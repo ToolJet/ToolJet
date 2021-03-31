@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+load File.expand_path("spring", __dir__)
+require_relative "../config/boot"
+require "rake"
+Rake.application.run
