@@ -1,0 +1,101 @@
+.editor { 
+
+    .header-container {
+        max-width: 100%;
+    }
+
+    .right-sidebar {
+        height: 100%; 
+        width: 260px; 
+        position: fixed; 
+        z-index: 1; 
+        right: 0;
+        overflow-x: hidden; 
+
+        flex: 1 1 auto;
+        top: 56px;
+
+        background-color: #fff;
+        background-clip: border-box;
+        border: solid rgba(0, 0, 0, 0.125);
+        border-width: 0px 0px 0px 1px;
+
+        .accordion-item { 
+            border: solid rgba(101,109,119,.16);
+            border-width: 1px 1px 1px 0px;
+        }
+    }
+
+    .editor-sidebar {
+        height: 100%; 
+        width: 260px; 
+        position: fixed; 
+        z-index: 1; 
+        left: 0;
+        overflow-x: hidden; 
+
+        flex: 1 1 auto;
+        background-color: #fff;
+        background-clip: border-box;
+        border: solid rgba(0, 0, 0, 0.125);
+        border-width: 0px 1px 3px 0px;
+
+        .pages-container { 
+
+        }
+
+        .components-container { 
+            .component-image-holder { 
+                background: #f6f7fb;
+                border-radius: 8px;
+                border: 1px solid #d0d0d0;
+
+                img { 
+                    margin: 0 auto;
+                    padding: 8px;
+                }
+            }
+
+            .component-title {
+                display: block;
+                font-weight: 500;
+                margin-top: 5px;
+                font-size: 0.8rem;
+            }
+
+            .component-description {
+                color: grey;
+                font-size: 0.7rem;
+            }
+        }
+      }
+      
+      
+      .main {
+        margin-left: 260px; 
+        margin-right: 260px; 
+        padding: 0px 10px;
+
+        .query-pane {
+            height: 350px; 
+            width: 100%; 
+            position: fixed; 
+            z-index: 1; 
+            left: 260px;
+            bottom: 0;
+            overflow-x: hidden; 
+    
+            flex: 1 1 auto;
+    
+            background-color: #fff;
+            background-clip: border-box;
+            border: solid rgba(0, 0, 0, 0.125);
+            border-width: 1px 0px 0px 0px;
+        }
+      }
+      
+      @media screen and (max-height: 450px) {
+        .sidebar {padding-top: 15px;}
+        .sidebar a {font-size: 18px;}
+      }
+}

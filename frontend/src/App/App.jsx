@@ -5,7 +5,8 @@ import { authenticationService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { Editor } from '@/Editor';
+import '@/_styles/theme.scss';
 
 class App extends React.Component {
     constructor(props) {
@@ -36,6 +37,7 @@ class App extends React.Component {
                     
                     <PrivateRoute exact path="/" component={HomePage} />
                     <Route path="/login" component={LoginPage} />
+                    <PrivateRoute exact path="/apps/:id" component={Editor} />
                                 
                 </div>
             </Router>
