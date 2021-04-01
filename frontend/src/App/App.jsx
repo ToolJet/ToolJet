@@ -33,16 +33,10 @@ class App extends React.Component {
                     {currentUser &&
                         <div></div>
                     }
-                    <div className="jumbotron">
-                        <div className="container">
-                            <div className="row">
-                                <div className="col-md-6 offset-md-3">
-                                    <PrivateRoute exact path="/" component={HomePage} />
-                                    <Route path="/login" component={LoginPage} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    
+                    <PrivateRoute exact path="/" component={HomePage} />
+                    <Route path="/login" component={LoginPage} />
+                                
                 </div>
             </Router>
         );
