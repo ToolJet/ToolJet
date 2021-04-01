@@ -132,7 +132,11 @@ class Editor extends React.Component {
                     }
                 </div>
                 <div className="main">
-                    main
+                    <div className="canvas-container align-items-center">
+                        <div className="canvas-area">
+                            canvas
+                        </div>
+                    </div>
                     <div className="query-pane p-2">
                         <div className="row">
                             <div className="col-md-2">

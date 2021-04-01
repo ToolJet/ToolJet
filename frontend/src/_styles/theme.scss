@@ -76,6 +76,38 @@
         margin-right: 260px; 
         padding: 0px 10px;
 
+        .canvas-container::-webkit-scrollbar {
+            width: 0;
+            background: transparent;
+        }
+        
+        .canvas-container::-webkit-scrollbar-thumb {
+            background: #FF0000;
+        }
+
+        .canvas-container { 
+            height: 100%;
+            position: fixed;
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-box-pack: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            align-items: center;
+
+            .canvas-area {
+                width: 1280px;
+                min-height: 1200px;
+                background: #f1f1f1;
+                padding: 10px;
+                margin: 0px auto;
+                margin-left: 50px;
+
+            }
+
+            
+        }
+
         .query-pane {
             height: 350px; 
             width: 100%; 
