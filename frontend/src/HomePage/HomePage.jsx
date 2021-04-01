@@ -1,6 +1,6 @@
 import React from 'react';
-
-import { userService, authenticationService } from '@/_services';
+import { useHistory } from "react-router-dom";
+import { appService, authenticationService } from '@/_services';
 
 class HomePage extends React.Component {
     constructor(props) {
@@ -13,6 +13,14 @@ class HomePage extends React.Component {
     }
 
     componentDidMount() {
+    }
+
+    createApp = () => {
+        let _self = this;
+        appService.createApp().then((data) => {
+            console.log(data)
+            _self.props.history.push(`/apps/${data.id}`);
+        });
     }
 
     render() {
@@ -92,7 +100,7 @@ class HomePage extends React.Component {
                     <div class="container-xl">
                         <div class="row row-deck row-cards">
                             <div class="col-sm-6 col-lg-3">
-                                <div class="card" role="button">
+                                <div class="card" role="button" onClick={this.createApp}>
                                     <div class="card-body p-5">
                                         <center>
                                             <img src="https://www.svgrepo.com/show/152121/plus.svg" width="15" height="50" alt=""/>
@@ -108,7 +116,7 @@ class HomePage extends React.Component {
                                 <div class="card-body">
                                         <div className="row">
                                             <div className="col-md-6">
-                                                <center><img src="https://www.svgrepo.com/show/258362/browser-website.svg" width="100" height="100" alt=""/></center>
+                                                <center><img src="https://www.svgrepo.com/show/258362/browser-website.svg" width="50" height="100" alt=""/></center>
 
                                             </div>
                                             <div className="col-md-6">
@@ -134,7 +142,7 @@ class HomePage extends React.Component {
                                 <div class="card-body">
                                         <div className="row">
                                             <div className="col-md-6">
-                                                <center><img src="https://www.svgrepo.com/show/261928/website.svg" width="100" height="100" alt=""/></center>
+                                                <center><img src="https://www.svgrepo.com/show/261928/website.svg" width="50" height="100" alt=""/></center>
 
                                             </div>
                                             <div className="col-md-6">
@@ -160,7 +168,7 @@ class HomePage extends React.Component {
                                     <div class="card-body">
                                         <div className="row">
                                             <div className="col-md-6">
-                                                <center><img src="https://www.svgrepo.com/show/154015/website.svg" width="100" height="100" alt=""/></center>
+                                                <center><img src="https://www.svgrepo.com/show/154015/website.svg" width="50" height="100" alt=""/></center>
 
                                             </div>
                                             <div className="col-md-6">
@@ -186,7 +194,7 @@ class HomePage extends React.Component {
                                         <div class="card-body">
                                             <div className="row">
                                                 <div className="col-md-6">
-                                                    <center><img src="https://www.svgrepo.com/show/149185/website.svg" width="100" height="100" alt=""/></center>
+                                                    <center><img src="https://www.svgrepo.com/show/149185/website.svg" width="50" height="100" alt=""/></center>
 
                                                 </div>
                                                 <div className="col-md-6">
