@@ -22,7 +22,8 @@ export const componentTypes = [
                 'visible': { value: true },
             },
             events: {
-
+                // onClick: { actionId: 'show-alert', options: { 'message': 'Message !'} }
+                onClick: { } 
             },
             styles: {
                 backgroundColor: { value: '#3c92dc' },

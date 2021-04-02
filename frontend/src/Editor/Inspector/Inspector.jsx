@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { TypeMapping } from './TypeMapping';
+import { EventSelector } from './EventSelector';
 
 const AllElements = { 
     Text,
@@ -29,7 +30,32 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged }) => 
         }
 
         setComponent(newComponent);
+        componentDefinitionChanged(newComponent);
+    }
 
+    function eventUpdated (event, actionId) {
+        
+        let newDefinition = { ...component.component.definition };
+        newDefinition.events[event.name] = { actionId };
+
+        let newComponent = { 
+            ...component
+        }
+
+        setComponent(newComponent);
+        componentDefinitionChanged(newComponent);
+    }
+
+    function eventOptionUpdated (event, option, value) {
+        
+        let newDefinition = { ...component.component.definition };
+        newDefinition.events[event.name].options = {...newDefinition.events[event.name].options, [option]: value}
+
+        let newComponent = { 
+            ...component
+        }
+
+        setComponent(newComponent);
         componentDefinitionChanged(newComponent);
     }
 
@@ -50,6 +76,18 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged }) => 
         )
     }
 
+    function renderEvent(param) {
+        const definition = component.component.definition.events[param];
+
+        return (<EventSelector 
+            param={{name: param, ...component.component.properties[param]}} 
+            definition={definition}
+            eventUpdated={eventUpdated}
+            eventOptionUpdated={eventOptionUpdated}
+        />
+    )
+    }
+
     return (
         <div className="inspector">
             <div className="header p-2">
@@ -62,6 +100,8 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged }) => 
             <div className="properties-container p-2">
                 {Object.keys(component.component.properties).map((property) => renderElement(property, 'properties'))}
                 {Object.keys(component.component.styles).map((style) => renderElement(style, 'styles'))}
+                <hr></hr>
+                {component.component.events.map((event) => renderEvent(event))}
             </div>
         </div>
     );

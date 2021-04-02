@@ -5,8 +5,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
 import { DraggableBox } from './DraggableBox';
-import { componentTypes } from './Components/components';
-import { Inspector } from './Inspector/Inspector';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 class Viewer extends React.Component {
     constructor(props) {
@@ -44,8 +44,12 @@ class Viewer extends React.Component {
     }
 
     onComponentClick = (id, component) => {
-        this.setState( { selectedComponent: { id, component } } )
-        this.switchSidebarTab(1);
+        console.log(component);
+        const onClickEvent = component.definition.events.onClick;
+
+        if(onClickEvent.actionId === 'show-alert') {
+            toast(onClickEvent.options.message, { hideProgressBar: true })
+        }
     }
 
     renderComponentCard = (component, index) => {
@@ -80,6 +84,7 @@ class Viewer extends React.Component {
 
         return (
             <div class="viewer wrapper">
+                <ToastContainer />
                 <DndProvider backend={HTML5Backend}>
                     <div className="header">
                         <header class="navbar navbar-expand-md navbar-light d-print-none">
