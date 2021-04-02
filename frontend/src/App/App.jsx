@@ -5,7 +5,7 @@ import { authenticationService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
-import { Editor } from '@/Editor';
+import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
 
 class App extends React.Component {
@@ -38,6 +38,7 @@ class App extends React.Component {
                     <PrivateRoute exact path="/" component={HomePage} />
                     <Route path="/login" component={LoginPage} />
                     <PrivateRoute exact path="/apps/:id" component={Editor} />
+                    <PrivateRoute exact path="/applications/:id" component={Viewer} />
                                 
                 </div>
             </Router>

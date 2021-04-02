@@ -15,23 +15,25 @@ class Editor extends React.Component {
         this.state = {
             currentUser: authenticationService.currentUserValue,
             users: null,
-            appDefinition: {}
+            appDefinition: {
+                components: {}
+            }
         };
     }
 
     componentDidMount() {
+        
+        const id = this.props.match.params.id;
+
+        appService.getApp(id).then(data => this.setState({ 
+            app: data, 
+            isLoading: false,
+            appDefinition: { ...this.state.appDefinition, ...data.definition }
+        }));
+
         this.setState({
             currentSidebarTab: 2,
             selectedComponent: null,
-            appDefinition: {}
-        });
-    }
-
-    createApp = () => {
-        let _self = this;
-        appService.createApp().then((data) => {
-            console.log(data)
-            _self.props.history.push(`/apps/${data.id}`);
         });
     }
 
@@ -64,8 +66,17 @@ class Editor extends React.Component {
         })
     }
 
+    saveApp = () => {
+        const { app, appDefinition } = this.state;
+        appService.saveApp(app.id, appDefinition).then((data) => {
+            alert('saved')
+        });
+    }
+
     render() {
         const { currentSidebarTab, selectedComponent, appDefinition } = this.state;
+
+        console.log(appDefinition);
 
         return (
             <div class="editor wrapper">
@@ -82,6 +93,9 @@ class Editor extends React.Component {
                                 </a>
                             </h1>
                             <div class="navbar-nav flex-row order-md-last">
+                                <div class="nav-item dropdown d-none d-md-flex me-3">
+                                    <button onClick={this.saveApp} className="btn">Save</button>    
+                                </div>
                                 <div class="nav-item dropdown d-none d-md-flex me-3">
                                     <button className="btn">Preview</button>    
                                 </div>
@@ -131,6 +145,12 @@ class Editor extends React.Component {
 
                         {currentSidebarTab === 2 && 
                             <div className="components-container m-2">
+                                <div class="input-icon">
+                                    <span class="input-icon-addon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
+                                    </span>
+                                    <input type="text" class="form-control mb-2" placeholder="Search…" aria-label="Search in website"/>
+                                </div>
                                 <div class="col-sm-12 col-lg-12">
                                     { componentTypes.map((component, i) => this.renderComponentCard(component, i)) }
                                 </div>

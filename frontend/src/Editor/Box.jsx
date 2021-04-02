@@ -16,7 +16,7 @@ let styles = {
 export const Box = function Box({ id, yellow, preview, component, inCanvas, onComponentClick }) {
     const backgroundColor = yellow ? 'yellow' : '';
 
-    console.log('rendering box');
+    console.log('rendering box', component);
 
     if(inCanvas) {
         styles = {

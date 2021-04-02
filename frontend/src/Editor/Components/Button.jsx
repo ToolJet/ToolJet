@@ -13,7 +13,7 @@ export const Button = function Button({ id, component, onComponentClick }) {
 
     return (
         <button 
-            class="btn btn-sm btn-primary p-1"
+            class="btn btn-primary p-1 m-1"
             style={computedStyles}
             onClick={() => onComponentClick(id, component) }>
             {text}

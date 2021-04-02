@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useDrop } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
@@ -19,8 +19,11 @@ function uuidv4() {
 }
 
 export const Container = ({ snapToGrid, onComponentClick, appDefinition, appDefinitionChanged}) => {
-    const [boxes, setBoxes] = useState(appDefinition);
-    
+    const [boxes, setBoxes] = useState(appDefinition.components);
+
+    useEffect(() => {
+        setBoxes(appDefinition.components);
+    }, [appDefinition.components]);
 
     const moveBox = useCallback((id, left, top) => {
         setBoxes(update(boxes, {

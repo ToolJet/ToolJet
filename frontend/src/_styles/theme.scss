@@ -19,8 +19,6 @@
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 1px 3px 0px;
 
-       
-
         .accordion-item { 
             border: solid rgba(101,109,119,.16);
             border-width: 1px 0px 1px 0px;
@@ -162,4 +160,52 @@
         .sidebar {padding-top: 15px;}
         .sidebar a {font-size: 18px;}
       }
+}
+
+
+.viewer { 
+
+    .header-container {
+        max-width: 100%;
+    }
+
+    .main {
+        margin-left: 260px; 
+        margin-right: 260px; 
+        padding: 0px 10px;
+
+        .canvas-container::-webkit-scrollbar {
+            width: 0;
+            background: transparent;
+        }
+        
+        .canvas-container::-webkit-scrollbar-thumb {
+            background: #FF0000;
+        }
+
+        .canvas-container { 
+            height: 100%;
+            position: fixed;
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-box-pack: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            align-items: center;
+
+            .canvas-area {
+                width: 1280px;
+                min-height: 1200px;
+                background: #edeff5;
+                padding: 10px;
+                margin: 0px auto;
+                margin-left: 50px;
+                background-size: 80px 80px;
+                // background-image: url(/public/images/tile.png);
+                background-repeat: repeat;
+            }
+
+            
+        }
+    }
 }
