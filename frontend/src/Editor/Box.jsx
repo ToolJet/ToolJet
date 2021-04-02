@@ -13,10 +13,10 @@ let styles = {
     cursor: 'move',
 };
 
-export const Box = memo(function Box({ id, yellow, preview, component, inCanvas, onComponentClick }) {
+export const Box = function Box({ id, yellow, preview, component, inCanvas, onComponentClick }) {
     const backgroundColor = yellow ? 'yellow' : '';
 
-    console.log(component);
+    console.log('rendering box');
 
     if(inCanvas) {
         styles = {
@@ -42,4 +42,4 @@ export const Box = memo(function Box({ id, yellow, preview, component, inCanvas,
                 </div>
             }
 		</div>);
-});
+};

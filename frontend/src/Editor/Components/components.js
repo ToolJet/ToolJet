@@ -4,17 +4,31 @@ export const componentTypes = [
         name: 'Button', 
         description: 'Trigger actions like run queries, open other pages etc',
         component: 'Button',
-        properties: [
-            { 'text': { 'type': 'string'} },
-            { 'style': { 'type': 'select', data: [{ name: 'Primary', value: 'primary' }, { name: 'Secondary', value: 'secondary' }] } },
-            { 'visible': { 'type': 'boolean', default: 'true' }}
-        ],
+        properties: {
+            text: { type: 'string'} ,
+            // { 'style': { 'type': 'select', data: [{ name: 'Primary', value: 'primary' }, { name: 'Secondary', value: 'secondary' }] } },
+            visible: { type: 'string' } 
+        },
         events: [
             'onClick'
         ],
-        styles: [
-            { backgroundColor: '#3c92dc'}
-        ]
+        styles: {
+            backgroundColor: { type: 'color'},
+            textColor: { type: 'color'} 
+        },
+        definition: {
+            properties: {
+                'text': { value: 'Button' },
+                'visible': { value: true },
+            },
+            events: {
+
+            },
+            styles: {
+                backgroundColor: { value: '#3c92dc' },
+                textColor: { value: '#fff' }
+            }
+        }
     },
 
     { 

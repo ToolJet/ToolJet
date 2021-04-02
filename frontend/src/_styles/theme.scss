@@ -23,7 +23,7 @@
 
         .accordion-item { 
             border: solid rgba(101,109,119,.16);
-            border-width: 1px 1px 1px 0px;
+            border-width: 1px 0px 1px 0px;
         }
     }
 
@@ -43,8 +43,35 @@
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 0px 0px 1px;
 
-        .pages-container { 
+        .inspector {
+            .header {
+                border: solid rgba(0, 0, 0, 0.125);
+                border-width: 0px 0px 2px 0px;
+                height: 40px;
 
+                .component-name {
+                    font-weight: 500;
+                }
+
+                .component-action-button {
+                    right: 10px;
+                    position: fixed;
+                }
+            }
+
+            .properties-container { 
+                .field { 
+                    .form-label { 
+                        font-size: 12px;
+                    }
+
+                    .text-field {
+                        height: 30px;
+                        font-size: 12px;
+                    }
+                }
+            }
+            
         }
 
         .components-container { 

@@ -6,6 +6,7 @@ import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
 import { DraggableBox } from './DraggableBox';
 import { componentTypes } from './Components/components';
+import { Inspector } from './Inspector/Inspector';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -13,13 +14,16 @@ class Editor extends React.Component {
 
         this.state = {
             currentUser: authenticationService.currentUserValue,
-            users: null
+            users: null,
+            appDefinition: {}
         };
     }
 
     componentDidMount() {
         this.setState({
-            currentSidebarTab: 1
+            currentSidebarTab: 2,
+            selectedComponent: null,
+            appDefinition: {}
         });
     }
 
@@ -38,7 +42,7 @@ class Editor extends React.Component {
     }
 
     onComponentClick = (id, component) => {
-        alert(id);
+        this.setState( { selectedComponent: { id, component } } )
         this.switchSidebarTab(1);
     }
 
@@ -46,8 +50,23 @@ class Editor extends React.Component {
         return (<DraggableBox key={index} index={index} component={component} />);
     };
 
+    appDefinitionChanged = (newDefinition) => { 
+        console.log('newDefinition', newDefinition);
+        this.setState({ appDefinition: newDefinition })
+        console.log('app definition', this.state.appDefinition);
+    }
+
+    componentDefinitionChanged = (newDefinition) => { 
+        console.log('new component definition', newDefinition);
+        console.log('app definition', this.state.appDefinition);
+        this.setState( { 
+            appDefinition: { ...this.state.appDefinition, [newDefinition.id]: { component: newDefinition.component } }
+        })
+    }
+
     render() {
-        const { currentUser, users, currentSidebarTab } = this.state;
+        const { currentSidebarTab, selectedComponent, appDefinition } = this.state;
+
         return (
             <div class="editor wrapper">
                 <DndProvider backend={HTML5Backend}>
@@ -97,8 +116,16 @@ class Editor extends React.Component {
                         </div>
 
                         {currentSidebarTab === 1 && 
-                            <div className="pages-container m-2">
-                                    pages
+                            <div className="pages-container">
+                                    {selectedComponent ?
+                                        <Inspector 
+                                            componentDefinitionChanged={this.componentDefinitionChanged}
+                                            selectedComponent={selectedComponent}>
+
+                                        </Inspector>
+                                        :
+                                        <div className="mt-5 p-2">Please select a component to inspect</div>
+                                    }
                             </div>
                         }
 
@@ -113,7 +140,11 @@ class Editor extends React.Component {
                     <div className="main">
                         <div className="canvas-container align-items-center">
                             <div className="canvas-area">
-                                <Container snapToGrid={true} onComponentClick={this.onComponentClick}/>
+                                <Container 
+                                    appDefinition={appDefinition}
+                                    appDefinitionChanged={this.appDefinitionChanged}
+                                    snapToGrid={true} 
+                                    onComponentClick={this.onComponentClick}/>
 			                    <CustomDragLayer snapToGrid={true}/>
                             </div>
                         </div>

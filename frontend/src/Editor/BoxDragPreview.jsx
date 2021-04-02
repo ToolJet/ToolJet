@@ -12,7 +12,7 @@ export const BoxDragPreview = memo(function BoxDragPreview({ component }) {
         const interval = setInterval(() => setTickTock(!tickTock), 500);
         return () => clearInterval(interval);
     }, [tickTock]);
-    return (<div style={styles}>
-				whatever
+    return (<div>
+				<img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" class="navbar-brand-image"/>
 			</div>);
 });

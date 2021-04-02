@@ -1,8 +1,9 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
+
 function getStyles(left, top, isDragging) {
     const transform = `translate3d(${left}px, ${top}px, 0)`;
     return {
@@ -15,9 +16,17 @@ function getStyles(left, top, isDragging) {
         height: isDragging ? 0 : '',
     };
 }
-export const DraggableBox = memo(function DraggableBox(props) {
-    console.log(props)
-    const { id, title, left, top, component, index, inCanvas, onComponentClick } = props;
+
+export const DraggableBox = function DraggableBox({ id, title, left, top, component, index, inCanvas, onComponentClick  }) {
+
+    // const [comp, setBoxes] = useState(component);
+
+    // useEffect(() => {
+    //     setBoxes(component);
+    // }, []);
+
+    console.log('Rendering draggable box');
+
     const [{ isDragging }, drag, preview] = useDrag(() => ({
         type: ItemTypes.BOX,
         item: { id, left, top, title, component },
@@ -25,10 +34,12 @@ export const DraggableBox = memo(function DraggableBox(props) {
             isDragging: monitor.isDragging(),
         }),
     }), [id, left, top, title, component, index]);
+
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
     }, []);
+
     return (<div ref={drag} style={getStyles(left, top, isDragging)} role="DraggableBox">
 			<Box component={component} id={id} inCanvas={inCanvas} onComponentClick={onComponentClick}/>
 		</div>);
-});
+};

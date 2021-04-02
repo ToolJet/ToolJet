@@ -4,6 +4,7 @@ import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
+import { componentTypes } from './Components/components';
 
 const styles = {
     width: 1280,
@@ -17,17 +18,20 @@ function uuidv4() {
     );
 }
 
-export const Container = ({ snapToGrid, onComponentClick }) => {
-    const [boxes, setBoxes] = useState({
-        
-    });
+export const Container = ({ snapToGrid, onComponentClick, appDefinition, appDefinitionChanged}) => {
+    const [boxes, setBoxes] = useState(appDefinition);
+    
+
     const moveBox = useCallback((id, left, top) => {
         setBoxes(update(boxes, {
             [id]: {
                 $merge: { left, top },
             },
         }));
+
+        appDefinitionChanged({...appDefinition, components: boxes});
     }, [boxes]);
+
     const [, drop] = useDrop(() => ({
         accept: ItemTypes.BOX,
         drop(item, monitor) {
@@ -37,7 +41,11 @@ export const Container = ({ snapToGrid, onComponentClick }) => {
                 item.top = 0;
             }
 
-            setBoxes({...boxes, [uuidv4()]: { top: 20, left: 80, component: item.component}})
+            const componentMeta = componentTypes.find(component => component.component === item.component.component);
+            console.log('adding new component');
+
+            setBoxes({...boxes, [uuidv4()]: { top: 20, left: 80, component:  JSON.parse(JSON.stringify(componentMeta))}})
+
             const delta = monitor.getDifferenceFromInitialOffset();
             let left = Math.round(item.left + delta.x);
             let top = Math.round(item.top + delta.y);
@@ -50,6 +58,7 @@ export const Container = ({ snapToGrid, onComponentClick }) => {
             return undefined;
         },
     }), [moveBox]);
+
     return (<div ref={drop} style={styles}>
 			{Object.keys(boxes).map((key) => (<DraggableBox onComponentClick={onComponentClick} key={key} id={key} {...boxes[key]} inCanvas={true} />))}
 		</div>);
