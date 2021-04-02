@@ -4,7 +4,30 @@
         max-width: 100%;
     }
 
-    .right-sidebar {
+    .left-sidebar {
+
+        height: 100%; 
+        width: 260px; 
+        position: fixed; 
+        z-index: 1; 
+        left: 0;
+        overflow-x: hidden; 
+
+        flex: 1 1 auto;
+        background-color: #fff;
+        background-clip: border-box;
+        border: solid rgba(0, 0, 0, 0.125);
+        border-width: 0px 1px 3px 0px;
+
+       
+
+        .accordion-item { 
+            border: solid rgba(101,109,119,.16);
+            border-width: 1px 1px 1px 0px;
+        }
+    }
+
+    .editor-sidebar {
         height: 100%; 
         width: 260px; 
         position: fixed; 
@@ -19,26 +42,6 @@
         background-clip: border-box;
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 0px 0px 1px;
-
-        .accordion-item { 
-            border: solid rgba(101,109,119,.16);
-            border-width: 1px 1px 1px 0px;
-        }
-    }
-
-    .editor-sidebar {
-        height: 100%; 
-        width: 260px; 
-        position: fixed; 
-        z-index: 1; 
-        left: 0;
-        overflow-x: hidden; 
-
-        flex: 1 1 auto;
-        background-color: #fff;
-        background-clip: border-box;
-        border: solid rgba(0, 0, 0, 0.125);
-        border-width: 0px 1px 3px 0px;
 
         .pages-container { 
 
@@ -98,11 +101,13 @@
             .canvas-area {
                 width: 1280px;
                 min-height: 1200px;
-                background: #f1f1f1;
+                background: #edeff5;
                 padding: 10px;
                 margin: 0px auto;
                 margin-left: 50px;
-
+                background-size: 80px 80px;
+                // background-image: url(/public/images/tile.png);
+                background-repeat: repeat;
             }
 
             
