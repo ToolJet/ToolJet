@@ -7,6 +7,7 @@ import { CustomDragLayer } from './CustomDragLayer';
 import { DraggableBox } from './DraggableBox';
 import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
+import ReactJson from 'react-json-view'
 
 class Editor extends React.Component {
     constructor(props) {
@@ -76,7 +77,15 @@ class Editor extends React.Component {
     render() {
         const { currentSidebarTab, selectedComponent, appDefinition } = this.state;
 
-        console.log(appDefinition);
+        const global_context = {
+            current_user: {
+                name: 'navaneeth',
+                email: 'n@stackegg.com'
+            },
+            urlparams: {
+                q: 'components'
+            }
+        }
 
         return (
             <div class="editor wrapper">
@@ -247,13 +256,17 @@ class Editor extends React.Component {
                             </div>
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="heading-2">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-2" aria-expanded="false">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-2" aria-expanded="false">
                                     Globals
                                 </button>
                                 </h2>
-                                <div id="collapse-2" class="accordion-collapse collapse" data-bs-parent="#accordion-example">
+                                <div id="collapse-2" class="accordion" data-bs-parent="#accordion-example">
                                 <div class="accordion-body pt-0">
-                                    <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                                    <ReactJson
+                                        collapsed={true}
+                                        enableClipboard={false}
+                                        name={null}
+                                        src={global_context} />
                                 </div>
                                 </div>
                             </div>
