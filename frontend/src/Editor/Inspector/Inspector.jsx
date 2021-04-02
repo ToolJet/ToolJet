@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Text } from './Elements/Text';
+import { Color } from './Elements/Color';
+import { TypeMapping } from './TypeMapping';
+
+const AllElements = { 
+    Text,
+    Color
+}
 
 export const Inspector = ({ selectedComponent, componentDefinitionChanged }) => {
 
@@ -29,9 +36,12 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged }) => 
     function renderElement(param, paramType) {
 
         const definition = component.component.definition[paramType][param];
+        const meta = component.component[paramType][param];
         console.log('definition', definition);
 
-        return (<Text 
+        const ElementToRender = AllElements[TypeMapping[meta.type]];
+
+        return (<ElementToRender 
                 param={{name: param, ...component.component.properties[param]}} 
                 definition={definition}
                 onChange={paramUpdated}
