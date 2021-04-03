@@ -1,12 +1,14 @@
 import React, { memo } from 'react';
 import { Button } from './Components/Button';
 import { Text } from './Components/Text';
+import { Table } from './Components/Table';
 import { TextInput } from './Components/TextInput';
 
 const AllComponents = {
     Button,
     Text,
-    TextInput
+    TextInput,
+    Table
 }
 
 let styles = {

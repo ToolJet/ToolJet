@@ -35,7 +35,32 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/54455/table.svg', 
         name: 'Table', 
-        description: 'Display paginated tabular data' 
+        description: 'Display paginated tabular data',
+        component: 'Table',
+        properties: {
+            text: { type: 'string'} ,
+            visible: { type: 'string' } 
+        },
+        events: [
+            'onClick'
+        ],
+        styles: {
+            backgroundColor: { type: 'color'},
+            textColor: { type: 'color'} 
+        },
+        definition: {
+            properties: {
+                'text': { value: 'Button' },
+                'visible': { value: true },
+            },
+            events: {
+                onClick: { } 
+            },
+            styles: {
+                backgroundColor: { value: '#3c92dc' },
+                textColor: { value: '#fff' }
+            }
+        }
     },
     { 
         icon: 'https://www.svgrepo.com/show/38828/text.svg', 

@@ -7,7 +7,8 @@ import { CustomDragLayer } from './CustomDragLayer';
 import { DraggableBox } from './DraggableBox';
 import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
-import ReactJson from 'react-json-view'
+import ReactJson from 'react-json-view';
+import { DataSourceManager }  from './DataSourceManager';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -34,6 +35,7 @@ class Editor extends React.Component {
 
         this.setState({
             currentSidebarTab: 2,
+            currentQueryPaneTab: 1,
             selectedComponent: null,
         });
     }
@@ -41,6 +43,12 @@ class Editor extends React.Component {
     switchSidebarTab = (tabIndex) => { 
         this.setState({
             currentSidebarTab: tabIndex
+        });
+    }
+
+    switchQueryPaneTab = (tabIndex) => { 
+        this.setState({
+            currentQueryPaneTab: tabIndex
         });
     }
 
@@ -75,7 +83,7 @@ class Editor extends React.Component {
     }
 
     render() {
-        const { currentSidebarTab, selectedComponent, appDefinition } = this.state;
+        const { currentSidebarTab, currentQueryPaneTab, selectedComponent, appDefinition } = this.state;
 
         const global_context = {
             current_user: {
@@ -177,27 +185,56 @@ class Editor extends React.Component {
 			                    <CustomDragLayer snapToGrid={true}/>
                             </div>
                         </div>
-                        <div className="query-pane p-2">
+                        <div className="query-pane">
                             <div className="row">
-                                <div className="col-md-2">
-                                    <div className="row">
-                                        <div className="col-md-9 ">
+                                <div className="col-md-2 data-pane">
+                                    <div className="card row header">
+                                        <ul className="nav nav-tabs" data-bs-toggle="tabs">
+                                            <li class="nav-item col-md-6">
+                                                <a onClick={() => this.switchQueryPaneTab(1)} className={currentQueryPaneTab === 1 ? 'nav-link active' : 'nav-link'} data-bs-toggle="tab">
+                                                    <img src="https://www.svgrepo.com/show/22204/database.svg" width="16" height="16"/>
+                                                        &nbsp; Datasources
+                                                </a>
+                                            </li>
+                                            <li className="nav-item col-md-6">
+                                                <a onClick={() => this.switchQueryPaneTab(2)} className={currentQueryPaneTab === 2 ? 'nav-link active' : 'nav-link'}  data-bs-toggle="tab">
+                                                    <img src="https://www.svgrepo.com/show/15910/search.svg" width="16" height="16"/>
+                                                        &nbsp; Queries
+                                                </a>
+                                            </li>
+                                            
+                                        </ul>
+                                    </div>
+                                    <div className="row m-2">
+                                        <div className="col-md-9">
                                             <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
-                                                <form action="." method="get">
                                                 <div class="input-icon">
                                                     <span class="input-icon-addon">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
                                                     </span>
                                                     <input type="text" class="form-control" placeholder="Search…" aria-label="Search in website"/>
                                                 </div>
-                                                </form>
                                             </div>
                                         </div>
                                         <div className="col-md-3">
-                                            <button className="btn btn-light">+ New </button>
+                                            <DataSourceManager></DataSourceManager>
                                         </div>
                                     </div>
                                     
+                                    {currentQueryPaneTab === 1 && 
+                                        <div className="datasources-container">
+                                                <div className="mt-5 p-2">You do not have any datasources.</div>
+                                        </div>
+                                    }
+
+                                    {currentQueryPaneTab === 2 && 
+                                        <div className="queries-container">
+                                            <div className="mt-5 p-2">You haven't created any queries</div>
+                                        </div>
+                                    }
+
+                                    
+
                                 </div>
                             </div>
                         </div>
