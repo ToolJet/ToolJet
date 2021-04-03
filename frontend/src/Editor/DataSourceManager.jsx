@@ -1,7 +1,9 @@
 import React from 'react';
-import { appService, authenticationService } from '@/_services';
+import { datasourceService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const SOURCES = [
     {
@@ -23,6 +25,7 @@ class DataSourceManager extends React.Component {
         this.state = {
             currentUser: authenticationService.currentUserValue,
             showModal: false,
+            appId: props.appId,
             options: { 
                 host: '',
                 port: '5432',
@@ -43,8 +46,17 @@ class DataSourceManager extends React.Component {
         this.setState( { options: { ...this.state.options, [option]: value } } );
     }
 
-    saveDataSource = () => {
+    createDataSource = () => {
+        let _self = this;
 
+        const  { appId, options, selectedDataSource } = this.state;
+        const name = selectedDataSource.name;
+        const kind = selectedDataSource.kind;
+
+        datasourceService.createDataSource(appId, name, kind, options).then((data) => {
+            this.setState( { showModal: false } );
+            toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
+        });
     }
    
     render() {
@@ -52,6 +64,8 @@ class DataSourceManager extends React.Component {
 
         return (
             <div>
+
+                <ToastContainer/>
                 
                 {!showModal && <button className="btn btn-light" onClick={() => this.setState({ showModal: true })}>+</button>}
 
@@ -131,7 +145,7 @@ class DataSourceManager extends React.Component {
                                                 <Button className="m-2" variant="success" onClick={() => this.setState({ showModal: false })}>
                                                     Test
                                                 </Button>
-                                                <Button className="m-2" variant="primary" onClick={this.saveDataSource}>
+                                                <Button className="m-2" variant="primary" onClick={this.createDataSource}>
                                                     Save
                                                 </Button>
                                             </div>

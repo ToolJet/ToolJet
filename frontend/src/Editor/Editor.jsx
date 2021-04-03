@@ -25,15 +25,16 @@ class Editor extends React.Component {
 
     componentDidMount() {
         
-        const id = this.props.match.params.id;
+        const appId = this.props.match.params.id;
 
-        appService.getApp(id).then(data => this.setState({ 
+        appService.getApp(appId).then(data => this.setState({ 
             app: data, 
             isLoading: false,
             appDefinition: { ...this.state.appDefinition, ...data.definition }
         }));
 
         this.setState({
+            appId,
             currentSidebarTab: 2,
             currentQueryPaneTab: 1,
             selectedComponent: null,
@@ -83,7 +84,7 @@ class Editor extends React.Component {
     }
 
     render() {
-        const { currentSidebarTab, currentQueryPaneTab, selectedComponent, appDefinition } = this.state;
+        const { currentSidebarTab, currentQueryPaneTab, selectedComponent, appDefinition, appId } = this.state;
 
         const global_context = {
             current_user: {
@@ -217,7 +218,7 @@ class Editor extends React.Component {
                                             </div>
                                         </div>
                                         <div className="col-md-3">
-                                            <DataSourceManager></DataSourceManager>
+                                            <DataSourceManager appId={appId}></DataSourceManager>
                                         </div>
                                     </div>
                                     
