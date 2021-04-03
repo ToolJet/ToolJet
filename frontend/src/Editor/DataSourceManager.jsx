@@ -4,19 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-const SOURCES = [
-    {
-        name: 'PostgreSQL',
-        kind: 'postgresql',
-        icon: 'https://www.svgrepo.com/show/303301/postgresql-logo.svg'
-    },
-    {
-        name: 'ElasticSearch',
-        kind: 'elasticsearch',
-        icon: 'https://www.svgrepo.com/show/305988/elasticsearch.svg'
-    }
-]
+import { DataSourceTypes } from './DataSourceTypes';
 
 class DataSourceManager extends React.Component {
     constructor(props) {
@@ -36,7 +24,12 @@ class DataSourceManager extends React.Component {
         };
     }
 
-    componentDidMount() {}
+    componentDidMount() {
+        console.log('props',this.props);
+        this.state = {
+            appId: this.props.appId
+        }
+    }
 
     selectDataSource = (source) => { 
         this.setState({ selectedDataSource: source });
@@ -53,9 +46,10 @@ class DataSourceManager extends React.Component {
         const name = selectedDataSource.name;
         const kind = selectedDataSource.kind;
 
-        datasourceService.createDataSource(appId, name, kind, options).then((data) => {
+        datasourceService.create(appId, name, kind, options).then((data) => {
             this.setState( { showModal: false } );
             toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
+            this.props.dataSourcesChanged();
         });
     }
    
@@ -89,7 +83,7 @@ class DataSourceManager extends React.Component {
                         {!selectedDataSource &&
                             <div class="row row-deck">
 
-                                {SOURCES.map((dataSource) => (<div class="col-md-2">
+                                {DataSourceTypes.map((dataSource) => (<div class="col-md-2">
                                     <div class="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
                                             <div class="card-body">
                                                 <center>

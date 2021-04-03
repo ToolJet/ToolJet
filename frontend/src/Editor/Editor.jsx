@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService } from '@/_services';
+import { datasourceService, appService, authenticationService } from '@/_services';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Container } from './Container';
@@ -9,14 +9,19 @@ import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
 import ReactJson from 'react-json-view';
 import { DataSourceManager }  from './DataSourceManager';
+import { DataSourceTypes } from './DataSourceTypes';
 
 class Editor extends React.Component {
     constructor(props) {
         super(props);
 
+        const appId = this.props.match.params.id;
+
         this.state = {
             currentUser: authenticationService.currentUserValue,
             users: null,
+            appId,
+            loadingDataSources: true,
             appDefinition: {
                 components: {}
             }
@@ -33,12 +38,29 @@ class Editor extends React.Component {
             appDefinition: { ...this.state.appDefinition, ...data.definition }
         }));
 
+        this.fetchDataSources();
+
         this.setState({
             appId,
             currentSidebarTab: 2,
             currentQueryPaneTab: 1,
             selectedComponent: null,
         });
+    }
+
+    fetchDataSources = () => {
+        this.setState({
+            loadingDataSources: true
+        }, () => {
+            datasourceService.getAll(this.state.appId).then(data => this.setState({ 
+                data_sources: data.data_sources, 
+                loadingDataSources: false,
+            }));
+        });
+    }
+
+    dataSourcesChanged = () => {
+        this.fetchDataSources();
     }
 
     switchSidebarTab = (tabIndex) => { 
@@ -83,8 +105,26 @@ class Editor extends React.Component {
         });
     }
 
+    renderDataSource = (data_source) => {
+        const sourceMeta = DataSourceTypes.find(source => source.kind === data_source.kind);
+        return (
+            <tr>
+                <td>
+                    <img src={sourceMeta.icon} width="20" height="20"/> {sourceMeta.name}
+                </td>
+            </tr>
+        )
+    }
+
     render() {
-        const { currentSidebarTab, currentQueryPaneTab, selectedComponent, appDefinition, appId } = this.state;
+        const { 
+            currentSidebarTab, 
+            currentQueryPaneTab, 
+            selectedComponent, 
+            appDefinition, 
+            appId, 
+            loadingDataSources 
+        } = this.state;
 
         const global_context = {
             current_user: {
@@ -218,13 +258,31 @@ class Editor extends React.Component {
                                             </div>
                                         </div>
                                         <div className="col-md-3">
-                                            <DataSourceManager appId={appId}></DataSourceManager>
+                                            <DataSourceManager 
+                                                appId={appId}
+                                                dataSourcesChanged={this.dataSourcesChanged}
+                                            />
                                         </div>
                                     </div>
                                     
                                     {currentQueryPaneTab === 1 && 
                                         <div className="datasources-container">
-                                                <div className="mt-5 p-2">You do not have any datasources.</div>
+                                                {loadingDataSources ?  
+                                                    <div>Loading datasources...</div>
+                                                    : 
+                                                    <div className="m-2">
+                                                        <div class="table-responsive">
+                                                            <table
+                                                                    class="table table-vcenter table-nowrap">
+                                                                <tbody>
+                                                                    {this.state.data_sources.map((source) => this.renderDataSource(source))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                }
+                                                
                                         </div>
                                     }
 
