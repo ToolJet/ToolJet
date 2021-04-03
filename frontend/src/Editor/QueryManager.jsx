@@ -54,7 +54,7 @@ class QueryManager extends React.Component {
                     </div>
                     <div className="col-md-3">
                         <button className="btn btn-light m-1 float-right">Preview</button>
-                        <button onClick={this.createDataQuery} className="btn btn-primary m-1 float-right">Save</button>
+                        <button onClick={this.createDataQuery} className="btn btn-primary m-1 float-right">Create</button>
                     </div>
                 </div>
                 

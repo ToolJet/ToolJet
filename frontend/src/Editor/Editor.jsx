@@ -1,5 +1,5 @@
 import React from 'react';
-import { datasourceService, appService, authenticationService } from '@/_services';
+import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Container } from './Container';
@@ -23,6 +23,7 @@ class Editor extends React.Component {
             users: null,
             appId,
             loadingDataSources: true,
+            loadingDataQueries: true,
             appDefinition: {
                 components: {}
             }
@@ -40,6 +41,7 @@ class Editor extends React.Component {
         }));
 
         this.fetchDataSources();
+        this.fetchDataQueries();
 
         this.setState({
             appId,
@@ -56,6 +58,17 @@ class Editor extends React.Component {
             datasourceService.getAll(this.state.appId).then(data => this.setState({ 
                 dataSources: data.data_sources, 
                 loadingDataSources: false,
+            }));
+        });
+    }
+
+    fetchDataQueries = () => {
+        this.setState({
+            loadingDataQueries: true
+        }, () => {
+            dataqueryService.getAll(this.state.appId).then(data => this.setState({ 
+                dataQueries: data.data_queries, 
+                loadingDataQueries: false,
             }));
         });
     }
@@ -117,6 +130,17 @@ class Editor extends React.Component {
         )
     }
 
+    renderDataQuery = (data_query) => {
+        const sourceMeta = DataSourceTypes.find(source => source.kind === data_query.kind);
+        return (
+            <tr>
+                <td>
+                    <img src={sourceMeta.icon} width="20" height="20"/> {data_query.name}
+                </td>
+            </tr>
+        )
+    }
+
     render() {
         const { 
             currentSidebarTab, 
@@ -125,7 +149,10 @@ class Editor extends React.Component {
             appDefinition, 
             appId, 
             dataSources,
-            loadingDataSources 
+            loadingDataQueries,
+            dataQueries,
+            loadingDataSources,
+            addingQuery
         } = this.state;
 
         const global_context = {
@@ -303,17 +330,31 @@ class Editor extends React.Component {
                                                     </div>
                                                 </div>
                                                 <div className="col-md-3">
-                                                    
+                                                    {<button className="btn btn-light" onClick={() => this.setState({addingQuery: true})}>+</button>}
                                                 </div>
                                             </div>
-                                            <div className="mt-5 p-2">You haven't created any queries</div>
+                                            {loadingDataQueries ?  
+                                                    <div>Loading queries...</div>
+                                                    : 
+                                                    <div className="m-2">
+                                                        <div class="table-responsive">
+                                                            <table
+                                                                    class="table table-vcenter table-nowrap">
+                                                                <tbody>
+                                                                    {dataQueries.map((query) => this.renderDataQuery(query))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                }
                                         </div>
                                     }
                                 </div>
                                 <div className="col-md-9">
                                     {!loadingDataSources &&
                                         <div className="query-definition-pane">
-                                            {currentQueryPaneTab === 2 && 
+                                            {(currentQueryPaneTab === 2 && addingQuery) && 
                                                 <QueryManager 
                                                     dataSources={dataSources}
                                                     appId={appId}

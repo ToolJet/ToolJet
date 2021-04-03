@@ -2,8 +2,14 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
 export const dataqueryService = {
-    create
+    create,
+    getAll
 };
+
+function getAll(appId) {
+    const requestOptions = { method: 'GET', headers: authHeader() };
+    return fetch(`${config.apiUrl}/data_queries?app_id=${appId}`, requestOptions).then(handleResponse);
+}
 
 function create(app_id, name, kind, options) {
     const body =  {
