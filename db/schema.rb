@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_03_052816) do
+ActiveRecord::Schema.define(version: 2021_04_03_094932) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -24,6 +24,16 @@ ActiveRecord::Schema.define(version: 2021_04_03_052816) do
     t.uuid "organization_id", null: false
     t.json "definition"
     t.index ["organization_id"], name: "index_apps_on_organization_id"
+  end
+
+  create_table "data_queries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_id", null: false
+    t.string "name"
+    t.json "options"
+    t.string "kind"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["app_id"], name: "index_data_queries_on_app_id"
   end
 
   create_table "data_sources", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -56,5 +66,6 @@ ActiveRecord::Schema.define(version: 2021_04_03_052816) do
   end
 
   add_foreign_key "apps", "organizations"
+  add_foreign_key "data_queries", "apps"
   add_foreign_key "data_sources", "apps"
 end

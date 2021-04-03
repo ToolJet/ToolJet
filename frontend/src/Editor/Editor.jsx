@@ -10,6 +10,7 @@ import { Inspector } from './Inspector/Inspector';
 import ReactJson from 'react-json-view';
 import { DataSourceManager }  from './DataSourceManager';
 import { DataSourceTypes } from './DataSourceTypes';
+import { QueryManager } from './QueryManager';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -43,7 +44,7 @@ class Editor extends React.Component {
         this.setState({
             appId,
             currentSidebarTab: 2,
-            currentQueryPaneTab: 1,
+            currentQueryPaneTab: 2,
             selectedComponent: null,
         });
     }
@@ -53,7 +54,7 @@ class Editor extends React.Component {
             loadingDataSources: true
         }, () => {
             datasourceService.getAll(this.state.appId).then(data => this.setState({ 
-                data_sources: data.data_sources, 
+                dataSources: data.data_sources, 
                 loadingDataSources: false,
             }));
         });
@@ -123,6 +124,7 @@ class Editor extends React.Component {
             selectedComponent, 
             appDefinition, 
             appId, 
+            dataSources,
             loadingDataSources 
         } = this.state;
 
@@ -228,7 +230,7 @@ class Editor extends React.Component {
                         </div>
                         <div className="query-pane">
                             <div className="row">
-                                <div className="col-md-2 data-pane">
+                                <div className="col-md-3 data-pane">
                                     <div className="card row header">
                                         <ul className="nav nav-tabs" data-bs-toggle="tabs">
                                             <li class="nav-item col-md-6">
@@ -246,27 +248,28 @@ class Editor extends React.Component {
                                             
                                         </ul>
                                     </div>
-                                    <div className="row m-2">
-                                        <div className="col-md-9">
-                                            <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
-                                                <div class="input-icon">
-                                                    <span class="input-icon-addon">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
-                                                    </span>
-                                                    <input type="text" class="form-control" placeholder="Search…" aria-label="Search in website"/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <DataSourceManager 
-                                                appId={appId}
-                                                dataSourcesChanged={this.dataSourcesChanged}
-                                            />
-                                        </div>
-                                    </div>
+                                    
                                     
                                     {currentQueryPaneTab === 1 && 
                                         <div className="datasources-container">
+                                                <div className="row m-2">
+                                                    <div className="col-md-9">
+                                                        <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
+                                                            <div class="input-icon">
+                                                                <span class="input-icon-addon">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
+                                                                </span>
+                                                                <input type="text" class="form-control" placeholder="Search…" aria-label="Search in website"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <DataSourceManager 
+                                                            appId={appId}
+                                                            dataSourcesChanged={this.dataSourcesChanged}
+                                                        />
+                                                    </div>
+                                                </div>
                                                 {loadingDataSources ?  
                                                     <div>Loading datasources...</div>
                                                     : 
@@ -275,7 +278,7 @@ class Editor extends React.Component {
                                                             <table
                                                                     class="table table-vcenter table-nowrap">
                                                                 <tbody>
-                                                                    {this.state.data_sources.map((source) => this.renderDataSource(source))}
+                                                                    {this.state.dataSources.map((source) => this.renderDataSource(source))}
                                                                 </tbody>
                                                             </table>
                                                         </div>
@@ -288,12 +291,36 @@ class Editor extends React.Component {
 
                                     {currentQueryPaneTab === 2 && 
                                         <div className="queries-container">
+                                            <div className="row m-2">
+                                                <div className="col-md-9">
+                                                    <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
+                                                        <div class="input-icon">
+                                                            <span class="input-icon-addon">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
+                                                            </span>
+                                                            <input type="text" class="form-control" placeholder="Search…" aria-label="Search in website"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    
+                                                </div>
+                                            </div>
                                             <div className="mt-5 p-2">You haven't created any queries</div>
                                         </div>
                                     }
-
-                                    
-
+                                </div>
+                                <div className="col-md-9">
+                                    {!loadingDataSources &&
+                                        <div className="query-definition-pane">
+                                            {currentQueryPaneTab === 2 && 
+                                                <QueryManager 
+                                                    dataSources={dataSources}
+                                                    appId={appId}
+                                                />
+                                            }
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>

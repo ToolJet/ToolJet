@@ -7,7 +7,7 @@
     .left-sidebar {
 
         height: 100%; 
-        width: 260px; 
+        width: 12%; 
         position: fixed; 
         z-index: 1; 
         left: 0;
@@ -27,7 +27,7 @@
 
     .editor-sidebar {
         height: 100%; 
-        width: 260px; 
+        width: 15%; 
         position: fixed; 
         z-index: 10; 
         right: 0;
@@ -105,8 +105,8 @@
       
       
       .main {
-        margin-left: 260px; 
-        margin-right: 260px; 
+        margin-left: 12%; 
+        margin-right: 13%; 
         padding: 0px 10px;
 
         .canvas-container::-webkit-scrollbar {
@@ -143,14 +143,24 @@
             
         }
 
+        .query-pane::-webkit-scrollbar {
+            width: 0;
+            background: transparent;
+        }
+        
+        .query-pane::-webkit-scrollbar-thumb {
+            background: #FF0000;
+        }
+
         .query-pane {
             height: 350px; 
-            width: 100%; 
+            width: 73%; 
             position: fixed; 
             z-index: 1; 
-            left: 260px;
+            left: 12%;
             bottom: 0;
             overflow-x: hidden; 
+            
     
             flex: 1 1 auto;
     
@@ -159,6 +169,13 @@
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 1px 0px 0px 0px;
 
+            .query-definition-pane {
+                .header {
+                    border: solid rgba(0, 0, 0, 0.125);
+                    border-width: 0px 0px 1px 0px;
+                }
+            }
+
             .data-pane {
                 height: 100%;
                 min-height: 350px;
@@ -166,6 +183,7 @@
                 border-width: 0px 1px 0px 0px;
 
                 .header {
+                    height: 40px;
                     text-align: center;
                 }
             }
