@@ -8,5 +8,10 @@ export const DataSourceTypes = [
         name: 'ElasticSearch',
         kind: 'elasticsearch',
         icon: 'https://www.svgrepo.com/show/305988/elasticsearch.svg'
+    },
+    {
+        name: 'Rest API',
+        kind: 'restapi',
+        icon: 'https://www.svgrepo.com/show/120283/api.svg'
     }
 ]

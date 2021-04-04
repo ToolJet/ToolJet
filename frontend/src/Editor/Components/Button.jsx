@@ -1,6 +1,8 @@
 import React from 'react';
 
-export const Button = function Button({ id, component, onComponentClick }) {
+export const Button = function Button({ id, component, onComponentClick, currentState }) {
+
+    console.log('currentState', currentState);
     
     const text = component.definition.properties.text.value;
     const backgroundColor = component.definition.styles.backgroundColor.value;

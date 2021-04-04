@@ -29,6 +29,7 @@ gem 'jwt'
 gem 'simple_command'
 gem 'lograge'
 gem "pundit"
+gem "httparty"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

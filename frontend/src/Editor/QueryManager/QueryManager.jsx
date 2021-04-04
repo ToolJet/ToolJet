@@ -2,6 +2,25 @@ import React from 'react';
 import { dataqueryService, authenticationService } from '@/_services';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { RestApi } from './RestApi';
+
+const staticDataSources = [
+    { kind: 'js-code', id: 'js-code', name: 'Custom JS Code' },
+    { kind: 'restapi', id: 'restapi', name: 'REST API' },
+]
+
+const defaultOptions = { 
+    'postgresql': {
+
+    },
+    'restapi': {
+        method: 'GET',
+        url: null,
+        url_params: [ ['', ''] ],
+        headers: [ ['', ''] ],
+        body: [ ['', ''] ],
+    }
+}
 
 class QueryManager extends React.Component {
     constructor(props) {
@@ -24,8 +43,8 @@ class QueryManager extends React.Component {
     }
 
     changeDataSource = (sourceId) => {
-        const source = this.state.dataSources.find(source => source.id === sourceId);
-        this.setState({ selectedDataSource: source });
+        const source = [...this.state.dataSources, ...staticDataSources].find(source => source.id === sourceId);
+        this.setState({ selectedDataSource: source, options: defaultOptions[source.kind] });
     }
 
     computeQueryName = (kind) => {
@@ -61,6 +80,10 @@ class QueryManager extends React.Component {
         this.setState( { options: { ...this.state.options, [option]: value } } );
     }
 
+    optionsChanged = (newOptions) => {
+        this.setState({ options: newOptions });
+    }
+
     render() {
         const { dataSources, selectedDataSource } = this.state;
 
@@ -83,10 +106,9 @@ class QueryManager extends React.Component {
                     <label class="form-label">Datasource</label>
 
                     {dataSources && 
-                        <select class="form-select" onChange={(e) => this.changeDataSource(e.target.value)} >
+                        <select class="form-select m-2" style={{width: '300px'}} onChange={(e) => this.changeDataSource(e.target.value)} >
                             {dataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
-                            <option value="none">REST API</option>
-                            <option value="none">Run JS code</option>
+                            {staticDataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
                         </select>
                     } 
 
@@ -97,6 +119,12 @@ class QueryManager extends React.Component {
                                     <label class="form-label">SQL Query</label>
                                     <textarea onChange={(e) => this.optionchanged('query', e.target.value)} class="form-control" placeholder="SELECT * FROM"></textarea>
                                 </div>
+                            }
+                            { selectedDataSource.kind === 'restapi' && 
+                                <RestApi 
+                                    options={this.state.options}
+                                    optionsChanged={this.optionsChanged}
+                                />
                             }
                         </div>
                     }

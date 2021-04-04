@@ -10,9 +10,12 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
 
     let data = []
     if(currentState) {
-        data = resolve(component.definition.properties.data.value, currentState);
+        data = resolve(component.definition.properties.data.value, currentState, []);
         console.log('resolved param', data);
     }
+
+    // Quick fix, need to remove later
+    data = data ? data : [];
 
     const computedStyles = { 
         backgroundColor,
