@@ -1,10 +1,18 @@
 import React from 'react';
+import { resolve, findProps } from '@/_helpers/utils';
 
-export const Table = function Table({ id, component, onComponentClick }) {
+export const Table = function Table({ id, component, onComponentClick, currentState }) {
     
-    const data = JSON.parse(component.definition.properties.data.value);
     const backgroundColor = component.definition.styles.backgroundColor.value;
     const color = component.definition.styles.textColor.value;
+
+    console.log('currentState', currentState);
+
+    let data = []
+    if(currentState) {
+        data = resolve(component.definition.properties.data.value, currentState);
+        console.log('resolved param', data);
+    }
 
     const computedStyles = { 
         backgroundColor,
@@ -32,13 +40,13 @@ export const Table = function Table({ id, component, onComponentClick }) {
                         {row.name}
                     </td>
                     <td class="text-muted" >
-                        {row.email}
+                        {row.domain}
                     </td>
                 </tr>))}
                 </tbody>
-                <div className="table-footer p-2">
+                {/* <div className="table-footer p-2">
                     Records 1-10 of 242
-                </div>
+                </div> */}
             </table>
         </div>
     );

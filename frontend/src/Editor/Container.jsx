@@ -18,7 +18,7 @@ function uuidv4() {
     );
 }
 
-export const Container = ({ snapToGrid, onComponentClick, appDefinition, appDefinitionChanged}) => {
+export const Container = ({ snapToGrid, onComponentClick, appDefinition, appDefinitionChanged, currentState}) => {
     const [boxes, setBoxes] = useState(appDefinition.components);
 
     useEffect(() => {
@@ -63,6 +63,11 @@ export const Container = ({ snapToGrid, onComponentClick, appDefinition, appDefi
     }), [moveBox]);
 
     return (<div ref={drop} style={styles}>
-			{Object.keys(boxes).map((key) => (<DraggableBox onComponentClick={onComponentClick} key={key} id={key} {...boxes[key]} inCanvas={true} />))}
+			{Object.keys(boxes).map((key) => (<DraggableBox 
+                onComponentClick={onComponentClick} 
+                key={key} 
+                currentState={currentState}
+                id={key} {...boxes[key]} 
+                inCanvas={true} />))}
 		</div>);
 };

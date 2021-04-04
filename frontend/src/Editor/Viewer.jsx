@@ -42,6 +42,14 @@ class Viewer extends React.Component {
         this.setState({
             currentSidebarTab: 2,
             selectedComponent: null,
+            currentState: {
+                queries: {},
+                components: {},
+                globals: {
+                    current_user: {},
+                    urlparams: {}
+                }
+            }
         });
     }
 
@@ -69,10 +77,6 @@ class Viewer extends React.Component {
             );
         }
     }
-
-    renderComponentCard = (component, index) => {
-        return (<DraggableBox key={index} index={index} component={component} />);
-    };
 
     appDefinitionChanged = (newDefinition) => { 
         console.log('newDefinition', newDefinition);
@@ -130,6 +134,7 @@ class Viewer extends React.Component {
                                     appDefinition={appDefinition}
                                     appDefinitionChanged={this.appDefinitionChanged}
                                     snapToGrid={true} 
+                                    currentState={this.state.currentState}
                                     onComponentClick={this.onComponentClick}/>
 			                    <CustomDragLayer snapToGrid={true}/>
                             </div>

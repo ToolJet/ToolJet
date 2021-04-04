@@ -15,7 +15,7 @@ let styles = {
     cursor: 'move',
 };
 
-export const Box = function Box({ id, yellow, preview, component, inCanvas, onComponentClick }) {
+export const Box = function Box({ id, yellow, preview, component, inCanvas, onComponentClick, currentState }) {
     const backgroundColor = yellow ? 'yellow' : '';
 
     console.log('rendering box', component);
@@ -31,7 +31,12 @@ export const Box = function Box({ id, yellow, preview, component, inCanvas, onCo
     return (<div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
 
             {inCanvas ? 
-                <ComponentToRender onComponentClick={onComponentClick} id={id} component={component}></ComponentToRender>
+                <ComponentToRender 
+                    onComponentClick={onComponentClick}
+                    currentState={currentState} 
+                    id={id} 
+                    component={component}>
+                </ComponentToRender>
             :
                 <div className="row p-1">
                     <div className="col-md-3 component-image-holder p-2">

@@ -77,6 +77,10 @@ class Editor extends React.Component {
         this.fetchDataSources();
     }
 
+    dataQueriesChanged = () => {
+        this.fetchDataQueries();
+    }
+
     switchSidebarTab = (tabIndex) => { 
         this.setState({
             currentSidebarTab: tabIndex
@@ -360,6 +364,8 @@ class Editor extends React.Component {
                                             {(currentQueryPaneTab === 2 && addingQuery) && 
                                                 <QueryManager 
                                                     dataSources={dataSources}
+                                                    dataQueries={dataQueries}
+                                                    dataQueriesChanged={this.dataQueriesChanged}
                                                     appId={appId}
                                                 />
                                             }

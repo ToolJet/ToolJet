@@ -16,8 +16,8 @@ export const Json = ({ param, definition, onChange, paramType  }) => {
             <CodeMirror
                 height ="300px"
                 fontSize="2"
-                onChange={ (instance, change) => onChange(param, 'value', JSON.parse(instance.getValue()), paramType) }
-                value={JSON.stringify(value)}
+                onChange={ (instance, change) => onChange(param, 'value', instance.getValue(), paramType) }
+                value={value}
                 options={{
                     theme: 'duotone-light',
                     mode: 'json',
