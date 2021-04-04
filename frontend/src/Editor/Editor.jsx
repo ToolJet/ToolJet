@@ -189,7 +189,7 @@ class Editor extends React.Component {
                                 <span class="navbar-toggler-icon"></span>
                             </button>
                             <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-                                <a href=".">
+                                <a href="/">
                                 <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" class="navbar-brand-image"/>
                                 </a>
                             </h1>

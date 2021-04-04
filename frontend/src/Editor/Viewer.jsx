@@ -39,6 +39,8 @@ class Viewer extends React.Component {
             appDefinition: data.definition
         }));
 
+        const currentUser = authenticationService.currentUserValue;
+
         this.setState({
             currentSidebarTab: 2,
             selectedComponent: null,
@@ -46,7 +48,11 @@ class Viewer extends React.Component {
                 queries: {},
                 components: {},
                 globals: {
-                    current_user: {},
+                    current_user: {
+                        email: currentUser.email,
+                        first_name: currentUser.first_name,
+                        last_name: currentUser.last_name
+                    },
                     urlparams: {}
                 }
             }
@@ -78,6 +84,19 @@ class Viewer extends React.Component {
                 })
             );
         }
+    }
+
+    onComponentOptionChanged = (component, option_name, value) => {
+
+        const componentName = component.name;
+        const components = this.state.currentState.components;
+        let componentData = components[componentName];
+        componentData = componentData ? componentData : { };
+        componentData[option_name] = value;
+
+        this.setState({
+            currentState: { ...this.state.currentState, components: {...components, [componentName]: componentData }}
+        })
     }
 
     appDefinitionChanged = (newDefinition) => { 
@@ -137,7 +156,9 @@ class Viewer extends React.Component {
                                     appDefinitionChanged={this.appDefinitionChanged}
                                     snapToGrid={true} 
                                     currentState={this.state.currentState}
-                                    onComponentClick={this.onComponentClick}/>
+                                    onComponentClick={this.onComponentClick}
+                                    onComponentOptionChanged={this.onComponentOptionChanged}
+                                />
 			                    <CustomDragLayer snapToGrid={true}/>
                             </div>
                         </div>

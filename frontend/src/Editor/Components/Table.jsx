@@ -1,5 +1,5 @@
 import React from 'react';
-import { resolve, findProps } from '@/_helpers/utils';
+import { resolve } from '@/_helpers/utils';
 
 export const Table = function Table({ id, component, onComponentClick, currentState }) {
     

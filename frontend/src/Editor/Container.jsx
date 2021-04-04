@@ -5,6 +5,7 @@ import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
+import {computeComponentName } from '@/_helpers/utils';
 
 const styles = {
     width: 1280,
@@ -18,7 +19,7 @@ function uuidv4() {
     );
 }
 
-export const Container = ({ snapToGrid, onComponentClick, appDefinition, appDefinitionChanged, currentState}) => {
+export const Container = ({ snapToGrid, onComponentClick, appDefinition, appDefinitionChanged, currentState, onComponentOptionChanged}) => {
     const [boxes, setBoxes] = useState(appDefinition.components);
 
     useEffect(() => {
@@ -47,7 +48,10 @@ export const Container = ({ snapToGrid, onComponentClick, appDefinition, appDefi
             const componentMeta = componentTypes.find(component => component.component === item.component.component);
             console.log('adding new component');
 
-            setBoxes({...boxes, [uuidv4()]: { top: 20, left: 80, component:  JSON.parse(JSON.stringify(componentMeta))}})
+            let componentData = JSON.parse(JSON.stringify(componentMeta));
+            componentData.name = computeComponentName(componentData.component, boxes)
+
+            setBoxes({...boxes, [uuidv4()]: { top: 20, left: 80, component: componentData}})
 
             const delta = monitor.getDifferenceFromInitialOffset();
             let left = Math.round(item.left + delta.x);
@@ -65,6 +69,7 @@ export const Container = ({ snapToGrid, onComponentClick, appDefinition, appDefi
     return (<div ref={drop} style={styles}>
 			{Object.keys(boxes).map((key) => (<DraggableBox 
                 onComponentClick={onComponentClick} 
+                onComponentOptionChanged={onComponentOptionChanged}
                 key={key} 
                 currentState={currentState}
                 id={key} {...boxes[key]} 

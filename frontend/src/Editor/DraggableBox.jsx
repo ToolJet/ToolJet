@@ -17,7 +17,7 @@ function getStyles(left, top, isDragging) {
     };
 }
 
-export const DraggableBox = function DraggableBox({ id, title, left, top, component, index, inCanvas, onComponentClick, currentState  }) {
+export const DraggableBox = function DraggableBox({ id, title, left, top, component, index, inCanvas, onComponentClick, currentState, onComponentOptionChanged  }) {
 
     // const [comp, setBoxes] = useState(component);
 
@@ -44,6 +44,7 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, compon
                 component={component} 
                 id={id} 
                 inCanvas={inCanvas} 
+                onComponentOptionChanged={onComponentOptionChanged}
                 onComponentClick={onComponentClick} 
                 currentState={currentState} />
 		</div>);

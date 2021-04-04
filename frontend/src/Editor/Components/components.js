@@ -22,8 +22,11 @@ export const componentTypes = [
                 'visible': { value: true },
             },
             events: {
-                // onClick: { actionId: 'show-alert', options: { 'message': 'Message !'} }
-                onClick: { } 
+                onClick: { 
+                    options: {
+
+                    }
+                } 
             },
             styles: {
                 backgroundColor: { value: '#3c92dc' },
@@ -57,25 +60,63 @@ export const componentTypes = [
                
             },
             styles: {
-                backgroundColor: { value: '#3c92dc' },
-                textColor: { value: '#fff' }
+                backgroundColor: { value: '' },
+                textColor: { value: '' }
             }
         }
     },
     { 
         icon: 'https://www.svgrepo.com/show/38828/text.svg', 
-        name: 'Text Input', 
-        description: 'Display paginated tabular data',
+        name: 'TextInput', 
+        description: 'Text field for forms',
         component: 'TextInput',
+        properties: {
+            placeholder: { type: 'string'}
+        },
+        events: [
+
+        ],
+        styles: {
+            
+        },
+        definition: {
+            properties: {
+                'placeholder': { value: 'Placeholder text' }
+            },
+            events: {
+                
+            },
+            styles: {
+                
+            }
+        }
     },
     { 
         icon: 'https://www.svgrepo.com/show/219344/text.svg', 
         name: 'Text', 
         description: 'Display markdown or HTML',
         component: 'Text',
-        properties: [
-            { 'text': { 'type': 'string'} },
-            { 'visible': { 'type': 'boolean', default: 'true' }}
-        ]
+        properties: {
+            text: { type: 'string'} ,
+            visible: { type: 'string' } 
+        },
+        events: [
+
+        ],
+        styles: {
+            textColor: { type: 'color'} 
+        },
+        definition: {
+            properties: {
+                'text': { value: 'Text goes here !' },
+                'visible': { value: true },
+            },
+            events: {
+                onClick: { } 
+            },
+            styles: {
+                textColor: { value: '#000' }
+            }
+        }
     },
 ]

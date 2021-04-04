@@ -19,8 +19,24 @@ export function findProp(obj, prop, defval){
 }
 
 export function resolve(data, state) {
-    if(data.startsWith("{{queries.")) {
+    if(data.startsWith("{{queries.") || data.startsWith("{{globals.") || data.startsWith("{{components.")) {
         let prop = data.replace('{{', '').replace('}}', '');
         return findProp(state, prop, []);
     }
+}
+
+export function computeComponentName(componentType, currentComponents) {
+    
+    const currentComponentsForKind = Object.values(currentComponents).filter(component => component.component.component === componentType);
+    let found = false;
+    let name = '';
+    let currentNumber = currentComponentsForKind.length;
+    while(!found) { 
+        name = `${componentType.toLowerCase()}${currentNumber}`;
+        if(Object.values(currentComponents).find(component => component.name === name) === undefined) {
+            found = true;
+        }
+    }
+
+    return name;
 }

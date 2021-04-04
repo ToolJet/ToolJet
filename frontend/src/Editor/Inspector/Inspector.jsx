@@ -15,8 +15,7 @@ const AllElements = {
 export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQueries }) => {
 
     const [component, setComponent] = useState(selectedComponent);
-
-    const componentMeta = componentTypes.find(comp => component.component.name === comp.component);
+    const componentMeta = componentTypes.find(comp => component.component.component === comp.component);
 
     console.log('rendering inspector');
     console.log(selectedComponent);
@@ -30,7 +29,7 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
         let newDefinition = { ...component.component.definition };
 
         const paramObject = newDefinition[paramType][param.name];
-        
+
         if(!paramObject) {
             newDefinition[paramType][param.name] = {}
         }
