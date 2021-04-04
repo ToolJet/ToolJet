@@ -11,6 +11,8 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
         eventOptionUpdated(param, 'queryName', query.name);
     }
 
+    const message = definition.options ? definition.options.message : 'Message';
+
     return (
         <div className="field mb-2 mt-1">
             <label class="form-label">{param.name}</label>
@@ -26,7 +28,7 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
                             <label class="form-label mt-2">Message</label>
                             <input 
                                 onChange={(e) => eventOptionUpdated(param, 'message', e.target.value)} 
-                                value={definition.options.message}
+                                value={message}
                                 type="text" 
                                 class="form-control form-control-sm" 
                                 placeholder="Text goes here" />
