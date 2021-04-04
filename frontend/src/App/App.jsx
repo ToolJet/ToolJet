@@ -7,6 +7,8 @@ import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 class App extends React.Component {
     constructor(props) {
@@ -34,6 +36,8 @@ class App extends React.Component {
                     {currentUser &&
                         <div></div>
                     }
+
+                    <ToastContainer/>
                     
                     <PrivateRoute exact path="/" component={HomePage} />
                     <Route path="/login" component={LoginPage} />

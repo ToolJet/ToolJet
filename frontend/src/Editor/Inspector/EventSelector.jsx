@@ -5,6 +5,12 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
 
     console.log('dq', dataQueries);
 
+    function onChange(e) {
+        const query = dataQueries.find(query => query.id === e.target.value) 
+        eventOptionUpdated(param, 'queryId', query.id);
+        eventOptionUpdated(param, 'queryName', query.name);
+    }
+
     return (
         <div className="field mb-2 mt-1">
             <label class="form-label">{param.name}</label>
@@ -30,10 +36,8 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
                     {definition.actionId === 'run-query' && 
                         <div className="p-3">
                             <label class="form-label mt-2">Query</label>
-                            <select class="form-select" onChange={(e) => eventOptionUpdated(param, 'queryId', e.target.value)} >
+                            <select class="form-select" onChange={onChange} >
                                 {dataQueries.map((query) => (<option value={query.id}>{query.name}</option>))}
-                                <option value="none">REST API</option>
-                                <option value="none">Run JS code</option>
                             </select>
                         </div>
                     }

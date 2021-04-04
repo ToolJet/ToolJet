@@ -70,9 +70,11 @@ class Viewer extends React.Component {
         if(onClickEvent.actionId === 'run-query') {
             console.log(onClickEvent.options);
 
-            dataqueryService.run(onClickEvent.options.queryId).then(data => 
+            const { queryId, queryName } = onClickEvent.options;
+
+            dataqueryService.run(queryId).then(data => 
                 this.setState({
-                    currentState: {...this.state.currentState, queries: {...this.state.currentState.queries, 'a': data.data}}
+                    currentState: {...this.state.currentState, queries: {...this.state.currentState.queries, [queryName]: data.data}}
                 })
             );
         }

@@ -11,6 +11,8 @@ import ReactJson from 'react-json-view';
 import { DataSourceManager }  from './DataSourceManager';
 import { DataSourceTypes } from './DataSourceTypes';
 import { QueryManager } from './QueryManager';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
+import { toast } from 'react-toastify';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -119,7 +121,7 @@ class Editor extends React.Component {
     saveApp = () => {
         const { app, appDefinition } = this.state;
         appService.saveApp(app.id, appDefinition).then((data) => {
-            alert('saved')
+            toast.success('App saved & deployed sucessfully', { hideProgressBar: true, position: "top-center" })
         });
     }
 
@@ -140,6 +142,12 @@ class Editor extends React.Component {
             <tr>
                 <td>
                     <img src={sourceMeta.icon} width="20" height="20"/> {data_query.name}
+                </td>
+                <td>
+                    <CopyToClipboard text={`{{queries.${data_query.name}}}`}
+                        onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
+                        <img src="https://www.svgrepo.com/show/86790/copy.svg" width="15" height="15" role="button"></img>
+                    </CopyToClipboard>
                 </td>
             </tr>
         )
