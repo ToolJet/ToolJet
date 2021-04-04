@@ -11,6 +11,7 @@ class QueryManager extends React.Component {
             currentUser: authenticationService.currentUserValue,
             appId: props.appId,
             dataSources: props.dataSources,
+            dataQueries: props.dataQueries
         };
     }
 
@@ -18,6 +19,7 @@ class QueryManager extends React.Component {
         this.state = {
             appId: this.props.appId,
             dataSources: this.props.dataSources,
+            dataQueries: this.props.dataQueries,
         };
     }
 
@@ -26,15 +28,32 @@ class QueryManager extends React.Component {
         this.setState({ selectedDataSource: source });
     }
 
+    computeQueryName = (kind) => {
+        const { dataQueries } = this.state;
+        const currentQueriesForKind = dataQueries.filter(query => query.kind === kind);
+        let found = false;
+        let name = '';
+        let currentNumber = currentQueriesForKind.length;
+        while(!found) { 
+            name = `${kind}${currentNumber}`;
+            if(dataQueries.find(query => query.name === name) === undefined) {
+                found = true;
+            }
+        }
+
+        return name;
+    }
+
     createDataQuery = () => {
         const  { appId, options, selectedDataSource } = this.state;
-        const name = selectedDataSource.name;
+        const name = this.computeQueryName(selectedDataSource.kind);
         const kind = selectedDataSource.kind;
         const data_source_id = selectedDataSource.id;
  
         dataqueryService.create(appId, name, kind, options, data_source_id).then((data) => {
             this.setState( { showModal: false } );
             toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
+            this.props.dataQueriesChanged();
         });
     }
 
