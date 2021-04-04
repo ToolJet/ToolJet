@@ -38,11 +38,11 @@ export const componentTypes = [
         description: 'Display paginated tabular data',
         component: 'Table',
         properties: {
-            text: { type: 'string'} ,
+            title: { type: 'string'} ,
+            data: { type: 'json'},
             visible: { type: 'string' } 
         },
         events: [
-            'onClick'
         ],
         styles: {
             backgroundColor: { type: 'color'},
@@ -50,11 +50,11 @@ export const componentTypes = [
         },
         definition: {
             properties: {
-                'text': { value: 'Button' },
+                'title': { value: 'Table' },
                 'visible': { value: true },
             },
             events: {
-                onClick: { } 
+               
             },
             styles: {
                 backgroundColor: { value: '#3c92dc' },

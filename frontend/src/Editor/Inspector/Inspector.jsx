@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
+import { Json } from './Elements/Json';
 import { TypeMapping } from './TypeMapping';
 import { EventSelector } from './EventSelector';
+import { componentTypes } from '../Components/components';
 
 const AllElements = { 
-    Text,
-    Color
+    Color,
+    Json,
+    Text
 }
 
 export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQueries }) => {
 
     const [component, setComponent] = useState(selectedComponent);
+
+    const componentMeta = componentTypes.find(comp => component.component.name === comp.component);
 
     console.log('rendering inspector');
     console.log(selectedComponent);
@@ -23,6 +28,12 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
     function paramUpdated (param, attr, value, paramType) {
 
         let newDefinition = { ...component.component.definition };
+
+        const paramObject = newDefinition[paramType][param.name];
+        
+        if(!paramObject) {
+            newDefinition[paramType][param.name] = {}
+        }
         newDefinition[paramType][param.name][attr] = value;
 
         let newComponent = { 
@@ -64,7 +75,7 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
     function renderElement(param, paramType) {
 
         const definition = component.component.definition[paramType][param];
-        const meta = component.component[paramType][param];
+        const meta = componentMeta[paramType][param];
         console.log('definition', definition);
 
         const ElementToRender = AllElements[TypeMapping[meta.type]];
@@ -102,10 +113,10 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
             </div>
 
             <div className="properties-container p-2">
-                {Object.keys(component.component.properties).map((property) => renderElement(property, 'properties'))}
-                {Object.keys(component.component.styles).map((style) => renderElement(style, 'styles'))}
+                {Object.keys(componentMeta.properties).map((property) => renderElement(property, 'properties'))}
+                {Object.keys(componentMeta.styles).map((style) => renderElement(style, 'styles'))}
                 <hr></hr>
-                {component.component.events.map((event) => renderEvent(event))}
+                {componentMeta.events.map((event) => renderEvent(event))}
             </div>
         </div>
     );
