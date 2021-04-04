@@ -221,6 +221,7 @@ class Editor extends React.Component {
                                     {selectedComponent ?
                                         <Inspector 
                                             componentDefinitionChanged={this.componentDefinitionChanged}
+                                            dataQueries={dataQueries}
                                             selectedComponent={selectedComponent}>
 
                                         </Inspector>

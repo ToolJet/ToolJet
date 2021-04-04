@@ -9,7 +9,7 @@ const AllElements = {
     Color
 }
 
-export const Inspector = ({ selectedComponent, componentDefinitionChanged }) => {
+export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQueries }) => {
 
     const [component, setComponent] = useState(selectedComponent);
 
@@ -47,6 +47,8 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged }) => 
     }
 
     function eventOptionUpdated (event, option, value) {
+
+        console.log('eventOptionUpdated', event, option, value)
         
         let newDefinition = { ...component.component.definition };
         newDefinition.events[event.name].options = {...newDefinition.events[event.name].options, [option]: value}
@@ -70,6 +72,7 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged }) => 
         return (<ElementToRender 
                 param={{name: param, ...component.component.properties[param]}} 
                 definition={definition}
+                dataQueries={dataQueries}
                 onChange={paramUpdated}
                 paramType={paramType}
             />
@@ -83,6 +86,7 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged }) => 
             param={{name: param, ...component.component.properties[param]}} 
             definition={definition}
             eventUpdated={eventUpdated}
+            dataQueries={dataQueries}
             eventOptionUpdated={eventOptionUpdated}
         />
     )

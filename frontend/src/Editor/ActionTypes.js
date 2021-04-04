@@ -5,5 +5,12 @@ export const ActionTypes = [
         options: [
             { name: 'message', type: 'text', default: 'Message !' }
         ]
+    },
+    {
+        name: 'Run Query',
+        id: 'run-query',
+        options: [
+            { queryId: '' }
+        ]
     }
 ]

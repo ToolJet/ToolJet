@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService } from '@/_services';
+import { appService, dataqueryService, authenticationService } from '@/_services';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Container } from './Container';
@@ -17,6 +17,14 @@ class Viewer extends React.Component {
             users: null,
             appDefinition: {
                 components: {}
+            },
+            currentState: {
+                queries: {},
+                components: {},
+                globals: {
+                    current_user: {},
+                    urlparams: {}
+                }
             }
         };
     }
@@ -49,6 +57,16 @@ class Viewer extends React.Component {
 
         if(onClickEvent.actionId === 'show-alert') {
             toast(onClickEvent.options.message, { hideProgressBar: true })
+        }
+
+        if(onClickEvent.actionId === 'run-query') {
+            console.log(onClickEvent.options);
+
+            dataqueryService.run(onClickEvent.options.queryId).then(data => 
+                this.setState({
+                    currentState: {...this.state.currentState, queries: {...this.state.currentState.queries, 'a': data.data}}
+                })
+            );
         }
     }
 

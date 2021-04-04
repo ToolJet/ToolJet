@@ -30,8 +30,9 @@ class QueryManager extends React.Component {
         const  { appId, options, selectedDataSource } = this.state;
         const name = selectedDataSource.name;
         const kind = selectedDataSource.kind;
+        const data_source_id = selectedDataSource.id;
  
-        dataqueryService.create(appId, name, kind, options).then((data) => {
+        dataqueryService.create(appId, name, kind, options, data_source_id).then((data) => {
             this.setState( { showModal: false } );
             toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
         });

@@ -1,7 +1,9 @@
 import React from 'react';
 import { ActionTypes } from '../ActionTypes';
 
-export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpdated }) => {
+export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpdated, dataQueries }) => {
+
+    console.log('dq', dataQueries);
 
     return (
         <div className="field mb-2 mt-1">
@@ -22,6 +24,17 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
                                 type="text" 
                                 class="form-control form-control-sm" 
                                 placeholder="Text goes here" />
+                        </div>
+                    }
+
+                    {definition.actionId === 'run-query' && 
+                        <div className="p-3">
+                            <label class="form-label mt-2">Query</label>
+                            <select class="form-select" onChange={(e) => eventOptionUpdated(param, 'queryId', e.target.value)} >
+                                {dataQueries.map((query) => (<option value={query.id}>{query.name}</option>))}
+                                <option value="none">REST API</option>
+                                <option value="none">Run JS code</option>
+                            </select>
                         </div>
                     }
                 </div> 
