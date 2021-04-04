@@ -165,6 +165,8 @@ class Editor extends React.Component {
             }
         }
 
+        const appLink = `/applications/${appId}`;
+
         return (
             <div class="editor wrapper">
                 <DndProvider backend={HTML5Backend}>
@@ -184,7 +186,7 @@ class Editor extends React.Component {
                                     <button onClick={this.saveApp} className="btn">Save</button>    
                                 </div>
                                 <div class="nav-item dropdown d-none d-md-flex me-3">
-                                    <button className="btn">Preview</button>    
+                                    <a href={appLink} target="_blank" className="btn">Launch</a>    
                                 </div>
                                 <div class="nav-item dropdown ml-2">
                                     <button className="btn btn-primary">Deploy</button>    
