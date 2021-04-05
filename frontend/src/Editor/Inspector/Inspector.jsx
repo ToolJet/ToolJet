@@ -5,6 +5,8 @@ import { Json } from './Elements/Json';
 import { TypeMapping } from './TypeMapping';
 import { EventSelector } from './EventSelector';
 import { componentTypes } from '../Components/components';
+import { Table } from './Components/Table';
+import { renderElement } from './Utils';
 
 const AllElements = { 
     Color,
@@ -24,7 +26,7 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
         setComponent(selectedComponent);
     }, [selectedComponent]);
 
-    function paramUpdated (param, attr, value, paramType) {
+    function paramUpdated(param, attr, value, paramType) {
 
         let newDefinition = { ...component.component.definition };
 
@@ -71,24 +73,6 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
         componentDefinitionChanged(newComponent);
     }
 
-    function renderElement(param, paramType) {
-
-        const definition = component.component.definition[paramType][param];
-        const meta = componentMeta[paramType][param];
-        console.log('definition', definition);
-
-        const ElementToRender = AllElements[TypeMapping[meta.type]];
-
-        return (<ElementToRender 
-                param={{name: param, ...component.component.properties[param]}} 
-                definition={definition}
-                dataQueries={dataQueries}
-                onChange={paramUpdated}
-                paramType={paramType}
-            />
-        )
-    }
-
     function renderEvent(param) {
         const definition = component.component.definition.events[param];
 
@@ -111,12 +95,21 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
                 <img role="button" className="component-action-button" src="https://www.svgrepo.com/show/46582/menu.svg" width="15" height="15"/>
             </div>
 
-            <div className="properties-container p-2">
-                {Object.keys(componentMeta.properties).map((property) => renderElement(property, 'properties'))}
-                {Object.keys(componentMeta.styles).map((style) => renderElement(style, 'styles'))}
-                <hr></hr>
-                {componentMeta.events.map((event) => renderEvent(event))}
-            </div>
+            {componentMeta.component === 'Table' ? 
+                <Table 
+                    component={component}
+                    paramUpdated={paramUpdated}
+                    dataQueries={dataQueries}
+                    componentMeta={componentMeta}
+                />
+            :
+                <div className="properties-container p-2">
+                    {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties'))}
+                    {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles'))}
+                    <hr></hr>
+                    {componentMeta.events.map((event) => renderEvent(event))}
+                </div>
+            }
         </div>
     );
 }

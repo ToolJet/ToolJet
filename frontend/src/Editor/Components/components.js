@@ -43,7 +43,8 @@ export const componentTypes = [
         properties: {
             title: { type: 'string'} ,
             data: { type: 'json'},
-            visible: { type: 'string' } 
+            visible: { type: 'string' },
+            columns: { type: 'array' } 
         },
         events: [
         ],
@@ -55,6 +56,11 @@ export const componentTypes = [
             properties: {
                 'title': { value: 'Table' },
                 'visible': { value: true },
+                'columns': { value: [
+                    { name: 'id' },
+                    { name: 'name' },
+                    { name: 'email' },
+                ]}
             },
             events: {
                

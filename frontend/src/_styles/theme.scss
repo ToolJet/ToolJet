@@ -42,6 +42,9 @@
         border-width: 0px 0px 0px 1px;
 
         .inspector {
+            .form-control-plaintext {
+                padding: 0;
+            }
             .header {
                 border: solid rgba(0, 0, 0, 0.125);
                 border-width: 0px 0px 2px 0px;

@@ -5,6 +5,7 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
     
     const backgroundColor = component.definition.styles.backgroundColor.value;
     const color = component.definition.styles.textColor.value;
+    const columns = component.definition.properties.columns.value;
 
     console.log('currentState', currentState);
 
@@ -28,24 +29,16 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
                     class="table table-vcenter table-nowrap">
                 <thead>
                 <tr>
-                    <th>id</th>
-                    <th>name</th>
-                    <th>email</th>
+                    {columns.map((column) => <th>{column.name}</th>)}
                 </tr>
                 </thead>
                 <tbody>
 
-                {data.map((row => <tr>
-                    <td>
-                        {row.id}
-                    </td>
-                    <td>
-                        {row.name}
-                    </td>
-                    <td class="text-muted" >
-                        {row.domain}
-                    </td>
-                </tr>))}
+                {data.map((row => 
+                    <tr>
+                        {columns.map((column) => <td>{row[column.name]}</td>)}
+                    </tr>
+                ))}
                 </tbody>
                 {/* <div className="table-footer p-2">
                     Records 1-10 of 242
