@@ -65,24 +65,42 @@ class Viewer extends React.Component {
         });
     }
 
-    onComponentClick = (id, component) => {
-        console.log(component);
-        const onClickEvent = component.definition.events.onClick;
-
-        if(onClickEvent.actionId === 'show-alert') {
-            toast(onClickEvent.options.message, { hideProgressBar: true })
+    executeAction = (event) => {
+        if(event.actionId === 'show-alert') {
+            toast(event.options.message, { hideProgressBar: true })
         }
 
-        if(onClickEvent.actionId === 'run-query') {
-            console.log(onClickEvent.options);
+        if(event.actionId === 'run-query') {
 
-            const { queryId, queryName } = onClickEvent.options;
+            const { queryId, queryName } = event.options;
 
             dataqueryService.run(queryId).then(data => 
                 this.setState({
                     currentState: {...this.state.currentState, queries: {...this.state.currentState.queries, [queryName]: data.data}}
                 })
             );
+        }
+    }
+
+    onComponentClick = (id, component) => {
+        console.log(component);
+        const onClickEvent = component.definition.events.onClick;
+        this.executeAction(onClickEvent);
+    }
+
+    onEvent = (eventName, component, data) => {
+        if (eventName == 'onRowClicked') {
+            const event = component.definition.events[eventName];
+            this.setState({
+                currentState: {...this.state.currentState, 
+                    components: {
+                        ...this.state.currentState.components, 
+                        [component.name]: {
+                            ...this.state.currentState.components[component.name],
+                            selectedRow: data
+                        }}}
+            })
+            this.executeAction(event);
         }
     }
 
@@ -155,6 +173,7 @@ class Viewer extends React.Component {
                                     appDefinition={appDefinition}
                                     appDefinitionChanged={this.appDefinitionChanged}
                                     snapToGrid={true} 
+                                    onEvent={this.onEvent}
                                     currentState={this.state.currentState}
                                     onComponentClick={this.onComponentClick}
                                     onComponentOptionChanged={this.onComponentOptionChanged}

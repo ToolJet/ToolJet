@@ -6,7 +6,7 @@ import { TypeMapping } from './TypeMapping';
 import { EventSelector } from './EventSelector';
 import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
-import { renderElement } from './Utils';
+import { renderElement, renderEvent } from './Utils';
 
 const AllElements = { 
     Color,
@@ -73,19 +73,6 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
         componentDefinitionChanged(newComponent);
     }
 
-    function renderEvent(param) {
-        const definition = component.component.definition.events[param];
-
-        return (<EventSelector 
-            param={{name: param, ...component.component.properties[param]}} 
-            definition={definition}
-            eventUpdated={eventUpdated}
-            dataQueries={dataQueries}
-            eventOptionUpdated={eventOptionUpdated}
-        />
-    )
-    }
-
     return (
         <div className="inspector">
             <div className="header p-2">
@@ -101,13 +88,15 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
                     paramUpdated={paramUpdated}
                     dataQueries={dataQueries}
                     componentMeta={componentMeta}
+                    eventUpdated={eventUpdated}
+                    eventOptionUpdated={eventOptionUpdated}
                 />
             :
                 <div className="properties-container p-2">
                     {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties'))}
                     {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles'))}
                     <hr></hr>
-                    {componentMeta.events.map((event) => renderEvent(event))}
+                    {componentMeta.events.map((event) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, event))}
                 </div>
             }
         </div>

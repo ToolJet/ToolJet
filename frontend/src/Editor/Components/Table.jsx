@@ -1,7 +1,7 @@
 import React from 'react';
 import { resolve } from '@/_helpers/utils';
 
-export const Table = function Table({ id, component, onComponentClick, currentState }) {
+export const Table = function Table({ id, component, onComponentClick, currentState, onEvent }) {
     
     const backgroundColor = component.definition.styles.backgroundColor.value;
     const color = component.definition.styles.textColor.value;
@@ -35,7 +35,7 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
                 <tbody>
 
                 {data.map((row => 
-                    <tr>
+                    <tr onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked', component, row); }}>
                         {columns.map((column) => <td>{row[column.name]}</td>)}
                     </tr>
                 ))}

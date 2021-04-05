@@ -1,11 +1,13 @@
 import React, { memo } from 'react';
 import { Button } from './Components/Button';
+import { Image } from './Components/Image';
 import { Text } from './Components/Text';
 import { Table } from './Components/Table';
 import { TextInput } from './Components/TextInput';
 
 const AllComponents = {
     Button,
+    Image,
     Text,
     TextInput,
     Table
@@ -15,7 +17,7 @@ let styles = {
     cursor: 'move',
 };
 
-export const Box = function Box({ id, yellow, preview, component, inCanvas, onComponentClick, currentState, onComponentOptionChanged }) {
+export const Box = function Box({ id, yellow, preview, component, inCanvas, onComponentClick, onEvent, currentState, onComponentOptionChanged }) {
     const backgroundColor = yellow ? 'yellow' : '';
 
     console.log('rendering box', component);
@@ -34,7 +36,8 @@ export const Box = function Box({ id, yellow, preview, component, inCanvas, onCo
                 <ComponentToRender 
                     onComponentClick={onComponentClick}
                     onComponentOptionChanged={onComponentOptionChanged}
-                    currentState={currentState} 
+                    currentState={currentState}
+                    onEvent={onEvent}
                     id={id} 
                     component={component}>
                 </ComponentToRender>

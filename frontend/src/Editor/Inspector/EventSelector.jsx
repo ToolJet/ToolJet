@@ -11,7 +11,11 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
         eventOptionUpdated(param, 'queryName', query.name);
     }
 
-    const message = definition.options ? definition.options.message : 'Message';
+    if(definition.options === undefined) {
+        definition.options = {}
+    }
+
+    const message = definition.options.message;
 
     return (
         <div className="field mb-2 mt-1">

@@ -1,9 +1,9 @@
 import React from 'react';
-import { renderElement } from '../Utils';
+import { renderElement, renderEvent } from '../Utils';
 import SortableList, { SortableItem } from "react-easy-sort";
 import arrayMove from "array-move";
 
-export const Table = ({ dataQueries, component, paramUpdated, componentMeta  }) => {
+export const Table = ({ dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated  }) => {
 
     const columns = component.component.definition.properties.columns;
 
@@ -93,6 +93,12 @@ export const Table = ({ dataQueries, component, paramUpdated, componentMeta  }) 
                     </SortableList>
                     
                 </div>
+
+                <hr></hr>
+
+                {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked')}
+
+                <hr></hr>
             </div>
 
             {renderElement(component, componentMeta, paramUpdated, dataQueries, 'visible', 'properties')}

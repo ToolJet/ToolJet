@@ -1,6 +1,7 @@
 import React from 'react';
 import { useHistory } from "react-router-dom";
 import { appService, authenticationService } from '@/_services';
+import { Router, Route, Link } from 'react-router-dom';
 
 class HomePage extends React.Component {
     constructor(props) {
@@ -13,6 +14,10 @@ class HomePage extends React.Component {
     }
 
     componentDidMount() {
+        appService.getAll().then(data => this.setState({ 
+            apps: data.apps, 
+            loadingDataSources: false,
+        }));
     }
 
     createApp = () => {
@@ -24,7 +29,7 @@ class HomePage extends React.Component {
     }
 
     render() {
-        const { currentUser, users } = this.state;
+        const { currentUser, users, apps } = this.state;
         return (
             <div class="wrapper">
                 <header class="navbar navbar-expand-md navbar-light d-print-none">
@@ -55,7 +60,7 @@ class HomePage extends React.Component {
                             <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
                                 <span class="avatar avatar-sm" style={{backgroundImage: "url('https://www.svgrepo.com/show/24707/avatar.svg')"}}></span>
                                 <div class="d-none d-xl-block ps-2">
-                                <div>Paweł Kuna</div>
+                                <div>{this.state.currentUser.first_name}</div>
                                 <div class="mt-1 small text-muted">Admin</div>
                                 </div>
                             </a>
@@ -77,19 +82,11 @@ class HomePage extends React.Component {
                             {/* Dashboard */}
                             </div>
                             <h2 class="page-title">
-                            Applications
+                                Your Applications
                             </h2>
                         </div>
                         <div class="col-auto ms-auto d-print-none">
-                            {/* <div class="btn-list">
-                            <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#modal-report">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                                Application
-                            </a>
-                            <a href="#" class="btn btn-primary d-sm-none btn-icon" data-bs-toggle="modal" data-bs-target="#modal-report" aria-label="Create new report">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                            </a>
-                            </div> */}
+                            
                         </div>
                         </div>
                     </div>
@@ -111,109 +108,37 @@ class HomePage extends React.Component {
                                 </div>
                             </div>
 
-                            <div class="col-sm-6 col-lg-3">
-                                <div class="card">
-                                <div class="card-body">
-                                        <div className="row">
-                                            <div className="col-md-6">
-                                                <center><img src="https://www.svgrepo.com/show/258362/browser-website.svg" width="50" height="100" alt=""/></center>
+                            {apps && 
+                                <>
+                                    {apps.map((app) => 
+                                        <div class="col-sm-6 col-lg-3">
+                                            <div class="card">
+                                                <Link 
+                                                    to={`/apps/${app.id}`} 
+                                                    className="">
 
-                                            </div>
-                                            <div className="col-md-6">
-                                                <a href="#" class="btn btn-ghost-light btn-sm mt-2">
-                                                    <img width="20" height="20" src="https://www.svgrepo.com/show/56347/rocket-launch.svg" alt=""/> Launch
-                                                </a>
-                                                <a href="#" class="btn btn-ghost-light btn-sm mt-2">
-                                                    <img width="20" height="14" src="https://www.svgrepo.com/show/13683/edit.svg" alt=""/> Edit
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="row align-items-center">
-                                            <center>Sales Data</center>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                                        <div class="card-body p-5" >
+                                                            <div class="row align-items-center">
+                                                                <center>{app.name}</center>
+                                                            </div>
+                                                        </div>
 
-                            <div class="col-sm-6 col-lg-3">
-                                <div class="card">
-                                <div class="card-body">
-                                        <div className="row">
-                                            <div className="col-md-6">
-                                                <center><img src="https://www.svgrepo.com/show/261928/website.svg" width="50" height="100" alt=""/></center>
-
-                                            </div>
-                                            <div className="col-md-6">
-                                                <a href="#" class="btn btn-ghost-light btn-sm mt-2">
-                                                    <img width="20" height="20" src="https://www.svgrepo.com/show/56347/rocket-launch.svg" alt=""/> Launch
-                                                </a>
-                                                <a href="#" class="btn btn-ghost-light btn-sm mt-2">
-                                                    <img width="20" height="14" src="https://www.svgrepo.com/show/13683/edit.svg" alt=""/> Edit
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="row align-items-center">
-                                            <center>Customers</center>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-sm-6 col-lg-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div className="row">
-                                            <div className="col-md-6">
-                                                <center><img src="https://www.svgrepo.com/show/154015/website.svg" width="50" height="100" alt=""/></center>
-
-                                            </div>
-                                            <div className="col-md-6">
-                                                <a href="#" class="btn btn-ghost-light btn-sm mt-2">
-                                                    <img width="20" height="20" src="https://www.svgrepo.com/show/56347/rocket-launch.svg" alt=""/> Launch
-                                                </a>
-                                                <a href="#" class="btn btn-ghost-light btn-sm mt-2">
-                                                    <img width="20" height="14" src="https://www.svgrepo.com/show/13683/edit.svg" alt=""/> Edit
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="row align-items-center">
-                                            <center>Customers</center>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-sm-6 col-lg-3">
-                                <div class="card">
-                                        <div class="card-body">
-                                            <div className="row">
-                                                <div className="col-md-6">
-                                                    <center><img src="https://www.svgrepo.com/show/149185/website.svg" width="50" height="100" alt=""/></center>
-
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <a href="#" class="btn btn-ghost-light btn-sm mt-2">
-                                                        <img width="20" height="20" src="https://www.svgrepo.com/show/56347/rocket-launch.svg" alt=""/> Launch
-                                                    </a>
-                                                    <a href="#" class="btn btn-ghost-light btn-sm mt-2">
-                                                        <img width="20" height="14" src="https://www.svgrepo.com/show/13683/edit.svg" alt=""/> Edit
-                                                    </a>
+                                                </Link>
+                                                <div class="card-footer">
+                                                    <div className="row">
+                                                        <Link 
+                                                            to={`/applications/${app.id}`} 
+                                                            target="_blank"
+                                                            className="btn btn-ghost-primary btn-sm mt-2">
+                                                            <img width="20" height="20" src="https://www.svgrepo.com/show/56347/rocket-launch.svg" alt=""/> Launch
+                                                        </Link>
+                                                    </div>
                                                 </div>
                                             </div>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div class="row align-items-center">
-                                            <center>Customers</center>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
+                                    )}
+                                </>
+                            }
                         </div>
                     </div>
                 </div>

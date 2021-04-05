@@ -3,6 +3,7 @@ import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';
 import { TypeMapping } from './TypeMapping';
+import { EventSelector } from './EventSelector';
 
 const AllElements = { 
     Color,
@@ -24,6 +25,21 @@ export function renderElement(component, componentMeta, paramUpdated, dataQuerie
             dataQueries={dataQueries}
             onChange={paramUpdated}
             paramType={paramType}
+        />
+    )
+}
+
+export function renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, param) {
+    let definition = component.component.definition.events[param];
+    definition = definition ? definition : {  }
+
+    return (
+        <EventSelector 
+            param={{name: param, ...component.component.properties[param]}}
+            definition={definition}
+            eventUpdated={eventUpdated}
+            dataQueries={dataQueries}
+            eventOptionUpdated={eventOptionUpdated}
         />
     )
 }
