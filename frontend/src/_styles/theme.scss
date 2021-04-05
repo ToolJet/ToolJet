@@ -89,10 +89,11 @@
                 background: #f6f7fb;
                 border-radius: 8px;
                 border: 1px solid #d0d0d0;
+                height: 50px;
 
                 img { 
                     margin: 0 auto;
-                    padding: 8px;
+                    padding: 12px;
                 }
             }
 
@@ -167,14 +168,17 @@
             left: 12%;
             bottom: 0;
             overflow-x: hidden; 
-            
-    
             flex: 1 1 auto;
+            
     
             background-color: #fff;
             background-clip: border-box;
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 1px 0px 0px 0px;
+
+            .main-row {
+                --tblr-gutter-x: 0rem;
+            }
 
             .query-definition-pane {
                 .header {

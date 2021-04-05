@@ -213,13 +213,13 @@ class Editor extends React.Component {
                         <div className="col-md-12">
                             <div className="card">
                                 <ul className="nav nav-tabs" data-bs-toggle="tabs">
-                                    <li class="nav-item">
+                                    <li class="nav-item col-md-6">
                                         <a onClick={() => this.switchSidebarTab(1)} className={currentSidebarTab === 1 ? 'nav-link active' : 'nav-link'} data-bs-toggle="tab">
                                             <img src="https://www.svgrepo.com/show/73662/pages.svg" width="16" height="16"/>
                                                 &nbsp; Inspect
                                         </a>
                                     </li>
-                                    <li className="nav-item">
+                                    <li className="nav-item col-md-6">
                                         <a onClick={() => this.switchSidebarTab(2)} className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}  data-bs-toggle="tab">
                                             <img src="https://www.svgrepo.com/show/315687/components.svg" width="16" height="16"/>
                                                 &nbsp; Components
@@ -271,9 +271,9 @@ class Editor extends React.Component {
                             </div>
                         </div>
                         <div className="query-pane">
-                            <div className="row">
+                            <div className="row main-row">
                                 <div className="col-md-3 data-pane">
-                                    <div className="card row header">
+                                    <div className="card header">
                                         <ul className="nav nav-tabs" data-bs-toggle="tabs">
                                             <li class="nav-item col-md-6">
                                                 <a onClick={() => this.switchQueryPaneTab(1)} className={currentQueryPaneTab === 1 ? 'nav-link active' : 'nav-link'} data-bs-toggle="tab">
