@@ -2,7 +2,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/243696/buy-click.svg', 
         name: 'Button', 
-        description: 'Trigger actions like run queries, open other pages etc',
+        description: 'Trigger actions: queries, alerts etc',
         component: 'Button',
         properties: {
             text: { type: 'string'} ,
@@ -47,6 +47,7 @@ export const componentTypes = [
             columns: { type: 'array' } 
         },
         events: [
+            'onRowClicked'
         ],
         styles: {
             backgroundColor: { type: 'color'},
@@ -63,7 +64,11 @@ export const componentTypes = [
                 ]}
             },
             events: {
-               
+               onRowClicked: {
+                   options: {
+
+                   }
+               }
             },
             styles: {
                 backgroundColor: { value: '' },
@@ -122,6 +127,34 @@ export const componentTypes = [
             },
             styles: {
                 textColor: { value: '#000' }
+            }
+        }
+    },
+    { 
+        icon: 'https://www.svgrepo.com/show/34217/image.svg', 
+        name: 'Image', 
+        description: 'Display an Image',
+        component: 'Image',
+        properties: {
+            source: { type: 'string'} ,
+            visible: { type: 'string' } 
+        },
+        events: [
+            'onClick'
+        ],
+        styles: {
+            
+        },
+        definition: {
+            properties: {
+                'source': { value: 'https://www.svgrepo.com/show/34217/image.svg' },
+                'visible': { value: true },
+            },
+            events: {
+                onClick: { } 
+            },
+            styles: {
+                
             }
         }
     },
