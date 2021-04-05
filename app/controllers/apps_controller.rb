@@ -13,6 +13,7 @@ class AppsController < ApplicationController
     end
 
     def update
-        @app = App.update(definition: params[:definition])
+        @app = App.find params[:id]
+        @app.update(definition: params[:definition], name: params[:name])
     end
 end

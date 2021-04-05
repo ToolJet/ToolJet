@@ -120,7 +120,7 @@ class Editor extends React.Component {
 
     saveApp = () => {
         const { app, appDefinition } = this.state;
-        appService.saveApp(app.id, appDefinition).then((data) => {
+        appService.saveApp(app.id, app.name, appDefinition).then((data) => {
             toast.success('App saved & deployed sucessfully', { hideProgressBar: true, position: "top-center" })
         });
     }
@@ -151,6 +151,12 @@ class Editor extends React.Component {
                 </td>
             </tr>
         )
+    }
+
+    onNameChanged = (newName) => {
+        this.setState({
+            app: { ...this.state.app, name: newName }
+        })
     }
 
     render() {
@@ -193,6 +199,14 @@ class Editor extends React.Component {
                                 <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" class="navbar-brand-image"/>
                                 </a>
                             </h1>
+                            {this.state.app &&
+                                <input 
+                                    type="text" 
+                                    onChange={(e) => this.onNameChanged(e.target.value)}
+                                    class="form-control-plaintext form-control-plaintext-sm" 
+                                    value={this.state.app.name}
+                                />
+                            }
                             <div class="navbar-nav flex-row order-md-last">
                                 <div class="nav-item dropdown d-none d-md-flex me-3">
                                     <button onClick={this.saveApp} className="btn">Save</button>    
@@ -222,7 +236,7 @@ class Editor extends React.Component {
                                     <li className="nav-item col-md-6">
                                         <a onClick={() => this.switchSidebarTab(2)} className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}  data-bs-toggle="tab">
                                             <img src="https://www.svgrepo.com/show/315687/components.svg" width="16" height="16"/>
-                                                &nbsp; Components
+                                                &nbsp; Insert
                                         </a>
                                     </li>
                                     
