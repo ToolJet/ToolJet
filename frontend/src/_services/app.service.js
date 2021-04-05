@@ -2,10 +2,16 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
 export const appService = {
+    getAll,
     createApp,
     getApp,
     saveApp
 };
+
+function getAll() {
+    const requestOptions = { method: 'GET', headers: authHeader() };
+    return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+}
 
 function createApp() {
     const body =  {
