@@ -81,6 +81,7 @@ class Editor extends React.Component {
 
     dataQueriesChanged = () => {
         this.fetchDataQueries();
+        this.setState({addingQuery: false})
     }
 
     switchSidebarTab = (tabIndex) => { 

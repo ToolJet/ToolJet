@@ -11,10 +11,12 @@ export const Text = function Text({ id, component, onComponentClick, currentStat
 
         const matchedParams  = text.match(/\{\{(.*?)\}\}/g);
 
-        for(const param of matchedParams) {
-            const resolvedParam = resolve(param, currentState, '');
-            console.log('resolved param', param, resolvedParam);
-            data = data.replace(param, resolvedParam);
+        if (matchedParams) {
+            for(const param of matchedParams) {
+                const resolvedParam = resolve(param, currentState, '');
+                console.log('resolved param', param, resolvedParam);
+                data = data.replace(param, resolvedParam);
+            }
         }
 
     }

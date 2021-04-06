@@ -22,7 +22,7 @@ class PostgresqlQueryService
             query_text.gsub!(query_variable[0], query_variable[1])
         end
 
-        result = conn.exec( data_query.options["query"] )
+        result = conn.exec( query_text )
         { status: 'success', data: result.to_a }
     end
 end
