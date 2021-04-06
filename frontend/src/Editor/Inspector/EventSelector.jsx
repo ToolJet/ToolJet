@@ -5,8 +5,6 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
 
     console.log('dq', dataQueries);
 
-    debugger
-
     function onChange(e) {
         const query = dataQueries.find(query => query.id === e.target.value) 
         eventOptionUpdated(param, 'queryId', query.id, extraData);
@@ -26,7 +24,7 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
     return (
         <div className="field mb-2 mt-1">
             <label class="form-label">{param.name}</label>
-            <select onChange={(e) => eventUpdated(param, e.target.value, extraData)} value={definition.actionId} class="form-select" >
+            <select onClick={(e) => {  e.stopPropagation(); e.preventDefault() } } onChange={(e) => { e.stopPropagation(); eventUpdated(param, e.target.value, extraData)}} value={definition.actionId} class="form-select" >
                 <option value="none">None</option>
                 {ActionTypes.map((action) => (<option value={action.id}>{action.name}</option>))}
             </select>

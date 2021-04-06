@@ -80,7 +80,7 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
                     <span className="p-2">{component.component.name}</span>
                     <CopyToClipboard text={`{{components.${component.component.name}}}`}
                         onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
-                        <img src="https://www.svgrepo.com/show/86790/copy.svg" width="15" height="15" role="button"></img>
+                        <img src="https://www.svgrepo.com/show/86790/copy.svg" width="10" height="10" role="button"></img>
                     </CopyToClipboard>
                 </span>
                 
