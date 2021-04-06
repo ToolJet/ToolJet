@@ -12,7 +12,22 @@ import { Mysql } from './Mysql';
 
 const defaultOptions = { 
     'postgresql': {
-
+        host: 'localhost',
+        port: 5000,
+        username: '',
+        password: ''
+    },
+    'mysql': {
+        host: 'localhost',
+        port: 5000,
+        username: '',
+        password: ''
+    },
+    'redis': {
+        host: 'localhost',
+        port: 5000,
+        username: '',
+        password: ''
     },
     'elasticsearch': {
         host: 'localhost',
@@ -142,6 +157,15 @@ class DataSourceManager extends React.Component {
                                 }
                                 {selectedDataSource.kind === 'postgresql' && 
                                     <Postgresql
+                                        optionchanged={this.optionchanged}
+                                        createDataSource={this.createDataSource}
+                                        options={options}
+                                        hideModal={this.hideModal}
+                                    />
+                                }
+
+                                {selectedDataSource.kind === 'mysql' && 
+                                    <Mysql
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}

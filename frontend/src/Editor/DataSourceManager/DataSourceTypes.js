@@ -5,6 +5,11 @@ export const DataSourceTypes = [
         icon: 'https://www.svgrepo.com/show/303301/postgresql-logo.svg'
     },
     {
+        name: 'MySQL',
+        kind: 'mysql',
+        icon: 'https://www.svgrepo.com/show/303251/mysql-logo.svg'
+    },
+    {
         name: 'ElasticSearch',
         kind: 'elasticsearch',
         icon: 'https://www.svgrepo.com/show/305988/elasticsearch.svg'
