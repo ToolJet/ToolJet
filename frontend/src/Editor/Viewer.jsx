@@ -100,8 +100,13 @@ class Viewer extends React.Component {
         this.executeAction(onClickEvent);
     }
 
-    onEvent = (eventName, component, data) => {
-        if (eventName == 'onRowClicked') {
+    // setSelectedRowOfTable = (component, data) => {
+
+    // }
+
+    onEvent = (eventName, options) => {
+        if (eventName === 'onRowClicked') {
+            const { component, data } = options;
             const event = component.definition.events[eventName];
             this.setState({
                 currentState: {...this.state.currentState, 
@@ -112,7 +117,28 @@ class Viewer extends React.Component {
                             selectedRow: data
                         }}}
             }, () => {
-                this.executeAction(event);
+                if(event.actionId) {
+                    this.executeAction(event);
+                }
+            });
+        }
+
+        if(eventName === 'onTableActionButtonClicked') { 
+            const { component, data, action } = options;
+            const event = action.onClick;
+
+            this.setState({
+                currentState: {...this.state.currentState, 
+                    components: {
+                        ...this.state.currentState.components, 
+                        [component.name]: {
+                            ...this.state.currentState.components[component.name],
+                            selectedRow: data
+                        }}}
+            }, () => {
+                if(event.actionId) {
+                    this.executeAction(event);
+                }
             });
         }
     }

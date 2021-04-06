@@ -21,7 +21,7 @@ export function findProp(obj, prop, defval){
 export function resolve(data, state) {
     if(data.startsWith("{{queries.") || data.startsWith("{{globals.") || data.startsWith("{{components.")) {
         let prop = data.replace('{{', '').replace('}}', '');
-        return findProp(state, prop, []);
+        return findProp(state, prop, '');
     }
 }
 

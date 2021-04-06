@@ -39,12 +39,17 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
                 <tbody>
 
                 {data.map((row => 
-                    <tr onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked', component, row); }}>
+                    <tr onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, row }); }}>
                         {columns.map((column) => <td>{row[column.name]}</td>)}
                         
                         <td>
                             {actions.value.map((action) => ( 
-                                <button class="btn btn-sm m-1 btn-light">{action.name}</button>
+                                <button 
+                                    class="btn btn-sm m-1 btn-light"
+                                    onClick={(e) => { e.stopPropagation(); onEvent('onTableActionButtonClicked', { component, data: row, action }); }}
+                                >
+                                    {action.buttonText}
+                                </button>
                             ))}
                         </td>
                     </tr>

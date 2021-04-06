@@ -18,6 +18,7 @@ class PostgresqlQueryService
         )
 
         query_text = data_query.options["query"]
+
         query_variables.each do |query_variable|
             query_text.gsub!(query_variable[0], query_variable[1])
         end
