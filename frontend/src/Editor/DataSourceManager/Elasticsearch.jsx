@@ -26,10 +26,10 @@ export const Elasticsearch = ({ optionchanged, createDataSource, options  }) => 
                 </div>
             </div>
             <div className="row mt-3">
-                <div className="col-md-9">
+                <div className="col">
 
                 </div>
-                <div className="col-md-3">
+                <div className="col-auto">
                     <Button className="m-2" variant="light" onClick={() => hideModal()} >
                         Cancel
                     </Button>

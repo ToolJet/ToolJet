@@ -50,3 +50,20 @@ export function computeComponentName(componentType, currentComponents) {
 
     return name;
 }
+
+export function computeActionName(actions) {
+    
+    let currentNumber = actions.value.length;
+    let found = false;
+    let actionName = '';
+
+    while(!found) { 
+        actionName = `Action${currentNumber}`;
+        if(actions.value.find(action => action.name === actionName) === undefined) {
+            found = true;
+        }
+        currentNumber = currentNumber + 1
+    }
+
+    return actionName;
+}

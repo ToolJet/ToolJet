@@ -158,4 +158,67 @@ export const componentTypes = [
             }
         }
     },
+    { 
+        icon: 'https://www.svgrepo.com/show/46775/drop-down-list.svg', 
+        name: 'Dropdown', 
+        description: 'Select one value from options',
+        component: 'Dropdown',
+        properties: {
+            label: { type: 'string'} ,
+            values: { type: 'string' },
+            display_values: { type: 'string' }
+        },
+        events: [
+            'onSelect'
+        ],
+        styles: {
+            
+        },
+        definition: {
+            properties: {
+                'label': { value: 'Select' },
+                'values': [1,2,3],
+                'display_values': ["one", "two", "three"],
+                'visible': { value: true },
+            },
+            events: {
+                onSelect: { } 
+            },
+            styles: {
+                
+            }
+        }
+    },
+    { 
+        icon: 'https://www.svgrepo.com/show/10112/map.svg', 
+        name: 'Map', 
+        description: 'Display maps with markers.',
+        component: 'Map',
+        properties: {
+            label: { type: 'string'} ,
+            values: { type: 'string' },
+            display_values: { type: 'string' }
+        },
+        events: [
+            'onMarkerClick', 'onMarkerCreate'
+        ],
+        styles: {
+            
+        },
+        definition: {
+            properties: {
+                'label': { value: 'https://www.svgrepo.com/show/46775/drop-down-list.svg' },
+                'values': [1,2,3],
+                'display_values': ["one", "two", "three"],
+                'visible': { value: true },
+            },
+            events: {
+                onMarkerClick: { },
+                onMarkerCreate: { }
+            },
+            styles: {
+                
+            }
+        }
+    },
 ]

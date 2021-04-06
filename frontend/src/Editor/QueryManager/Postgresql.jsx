@@ -1,4 +1,6 @@
 import React from 'react';
+import CodeMirror from '@uiw/react-codemirror';
+import 'codemirror/theme/duotone-light.css';
 
 class Postgresql extends React.Component {
     constructor(props) {

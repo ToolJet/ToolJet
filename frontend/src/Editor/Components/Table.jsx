@@ -6,6 +6,7 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
     const backgroundColor = component.definition.styles.backgroundColor.value;
     const color = component.definition.styles.textColor.value;
     const columns = component.definition.properties.columns.value;
+    const actions = component.definition.properties.actions || { value: []};
 
     console.log('currentState', currentState);
 
@@ -30,6 +31,9 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
                 <thead>
                 <tr>
                     {columns.map((column) => <th>{column.name}</th>)}
+                    {actions.value.length > 0 && 
+                        <th>Actions</th>
+                    }
                 </tr>
                 </thead>
                 <tbody>
@@ -37,6 +41,12 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
                 {data.map((row => 
                     <tr onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked', component, row); }}>
                         {columns.map((column) => <td>{row[column.name]}</td>)}
+                        
+                        <td>
+                            {actions.value.map((action) => ( 
+                                <button class="btn btn-sm m-1 btn-light">{action.name}</button>
+                            ))}
+                        </td>
                     </tr>
                 ))}
                 </tbody>

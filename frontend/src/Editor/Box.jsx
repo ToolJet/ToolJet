@@ -42,7 +42,7 @@ export const Box = function Box({ id, yellow, preview, component, inCanvas, onCo
                     component={component}>
                 </ComponentToRender>
             :
-                <div className="row p-1">
+                <div className="row p-1 m-1">
                     <div className="col-md-3 component-image-holder">
                         <center><img src={component.icon}/></center>
                     </div>

@@ -4,7 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { DataSourceTypes } from './DataSourceTypes';
+import { dataBaseSources, apiSources, DataSourceTypes } from './DataSourceTypes';
 import { Elasticsearch } from './Elasticsearch';
 import { Redis } from './Redis';
 import { Postgresql } from './Postgresql';
@@ -108,7 +108,7 @@ class DataSourceManager extends React.Component {
 
                 <Modal
                     show={this.state.showModal}
-                    size="xl"
+                    size="lg"
                     className="mt-5"
                     // onHide={handleClose}
                     backdrop="static"
@@ -131,29 +131,46 @@ class DataSourceManager extends React.Component {
                              }
                             </Modal.Title>
                             <Button variant="light" onClick={() => this.hideModal()}>
-                                Close
+                                x
                             </Button>
                         </Modal.Header>
 
                         <Modal.Body>
 
                         {!selectedDataSource &&
-                            <div class="row row-deck">
-
-                                {DataSourceTypes.map((dataSource) => (<div class="col-md-2">
-                                    <div class="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
-                                            <div class="card-body">
-                                                <center>
-                                                    <img src={dataSource.icon} width="50" height="50" alt=""/>
-                                                    <br></br>
-                                                    <br></br>
-                                                    {dataSource.name}
-                                                </center>
+                            <div>
+                                <div class="row row-deck">
+                                    <h4 className="text-muted mb-2">DATABASES</h4>
+                                    {dataBaseSources.map((dataSource) => (<div class="col-md-3">
+                                        <div class="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
+                                                <div class="card-body">
+                                                    <center>
+                                                        <img src={dataSource.icon} width="50" height="50" alt=""/>
+                                                        <br></br>
+                                                        <br></br>
+                                                        {dataSource.name}
+                                                    </center>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
-                            
+                                    ))}
+                                </div>
+                                <div class="row row-deck mt-5">
+                                    <h4 className="text-muted mb-2">APIS</h4>
+                                    {apiSources.map((dataSource) => (<div class="col-md-3">
+                                        <div class="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
+                                                <div class="card-body">
+                                                    <center>
+                                                        <img src={dataSource.icon} width="50" height="50" alt=""/>
+                                                        <br></br>
+                                                        <br></br>
+                                                        {dataSource.name}
+                                                    </center>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         }
 
