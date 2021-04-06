@@ -9,7 +9,7 @@ import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
 import ReactJson from 'react-json-view';
 import { DataSourceManager }  from './DataSourceManager';
-import { DataSourceTypes } from './DataSourceTypes';
+import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
 import { QueryManager } from './QueryManager';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { toast } from 'react-toastify';

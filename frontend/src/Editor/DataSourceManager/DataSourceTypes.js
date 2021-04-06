@@ -10,6 +10,11 @@ export const DataSourceTypes = [
         icon: 'https://www.svgrepo.com/show/305988/elasticsearch.svg'
     },
     {
+        name: 'Redis',
+        kind: 'redis',
+        icon: 'https://www.svgrepo.com/show/303460/redis-logo.svg'
+    },
+    {
         name: 'Rest API',
         kind: 'restapi',
         icon: 'https://www.svgrepo.com/show/120283/api.svg'

@@ -6,6 +6,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { DataSourceTypes } from './DataSourceTypes';
 import { Elasticsearch } from './Elasticsearch';
+import { Redis } from './Redis';
+import { Postgresql } from './Postgresql';
+import { Mysql } from './Mysql';
 
 const defaultOptions = { 
     'postgresql': {
@@ -52,7 +55,10 @@ class DataSourceManager extends React.Component {
     }
 
     hideModal = () => {
-        this.setState({ showModal: false });
+        this.setState({ 
+            showModal: false,
+            selectedDataSource: null
+        });
     }
 
     createDataSource = () => {
@@ -89,7 +95,7 @@ class DataSourceManager extends React.Component {
 
                         <Modal.Header>
                             <Modal.Title>Add new datasource</Modal.Title>
-                            <Button variant="light" onClick={() => this.setState({ showModal: false })}>
+                            <Button variant="light" onClick={() => this.hideModal()}>
                                 Close
                             </Button>
                         </Modal.Header>
@@ -126,50 +132,23 @@ class DataSourceManager extends React.Component {
                                         hideModal={this.hideModal}
                                     />
                                 }
-                                {selectedDataSource.kind === 'postgresql' && 
-                                    <div>
-                                        <div className="row">
-                                            <div className="col-md-9">
-                                                <label class="form-label">Host Address</label>
-                                                <input type="text" class="form-control" onChange={(e) => this.optionchanged('host', e.target.value)} value={options.host} />
-                                            </div>
-                                            <div className="col-md-3">
-                                                <label class="form-label">Port</label>
-                                                <input type="text" class="form-control" onChange={(e) => this.optionchanged('port', e.target.value)}  value={options.port} />
-                                            </div>
-                                        </div>
-                                        <div className="row mt-3">
-                                            <div className="col-md-4">
-                                                <label class="form-label">Database Name</label>
-                                                <input type="text" class="form-control" onChange={(e) => this.optionchanged('database', e.target.value)}  value={options.database} />
-                                            </div>
-                                            <div className="col-md-4">
-                                                <label class="form-label">Username</label>
-                                                <input type="text" class="form-control" onChange={(e) => this.optionchanged('username', e.target.value)}  value={options.username} />
-                                            </div>
-                                            <div className="col-md-4">
-                                                <label class="form-label">Password</label>
-                                                <input type="text" class="form-control" onChange={(e) => this.optionchanged('password', e.target.value)}  value={options.password} />
-                                            </div>
-                                        </div>
-                                        <div className="row mt-3">
-                                            <div className="col-md-9">
-
-                                            </div>
-                                            <div className="col-md-3">
-                                                <Button className="m-2" variant="light" onClick={() => this.setState({ showModal: false })}>
-                                                    Cancel
-                                                </Button>
-                                                <Button className="m-2" variant="success" onClick={() => this.setState({ showModal: false })}>
-                                                    Test
-                                                </Button>
-                                                <Button className="m-2" variant="primary" onClick={this.createDataSource}>
-                                                    Save
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                {selectedDataSource.kind === 'redis' && 
+                                    <Redis
+                                        optionchanged={this.optionchanged}
+                                        createDataSource={this.createDataSource}
+                                        options={options}
+                                        hideModal={this.hideModal}
+                                    />
                                 }
+                                {selectedDataSource.kind === 'postgresql' && 
+                                    <Postgresql
+                                        optionchanged={this.optionchanged}
+                                        createDataSource={this.createDataSource}
+                                        options={options}
+                                        hideModal={this.hideModal}
+                                    />
+                                }
+                                
                             </div>
                         }
 
