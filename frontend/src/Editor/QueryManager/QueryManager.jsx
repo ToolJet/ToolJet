@@ -2,7 +2,15 @@ import React from 'react';
 import { dataqueryService, authenticationService } from '@/_services';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { RestApi } from './RestApi';
+import { Restapi } from './Restapi';
+import { Mysql } from './Mysql';
+import { Postgresql } from './Postgresql';
+
+const allSources = {
+    Restapi,
+    Mysql,
+    Postgresql
+}
 
 const staticDataSources = [
     { kind: 'js-code', id: 'js-code', name: 'Custom JS Code' },
@@ -88,6 +96,14 @@ class QueryManager extends React.Component {
     render() {
         const { dataSources, selectedDataSource } = this.state;
 
+        let ElementToRender = '';
+
+        if(selectedDataSource) {
+            const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
+            debugger
+            ElementToRender = allSources[sourcecomponentName];
+        }
+
         return (
             <div>
 
@@ -115,18 +131,12 @@ class QueryManager extends React.Component {
 
                     {selectedDataSource && 
                         <div>
-                            { selectedDataSource.kind === 'postgresql' && 
-                                <div class="mb-3 mt-2">
-                                    <label class="form-label">SQL Query</label>
-                                    <textarea onChange={(e) => this.optionchanged('query', e.target.value)} class="form-control" placeholder="SELECT * FROM"></textarea>
-                                </div>
-                            }
-                            { selectedDataSource.kind === 'restapi' && 
-                                <RestApi 
+                           
+                                <ElementToRender 
                                     options={this.state.options}
                                     optionsChanged={this.optionsChanged}
                                 />
-                            }
+                            
                         </div>
                     }
 

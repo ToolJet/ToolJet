@@ -1,6 +1,6 @@
 import React from 'react';
 
-class RestApi extends React.Component {
+class Restapi extends React.Component {
     constructor(props) {
         super(props);
 
@@ -129,4 +129,4 @@ class RestApi extends React.Component {
     }
 }
 
-export { RestApi };
+export { Restapi };
