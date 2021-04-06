@@ -28,9 +28,9 @@ function create(app_id, name, kind, options, data_source_id) {
     return fetch(`${config.apiUrl}/data_queries`, requestOptions).then(handleResponse);
 }
 
-function run(queryId) {
+function run(queryId, queryVariables) {
     const body =  {
-        
+        query_variables: queryVariables
     }
     const headers = {
         ...authHeader(),

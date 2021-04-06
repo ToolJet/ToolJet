@@ -53,11 +53,13 @@ class QueryManager extends React.Component {
         let found = false;
         let name = '';
         let currentNumber = currentQueriesForKind.length;
+
         while(!found) { 
             name = `${kind}${currentNumber}`;
             if(dataQueries.find(query => query.name === name) === undefined) {
                 found = true;
             }
+            currentNumber = currentNumber + 1
         }
 
         return name;
@@ -67,10 +69,9 @@ class QueryManager extends React.Component {
         const  { appId, options, selectedDataSource } = this.state;
         const name = this.computeQueryName(selectedDataSource.kind);
         const kind = selectedDataSource.kind;
-        const data_source_id = selectedDataSource.id;
+        const dataSourceId = selectedDataSource.id;
  
-        dataqueryService.create(appId, name, kind, options, data_source_id).then((data) => {
-            this.setState( { showModal: false } );
+        dataqueryService.create(appId, name, kind, options, dataSourceId).then((data) => {
             toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
             this.props.dataQueriesChanged();
         });

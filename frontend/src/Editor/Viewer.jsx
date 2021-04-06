@@ -4,9 +4,9 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
-import { DraggableBox } from './DraggableBox';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { getDynamicVariables, resolve } from '@/_helpers/utils';
 
 class Viewer extends React.Component {
     constructor(props) {
@@ -73,8 +73,20 @@ class Viewer extends React.Component {
         if(event.actionId === 'run-query') {
 
             const { queryId, queryName } = event.options;
+            const dataQuery = this.state.app.data_queries.find(query => query.id === queryId);
 
-            dataqueryService.run(queryId).then(data => 
+            const queryText = dataQuery.options.query;
+            const queryVariables = getDynamicVariables(queryText);
+
+            const dynamicVariableData = {}
+            if (queryVariables) {
+                for(const queryVariable of queryVariables) {
+                    const value = resolve(queryVariable, this.state.currentState);
+                    dynamicVariableData[queryVariable] = value;
+                }
+            }
+
+            dataqueryService.run(queryId, dynamicVariableData).then(data => 
                 this.setState({
                     currentState: {...this.state.currentState, queries: {...this.state.currentState.queries, [queryName]: data.data}}
                 })
@@ -99,8 +111,9 @@ class Viewer extends React.Component {
                             ...this.state.currentState.components[component.name],
                             selectedRow: data
                         }}}
-            })
-            this.executeAction(event);
+            }, () => {
+                this.executeAction(event);
+            });
         }
     }
 

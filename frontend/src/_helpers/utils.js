@@ -25,12 +25,22 @@ export function resolve(data, state) {
     }
 }
 
+export function resolveAll(data, state) {
+
+}
+
+export function getDynamicVariables(text) {
+    const matchedParams  = text.match(/\{\{(.*?)\}\}/g);
+    return matchedParams;
+}
+
 export function computeComponentName(componentType, currentComponents) {
     
     const currentComponentsForKind = Object.values(currentComponents).filter(component => component.component.component === componentType);
     let found = false;
     let name = '';
     let currentNumber = currentComponentsForKind.length;
+
     while(!found) { 
         name = `${componentType.toLowerCase()}${currentNumber}`;
         if(Object.values(currentComponents).find(component => component.name === name) === undefined) {

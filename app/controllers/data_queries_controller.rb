@@ -16,7 +16,7 @@ class DataQueriesController < ApplicationController
 
     def run
         @data_query = DataQuery.find params[:data_query_id]
-        query_service = QueryService.new @data_query
+        query_service = QueryService.new @data_query, params[:query_variables]
         result = query_service.process
 
         render json: result
