@@ -131,7 +131,7 @@ class Editor extends React.Component {
         return (
             <tr>
                 <td>
-                    <img src={sourceMeta.icon} width="20" height="20"/> {sourceMeta.name}
+                    <img src={sourceMeta.icon} width="20" height="20"/> {data_source.name}
                 </td>
             </tr>
         )

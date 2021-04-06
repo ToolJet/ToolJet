@@ -120,10 +120,10 @@ class QueryManager extends React.Component {
                 
                 <div class="row row-deck p-3">
 
-                    <label class="form-label">Datasource</label>
+                    <label class="form-label col-md-2 p-2">Datasource</label>
 
                     {dataSources && 
-                        <select class="form-select m-2" style={{width: '300px'}} onChange={(e) => this.changeDataSource(e.target.value)} >
+                        <select class="form-select form-sm mb-2" style={{width: '300px'}} onChange={(e) => this.changeDataSource(e.target.value)} >
                             {dataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
                             {staticDataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
                         </select>

@@ -30,7 +30,19 @@ class Postgresql extends React.Component {
             <div>
                 <div class="mb-3 mt-2">
                     <label class="form-label">SQL Query</label>
-                    <textarea onChange={(e) => this.changeOption('query', e.target.value)} class="form-control" placeholder="SELECT * FROM"></textarea>
+                    <CodeMirror
+                        height ="100px"
+                        fontSize="2"
+                        onChange={ (instance, change) => this.changeOption('query', instance.getValue()) }
+                        placeholder="SELECT * FROM customers;"
+                        options={{
+                            theme: 'duotone-light',
+                            mode: 'sql',
+                            lineWrapping: true,
+                            scrollbarStyle: null,
+                            
+                        }}
+                    />
                 </div>   
             </div>                    
         )

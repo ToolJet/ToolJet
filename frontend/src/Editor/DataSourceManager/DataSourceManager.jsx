@@ -61,8 +61,15 @@ class DataSourceManager extends React.Component {
     selectDataSource = (source) => { 
         this.setState({ 
             selectedDataSource: source,
-            options: defaultOptions[source.kind]
+            options: defaultOptions[source.kind],
+            name: source.kind
         });
+    }
+
+    onNameChanged = (newName) => {
+        this.setState({
+            name: newName
+        })
     }
 
     optionchanged = (option, value) => {
@@ -79,8 +86,7 @@ class DataSourceManager extends React.Component {
     createDataSource = () => {
         let _self = this;
 
-        const  { appId, options, selectedDataSource } = this.state;
-        const name = selectedDataSource.name;
+        const  { appId, options, selectedDataSource, name } = this.state;
         const kind = selectedDataSource.kind;
 
         datasourceService.create(appId, name, kind, options).then((data) => {
@@ -109,7 +115,21 @@ class DataSourceManager extends React.Component {
                     keyboard={false}>
 
                         <Modal.Header>
-                            <Modal.Title>Add new datasource</Modal.Title>
+                            <Modal.Title>
+                             {selectedDataSource &&
+                             <div className="row">
+                                <img src={selectedDataSource.icon} height="25" width="25" className="mt-2 col-md-2"></img>
+                                <input 
+                                    type="text" 
+                                    onChange={(e) => this.onNameChanged(e.target.value)}
+                                    class="form-control-plaintext form-control-plaintext-sm col" 
+                                    value={this.state.name}
+                                    autoFocus
+                                />
+                             </div>
+                               
+                             }
+                            </Modal.Title>
                             <Button variant="light" onClick={() => this.hideModal()}>
                                 Close
                             </Button>
