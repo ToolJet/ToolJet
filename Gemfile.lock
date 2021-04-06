@@ -102,6 +102,7 @@ GEM
     minitest (5.14.4)
     msgpack (1.4.2)
     multi_xml (0.6.0)
+    mysql2 (0.5.3)
     nio4r (2.5.7)
     nokogiri (1.11.2)
       mini_portile2 (~> 2.5.0)
@@ -178,6 +179,7 @@ DEPENDENCIES
   jwt
   listen (~> 3.3)
   lograge
+  mysql2
   pg (~> 1.1)
   puma (~> 5.0)
   pundit

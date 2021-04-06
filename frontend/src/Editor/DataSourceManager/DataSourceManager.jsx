@@ -13,25 +13,25 @@ import { Mysql } from './Mysql';
 const defaultOptions = { 
     'postgresql': {
         host: 'localhost',
-        port: 5000,
+        port: 5432,
         username: '',
         password: ''
     },
     'mysql': {
         host: 'localhost',
-        port: 5000,
+        port: 3306,
         username: '',
         password: ''
     },
     'redis': {
         host: 'localhost',
-        port: 5000,
+        port: 6379,
         username: '',
         password: ''
     },
     'elasticsearch': {
         host: 'localhost',
-        port: 5000,
+        port: 9000,
         username: '',
         password: ''
     }
