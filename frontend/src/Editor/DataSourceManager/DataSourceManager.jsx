@@ -5,6 +5,19 @@ import Button from 'react-bootstrap/Button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { DataSourceTypes } from './DataSourceTypes';
+import { Elasticsearch } from './Elasticsearch';
+
+const defaultOptions = { 
+    'postgresql': {
+
+    },
+    'elasticsearch': {
+        host: 'localhost',
+        port: 5000,
+        username: '',
+        password: ''
+    }
+}
 
 class DataSourceManager extends React.Component {
     constructor(props) {
@@ -15,11 +28,7 @@ class DataSourceManager extends React.Component {
             showModal: false,
             appId: props.appId,
             options: { 
-                host: '',
-                port: '5432',
-                database: 'production',
-                username: 'root',
-                password: 'root'
+               
             }
         };
     }
@@ -32,11 +41,18 @@ class DataSourceManager extends React.Component {
     }
 
     selectDataSource = (source) => { 
-        this.setState({ selectedDataSource: source });
+        this.setState({ 
+            selectedDataSource: source,
+            options: defaultOptions[source.kind]
+        });
     }
 
     optionchanged = (option, value) => {
         this.setState( { options: { ...this.state.options, [option]: value } } );
+    }
+
+    hideModal = () => {
+        this.setState({ showModal: false });
     }
 
     createDataSource = () => {
@@ -102,6 +118,14 @@ class DataSourceManager extends React.Component {
 
                         {selectedDataSource &&
                             <div>
+                                {selectedDataSource.kind === 'elasticsearch' && 
+                                    <Elasticsearch
+                                        optionchanged={this.optionchanged}
+                                        createDataSource={this.createDataSource}
+                                        options={options}
+                                        hideModal={this.hideModal}
+                                    />
+                                }
                                 {selectedDataSource.kind === 'postgresql' && 
                                     <div>
                                         <div className="row">
