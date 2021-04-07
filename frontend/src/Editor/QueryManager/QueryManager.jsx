@@ -52,11 +52,12 @@ class QueryManager extends React.Component {
 
 
         if(this.props.mode === 'edit') {
-            const source = this.props.dataSources.find(source => source.id === selectedQuery.data_source_id) 
+            const source = props.dataSources.find(source => source.id === selectedQuery.data_source_id) 
 
             this.setState({
                 options: selectedQuery.options,
-                selectedDataSource: source
+                selectedDataSource: source,
+                selectedQuery
             })
         } else { 
             this.setState({
@@ -128,6 +129,11 @@ class QueryManager extends React.Component {
 
     optionsChanged = (newOptions) => {
         this.setState({ options: newOptions });
+    }
+
+    toggleOption = (option) => {
+        const currentValue = this.state.options[option] ? this.state.options[option] : false;
+        this.optionchanged(option, !currentValue);
     }
 
     render() {
@@ -208,6 +214,19 @@ class QueryManager extends React.Component {
                     </div>
                 }
 
+                {currentTab === 2 && 
+                    <div class="advanced-options-container p-2 m-2">
+                        <label class="form-check form-switch">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                onClick={() => this.toggleOption('runOnPageLoad')}
+                                checked={this.state.options.runOnPageLoad} 
+                            />
+                            <span class="form-check-label">Run this query on page load?</span>
+                        </label>
+                    </div>
+                }
             </div>
         )
     }

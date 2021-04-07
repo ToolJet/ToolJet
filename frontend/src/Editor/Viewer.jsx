@@ -37,6 +37,12 @@ class Viewer extends React.Component {
             app: data, 
             isLoading: false,
             appDefinition: data.definition
+        }, () => {
+            data.data_queries.map((query) => {
+                if(query.options.runOnPageLoad) {
+                    this.runQuery(query.id, query.name);
+                }
+            })
         }));
 
         const currentUser = authenticationService.currentUserValue;
@@ -65,6 +71,27 @@ class Viewer extends React.Component {
         });
     }
 
+    runQuery = (queryId, queryName) => {
+        const dataQuery = this.state.app.data_queries.find(query => query.id === queryId);
+
+        const queryText = dataQuery.options.query;
+        const queryVariables = getDynamicVariables(queryText);
+
+        const dynamicVariableData = {}
+        if (queryVariables) {
+            for(const queryVariable of queryVariables) {
+                const value = resolve(queryVariable, this.state.currentState);
+                dynamicVariableData[queryVariable] = value;
+            }
+        }
+
+        dataqueryService.run(queryId, dynamicVariableData).then(data => 
+            this.setState({
+                currentState: {...this.state.currentState, queries: {...this.state.currentState.queries, [queryName]: data.data}}
+            })
+        );
+    }
+
     executeAction = (event) => {
         if(event.actionId === 'show-alert') {
             toast(event.options.message, { hideProgressBar: true })
@@ -73,24 +100,7 @@ class Viewer extends React.Component {
         if(event.actionId === 'run-query') {
 
             const { queryId, queryName } = event.options;
-            const dataQuery = this.state.app.data_queries.find(query => query.id === queryId);
-
-            const queryText = dataQuery.options.query;
-            const queryVariables = getDynamicVariables(queryText);
-
-            const dynamicVariableData = {}
-            if (queryVariables) {
-                for(const queryVariable of queryVariables) {
-                    const value = resolve(queryVariable, this.state.currentState);
-                    dynamicVariableData[queryVariable] = value;
-                }
-            }
-
-            dataqueryService.run(queryId, dynamicVariableData).then(data => 
-                this.setState({
-                    currentState: {...this.state.currentState, queries: {...this.state.currentState.queries, [queryName]: data.data}}
-                })
-            );
+            this.runQuery(queryId, queryName);
         }
     }
 
@@ -168,13 +178,6 @@ class Viewer extends React.Component {
         this.setState( { 
             appDefinition: { ...this.state.appDefinition, [newDefinition.id]: { component: newDefinition.component } }
         })
-    }
-
-    saveApp = () => {
-        const { app, appDefinition } = this.state;
-        appService.saveApp(app.id, appDefinition).then((data) => {
-            alert('saved')
-        });
     }
 
     render() {
