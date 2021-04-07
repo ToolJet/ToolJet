@@ -7,6 +7,8 @@ import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
 import { renderElement, renderEvent } from './Utils';
 import { toast } from 'react-toastify';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Popover from 'react-bootstrap/Popover';
 
 const AllElements = { 
     Color,
@@ -14,7 +16,7 @@ const AllElements = {
     Text
 }
 
-export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQueries }) => {
+export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQueries, removeComponent }) => {
 
     const [component, setComponent] = useState(selectedComponent);
     const componentMeta = componentTypes.find(comp => component.component.component === comp.component);
@@ -84,7 +86,32 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
                     </CopyToClipboard>
                 </span>
                 
-                <img role="button" className="component-action-button" src="https://www.svgrepo.com/show/46582/menu.svg" width="15" height="15"/>
+
+                <OverlayTrigger 
+                    trigger="click" 
+                    placement="left" 
+                    overlay={
+                        <Popover id="popover-basic">
+                            {/* <Popover.Title as="h3">brrr</Popover.Title> */}
+                            <Popover.Content>
+                                <div className="field mb-2">
+                                    <button className="btn btn-light btn-sm mb-2">Duplicate</button>
+                                    <br></br>
+                                    <button 
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => removeComponent(component)}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </Popover.Content>
+                        </Popover>
+                    }>
+
+                    <img role="button" className="component-action-button" src="https://www.svgrepo.com/show/46582/menu.svg" width="15" height="15"/>
+
+                </OverlayTrigger>
+
             </div>
 
             {componentMeta.component === 'Table' ? 

@@ -104,6 +104,12 @@ class Editor extends React.Component {
         console.log('app definition', this.state.appDefinition);
     }
 
+    removeComponent = (component) => {
+        let newDefinition = this.state.appDefinition;
+        delete newDefinition.components[component.id];
+        this.appDefinitionChanged(newDefinition);
+    }
+
     componentDefinitionChanged = (newDefinition) => { 
         console.log('new component definition', newDefinition);
         console.log('app definition', this.state.appDefinition);
@@ -245,6 +251,7 @@ class Editor extends React.Component {
                                         <Inspector 
                                             componentDefinitionChanged={this.componentDefinitionChanged}
                                             dataQueries={dataQueries}
+                                            removeComponent={this.removeComponent}
                                             selectedComponent={selectedComponent}>
 
                                         </Inspector>

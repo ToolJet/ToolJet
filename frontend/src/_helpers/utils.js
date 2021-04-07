@@ -39,7 +39,7 @@ export function computeComponentName(componentType, currentComponents) {
     const currentComponentsForKind = Object.values(currentComponents).filter(component => component.component.component === componentType);
     let found = false;
     let name = '';
-    let currentNumber = currentComponentsForKind.length;
+    let currentNumber = currentComponentsForKind.length + 1;
 
     while(!found) { 
         name = `${componentType.toLowerCase()}${currentNumber}`;
