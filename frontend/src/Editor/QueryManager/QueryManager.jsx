@@ -38,16 +38,33 @@ class QueryManager extends React.Component {
             currentUser: authenticationService.currentUserValue,
             appId: props.appId,
             dataSources: props.dataSources,
-            dataQueries: props.dataQueries
+            dataQueries: props.dataQueries,
+            selectedQuery: props.selectedQuery,
+            mode: props.mode
         };
     }
 
     componentDidMount() {
+
+        const selectedQuery = this.state.selectedQuery;
+
         this.state = {
             appId: this.props.appId,
             dataSources: this.props.dataSources,
             dataQueries: this.props.dataQueries,
+            mode: this.props.mode
         };
+
+
+        if(this.props.mode === 'edit') {
+            const source = this.props.dataSources.find(source => source.id === selectedQuery.data_source_id) 
+
+            this.setState({
+                options: selectedQuery.options,
+                selectedDataSource: source
+            })
+        }
+
     }
 
     changeDataSource = (sourceId) => {
@@ -73,16 +90,25 @@ class QueryManager extends React.Component {
         return name;
     }
 
-    createDataQuery = () => {
-        const  { appId, options, selectedDataSource } = this.state;
+    createOrUpdateDataQuery = () => {
+        const  { appId, options, selectedDataSource, mode } = this.state;
         const name = this.computeQueryName(selectedDataSource.kind);
         const kind = selectedDataSource.kind;
         const dataSourceId = selectedDataSource.id;
+
+        if ( mode === 'edit') {
+            dataqueryService.update(this.state.selectedQuery.id, options).then((data) => {
+                toast.success('Datasource Updated', { hideProgressBar: true, position: "top-center", });
+                this.props.dataQueriesChanged();
+            });
+        } else { 
+            dataqueryService.create(appId, name, kind, options, dataSourceId).then((data) => {
+                toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
+                this.props.dataQueriesChanged();
+            });
+        }
  
-        dataqueryService.create(appId, name, kind, options, dataSourceId).then((data) => {
-            toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
-            this.props.dataQueriesChanged();
-        });
+        
     }
 
     optionchanged = (option, value) => {
@@ -94,13 +120,12 @@ class QueryManager extends React.Component {
     }
 
     render() {
-        const { dataSources, selectedDataSource } = this.state;
+        const { dataSources, selectedDataSource, mode } = this.state;
 
         let ElementToRender = '';
 
         if(selectedDataSource) {
             const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
-            debugger
             ElementToRender = allSources[sourcecomponentName];
         }
 
@@ -114,7 +139,9 @@ class QueryManager extends React.Component {
                     </div>
                     <div className="col-md-3">
                         <button className="btn btn-light m-1 float-right">Preview</button>
-                        <button onClick={this.createDataQuery} className="btn btn-primary m-1 float-right">Create</button>
+                        <button onClick={this.createOrUpdateDataQuery} className="btn btn-primary m-1 float-right">
+                            { mode === 'edit' ? 'Save' : 'Create' }
+                        </button>
                     </div>
                 </div>
                 
@@ -123,7 +150,12 @@ class QueryManager extends React.Component {
                     <label class="form-label col-md-2 p-2">Datasource</label>
 
                     {dataSources && 
-                        <select class="form-select form-sm mb-2" style={{width: '300px'}} onChange={(e) => this.changeDataSource(e.target.value)} >
+                        <select 
+                            class="form-select form-sm mb-2" 
+                            value={selectedDataSource ? selectedDataSource.id : ''}
+                            style={{width: '300px'}} 
+                            onChange={(e) => this.changeDataSource(e.target.value)} 
+                        >
                             {dataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
                             {staticDataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
                         </select>

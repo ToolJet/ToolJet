@@ -34,6 +34,7 @@ class Mysql extends React.Component {
                     <CodeMirror
                         height ="100px"
                         fontSize="2"
+                        value={options.query}
                         onChange={ (instance, change) => this.changeOption('query', instance.getValue()) }
                         placeholder="SELECT * FROM customers;"
                         options={{

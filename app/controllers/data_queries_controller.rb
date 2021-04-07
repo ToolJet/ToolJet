@@ -14,6 +14,11 @@ class DataQueriesController < ApplicationController
         )
     end
 
+    def update
+        @data_query = DataQuery.find params[:id]
+        @data_query.update(options: params[:options])
+    end
+
     def run
         @data_query = DataQuery.find params[:data_query_id]
         query_service = QueryService.new @data_query, params[:query_variables]

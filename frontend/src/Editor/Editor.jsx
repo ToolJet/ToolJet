@@ -140,7 +140,7 @@ class Editor extends React.Component {
     renderDataQuery = (data_query) => {
         const sourceMeta = DataSourceTypes.find(source => source.kind === data_query.kind);
         return (
-            <tr>
+            <tr onClick={() => this.setState( { editingQuery: true, selectedQuery: data_query })} role="button">
                 <td>
                     <img src={sourceMeta.icon} width="20" height="20"/> {data_query.name}
                 </td>
@@ -171,7 +171,9 @@ class Editor extends React.Component {
             loadingDataQueries,
             dataQueries,
             loadingDataSources,
-            addingQuery
+            addingQuery,
+            selectedQuery,
+            editingQuery
         } = this.state;
 
         const global_context = {
@@ -384,10 +386,12 @@ class Editor extends React.Component {
                                 <div className="col-md-9">
                                     {!loadingDataSources &&
                                         <div className="query-definition-pane">
-                                            {(currentQueryPaneTab === 2 && addingQuery) && 
+                                            {(currentQueryPaneTab === 2 && (addingQuery || editingQuery)) && 
                                                 <QueryManager 
                                                     dataSources={dataSources}
                                                     dataQueries={dataQueries}
+                                                    mode={editingQuery ? 'edit' : 'create'}
+                                                    selectedQuery={selectedQuery}
                                                     dataQueriesChanged={this.dataQueriesChanged}
                                                     appId={appId}
                                                 />
