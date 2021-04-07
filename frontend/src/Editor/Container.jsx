@@ -22,9 +22,11 @@ function uuidv4() {
 export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition, appDefinitionChanged, currentState, onComponentOptionChanged}) => {
     const [boxes, setBoxes] = useState(appDefinition.components);
 
-    useEffect(() => {
-        setBoxes(appDefinition.components);
-    }, [appDefinition.components]);
+    debugger
+
+    // useEffect(() => {
+    //     setBoxes(appDefinition.components);
+    // }, [appDefinition.components]);
 
     const moveBox = useCallback((id, left, top) => {
         setBoxes(update(boxes, {
@@ -32,7 +34,12 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 $merge: { left, top },
             },
         }));
+        console.log('new boxes - 1', boxes);
+        // appDefinitionChanged({...appDefinition, components: boxes});
+    }, [boxes]);
 
+    useEffect(() => {
+        console.log('new boxes - 2', boxes);
         appDefinitionChanged({...appDefinition, components: boxes});
     }, [boxes]);
 

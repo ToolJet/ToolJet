@@ -16,7 +16,7 @@ class Viewer extends React.Component {
             currentUser: authenticationService.currentUserValue,
             users: null,
             appDefinition: {
-                components: {}
+                components: null
             },
             currentState: {
                 queries: {},
@@ -210,18 +210,19 @@ class Viewer extends React.Component {
                     
                     <div className="main">
                         <div className="canvas-container align-items-center">
-                            <div className="canvas-area">
-                                <Container 
-                                    appDefinition={appDefinition}
-                                    appDefinitionChanged={this.appDefinitionChanged}
-                                    snapToGrid={true} 
-                                    onEvent={this.onEvent}
-                                    currentState={this.state.currentState}
-                                    onComponentClick={this.onComponentClick}
-                                    onComponentOptionChanged={this.onComponentOptionChanged}
-                                />
-			                    <CustomDragLayer snapToGrid={true}/>
-                            </div>
+                            {appDefinition.components &&
+                                <div className="canvas-area">
+                                    <Container 
+                                        appDefinition={appDefinition}
+                                        appDefinitionChanged={this.appDefinitionChanged}
+                                        snapToGrid={true} 
+                                        onEvent={this.onEvent}
+                                        currentState={this.state.currentState}
+                                        onComponentClick={this.onComponentClick}
+                                        onComponentOptionChanged={this.onComponentOptionChanged}
+                                    />
+                                </div>
+                            }
                         </div>
                     </div>
                     </div>
