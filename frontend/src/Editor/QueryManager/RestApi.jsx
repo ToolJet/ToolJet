@@ -10,9 +10,9 @@ class Restapi extends React.Component {
     }
 
     componentDidMount() {
-        this.state = {
+        this.setState({
             options: this.props.options,
-        };
+        });
     }
 
     changeOption = (option, value) => {

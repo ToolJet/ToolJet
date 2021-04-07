@@ -35,25 +35,19 @@ class QueryManager extends React.Component {
         super(props);
 
         this.state = {
-            currentUser: authenticationService.currentUserValue,
-            appId: props.appId,
-            dataSources: props.dataSources,
-            dataQueries: props.dataQueries,
-            selectedQuery: props.selectedQuery,
-            mode: props.mode
+           
         };
     }
 
-    componentDidMount() {
+    setStateFromProps = (props) => {
+        const selectedQuery = props.selectedQuery;
 
-        const selectedQuery = this.state.selectedQuery;
-
-        this.state = {
-            appId: this.props.appId,
-            dataSources: this.props.dataSources,
-            dataQueries: this.props.dataQueries,
-            mode: this.props.mode
-        };
+        this.setState({
+            appId: props.appId,
+            dataSources: props.dataSources,
+            dataQueries: props.dataQueries,
+            mode: props.mode
+        });
 
 
         if(this.props.mode === 'edit') {
@@ -63,8 +57,20 @@ class QueryManager extends React.Component {
                 options: selectedQuery.options,
                 selectedDataSource: source
             })
+        } else { 
+            this.setState({
+                options: {},
+                selectedDataSource: props.dataSources[0]
+            })
         }
+    }
 
+    componentWillReceiveProps(nextProps) {
+        this.setStateFromProps(nextProps);
+    }
+
+    componentDidMount() {
+        this.setStateFromProps(this.props);
     }
 
     changeDataSource = (sourceId) => {
@@ -107,8 +113,6 @@ class QueryManager extends React.Component {
                 this.props.dataQueriesChanged();
             });
         }
- 
-        
     }
 
     optionchanged = (option, value) => {
@@ -146,20 +150,20 @@ class QueryManager extends React.Component {
                 </div>
                 
                 <div class="row row-deck p-3">
-
-                    <label class="form-label col-md-2 p-2">Datasource</label>
-
-                    {dataSources && 
-                        <select 
-                            class="form-select form-sm mb-2" 
-                            value={selectedDataSource ? selectedDataSource.id : ''}
-                            style={{width: '300px'}} 
-                            onChange={(e) => this.changeDataSource(e.target.value)} 
-                        >
-                            {dataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
-                            {staticDataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
-                        </select>
-                    } 
+                    {(dataSources && mode ==='create') && 
+                        <div>
+                            <label class="form-label col-md-2 p-2">Datasource</label>
+                            <select 
+                                class="form-select form-sm mb-2" 
+                                value={selectedDataSource ? selectedDataSource.id : ''}
+                                style={{width: '300px'}} 
+                                onChange={(e) => this.changeDataSource(e.target.value)} 
+                            >
+                                {dataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
+                                {staticDataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
+                            </select>
+                        </div>
+                    }   
 
                     {selectedDataSource && 
                         <div>

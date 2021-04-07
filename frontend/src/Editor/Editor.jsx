@@ -362,7 +362,7 @@ class Editor extends React.Component {
                                                     </div>
                                                 </div>
                                                 <div className="col-md-3">
-                                                    {<button className="btn btn-light" onClick={() => this.setState({addingQuery: true})}>+</button>}
+                                                    {<button className="btn btn-light" onClick={() => this.setState({ editingQuery: false, addingQuery: true})}>+</button>}
                                                 </div>
                                             </div>
                                             {loadingDataQueries ?  
@@ -387,14 +387,17 @@ class Editor extends React.Component {
                                     {!loadingDataSources &&
                                         <div className="query-definition-pane">
                                             {(currentQueryPaneTab === 2 && (addingQuery || editingQuery)) && 
-                                                <QueryManager 
-                                                    dataSources={dataSources}
-                                                    dataQueries={dataQueries}
-                                                    mode={editingQuery ? 'edit' : 'create'}
-                                                    selectedQuery={selectedQuery}
-                                                    dataQueriesChanged={this.dataQueriesChanged}
-                                                    appId={appId}
-                                                />
+                                                <div>
+                                                    {console.log('sq', editingQuery ? 'edit' : 'create')}
+                                                    <QueryManager 
+                                                        dataSources={dataSources}
+                                                        dataQueries={dataQueries}
+                                                        mode={editingQuery ? 'edit' : 'create'}
+                                                        selectedQuery={selectedQuery}
+                                                        dataQueriesChanged={this.dataQueriesChanged}
+                                                        appId={appId}
+                                                    />
+                                                </div>
                                             }
                                         </div>
                                     }

@@ -53,9 +53,9 @@ class DataSourceManager extends React.Component {
 
     componentDidMount() {
         console.log('props',this.props);
-        this.state = {
+        this.setState({
             appId: this.props.appId
-        }
+        })
     }
 
     selectDataSource = (source) => { 

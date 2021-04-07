@@ -12,9 +12,9 @@ class Postgresql extends React.Component {
     }
 
     componentDidMount() {
-        this.state = {
+        this.setState({
             options: this.props.options,
-        };
+        });
     }
 
     changeOption = (option, value) => {
@@ -30,22 +30,24 @@ class Postgresql extends React.Component {
 
         return (
             <div>
-                <div class="mb-3 mt-2">
-                    <label class="form-label">SQL Query</label>
-                    <CodeMirror
-                        height ="100px"
-                        fontSize="2"
-                        onChange={ (instance, change) => this.changeOption('query', instance.getValue()) }
-                        placeholder="SELECT * FROM customers;"
-                        options={{
-                            theme: 'duotone-light',
-                            mode: 'sql',
-                            lineWrapping: true,
-                            scrollbarStyle: null,
-                            
-                        }}
-                    />
-                </div>   
+                {options &&
+                    <div class="mb-3 mt-2">
+                        <CodeMirror
+                            height ="100px"
+                            fontSize="2"
+                            value={options.query}
+                            onChange={ (instance, change) => this.changeOption('query', instance.getValue()) }
+                            placeholder="SELECT * FROM customers;"
+                            options={{
+                                theme: 'duotone-light',
+                                mode: 'sql',
+                                lineWrapping: true,
+                                scrollbarStyle: null,
+                                
+                            }}
+                        />
+                    </div>
+                }
             </div>                    
         )
     }

@@ -24,9 +24,9 @@ class Table extends React.Component {
     componentDidMount() {
         const { dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated } = this.props;
 
-        this.state = {
+        this.setState({
             dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated
-         };
+         });
     }
 
     onActionButtonPropertyChanged = (index, property, value) => {
