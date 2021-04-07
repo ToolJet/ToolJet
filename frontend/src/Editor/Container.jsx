@@ -22,12 +22,6 @@ function uuidv4() {
 export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition, appDefinitionChanged, currentState, onComponentOptionChanged}) => {
     const [boxes, setBoxes] = useState(appDefinition.components);
 
-    debugger
-
-    // useEffect(() => {
-    //     setBoxes(appDefinition.components);
-    // }, [appDefinition.components]);
-
     const moveBox = useCallback((id, left, top) => {
         setBoxes(update(boxes, {
             [id]: {
@@ -48,8 +42,8 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
         drop(item, monitor) {
 
             if(item.left === undefined || item.top === undefined) {
-                item.left = 0;
-                item.top = 0;
+                item.left = 20;
+                item.top = 60;
             }
 
             const componentMeta = componentTypes.find(component => component.component === item.component.component);
@@ -58,7 +52,6 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
             let componentData = JSON.parse(JSON.stringify(componentMeta));
             componentData.name = computeComponentName(componentData.component, boxes)
 
-            setBoxes({...boxes, [uuidv4()]: { top: 20, left: 80, component: componentData}})
 
             const delta = monitor.getDifferenceFromInitialOffset();
             let left = Math.round(item.left + delta.x);
@@ -67,7 +60,11 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 ;
                 [left, top] = doSnapToGrid(left, top);
             }
+
+            setBoxes({...boxes, [uuidv4()]: { top: top, left: 60, component: componentData}})
+
             console.log(boxes);
+
             moveBox(item.id, left, top);
             return undefined;
         },
