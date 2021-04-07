@@ -48,7 +48,6 @@ class Editor extends React.Component {
         this.setState({
             appId,
             currentSidebarTab: 2,
-            currentQueryPaneTab: 2,
             selectedComponent: null,
         });
     }
@@ -87,12 +86,6 @@ class Editor extends React.Component {
     switchSidebarTab = (tabIndex) => { 
         this.setState({
             currentSidebarTab: tabIndex
-        });
-    }
-
-    switchQueryPaneTab = (tabIndex) => { 
-        this.setState({
-            currentQueryPaneTab: tabIndex
         });
     }
 
@@ -147,7 +140,7 @@ class Editor extends React.Component {
                 <td>
                     <CopyToClipboard text={`{{queries.${data_query.name}}}`}
                         onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
-                        <img src="https://www.svgrepo.com/show/86790/copy.svg" width="15" height="15" role="button"></img>
+                        <img src="https://www.svgrepo.com/show/86790/copy.svg" width="12" height="12" role="button"></img>
                     </CopyToClipboard>
                 </td>
             </tr>
@@ -163,7 +156,6 @@ class Editor extends React.Component {
     render() {
         const { 
             currentSidebarTab, 
-            currentQueryPaneTab, 
             selectedComponent, 
             appDefinition, 
             appId, 
@@ -290,103 +282,37 @@ class Editor extends React.Component {
                         <div className="query-pane">
                             <div className="row main-row">
                                 <div className="col-md-3 data-pane">
-                                    <div className="card header">
-                                        <ul className="nav nav-tabs" data-bs-toggle="tabs">
-                                            <li class="nav-item col-md-6">
-                                                <a onClick={() => this.switchQueryPaneTab(1)} className={currentQueryPaneTab === 1 ? 'nav-link active' : 'nav-link'} data-bs-toggle="tab">
-                                                    <img src="https://www.svgrepo.com/show/22204/database.svg" width="16" height="16"/>
-                                                        &nbsp; Datasources
-                                                </a>
-                                            </li>
-                                            <li className="nav-item col-md-6">
-                                                <a onClick={() => this.switchQueryPaneTab(2)} className={currentQueryPaneTab === 2 ? 'nav-link active' : 'nav-link'}  data-bs-toggle="tab">
-                                                    <img src="https://www.svgrepo.com/show/15910/search.svg" width="16" height="16"/>
-                                                        &nbsp; Queries
-                                                </a>
-                                            </li>
-                                            
-                                        </ul>
+                                    <div className="queries-container">
+                                        <div className="queries-header row m-2">
+                                                <div className="col">
+                                                    <h5 className="p-1 text-muted">QUERIES</h5>
+                                                    </div>
+                                                <div className="col-auto">
+                                                    {<button className="btn btn-sm btn-light" onClick={() => this.setState({ editingQuery: false, addingQuery: true})}>+</button>}
+                                                </div>
+                                        </div>
+                                        
+                                        {loadingDataQueries ?  
+                                                <div>Loading queries...</div>
+                                                : 
+                                                <div className="m-2">
+                                                    <div class="table-responsive">
+                                                        <table
+                                                                class="table table-vcenter table-nowrap">
+                                                            <tbody>
+                                                                {dataQueries.map((query) => this.renderDataQuery(query))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    
+                                                </div>
+                                            }
                                     </div>
-                                    
-                                    
-                                    {currentQueryPaneTab === 1 && 
-                                        <div className="datasources-container">
-                                                <div className="row m-2">
-                                                    <div className="col-md-9">
-                                                        <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
-                                                            <div class="input-icon">
-                                                                <span class="input-icon-addon">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
-                                                                </span>
-                                                                <input type="text" class="form-control" placeholder="Search…" aria-label="Search in website"/>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-md-3">
-                                                        <DataSourceManager 
-                                                            appId={appId}
-                                                            dataSourcesChanged={this.dataSourcesChanged}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                {loadingDataSources ?  
-                                                    <div>Loading datasources...</div>
-                                                    : 
-                                                    <div className="m-2">
-                                                        <div class="table-responsive">
-                                                            <table
-                                                                    class="table table-vcenter table-nowrap">
-                                                                <tbody>
-                                                                    {this.state.dataSources.map((source) => this.renderDataSource(source))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                        
-                                                    </div>
-                                                }
-                                                
-                                        </div>
-                                    }
-
-                                    {currentQueryPaneTab === 2 && 
-                                        <div className="queries-container">
-                                            <div className="row m-2">
-                                                <div className="col-md-9">
-                                                    <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">
-                                                        <div class="input-icon">
-                                                            <span class="input-icon-addon">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
-                                                            </span>
-                                                            <input type="text" class="form-control" placeholder="Search…" aria-label="Search in website"/>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-md-3">
-                                                    {<button className="btn btn-light" onClick={() => this.setState({ editingQuery: false, addingQuery: true})}>+</button>}
-                                                </div>
-                                            </div>
-                                            {loadingDataQueries ?  
-                                                    <div>Loading queries...</div>
-                                                    : 
-                                                    <div className="m-2">
-                                                        <div class="table-responsive">
-                                                            <table
-                                                                    class="table table-vcenter table-nowrap">
-                                                                <tbody>
-                                                                    {dataQueries.map((query) => this.renderDataQuery(query))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                        
-                                                    </div>
-                                                }
-                                        </div>
-                                    }
                                 </div>
                                 <div className="col-md-9">
                                     {!loadingDataSources &&
                                         <div className="query-definition-pane">
-                                            {(currentQueryPaneTab === 2 && (addingQuery || editingQuery)) && 
+                                            {(addingQuery || editingQuery) && 
                                                 <div>
                                                     {console.log('sq', editingQuery ? 'edit' : 'create')}
                                                     <QueryManager 
@@ -426,7 +352,37 @@ class Editor extends React.Component {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        
+                        <div className="datasources-container w-100">
+                                <div className="row m-2 datasources-header ">
+                                    <div className="col-md-9">
+                                       <h5 className="p-1 text-muted">DATASOURCES</h5>
+                                    </div>
+                                    <div className="col-md-3">
+                                        <DataSourceManager 
+                                            appId={appId}
+                                            dataSourcesChanged={this.dataSourcesChanged}
+                                        />
+                                    </div>
+                                </div>
+                                {loadingDataSources ?  
+                                    <div>Loading datasources...</div>
+                                    : 
+                                    <div className="m-2">
+                                        <div class="table-responsive">
+                                            <table
+                                                    class="table table-vcenter table-nowrap">
+                                                <tbody>
+                                                    {this.state.dataSources.map((source) => this.renderDataSource(source))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                    </div>
+                                }
+                                
+                            </div>
+                        </div>
                     </div>
                 </DndProvider>    
             </div>

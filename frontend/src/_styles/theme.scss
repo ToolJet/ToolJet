@@ -3,6 +3,18 @@
         max-width: 100%;
     }
 
+    .query-manager { 
+       .btn {
+           height: 31px;
+       }
+
+       .nav-header {
+            .nav-tabs {
+                border-bottom: 0;
+            }
+       }
+    }
+
     .left-sidebar {
 
         height: 100%; 
@@ -21,6 +33,20 @@
         .accordion-item { 
             border: solid rgba(101,109,119,.16);
             border-width: 1px 0px 1px 0px;
+        }
+
+        .datasources-container { 
+            position: fixed;
+            position: absolute;
+            bottom: 0;
+            height: 500px;
+            border: solid rgba(101,109,119,.16);
+            border-width: 1px 0px 1px 0px;
+
+            .datasources-header { 
+                border: solid rgba(0, 0, 0, 0.125);
+                border-width: 0px 0px 1px 0px;
+            }
         }
     }
 
@@ -191,6 +217,13 @@
                 min-height: 350px;
                 border: solid rgba(0, 0, 0, 0.125);
                 border-width: 0px 1px 0px 0px;
+
+                .queries-container { 
+                    .queries-header {
+                        border: solid rgba(0, 0, 0, 0.125);
+                        border-width: 0px 0px 1px 0px;
+                    }
+                }
 
                 .header {
                     height: 40px;

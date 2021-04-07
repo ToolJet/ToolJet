@@ -46,7 +46,8 @@ class QueryManager extends React.Component {
             appId: props.appId,
             dataSources: props.dataSources,
             dataQueries: props.dataQueries,
-            mode: props.mode
+            mode: props.mode,
+            currentTab: 1,
         });
 
 
@@ -78,12 +79,18 @@ class QueryManager extends React.Component {
         this.setState({ selectedDataSource: source, options: defaultOptions[source.kind] });
     }
 
+    switchCurrentTab = (tab) => {
+        this.setState({
+            currentTab: tab
+        });
+    }
+
     computeQueryName = (kind) => {
         const { dataQueries } = this.state;
         const currentQueriesForKind = dataQueries.filter(query => query.kind === kind);
         let found = false;
         let name = '';
-        let currentNumber = currentQueriesForKind.length;
+        let currentNumber = currentQueriesForKind.length + 1;
 
         while(!found) { 
             name = `${kind}${currentNumber}`;
@@ -124,7 +131,7 @@ class QueryManager extends React.Component {
     }
 
     render() {
-        const { dataSources, selectedDataSource, mode } = this.state;
+        const { dataSources, selectedDataSource, mode, currentTab } = this.state;
 
         let ElementToRender = '';
 
@@ -134,14 +141,35 @@ class QueryManager extends React.Component {
         }
 
         return (
-            <div>
+            <div className="query-manager">
 
                 <ToastContainer/>
 
                 <div className="row header">
-                    <div className="col-md-9">
+                    <div className="col">
+                        <div className="nav-header">
+                            <ul className="nav nav-tabs" data-bs-toggle="tabs">
+                                <li class="nav-item">
+                                    <a 
+                                        onClick={() => this.switchCurrentTab(1)} 
+                                        className={currentTab === 1 ? 'nav-link active' : 'nav-link'} 
+                                    >
+                                        &nbsp; General
+                                    </a>
+                                </li>
+                                <li className="nav-item">
+                                    <a 
+                                        onClick={() => this.switchCurrentTab(2)} 
+                                        className={currentTab === 2 ? 'nav-link active' : 'nav-link'}  
+                                    >
+                                        &nbsp; Advanced
+                                    </a>
+                                </li>
+                                
+                            </ul>
+                        </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-auto">
                         <button className="btn btn-light m-1 float-right">Preview</button>
                         <button onClick={this.createOrUpdateDataQuery} className="btn btn-primary m-1 float-right">
                             { mode === 'edit' ? 'Save' : 'Create' }
@@ -149,36 +177,38 @@ class QueryManager extends React.Component {
                     </div>
                 </div>
                 
-                <div class="row row-deck p-3">
-                    {(dataSources && mode ==='create') && 
-                        <div>
-                            <label class="form-label col-md-2 p-2">Datasource</label>
-                            <select 
-                                class="form-select form-sm mb-2" 
-                                value={selectedDataSource ? selectedDataSource.id : ''}
-                                style={{width: '300px'}} 
-                                onChange={(e) => this.changeDataSource(e.target.value)} 
-                            >
-                                {dataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
-                                {staticDataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
-                            </select>
-                        </div>
-                    }   
+                {currentTab === 1 && 
+                    <div class="row row-deck p-3">
+                        {(dataSources && mode ==='create') && 
+                            <div>
+                                <label class="form-label col-md-2 p-2">Datasource</label>
+                                <select 
+                                    class="form-select form-sm mb-2" 
+                                    value={selectedDataSource ? selectedDataSource.id : ''}
+                                    style={{width: '300px'}} 
+                                    onChange={(e) => this.changeDataSource(e.target.value)} 
+                                >
+                                    {dataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
+                                    {staticDataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
+                                </select>
+                            </div>
+                        }   
 
-                    {selectedDataSource && 
-                        <div>
-                           
-                                <ElementToRender 
-                                    options={this.state.options}
-                                    optionsChanged={this.optionsChanged}
-                                />
+                        {selectedDataSource && 
+                            <div>
                             
-                        </div>
-                    }
+                                    <ElementToRender 
+                                        options={this.state.options}
+                                        optionsChanged={this.optionsChanged}
+                                    />
+                                
+                            </div>
+                        }
 
-                </div>
+                    </div>
+                }
+
             </div>
-            
         )
     }
 }
