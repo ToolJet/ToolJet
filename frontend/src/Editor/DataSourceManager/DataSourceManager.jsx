@@ -9,33 +9,8 @@ import { Elasticsearch } from './Elasticsearch';
 import { Redis } from './Redis';
 import { Postgresql } from './Postgresql';
 import { Mysql } from './Mysql';
-
-const defaultOptions = { 
-    'postgresql': {
-        host: 'localhost',
-        port: 5432,
-        username: '',
-        password: ''
-    },
-    'mysql': {
-        host: 'localhost',
-        port: 3306,
-        username: '',
-        password: ''
-    },
-    'redis': {
-        host: 'localhost',
-        port: 6379,
-        username: '',
-        password: ''
-    },
-    'elasticsearch': {
-        host: 'localhost',
-        port: 9000,
-        username: '',
-        password: ''
-    }
-}
+import { Stripe } from './Stripe';
+import { defaultOptions } from './DefaultOptions';
 
 class DataSourceManager extends React.Component {
     constructor(props) {
@@ -45,9 +20,7 @@ class DataSourceManager extends React.Component {
             currentUser: authenticationService.currentUserValue,
             showModal: false,
             appId: props.appId,
-            options: { 
-               
-            }
+            options: {}
         };
     }
 
@@ -203,6 +176,15 @@ class DataSourceManager extends React.Component {
 
                                 {selectedDataSource.kind === 'mysql' && 
                                     <Mysql
+                                        optionchanged={this.optionchanged}
+                                        createDataSource={this.createDataSource}
+                                        options={options}
+                                        hideModal={this.hideModal}
+                                    />
+                                }
+
+                                {selectedDataSource.kind === 'stripe' && 
+                                    <Stripe
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}

@@ -13,6 +13,7 @@ import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
 import { QueryManager } from './QueryManager';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { toast } from 'react-toastify';
+import { Router, Route, Link } from 'react-router-dom';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -196,8 +197,13 @@ class Editor extends React.Component {
                                 <span class="navbar-toggler-icon"></span>
                             </button>
                             <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                            <Link 
+                                to={`/`} 
+                                className="">
+                                    <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" class="navbar-brand-image"/>
+
+                                </Link>
                                 <a href="/">
-                                <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" class="navbar-brand-image"/>
                                 </a>
                             </h1>
                             {this.state.app &&

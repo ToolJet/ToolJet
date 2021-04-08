@@ -5,11 +5,13 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Restapi } from './Restapi';
 import { Mysql } from './Mysql';
 import { Postgresql } from './Postgresql';
+import { Stripe } from './Stripe';
 
 const allSources = {
     Restapi,
     Mysql,
-    Postgresql
+    Postgresql,
+    Stripe
 }
 
 const staticDataSources = [
@@ -17,8 +19,11 @@ const staticDataSources = [
     { kind: 'restapi', id: 'restapi', name: 'REST API' },
 ]
 
-const defaultOptions = { 
+const defaultOptions = {
     'postgresql': {
+
+    },
+    'mysql': {
 
     },
     'restapi': {
@@ -27,6 +32,8 @@ const defaultOptions = {
         url_params: [ ['', ''] ],
         headers: [ ['', ''] ],
         body: [ ['', ''] ],
+    },
+    'stripe': {
     }
 }
 

@@ -58,7 +58,6 @@ class HomePage extends React.Component {
                         </div>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
-                                <span class="avatar avatar-sm" style={{backgroundImage: "url('https://www.svgrepo.com/show/24707/avatar.svg')"}}></span>
                                 <div class="d-none d-xl-block ps-2">
                                 <div>{this.state.currentUser.first_name}</div>
                                 <div class="mt-1 small text-muted">Admin</div>
@@ -93,7 +92,7 @@ class HomePage extends React.Component {
                 </div>
                 
                 </div>
-                <div class="page-body">
+                <div class="page-body homepage-body">
                     <div class="container-xl">
                         <div class="row row-deck row-cards">
                             <div class="col-sm-6 col-lg-3">
@@ -120,11 +119,15 @@ class HomePage extends React.Component {
                                                         <div class="card-body p-5" >
                                                             <div class="row align-items-center">
                                                                 <center>{app.name}</center>
+                                                                
+                                                                <small className="text-muted mt-2">
+                                                                    An application to view whatever data whatever action etc etc. 
+                                                                </small>
                                                             </div>
                                                         </div>
 
                                                 </Link>
-                                                <div class="card-footer">
+                                                {/* <div class="card-footer">
                                                     <div className="row">
                                                         <Link 
                                                             to={`/applications/${app.id}`} 
@@ -133,7 +136,7 @@ class HomePage extends React.Component {
                                                             <img width="20" height="20" src="https://www.svgrepo.com/show/56347/rocket-launch.svg" alt=""/> Launch
                                                         </Link>
                                                     </div>
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </div>
                                     )}
