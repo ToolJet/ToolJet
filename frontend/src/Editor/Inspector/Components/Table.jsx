@@ -131,9 +131,9 @@ class Table extends React.Component {
     }
 
     removeAction = (index) => {
-        const newValue = actions.value;
+        const newValue = this.state.component.component.definition.properties.actions.value;
         newValue.splice(index, 1);
-        paramUpdated ({name: 'actions'}, 'value', newValue, 'properties');
+        this.props.paramUpdated ({name: 'actions'}, 'value', newValue, 'properties');
     }
 
     onColumnItemChange = (index, e) => {
