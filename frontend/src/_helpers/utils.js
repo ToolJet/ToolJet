@@ -96,14 +96,16 @@ export function computeComponentName(componentType, currentComponents) {
 }
 
 export function computeActionName(actions) {
+
+    const values = actions ? actions.value : [];
     
-    let currentNumber = actions.value.length;
+    let currentNumber = values.length;
     let found = false;
     let actionName = '';
 
     while(!found) { 
         actionName = `Action${currentNumber}`;
-        if(actions.value.find(action => action.name === actionName) === undefined) {
+        if(values.find(action => action.name === actionName) === undefined) {
             found = true;
         }
         currentNumber = currentNumber + 1

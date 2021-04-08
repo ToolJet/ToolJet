@@ -95,6 +95,7 @@ class Stripe extends React.Component {
                             </div>
                             <div class="col-md-10">
                             <select class="form-select" onChange={(e) => this.changeOperation(e.target.value)}>
+                                <option>Select an operation</option>
                                 {Object.keys(specJson.paths).map((path) => 
                                     <>
                                         {Object.keys(specJson.paths[path]).map((operation) =>  

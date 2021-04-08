@@ -16,8 +16,12 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
         console.log('resolved param', data);
     }
     
-    function findColumnValue(row, name) {
-        return findProp(row, name);
+    function findColumnValue(row, column) {
+        if(column.key) {
+            return findProp(row, column.key);
+        } else  {
+            return findProp(row, column.name);
+        }
     }
 
     // Quick fix, need to remove later
@@ -43,8 +47,8 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
                 <tbody>
 
                 {data.map((row => 
-                    <tr onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, row }); }}>
-                        {columns.map((column) => <td>{findColumnValue(row, column.name)}</td>)}
+                    <tr onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, data: row }); }}>
+                        {columns.map((column) => <td>{findColumnValue(row, column)}</td>)}
                         
                         {actions.value.length > 0 && 
                             <td>

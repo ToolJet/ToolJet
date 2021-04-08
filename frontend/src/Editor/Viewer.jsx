@@ -101,11 +101,8 @@ class Viewer extends React.Component {
         this.executeAction(onClickEvent);
     }
 
-    // setSelectedRowOfTable = (component, data) => {
-
-    // }
-
     onEvent = (eventName, options) => {
+
         if (eventName === 'onRowClicked') {
             const { component, data } = options;
             const event = component.definition.events[eventName];

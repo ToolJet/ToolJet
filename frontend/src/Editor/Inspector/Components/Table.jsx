@@ -64,6 +64,36 @@ class Table extends React.Component {
         this.props.paramUpdated ({name: 'actions'}, 'value', newValues, 'properties');
     }
 
+    columnPopover = (column, index) => {
+        return (
+            <Popover id="popover-basic">
+                <Popover.Title as="h3">Column Settings</Popover.Title>
+                <Popover.Content>
+                <div className="field mb-2">
+                        <label class="form-label">name</label>
+                        <input 
+                            type="text"  
+                            class="form-control text-field" 
+                            onChange={(e) => { e.stopPropagation(); this.onColumnItemChange(index, 'name', e) }} 
+                            value={column.name} 
+                        />
+                    </div>
+                    <div className="field mb-2">
+                        <label class="form-label">key</label>
+                        <input 
+                            type="text"  
+                            class="form-control text-field" 
+                            onChange={(e) => { e.stopPropagation(); this.onColumnItemChange(index, 'key', e) }} 
+                            value={column.key} 
+                        />
+                    </div>
+                   
+                    <button className="btn btn-sm btn-danger col" onClick={() => this.removeAction(index)}>Remove</button>
+                </Popover.Content>
+            </Popover>
+        );
+    }
+
     actionPopOver = (action, index) => {
         return (
             <Popover id="popover-basic">
@@ -111,9 +141,10 @@ class Table extends React.Component {
         </OverlayTrigger>
     };
 
-    onSortEnd(oldIndex, newIndex) {
+    onSortEnd = (oldIndex, newIndex) => {
+        const columns = this.state.component.component.definition.properties.columns;
         const newColumns = arrayMove(columns.value, oldIndex, newIndex);
-        paramUpdated ({name: 'columns'}, 'value', newColumns, 'properties');
+        this.props.paramUpdated ({name: 'columns'}, 'value', newColumns, 'properties');
     }
 
     addNewColumn = () => {
@@ -125,7 +156,7 @@ class Table extends React.Component {
 
     addNewAction = () => {
         const actions = this.state.component.component.definition.properties.actions;
-        const newValue = actions.value;
+        const newValue = actions ? actions.value : [];
         newValue.push({ name: computeActionName(actions), buttonText: 'Button'});
         this.props.paramUpdated({name: 'actions'}, 'value', newValue, 'properties');
     }
@@ -136,12 +167,12 @@ class Table extends React.Component {
         this.props.paramUpdated ({name: 'actions'}, 'value', newValue, 'properties');
     }
 
-    onColumnItemChange = (index, e) => {
+    onColumnItemChange = (index, item, e) => {
         e.preventDefault();
         const columns = this.state.component.component.definition.properties.columns;
         const value = e.target.value;
         const column = columns.value[index];
-        column.name = value;
+        column[item] = value;
         const newColumns = columns.value;
         newColumns[index] = column;
         this.props.paramUpdated ({name: 'columns'}, 'value', newColumns, 'properties');
@@ -186,32 +217,35 @@ class Table extends React.Component {
                             {columns.value.map((item, index) => (
                                 
                                 <div className="card p-2 bg-light">
-                                    <div className="row bg-light">
-                                        <div className="col-auto">
-                                            <SortableItem key={item.name}>
-                                                <img 
-                                                    style={{cursor: 'move'}}
-                                                    src="https://www.svgrepo.com/show/20663/menu.svg" 
-                                                    width="10" 
-                                                    height="10" />
-                                            </SortableItem>
-                                        </div>
-                                        <div className="col-auto">
-                                            <div class="text">
-                                                <input 
-                                                    type="text" 
-                                                    onChange={(e) => this.onColumnItemChange(index, e)}
-                                                    class="form-control-plaintext form-control-plaintext-sm" 
-                                                    value={item.name}
-                                                />
+                                    <OverlayTrigger 
+                                        trigger="click" 
+                                        placement="left" 
+                                        overlay={this.columnPopover(item, index)}>
+
+                                        <div className="row bg-light" role="button">
+                                            <div className="col-auto">
+                                                <SortableItem key={item.name}>
+                                                    <img 
+                                                        style={{cursor: 'move'}}
+                                                        src="https://www.svgrepo.com/show/20663/menu.svg" 
+                                                        width="10" 
+                                                        height="10" />
+                                                </SortableItem>
+                                            </div>
+                                            <div className="col">
+                                                <div class="text">
+                                                    {item.name}
+                                                </div>
+                                            </div>
+                                            <div className="col-auto">
+                                                <div class="btn btn-sm text-danger" onClick={() => this.removeColumn(index)}>
+                                                    x
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="col">
-                                            <div class="btn btn-sm text-danger" onClick={() => this.removeColumn(index)}>
-                                                x
-                                            </div>
-                                        </div>
-                                    </div>
+
+                                    </OverlayTrigger>
+                                    
                                 </div>
                                 
                             ))}
