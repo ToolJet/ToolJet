@@ -29,6 +29,50 @@ export function resolveAll(data, state) {
 
 }
 
+export function resolve_references(object, state) {
+        
+    console.log(`[Resolver] Resolving: ${object}`);
+
+    let resolved = null;
+
+    if (typeof object === "string") {
+        const dynamicVariables = getDynamicVariables(object);
+        if (dynamicVariables) {
+            for(const dynamicVariable of dynamicVariables) {
+                const value = resolve(dynamicVariable, state);
+                object = object.replace(dynamicVariable, value);
+            }
+        }
+        return object;
+
+    } else if(Array.isArray(object)) {
+
+        console.log(`[Resolver] Resolving as array ${typeof object}`);
+
+        const new_array = [];
+
+        object.forEach((element, index) => {
+            const resolved_object=  resolve_references(element, state);
+            new_array[index] = resolved_object;
+        });
+
+        return new_array;
+
+    } else if(typeof object === 'object') {
+
+        console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
+        Object.keys(object).forEach((key, index) => {
+            const resolved_object = resolve_references(object[key], state);
+            object[key] = resolved_object;
+        })
+
+        return object;
+
+    } else {
+        return object;
+    }
+}
+
 export function getDynamicVariables(text) {
     const matchedParams  = text.match(/\{\{(.*?)\}\}/g);
     return matchedParams;

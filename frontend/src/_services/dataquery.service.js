@@ -41,9 +41,9 @@ function update(id, options) {
     return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, queryVariables) {
+function run(queryId, options) {
     const body =  {
-        query_variables: queryVariables
+        options: options
     }
     const headers = {
         ...authHeader(),

@@ -1,16 +1,16 @@
 class StripeQueryService
 
-    attr_accessor :data_query, :query_variables, :data_source
+    attr_accessor :data_query, :options, :data_source
 
-    def initialize(data_query, query_variables)
+    def initialize(data_query, options)
         @data_query = data_query
         @data_source = data_query.data_source
-        @query_variables = query_variables
+        @options = options
     end
 
     def replace_path_params(url, path_params)
-        path_params.each do |param|
-            url.gsub!("{#{param[0]}}", param[1])
+        path_params.each do |param, value|
+            url.gsub!("{#{param}}", value)
         end
         
         url
@@ -27,7 +27,10 @@ class StripeQueryService
         url = "#{api_base_url}#{path}"
 
         # Replace path params in url with their values
-        path_params = data_query.options["params"]["path"].to_a
+        path_params = options["params"]["path"]
+        query_params = data_query.options["params"]["query"]
+        body_params = data_query.options["params"]["request"]
+
         url = replace_path_params(url, path_params)
 
         headers = {
@@ -37,7 +40,9 @@ class StripeQueryService
         response = HTTParty.send(
             operation.downcase, 
             url,
-            headers: headers
+            headers: headers,
+            body: body_params,
+            query: query_params
         )
         
         { code: response.code, data: JSON.parse(response.body) }

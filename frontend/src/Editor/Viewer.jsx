@@ -6,7 +6,7 @@ import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { getDynamicVariables, resolve } from '@/_helpers/utils';
+import { getDynamicVariables, resolve, resolve_references } from '@/_helpers/utils';
 
 class Viewer extends React.Component {
     constructor(props) {
@@ -74,18 +74,9 @@ class Viewer extends React.Component {
     runQuery = (queryId, queryName) => {
         const dataQuery = this.state.app.data_queries.find(query => query.id === queryId);
 
-        // const queryText = dataQuery.options.query;
-        // const queryVariables = getDynamicVariables(queryText);
+        const options = resolve_references(dataQuery.options, this.state.currentState);
 
-        const dynamicVariableData = {}
-        // if (queryVariables) {
-        //     for(const queryVariable of queryVariables) {
-        //         const value = resolve(queryVariable, this.state.currentState);
-        //         dynamicVariableData[queryVariable] = value;
-        //     }
-        // }
-
-        dataqueryService.run(queryId, dynamicVariableData).then(data => 
+        dataqueryService.run(queryId, options).then(data => 
             this.setState({
                 currentState: {...this.state.currentState, queries: {...this.state.currentState.queries, [queryName]: data.data}}
             })
