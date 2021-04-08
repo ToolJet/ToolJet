@@ -1,5 +1,5 @@
 import React from 'react';
-import { resolve } from '@/_helpers/utils';
+import { resolve, findProp } from '@/_helpers/utils';
 
 export const Table = function Table({ id, component, onComponentClick, currentState, onEvent }) {
     
@@ -14,6 +14,10 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
     if(currentState) {
         data = resolve(component.definition.properties.data.value, currentState, []);
         console.log('resolved param', data);
+    }
+    
+    function findColumnValue(row, name) {
+        return findProp(row, name);
     }
 
     // Quick fix, need to remove later
@@ -40,7 +44,7 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
 
                 {data.map((row => 
                     <tr onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, row }); }}>
-                        {columns.map((column) => <td>{row[column.name]}</td>)}
+                        {columns.map((column) => <td>{findColumnValue(row, column.name)}</td>)}
                         
                         {actions.value.length > 0 && 
                             <td>
