@@ -1,6 +1,7 @@
 import React from 'react';
-import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
+import specJson from './spec3.json';
+import DOMPurify from 'dompurify';
 
 class Stripe extends React.Component {
     constructor(props) {
@@ -10,20 +11,79 @@ class Stripe extends React.Component {
 
     componentDidMount() {
         this.setState ({
-            options: this.props.options,
+            options: {
+                params: {
+                    path: {},
+                    query: {},
+                    request: {}
+                }
+            },
         });
     }
 
-    changeOption = (option, value) => {
-        const { options } = this.state;
-        const newOptions = { ...options, [option]: value };
-        this.setState({ options: newOptions });
+    changeOption( option, value ) {
+        this.setState({ options: { 
+            ...this.state.options,
+            [option]: value
+        }});
+    }
+
+    changeOperation = (value) => {
+        const operation = value.split(',')[0];
+        const path = value.split(',')[1];
+
+        this.setState({
+            selectedOperation: specJson.paths[path][operation],
+            options: {
+                ...this.state.options,
+                path,
+                operation
+            }
+        }, () => {
+            this.props.optionsChanged(this.state.options);
+        });
+    }
+
+    changeParam = (paramType, paramName, value) => {
+
+        const options = this.state.options;
+        const newOptions = {
+            ...options,
+            params: {
+                ...options.params,
+                [paramType]: {
+                    ...options.params[paramType],
+                    [paramName]: value
+                }
+            }
+        }
+
+        this.setState({ 
+            options: newOptions
+        });
+
         this.props.optionsChanged(newOptions);
     }
    
-
     render() {
-        const { options } = this.state;
+        const { options, selectedOperation } = this.state;
+        let pathParams = [];
+        let queryParams = [];
+        let requestBody = []
+
+        if (selectedOperation) {
+            if(selectedOperation.parameters) {
+                pathParams = selectedOperation.parameters.filter(param => param.in === "path");
+                queryParams = selectedOperation.parameters.filter(param => param.in === "query");
+            }
+
+            if(selectedOperation.requestBody) {
+                const requestType = Object.keys(selectedOperation.requestBody.content)[0];
+                requestBody = selectedOperation.requestBody.content[requestType];
+            }
+        }
+
+        debugger
 
         return (
             <div>
@@ -33,22 +93,127 @@ class Stripe extends React.Component {
                             <div class="col-md-2">
                                 <label class="form-label pt-2">Endpoint</label>
                             </div>
-                            <div class="col-auto">
-                            <select class="form-select" onChange={(e) => this.changeOption('endpoint', e.target.value)}>
-                                <option value="1">{'/v1/customers/{customer}'}</option>
-                                <option value="1">{'/v1/customers/{customer}/subscriptions'}</option>
+                            <div class="col-md-10">
+                            <select class="form-select" onChange={(e) => this.changeOperation(e.target.value)}>
+                                {Object.keys(specJson.paths).map((path) => 
+                                    <>
+                                        {Object.keys(specJson.paths[path]).map((operation) =>  
+                                            <option value={[operation, path]}>{operation}{path}</option>
+                                        )}
+                                    </>                                   
+                                )}
+
                             </select>
+                            {selectedOperation &&
+                                <small
+                                    className="mt-2"
+                                    dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(selectedOperation.description)}}
+                                />
+                            }
                             </div>
                         </div>
 
-                        <div className="row mt-2">
-                            <div class="col-md-2">
-                                <label class="form-label pt-2">customer</label>
+                        {selectedOperation &&
+                            <div className="row mt-2">
+                                {pathParams.length > 0 &&
+                                    <div>
+                                        <h5 className="text-muted">
+                                            PATH
+                                        </h5>
+                                        {pathParams.map((param) => 
+                                            <div class="input-group">
+                                            <input 
+                                                type="text" 
+                                                value={param.name} 
+                                                class="form-control form-control-sm"  
+                                                placeholder="key"  
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={this.state.options.params['path'][param.name]} 
+                                                class="form-control form-control-sm"  
+                                                placeholder="value"  
+                                                onChange={(e) => this.changeParam('path', param.name, e.target.value)}
+                                            />
+                                            <span 
+                                                class="input-group-text"
+                                                role="button"
+                                            >
+                                                x
+                                            </span>
+                                        </div>
+                                        )}
+                                        
+                                    </div>
+                                }
+
+                                {queryParams.length > 0 &&
+                                    <div>
+                                        <h5 className="text-muted">
+                                            QUERY
+                                        </h5>
+                                        {queryParams.map((param) => 
+                                            <div class="input-group">
+                                            <input 
+                                                type="text" 
+                                                value={param.name} 
+                                                class="form-control form-control-sm"  
+                                                placeholder="key"
+                                                disabled
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={this.state.options.params['query'][param.name]} 
+                                                class="form-control form-control-sm"  
+                                                placeholder="value"  
+                                                onChange={(e) => this.changeParam('query', param.name, e.target.value)}
+                                            />
+                                            <span 
+                                                class="input-group-text"
+                                                role="button"
+                                            >
+                                                x
+                                            </span>
+                                        </div>
+                                        )}
+                                        
+                                    </div>
+                                }
+
+                                {requestBody.schema.properties &&
+                                    <div>
+                                        <h5 className="text-muted">
+                                            REQUEST BODY
+                                        </h5>
+                                        {Object.keys(requestBody.schema.properties).map((param) => 
+                                            <div class="input-group">
+                                                <input 
+                                                    type="text" 
+                                                    value={param} 
+                                                    class="form-control form-control-sm"  
+                                                    placeholder="key"
+                                                    disabled
+                                                />
+                                                <input 
+                                                    type="text" 
+                                                    value={this.state.options.params['request'][param.name]} 
+                                                    class="form-control form-control-sm"  
+                                                    placeholder="value"  
+                                                    onChange={(e) => this.changeParam('request', param.name, e.target.value)}
+                                                />
+                                                <span 
+                                                    class="input-group-text"
+                                                    role="button"
+                                                >
+                                                    x
+                                                </span>
+                                            </div>
+                                        )}
+                                        
+                                    </div>
+                                }
                             </div>
-                            <div class="col-auto">
-                                <input type="text" class="form-control" onChange={(e) => changeOption('api_key', e.target.value)} value={options.api_key} />
-                            </div>
-                        </div>
+                        }
                     </div>
                 }
             </div>                    

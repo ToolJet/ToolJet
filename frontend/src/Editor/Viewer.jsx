@@ -74,16 +74,16 @@ class Viewer extends React.Component {
     runQuery = (queryId, queryName) => {
         const dataQuery = this.state.app.data_queries.find(query => query.id === queryId);
 
-        const queryText = dataQuery.options.query;
-        const queryVariables = getDynamicVariables(queryText);
+        // const queryText = dataQuery.options.query;
+        // const queryVariables = getDynamicVariables(queryText);
 
         const dynamicVariableData = {}
-        if (queryVariables) {
-            for(const queryVariable of queryVariables) {
-                const value = resolve(queryVariable, this.state.currentState);
-                dynamicVariableData[queryVariable] = value;
-            }
-        }
+        // if (queryVariables) {
+        //     for(const queryVariable of queryVariables) {
+        //         const value = resolve(queryVariable, this.state.currentState);
+        //         dynamicVariableData[queryVariable] = value;
+        //     }
+        // }
 
         dataqueryService.run(queryId, dynamicVariableData).then(data => 
             this.setState({

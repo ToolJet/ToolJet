@@ -23,6 +23,7 @@ class Editor extends React.Component {
 
         this.state = {
             currentUser: authenticationService.currentUserValue,
+            queryPaneHeight: '30%',
             users: null,
             appId,
             loadingDataSources: true,
@@ -157,6 +158,12 @@ class Editor extends React.Component {
     onNameChanged = (newName) => {
         this.setState({
             app: { ...this.state.app, name: newName }
+        })
+    }
+
+    toggleQueryPaneHeight = () => {
+        this.setState({
+            queryPaneHeight: this.state.queryPaneHeight === '30%' ? '80%' : '30%'
         })
     }
 
@@ -295,7 +302,7 @@ class Editor extends React.Component {
                                 </div>
                             }
                         </div>
-                        <div className="query-pane">
+                        <div className="query-pane" style={{height: this.state.queryPaneHeight}}>
                             <div className="row main-row">
                                 <div className="col-md-3 data-pane">
                                     <div className="queries-container">
@@ -333,6 +340,7 @@ class Editor extends React.Component {
                                                     {console.log('sq', editingQuery ? 'edit' : 'create')}
                                                     <QueryManager 
                                                         dataSources={dataSources}
+                                                        toggleQueryPaneHeight={this.toggleQueryPaneHeight}
                                                         dataQueries={dataQueries}
                                                         mode={editingQuery ? 'edit' : 'create'}
                                                         selectedQuery={selectedQuery}
