@@ -249,7 +249,7 @@ class Editor extends React.Component {
                                     </li>
                                     <li className="nav-item col-md-6">
                                         <a onClick={() => this.switchSidebarTab(2)} className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}  data-bs-toggle="tab">
-                                            <img src="https://www.svgrepo.com/show/315687/components.svg" width="16" height="16"/>
+                                            <img src="https://www.svgrepo.com/show/274200/insert.svg" width="16" height="16"/>
                                                 &nbsp; Insert
                                         </a>
                                     </li>
@@ -311,6 +311,9 @@ class Editor extends React.Component {
                                                     <h5 className="p-1 text-muted">QUERIES</h5>
                                                     </div>
                                                 <div className="col-auto">
+                                                    {<button className="btn btn-sm btn-light mx-2">
+                                                        <img className="p-1" src="https://www.svgrepo.com/show/13682/search.svg" width="17" height="17"/>
+                                                    </button>}
                                                     {<button className="btn btn-sm btn-light" onClick={() => this.setState({ editingQuery: false, addingQuery: true})}>+</button>}
                                                 </div>
                                         </div>

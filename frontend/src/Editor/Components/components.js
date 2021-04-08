@@ -1,6 +1,6 @@
 export const componentTypes = [
     { 
-        icon: 'https://www.svgrepo.com/show/243696/buy-click.svg', 
+        icon: 'https://www.svgrepo.com/show/243604/buy-click.svg', 
         name: 'Button', 
         description: 'Trigger actions: queries, alerts etc',
         component: 'Button',
@@ -131,7 +131,7 @@ export const componentTypes = [
         }
     },
     { 
-        icon: 'https://www.svgrepo.com/show/34217/image.svg', 
+        icon: 'https://www.svgrepo.com/show/35088/image.svg', 
         name: 'Image', 
         description: 'Display an Image',
         component: 'Image',
@@ -190,7 +190,7 @@ export const componentTypes = [
         }
     },
     { 
-        icon: 'https://www.svgrepo.com/show/10112/map.svg', 
+        icon: 'https://www.svgrepo.com/show/16476/map.svg', 
         name: 'Map', 
         description: 'Display maps with markers.',
         component: 'Map',

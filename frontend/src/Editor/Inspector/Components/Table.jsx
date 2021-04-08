@@ -197,12 +197,12 @@ class Table extends React.Component {
                 {renderElement(component, componentMeta, paramUpdated, dataQueries, 'title', 'properties')}
                 {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties')}
 
-                <div className="field mb-2 mt-2">
+                <div className="field mb-2 mt-3">
                     <div class="row g-2">
-                        <div class="col-auto">
+                        <div class="col">
                             <label class="form-label col pt-1">Columns</label>
                         </div>
-                        <div class="col">
+                        <div class="col-auto">
                             <button onClick={this.addNewColumn} className="btn btn-sm btn-light col-auto">
                                 + Add column
                             </button>
@@ -211,7 +211,7 @@ class Table extends React.Component {
                     <div>
                         <SortableList
                             onSortEnd={this.onSortEnd}
-                            className="w-100 p-2"
+                            className="w-100"
                             draggedItemClassName="dragged"
                             >
                             {columns.value.map((item, index) => (
@@ -254,7 +254,6 @@ class Table extends React.Component {
                     </div>
 
                     <hr></hr>
-                    <h4 className="text-muted">Actions</h4>  
                     <div className="field mb-2 mt-2">
                         <div class="row g-2">
                             <div class="col">
