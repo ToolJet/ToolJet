@@ -2,6 +2,14 @@ import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import specJson from './spec3.json';
 import DOMPurify from 'dompurify';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
+
+const operationColorMapping = {
+    'get': 'azure',
+    'post': 'green',
+    'delete': 'red',
+    'put': 'yellow'
+}
 
 class Stripe extends React.Component {
     constructor(props) {
@@ -64,7 +72,39 @@ class Stripe extends React.Component {
 
         this.props.optionsChanged(newOptions);
     }
-   
+
+    renderOperationOption = (props, option, snapshot, className) => {
+        return (
+            <button {...props} className={className} type="button">
+                <div className="row">
+                    <div className="col-md-1">
+                        <span class={`badge bg-${operationColorMapping[option.operation]}`}>{option.operation}</span>
+                    </div>
+
+                    <div className="col-md-8">
+                        <span className="text-muted mx-2">{option.name}</span>
+                    </div>
+                </div>
+            </button>
+        );
+    }
+
+    computeOperationSelectionOptions = (paths) => {
+        let options = [];
+
+        for (const path of Object.keys(paths)) {
+            for (const operation of Object.keys(paths[path])) {
+                options.push({ 
+                    value: `${operation},${path}`, 
+                    name: path,
+                    operation: operation
+                })
+            }
+        }
+
+        return options;
+    }
+
     render() {
         const { options, selectedOperation } = this.state;
         let pathParams = [];
@@ -83,34 +123,31 @@ class Stripe extends React.Component {
             }
         }
 
-        debugger
-
         return (
             <div>
                 {options && 
                      <div class="mb-3 mt-2">
                         <div class="row g-2">
-                            <div class="col-md-2">
-                                <label class="form-label pt-2">Endpoint</label>
+                            <div class="col-auto">
+                                <label class="form-label pt-2">Operation</label>
                             </div>
-                            <div class="col-md-10">
-                            <select class="form-select" onChange={(e) => this.changeOperation(e.target.value)}>
-                                <option>Select an operation</option>
-                                {Object.keys(specJson.paths).map((path) => 
-                                    <>
-                                        {Object.keys(specJson.paths[path]).map((operation) =>  
-                                            <option value={[operation, path]}>{operation}{path}</option>
-                                        )}
-                                    </>                                   
-                                )}
-
-                            </select>
-                            {selectedOperation &&
-                                <small
-                                    className="mt-2"
-                                    dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(selectedOperation.description)}}
+                            <div class="col">
+                                <SelectSearch 
+                                    options={this.computeOperationSelectionOptions(specJson.paths)}
+                                    value="sv" 
+                                    search={true}
+                                    onChange={(value) => this.changeOperation(value) }
+                                    filterOptions={fuzzySearch}
+                                    renderOption={this.renderOperationOption}
+                                    placeholder="Select an operation" 
                                 />
-                            }
+
+                                {selectedOperation &&
+                                    <small
+                                        className="my-2"
+                                        dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(selectedOperation.description)}}
+                                    />
+                                }
                             </div>
                         </div>
 

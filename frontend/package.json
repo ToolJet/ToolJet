@@ -25,6 +25,7 @@
     "react-json-view": "^1.21.3",
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.4.3",
+    "react-select-search": "^3.0.5",
     "react-toastify": "^7.0.3",
     "rxjs": "^6.3.3",
     "yup": "^0.27.0"

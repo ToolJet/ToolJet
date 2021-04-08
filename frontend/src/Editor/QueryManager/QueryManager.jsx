@@ -6,6 +6,7 @@ import { Restapi } from './Restapi';
 import { Mysql } from './Mysql';
 import { Postgresql } from './Postgresql';
 import { Stripe } from './Stripe';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 const allSources = {
     Restapi,
@@ -69,7 +70,6 @@ class QueryManager extends React.Component {
         } else { 
             this.setState({
                 options: {},
-                selectedDataSource: props.dataSources[0]
             })
         }
     }
@@ -143,6 +143,18 @@ class QueryManager extends React.Component {
         this.optionchanged(option, !currentValue);
     }
 
+    renderDataSourceOption = (props, option, snapshot, className) => {
+        return (
+            <button {...props} className={className} type="button">
+                <div className="row">
+                    <div className="col-md-9">
+                        <span className="text-muted mx-2">{option.name}</span>
+                    </div>
+                </div>
+            </button>
+        );
+    }
+
     render() {
         const { dataSources, selectedDataSource, mode, currentTab } = this.state;
 
@@ -196,17 +208,20 @@ class QueryManager extends React.Component {
                 {currentTab === 1 && 
                     <div class="row row-deck p-3">
                         {(dataSources && mode ==='create') && 
-                            <div>
-                                <label class="form-label col-md-2 p-2">Datasource</label>
-                                <select 
-                                    class="form-select form-sm mb-2" 
-                                    value={selectedDataSource ? selectedDataSource.id : ''}
-                                    style={{width: '300px'}} 
-                                    onChange={(e) => this.changeDataSource(e.target.value)} 
-                                >
-                                    {dataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
-                                    {staticDataSources.map((source) => (<option value={source.id}>{source.name}</option>))}
-                                </select>
+                            <div className="datasource-picker mb-2">
+                                <label class="form-label col-md-2">Datasource</label>
+                                <SelectSearch 
+                                    options={[
+                                        ...dataSources.map(source => { return  { name: source.name, value: source.id } }),
+                                        ...staticDataSources.map(source => { return  {name: source.name, value: source.id} }),
+                                    ]}
+                                    value={selectedDataSource ? selectedDataSource.id : ''} 
+                                    search={true}
+                                    onChange={(value) => this.changeDataSource(value) }
+                                    filterOptions={fuzzySearch}
+                                    renderOption={this.renderDataSourceOption}
+                                    placeholder="Select a data source" 
+                                />
                             </div>
                         }   
 
