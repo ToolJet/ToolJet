@@ -205,6 +205,27 @@
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 1px 0px 0px 0px;
 
+            .table-responsive::-webkit-scrollbar {
+                width: 0;
+                background: transparent;
+            }
+            
+            .table-responsive::-webkit-scrollbar-thumb {
+                background: #FF0000;
+            }
+
+            .query-row {
+                .query-copy-button {
+                    display: none;
+                }
+            }
+
+            .query-row:hover {
+                .query-copy-button {
+                    display: inline-block;
+                }
+            }
+
             .main-row {
                 --tblr-gutter-x: 0rem;
             }

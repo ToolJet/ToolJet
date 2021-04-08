@@ -141,12 +141,16 @@ class Editor extends React.Component {
     renderDataQuery = (data_query) => {
         const sourceMeta = DataSourceTypes.find(source => source.kind === data_query.kind);
         return (
-            <tr onClick={() => this.setState( { editingQuery: true, selectedQuery: data_query })} role="button">
+            <tr className="query-row" onClick={() => this.setState( { editingQuery: true, selectedQuery: data_query })} role="button">
                 <td>
-                    <img src={sourceMeta.icon} width="20" height="20"/> {data_query.name}
+                    <img src={sourceMeta.icon} width="20" height="20"/> 
+                    <span className="p-3">
+                        {data_query.name}
+                    </span>
+                    
                 </td>
                 <td>
-                    <CopyToClipboard text={`{{queries.${data_query.name}}}`}
+                    <CopyToClipboard className="query-copy-button" text={`{{queries.${data_query.name}}}`}
                         onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
                         <img src="https://www.svgrepo.com/show/86790/copy.svg" width="12" height="12" role="button"></img>
                     </CopyToClipboard>
