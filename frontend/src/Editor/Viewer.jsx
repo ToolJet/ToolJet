@@ -76,9 +76,32 @@ class Viewer extends React.Component {
 
         const options = resolve_references(dataQuery.options, this.state.currentState);
 
+        this.setState({
+            currentState: {
+                ...this.state.currentState, 
+                queries: {
+                    ...this.state.currentState.queries, 
+                    [queryName]: {
+                        ...this.state.currentState.queries[queryName],
+                        isLoading: true
+                    }
+                }
+            }
+        })
+
         dataqueryService.run(queryId, options).then(data => 
             this.setState({
-                currentState: {...this.state.currentState, queries: {...this.state.currentState.queries, [queryName]: data.data}}
+                currentState: {
+                    ...this.state.currentState, 
+                    queries: {
+                        ...this.state.currentState.queries, 
+                        [queryName]: {
+                            ...this.state.currentState.queries[queryName],
+                            data: data.data,
+                            isLoading: false
+                        }
+                    }
+                }
             })
         );
     }

@@ -44,6 +44,7 @@ export const componentTypes = [
             title: { type: 'string'} ,
             data: { type: 'json'},
             visible: { type: 'string' },
+            loadingState: { type: 'string' },
             columns: { type: 'array' } 
         },
         events: [
@@ -57,6 +58,7 @@ export const componentTypes = [
             properties: {
                 'title': { value: 'Table' },
                 'visible': { value: true },
+                loadingState: { value: false },
                 'columns': { value: [
                     { name: 'id' },
                     { name: 'name' },
