@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useTable, useFilters } from "react-table";
-import { resolve, findProp } from '@/_helpers/utils';
+import { useTable, useFilters, useSortBy } from "react-table";
+import { resolve } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
 export function Table({ id, component, onComponentClick, currentState, onEvent }) {
@@ -83,6 +83,7 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
         data
     },
 	useFilters,
+	useSortBy
 	);
 
 
@@ -110,13 +111,24 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
 			</div>
 		  </div>
 		</div>
-		<div class="table-responsive">
+		<div class="table-responsive jet-data-table">
 		<table {...getTableProps()} class="table table-vcenter table-nowrap table-bordered" style={computedStyles}>
 			<thead>
 				{headerGroups.map(headerGroup => (
 				<tr {...headerGroup.getHeaderGroupProps()}>
 					{headerGroup.headers.map(column => (
-					<th {...column.getHeaderProps()}>{column.render("Header")}</th>
+					<th 
+						{...column.getHeaderProps(column.getSortByToggleProps())}
+						className={
+							column.isSorted
+							  ? column.isSortedDesc
+								? "sort-desc"
+								: "sort-asc"
+							  : ""
+						}
+					>
+						{column.render("Header")}
+					</th>
 					))}
 				</tr>
 				))}
