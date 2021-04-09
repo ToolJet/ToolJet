@@ -20,7 +20,14 @@ function uuidv4() {
 }
 
 export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition, appDefinitionChanged, currentState, onComponentOptionChanged}) => {
-    const [boxes, setBoxes] = useState(appDefinition.components);
+
+    const components = appDefinition.components || [];
+
+    const [boxes, setBoxes] = useState(components);
+
+    useEffect(() => {
+        setBoxes(components);
+    }, [components]);
 
     const moveBox = useCallback((id, left, top) => {
         setBoxes(update(boxes, {
@@ -29,7 +36,6 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
             },
         }));
         console.log('new boxes - 1', boxes);
-        // appDefinitionChanged({...appDefinition, components: boxes});
     }, [boxes]);
 
     useEffect(() => {
@@ -61,14 +67,36 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 [left, top] = doSnapToGrid(left, top);
             }
 
-            setBoxes({...boxes, [uuidv4()]: { top: top, left: 60, component: componentData}})
+            const id = item.id ? item.id : uuidv4();
 
-            console.log(boxes);
+            debugger
 
-            moveBox(item.id, left, top);
+            setBoxes({
+                ...boxes, 
+                [id]: { 
+                    top: top, 
+                    left: 60,
+                    width: componentMeta.defaultSize.width,
+                    height: componentMeta.defaultSize.height,
+                    component: componentData
+                }
+            })
+
+            
             return undefined;
         },
     }), [moveBox]);
+
+    function onResizeStop (id, width, height, e, direction, ref, d) {
+        const delta_width = d.width;
+        const dela_height = d.height;
+        
+        setBoxes(update(boxes, {
+            [id]: {
+                $merge: { width: delta_width + width, height: dela_height + height }
+            },
+        }));
+    }
 
     return (<div ref={drop} style={styles}>
 			{Object.keys(boxes).map((key) => (<DraggableBox 
@@ -77,6 +105,7 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 onComponentOptionChanged={onComponentOptionChanged}
                 key={key} 
                 currentState={currentState}
+                onResizeStop={onResizeStop}
                 id={key} {...boxes[key]} 
                 inCanvas={true} />))}
 		</div>);

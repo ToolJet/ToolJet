@@ -175,6 +175,10 @@
                 background-size: 80px 80px;
                 // background-image: url(/public/images/tile.png);
                 background-repeat: repeat;
+
+                .resizer:hover { 
+                    border: solid 1px rgb(70, 165, 253);
+                }
             }
 
             

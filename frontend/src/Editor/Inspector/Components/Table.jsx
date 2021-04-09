@@ -280,7 +280,6 @@ class Table extends React.Component {
 
                 {renderElement(component, componentMeta, paramUpdated, dataQueries, 'visible', 'properties')}
                 {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties')}
-                {renderElement(component, componentMeta, paramUpdated, dataQueries, 'backgroundColor', 'styles')}
                 {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles')}
             </div>         
         )

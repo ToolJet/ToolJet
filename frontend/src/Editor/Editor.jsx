@@ -294,17 +294,14 @@ class Editor extends React.Component {
                     </div>
                     <div className="main">
                         <div className="canvas-container align-items-center">
-                            {appDefinition.components &&
-                                <div className="canvas-area">
-                                    
-                                        <Container 
-                                            appDefinition={appDefinition}
-                                            appDefinitionChanged={this.appDefinitionChanged}
-                                            snapToGrid={true} 
-                                            onComponentClick={this.onComponentClick}/>
-                                        <CustomDragLayer snapToGrid={true}/>
-                                </div>
-                            }
+                            <div className="canvas-area">
+                                <Container 
+                                    appDefinition={appDefinition}
+                                    appDefinitionChanged={this.appDefinitionChanged}
+                                    snapToGrid={true} 
+                                    onComponentClick={this.onComponentClick}/>
+                                <CustomDragLayer snapToGrid={true}/>
+                            </div>
                         </div>
                         <div className="query-pane" style={{height: this.state.queryPaneHeight}}>
                             <div className="row main-row">

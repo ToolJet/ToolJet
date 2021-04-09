@@ -17,10 +17,11 @@ let styles = {
     cursor: 'move',
 };
 
-export const Box = function Box({ id, yellow, preview, component, inCanvas, onComponentClick, onEvent, currentState, onComponentOptionChanged }) {
+export const Box = function Box({ id, width, height, yellow, preview, component, inCanvas, onComponentClick, onEvent, currentState, onComponentOptionChanged }) {
     const backgroundColor = yellow ? 'yellow' : '';
 
     console.log('rendering box', component);
+    console.log('width, height', width, height);
 
     if(inCanvas) {
         styles = {
@@ -38,7 +39,9 @@ export const Box = function Box({ id, yellow, preview, component, inCanvas, onCo
                     onComponentOptionChanged={onComponentOptionChanged}
                     currentState={currentState}
                     onEvent={onEvent}
-                    id={id} 
+                    id={id}
+                    width={width}
+                    height={height}
                     component={component}>
                 </ComponentToRender>
             :

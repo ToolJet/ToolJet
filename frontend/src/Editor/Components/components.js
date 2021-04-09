@@ -4,6 +4,10 @@ export const componentTypes = [
         name: 'Button', 
         description: 'Trigger actions: queries, alerts etc',
         component: 'Button',
+        defaultSize: {
+            width: 120,
+            height: 60
+        },
         properties: {
             text: { type: 'string'} ,
             // { 'style': { 'type': 'select', data: [{ name: 'Primary', value: 'primary' }, { name: 'Secondary', value: 'secondary' }] } },
@@ -47,6 +51,10 @@ export const componentTypes = [
             loadingState: { type: 'string' },
             columns: { type: 'array' } 
         },
+        defaultSize: {
+            width: 800,
+            height: 300
+        },
         events: [
             'onRowClicked'
         ],
@@ -81,6 +89,10 @@ export const componentTypes = [
         name: 'TextInput', 
         description: 'Text field for forms',
         component: 'TextInput',
+        defaultSize: {
+            width: 100,
+            height: 60
+        },
         properties: {
             placeholder: { type: 'string'}
         },
@@ -111,6 +123,10 @@ export const componentTypes = [
             text: { type: 'string'} ,
             visible: { type: 'string' } 
         },
+        defaultSize: {
+            width: 100,
+            height: 60
+        },
         events: [
 
         ],
@@ -134,6 +150,10 @@ export const componentTypes = [
         icon: 'https://www.svgrepo.com/show/35088/image.svg', 
         name: 'Image', 
         description: 'Display an Image',
+        defaultSize: {
+            width: 200,
+            height: 200
+        },
         component: 'Image',
         properties: {
             source: { type: 'string'} ,

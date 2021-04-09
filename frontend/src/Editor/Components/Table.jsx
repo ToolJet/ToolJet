@@ -10,9 +10,8 @@ import {
 import { resolve } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
-export function Table({ id, component, onComponentClick, currentState, onEvent }) {
+export function Table({ id, width, height, component, onComponentClick, currentState, onEvent }) {
 
-	const backgroundColor = component.definition.styles.backgroundColor.value;
 	const color = component.definition.styles.textColor.value;
 	const actions = component.definition.properties.actions || { value: []};
 
@@ -73,9 +72,8 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
 	);
 
 	const computedStyles = { 
-        backgroundColor,
         color,
-		width: '800px'
+		width: `${width}px`
     }
 
     const {
@@ -139,7 +137,7 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
 
 
       return (
-		<div class="card" style={{width: '802px'}} onClick={() => onComponentClick(id, component) }>
+		<div class="card" style={{width: `${width + 2}px`}} onClick={() => onComponentClick(id, component) }>
 		<div class="card-body border-bottom py-3">
 		  <div class="d-flex">
 			<div class="text-muted">
