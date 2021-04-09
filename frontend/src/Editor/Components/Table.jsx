@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useTable, useFilters, useSortBy } from "react-table";
+import { useTable, useFilters, useSortBy, useGlobalFilter, useAsyncDebounce } from "react-table";
 import { resolve } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
@@ -76,15 +76,48 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
         getTableBodyProps,
         headerGroups,
         rows,
+		state,
         prepareRow,
-		setFilter
+		setFilter,
+		preGlobalFilteredRows,
+    	setGlobalFilter,
     } = useTable( {
         columns,
         data
     },
 	useFilters,
+	useGlobalFilter,
 	useSortBy
 	);
+
+	function GlobalFilter({
+		preGlobalFilteredRows,
+		globalFilter,
+		setGlobalFilter,
+	  }) {
+		const count = preGlobalFilteredRows.length
+		const [value, setValue] = React.useState(globalFilter)
+		const onChange = useAsyncDebounce(value => {
+		  setGlobalFilter(value || undefined)
+		}, 200)
+	  
+		return (
+		  <div class="ms-2 d-inline-block">
+			Search:{' '}
+			<input
+			  value={value || ""}
+			  onChange={e => {
+				setValue(e.target.value);
+				onChange(e.target.value);
+			  }}
+			  placeholder={`${count} records`}
+			  style={{
+				border: '0',
+			  }}
+			/>
+		  </div>
+		)
+	  }
 
 
       return (
@@ -99,15 +132,18 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
 			  entries
 			</div>
 			<div class="ms-auto text-muted">
-			  Search:
-			  <div class="ms-2 d-inline-block">
-				<input
+			  
+				{/* <input
 					className="form-control form-control-sm"
 					value={filterInput}
 					onChange={handleFilterChange}
 					placeholder={"Search name"}
+				/> */}
+				<GlobalFilter
+					preGlobalFilteredRows={preGlobalFilteredRows}
+					globalFilter={state.globalFilter}
+					setGlobalFilter={setGlobalFilter}
 				/>
-			  </div>
 			</div>
 		  </div>
 		</div>
@@ -153,7 +189,9 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
             }
 		</div>
 		<div class="card-footer d-flex align-items-center">
-		  <p class="m-0 text-muted">Showing <span>1</span> to <span>8</span> of <span>16</span> entries</p>
+			<p class="m-0 text-muted">
+				Showing the first 10 results of {rows.length} rows 
+			</p>
 		  <ul class="pagination m-0 ms-auto">
 			<li class="page-item disabled">
 			  <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
