@@ -31,60 +31,60 @@ class HomePage extends React.Component {
     render() {
         const { currentUser, users, apps } = this.state;
         return (
-            <div class="wrapper">
-                <header class="navbar navbar-expand-md navbar-light d-print-none">
-                    <div class="container-xl">
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-                        <span class="navbar-toggler-icon"></span>
+            <div className="wrapper">
+                <header className="navbar navbar-expand-md navbar-light d-print-none">
+                    <div className="container-xl">
+                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                        <span className="navbar-toggler-icon"></span>
                     </button>
-                    <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                    <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                         <a href=".">
-                        <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" class="navbar-brand-image"/>
+                        <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" className="navbar-brand-image"/>
                         </a>
                     </h1>
-                    <div class="navbar-nav flex-row order-md-last">
-                        <div class="nav-item dropdown d-none d-md-flex me-3">
-                        <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1" aria-label="Show notifications">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>
-                            <span class="badge bg-red"></span>
+                    <div className="navbar-nav flex-row order-md-last">
+                        <div className="nav-item dropdown d-none d-md-flex me-3">
+                        <a href="#" className="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1" aria-label="Show notifications">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>
+                            <span className="badge bg-red"></span>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-card">
-                            <div class="card">
-                            <div class="card-body">
+                        <div className="dropdown-menu dropdown-menu-end dropdown-menu-card">
+                            <div className="card">
+                            <div className="card-body">
                                 Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus ad amet consectetur exercitationem fugiat in ipsa ipsum, natus odio quidem quod repudiandae sapiente. Amet debitis et magni maxime necessitatibus ullam.
                             </div>
                             </div>
                         </div>
                         </div>
-                        <div class="nav-item dropdown">
-                            <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
-                                <div class="d-none d-xl-block ps-2">
+                        <div className="nav-item dropdown">
+                            <a href="#" className="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+                                <div className="d-none d-xl-block ps-2">
                                 <div>{this.state.currentUser.first_name}</div>
-                                <div class="mt-1 small text-muted">Admin</div>
+                                <div className="mt-1 small text-muted">Admin</div>
                                 </div>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                <a href="#" class="dropdown-item">Settings</a>
-                                <a href="#" class="dropdown-item">Logout</a>
+                            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                <a href="#" className="dropdown-item">Settings</a>
+                                <a href="#" className="dropdown-item">Logout</a>
                             </div>
                             </div>
                         </div>
                     </div>
                 </header>
 
-                <div class="page-wrapper">
-                    <div class="container-xl">
-                    <div class="page-header d-print-none">
-                        <div class="row align-items-center">
-                        <div class="col">
-                            <div class="page-pretitle">
+                <div className="page-wrapper">
+                    <div className="container-xl">
+                    <div className="page-header d-print-none">
+                        <div className="row align-items-center">
+                        <div className="col">
+                            <div className="page-pretitle">
                             {/* Dashboard */}
                             </div>
-                            <h2 class="page-title">
+                            <h2 className="page-title">
                                 Your Applications
                             </h2>
                         </div>
-                        <div class="col-auto ms-auto d-print-none">
+                        <div className="col-auto ms-auto d-print-none">
                             
                         </div>
                         </div>
@@ -92,12 +92,12 @@ class HomePage extends React.Component {
                 </div>
                 
                 </div>
-                <div class="page-body homepage-body">
-                    <div class="container-xl">
-                        <div class="row row-deck row-cards">
-                            <div class="col-sm-6 col-lg-3">
-                                <div class="card" role="button" onClick={this.createApp}>
-                                    <div class="card-body p-5">
+                <div className="page-body homepage-body">
+                    <div className="container-xl">
+                        <div className="row row-deck row-cards">
+                            <div className="col-sm-6 col-lg-3">
+                                <div className="card" role="button" onClick={this.createApp}>
+                                    <div className="card-body p-5">
                                         <center>
                                             <img src="https://www.svgrepo.com/show/152121/plus.svg" width="15" height="50" alt=""/>
                                             <br></br>
@@ -110,14 +110,14 @@ class HomePage extends React.Component {
                             {apps && 
                                 <>
                                     {apps.map((app) => 
-                                        <div class="col-sm-6 col-lg-3">
-                                            <div class="card">
+                                        <div className="col-sm-6 col-lg-3">
+                                            <div className="card">
                                                 <Link 
                                                     to={`/apps/${app.id}`} 
                                                     className="">
 
-                                                        <div class="card-body p-5" >
-                                                            <div class="row align-items-center">
+                                                        <div className="card-body p-5" >
+                                                            <div className="row align-items-center">
                                                                 <center>{app.name}</center>
                                                                 
                                                                 <small className="text-muted mt-2">
@@ -127,7 +127,7 @@ class HomePage extends React.Component {
                                                         </div>
 
                                                 </Link>
-                                                {/* <div class="card-footer">
+                                                {/* <div className="card-footer">
                                                     <div className="row">
                                                         <Link 
                                                             to={`/applications/${app.id}`} 
