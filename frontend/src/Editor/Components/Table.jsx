@@ -1,5 +1,12 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useTable, useFilters, useSortBy, useGlobalFilter, useAsyncDebounce } from "react-table";
+import { 
+	useTable, 
+	useFilters, 
+	useSortBy, 
+	useGlobalFilter, 
+	useAsyncDebounce,
+	usePagination
+} from "react-table";
 import { resolve } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
@@ -68,26 +75,37 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
 	const computedStyles = { 
         backgroundColor,
         color,
-		width: '700px'
+		width: '800px'
     }
 
     const {
         getTableProps,
         getTableBodyProps,
         headerGroups,
-        rows,
+		page,
+		canPreviousPage,
+		canNextPage,
+		pageOptions,
+		gotoPage,
+		pageCount,
+		nextPage,
+		previousPage,
+		setPageSize,
 		state,
         prepareRow,
 		setFilter,
 		preGlobalFilteredRows,
     	setGlobalFilter,
+		state: { pageIndex, pageSize }
     } = useTable( {
         columns,
-        data
+        data,
+		initialState: { pageIndex: 0 },
     },
 	useFilters,
 	useGlobalFilter,
-	useSortBy
+	useSortBy,
+	usePagination
 	);
 
 	function GlobalFilter({
@@ -121,13 +139,25 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
 
 
       return (
-		<div class="card" style={{width: '702px'}} onClick={() => onComponentClick(id, component) }>
+		<div class="card" style={{width: '802px'}} onClick={() => onComponentClick(id, component) }>
 		<div class="card-body border-bottom py-3">
 		  <div class="d-flex">
 			<div class="text-muted">
 			  Show
 			  <div class="mx-2 d-inline-block">
-				<input type="text" class="form-control form-control-sm" value="8" size="3" aria-label="Invoices count"/>
+				<select
+					value={pageSize}
+					className="form-control form-control-sm"
+					onChange={e => {
+						setPageSize(Number(e.target.value))
+					}}
+					>
+					{[10, 20, 30, 40, 50].map(pageSize => (
+						<option key={pageSize} value={pageSize}>
+							{pageSize}
+						</option>
+					))}
+				</select>
 			  </div>
 			  entries
 			</div>
@@ -170,7 +200,8 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
 				))}
 			</thead>
 			<tbody {...getTableBodyProps()}>
-				{rows.map((row, i) => {
+				{console.log('page', page)}
+				{page.map((row, i) => {
 				prepareRow(row);
 				return (
 					<tr {...row.getRowProps()} onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, data: row.original }); }}>
@@ -188,28 +219,52 @@ export function Table({ id, component, onComponentClick, currentState, onEvent }
                 </div>
             }
 		</div>
-		<div class="card-footer d-flex align-items-center">
-			<p class="m-0 text-muted">
-				Showing the first 10 results of {rows.length} rows 
-			</p>
-		  <ul class="pagination m-0 ms-auto">
-			<li class="page-item disabled">
-			  <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-				<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="15 6 9 12 15 18"></polyline></svg>
-				prev
-			  </a>
-			</li>
-			<li class="page-item"><a class="page-link" href="#">1</a></li>
-			<li class="page-item active"><a class="page-link" href="#">2</a></li>
-			<li class="page-item"><a class="page-link" href="#">3</a></li>
-			<li class="page-item"><a class="page-link" href="#">4</a></li>
-			<li class="page-item"><a class="page-link" href="#">5</a></li>
-			<li class="page-item">
-			  <a class="page-link" href="#">
-				<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="9 6 15 12 9 18"></polyline></svg>
-			  </a>
-			</li>
-		  </ul>
+		<div class="card-footer d-flex align-items-center jet-table-footer">
+			<div className="pagination row">
+				<div className="pagination-buttons col">
+					<button className="btn btn-sm btn-light" onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+					{'<<'}
+					</button>{' '}
+					<button className="btn btn-light btn-sm" onClick={() => previousPage()} disabled={!canPreviousPage}>
+					{'<'}
+					</button>{' '}
+					<button className="btn btn-light btn-sm"  onClick={() => nextPage()} disabled={!canNextPage}>
+					{'>'}
+					</button>{' '}
+					<button className="btn btn-light btn-sm mr-5"  onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+					{'>>'}
+					</button>{' '}
+				</div>
+
+				<div className="page-stats col-auto">
+					<span className="p-1">
+						Page{' '}
+						<strong>
+							{pageIndex + 1} of {pageOptions.length}
+						</strong>{' '}
+						</span>
+				</div>
+				
+				<div className="goto-page col-auto">
+					<div className="row">
+						<div className="col">
+							| Go to page:{' '}
+						</div>
+						<div className="col-auto">
+						<input
+							type="number"
+							className="form-control form-control-sm"
+							defaultValue={pageIndex + 1}
+							onChange={e => {
+							const page = e.target.value ? Number(e.target.value) - 1 : 0
+							gotoPage(page)
+							}}
+							style={{ width: '50px' }}
+						/>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	  </div>
       );

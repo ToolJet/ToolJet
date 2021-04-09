@@ -538,7 +538,14 @@
     color: #888;
 }
 
+.jet-table-footer {
+    .pagination {
+        width: 100%;
+    }
+}
+
 .jet-data-table {
+
     th:after {
         content: ' ';
         position: relative;
