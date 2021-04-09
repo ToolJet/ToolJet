@@ -51,7 +51,6 @@ export const componentTypes = [
             'onRowClicked'
         ],
         styles: {
-            backgroundColor: { type: 'color'},
             textColor: { type: 'color'} 
         },
         definition: {
@@ -73,7 +72,6 @@ export const componentTypes = [
                }
             },
             styles: {
-                backgroundColor: { value: '' },
                 textColor: { value: '' }
             }
         }
