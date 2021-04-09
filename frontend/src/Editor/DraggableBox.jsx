@@ -20,7 +20,7 @@ function getStyles(left, top, isDragging) {
 
 export const DraggableBox = function DraggableBox({ id, title, left, top, width, height, component, index, inCanvas, onEvent, onComponentClick, currentState, onComponentOptionChanged, onResizeStop  }) {
 
-    // const [comp, setBoxes] = useState(component);
+    const [isResizing, setResizing] = useState(false);
 
     // useEffect(() => {
     //     setBoxes(component);
@@ -30,11 +30,11 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
 
     const [{ isDragging }, drag, preview] = useDrag(() => ({
         type: ItemTypes.BOX,
-        item: { id, left, top, title, component },
+        item: { id, left, top, width, height, title, component },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
-    }), [id, left, top, title, component, index]);
+    }), [id, left, top, height, width, title, component, index]);
 
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
@@ -56,9 +56,14 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
                         defaultSize={{
                         }}
                         className="resizer"
-                        onResizeStop={(e, direction, ref, d) => onResizeStop(id, width, height, e, direction, ref, d)}
+                        onResize={(e) => setResizing(true)}
+                        onResizeStop={(e, direction, ref, d) => { 
+                            setResizing(false);
+                            onResizeStop(id, width, height, e, direction, ref, d);
+                        }}
                         >
-                        <div ref={drag} role="DraggableBox">
+                        <div ref={drag} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
+
                             <Box 
                                 component={component} 
                                 id={id} 

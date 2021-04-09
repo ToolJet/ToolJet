@@ -41,28 +41,30 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 	tableData = tableData ? tableData : [];
 
+	const actionsCellData = actions.value.length > 0 ? [{
+		id: 'actions',
+		Header: 'Actions',
+		accessor: 'edit',
+		Cell: (cell) => {
+			return actions.value.map((action) => 
+				<button 
+					className="btn btn-sm m-1 btn-light"
+					onClick={(e) => { e.stopPropagation(); onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action }); }}
+				>
+						{action.buttonText}
+				</button>
+			)
+		}
+	}] : [];
+
 
     const columns = useMemo(
 		() =>
 			[
 				...columnData,
-				{
-					id: 'actions',
-					Header: 'Actions',
-					accessor: 'edit',
-					Cell: (cell) => {
-						return actions.value.map((action) => 
-							<button 
-								className="btn btn-sm m-1 btn-light"
-								onClick={(e) => { e.stopPropagation(); onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action }); }}
-							>
-									{action.buttonText}
-							</button>
-						)
-					}
-				}
+				...actionsCellData
 			],
-		[]
+		[columnData.length, actionsCellData.length]
     );
 
 	const data = useMemo(
@@ -73,7 +75,8 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 	const computedStyles = { 
         color,
-		width: `${width}px`
+		width: `${width}px`,
+		height: `${height}px`
     }
 
     const {
@@ -133,12 +136,12 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 			/>
 		  </div>
 		)
-	  }
+	}
 
 
       return (
-		<div class="card" style={{width: `${width + 2}px`}} onClick={() => onComponentClick(id, component) }>
-		<div class="card-body border-bottom py-3">
+		<div class="card" style={{width: `${width + 2}px`, height: `${height}px`}} onClick={() => onComponentClick(id, component) }>
+		<div class="card-body border-bottom py-3 jet-data-table-header">
 		  <div class="d-flex">
 			<div class="text-muted">
 			  Show

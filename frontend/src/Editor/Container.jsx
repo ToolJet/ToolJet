@@ -69,15 +69,13 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
 
             const id = item.id ? item.id : uuidv4();
 
-            debugger
-
             setBoxes({
                 ...boxes, 
                 [id]: { 
                     top: top, 
                     left: 60,
-                    width: componentMeta.defaultSize.width,
-                    height: componentMeta.defaultSize.height,
+                    width: item.width > 0 ? item.width : componentMeta.defaultSize.width,
+                    height: item.height > 0 ? item.height: componentMeta.defaultSize.height,
                     component: componentData
                 }
             })
@@ -87,7 +85,7 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
         },
     }), [moveBox]);
 
-    function onResizeStop (id, width, height, e, direction, ref, d) {
+    function onResizeStop(id, width, height, e, direction, ref, d) {
         const delta_width = d.width;
         const dela_height = d.height;
         
