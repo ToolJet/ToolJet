@@ -114,7 +114,7 @@ class DataSourceManager extends React.Component {
                             <div>
                                 <div class="row row-deck">
                                     <h4 className="text-muted mb-2">DATABASES</h4>
-                                    {dataBaseSources.map((dataSource) => (<div class="col-md-3">
+                                    {dataBaseSources.map((dataSource) => (<div class="col-md-3" key={dataSource.name}>
                                         <div class="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
                                                 <div class="card-body">
                                                     <center>
@@ -130,7 +130,7 @@ class DataSourceManager extends React.Component {
                                 </div>
                                 <div class="row row-deck mt-5">
                                     <h4 className="text-muted mb-2">APIS</h4>
-                                    {apiSources.map((dataSource) => (<div class="col-md-3">
+                                    {apiSources.map((dataSource) => (<div class="col-md-3" key={dataSource.name}>
                                         <div class="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
                                                 <div class="card-body">
                                                     <center>

@@ -130,7 +130,7 @@ class Editor extends React.Component {
     renderDataSource = (data_source) => {
         const sourceMeta = DataSourceTypes.find(source => source.kind === data_source.kind);
         return (
-            <tr>
+            <tr key={data_source.name}>
                 <td>
                     <img src={sourceMeta.icon} width="20" height="20"/> {data_source.name}
                 </td>
@@ -141,7 +141,7 @@ class Editor extends React.Component {
     renderDataQuery = (data_query) => {
         const sourceMeta = DataSourceTypes.find(source => source.kind === data_query.kind);
         return (
-            <tr className="query-row" onClick={() => this.setState( { editingQuery: true, selectedQuery: data_query })} role="button">
+            <tr key={data_query.name} className="query-row" onClick={() => this.setState( { editingQuery: true, selectedQuery: data_query })} role="button">
                 <td>
                     <img src={sourceMeta.icon} width="20" height="20"/> 
                     <span className="p-3">
@@ -199,19 +199,19 @@ class Editor extends React.Component {
         const appLink = `/applications/${appId}`;
 
         return (
-            <div class="editor wrapper">
+            <div className="editor wrapper">
                 <DndProvider backend={HTML5Backend}>
                     <div className="header">
-                        <header class="navbar navbar-expand-md navbar-light d-print-none">
-                            <div class="container-xl header-container">
-                            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-                                <span class="navbar-toggler-icon"></span>
+                        <header className="navbar navbar-expand-md navbar-light d-print-none">
+                            <div className="container-xl header-container">
+                            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                                <span className="navbar-toggler-icon"></span>
                             </button>
-                            <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                            <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                             <Link 
                                 to={`/`} 
                                 className="">
-                                    <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" class="navbar-brand-image"/>
+                                    <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" className="navbar-brand-image"/>
 
                                 </Link>
                                 <a href="/">
@@ -221,18 +221,18 @@ class Editor extends React.Component {
                                 <input 
                                     type="text" 
                                     onChange={(e) => this.onNameChanged(e.target.value)}
-                                    class="form-control-plaintext form-control-plaintext-sm" 
+                                    className="form-control-plaintext form-control-plaintext-sm" 
                                     value={this.state.app.name}
                                 />
                             }
-                            <div class="navbar-nav flex-row order-md-last">
-                                <div class="nav-item dropdown d-none d-md-flex me-3">
+                            <div className="navbar-nav flex-row order-md-last">
+                                <div className="nav-item dropdown d-none d-md-flex me-3">
                                     <button onClick={this.saveApp} className="btn">Save</button>    
                                 </div>
-                                <div class="nav-item dropdown d-none d-md-flex me-3">
+                                <div className="nav-item dropdown d-none d-md-flex me-3">
                                     <a href={appLink} target="_blank" className="btn">Launch</a>    
                                 </div>
-                                <div class="nav-item dropdown ml-2">
+                                <div className="nav-item dropdown ml-2">
                                     <button className="btn btn-primary">Deploy</button>    
                                 </div>
                                 
@@ -245,7 +245,7 @@ class Editor extends React.Component {
                         <div className="col-md-12">
                             <div className="card">
                                 <ul className="nav nav-tabs" data-bs-toggle="tabs">
-                                    <li class="nav-item col-md-6">
+                                    <li className="nav-item col-md-6">
                                         <a onClick={() => this.switchSidebarTab(1)} className={currentSidebarTab === 1 ? 'nav-link active' : 'nav-link'} data-bs-toggle="tab">
                                             <img src="https://www.svgrepo.com/show/73662/pages.svg" width="16" height="16"/>
                                                 &nbsp; Inspect
@@ -280,13 +280,13 @@ class Editor extends React.Component {
 
                         {currentSidebarTab === 2 && 
                             <div className="components-container m-2">
-                                <div class="input-icon">
-                                    <span class="input-icon-addon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
+                                <div className="input-icon">
+                                    <span className="input-icon-addon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="icon" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
                                     </span>
-                                    <input type="text" class="form-control mb-2" placeholder="Search…" aria-label="Search in website"/>
+                                    <input type="text" className="form-control mb-2" placeholder="Search…" aria-label="Search in website"/>
                                 </div>
-                                <div class="col-sm-12 col-lg-12">
+                                <div className="col-sm-12 col-lg-12">
                                     { componentTypes.map((component, i) => this.renderComponentCard(component, i)) }
                                 </div>
                             </div>
@@ -323,9 +323,9 @@ class Editor extends React.Component {
                                                 <div>Loading queries...</div>
                                                 : 
                                                 <div className="m-2">
-                                                    <div class="table-responsive">
+                                                    <div className="table-responsive">
                                                         <table
-                                                                class="table table-vcenter table-nowrap">
+                                                                className="table table-vcenter table-nowrap">
                                                             <tbody>
                                                                 {dataQueries.map((query) => this.renderDataQuery(query))}
                                                             </tbody>
@@ -360,17 +360,17 @@ class Editor extends React.Component {
                         </div>
                     </div>
                     <div className="left-sidebar">
-                        <div class="accordion" id="accordion-example">
-                            <div class="accordion-item">
+                        <div className="accordion" id="accordion-example">
+                            <div className="accordion-item">
                             </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="heading-2">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-2" aria-expanded="false">
+                            <div className="accordion-item">
+                                <h2 className="accordion-header" id="heading-2">
+                                <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-2" aria-expanded="false">
                                     Globals
                                 </button>
                                 </h2>
-                                <div id="collapse-2" class="accordion" data-bs-parent="#accordion-example">
-                                <div class="accordion-body pt-0">
+                                <div id="collapse-2" className="accordion" data-bs-parent="#accordion-example">
+                                <div className="accordion-body pt-0">
                                     <ReactJson
                                         collapsed={true}
                                         enableClipboard={false}
@@ -397,9 +397,9 @@ class Editor extends React.Component {
                                     <div>Loading datasources...</div>
                                     : 
                                     <div className="m-2">
-                                        <div class="table-responsive">
+                                        <div className="table-responsive">
                                             <table
-                                                    class="table table-vcenter table-nowrap">
+                                                    className="table table-vcenter table-nowrap">
                                                 <tbody>
                                                     {this.state.dataSources.map((source) => this.renderDataSource(source))}
                                                 </tbody>
