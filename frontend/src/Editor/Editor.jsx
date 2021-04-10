@@ -184,7 +184,7 @@ class Editor extends React.Component {
 
         return (
             <div className="mb-2">
-                table1 <small className="text-muted"> {exposedVariables.length} keys</small>
+                {component.component.name} <small className="text-muted"> {exposedVariables.length} keys</small>
                 <div className="p-2 bg-light w-100">
                     {exposedVariables.map((variable) => 
                         <div className="row">
@@ -244,7 +244,7 @@ class Editor extends React.Component {
                             <Link 
                                 to={`/`} 
                                 className="">
-                                    <img src="/public/images/logo.png" width="110" height="32" alt="StackEgg" className="navbar-brand-image"/>
+                                    <img src="/public/images/logo.svg" width="110" height="32" alt="StackEgg" className="navbar-brand-image"/>
                                 </Link>
                                 <a href="/">
                                 </a>
