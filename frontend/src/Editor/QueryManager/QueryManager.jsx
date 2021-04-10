@@ -174,7 +174,7 @@ class QueryManager extends React.Component {
                     <div className="col">
                         <div className="nav-header">
                             <ul className="nav nav-tabs" data-bs-toggle="tabs">
-                                <li class="nav-item">
+                                <li className="nav-item">
                                     <a 
                                         onClick={() => this.switchCurrentTab(1)} 
                                         className={currentTab === 1 ? 'nav-link active' : 'nav-link'} 
@@ -205,10 +205,10 @@ class QueryManager extends React.Component {
                 </div>
                 
                 {currentTab === 1 && 
-                    <div class="row row-deck p-3">
+                    <div className="row row-deck p-3">
                         {(dataSources && mode ==='create') && 
                             <div className="datasource-picker mb-2">
-                                <label class="form-label col-md-2">Datasource</label>
+                                <label className="form-label col-md-2">Datasource</label>
                                 <SelectSearch 
                                     options={[
                                         ...dataSources.map(source => { return  { name: source.name, value: source.id } }),
@@ -239,15 +239,15 @@ class QueryManager extends React.Component {
                 }
 
                 {currentTab === 2 && 
-                    <div class="advanced-options-container p-2 m-2">
-                        <label class="form-check form-switch">
+                    <div className="advanced-options-container p-2 m-2">
+                        <label className="form-check form-switch">
                             <input 
-                                class="form-check-input" 
+                                className="form-check-input" 
                                 type="checkbox" 
                                 onClick={() => this.toggleOption('runOnPageLoad')}
                                 checked={this.state.options.runOnPageLoad} 
                             />
-                            <span class="form-check-label">Run this query on page load?</span>
+                            <span className="form-check-label">Run this query on page load?</span>
                         </label>
                     </div>
                 }
