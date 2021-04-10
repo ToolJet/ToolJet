@@ -43,7 +43,7 @@ export const CustomDragLayer = (props) => {
     function renderItem() {
         switch (itemType) {
             case ItemTypes.BOX:
-                return <BoxDragPreview component={item.component}/>;
+                return <BoxDragPreview item={item} />;
             default:
                 return null;
         }
