@@ -56,6 +56,10 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
             let componentMeta = {};
             let id = item.id;
 
+            const delta = monitor.getDifferenceFromInitialOffset();
+            let left = Math.round(item.left + delta.x);
+            let top = Math.round(item.top + delta.y);
+
             // Component already exists and this is just a reposition event
             if(id) {
                 componentData = item.component;
@@ -67,11 +71,10 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 componentData.name = computeComponentName(componentData.component, boxes);
 
                 id = uuidv4();
+                left = 20;
+                top = 60;
             }
 
-            const delta = monitor.getDifferenceFromInitialOffset();
-            let left = Math.round(item.left + delta.x);
-            let top = Math.round(item.top + delta.y);
             if (snapToGrid) {
                 ;
                 [left, top] = doSnapToGrid(left, top);
