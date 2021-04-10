@@ -177,22 +177,18 @@ class Editor extends React.Component {
         })
     }
 
-    renderComponentVariables = (id, component) => { 
-        const componentType = component.component.component;
-        const componentMeta = componentTypes.find(comp => componentType === comp.component);
-        const exposedVariables = Object.keys(componentMeta.exposedVariables);
-
+    renderVariables = (type, name, variables) => {
         return (
             <div className="mb-2">
-                {component.component.name} <small className="text-muted"> {exposedVariables.length} keys</small>
+                {name} <small className="text-muted"> {variables.length} keys</small>
                 <div className="p-2 bg-light w-100">
-                    {exposedVariables.map((variable) => 
+                    {variables.map((variable) => 
                         <div className="row">
                             <div className="col">
                                 <small role="button col-auto">{variable}</small>
                             </div>
                             <div className="col-auto">
-                                <CopyToClipboard className="query-copy-button" text={`{{components.${component.component.name}.${variable}}}`}
+                                <CopyToClipboard className="query-copy-button" text={`{{${type}.${name}.${variable}}}`}
                                     onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
                                     <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
                                 </CopyToClipboard>
@@ -202,6 +198,21 @@ class Editor extends React.Component {
                 </div>
             </div>
         )
+    }
+
+    renderQueryVariables = (query) => { 
+        const dataSourceMeta = DataSourceTypes.find(source => query.kind === source.kind);
+        const exposedVariables = Object.keys(dataSourceMeta.exposedVariables);
+
+        return this.renderVariables('queries', query.name, exposedVariables);
+    }
+
+    renderComponentVariables = (id, component) => { 
+        const componentType = component.component.component;
+        const componentMeta = componentTypes.find(comp => componentType === comp.component);
+        const exposedVariables = Object.keys(componentMeta.exposedVariables);
+
+        return this.renderVariables('components', component.component.name, exposedVariables);
     }
 
     render() {
@@ -436,6 +447,20 @@ class Editor extends React.Component {
                                     ))}
                                 </>
                             }
+
+                            <hr/>
+
+                            <div className="col-md-9">
+                                <h5 className="text-muted">Queries</h5>
+                            </div>
+                            {dataQueries && 
+                                <>
+                                    {dataQueries.map((query => 
+                                        this.renderQueryVariables(query)
+                                    ))}
+                                </>
+                            }
+
                         </div>
                         
                         
