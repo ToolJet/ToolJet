@@ -252,7 +252,7 @@ class Editor extends React.Component {
                                 <ul className="nav nav-tabs" data-bs-toggle="tabs">
                                     <li className="nav-item col-md-6">
                                         <a onClick={() => this.switchSidebarTab(1)} className={currentSidebarTab === 1 ? 'nav-link active' : 'nav-link'} data-bs-toggle="tab">
-                                            <img src="https://www.svgrepo.com/show/73662/pages.svg" width="16" height="16"/>
+                                            <img src="https://www.svgrepo.com/show/308964/search-look-inspect-magnifying-glass.svg" width="16" height="16"/>
                                                 &nbsp; Inspect
                                         </a>
                                     </li>

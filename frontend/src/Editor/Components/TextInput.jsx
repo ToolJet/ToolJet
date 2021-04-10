@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const TextInput = function TextInput({ id, component, onComponentClick, currentState, onComponentOptionChanged }) {
+export const TextInput = function TextInput({ id, width, height, component, onComponentClick, currentState, onComponentOptionChanged }) {
 
     console.log('currentState', currentState);
 
@@ -13,7 +13,7 @@ export const TextInput = function TextInput({ id, component, onComponentClick, c
             type="text" 
             class="form-control" 
             placeholder={placeholder} 
-            style={{width: '300px'}} 
+            style={{width, height}} 
         />
     );
 };
