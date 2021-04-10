@@ -20,6 +20,7 @@ export const componentTypes = [
             backgroundColor: { type: 'color'},
             textColor: { type: 'color'} 
         },
+        exposedVariables: {},
         definition: {
             properties: {
                 'text': { value: 'Button' },
@@ -60,6 +61,9 @@ export const componentTypes = [
         ],
         styles: {
             textColor: { type: 'color'} 
+        },
+        exposedVariables: {
+            'selectedRow': {},
         },
         definition: {
             properties: {
@@ -102,6 +106,7 @@ export const componentTypes = [
         styles: {
             
         },
+        exposedVariables: {},
         definition: {
             properties: {
                 'placeholder': { value: 'Placeholder text' }
@@ -132,6 +137,7 @@ export const componentTypes = [
         styles: {
             
         },
+        exposedVariables: {},
         definition: {
             properties: {
                 'placeholder': { value: 'Placeholder text' }
@@ -163,6 +169,7 @@ export const componentTypes = [
         styles: {
             textColor: { type: 'color'} 
         },
+        exposedVariables: {},
         definition: {
             properties: {
                 'text': { value: 'Text goes here !' },
@@ -195,6 +202,7 @@ export const componentTypes = [
         styles: {
             
         },
+        exposedVariables: {},
         definition: {
             properties: {
                 'source': { value: 'https://www.svgrepo.com/show/34217/image.svg' },
@@ -224,6 +232,7 @@ export const componentTypes = [
         styles: {
             
         },
+        exposedVariables: {},
         definition: {
             properties: {
                 'label': { value: 'Select' },
@@ -255,6 +264,7 @@ export const componentTypes = [
         styles: {
             
         },
+        exposedVariables: {},
         definition: {
             properties: {
                 'label': { value: 'https://www.svgrepo.com/show/46775/drop-down-list.svg' },
