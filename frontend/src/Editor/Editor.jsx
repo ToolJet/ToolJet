@@ -464,7 +464,7 @@ class Editor extends React.Component {
                         </div>
                         
                         
-                        <div className="datasources-container w-100">
+                        <div className="datasources-container w-100 mt-3">
                                 <div className="row m-2 datasources-header ">
                                     <div className="col-md-9">
                                        <h5 className="p-1 text-muted">DATASOURCES</h5>

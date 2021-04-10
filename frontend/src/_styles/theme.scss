@@ -23,6 +23,15 @@ body {
        }
     }
 
+    .left-sidebar::-webkit-scrollbar {
+        width: 0;
+        background: transparent;
+    }
+    
+    .left-sidebar::-webkit-scrollbar-thumb {
+        background: #FF0000;
+    }
+
     .left-sidebar {
 
         height: 100%; 
@@ -43,9 +52,26 @@ body {
             border-width: 1px 0px 1px 0px;
         }
 
+        .datasources-container {
+            height: 50%;
+            overflow-y: scroll;
+        }
+
+        .variables-container {
+            height: 50%;
+            overflow-y: scroll;
+        }
+
+        .variables-container::-webkit-scrollbar, .datasources-container::-webkit-scrollbar {
+            width: 0;
+            background: transparent;
+        }
+        
+        .variables-container::-webkit-scrollbar-thumb, .datasources-container::-webkit-scrollbar-thumb {
+            background: #FF0000;
+        }
+
         .datasources-container { 
-            position: fixed;
-            position: absolute;
             bottom: 0;
             height: 500px;
             border: solid rgba(101,109,119,.16);
@@ -56,6 +82,8 @@ body {
                 border-width: 0px 0px 1px 0px;
             }
         }
+
+        
     }
 
     .editor-sidebar {
