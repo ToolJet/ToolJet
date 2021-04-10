@@ -216,6 +216,12 @@ body {
 
                 .resizer:hover { 
                     border: solid 1px rgb(70, 165, 253);
+
+                    .top-right, .top-left, .bottom-right, .bottom-left {
+                        background: white;
+                        border-radius: 10px;
+                        border: solid 1px rgb(70, 165, 253);
+                    }
                 }
             }
 

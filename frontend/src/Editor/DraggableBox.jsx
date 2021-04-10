@@ -5,6 +5,20 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { Resizable } from "re-resizable";
 
+const resizerClasses = {
+    topRight: 'top-right',
+    bottomRight: 'bottom-right',
+    bottomLeft: 'bottom-left',
+    topLeft: 'top-left'
+}
+
+const resizerStyles = {
+    topRight: { width: '12px', height: '12px', right: '-6px', top: '-6px' },
+    bottomRight: { width: '12px', height: '12px', right: '-6px', bottom: '-6px' },
+    bottomLeft: { width: '12px', height: '12px', left: '-6px', bottom: '-6px' },
+    topLeft: { width: '12px', height: '12px', left: '-6px', top: '-6px' }
+}
+
 function getStyles(left, top, isDragging) {
     const transform = `translate3d(${left}px, ${top}px, 0)`;
     return {
@@ -57,6 +71,8 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
                         }}
                         className="resizer"
                         onResize={(e) => setResizing(true)}
+                        handleClasses={resizerClasses}
+                        handleStyles={resizerStyles}
                         onResizeStop={(e, direction, ref, d) => { 
                             setResizing(false);
                             onResizeStop(id, width, height, e, direction, ref, d);
