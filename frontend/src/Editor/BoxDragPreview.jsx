@@ -9,8 +9,15 @@ export const BoxDragPreview = memo(function BoxDragPreview({ item }) {
         return () => clearInterval(interval);
     }, [tickTock]);
 
+    let { width, height } = item;
+
+    if(item.id === undefined) {
+        width = item.component.defaultSize.width;
+        height = item.component.defaultSize.height;
+    }
+
     return (
-        <div style={{ background: '#438fd7', opacity: '0.7', height: item.height, width: item.width }}>
+        <div style={{ background: '#438fd7', opacity: '0.7', height, width }}>
 		</div>
     );
 });
