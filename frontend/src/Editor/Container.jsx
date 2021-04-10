@@ -52,12 +52,22 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 item.top = 60;
             }
 
-            const componentMeta = componentTypes.find(component => component.component === item.component.component);
-            console.log('adding new component');
+            let componentData = {};
+            let componentMeta = {};
+            let id = item.id;
 
-            let componentData = JSON.parse(JSON.stringify(componentMeta));
-            componentData.name = computeComponentName(componentData.component, boxes)
+            // Component already exists and this is just a reposition event
+            if(id) {
+                componentData = item.component;
+            } else {
+                //  This is a new component 
+                componentMeta = componentTypes.find(component => component.component === item.component.component);
+                console.log('adding new component');
+                componentData = JSON.parse(JSON.stringify(componentMeta));
+                componentData.name = computeComponentName(componentData.component, boxes);
 
+                id = uuidv4();
+            }
 
             const delta = monitor.getDifferenceFromInitialOffset();
             let left = Math.round(item.left + delta.x);
@@ -66,8 +76,6 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 ;
                 [left, top] = doSnapToGrid(left, top);
             }
-
-            const id = item.id ? item.id : uuidv4();
 
             setBoxes({
                 ...boxes, 
