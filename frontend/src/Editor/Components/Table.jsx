@@ -7,7 +7,7 @@ import {
 	useAsyncDebounce,
 	usePagination
 } from "react-table";
-import { resolve } from '@/_helpers/utils';
+import { resolve, resolve_references } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
 export function Table({ id, width, height, component, onComponentClick, currentState, onEvent }) {
@@ -18,7 +18,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	let loadingState = false;
 	const loadingStateProperty = component.definition.properties.loadingState;
 	if(loadingStateProperty && currentState) { 
-		loadingState = resolve(loadingStateProperty.value, currentState);
+		loadingState = resolve_references(loadingStateProperty.value, currentState);
 	}
 
     const [filterInput, setFilterInput] = useState("");
