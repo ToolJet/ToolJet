@@ -71,6 +71,12 @@ class Viewer extends React.Component {
         });
     }
 
+    runTransformation = (rawData, transformation) => {
+        const data = rawData;
+        const evalFunction = Function(['data'], transformation);
+        return evalFunction(data);
+    }
+
     runQuery = (queryId, queryName) => {
         const dataQuery = this.state.app.data_queries.find(query => query.id === queryId);
 
@@ -87,22 +93,29 @@ class Viewer extends React.Component {
                     }
                 }
             }
-        })
+        });
 
         dataqueryService.run(queryId, options).then(data => 
-            this.setState({
-                currentState: {
-                    ...this.state.currentState, 
-                    queries: {
-                        ...this.state.currentState.queries, 
-                        [queryName]: {
-                            ...this.state.currentState.queries[queryName],
-                            data: data.data,
-                            isLoading: false
+            {
+                let rawData = data.data;
+                let finalData = data.data;
+                finalData = this.runTransformation(rawData, options.transformation);
+
+                this.setState({
+                    currentState: {
+                        ...this.state.currentState, 
+                        queries: {
+                            ...this.state.currentState.queries, 
+                            [queryName]: {
+                                ...this.state.currentState.queries[queryName],
+                                data: finalData,
+                                rawData,
+                                isLoading: false
+                            }
                         }
                     }
-                }
-            })
+                })
+            }
         );
     }
 
@@ -208,7 +221,7 @@ class Viewer extends React.Component {
                                 </button>
                                 <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                                     <a href=".">
-                                    <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" class="navbar-brand-image"/>
+                                    <img src="/public/images/logo.png" width="110" height="32" alt="StackEgg" class="navbar-brand-image"/>
                                     </a>
                                 </h1>
                                 <div class="navbar-nav flex-row order-md-last">

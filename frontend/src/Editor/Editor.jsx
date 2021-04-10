@@ -217,8 +217,7 @@ class Editor extends React.Component {
                             <Link 
                                 to={`/`} 
                                 className="">
-                                    <img src="https://www.svgrepo.com/show/210145/egg.svg" width="110" height="32" alt="StackEgg" className="navbar-brand-image"/>
-
+                                    <img src="/public/images/logo.png" width="110" height="32" alt="StackEgg" className="navbar-brand-image"/>
                                 </Link>
                                 <a href="/">
                                 </a>
