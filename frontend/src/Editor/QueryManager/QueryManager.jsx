@@ -198,7 +198,6 @@ class QueryManager extends React.Component {
                         <button className="btn btn-light" onClick={this.props.toggleQueryPaneHeight}>
                             <img src="https://www.svgrepo.com/show/129993/expand.svg" width="12" height="12"/>
                         </button>
-                        <button className="btn btn-light m-1 float-right">Preview</button>
                         <button onClick={this.createOrUpdateDataQuery} className="btn btn-primary m-1 float-right">
                             { mode === 'edit' ? 'Save' : 'Create' }
                         </button>

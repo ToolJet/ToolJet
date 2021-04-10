@@ -224,6 +224,10 @@
                 }
             }
 
+            .query-row-selected {
+                background: #faf8f5;
+            }
+
             .query-row:hover {
                 .query-copy-button {
                     display: inline-block;
@@ -231,6 +235,7 @@
             }
 
             .main-row {
+                height: 100%;
                 --tblr-gutter-x: 0rem;
             }
 

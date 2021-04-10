@@ -76,7 +76,6 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	const computedStyles = { 
         color,
 		width: `${width}px`,
-		height: `${height}px`
     }
 
     const {
@@ -140,7 +139,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 
       return (
-		<div class="card" style={{width: `${width + 2}px`, height: `${height}px`}} onClick={() => onComponentClick(id, component) }>
+		<div class="card" style={{width: `${width + 16}px`, height: `${height+3}px`}} onClick={() => onComponentClick(id, component) }>
 		<div class="card-body border-bottom py-3 jet-data-table-header">
 		  <div class="d-flex">
 			<div class="text-muted">

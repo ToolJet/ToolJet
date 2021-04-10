@@ -1,6 +1,7 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
+import { Transformation } from './Transformation';
 
 class Postgresql extends React.Component {
     constructor(props) {
@@ -31,21 +32,30 @@ class Postgresql extends React.Component {
         return (
             <div>
                 {options &&
-                    <div class="mb-3 mt-2">
-                        <CodeMirror
-                            height ="100px"
-                            fontSize="2"
-                            value={options.query}
-                            onChange={ (instance, change) => this.changeOption('query', instance.getValue()) }
-                            placeholder="SELECT * FROM customers;"
-                            options={{
-                                theme: 'duotone-light',
-                                mode: 'sql',
-                                lineWrapping: true,
-                                scrollbarStyle: null,
-                                
-                            }}
-                        />
+                    <div>
+                        <div class="mb-3 mt-2">
+                            <CodeMirror
+                                height ="100px"
+                                fontSize="2"
+                                value={options.query}
+                                onChange={ (instance, change) => this.changeOption('query', instance.getValue()) }
+                                placeholder="SELECT * FROM customers;"
+                                options={{
+                                    theme: 'duotone-light',
+                                    mode: 'sql',
+                                    lineWrapping: true,
+                                    scrollbarStyle: null,
+                                    
+                                }}
+                            />
+                        </div>
+                        <hr></hr>
+                        <div className="mb-3 mt-2">
+                            <Transformation 
+                                changeOption={this.changeOption}
+                                options={options}
+                            />
+                        </div>
                     </div>
                 }
             </div>                    

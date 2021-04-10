@@ -71,7 +71,7 @@ class Editor extends React.Component {
         }, () => {
             dataqueryService.getAll(this.state.appId).then(data => this.setState({ 
                 dataQueries: data.data_queries, 
-                loadingDataQueries: false,
+                loadingDataQueries: false
             }));
         });
     }
@@ -140,8 +140,14 @@ class Editor extends React.Component {
 
     renderDataQuery = (data_query) => {
         const sourceMeta = DataSourceTypes.find(source => source.kind === data_query.kind);
+        
+        let isSeletedQuery = false;
+        if(this.state.selectedQuery) {
+            isSeletedQuery = data_query.id === this.state.selectedQuery.id
+        }
+
         return (
-            <tr className="query-row" onClick={() => this.setState( { editingQuery: true, selectedQuery: data_query })} role="button">
+            <tr className={"query-row" + (isSeletedQuery ? ' query-row-selected': '')} onClick={() => this.setState( { editingQuery: true, selectedQuery: data_query })} role="button">
                 <td>
                     <img src={sourceMeta.icon} width="20" height="20"/> 
                     <span className="p-3">

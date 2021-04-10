@@ -81,7 +81,7 @@ class HomePage extends React.Component {
                             {/* Dashboard */}
                             </div>
                             <h2 class="page-title">
-                                Your Applications
+                                Applications
                             </h2>
                         </div>
                         <div class="col-auto ms-auto d-print-none">
