@@ -115,6 +115,36 @@ export const componentTypes = [
         }
     },
     { 
+        icon: 'https://www.svgrepo.com/show/317958/editor-left.svg', 
+        name: 'Textarea', 
+        description: 'Text area form field',
+        component: 'TextArea',
+        defaultSize: {
+            width: 250,
+            height: 100
+        },
+        properties: {
+            placeholder: { type: 'string'}
+        },
+        events: [
+
+        ],
+        styles: {
+            
+        },
+        definition: {
+            properties: {
+                'placeholder': { value: 'Placeholder text' }
+            },
+            events: {
+                
+            },
+            styles: {
+                
+            }
+        }
+    },
+    { 
         icon: 'https://www.svgrepo.com/show/219344/text.svg', 
         name: 'Text', 
         description: 'Display markdown or HTML',
