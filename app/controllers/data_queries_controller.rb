@@ -20,6 +20,7 @@ class DataQueriesController < ApplicationController
     end
 
     def run
+        sleep(1) # Just to see the loading state in action
         @data_query = DataQuery.find params[:data_query_id]
         query_service = QueryService.new @data_query, params[:options]
         result = query_service.process

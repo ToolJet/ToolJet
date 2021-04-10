@@ -39,7 +39,7 @@ class HomePage extends React.Component {
                     </button>
                     <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                         <a href=".">
-                        <img src="/public/images/logo.png" width="110" height="32" alt="StackEgg" className="navbar-brand-image"/>
+                        <img src="/public/images/logo.svg" width="110" height="32" alt="StackEgg" className="navbar-brand-image"/>
                         </a>
                     </h1>
                     <div className="navbar-nav flex-row order-md-last">

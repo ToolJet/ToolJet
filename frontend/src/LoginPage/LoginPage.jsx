@@ -37,7 +37,7 @@ class LoginPage extends React.Component {
             <div className="page page-center">
                   <div className="container-tight py-2">
                     <div className="text-center mb-4">
-                    <a href="."><img src="/public/images/logo.png" height="80" alt=""/></a>
+                    <a href="."><img src="/public/images/logo-text.svg" height="30" alt=""/></a>
                     </div>
                     <form className="card card-md" action="." method="get" autoComplete="off">
                     <div className="card-body">
@@ -50,7 +50,7 @@ class LoginPage extends React.Component {
                         <label className="form-label">
                             Password
                             <span className="form-label-description">
-                            <a href="/forgot-password">I forgot password</a>
+                            <a href="/forgot-password">Forgot password</a>
                             </span>
                         </label>
                         <div className="input-group input-group-flat">
