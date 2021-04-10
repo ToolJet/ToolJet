@@ -4,13 +4,15 @@ import { Image } from './Components/Image';
 import { Text } from './Components/Text';
 import { Table } from './Components/Table';
 import { TextInput } from './Components/TextInput';
+import { TextArea } from './Components/TextArea';
 
 const AllComponents = {
     Button,
     Image,
     Text,
     TextInput,
-    Table
+    Table,
+    TextArea
 }
 
 let styles = {
