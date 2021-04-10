@@ -63,7 +63,7 @@ export const componentTypes = [
             textColor: { type: 'color'} 
         },
         exposedVariables: {
-            'selectedRow': {},
+            'selectedRow': {}
         },
         definition: {
             properties: {
