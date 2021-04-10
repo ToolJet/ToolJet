@@ -1,3 +1,7 @@
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
 .editor { 
     .header-container {
         max-width: 100%;
@@ -177,7 +181,7 @@
                 background: #edeff5;
                 padding: 10px;
                 margin: 0px auto;
-                margin-left: 50px;
+                // margin-left: 50px;
                 background-size: 80px 80px;
                 // background-image: url(/public/images/tile.png);
                 background-repeat: repeat;
