@@ -13,6 +13,9 @@ const styles = {
     position: 'relative',
 };
 
+const leftSideBarWidth = 12;
+const rightSideBarWidth = 15;
+
 function uuidv4() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
       (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
@@ -57,12 +60,15 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
             let id = item.id;
 
             const delta = monitor.getDifferenceFromInitialOffset();
-            let left = Math.round(item.left + delta.x);
-            let top = Math.round(item.top + delta.y);
+
+            let left = 20;
+            let top = 60;
 
             // Component already exists and this is just a reposition event
             if(id) {
                 componentData = item.component;
+                left = Math.round(item.left + delta.x);
+                top = Math.round(item.top + delta.y);
             } else {
                 //  This is a new component 
                 componentMeta = componentTypes.find(component => component.component === item.component.component);
@@ -70,9 +76,10 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 componentData = JSON.parse(JSON.stringify(componentMeta));
                 componentData.name = computeComponentName(componentData.component, boxes);
 
+                left = Math.round(item.left + delta.x + document.body.offsetWidth - (document.body.offsetWidth * ((leftSideBarWidth + rightSideBarWidth)/100)));
+                top = Math.round(item.top + delta.y);
+
                 id = uuidv4();
-                left = 20;
-                top = 60;
             }
 
             if (snapToGrid) {
