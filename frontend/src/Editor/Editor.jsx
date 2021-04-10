@@ -177,6 +177,33 @@ class Editor extends React.Component {
         })
     }
 
+    renderComponentVariables = (id, component) => { 
+        const componentType = component.component.component;
+        const componentMeta = componentTypes.find(comp => componentType === comp.component);
+        const exposedVariables = Object.keys(componentMeta.exposedVariables);
+
+        return (
+            <div className="mb-2">
+                table1 <small className="text-muted"> {exposedVariables.length} keys</small>
+                <div className="p-2 bg-light w-100">
+                    {exposedVariables.map((variable) => 
+                        <div className="row">
+                            <div className="col">
+                                <small role="button col-auto">{variable}</small>
+                            </div>
+                            <div className="col-auto">
+                                <CopyToClipboard className="query-copy-button" text={`{{components.${component.component.name}.${variable}}}`}
+                                    onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
+                                    <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
+                                </CopyToClipboard>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )
+    }
+
     render() {
         const { 
             currentSidebarTab, 
@@ -365,26 +392,52 @@ class Editor extends React.Component {
                         </div>
                     </div>
                     <div className="left-sidebar">
-                        <div className="accordion" id="accordion-example">
-                            <div className="accordion-item">
-                            </div>
-                            <div className="accordion-item">
-                                <h2 className="accordion-header" id="heading-2">
-                                <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-2" aria-expanded="false">
-                                    Globals
-                                </button>
-                                </h2>
-                                <div id="collapse-2" className="accordion" data-bs-parent="#accordion-example">
-                                <div className="accordion-body pt-0">
-                                    <ReactJson
-                                        collapsed={true}
-                                        enableClipboard={false}
-                                        name={null}
-                                        src={global_context} />
+                        <div className="variables-container p-3">
+                            <div className="col-md-12">
+                                <h5 className="text-muted">Globals</h5>
+                                <div className="mb-2">
+                                    currentUser <small className="text-muted">  2 keys</small>
+                                    <div className="p-2 bg-light w-100">
+                                    <div className="row">
+                                            <div className="col">
+                                                <small role="button col-auto">name</small>
+                                            </div>
+                                            <div className="col-auto">
+                                                <CopyToClipboard className="query-copy-button" text={`{{globals.current_user.name}}`}
+                                                    onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
+                                                    <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
+                                                </CopyToClipboard>
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <div className="col">
+                                                <small role="button col-auto">email</small>
+                                            </div>
+                                            <div className="col-auto">
+                                                <CopyToClipboard className="query-copy-button" text={`{{globals.current_user.email}}`}
+                                                    onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
+                                                    <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
+                                                </CopyToClipboard>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                </div>
                             </div>
+
+                            <hr/>
+
+                            <div className="col-md-9">
+                                <h5 className="text-muted">Components</h5>
+                            </div>
+                            {appDefinition.components && 
+                                <>
+                                    {Object.keys(appDefinition.components).map((key => 
+                                        this.renderComponentVariables(key, appDefinition.components[key])
+                                    ))}
+                                </>
+                            }
                         </div>
+                        
                         
                         <div className="datasources-container w-100">
                                 <div className="row m-2 datasources-header ">
