@@ -73,7 +73,7 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 ...boxes, 
                 [id]: { 
                     top: top, 
-                    left: 60,
+                    left: left,
                     width: item.width > 0 ? item.width : componentMeta.defaultSize.width,
                     height: item.height > 0 ? item.height: componentMeta.defaultSize.height,
                     component: componentData
