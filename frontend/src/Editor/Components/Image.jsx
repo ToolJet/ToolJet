@@ -1,7 +1,7 @@
 import React from 'react';
 import { resolve } from '@/_helpers/utils';
 
-export const Image = function Image({ id, component, onComponentClick, currentState }) {
+export const Image = function Image({ id, width, height, component, onComponentClick, currentState }) {
 
     const source = component.definition.properties.source.value;
 
@@ -22,7 +22,7 @@ export const Image = function Image({ id, component, onComponentClick, currentSt
 
     return (
         <div onClick={() => onComponentClick(id, component) }>
-            <img src={data} width="100" height="100"/>
+            <img src={data} width={width} height={height}/>
         </div>
     );
 };

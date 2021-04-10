@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Button = function Button({ id, component, onComponentClick, currentState }) {
+export const Button = function Button({ id, width, height, component, onComponentClick, currentState }) {
 
     console.log('currentState', currentState);
     
@@ -10,7 +10,9 @@ export const Button = function Button({ id, component, onComponentClick, current
 
     const computedStyles = { 
         backgroundColor,
-        color
+        color,
+        width,
+        height
     }
 
     return (

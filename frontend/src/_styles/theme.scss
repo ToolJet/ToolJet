@@ -70,7 +70,13 @@
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 0px 0px 1px;
 
+        .nav-tabs .nav-link {
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
+        }
+
         .inspector {
+            
             .form-control-plaintext {
                 padding: 0;
             }

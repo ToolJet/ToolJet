@@ -1,7 +1,7 @@
 import React from 'react';
 import { resolve } from '@/_helpers/utils';
 
-export const Text = function Text({ id, component, onComponentClick, currentState }) {
+export const Text = function Text({ id, width, height, component, onComponentClick, currentState }) {
 
     const text = component.definition.properties.text.value;
     const color = component.definition.styles.textColor.value;
@@ -23,7 +23,9 @@ export const Text = function Text({ id, component, onComponentClick, currentStat
 
     
     const computedStyles = { 
-        color
+        color,
+        width,
+        height
     }
 
     return (
