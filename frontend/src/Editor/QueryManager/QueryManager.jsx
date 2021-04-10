@@ -249,6 +249,15 @@ class QueryManager extends React.Component {
                             />
                             <span className="form-check-label">Run this query on page load?</span>
                         </label>
+                        <label className="form-check form-switch">
+                            <input 
+                                className="form-check-input" 
+                                type="checkbox" 
+                                onClick={() => this.toggleOption('requestConfirmation')}
+                                checked={this.state.options.requestConfirmation} 
+                            />
+                            <span className="form-check-label">Request confirmation before running query?</span>
+                        </label>
                     </div>
                 }
             </div>

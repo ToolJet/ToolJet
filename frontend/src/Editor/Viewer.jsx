@@ -7,6 +7,7 @@ import { CustomDragLayer } from './CustomDragLayer';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getDynamicVariables, resolve, resolve_references } from '@/_helpers/utils';
+import { Confirm } from './Viewer/Confirm';
 
 class Viewer extends React.Component {
     constructor(props) {
@@ -77,10 +78,22 @@ class Viewer extends React.Component {
         return evalFunction(data);
     }
 
-    runQuery = (queryId, queryName) => {
+    runQuery = (queryId, queryName, confirmed = undefined ) => {
         const dataQuery = this.state.app.data_queries.find(query => query.id === queryId);
 
         const options = resolve_references(dataQuery.options, this.state.currentState);
+
+        if(options.requestConfirmation) {
+            if(confirmed === undefined) {
+                this.setState({ 
+                    showQueryConfirmation: true,
+                    queryConfirmationData : {
+                        queryId, queryName
+                    }
+                });
+                return;
+            }
+        }
 
         this.setState({
             currentState: {
@@ -204,13 +217,33 @@ class Viewer extends React.Component {
         })
     }
 
+    onQueryConfirm = (queryConfirmationData) => {
+        this.setState({
+            showQueryConfirmation: false
+        })
+        this.runQuery(queryConfirmationData.queryId, queryConfirmationData.queryName, true);
+    }
+
+    onQueryCancel = () => {
+        this.setState({
+            showQueryConfirmation: false
+        })
+    }
+
     render() {
-        const { currentSidebarTab, selectedComponent, appDefinition } = this.state;
+        const { currentSidebarTab, selectedComponent, appDefinition, showQueryConfirmation } = this.state;
 
         console.log(appDefinition);
 
         return (
             <div class="viewer wrapper">
+                <Confirm 
+                    show={showQueryConfirmation} 
+                    message={'Do you want to run this query?'}
+                    onConfirm={this.onQueryConfirm}
+                    onCancel={this.onQueryCancel}
+                    queryConfirmationData={this.state.queryConfirmationData}
+                />
                 <ToastContainer />
                 <DndProvider backend={HTML5Backend}>
                     <div className="header">
