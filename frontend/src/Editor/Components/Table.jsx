@@ -25,7 +25,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 			setLoadingState(newState === 'true');
 		}
         
-    }, [currentState.queries]);
+    }, [currentState]);
 
     const [filterInput, setFilterInput] = useState("");
 
