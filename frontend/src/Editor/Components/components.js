@@ -10,7 +10,6 @@ export const componentTypes = [
         },
         properties: {
             text: { type: 'string'} ,
-            // { 'style': { 'type': 'select', data: [{ name: 'Primary', value: 'primary' }, { name: 'Secondary', value: 'secondary' }] } },
             visible: { type: 'string' } 
         },
         events: [
@@ -213,6 +212,35 @@ export const componentTypes = [
             },
             styles: {
                 
+            }
+        }
+    },
+    { 
+        icon: 'https://www.svgrepo.com/show/239864/grid.svg', 
+        name: 'Container', 
+        description: 'Wrapper for multiple components',
+        defaultSize: {
+            width: 200,
+            height: 200
+        },
+        component: 'Container',
+        properties: {
+            visible: { type: 'string' } 
+        },
+        events: [
+            
+        ],
+        styles: {
+            backgroundColor: { type: 'color'},
+        },
+        exposedVariables: {},
+        definition: {
+            properties: {
+                'visible': { value: true }
+            },
+            events: { },
+            styles: {
+                backgroundColor: { value: '#fff' }
             }
         }
     },

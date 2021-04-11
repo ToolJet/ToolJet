@@ -5,6 +5,7 @@ import { Text } from './Components/Text';
 import { Table } from './Components/Table';
 import { TextInput } from './Components/TextInput';
 import { TextArea } from './Components/TextArea';
+import { Container } from './Components/Container';
 
 const AllComponents = {
     Button,
@@ -12,7 +13,8 @@ const AllComponents = {
     Text,
     TextInput,
     Table,
-    TextArea
+    TextArea,
+    Container
 }
 
 let styles = {
