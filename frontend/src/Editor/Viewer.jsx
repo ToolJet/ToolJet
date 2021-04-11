@@ -114,6 +114,11 @@ class Viewer extends React.Component {
                 let finalData = data.data;
                 finalData = this.runTransformation(rawData, options.transformation);
 
+                if(options.showSuccessNotification) {
+                    const notificationDuration = options.notificationDuration || 5;
+                    toast.success(options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 })
+                }
+
                 this.setState({
                     currentState: {
                         ...this.state.currentState, 

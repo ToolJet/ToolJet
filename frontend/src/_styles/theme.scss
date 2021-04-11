@@ -640,7 +640,7 @@ body {
     border-color: rgba(101,109,119,.24);
 }
 
-.btn:focus,.btn:active, .form-check-input:focus, .form-check-input:active {
+.btn:focus,.btn:active, .form-check-input:focus, .form-check-input:active, .form-control:focus {
     outline: none !important;
     box-shadow: none;
  }

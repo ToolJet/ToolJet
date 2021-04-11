@@ -258,6 +258,55 @@ class QueryManager extends React.Component {
                             />
                             <span className="form-check-label">Request confirmation before running query?</span>
                         </label>
+
+                        <hr/>
+
+                        <label className="form-check form-switch">
+                            <input 
+                                className="form-check-input" 
+                                type="checkbox" 
+                                onClick={() => this.toggleOption('showSuccessNotification')}
+                                checked={this.state.options.showSuccessNotification} 
+                            />
+                            <span className="form-check-label">Show notification on success?</span>
+
+                        </label>
+
+                        <div class="row mt-3">
+                            <div class="col-auto">
+                                <label class="form-label p-2">Success Message</label>
+                            </div>
+                            <div class="col">
+                                <input 
+                                    type="text" 
+                                    disabled={!this.state.options.showSuccessNotification}
+                                    value={this.state.options.successMessage}
+                                    onChange={(e) => this.optionchanged('successMessage', e.target.value)}
+                                    placeholder="Query ran successfully"
+                                    class="form-control" 
+                                    value={this.state.options.successMessage} 
+                                />
+                            </div>
+                        </div>
+
+                        <hr/>
+
+                        <div class="row mt-3">
+                            <div class="col-auto">
+                                <label class="form-label p-2">Notification duration (s)</label>
+                            </div>
+                            <div class="col">
+                                <input 
+                                    type="number" 
+                                    disabled={!this.state.options.showSuccessNotification}
+                                    value={this.state.options.notificationDuration}
+                                    onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
+                                    placeholder={5}
+                                    class="form-control" 
+                                    value={this.state.options.notificationDuration} 
+                                />
+                            </div>
+                        </div>
                     </div>
                 }
             </div>
