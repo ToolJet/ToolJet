@@ -79,7 +79,7 @@ class Viewer extends React.Component {
     }
 
     runQuery = (queryId, queryName, confirmed = undefined ) => {
-        const dataQuery = this.state.app.data_queries.find(query => query.id === queryId);
+        const dataQuery = JSON.parse(JSON.stringify(this.state.app.data_queries.find(query => query.id === queryId)));
 
         const options = resolve_references(dataQuery.options, this.state.currentState);
 
