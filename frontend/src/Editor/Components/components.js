@@ -1,45 +1,5 @@
 export const componentTypes = [
     { 
-        icon: 'https://www.svgrepo.com/show/243604/buy-click.svg', 
-        name: 'Button', 
-        description: 'Trigger actions: queries, alerts etc',
-        component: 'Button',
-        defaultSize: {
-            width: 120,
-            height: 60
-        },
-        properties: {
-            text: { type: 'string'} ,
-            visible: { type: 'string' } 
-        },
-        events: [
-            'onClick'
-        ],
-        styles: {
-            backgroundColor: { type: 'color'},
-            textColor: { type: 'color'} 
-        },
-        exposedVariables: {},
-        definition: {
-            properties: {
-                'text': { value: 'Button' },
-                'visible': { value: true },
-            },
-            events: {
-                onClick: { 
-                    options: {
-
-                    }
-                } 
-            },
-            styles: {
-                backgroundColor: { value: '#3c92dc' },
-                textColor: { value: '#fff' }
-            }
-        }
-    },
-
-    { 
         icon: 'https://www.svgrepo.com/show/54455/table.svg', 
         name: 'Table', 
         description: 'Display paginated tabular data',
@@ -84,6 +44,46 @@ export const componentTypes = [
             },
             styles: {
                 textColor: { value: '' }
+            }
+        }
+    },
+    
+    { 
+        icon: 'https://www.svgrepo.com/show/243604/buy-click.svg', 
+        name: 'Button', 
+        description: 'Trigger actions: queries, alerts etc',
+        component: 'Button',
+        defaultSize: {
+            width: 120,
+            height: 60
+        },
+        properties: {
+            text: { type: 'string'} ,
+            visible: { type: 'string' } 
+        },
+        events: [
+            'onClick'
+        ],
+        styles: {
+            backgroundColor: { type: 'color'},
+            textColor: { type: 'color'} 
+        },
+        exposedVariables: {},
+        definition: {
+            properties: {
+                'text': { value: 'Button' },
+                'visible': { value: true },
+            },
+            events: {
+                onClick: { 
+                    options: {
+
+                    }
+                } 
+            },
+            styles: {
+                backgroundColor: { value: '#3c92dc' },
+                textColor: { value: '#fff' }
             }
         }
     },
@@ -303,6 +303,37 @@ export const componentTypes = [
             events: {
                 onMarkerClick: { },
                 onMarkerCreate: { }
+            },
+            styles: {
+                
+            }
+        }
+    },
+    { 
+        icon: 'https://www.svgrepo.com/show/5908/text-document.svg', 
+        name: 'RichTextEditor', 
+        description: 'Rich text editor',
+        component: 'RichTextEditor',
+        defaultSize: {
+            width: 250,
+            height: 100
+        },
+        properties: {
+            placeholder: { type: 'string'}
+        },
+        events: [
+
+        ],
+        styles: {
+            
+        },
+        exposedVariables: {},
+        definition: {
+            properties: {
+                'placeholder': { value: 'Placeholder text' }
+            },
+            events: {
+                
             },
             styles: {
                 
