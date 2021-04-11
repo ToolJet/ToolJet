@@ -25,7 +25,7 @@ export const Text = function Text({ id, width, height, component, onComponentCli
     const computedStyles = { 
         color,
         width,
-        height
+        height,
     }
 
     return (
