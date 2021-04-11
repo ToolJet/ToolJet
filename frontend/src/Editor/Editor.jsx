@@ -230,16 +230,6 @@ class Editor extends React.Component {
             editingQuery
         } = this.state;
 
-        const global_context = {
-            current_user: {
-                name: 'navaneeth',
-                email: 'n@stackegg.com'
-            },
-            urlparams: {
-                q: 'components'
-            }
-        }
-
         const appLink = `/applications/${appId}`;
 
         return (
@@ -255,7 +245,7 @@ class Editor extends React.Component {
                             <Link 
                                 to={`/`} 
                                 className="">
-                                    <img src="/public/images/logo.svg" width="110" height="32" alt="StackEgg" className="navbar-brand-image"/>
+                                    <img src="/public/images/logo.svg" width="110" height="32" className="navbar-brand-image"/>
                                 </Link>
                                 <a href="/">
                                 </a>

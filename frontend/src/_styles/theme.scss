@@ -603,6 +603,10 @@ body {
 
 .jet-data-table {
 
+    .table-row:hover, .table-row:focus-within {
+        background: rgba(lightBlue, .25);
+    }
+
     th:after {
         content: ' ';
         position: relative;
