@@ -15,11 +15,17 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	const color = component.definition.styles.textColor.value;
 	const actions = component.definition.properties.actions || { value: []};
 
-	let loadingState = false;
-	const loadingStateProperty = component.definition.properties.loadingState;
-	if(loadingStateProperty && currentState) { 
-		loadingState = resolve_references(loadingStateProperty.value, currentState);
-	}
+	const [loadingState, setLoadingState] = useState(false);
+
+    useEffect(() => {
+
+		const loadingStateProperty = component.definition.properties.loadingState;
+		if(loadingStateProperty && currentState) { 
+			const newState = resolve_references(loadingStateProperty.value, currentState, false);
+			setLoadingState(newState === 'true');
+		}
+        
+    }, [currentState.queries]);
 
     const [filterInput, setFilterInput] = useState("");
 
