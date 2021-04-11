@@ -78,6 +78,7 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
 
                 left = Math.round(item.left + delta.x + document.body.offsetWidth - (document.body.offsetWidth * ((leftSideBarWidth + rightSideBarWidth)/100)));
                 top = Math.round(item.top + delta.y);
+                top = 60;
 
                 id = uuidv4();
             }
