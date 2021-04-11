@@ -181,7 +181,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		<table {...getTableProps()} class="table table-vcenter table-nowrap table-bordered" style={computedStyles}>
 			<thead>
 				{headerGroups.map(headerGroup => (
-				<tr {...headerGroup.getHeaderGroupProps()}>
+				<tr {...headerGroup.getHeaderGroupProps()} tabindex="0">
 					{headerGroup.headers.map(column => (
 					<th 
 						{...column.getHeaderProps(column.getSortByToggleProps())}
@@ -204,7 +204,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 				{page.map((row, i) => {
 				prepareRow(row);
 				return (
-					<tr {...row.getRowProps()} onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, data: row.original }); }}>
+					<tr className="table-row" {...row.getRowProps()} onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, data: row.original }); }}>
 					{row.cells.map(cell => {
 						return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
 					})}
