@@ -634,3 +634,13 @@ body {
     --tblr-btn-color: 74, 196, 214;
     --tblr-btn-color-darker: 60,158,173
 }
+
+.form-check-input:checked {
+    background-color: #4ac4d6;
+    border-color: rgba(101,109,119,.24);
+}
+
+.btn:focus,.btn:active, .form-check-input:focus, .form-check-input:active {
+    outline: none !important;
+    box-shadow: none;
+ }
