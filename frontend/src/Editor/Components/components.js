@@ -154,6 +154,38 @@ export const componentTypes = [
         }
     },
     { 
+        icon: 'https://www.svgrepo.com/show/14690/calendar.svg', 
+        name: 'Datepicker', 
+        description: 'Select a date and time',
+        component: 'Datepicker',
+        defaultSize: {
+            width: 100,
+            height: 60
+        },
+        properties: {
+            
+        },
+        events: [
+
+        ],
+        styles: {
+            
+        },
+        exposedVariables: {},
+        definition: {
+            properties: {
+                
+            },
+            events: {
+                
+            },
+            styles: {
+                
+            }
+        }
+    },
+  
+    { 
         icon: 'https://www.svgrepo.com/show/309414/checkbox-checked.svg', 
         name: 'Checkbox', 
         description: 'A single checkbox',

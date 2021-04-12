@@ -9,6 +9,7 @@ import { Container } from './Components/Container';
 import { RichTextEditor } from './Components/RichTextEditor';
 import { DropDown } from './Components/DropDown';
 import { Checkbox } from './Components/Checkbox';
+import { Datepicker } from './Components/Datepicker';
 
 const AllComponents = {
     Button,
@@ -20,7 +21,8 @@ const AllComponents = {
     Container,
     RichTextEditor,
     DropDown,
-    Checkbox
+    Checkbox,
+    Datepicker
 }
 
 let styles = {
