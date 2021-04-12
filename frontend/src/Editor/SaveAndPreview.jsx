@@ -1,5 +1,5 @@
 import React from 'react';
-import { appVersionService } from '@/_services';
+import { appService, appVersionService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
@@ -58,6 +58,12 @@ class SaveAndPreview extends React.Component {
             this.fetchVersions();
         });    
     }
+
+    deployVersion = (versionId) => {
+        appService.saveApp(this.props.appId, undefined ,undefined, versionId).then(data => { 
+            toast.success('Version Deployed', { hideProgressBar: true, position: "top-center", });
+        });    
+    }
    
     render() {
         const { showModal, isLoading, versions , showVersionForm} = this.state;
@@ -65,7 +71,7 @@ class SaveAndPreview extends React.Component {
         return (
             <div>
 
-                {!showModal && <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}>Save & preview </button>}
+                {!showModal && <button className="btn btn-primary btn-sm" onClick={() => this.setState({ showModal: true })}>Deploy</button>}
 
                 <Modal
                     show={this.state.showModal}
@@ -76,7 +82,7 @@ class SaveAndPreview extends React.Component {
 
                         <Modal.Header>
                             <Modal.Title>
-                                Save and Preview
+                                Versions and deployments
                             </Modal.Title>
                             <div>
                                 {!showVersionForm &&
@@ -96,7 +102,7 @@ class SaveAndPreview extends React.Component {
                         </Modal.Header>
 
                         <Modal.Body>
-                            {showVersionForm && 
+                            {showVersionForm &&
                                 <div className="row">
                                     <div className="col">
                                         <input 
@@ -134,7 +140,12 @@ class SaveAndPreview extends React.Component {
                                                     >
                                                         save
                                                     </button>
-                                                    <button className="btn btn-primary btn-sm mx-2">deploy</button>
+                                                    <button 
+                                                        className="btn btn-primary btn-sm mx-2"
+                                                        onClick={() => this.deployVersion(version.id)}
+                                                    >
+                                                        deploy
+                                                    </button>
                                                 </td>
                                             </tr>
                                         )}

@@ -14,7 +14,7 @@ class AppsController < ApplicationController
 
     def update
         @app = App.find params[:id]
-        @app.update(definition: params[:definition], name: params[:name])
+        @app.update(definition: params[:definition], name: params[:name], current_version_id: params['currentVersion'])
     end
 
     def users
