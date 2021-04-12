@@ -10,5 +10,9 @@ Rails.application.routes.draw do
     post '/run', to: 'data_queries#run'
   end
 
+  resources :organizations, only: [] do
+    get '/users', to: 'organizations#users'
+  end
+
   post 'authenticate', to: 'authentication#authenticate'
 end
