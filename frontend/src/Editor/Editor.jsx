@@ -272,6 +272,8 @@ class Editor extends React.Component {
                                 <div className="nav-item dropdown me-2">
                                     <SaveAndPreview
                                         appId={appId} 
+                                        appName={app.name}
+                                        appDefinition={appDefinition}
                                     />
                                 </div>
                                 <div className="nav-item dropdown ml-2">
