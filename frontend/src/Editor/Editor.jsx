@@ -14,7 +14,7 @@ import { QueryManager } from './QueryManager';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { toast } from 'react-toastify';
 import { Router, Route, Link } from 'react-router-dom';
-import { ManageUsers } from './ManageUsers';
+import { ManageAppUsers } from './ManageAppUsers';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -261,7 +261,7 @@ class Editor extends React.Component {
                             }
                             <div className="navbar-nav flex-row order-md-last">
                                 <div className="nav-item dropdown d-none d-md-flex me-3">
-                                    <ManageUsers 
+                                    <ManageAppUsers 
                                         appId={appId}
                                     />
                                 </div>
