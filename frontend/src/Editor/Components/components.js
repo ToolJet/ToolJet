@@ -283,10 +283,14 @@ export const componentTypes = [
         icon: 'https://www.svgrepo.com/show/46775/drop-down-list.svg', 
         name: 'Dropdown', 
         description: 'Select one value from options',
-        component: 'Dropdown',
+        defaultSize: {
+            width: 200,
+            height: 60
+        },
+        component: 'DropDown',
         properties: {
             label: { type: 'string'} ,
-            values: { type: 'string' },
+            values: { type: 'json' },
             display_values: { type: 'string' }
         },
         events: [
@@ -295,12 +299,14 @@ export const componentTypes = [
         styles: {
             
         },
-        exposedVariables: {},
+        exposedVariables: {
+            'value': {}
+        },
         definition: {
             properties: {
                 'label': { value: 'Select' },
-                'values': [1,2,3],
-                'display_values': ["one", "two", "three"],
+                'values': { value: "[1,2,3]" },
+                'display_values': { value: `["one", "two", "three"]` },
                 'visible': { value: true },
             },
             events: {

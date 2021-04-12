@@ -1,7 +1,7 @@
 class AppsController < ApplicationController
 
     def index
-        @apps = App.where(organization: @current_user.organization)
+        @apps = App.where(organization: @current_user.organization).order("created_at desc")
     end
     
     def create
