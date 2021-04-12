@@ -151,7 +151,21 @@ body {
             
         }
 
+        .components-container::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+            background: transparent;
+        }
+        
+        .components-container::-webkit-scrollbar-thumb {
+            background: transparent;
+        }
+
         .components-container { 
+
+            height: 88%;
+            overflow: scroll;
+
             .component-image-holder { 
                 background: #f6f7fb;
                 border-radius: 8px;
