@@ -138,14 +138,16 @@ class Viewer extends React.Component {
     }
 
     executeAction = (event) => {
-        if(event.actionId === 'show-alert') {
-            toast(event.options.message, { hideProgressBar: true })
-        }
+        if(event) {
+            if(event.actionId === 'show-alert') {
+                toast(event.options.message, { hideProgressBar: true })
+            }
 
-        if(event.actionId === 'run-query') {
+            if(event.actionId === 'run-query') {
 
-            const { queryId, queryName } = event.options;
-            this.runQuery(queryId, queryName);
+                const { queryId, queryName } = event.options;
+                this.runQuery(queryId, queryName);
+            }
         }
     }
 
@@ -192,6 +194,15 @@ class Viewer extends React.Component {
                     this.executeAction(event);
                 }
             });
+        }
+
+        if(eventName === 'onCheck' || eventName === 'onUnCheck') { 
+            const { component, data, action } = options;
+            const event = (eventName === 'onCheck') ? component.definition.events.onCheck : component.definition.events.onUnCheck;
+
+            if(event.actionId) {
+                this.executeAction(event);
+            }
         }
     }
 

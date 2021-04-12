@@ -12,14 +12,13 @@ export const DropDown = function DropDown({ id, width, height, component, onComp
     const parsed_display_values = JSON.parse(display_values);
 
     return (
-        <div className="row" style={{width, height}} >
+        <div className="row" style={{width, height}} onClick={() => onComponentClick(id, component) }>
             <div className="col-auto">
                 <label className="form-label p-2">{label}</label>
             </div>
 
             <div className="col">
                 <select 
-                onClick={() => onComponentClick(id, component) }
                 onChange={(e) => { e.stopPropagation(); onComponentOptionChanged(component, 'value', e.target.value)}}
                 placeholder="Select a value"
                 class="form-select">

@@ -8,6 +8,7 @@ import { TextArea } from './Components/TextArea';
 import { Container } from './Components/Container';
 import { RichTextEditor } from './Components/RichTextEditor';
 import { DropDown } from './Components/DropDown';
+import { Checkbox } from './Components/Checkbox';
 
 const AllComponents = {
     Button,
@@ -18,7 +19,8 @@ const AllComponents = {
     TextArea,
     Container,
     RichTextEditor,
-    DropDown
+    DropDown,
+    Checkbox
 }
 
 let styles = {
