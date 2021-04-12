@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
 
   resources :apps, only: [:index, :create, :show, :update] do
+    resources :versions, only: [:index]
+
     get '/users', to: 'apps#users'
   end
 
