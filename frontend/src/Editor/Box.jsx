@@ -10,6 +10,7 @@ import { RichTextEditor } from './Components/RichTextEditor';
 import { DropDown } from './Components/DropDown';
 import { Checkbox } from './Components/Checkbox';
 import { Datepicker } from './Components/Datepicker';
+import { DaterangePicker } from './Components/DaterangePicker';
 
 const AllComponents = {
     Button,
@@ -22,7 +23,8 @@ const AllComponents = {
     RichTextEditor,
     DropDown,
     Checkbox,
-    Datepicker
+    Datepicker,
+    DaterangePicker
 }
 
 let styles = {

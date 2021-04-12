@@ -184,7 +184,40 @@ export const componentTypes = [
             }
         }
     },
-  
+    { 
+        icon: 'https://www.svgrepo.com/show/14690/calendar.svg', 
+        name: 'DateRangePicker', 
+        description: 'Select a date range',
+        component: 'DaterangePicker',
+        defaultSize: {
+            width: 100,
+            height: 60
+        },
+        properties: {
+            format: { type: 'string'}
+        },
+        events: [
+
+        ],
+        styles: {
+            
+        },
+        exposedVariables: {
+            'endDate': {},
+            'startDate': {}
+        },
+        definition: {
+            properties: {
+                'format': { value: 'DD/MM/YYYY' }
+            },
+            events: {
+                
+            },
+            styles: {
+                
+            }
+        }
+    },
     { 
         icon: 'https://www.svgrepo.com/show/309414/checkbox-checked.svg', 
         name: 'Checkbox', 

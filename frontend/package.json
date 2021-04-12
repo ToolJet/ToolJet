@@ -23,6 +23,7 @@
     "react-color": "^2.19.3",
     "react-copy-to-clipboard": "^5.0.3",
     "react-dates": "^21.8.0",
+    "react-datetime": "^3.0.4",
     "react-dnd": "^14.0.2",
     "react-dnd-html5-backend": "^14.0.0",
     "react-dom": "^16.13.1",
