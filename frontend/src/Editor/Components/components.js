@@ -154,6 +154,46 @@ export const componentTypes = [
         }
     },
     { 
+        icon: 'https://www.svgrepo.com/show/309414/checkbox-checked.svg', 
+        name: 'Checkbox', 
+        description: 'A single checkbox',
+        component: 'Checkbox',
+        defaultSize: {
+            width: 100,
+            height: 60
+        },
+        properties: {
+            label: { type: 'string' },
+        },
+        events: [
+            'onCheck', 'onUnCheck'
+        ],
+        styles: {
+            
+        },
+        exposedVariables: {},
+        definition: {
+            properties: {
+                'label': { value: 'Checkbox label' },
+            },
+            events: {
+                onCheck: { 
+                    options: {
+
+                    }
+                },
+                onUnCheck: { 
+                    options: {
+
+                    }
+                } 
+            },
+            styles: {
+                
+            }
+        }
+    },
+    { 
         icon: 'https://www.svgrepo.com/show/317958/editor-left.svg', 
         name: 'Textarea', 
         description: 'Text area form field',
