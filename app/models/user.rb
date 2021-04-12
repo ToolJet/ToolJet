@@ -1,5 +1,6 @@
 class User < ApplicationRecord
     has_secure_password
+    has_many :organization_users
     belongs_to :organization
     has_many :app_users
   
