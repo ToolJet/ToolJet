@@ -1,6 +1,7 @@
 json.id  @app.id
 json.name @app.name
-json.definition @app.current_version.definition
+json.definition @app.current_version.definition if @app.current_version
+json.definition {} unless @app.current_version
 json.current_version_id @app.current_version_id
 
 json.data_queries do 

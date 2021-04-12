@@ -5,7 +5,11 @@ class AppsController < ApplicationController
     end
     
     def create
-        @app = App.create({ name: 'Untitled app', organization: @current_user.organization })
+        @app = App.create({ 
+            name: 'Untitled app', 
+            organization: @current_user.organization,
+            current_version: AppVersion.new(name: 'v0')
+        })
     end
 
     def show 
