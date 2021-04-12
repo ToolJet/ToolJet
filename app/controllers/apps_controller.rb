@@ -16,4 +16,9 @@ class AppsController < ApplicationController
         @app = App.find params[:id]
         @app.update(definition: params[:definition], name: params[:name])
     end
+
+    def users
+        @app = App.find params[:app_id]
+        @app_users = AppUser.where(app: @app).includes(:user)
+    end
 end

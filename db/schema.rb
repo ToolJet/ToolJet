@@ -10,12 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_04_164710) do
+ActiveRecord::Schema.define(version: 2021_04_12_035633) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
+
+  create_table "app_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_id", null: false
+    t.uuid "user_id", null: false
+    t.string "role"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["app_id"], name: "index_app_users_on_app_id"
+    t.index ["user_id"], name: "index_app_users_on_user_id"
+  end
 
   create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
@@ -48,6 +58,26 @@ ActiveRecord::Schema.define(version: 2021_04_04_164710) do
     t.index ["app_id"], name: "index_data_sources_on_app_id"
   end
 
+  create_table "endpoints", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "identifier"
+    t.string "path"
+    t.string "method"
+    t.text "description"
+    t.json "request_schema"
+    t.json "response_schema"
+    t.uuid "integration_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["integration_id"], name: "index_endpoints_on_integration_id"
+  end
+
+  create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "identifier"
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.string "domain"
@@ -64,11 +94,15 @@ ActiveRecord::Schema.define(version: 2021_04_04_164710) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "role"
     t.uuid "organization_id"
+    t.text "image"
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
+  add_foreign_key "app_users", "apps"
+  add_foreign_key "app_users", "users"
   add_foreign_key "apps", "organizations"
   add_foreign_key "data_queries", "apps"
   add_foreign_key "data_queries", "data_sources"
   add_foreign_key "data_sources", "apps"
+  add_foreign_key "endpoints", "integrations"
 end
