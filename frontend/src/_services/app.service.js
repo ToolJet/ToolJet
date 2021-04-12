@@ -31,7 +31,7 @@ function getApp(id) {
 }
 
 
-function saveApp(id, name, definition) {
+function saveApp(id, name, definition, currentVersion) {
     const headers = {
         ...authHeader(),
         'Content-Type': 'application/json'
@@ -39,7 +39,8 @@ function saveApp(id, name, definition) {
 
     const body = {
         definition,
-        name
+        name,
+        currentVersion
     };
 
     const requestOptions = { method: 'PUT', headers: headers, body: JSON.stringify(body) };

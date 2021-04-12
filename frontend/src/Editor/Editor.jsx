@@ -276,10 +276,6 @@ class Editor extends React.Component {
                                         appDefinition={appDefinition}
                                     />
                                 </div>
-                                <div className="nav-item dropdown ml-2">
-                                    <button className="btn btn-primary btn-sm" onClick={this.saveApp}>Deploy</button>    
-                                </div>
-                                
                                 </div>
                             </div>
                         </header>

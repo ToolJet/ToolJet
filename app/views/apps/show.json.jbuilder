@@ -1,6 +1,6 @@
 json.id  @app.id
 json.name @app.name
-json.definition @app.definition
+json.definition @app.current_version.definition
 
 json.data_queries do 
     json.array! @app.data_queries do |data_query|
