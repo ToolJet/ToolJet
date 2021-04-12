@@ -229,7 +229,8 @@ class Editor extends React.Component {
             loadingDataSources,
             addingQuery,
             selectedQuery,
-            editingQuery
+            editingQuery,
+            app
         } = this.state;
 
         const appLink = `/applications/${appId}`;
@@ -270,11 +271,14 @@ class Editor extends React.Component {
                                     <a href={appLink} target="_blank" className="btn btn-sm">Launch</a>    
                                 </div>
                                 <div className="nav-item dropdown me-2">
-                                    <SaveAndPreview
-                                        appId={appId} 
-                                        appName={app.name}
-                                        appDefinition={appDefinition}
-                                    />
+                                    {this.state.app &&
+                                        <SaveAndPreview
+                                            appId={appId} 
+                                            appName={app.name}
+                                            appDefinition={appDefinition}
+                                            app={app}
+                                        />
+                                    }
                                 </div>
                                 </div>
                             </div>
