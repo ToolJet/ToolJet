@@ -47,7 +47,42 @@ export const componentTypes = [
             }
         }
     },
-    
+
+    // { 
+    //     icon: 'https://www.svgrepo.com/show/322013/chart.svg', 
+    //     name: 'Chart', 
+    //     description: 'Display line charts, bar charts etc',
+    //     component: 'Chart',
+    //     properties: {
+    //         data: { type: 'json'},
+    //         visible: { type: 'string' },
+    //         loadingState: { type: 'string' },
+    //     },
+    //     defaultSize: {
+    //         width: 800,
+    //         height: 300
+    //     },
+    //     events: [
+            
+    //     ],
+    //     styles: {
+            
+    //     },
+    //     exposedVariables: {},
+    //     definition: {
+    //         properties: {
+    //             'visible': { value: true },
+    //             loadingState: { value: false },
+    //         },
+    //         events: {
+             
+    //         },
+    //         styles: {
+                
+    //         }
+    //     }
+    // },
+
     { 
         icon: 'https://www.svgrepo.com/show/243604/buy-click.svg', 
         name: 'Button', 

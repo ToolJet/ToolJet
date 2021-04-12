@@ -5,7 +5,8 @@ export const appService = {
     getAll,
     createApp,
     getApp,
-    saveApp
+    saveApp,
+    getAppUsers
 };
 
 function getAll() {
@@ -43,4 +44,9 @@ function saveApp(id, name, definition) {
 
     const requestOptions = { method: 'PUT', headers: headers, body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+}
+
+function getAppUsers(id) {
+    const requestOptions = { method: 'GET', headers: authHeader() };
+    return fetch(`${config.apiUrl}/apps/${id}/users`, requestOptions).then(handleResponse);
 }
