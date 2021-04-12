@@ -184,8 +184,8 @@ class Editor extends React.Component {
             <div className="mb-2">
                 {name} <small className="text-muted"> {variables.length} keys</small>
                 <div className="p-2 bg-light w-100">
-                    {variables.map((variable) => 
-                        <div className="row">
+                    {variables.map((variable, index) => 
+                        <div className="row" key={`${name}-${index}`}>
                             <div className="col">
                                 <small role="button col-auto">{variable}</small>
                             </div>
