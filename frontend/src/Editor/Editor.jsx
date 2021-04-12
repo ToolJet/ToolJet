@@ -15,6 +15,7 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { toast } from 'react-toastify';
 import { Router, Route, Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
+import { SaveAndPreview } from './SaveAndPreview';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -268,6 +269,11 @@ class Editor extends React.Component {
                                 <div className="nav-item dropdown d-none d-md-flex me-3">
                                     <a href={appLink} target="_blank" className="btn btn-sm">Launch</a>    
                                 </div>
+                                <div className="nav-item dropdown me-2">
+                                    <SaveAndPreview
+                                        appId={appId} 
+                                    />
+                                </div>
                                 <div className="nav-item dropdown ml-2">
                                     <button className="btn btn-primary btn-sm" onClick={this.saveApp}>Deploy</button>    
                                 </div>
@@ -431,12 +437,12 @@ class Editor extends React.Component {
                             <hr/>
 
                             <div className="col-md-9">
-                                <h5 className="text-muted">Components</h5>
+                                <h5 className="text-muted">Queries</h5>
                             </div>
-                            {appDefinition.components && 
+                            {dataQueries && 
                                 <>
-                                    {Object.keys(appDefinition.components).map((key => 
-                                        this.renderComponentVariables(key, appDefinition.components[key])
+                                    {dataQueries.map((query => 
+                                        this.renderQueryVariables(query)
                                     ))}
                                 </>
                             }
@@ -444,12 +450,12 @@ class Editor extends React.Component {
                             <hr/>
 
                             <div className="col-md-9">
-                                <h5 className="text-muted">Queries</h5>
+                                <h5 className="text-muted">Components</h5>
                             </div>
-                            {dataQueries && 
+                            {appDefinition.components && 
                                 <>
-                                    {dataQueries.map((query => 
-                                        this.renderQueryVariables(query)
+                                    {Object.keys(appDefinition.components).map((key => 
+                                        this.renderComponentVariables(key, appDefinition.components[key])
                                     ))}
                                 </>
                             }
