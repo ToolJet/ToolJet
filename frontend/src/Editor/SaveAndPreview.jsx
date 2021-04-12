@@ -60,6 +60,7 @@ class SaveAndPreview extends React.Component {
     }
 
     deployVersion = (versionId) => {
+        debugger
         appService.saveApp(this.props.appId, undefined ,undefined, versionId).then(data => { 
             toast.success('Version Deployed', { hideProgressBar: true, position: "top-center", });
         });    
@@ -132,20 +133,33 @@ class SaveAndPreview extends React.Component {
                                     <tbody>
                                         {versions.map((version) => 
                                             <tr>
-                                                <td>{version.name}</td>
                                                 <td>
-                                                    <button 
-                                                        className="btn btn-sm"
-                                                        onClick={() => this.saveVersion(version.id)}
-                                                    >
-                                                        save
-                                                    </button>
-                                                    <button 
-                                                        className="btn btn-primary btn-sm mx-2"
-                                                        onClick={() => this.deployVersion(version.id)}
-                                                    >
-                                                        deploy
-                                                    </button>
+                                                    {version.name}
+                                                    { version.id === this.props.app.current_version_id && 
+                                                        <small className="mx-2">
+                                                            (current)
+                                                        </small>}
+                                                </td>
+                                                <td >
+                                                    <div className="row">
+                                                        <div className="col">
+                                                            <button 
+                                                                className="btn btn-sm"
+                                                                onClick={() => this.saveVersion(version.id)}
+                                                            >
+                                                                save
+                                                            </button>
+                                                        </div>
+                                                        <div className="col">
+                                                            <button 
+                                                            className="btn btn-primary btn-sm mx-2"
+                                                            onClick={() => this.deployVersion(version.id)}
+                                                        >
+                                                            deploy
+                                                        </button>
+                                                        </div>
+                                                    </div>
+                                                   
                                                 </td>
                                             </tr>
                                         )}
