@@ -7,6 +7,7 @@ import { TextInput } from './Components/TextInput';
 import { TextArea } from './Components/TextArea';
 import { Container } from './Components/Container';
 import { RichTextEditor } from './Components/RichTextEditor';
+import { DropDown } from './Components/DropDown';
 
 const AllComponents = {
     Button,
@@ -16,7 +17,8 @@ const AllComponents = {
     Table,
     TextArea,
     Container,
-    RichTextEditor
+    RichTextEditor,
+    DropDown
 }
 
 let styles = {
