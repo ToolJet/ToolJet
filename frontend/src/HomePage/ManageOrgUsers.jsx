@@ -1,19 +1,20 @@
 import React from 'react';
-import { appService } from '@/_services';
+import { organizationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from 'react-loading-skeleton';
 
-class ManageUsers extends React.Component {
+class ManageOrgUsers extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            showModal: true,
+            showModal: false,
             appId: props.appId,
-            isLoading: true
+            isLoading: true,
+            addingUser: false
         };
     }
 
@@ -21,7 +22,7 @@ class ManageUsers extends React.Component {
 
         const appId = this.props.appId;
 
-        appService.getAppUsers(appId).then(data => this.setState({ 
+        organizationService.getUsers(appId).then(data => this.setState({ 
             users: data.users, 
             isLoading: false,
         }));    
@@ -41,7 +42,7 @@ class ManageUsers extends React.Component {
         return (
             <div>
 
-                {!showModal && <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}> Share</button>}
+                {!showModal && <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}> Manage Users</button>}
 
                 <Modal
                     show={this.state.showModal}
@@ -114,4 +115,4 @@ class ManageUsers extends React.Component {
     }
 }
 
-export { ManageUsers };
+export { ManageOrgUsers };
