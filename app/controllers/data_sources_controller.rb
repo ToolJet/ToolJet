@@ -12,4 +12,12 @@ class DataSourcesController < ApplicationController
             app_id: params[:app_id]
         )
     end
+    
+    def test_connection
+        service = DataSourceConnectionService.new params[:kind], params[:options]
+        service.process
+        render json: { status: 200 }
+    rescue StandardError => error
+        render json: { error: error }, status: 500
+    end
 end

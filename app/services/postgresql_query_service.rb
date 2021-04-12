@@ -22,4 +22,14 @@ class PostgresqlQueryService
         result = conn.exec( query_text )
         { status: 'success', data: result.to_a }
     end
+    
+    def self.connection options
+        PG.connect( 
+            dbname: options["database"], 
+            user: options["username"],
+            password:options["password"],
+            host: options["host"],
+            port: options["port"]
+        )
+    end
 end
