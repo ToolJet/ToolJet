@@ -25,5 +25,8 @@ export const defaultOptions = {
     },
     'stripe': { 
         api_key: ''
+    },
+    'firestore': { 
+        gcp_key: ''
     }
 }
