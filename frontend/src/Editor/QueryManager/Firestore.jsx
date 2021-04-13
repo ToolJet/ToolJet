@@ -61,12 +61,20 @@ class Firestore extends React.Component {
                                     <option value="delete_document">Delete Document</option> */}
                             </select>
                         </div>
-                        {this.state.options.operation === 'query_collection' && 
+                        {this.state.options.operation === 'get_document' && 
                             <div>
-
+                                <div class="mb-3 mt-2">
+                                    <label className="form-label">Path</label>
+                                    <input 
+                                        type="text" 
+                                        value={this.state.options.path}
+                                        onChange={(e) => { this.changeOption('path', e.target.value)}}
+                                        className="form-control"
+                                    />
+                                </div>
                             </div>
                         }
-                        {this.state.options.operation === 'get_document' && 
+                        {this.state.options.operation === 'query_collection' && 
                             <div>
                                 <div class="mb-3 mt-2">
                                     <label className="form-label">Path</label>
@@ -81,7 +89,7 @@ class Firestore extends React.Component {
                                     <label className="form-label">Order By ( Array of field names )</label>
                                     <input 
                                         type="text" 
-                                        value={this.state.options.path}
+                                        value={this.state.options.order_by}
                                         onChange={(e) => { this.changeOption('order_by', e.target.value)}}
                                         className="form-control"
                                     />
@@ -90,7 +98,7 @@ class Firestore extends React.Component {
                                     <label className="form-label">Start After</label>
                                     <input 
                                         type="text" 
-                                        value={this.state.options.path}
+                                        value={this.state.options.start_after}
                                         onChange={(e) => { this.changeOption('start_after', e.target.value)}}
                                         className="form-control"
                                     />
@@ -99,7 +107,7 @@ class Firestore extends React.Component {
                                     <label className="form-label">End Before</label>
                                     <input 
                                         type="text" 
-                                        value={this.state.options.path}
+                                        value={this.state.options.end_before}
                                         onChange={(e) => { this.changeOption('end_before', e.target.value)}}
                                         className="form-control"
                                     />
@@ -108,7 +116,7 @@ class Firestore extends React.Component {
                                     <label className="form-label">Limit</label>
                                     <input 
                                         type="text" 
-                                        value={this.state.options.path}
+                                        value={this.state.options.limit}
                                         onChange={(e) => { this.changeOption('limit', e.target.value)}}
                                         className="form-control"
                                     />
