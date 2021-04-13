@@ -10,6 +10,7 @@ import { Redis } from './Redis';
 import { Postgresql } from './Postgresql';
 import { Mysql } from './Mysql';
 import { Stripe } from './Stripe';
+import { Firestore } from './Firestore';
 import { defaultOptions } from './DefaultOptions';
 
 class DataSourceManager extends React.Component {
@@ -129,7 +130,7 @@ class DataSourceManager extends React.Component {
                                 <div class="row row-deck">
                                     <h4 className="text-muted mb-2">DATABASES</h4>
                                     {dataBaseSources.map((dataSource) => (<div class="col-md-3" key={dataSource.name}>
-                                        <div class="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
+                                        <div class="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                                                 <div class="card-body">
                                                     <center>
                                                         <img src={dataSource.icon} width="50" height="50" alt=""/>
@@ -200,6 +201,15 @@ class DataSourceManager extends React.Component {
 
                                 {selectedDataSource.kind === 'stripe' && 
                                     <Stripe
+                                        optionchanged={this.optionchanged}
+                                        createDataSource={this.createDataSource}
+                                        options={options}
+                                        hideModal={this.hideModal}
+                                    />
+                                }
+
+                                {selectedDataSource.kind === 'firestore' && 
+                                    <Firestore
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}

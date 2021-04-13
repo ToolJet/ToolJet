@@ -20,6 +20,16 @@ export const dataBaseSources = [
         }
     },
     {
+        name: 'Firestore',
+        kind: 'firestore',
+        icon: 'https://static.invertase.io/assets/firebase/cloud-firestore.svg',
+        exposedVariables: {
+            isLoading: {},
+            data: {},
+            rawData: {}
+        }
+    },
+    {
         name: 'ElasticSearch',
         kind: 'elasticsearch',
         icon: 'https://www.svgrepo.com/show/305988/elasticsearch.svg',
