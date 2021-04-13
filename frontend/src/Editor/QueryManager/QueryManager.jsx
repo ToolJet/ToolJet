@@ -6,13 +6,15 @@ import { Restapi } from './Restapi';
 import { Mysql } from './Mysql';
 import { Postgresql } from './Postgresql';
 import { Stripe } from './Stripe';
+import { Firestore } from './Firestore';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 const allSources = {
     Restapi,
     Mysql,
     Postgresql,
-    Stripe
+    Stripe,
+    Firestore
 }
 
 const staticDataSources = [
@@ -26,6 +28,10 @@ const defaultOptions = {
     },
     'mysql': {
 
+    },
+    'firestore': {
+        path: '',
+        
     },
     'restapi': {
         method: 'GET',
