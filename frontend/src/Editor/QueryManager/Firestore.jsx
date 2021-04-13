@@ -53,9 +53,10 @@ class Firestore extends React.Component {
                                 placeholder="Select a value"
                                 class="form-select">
                                     <option value="get_document">Get Document</option>
+                                    <option value="create_document">Create Document</option>
                                     <option value="query_collection">Query collection</option>
                                     {/* <option value="set_document">Set Document</option>
-                                    <option value="create_document">Create Document</option>
+                                    
                                     <option value="add_document">Add Document to Collection</option>
                                     <option value="update_document">Update Document</option>
                                     <option value="delete_document">Delete Document</option> */}
@@ -70,6 +71,36 @@ class Firestore extends React.Component {
                                         value={this.state.options.path}
                                         onChange={(e) => { this.changeOption('path', e.target.value)}}
                                         className="form-control"
+                                    />
+                                </div>
+                            </div>
+                        }
+                        {this.state.options.operation === 'create_document' && 
+                            <div>
+                                <div class="mb-3 mt-2">
+                                    <label className="form-label">Path</label>
+                                    <input 
+                                        type="text" 
+                                        value={this.state.options.path}
+                                        onChange={(e) => { this.changeOption('path', e.target.value)}}
+                                        className="form-control"
+                                    />
+                                </div>
+                                <div class="mb-3 mt-2">
+                                    <label className="form-label">Body</label>
+                                    <CodeMirror
+                                        height ="100px"
+                                        fontSize="2"
+                                        value={this.state.options.body}
+                                        onChange={ (instance, change) => this.changeOption('body', instance.getValue()) }
+                                        placeholder="{ }"
+                                        options={{
+                                            theme: 'duotone-light',
+                                            mode: 'json',
+                                            lineWrapping: true,
+                                            scrollbarStyle: null,
+                                            
+                                        }}
                                     />
                                 </div>
                             </div>
