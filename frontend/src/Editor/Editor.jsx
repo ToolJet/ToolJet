@@ -25,6 +25,8 @@ class Editor extends React.Component {
 
         this.state = {
             currentUser: authenticationService.currentUserValue,
+            allComponentTypes: componentTypes,
+            componentTypes: componentTypes,
             queryPaneHeight: '30%',
             users: null,
             appId,
@@ -101,6 +103,17 @@ class Editor extends React.Component {
     renderComponentCard = (component, index) => {
         return (<DraggableBox key={index} index={index} component={component} />);
     };
+    
+    filterComponents = (event, value) => {
+        const searchText = event.currentTarget.value;
+        let filteredComponents = this.state.allComponentTypes;
+
+        if(searchText !== "") {
+            filteredComponents = this.state.allComponentTypes.filter((e) => e.name.toLowerCase() == searchText.toLowerCase())
+        }
+
+        this.setState( { componentTypes: filteredComponents } )
+    }
 
     appDefinitionChanged = (newDefinition) => { 
         console.log('newDefinition', newDefinition);
@@ -230,7 +243,8 @@ class Editor extends React.Component {
             addingQuery,
             selectedQuery,
             editingQuery,
-            app
+            app,
+            componentTypes
         } = this.state;
 
         const appLink = `/applications/${appId}`;
@@ -328,7 +342,13 @@ class Editor extends React.Component {
                                     <span className="input-icon-addon">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="icon" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7" /><line x1="21" y1="21" x2="15" y2="15" /></svg>
                                     </span>
-                                    <input type="text" className="form-control mb-2" placeholder="Search…" aria-label="Search in website"/>
+                                    <input 
+                                        type="text" 
+                                        className="form-control mb-2" 
+                                        placeholder="Search…" 
+                                        aria-label="Search in website"
+                                        onBlur={(event) => this.filterComponents(event)}
+                                    />
                                 </div>
                                 <div className="col-sm-12 col-lg-12">
                                     { componentTypes.map((component, i) => this.renderComponentCard(component, i)) }
