@@ -124,42 +124,42 @@ class Firestore extends React.Component {
                                         className="form-control"
                                     />
                                 </div>
-                                <div class="mb-3 mt-2">
-                                    <label className="form-label">Order By ( Array of field names )</label>
-                                    <input 
-                                        type="text" 
-                                        value={this.state.options.order_by}
-                                        onChange={(e) => { this.changeOption('order_by', e.target.value)}}
-                                        className="form-control"
-                                    />
-                                </div>
-                                <div class="mb-3 mt-2">
-                                    <label className="form-label">Start After</label>
-                                    <input 
-                                        type="text" 
-                                        value={this.state.options.start_after}
-                                        onChange={(e) => { this.changeOption('start_after', e.target.value)}}
-                                        className="form-control"
-                                    />
-                                </div>
-                                <div class="mb-3 mt-2">
-                                    <label className="form-label">End Before</label>
-                                    <input 
-                                        type="text" 
-                                        value={this.state.options.end_before}
-                                        onChange={(e) => { this.changeOption('end_before', e.target.value)}}
-                                        className="form-control"
-                                    />
-                                </div>
-                                <div class="mb-3 mt-2">
-                                    <label className="form-label">Limit</label>
-                                    <input 
-                                        type="text" 
-                                        value={this.state.options.limit}
-                                        onChange={(e) => { this.changeOption('limit', e.target.value)}}
-                                        className="form-control"
-                                    />
-                                </div>
+                               <div className="row">
+                                    <div class="col">
+                                        <label className="form-label">Field</label>
+                                        <input 
+                                            type="text" 
+                                            value={this.state.options.where_field}
+                                            onChange={(e) => { this.changeOption('where_field', e.target.value)}}
+                                            className="form-control"
+                                        />
+                                    </div>
+                                    <div className="col">
+                                        <label className="form-label">Operator</label>
+                                        <select 
+                                            onChange={(e) => { e.stopPropagation(); this.changeOption('where_operation')}}
+                                            placeholder="Select a value"
+                                            class="form-select">
+                                                <option value="==">==</option>
+                                                <option value="<">{'<'}</option>
+                                                <option value="<=">{'<='}</option>
+                                                <option value=">=">{'>='}</option>
+                                                <option value="array-contains">{'array-contains'}</option>
+                                                <option value="in">{'in'}</option>
+                                                <option value="array-contains-any">{'array-contains-any'}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <label className="form-label">Value</label>
+                                        <input 
+                                            type="text" 
+                                            value={this.state.options.where_value}
+                                            onChange={(e) => { this.changeOption('where_value', e.target.value)}}
+                                            className="form-control"
+                                        />
+                                    </div>
+                               </div>
+                                
                             </div>
                         }
                     </div>
