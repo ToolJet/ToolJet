@@ -143,6 +143,11 @@ class Viewer extends React.Component {
                 toast(event.options.message, { hideProgressBar: true })
             }
 
+            if(event.actionId === 'open-webpage') {
+                const url = resolve_references(event.options.url, this.state.currentState);
+               window.open(url, '_blank');
+            }
+
             if(event.actionId === 'run-query') {
 
                 const { queryId, queryName } = event.options;

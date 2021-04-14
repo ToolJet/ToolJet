@@ -17,8 +17,6 @@ export const DropDown = function DropDown({ id, width, height, component, onComp
         ...parsed_values.map((value, index) => { return {name: parsed_display_values[index], value: value }} )
     ]
 
-    debugger
-
     const currentValueProperty = component.definition.properties.value;
     const value = currentValueProperty ? currentValueProperty.value : '';
     const [currentValue, setCurrentValue] = useState(value);
