@@ -1,38 +1,36 @@
-import React from 'react';
-import { resolve } from '@/_helpers/utils';
+import React, { useState, useEffect } from 'react';
+import { resolve, resolve_references } from '@/_helpers/utils';
 
 export const TextArea = function TextArea({ id, width, height, component, onComponentClick, currentState, onComponentOptionChanged }) {
 
     console.log('currentState', currentState);
 
-    const text = component.definition.properties.value ? component.definition.properties.value.value : '';
+    const value = component.definition.properties.value ? component.definition.properties.value.value : '';
+    const [text, setText] = useState(value);
 
-    let data = text;
-    if(currentState) {
-
-        const matchedParams  = text.match(/\{\{(.*?)\}\}/g);
-
-        if (matchedParams) {
-            for(const param of matchedParams) {
-                const resolvedParam = resolve(param, currentState, '');
-                console.log('resolved param', param, resolvedParam);
-                data = data.replace(param, resolvedParam);
-            }
-        }
-
+    const textProperty = component.definition.properties.value;
+    let newText = value;
+    if(textProperty && currentState) { 
+        newText = resolve_references(textProperty.value, currentState, '');
     }
+
+    useEffect(() => {
+		setText(newText);
+    }, [newText]);
 
     const placeholder = component.definition.properties.placeholder.value;
 
     return (
         <textarea 
             onClick={() => onComponentClick(id, component) }
-            onChange={(e) => onComponentOptionChanged(component, 'value', e.target.value)}
+            onChange={(e) => { setText(e.target.value); onComponentOptionChanged(component, 'value', e.target.value) }}
             type="text" 
             class="form-control" 
             placeholder={placeholder} 
             style={{width, height}} 
-            value={data}
-        ></textarea>
+            value={text}
+        >
+            
+        </textarea>
     );
 };
