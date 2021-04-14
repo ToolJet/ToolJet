@@ -94,7 +94,8 @@ export const componentTypes = [
         },
         properties: {
             text: { type: 'string'} ,
-            visible: { type: 'string' } 
+            visible: { type: 'string' },
+            loadingState: { type: 'string' },
         },
         events: [
             'onClick'
@@ -108,6 +109,7 @@ export const componentTypes = [
             properties: {
                 'text': { value: 'Button' },
                 'visible': { value: true },
+                'loadingState': { value: false }
             },
             events: {
                 onClick: { 
