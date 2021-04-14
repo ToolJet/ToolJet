@@ -95,46 +95,48 @@ class Viewer extends React.Component {
             }
         }
 
-        this.setState({
-            currentState: {
-                ...this.state.currentState, 
-                queries: {
-                    ...this.state.currentState.queries, 
-                    [queryName]: {
-                        ...this.state.currentState.queries[queryName],
-                        isLoading: true
-                    }
+        const newState = {
+            ...this.state.currentState, 
+            queries: {
+                ...this.state.currentState.queries, 
+                [queryName]: {
+                    ...this.state.currentState.queries[queryName],
+                    isLoading: true
                 }
             }
-        });
+        }
 
-        dataqueryService.run(queryId, options).then(data => 
-            {
-                let rawData = data.data;
-                let finalData = data.data;
-                finalData = this.runTransformation(rawData, options.transformation);
-
-                if(options.showSuccessNotification) {
-                    const notificationDuration = options.notificationDuration || 5;
-                    toast.success(options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 })
-                }
-
-                this.setState({
-                    currentState: {
-                        ...this.state.currentState, 
-                        queries: {
-                            ...this.state.currentState.queries, 
-                            [queryName]: {
-                                ...this.state.currentState.queries[queryName],
-                                data: finalData,
-                                rawData,
-                                isLoading: false
+        this.setState(newState, () => {
+            debugger
+            console.log('isll', this.state.currentState)
+            dataqueryService.run(queryId, options).then(data => 
+                {
+                    let rawData = data.data;
+                    let finalData = data.data;
+                    finalData = this.runTransformation(rawData, options.transformation);
+    
+                    if(options.showSuccessNotification) {
+                        const notificationDuration = options.notificationDuration || 5;
+                        toast.success(options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 })
+                    }
+    
+                    this.setState({
+                        currentState: {
+                            ...this.state.currentState, 
+                            queries: {
+                                ...this.state.currentState.queries, 
+                                [queryName]: {
+                                    ...this.state.currentState.queries[queryName],
+                                    data: finalData,
+                                    rawData,
+                                    isLoading: false
+                                }
                             }
                         }
-                    }
-                })
-            }
-        );
+                    })
+                }
+            );
+        });
     }
 
     executeAction = (event) => {

@@ -44,7 +44,7 @@ export function resolve_references(object, state) {
     if (typeof object === "string") {
         const dynamicVariables = getDynamicVariables(object);
         if (dynamicVariables) {
-            if(dynamicVariables.length == 1) {
+            if(dynamicVariables.length == 1 && dynamicVariables[0] === object) {
                 object = resolve(dynamicVariables[0], state)
             } else {
                 for(const dynamicVariable of dynamicVariables) {

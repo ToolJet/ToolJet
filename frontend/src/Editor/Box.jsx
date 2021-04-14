@@ -11,6 +11,7 @@ import { DropDown } from './Components/DropDown';
 import { Checkbox } from './Components/Checkbox';
 import { Datepicker } from './Components/Datepicker';
 import { DaterangePicker } from './Components/DaterangePicker';
+import { Multiselect } from './Components/Multiselect';
 
 const AllComponents = {
     Button,
@@ -24,7 +25,8 @@ const AllComponents = {
     DropDown,
     Checkbox,
     Datepicker,
-    DaterangePicker
+    DaterangePicker,
+    Multiselect
 }
 
 let styles = {
