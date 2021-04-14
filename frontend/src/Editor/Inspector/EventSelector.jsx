@@ -43,6 +43,19 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
                         </div>
                     }
 
+                    {definition.actionId === 'open-webpage' && 
+                        <div className="p-3">
+                            <label class="form-label mt-2">URL</label>
+                            <input 
+                                onChange={(e) => eventOptionUpdated(param, 'url', e.target.value, extraData)} 
+                                value={message}
+                                type="text" 
+                                class="form-control form-control-sm" 
+                                placeholder="https://example.com" />
+                        </div>
+                    }
+   
+
                     {definition.actionId === 'run-query' && 
                         <div className="p-3">
                             <label class="form-label mt-2">Query</label>

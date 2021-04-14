@@ -12,5 +12,12 @@ export const ActionTypes = [
         options: [
             { queryId: '' }
         ]
-    }
+    },
+    {
+        name: 'Open Webpage',
+        id: 'open-webpage',
+        options: [
+            { name: 'url', type: 'text', default: 'https://example.com' }
+        ]
+    },
 ]
