@@ -27,6 +27,15 @@ class Firestore extends React.Component {
         });
     }
 
+    changeJsonOption( option, value) {
+        this.setState({ options: { 
+            ...this.state.options,
+            [option]: JSON.parse(value)
+        }}, () => {
+            this.props.optionsChanged(this.state.options);
+        });
+    }
+
     changeOperation = (operation) => {
         this.setState({
             options: {
@@ -53,7 +62,7 @@ class Firestore extends React.Component {
                                 placeholder="Select a value"
                                 class="form-select">
                                     <option value="get_document">Get Document</option>
-                                    <option value="create_document">Create Document</option>
+                                    <option value="set_document">Set Document</option>
                                     <option value="query_collection">Query collection</option>
                                     {/* <option value="set_document">Set Document</option>
                                     
@@ -75,7 +84,7 @@ class Firestore extends React.Component {
                                 </div>
                             </div>
                         }
-                        {this.state.options.operation === 'create_document' && 
+                        {this.state.options.operation === 'set_document' && 
                             <div>
                                 <div class="mb-3 mt-2">
                                     <label className="form-label">Path</label>
@@ -91,15 +100,14 @@ class Firestore extends React.Component {
                                     <CodeMirror
                                         height ="100px"
                                         fontSize="2"
-                                        value={this.state.options.body}
-                                        onChange={ (instance, change) => this.changeOption('body', instance.getValue()) }
+                                        value={JSON.stringify(this.state.options.body)}
+                                        onChange={ (instance, change) => this.changeJsonOption('body', instance.getValue()) }
                                         placeholder="{ }"
                                         options={{
                                             theme: 'duotone-light',
                                             mode: 'json',
                                             lineWrapping: true,
                                             scrollbarStyle: null,
-                                            
                                         }}
                                     />
                                 </div>
