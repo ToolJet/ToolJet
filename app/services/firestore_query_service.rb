@@ -36,6 +36,13 @@ class FirestoreQueryService
                 doc_ref.set body
             end
 
+            if operation == 'update_document'
+                path = options["path"]
+                body = options["body"].as_json
+                doc_ref = firestore.doc path
+                doc_ref.update body
+            end
+
             if operation == 'query_collection'
                 path = options["path"]
                 doc_ref = firestore.col path
