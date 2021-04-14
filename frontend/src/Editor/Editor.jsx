@@ -125,6 +125,7 @@ class Editor extends React.Component {
         let newDefinition = this.state.appDefinition;
         delete newDefinition.components[component.id];
         this.appDefinitionChanged(newDefinition);
+        this.switchSidebarTab(2);
     }
 
     componentDefinitionChanged = (newDefinition) => { 
