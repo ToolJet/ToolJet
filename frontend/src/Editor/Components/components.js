@@ -431,6 +431,46 @@ export const componentTypes = [
         }
     },
     { 
+        icon: 'https://www.svgrepo.com/show/16187/multiple-shots.svg', 
+        name: 'Multiselect', 
+        description: 'Select multiple values from options',
+        defaultSize: {
+            width: 200,
+            height: 60
+        },
+        component: 'Multiselect',
+        properties: {
+            label: { type: 'string'} ,
+            values: { type: 'string'} ,
+            option_values: { type: 'string' },
+            display_values: { type: 'string' }
+        },
+        events: [
+            'onSelect'
+        ],
+        styles: {
+            
+        },
+        exposedVariables: {
+            'values': {}
+        },
+        definition: {
+            properties: {
+                'label': { value: 'Select' },
+                'values': { value: '[]' },
+                'option_values': { value: "[1,2,3]" },
+                'display_values': { value: `["one", "two", "three"]` },
+                'visible': { value: true },
+            },
+            events: {
+                onSelect: { } 
+            },
+            styles: {
+                
+            }
+        }
+    },
+    { 
         icon: 'https://www.svgrepo.com/show/16476/map.svg', 
         name: 'Map', 
         description: 'Display maps with markers.',
