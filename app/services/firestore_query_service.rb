@@ -29,6 +29,13 @@ class FirestoreQueryService
                 data = snapshot.data
             end
 
+            if operation == 'set_document'
+                path = options["path"]
+                body = options["body"].as_json
+                doc_ref = firestore.doc path
+                doc_ref.set body
+            end
+
         rescue => e
             puts e
             error = e.message
