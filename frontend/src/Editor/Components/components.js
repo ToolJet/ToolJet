@@ -401,6 +401,7 @@ export const componentTypes = [
         component: 'DropDown',
         properties: {
             label: { type: 'string'} ,
+            value: { type: 'string'} ,
             values: { type: 'json' },
             display_values: { type: 'string' }
         },
@@ -416,6 +417,7 @@ export const componentTypes = [
         definition: {
             properties: {
                 'label': { value: 'Select' },
+                'value': { value: '' },
                 'values': { value: "[1,2,3]" },
                 'display_values': { value: `["one", "two", "three"]` },
                 'visible': { value: true },
