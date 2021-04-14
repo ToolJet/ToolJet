@@ -12,7 +12,7 @@ export const Button = function Button({ id, width, height, component, onComponen
 		const loadingStateProperty = component.definition.properties.loadingState;
 		if(loadingStateProperty && currentState) { 
 			const newState = resolve_references(loadingStateProperty.value, currentState, false);
-			setLoadingState(newState === 'true');
+			setLoadingState(newState);
 		}
         
     }, [currentState]);
