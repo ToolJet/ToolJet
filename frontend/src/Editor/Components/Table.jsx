@@ -22,9 +22,9 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		const loadingStateProperty = component.definition.properties.loadingState;
 		if(loadingStateProperty && currentState) { 
 			const newState = resolve_references(loadingStateProperty.value, currentState, false);
-			setLoadingState(newState === 'true');
+			setLoadingState(newState);
 		}
-        
+
     }, [currentState]);
 
     const [filterInput, setFilterInput] = useState("");
