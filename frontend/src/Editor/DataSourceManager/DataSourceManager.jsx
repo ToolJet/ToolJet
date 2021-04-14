@@ -90,8 +90,6 @@ class DataSourceManager extends React.Component {
         return (
             <div>
 
-                <ToastContainer/>
-                
                 {!showModal && <button className="btn btn-light btn-sm" onClick={() => this.setState({ showModal: true, selectedDataSource: null })}>+</button>}
 
                 <Modal

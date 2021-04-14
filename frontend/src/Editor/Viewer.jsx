@@ -260,7 +260,6 @@ class Viewer extends React.Component {
                     onCancel={this.onQueryCancel}
                     queryConfirmationData={this.state.queryConfirmationData}
                 />
-                <ToastContainer />
                 <DndProvider backend={HTML5Backend}>
                     <div className="header">
                         <header class="navbar navbar-expand-md navbar-light d-print-none">
