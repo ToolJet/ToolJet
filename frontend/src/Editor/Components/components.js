@@ -268,6 +268,7 @@ export const componentTypes = [
             height: 100
         },
         properties: {
+            value: { type: 'string'},
             placeholder: { type: 'string'}
         },
         events: [
@@ -276,9 +277,12 @@ export const componentTypes = [
         styles: {
             
         },
-        exposedVariables: {},
+        exposedVariables: {
+            value: {}
+        },
         definition: {
             properties: {
+                'value': { value: ''},
                 'placeholder': { value: 'Placeholder text' }
             },
             events: {
