@@ -62,6 +62,7 @@ class Firestore extends React.Component {
                                 placeholder="Select a value"
                                 class="form-select">
                                     <option value="get_document">Get Document</option>
+                                    <option value="update_document">Update Document</option>
                                     <option value="set_document">Set Document</option>
                                     <option value="query_collection">Query collection</option>
                                     {/* <option value="set_document">Set Document</option>
@@ -84,7 +85,7 @@ class Firestore extends React.Component {
                                 </div>
                             </div>
                         }
-                        {this.state.options.operation === 'set_document' && 
+                        {(this.state.options.operation === 'set_document' || this.state.options.operation === 'update_document')&& 
                             <div>
                                 <div class="mb-3 mt-2">
                                     <label className="form-label">Path</label>
