@@ -31,7 +31,7 @@ const defaultOptions = {
     },
     'firestore': {
         path: '',
-        
+
     },
     'restapi': {
         method: 'GET',
@@ -173,8 +173,6 @@ class QueryManager extends React.Component {
 
         return (
             <div className="query-manager">
-
-                <ToastContainer/>
 
                 <div className="row header">
                     <div className="col">
