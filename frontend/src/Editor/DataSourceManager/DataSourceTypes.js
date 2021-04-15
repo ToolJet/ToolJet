@@ -3,6 +3,13 @@ export const dataBaseSources = [
         name: 'PostgreSQL',
         kind: 'postgresql',
         icon: 'https://www.svgrepo.com/show/303301/postgresql-logo.svg',
+        options: {
+            host: { type: "string" },
+            port: { type: "string" },
+            database: { type: "string" },
+            username: { type: "string" },
+            password: { type: "string", encrypted: true }
+        },
         exposedVariables: {
             isLoading: {},
             data: {},
@@ -27,7 +34,10 @@ export const dataBaseSources = [
             isLoading: {},
             data: {},
             rawData: {}
-        }
+        },
+        options: {
+            gcp_key: { type: "string", encrypted: true }
+        },
     },
     {
         name: 'ElasticSearch',
