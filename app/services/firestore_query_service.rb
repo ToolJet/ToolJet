@@ -1,15 +1,17 @@
 class FirestoreQueryService
-    
-    attr_accessor :data_query, :options
+    require "google/cloud/firestore"
 
-    def initialize(data_query, options)
+    attr_accessor :data_query, :options, :source_options
+
+    def initialize(data_query, options, source_options)
         @data_query = data_query
         @options = options
+        @source_options = source_options
     end
 
     def process
 
-        credential_json = JSON.parse(data_query.data_source.options["gcp_key"])
+        credential_json = JSON.parse(source_options["gcp_key"])
         data = {}
         error = nil
 

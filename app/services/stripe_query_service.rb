@@ -1,11 +1,12 @@
 class StripeQueryService
 
-    attr_accessor :data_query, :options, :data_source
+    attr_accessor :data_query, :options, :data_source, :source_options
 
     def initialize(data_query, options)
         @data_query = data_query
         @data_source = data_query.data_source
         @options = options
+        @source_options = source_options
     end
 
     def replace_path_params(url, path_params)
@@ -18,7 +19,6 @@ class StripeQueryService
 
     def process
 
-        source_options = data_source.options
         stripe_api_key = source_options["api_key"]
         api_base_url = "https://api.stripe.com"
         operation = data_query.options["operation"]

@@ -24,7 +24,14 @@ export const dataBaseSources = [
             isLoading: {},
             data: {},
             rawData: {}
-        }
+        },
+        options: {
+            host: { type: "string" },
+            port: { type: "string" },
+            database: { type: "string" },
+            username: { type: "string" },
+            password: { type: "string", encrypted: true }
+        },
     },
     {
         name: 'Firestore',
@@ -80,7 +87,10 @@ export const apiSources = [
             isLoading: {},
             data: {},
             rawData: {}
-        }
+        },
+        options: {
+            api_key: { type: "string", encrypted: true }
+        },
     },
     {
         name: 'Slack',

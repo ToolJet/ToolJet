@@ -1,20 +1,21 @@
 class MysqlQueryService
 
-    attr_accessor :data_query, :data_source, :options
+    attr_accessor :data_query, :data_source, :options, :source_options
 
-    def initialize(data_query, options)
+    def initialize(data_query, options, source_options)
         @data_query = data_query
         @data_source = data_query.data_source
         @options = options
+        @source_options = source_options
     end
 
     def process
         client = Mysql2::Client.new(
-            host: data_source.options["host"], 
-            username: data_source.options["username"],
-            password:data_source.options["password"],
-            port: data_source.options["port"],
-            database: data_source.options["database"], 
+            host: source_options["host"], 
+            username: source_options["username"],
+            password:source_options["password"],
+            port: source_options["port"],
+            database: source_options["database"], 
         )
 
         query_text = options["query"]

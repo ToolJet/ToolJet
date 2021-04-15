@@ -106,9 +106,7 @@ class Viewer extends React.Component {
             }
         }
 
-        this.setState(newState, () => {
-            debugger
-            console.log('isll', this.state.currentState)
+        this.setState({currentState: newState}, () => {
             dataqueryService.run(queryId, options).then(data => 
                 {
                     let rawData = data.data;
