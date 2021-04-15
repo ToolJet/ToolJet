@@ -63,7 +63,13 @@ class DataSourceManager extends React.Component {
         const  { appId, options, selectedDataSource, name } = this.state;
         const kind = selectedDataSource.kind;
 
-        datasourceService.create(appId, name, kind, options).then((data) => {
+        const parsedOptions = Object.keys(options).map((key) =>  { return {
+            key: key,
+            value: options[key],
+            encrypted: selectedDataSource.options[key].encrypted
+        }});
+
+        datasourceService.create(appId, name, kind, parsedOptions).then((data) => {
             this.setState( { showModal: false } );
             toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
             this.props.dataSourcesChanged();
