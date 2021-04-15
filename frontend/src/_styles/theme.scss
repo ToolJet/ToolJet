@@ -666,3 +666,15 @@ body {
 .jet-container { 
     border-radius: 8px;
 }
+
+.select-search__option.is-selected {
+    background: rgb(60, 146, 220);
+}
+
+.select-search__option.is-highlighted.is-selected, .select-search__option.is-selected:hover {
+    background: #4ac4d6;
+}
+
+.select-search__option.is-highlighted, .select-search__option:hover {
+    background: #4ac4d6;
+}
