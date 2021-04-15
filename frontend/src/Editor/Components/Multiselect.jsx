@@ -27,9 +27,6 @@ export const Multiselect = function Multiselect({ id, width, height, component, 
     }
 
     useEffect(() => {
-        if(onComponentOptionChanged){
-            onComponentOptionChanged(component, 'values', newValue);
-        }
 		setCurrentValue(newValue);
     }, [newValue]);
 

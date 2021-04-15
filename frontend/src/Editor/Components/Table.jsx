@@ -220,7 +220,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 			</tbody>
 			</table>
 			{loadingState && 
-                <div style={{width: '100%'}} className="p-5">
+                <div style={{width: '100%'}} className="p-2">
                     <Skeleton count={5}/> 
                 </div>
             }
