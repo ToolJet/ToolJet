@@ -42,7 +42,7 @@ export const Multiselect = function Multiselect({ id, width, height, component, 
                     search={true}
                     multiple={true}
                     printOptions="on-focus"
-                    onChange={(values) => { onComponentOptionChanged(component, 'values', values)}}
+                    onChange={(values) => { debugger; onComponentOptionChanged(component, 'values', values)}}
                     filterOptions={fuzzySearch}
                     placeholder="Select.." 
                 />

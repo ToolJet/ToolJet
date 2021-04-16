@@ -124,13 +124,17 @@ class QueryManager extends React.Component {
         const dataSourceId = selectedDataSource.id;
 
         if ( mode === 'edit') {
+            this.setState({ isUpdating: true });
             dataqueryService.update(this.state.selectedQuery.id, options).then((data) => {
                 toast.success('Datasource Updated', { hideProgressBar: true, position: "top-center", });
+                this.setState({ isUpdating: false });
                 this.props.dataQueriesChanged();
             });
         } else { 
+            this.setState({ isCreating: true });
             dataqueryService.create(appId, name, kind, options, dataSourceId).then((data) => {
                 toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
+                this.setState({ isCreating: false });
                 this.props.dataQueriesChanged();
             });
         }
@@ -162,7 +166,7 @@ class QueryManager extends React.Component {
     }
 
     render() {
-        const { dataSources, selectedDataSource, mode, currentTab } = this.state;
+        const { dataSources, selectedDataSource, mode, currentTab, isUpdating, isCreating } = this.state;
 
         let ElementToRender = '';
 
@@ -170,6 +174,12 @@ class QueryManager extends React.Component {
             const sourcecomponentName = selectedDataSource.kind.charAt(0).toUpperCase() + selectedDataSource.kind.slice(1);
             ElementToRender = allSources[sourcecomponentName];
         }
+
+        let buttonText = mode === 'edit' ? 'Save' : 'Create';
+        const buttonDisabled = isUpdating || isCreating;
+
+        if(isUpdating) { buttonText = 'Saving...'}
+        if(isCreating) { buttonText = 'Creating...'}
 
         return (
             <div className="query-manager">
@@ -202,8 +212,8 @@ class QueryManager extends React.Component {
                         <button className="btn btn-light" onClick={this.props.toggleQueryPaneHeight}>
                             <img src="https://www.svgrepo.com/show/129993/expand.svg" width="12" height="12"/>
                         </button>
-                        <button onClick={this.createOrUpdateDataQuery} className="btn btn-primary m-1 float-right">
-                            { mode === 'edit' ? 'Save' : 'Create' }
+                        <button onClick={this.createOrUpdateDataQuery} disabled={buttonDisabled} className="btn btn-primary m-1 float-right">
+                            { buttonText }
                         </button>
                     </div>
                 </div>
