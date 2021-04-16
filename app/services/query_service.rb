@@ -20,7 +20,6 @@ class QueryService
             else
                 parsed_options[key] = option["value"]
             end
-
         end
 
         service_class = "#{data_query.kind.capitalize}QueryService".constantize

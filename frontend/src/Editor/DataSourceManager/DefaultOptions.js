@@ -28,5 +28,20 @@ export const defaultOptions = {
     },
     'firestore': { 
         gcp_key: ''
+    },
+    'restapi': {
+        url: '',
+        auth_type: 'none',
+        grant_type: 'client_credentials',
+        add_token_to: 'header',
+        header_prefix: 'Bearer ',
+        access_token_url: '',
+        client_id: '',
+        client_secret: '',
+        scopes: 'read, write',
+        auth_url: '',
+        client_auth: 'header',
+        headers: [['', '']],
+        custom_auth_params: [['', '']]
     }
 }
