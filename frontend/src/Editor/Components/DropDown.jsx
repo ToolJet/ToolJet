@@ -10,12 +10,25 @@ export const DropDown = function DropDown({ id, width, height, component, onComp
     const values = component.definition.properties.values.value;
     const display_values = component.definition.properties.display_values.value;
 
-    const parsed_values = JSON.parse(values);
-    const parsed_display_values = JSON.parse(display_values);
+    let parsed_values = values;
 
-    const selectOptions = [
-        ...parsed_values.map((value, index) => { return {name: parsed_display_values[index], value: value }} )
-    ]
+    try {
+        parsed_values = JSON.parse(values)
+    } catch(err) { }
+    
+    let parsed_display_values = display_values;
+
+    try {
+        parsed_display_values = JSON.parse(display_values);
+    } catch(err) { }
+
+    let selectOptions = []
+    
+    try {
+        selectOptions = [
+            ...parsed_values.map((value, index) => { return {name: parsed_display_values[index], value: value }} )
+        ]
+    } catch(err) { }
 
     const currentValueProperty = component.definition.properties.value;
     const value = currentValueProperty ? currentValueProperty.value : '';
