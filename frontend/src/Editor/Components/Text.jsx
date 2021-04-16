@@ -1,5 +1,6 @@
 import React from 'react';
 import { resolve } from '@/_helpers/utils';
+import DOMPurify from 'dompurify';
 
 export const Text = function Text({ id, width, height, component, onComponentClick, currentState }) {
 
@@ -21,16 +22,18 @@ export const Text = function Text({ id, width, height, component, onComponentCli
 
     }
 
-    
-    const computedStyles = { 
+
+    const computedStyles = {
         color,
         width,
         height,
     }
 
     return (
-        <span style={computedStyles} onClick={() => onComponentClick(id, component) }>
-            {data}
-        </span>
+        <div style={computedStyles} onClick={() => onComponentClick(id, component) }>
+            <div
+                dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(data)}}
+            />
+        </div>
     );
 };
