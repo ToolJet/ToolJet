@@ -263,7 +263,7 @@ class Editor extends React.Component {
                             <Link 
                                 to={`/`} 
                                 className="">
-                                    <img src="/public/images/logo.svg" width="110" height="32" className="navbar-brand-image"/>
+                                    <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image"/>
                                 </Link>
                                 <a href="/">
                                 </a>
