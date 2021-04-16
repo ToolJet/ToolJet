@@ -2,6 +2,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/54455/table.svg', 
         name: 'Table', 
+        displayName: 'Table',
         description: 'Display paginated tabular data',
         component: 'Table',
         properties: {
@@ -47,45 +48,10 @@ export const componentTypes = [
             }
         }
     },
-
-    // { 
-    //     icon: 'https://www.svgrepo.com/show/322013/chart.svg', 
-    //     name: 'Chart', 
-    //     description: 'Display line charts, bar charts etc',
-    //     component: 'Chart',
-    //     properties: {
-    //         data: { type: 'json'},
-    //         visible: { type: 'string' },
-    //         loadingState: { type: 'string' },
-    //     },
-    //     defaultSize: {
-    //         width: 800,
-    //         height: 300
-    //     },
-    //     events: [
-            
-    //     ],
-    //     styles: {
-            
-    //     },
-    //     exposedVariables: {},
-    //     definition: {
-    //         properties: {
-    //             'visible': { value: true },
-    //             loadingState: { value: false },
-    //         },
-    //         events: {
-             
-    //         },
-    //         styles: {
-                
-    //         }
-    //     }
-    // },
-
     { 
         icon: 'https://www.svgrepo.com/show/243604/buy-click.svg', 
         name: 'Button', 
+        displayName: 'Button',
         description: 'Trigger actions: queries, alerts etc',
         component: 'Button',
         defaultSize: {
@@ -127,6 +93,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/38828/text.svg', 
         name: 'TextInput', 
+        displayName: 'Text Input',
         description: 'Text field for forms',
         component: 'TextInput',
         defaultSize: {
@@ -158,6 +125,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/14690/calendar.svg', 
         name: 'Datepicker', 
+        displayName: 'Date Picker',
         description: 'Select a date and time',
         component: 'Datepicker',
         defaultSize: {
@@ -189,6 +157,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/14690/calendar.svg', 
         name: 'DateRangePicker', 
+        displayName: 'Date Range Picker',
         description: 'Select a date range',
         component: 'DaterangePicker',
         defaultSize: {
@@ -223,6 +192,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/309414/checkbox-checked.svg', 
         name: 'Checkbox', 
+        displayName: 'Checkbox',
         description: 'A single checkbox',
         component: 'Checkbox',
         defaultSize: {
@@ -263,6 +233,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/317958/editor-left.svg', 
         name: 'Textarea', 
+        displayName: 'Textarea',
         description: 'Text area form field',
         component: 'TextArea',
         defaultSize: {
@@ -298,6 +269,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/219344/text.svg', 
         name: 'Text', 
+        displayName: 'Text',
         description: 'Display markdown or HTML',
         component: 'Text',
         properties: {
@@ -331,6 +303,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/35088/image.svg', 
         name: 'Image', 
+        displayName: 'Image',
         description: 'Display an Image',
         defaultSize: {
             width: 200,
@@ -364,6 +337,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/239864/grid.svg', 
         name: 'Container', 
+        displayName: 'Container',
         description: 'Wrapper for multiple components',
         defaultSize: {
             width: 200,
@@ -393,6 +367,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/46775/drop-down-list.svg', 
         name: 'Dropdown', 
+        displayName: 'Dropdown Selector',
         description: 'Select one value from options',
         defaultSize: {
             width: 200,
@@ -433,6 +408,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/16187/multiple-shots.svg', 
         name: 'Multiselect', 
+        displayName: 'Multiselect',
         description: 'Select multiple values from options',
         defaultSize: {
             width: 200,
@@ -473,6 +449,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/16476/map.svg', 
         name: 'Map', 
+        displayName: 'Map',
         description: 'Display maps with markers.',
         component: 'Map',
         properties: {
@@ -506,6 +483,7 @@ export const componentTypes = [
     { 
         icon: 'https://www.svgrepo.com/show/5908/text-document.svg', 
         name: 'RichTextEditor', 
+        displayName: 'Rich Text Editor',
         description: 'Rich text editor',
         component: 'RichTextEditor',
         defaultSize: {

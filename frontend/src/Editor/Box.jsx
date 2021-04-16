@@ -66,7 +66,7 @@ export const Box = function Box({ id, width, height, yellow, preview, component,
                         <center><img src={component.icon}/></center>
                     </div>
                     <div className="col-md-9">
-                        <span className="component-title" >{component.name}</span>
+                        <span className="component-title" >{component.displayName}</span>
                         <small className="component-description">{component.description}</small>
                     </div>
                 </div>
