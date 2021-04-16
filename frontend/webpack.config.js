@@ -4,12 +4,12 @@ const path = require('path');
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const API_URL = {
-    production: 'https://backend.stackegg.com',
+    production: 'https://cryptic-sea-27486.herokuapp.com',
     development: 'http://localhost:3000'
 }
 
 const ASSET_PATH = {
-    production: 'https://dashboard.stackegg.com/',
+    production: 'https://app.tooljet.io/',
     development: '/public/'
 }
 
