@@ -29,7 +29,8 @@ class DataSourceManager extends React.Component {
     componentDidMount() {
         console.log('props',this.props);
         this.setState({
-            appId: this.props.appId
+            appId: this.props.appId,
+            selectedDataSource: null
         })
     }
 
@@ -54,7 +55,6 @@ class DataSourceManager extends React.Component {
     hideModal = () => {
         this.setState({ 
             showModal: false,
-            selectedDataSource: null
         });
     }
 
