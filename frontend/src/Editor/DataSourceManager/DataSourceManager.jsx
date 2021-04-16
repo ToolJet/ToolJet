@@ -85,9 +85,13 @@ class DataSourceManager extends React.Component {
         const  { appId, options, selectedDataSource, name } = this.state;
         const kind = selectedDataSource.kind;
 
+        this.setState({ testingConnection: true });
+
         datasourceService.test(appId, name, kind, options).then((data) => {
+            this.setState({ testingConnection: false })
             toast.success('Datasource Connection Tested, Successfully!', { hideProgressBar: true, position: "top-center", });
         },(error) => {
+            this.setState({ testingConnection: false })
             toast.error('Datasource Connection Error', { hideProgressBar: true, position: "top-center", });
 
         });
@@ -192,6 +196,7 @@ class DataSourceManager extends React.Component {
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         testDataSource={this.testDataSource}
+                                        testingConnection={this.state.testingConnection}
                                         options={options}
                                         hideModal={this.hideModal}
                                     />
