@@ -11,6 +11,7 @@ import { Postgresql } from './Postgresql';
 import { Mysql } from './Mysql';
 import { Stripe } from './Stripe';
 import { Firestore } from './Firestore';
+import { RestApi } from './RestApi';
 import { defaultOptions } from './DefaultOptions';
 
 class DataSourceManager extends React.Component {
@@ -63,7 +64,9 @@ class DataSourceManager extends React.Component {
         const  { appId, options, selectedDataSource, name } = this.state;
         const kind = selectedDataSource.kind;
 
-        const parsedOptions = Object.keys(options).map((key) =>  { return {
+        const parsedOptions = Object.keys(options).map((key) =>  { 
+            console.log('ky', key);
+            return {
             key: key,
             value: options[key],
             encrypted: selectedDataSource.options[key].encrypted
@@ -214,6 +217,15 @@ class DataSourceManager extends React.Component {
 
                                 {selectedDataSource.kind === 'firestore' && 
                                     <Firestore
+                                        optionchanged={this.optionchanged}
+                                        createDataSource={this.createDataSource}
+                                        options={options}
+                                        hideModal={this.hideModal}
+                                    />
+                                }
+
+                                {selectedDataSource.kind === 'restapi' && 
+                                    <RestApi
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}

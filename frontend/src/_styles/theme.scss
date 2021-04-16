@@ -672,9 +672,21 @@ body {
 }
 
 .select-search__option.is-highlighted.is-selected, .select-search__option.is-selected:hover {
-    background: #4ac4d6;
+    background: #5fa7e5;
 }
 
 .select-search__option.is-highlighted, .select-search__option:hover {
-    background: #4ac4d6;
+    background: #5fa7e5;
+}
+
+.select-search__options {
+    margin-left: -33px
+}
+
+.select-search__option.is-highlighted, .select-search__option:not(.is-selected):hover {
+    background: rgb(199,223,243);
+}
+
+.select-search:not(.select-search--multiple) .select-search__input:hover {
+    border-color: #49c3d6;
 }
