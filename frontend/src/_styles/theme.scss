@@ -339,8 +339,6 @@ body {
     }
 
     .main {
-        margin-left: 260px; 
-        margin-right: 260px; 
         padding: 0px 10px;
 
         .canvas-container::-webkit-scrollbar {
@@ -354,6 +352,7 @@ body {
 
         .canvas-container { 
             height: 100%;
+            width: 100%;
             position: fixed;
             overflow-y: auto;
             overflow-x: auto;
@@ -368,7 +367,6 @@ body {
                 background: #edeff5;
                 padding: 10px;
                 margin: 0px auto;
-                margin-left: 50px;
                 background-size: 80px 80px;
                 // background-image: url(/public/images/tile.png);
                 background-repeat: repeat;
