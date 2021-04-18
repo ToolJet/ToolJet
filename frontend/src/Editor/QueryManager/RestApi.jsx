@@ -84,7 +84,7 @@ class Restapi extends React.Component {
                         <div class="mb-3">
                             <div class="row g-2">
                                 <div class="col-md-2">
-                                    <label class="form-label pt-2">URL parameters</label>
+                                    <label class="form-label pt-2">{option}</label>
                                 </div>
                                 <div className="col-md-10">
                                     {options[option].map((pair, index) => 
