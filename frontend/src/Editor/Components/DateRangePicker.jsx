@@ -44,6 +44,7 @@ export const DaterangePicker = function DaterangePicker({ id, width, height, com
             <DateRangePicker
                 startDate={startDate}
                 startDateId="startDate" 
+                isOutsideRange={() => false}
                 endDate={endDate}
                 endDateId="endDate"
                 onDatesChange={({ startDate, endDate }) => onDateChange({ startDate, endDate })} 
