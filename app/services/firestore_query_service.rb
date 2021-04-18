@@ -1,12 +1,13 @@
 class FirestoreQueryService
     require "google/cloud/firestore"
 
-    attr_accessor :data_query, :options, :source_options
+    attr_accessor :data_query, :options, :source_options, :current_user
 
-    def initialize(data_query, options, source_options)
+    def initialize(data_query, options, source_options, current_user)
         @data_query = data_query
         @options = options
         @source_options = source_options
+        @current_user = current_user
     end
 
     def process
