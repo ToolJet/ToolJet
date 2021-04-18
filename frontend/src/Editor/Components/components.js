@@ -109,7 +109,9 @@ export const componentTypes = [
         styles: {
             
         },
-        exposedVariables: {},
+        exposedVariables: {
+            value: {}
+        },
         definition: {
             properties: {
                 'placeholder': { value: 'Placeholder text' }
@@ -133,7 +135,7 @@ export const componentTypes = [
             height: 60
         },
         properties: {
-            
+            format: { type: 'string'}
         },
         events: [
 
@@ -141,10 +143,12 @@ export const componentTypes = [
         styles: {
             
         },
-        exposedVariables: {},
+        exposedVariables: {
+            value: {}
+        },
         definition: {
             properties: {
-                
+                'format': { value: 'DD/MM/YYYY' }
             },
             events: {
                 
