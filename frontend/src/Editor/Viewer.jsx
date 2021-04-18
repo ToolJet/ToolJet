@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { getDynamicVariables, resolve, resolve_references } from '@/_helpers/utils';
 import { Confirm } from './Viewer/Confirm';
 import moment from 'moment';
+import { toast } from 'react-toastify';
 
 class Viewer extends React.Component {
     constructor(props) {
@@ -74,8 +75,16 @@ class Viewer extends React.Component {
     runTransformation = (rawData, transformation) => {
         const data = rawData;
         const evalFunction = Function(['data', 'moment', 'currentState'], transformation);
-        return evalFunction(data, moment, this.state.currentState);
-}
+        let result = [];
+
+        try { 
+            result = evalFunction(data, moment, this.state.currentState);
+        } catch(err) {
+            toast.error(err.message, { hideProgressBar: true });
+        }
+
+        return result;
+    }
 
     fetchOAuthToken = (authUrl, dataSourceId) => {
         localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
