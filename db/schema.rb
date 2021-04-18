@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_15_070857) do
+ActiveRecord::Schema.define(version: 2021_04_18_071552) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -63,6 +63,16 @@ ActiveRecord::Schema.define(version: 2021_04_15_070857) do
     t.uuid "data_source_id"
     t.index ["app_id"], name: "index_data_queries_on_app_id"
     t.index ["data_source_id"], name: "index_data_queries_on_data_source_id"
+  end
+
+  create_table "data_source_user_oauth2s", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.uuid "data_source_id", null: false
+    t.text "encrypted_options"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["data_source_id"], name: "index_data_source_user_oauth2s_on_data_source_id"
+    t.index ["user_id"], name: "index_data_source_user_oauth2s_on_user_id"
   end
 
   create_table "data_sources", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -132,6 +142,8 @@ ActiveRecord::Schema.define(version: 2021_04_15_070857) do
   add_foreign_key "apps", "organizations"
   add_foreign_key "data_queries", "apps"
   add_foreign_key "data_queries", "data_sources"
+  add_foreign_key "data_source_user_oauth2s", "data_sources"
+  add_foreign_key "data_source_user_oauth2s", "users"
   add_foreign_key "data_sources", "apps"
   add_foreign_key "endpoints", "integrations"
   add_foreign_key "organization_users", "organizations"
