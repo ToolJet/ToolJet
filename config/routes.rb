@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   end
 
   resources :data_sources, only: [:create, :index] do
+    post '/authorize_oauth2', to: "data_sources#authorize_oauth2"
     collection do
         post '/test_connection', to: 'data_sources#test_connection'
     end
