@@ -40,7 +40,7 @@ export const DaterangePicker = function DaterangePicker({ id, width, height, com
     }
 
     return (
-        <div onClick={() => onComponentClick(id, component) }>
+        <div style={{width, height}} onClick={() => onComponentClick(id, component) }>
             <DateRangePicker
                 startDate={startDate}
                 startDateId="startDate" 

@@ -28,7 +28,7 @@ return data.filter(row => row.amount > 1000);`;
             <br></br>
             {options.enableTransformation && 
                 <CodeMirror
-                    height ="100px"
+                    height ="200px"
                     fontSize="1"
                     onChange={ (instance, change) => changeOption('transformation', instance.getValue()) }
                     value={value}
