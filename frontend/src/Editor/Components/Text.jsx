@@ -1,5 +1,5 @@
 import React from 'react';
-import { resolve } from '@/_helpers/utils';
+import { resolve_references } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 
 export const Text = function Text({ id, width, height, component, onComponentClick, currentState }) {
@@ -14,7 +14,7 @@ export const Text = function Text({ id, width, height, component, onComponentCli
 
         if (matchedParams) {
             for(const param of matchedParams) {
-                const resolvedParam = resolve(param, currentState, '');
+                const resolvedParam = resolve_references(param, currentState, '');
                 console.log('resolved param', param, resolvedParam);
                 data = data.replace(param, resolvedParam);
             }

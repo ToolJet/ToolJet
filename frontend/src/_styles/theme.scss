@@ -688,3 +688,9 @@ body {
 .select-search:not(.select-search--multiple) .select-search__input:hover {
     border-color: #49c3d6;
 }
+
+.DateInput_input {
+    font-weight: 300;
+    font-size: 14px;
+    padding: 4px 7px 2px;
+}

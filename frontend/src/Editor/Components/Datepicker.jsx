@@ -7,13 +7,17 @@ export const Datepicker = function Datepicker({ id, width, height, component, on
 
     console.log('currentState', currentState);
 
+    const formatProp = component.definition.properties.format;
+
     function onDateChange(event) {
-        onComponentOptionChanged(component, 'value', event.format())
+        onComponentOptionChanged(component, 'value', event.format(formatProp.value))
     }
 
     return (
-        <Datetime 
-            onChange={onDateChange}
-        />
-    );
+        <div style={{width, height}} onClick={() => onComponentClick(id, component) }>
+            <Datetime 
+                onChange={onDateChange}
+            />
+        </div>
+);
 };
