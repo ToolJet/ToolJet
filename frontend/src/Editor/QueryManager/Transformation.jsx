@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 
 export const Transformation = ({ changeOption, options  }) => {
 
-    const value = options.transformation || `// write your code here
+    const defaultValue = options.transformation || `// write your code here
 // return value will be set as data and the original data will be available as rawData
 return data.filter(row => row.amount > 1000);`;
+
+    const [value, setValue] = useState(defaultValue);
+
+    useEffect(() => {
+        setValue(defaultValue);
+    }, [defaultValue]);
 
     return (
         <div className="field mb-2">
