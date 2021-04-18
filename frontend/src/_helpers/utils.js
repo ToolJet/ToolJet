@@ -1,3 +1,4 @@
+import moment from 'moment';
 
 export function findProp(obj, prop, defval){
     if (typeof defval == 'undefined') defval = null;
@@ -42,6 +43,20 @@ export function resolve_references(object, state) {
     let resolved = null;
 
     if (typeof object === "string") {
+        if(object.startsWith("{{") && object.endsWith("}}")) {
+            const code = object.replace('{{', '').replace('}}', '');
+            const evalFunction = Function(['components', 'queries', 'globals', 'moment'], `return ${code}`);
+            let result = '';
+    
+            try { 
+                result = evalFunction(state.components, state.queries, state.globals, moment);
+            } catch(err) {
+                console.log('eval_error', err);
+            }
+
+            return result;
+        }
+        
         const dynamicVariables = getDynamicVariables(object);
         if (dynamicVariables) {
             if(dynamicVariables.length == 1 && dynamicVariables[0] === object) {
