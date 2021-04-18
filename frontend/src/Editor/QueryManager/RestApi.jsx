@@ -60,11 +60,11 @@ class Restapi extends React.Component {
                         <div class="row g-2">
                             <div class="col-auto">
                             <select class="form-select" value={options.method} onChange={(e) => this.changeOption('method', e.target.value)}>
-                                <option value="1">GET</option>
-                                <option value="2">POST</option>
-                                <option value="2">PUT</option>
-                                <option value="2">PATCH</option>
-                                <option value="3">DELETE</option>
+                                <option value="get">GET</option>
+                                <option value="post">POST</option>
+                                <option value="put">PUT</option>
+                                <option value="patch">PATCH</option>
+                                <option value="delete">DELETE</option>
                             </select>
                             </div>
                             <div class="col">

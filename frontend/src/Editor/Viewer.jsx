@@ -78,6 +78,11 @@ class Viewer extends React.Component {
         return evalFunction(data);
     }
 
+    fetchOAuthToken = (authUrl, dataSourceId) => {
+        localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+        window.open(authUrl);
+    }
+
     runQuery = (queryId, queryName, confirmed = undefined ) => {
         const dataQuery = JSON.parse(JSON.stringify(this.state.app.data_queries.find(query => query.id === queryId)));
 
@@ -109,6 +114,15 @@ class Viewer extends React.Component {
         this.setState({currentState: newState}, () => {
             dataqueryService.run(queryId, options).then(data => 
                 {
+
+                    if(data.error) {
+                        if(data.error.code === "oauth2_needs_auth") {
+                            const url = data.error.data.auth_url; // Backend generates and return sthe auth url
+                            this.fetchOAuthToken(url, dataQuery.data_source_id);
+                        }
+                        return;
+                    }
+
                     let rawData = data.data;
                     let finalData = data.data;
                     finalData = this.runTransformation(rawData, options.transformation);
@@ -145,11 +159,10 @@ class Viewer extends React.Component {
 
             if(event.actionId === 'open-webpage') {
                 const url = resolve_references(event.options.url, this.state.currentState);
-               window.open(url, '_blank');
+                window.open(url, '_blank');
             }
 
             if(event.actionId === 'run-query') {
-
                 const { queryId, queryName } = event.options;
                 this.runQuery(queryId, queryName);
             }
