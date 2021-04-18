@@ -59,7 +59,7 @@ class Restapi extends React.Component {
                     <div class="mb-3">
                         <div class="row g-2">
                             <div class="col-auto">
-                            <select class="form-select" onChange={(e) => this.changeOption('method', e.target.value)}>
+                            <select class="form-select" value={options.method} onChange={(e) => this.changeOption('method', e.target.value)}>
                                 <option value="1">GET</option>
                                 <option value="2">POST</option>
                                 <option value="2">PUT</option>
@@ -71,6 +71,7 @@ class Restapi extends React.Component {
                                 <input 
                                     type="text" 
                                     class="form-control" 
+                                    value={options.url}
                                     onChange={(e) => this.changeOption('url', e.target.value)}
                                     placeholder="https://api.example.com/v2/endpoint.json" 
                                 />
