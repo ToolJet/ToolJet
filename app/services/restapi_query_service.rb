@@ -48,7 +48,12 @@ class RestapiQueryService
                 query: url_params.to_h,
                 body: body.to_h 
             )
-        end    
+        end
+
+        if response.code == 401
+            auth_url = "#{source_options['auth_url']}?response_type=code&client_id=#{source_options['client_id']}&redirect_uri=#{ENV.fetch("TOOLJET_HOST")}/oauth2/authorize&scope=#{source_options['scopes']}"
+            return { error: { message: 'needs authorization', code: 'oauth2_needs_auth', data: { auth_url: auth_url } } }
+        end
 
         { code: response.code, data: JSON.parse(response.body) }
     end
