@@ -136,7 +136,8 @@ export const componentTypes = [
         },
         properties: {
             format: { type: 'string'},
-            enableTime: { type: 'string'}
+            enableTime: { type: 'string'},
+            enableDate: { type: 'string'}
         },
         events: [
 
@@ -150,7 +151,8 @@ export const componentTypes = [
         definition: {
             properties: {
                 'format': { value: 'DD/MM/YYYY' },
-                enableTime: { value: '{{false}}' }
+                enableTime: { value: '{{false}}' },
+                enableDate: { value: '{{true}}' }
             },
             events: {
                 
