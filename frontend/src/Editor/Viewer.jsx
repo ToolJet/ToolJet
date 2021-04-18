@@ -73,8 +73,8 @@ class Viewer extends React.Component {
 
     runTransformation = (rawData, transformation) => {
         const data = rawData;
-        const evalFunction = Function(['data', 'moment'], transformation);
-        return evalFunction(data, moment);
+        const evalFunction = Function(['data', 'moment', 'currentState'], transformation);
+        return evalFunction(data, moment, this.state.currentState);
 }
 
     fetchOAuthToken = (authUrl, dataSourceId) => {

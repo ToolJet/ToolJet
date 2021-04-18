@@ -60,6 +60,7 @@ class Firestore extends React.Component {
                             <select 
                                 onChange={(e) => { e.stopPropagation(); this.changeOperation(e.target.value)}}
                                 placeholder="Select a value"
+                                value={this.state.options.operation}
                                 class="form-select">
                                     <option value="get_document">Get Document</option>
                                     <option value="update_document">Update Document</option>
