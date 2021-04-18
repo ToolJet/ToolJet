@@ -1,10 +1,11 @@
 class QueryService
 
-    attr_accessor :data_query, :options
+    attr_accessor :data_query, :options, :current_user
 
-    def initialize(data_query, options)
+    def initialize(data_query, options, current_user)
         @data_query = data_query
         @options = options
+        @current_user = current_user
     end
 
     def process
@@ -14,7 +15,6 @@ class QueryService
         data_source_options.keys.each do |key|
             option = data_source_options[key]
 
-
             if option["encrypted"]
                 parsed_options[key] = Credential.find(option["credential_id"]).value
             else
@@ -23,7 +23,7 @@ class QueryService
         end
 
         service_class = "#{data_query.kind.capitalize}QueryService".constantize
-        service = service_class.new data_query, options, parsed_options
+        service = service_class.new data_query, options, parsed_options, current_user
         service.process
     end
 

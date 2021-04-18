@@ -1,12 +1,13 @@
 class StripeQueryService
 
-    attr_accessor :data_query, :options, :data_source, :source_options
+    attr_accessor :data_query, :options, :data_source, :source_options, :current_user
 
-    def initialize(data_query, options)
+    def initialize(data_query, options, source_options, current_user)
         @data_query = data_query
         @data_source = data_query.data_source
         @options = options
         @source_options = source_options
+        @current_user = current_user
     end
 
     def replace_path_params(url, path_params)
