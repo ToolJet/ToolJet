@@ -3,11 +3,10 @@ import { appService, dataqueryService, authenticationService } from '@/_services
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Container } from './Container';
-import { CustomDragLayer } from './CustomDragLayer';
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getDynamicVariables, resolve, resolve_references } from '@/_helpers/utils';
 import { Confirm } from './Viewer/Confirm';
+import moment from 'moment';
 
 class Viewer extends React.Component {
     constructor(props) {
@@ -74,9 +73,9 @@ class Viewer extends React.Component {
 
     runTransformation = (rawData, transformation) => {
         const data = rawData;
-        const evalFunction = Function(['data'], transformation);
-        return evalFunction(data);
-    }
+        const evalFunction = Function(['data', 'moment'], transformation);
+        return evalFunction(data, moment);
+}
 
     fetchOAuthToken = (authUrl, dataSourceId) => {
         localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
@@ -125,7 +124,10 @@ class Viewer extends React.Component {
 
                     let rawData = data.data;
                     let finalData = data.data;
-                    finalData = this.runTransformation(rawData, options.transformation);
+
+                    if(options.enableTransformation) {
+                        finalData = this.runTransformation(rawData, options.transformation);
+                    }
     
                     if(options.showSuccessNotification) {
                         const notificationDuration = options.notificationDuration || 5;
