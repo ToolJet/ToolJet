@@ -4,7 +4,8 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const datasourceService = {
     create,
     getAll,
-    test
+    test,
+    setOauth2Token
 };
 
 function getAll(appId) {
@@ -43,4 +44,14 @@ function test(app_id, name, kind, options) {
 
     const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/data_sources/test_connection`, requestOptions).then(handleResponse);
+}
+
+function setOauth2Token(dataSourceId, body) {
+    const headers = {
+        ...authHeader(),
+        'Content-Type': 'application/json'
+    }
+
+    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+    return fetch(`${config.apiUrl}/data_sources/${dataSourceId}/authorize_oauth2`, requestOptions).then(handleResponse);
 }
