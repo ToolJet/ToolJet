@@ -18,7 +18,7 @@ export const Firestore = ({ optionchanged, createDataSource, options  }) => {
                         rows="15"
                         className="form-control w-100"
                         onChange={(e) => { optionchanged('gcp_key', e.target.value) }}
-                        value={options.gcp_key}>
+                        value={options.gcp_key.value}>
                     </textarea>
                 </div>
             </div>

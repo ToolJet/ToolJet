@@ -1,47 +1,49 @@
 export const defaultOptions = { 
     'postgresql': {
-        host: 'localhost',
-        port: 5432,
-        username: '',
-        password: ''
+        host: { value: 'localhost' },
+        port: { value: 5432 },
+        database: { value: '' },
+        username: { value: '' },
+        password: { value: '' },
     },
     'mysql': {
-        host: 'localhost',
-        port: 3306,
-        username: '',
-        password: ''
+        host: { value: 'localhost' },
+        port: { value: 3306 },
+        database: { value: '' },
+        username: { value: '' },
+        password: { value: '' },
     },
     'redis': {
-        host: 'localhost',
-        port: 6379,
-        username: '',
-        password: ''
+        host: { value: 'localhost' },
+        port: { value: 6379 },
+        username: { value: '' },
+        password: { value: '' },
     },
     'elasticsearch': {
-        host: 'localhost',
-        port: 9000,
-        username: '',
-        password: ''
+        host: { value: 'localhost' },
+        port: { value: 9000 },
+        username: { value: '' },
+        password: { value: '' },
     },
     'stripe': { 
-        api_key: ''
+        api_key: { value: '' },
     },
     'firestore': { 
-        gcp_key: ''
+        gcp_key: { value: '' },
     },
     'restapi': {
-        url: '',
-        auth_type: 'none',
-        grant_type: 'client_credentials',
-        add_token_to: 'header',
-        header_prefix: 'Bearer ',
-        access_token_url: '',
-        client_id: '',
-        client_secret: '',
-        scopes: 'read, write',
-        auth_url: '',
-        client_auth: 'header',
-        headers: [['', '']],
-        custom_auth_params: [['', '']]
+        url: { value: '' },
+        auth_type: { value: 'none'},
+        grant_type: { value: 'client_credentials'},
+        add_token_to: { value: 'header'},
+        header_prefix: { value: 'Bearer '},
+        access_token_url: { value: ''},
+        client_id: { value: ''},
+        client_secret: { value: ''},
+        scopes: { value: 'read, write'},
+        auth_url: { value: ''},
+        client_auth: { value: 'header'},
+        headers: { value: [['', '']]},
+        custom_auth_params: { value: [['', '']] }
     }
 }

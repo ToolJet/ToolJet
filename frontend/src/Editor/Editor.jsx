@@ -146,7 +146,7 @@ class Editor extends React.Component {
     renderDataSource = (data_source) => {
         const sourceMeta = DataSourceTypes.find(source => source.kind === data_source.kind);
         return (
-            <tr key={data_source.name}>
+            <tr role="button" key={data_source.name} onClick={() => { console.log('dss', data_source); this.setState({ selectedDataSource: data_source, showDataSourceManagerModal: true })}}>
                 <td>
                     <img src={sourceMeta.icon} width="20" height="20"/> {data_source.name}
                 </td>
@@ -491,11 +491,20 @@ class Editor extends React.Component {
                                     <div className="col-md-9">
                                        <h5 className="p-1 text-muted">DATASOURCES</h5>
                                     </div>
-                                    <div className="col-md-3">
-                                        <DataSourceManager 
-                                            appId={appId}
-                                            dataSourcesChanged={this.dataSourcesChanged}
-                                        />
+                                        <div className="col-md-3">
+                                        <button className="btn btn-light btn-sm" 
+                                            onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })}>
+                                                +
+                                        </button>
+                                        {this.state.showDataSourceManagerModal && 
+                                            <DataSourceManager 
+                                                appId={appId}
+                                                hideModal={() => this.setState({ showDataSourceManagerModal: false })}
+                                                dataSourcesChanged={this.dataSourcesChanged}
+                                                showDataSourceManagerModal={this.state.showDataSourceManagerModal}
+                                                selectedDataSource={this.state.selectedDataSource}
+                                            />
+                                        }
                                     </div>
                                 </div>
                                 {loadingDataSources ?  
