@@ -264,13 +264,14 @@ class Editor extends React.Component {
                                 to={`/`} 
                                 className="">
                                     <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image"/>
-                                </Link>
+                            </Link>
                                 <a href="/">
                                 </a>
                             </h1>
                             {this.state.app &&
                                 <input 
                                     type="text" 
+                                    style={{width: '200px', left: '80px', position: 'absolute'}}
                                     onChange={(e) => this.onNameChanged(e.target.value)}
                                     className="form-control-plaintext form-control-plaintext-sm" 
                                     value={this.state.app.name}
