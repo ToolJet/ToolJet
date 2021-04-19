@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
 
-export const Postgresql = ({ optionchanged, createDataSource, testDataSource, options, testingConnection  }) => {
+export const Postgresql = ({ optionchanged, createDataSource, testDataSource, options, testingConnection, isSaving  }) => {
 
     return (
         <div>
@@ -46,8 +46,8 @@ export const Postgresql = ({ optionchanged, createDataSource, testDataSource, op
                     <Button className="m-2" variant="success" onClick={testDataSource} disabled={testingConnection}>
                         {testingConnection ? 'Testing in progress..' :  'Test Connection' }
                     </Button>
-                    <Button className="m-2" variant="primary" onClick={createDataSource}>
-                        Save
+                    <Button className="m-2" disabled={isSaving} variant="primary" onClick={createDataSource}>
+                        {isSaving ? 'Saving...' : 'Save'}
                     </Button>
                 </div>
             </div>

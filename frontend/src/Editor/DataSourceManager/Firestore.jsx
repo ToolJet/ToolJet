@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
 
-export const Firestore = ({ optionchanged, createDataSource, options  }) => {
+export const Firestore = ({ optionchanged, createDataSource, options, isSaving }) => {
 
     return (
         <div>
@@ -33,8 +33,8 @@ export const Firestore = ({ optionchanged, createDataSource, options  }) => {
                     <Button className="m-2" variant="success" onClick={() => hideModal()} >
                         Test
                     </Button>
-                    <Button className="m-2" variant="primary" onClick={createDataSource}>
-                        Save
+                    <Button className="m-2" disabled={isSaving} variant="primary" onClick={createDataSource}>
+                        {isSaving ? 'Saving...' : 'Save'}
                     </Button>
                 </div>
             </div>

@@ -34,7 +34,8 @@ class DataSourceManager extends React.Component {
             appId: props.appId,
             selectedDataSource,
             options,
-            dataSourceMeta
+            dataSourceMeta,
+            isSaving: false
         };
     }
 
@@ -91,13 +92,17 @@ class DataSourceManager extends React.Component {
         });
 
         if(selectedDataSource.id) {
+            this.setState({ isSaving: true });
             datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then((data) => {
+                this.setState({ isSaving: false});
                 this.hideModal();
                 toast.success('Datasource Saved', { hideProgressBar: true, position: "top-center", });
                 this.props.dataSourcesChanged();
             });
         } else { 
+            this.setState({ isSaving: true});
             datasourceService.create(appId, name, kind, parsedOptions).then((data) => {
+                this.setState({ isSaving: false});
                 this.hideModal();
                 toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
                 this.props.dataSourcesChanged();
@@ -124,7 +129,7 @@ class DataSourceManager extends React.Component {
     }
    
     render() {
-        const { dataSourceMeta, selectedDataSource, options } = this.state;
+        const { dataSourceMeta, selectedDataSource, options, isSaving } = this.state;
 
         return (
             <div>
@@ -204,6 +209,7 @@ class DataSourceManager extends React.Component {
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}
+                                        isSaving={isSaving}
                                         hideModal={this.hideModal}
                                     />
                                 }
@@ -212,6 +218,7 @@ class DataSourceManager extends React.Component {
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}
+                                        isSaving={isSaving}
                                         hideModal={this.hideModal}
                                     />
                                 }
@@ -222,6 +229,7 @@ class DataSourceManager extends React.Component {
                                         testDataSource={this.testDataSource}
                                         testingConnection={this.state.testingConnection}
                                         options={options}
+                                        isSaving={isSaving}
                                         hideModal={this.hideModal}
                                     />
                                 }
@@ -231,6 +239,7 @@ class DataSourceManager extends React.Component {
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}
+                                        isSaving={isSaving}
                                         hideModal={this.hideModal}
                                     />
                                 }
@@ -240,6 +249,7 @@ class DataSourceManager extends React.Component {
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}
+                                        isSaving={isSaving}
                                         hideModal={this.hideModal}
                                     />
                                 }
@@ -249,6 +259,7 @@ class DataSourceManager extends React.Component {
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}
+                                        isSaving={isSaving}
                                         hideModal={this.hideModal}
                                     />
                                 }
@@ -258,6 +269,7 @@ class DataSourceManager extends React.Component {
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}
+                                        isSaving={isSaving}
                                         hideModal={this.hideModal}
                                     />
                                 }
