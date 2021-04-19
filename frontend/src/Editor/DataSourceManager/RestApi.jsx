@@ -7,35 +7,35 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
     const [authType, setAuthType] = useState(options.auth_type);
 
     useEffect(() => {
-        setAuthType(options.auth_type);
+        setAuthType(options.auth_type.value);
     }, [options.auth_type]);
 
     const [grantType, setGrantType] = useState(options.grant_type);
 
     useEffect(() => {
-        setGrantType(options.grant_type);
+        setGrantType(options.grant_type.value);
     }, [options.grant_type]);
 
-    const [addTokenTo, setAddTokenTo] = useState(options.add_token_to);
+    const [addTokenTo, setAddTokenTo] = useState(options.add_token_to.value);
 
     useEffect(() => {
-        setAddTokenTo(options.add_token_to);
+        setAddTokenTo(options.add_token_to.value);
     }, [options.add_token_to]);
 
     function  addNewKeyValuePair(option) {
-        const newPairs = [...options[option], ['', '']] ;
+        const newPairs = [...options[option].value, ['', '']] ;
         optionchanged(option, newPairs);
     }
 
     function removeKeyValuePair(option, index) {
-        options[option].splice(index, 1);
-        optionchanged(option, options[option]);
+        options[option].value.splice(index, 1);
+        optionchanged(option, options[option].value);
     }
 
     function keyValuePairValueChanged(e, key_index, option, index) {
         const value = e.target.value;
-        options[option][index][key_index] = value;
-        optionchanged(option, options[option]);
+        options[option].value[index][key_index] = value;
+        optionchanged(option, options[option].value);
     }
 
     return (
@@ -48,7 +48,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                         placeholder="https://api.example.com/v1/"
                         className="form-control" 
                         onChange={(e) => optionchanged('url', e.target.value)} 
-                        value={options.url} 
+                        value={options.url.value} 
                     />
                 </div>
             </div>
@@ -68,7 +68,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                         </div>
                     </div>
                     <div className="col-md-12 mb-3">
-                        {options.headers.map((pair, index) => 
+                        {options.headers.value.map((pair, index) => 
                             <div class="input-group">
                                 <input 
                                     type="text" 
@@ -104,7 +104,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                         {name: 'None', value: 'none'},
                         {name: 'OAuth 2.0', value: 'oauth2'}
                     ]}
-                    value={options.auth_type} 
+                    value={options.auth_type.value} 
                     search={false}
                     onChange={(value) => { optionchanged('auth_type', value)}}
                     filterOptions={fuzzySearch}
@@ -123,7 +123,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                                 {name: 'Client Credentials', value: 'client_credentials'},
                                 {name: 'Authorization Code', value: 'authorization_code'}
                             ]}
-                            value={options.grant_type} 
+                            value={options.grant_type.value} 
                             search={false}
                             onChange={(value) => { optionchanged('grant_type', value)}}
                             filterOptions={fuzzySearch}
@@ -136,7 +136,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                                 {name: 'Request Header', value: 'header'},
                                 {name: 'Request URL', value: 'url'}
                             ]}
-                            value={options.add_token_to} 
+                            value={options.add_token_to.value} 
                             search={false}
                             onChange={(value) => { optionchanged('add_token_to', value)}}
                             filterOptions={fuzzySearch}
@@ -146,7 +146,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                         {(addTokenTo === 'header') && 
                             <div className="col-md-12">
                                 <label className="form-label text-muted mt-3">Header Prefix</label>
-                                <input type="text" className="form-control" onChange={(e) => optionchanged('header_prefix', e.target.value)} value={options.header_prefix} />
+                                <input type="text" className="form-control" onChange={(e) => optionchanged('header_prefix', e.target.value)} value={options.header_prefix.value} />
                             </div>
                         }
                     </div>
@@ -158,13 +158,13 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                             placeholder="https://api.example.com/oauth/token"
                             className="form-control"
                             onChange={(e) => optionchanged('access_token_url', e.target.value)}
-                            value={options.access_token_url}
+                            value={options.access_token_url.value}
                         />
                     </div>
 
                     <div className="col-md-12">
                         <label className="form-label text-muted mt-3">Client ID</label>
-                        <input type="text" className="form-control" onChange={(e) => optionchanged('client_id', e.target.value)} value={options.client_id} />
+                        <input type="text" className="form-control" onChange={(e) => optionchanged('client_id', e.target.value)} value={options.client_id.value} />
                     </div>
 
                     <div className="col-md-12">
@@ -175,12 +175,12 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                                 Encrypted
                             </small>
                         </label>
-                        <input type="text" className="form-control" onChange={(e) => optionchanged('client_secret', e.target.value)} value={options.client_secret} />
+                        <input type="text" className="form-control" onChange={(e) => optionchanged('client_secret', e.target.value)} value={options.client_secret.value} />
                     </div>
 
                     <div className="col-md-12">
                         <label className="form-label text-muted mt-3">Scope(s)</label>
-                        <input type="text" className="form-control" onChange={(e) => optionchanged('scopes', e.target.value)} value={options.scopes} />
+                        <input type="text" className="form-control" onChange={(e) => optionchanged('scopes', e.target.value)} value={options.scopes.value} />
                     </div>
 
                     {(grantType === 'authorization_code') && 
@@ -192,7 +192,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                                     placeholder="https://api.example.com/oauth/authorize"
                                     className="form-control" 
                                     onChange={(e) => optionchanged('auth_url', e.target.value)} 
-                                    value={options.auth_url} 
+                                    value={options.auth_url.value} 
                                 />
                             </div>
 
@@ -210,7 +210,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                                 </div>
                             </div>
                             <div className="col-md-12 mb-3">
-                                {options.custom_auth_params.map((pair, index) => 
+                                {options.custom_auth_params.value.map((pair, index) => 
                                     <div class="input-group">
                                         <input 
                                             type="text" 
@@ -246,7 +246,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                                     {name: 'Send as Basic Auth header', value: 'header'},
                                     {name: 'Send client credentials in body ', value: 'body'}
                                 ]}
-                                value={options.client_auth} 
+                                value={options.client_auth.value} 
                                 search={false}
                                 onChange={(value) => { optionchanged('client_auth', value)}}
                                 filterOptions={fuzzySearch}

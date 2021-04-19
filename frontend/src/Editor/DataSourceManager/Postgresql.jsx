@@ -8,21 +8,21 @@ export const Postgresql = ({ optionchanged, createDataSource, testDataSource, op
             <div className="row">
                 <div className="col-md-9">
                     <label className="form-label">Host</label>
-                    <input type="text" className="form-control" onChange={(e) => optionchanged('host', e.target.value)} value={options.host} />
+                    <input type="text" className="form-control" onChange={(e) => optionchanged('host', e.target.value)} value={options.host.value} />
                 </div>
                 <div className="col-md-3">
                     <label className="form-label">Port</label>
-                    <input type="text" className="form-control" onChange={(e) => optionchanged('port', e.target.value)}  value={options.port} />
+                    <input type="text" className="form-control" onChange={(e) => optionchanged('port', e.target.value)}  value={options.port.value} />
                 </div>
             </div>
             <div className="row mt-3">
                 <div className="col-md-4">
                     <label className="form-label">Database Name</label>
-                    <input type="text" className="form-control" onChange={(e) => optionchanged('database', e.target.value)}  value={options.database} />
+                    <input type="text" className="form-control" onChange={(e) => optionchanged('database', e.target.value)}  value={options.database.value} />
                 </div>
                 <div className="col-md-4">
                     <label className="form-label">Username</label>
-                    <input type="text" className="form-control" onChange={(e) => optionchanged('username', e.target.value)}  value={options.username} />
+                    <input type="text" className="form-control" onChange={(e) => optionchanged('username', e.target.value)}  value={options.username.value} />
                 </div>
                 <div className="col-md-4">
                     <label className="form-label">
@@ -32,7 +32,7 @@ export const Postgresql = ({ optionchanged, createDataSource, testDataSource, op
                             Encrypted
                         </small>
                     </label>
-                    <input type="text" className="form-control" onChange={(e) => optionchanged('password', e.target.value)}  value={options.password} />
+                    <input type="text" className="form-control" onChange={(e) => optionchanged('password', e.target.value)}  value={options.password.value} />
                 </div>
             </div>
             <div className="row mt-3">

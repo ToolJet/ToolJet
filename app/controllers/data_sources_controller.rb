@@ -32,6 +32,36 @@ class DataSourcesController < ApplicationController
             app_id: params[:app_id]
         )
     end
+
+    def update
+
+        @data_source = DataSource.find params[:id]
+
+        options = params[:options]
+
+        options_to_save = {}
+        options.each do |option|
+
+            if option["encrypted"]
+                credential = Credential.create(value: option["value"])
+
+                options_to_save[option["key"]] = {
+                    credential_id: credential.id,
+                    encrypted: option["encrypted"]
+                }
+            else
+                options_to_save[option["key"]] = {
+                    value: option["value"],
+                    encrypted: option["encrypted"]
+                }
+            end
+        end
+
+        @data_source.update(
+            name: params[:name],
+            options: options_to_save
+        )
+    end
     
     def test_connection
         service = DataSourceConnectionService.new params[:kind], params[:options]
