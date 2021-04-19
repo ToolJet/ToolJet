@@ -381,7 +381,7 @@ class Editor extends React.Component {
                                                     {<button className="btn btn-sm btn-light mx-2">
                                                         <img className="p-1" src="https://www.svgrepo.com/show/13682/search.svg" width="17" height="17"/>
                                                     </button>}
-                                                    {<button className="btn btn-sm btn-light" onClick={() => this.setState({ editingQuery: false, addingQuery: true})}>+</button>}
+                                                    {<button className="btn btn-sm btn-light" onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true})}>+</button>}
                                                 </div>
                                         </div>
                                         

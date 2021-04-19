@@ -69,7 +69,6 @@ class QueryManager extends React.Component {
             currentTab: 1,
         });
 
-
         if(this.props.mode === 'edit') {
             const source = props.dataSources.find(source => source.id === selectedQuery.data_source_id) 
 
@@ -187,7 +186,7 @@ class QueryManager extends React.Component {
         if(isCreating) { buttonText = 'Creating...'}
 
         return (
-            <div className="query-manager">
+            <div className="query-manager" key={this.props.selectedQuery.id}>
 
                 <div className="row header">
                     <div className="col">
