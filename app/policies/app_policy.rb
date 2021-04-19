@@ -1,4 +1,4 @@
-class ApplicationPolicy
+class AppPolicy < ApplicationPolicy
     attr_reader :user, :record
 
     def initialize(user, record)
@@ -7,40 +7,25 @@ class ApplicationPolicy
     end
 
     def index?
-      false
+      @user.admin? || @user.org_admin?
     end
 
     def show?
-      false
+      @user.admin? || @user.org_admin?
     end
 
     def create?
-      false
-    end
-
-    def new?
-      create?
+      @user.admin? || @user.org_admin?
     end
 
     def update?
-      false
+      @user.admin? || @user.org_admin?
     end
 
-    def edit?
-      update?
+    def users?
+      @user.admin? || @user.org_admin?
     end
 
-    def destroy?
-      false
-    end
-
-    def current_organization
-      @user.organization
-    end
-
-    def org_admin?
-      @user.organization_users.find_by(organization_id: current_organization.id).admin?
-    end
 
     class Scope
       attr_reader :user, :scope
@@ -51,7 +36,11 @@ class ApplicationPolicy
       end
 
       def resolve
-        scope.all
+        if @user.admin?
+          scope.all
+        else
+          scope.where(organization: current_organization)
+        end
       end
     end
   end
