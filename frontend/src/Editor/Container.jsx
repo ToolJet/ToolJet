@@ -77,8 +77,8 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 componentData.name = computeComponentName(componentData.component, boxes);
 
                 left = Math.round(item.left + delta.x + document.body.offsetWidth - (document.body.offsetWidth * ((leftSideBarWidth + rightSideBarWidth)/100)));
-                top = Math.round(item.top + delta.y);
-                top = 60;
+                
+                top = Math.round(monitor.getInitialSourceClientOffset().y - item.top + delta.y);
 
                 id = uuidv4();
             }
