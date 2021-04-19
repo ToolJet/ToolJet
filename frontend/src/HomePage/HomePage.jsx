@@ -1,8 +1,8 @@
 import React from 'react';
-import { useHistory } from "react-router-dom";
 import { appService, authenticationService } from '@/_services';
-import { Router, Route, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ManageOrgUsers } from './ManageOrgUsers';
+import Skeleton from 'react-loading-skeleton';
 
 class HomePage extends React.Component {
     constructor(props) {
@@ -10,14 +10,15 @@ class HomePage extends React.Component {
 
         this.state = {
             currentUser: authenticationService.currentUserValue,
-            users: null
+            users: null,
+            isLoading: true
         };
     }
 
     componentDidMount() {
         appService.getAll().then(data => this.setState({ 
             apps: data.apps, 
-            loadingDataSources: false,
+            isLoading: false,
         }));
     }
 
@@ -30,7 +31,7 @@ class HomePage extends React.Component {
     }
 
     render() {
-        const { currentUser, users, apps } = this.state;
+        const  { currentUser, users, apps, isLoading } = this.state;
         return (
             <div className="wrapper">
                 <header className="navbar navbar-expand-md navbar-light d-print-none">
@@ -98,17 +99,32 @@ class HomePage extends React.Component {
                 <div className="page-body homepage-body">
                     <div className="container-xl">
                         <div className="row row-deck row-cards">
-                            <div className="col-sm-6 col-lg-3">
-                                <div className="card" role="button" onClick={this.createApp}>
-                                    <div className="card-body p-5">
-                                        <center>
-                                            <img src="https://www.svgrepo.com/show/152121/plus.svg" width="15" height="50" alt=""/>
-                                            <br></br>
-                                            Create App
-                                        </center>
+
+                            {!isLoading &&
+                                <div className="col-sm-6 col-lg-3">
+                                    <div className="card" role="button" onClick={this.createApp}>
+                                        <div className="card-body p-5">
+                                            <center>
+                                                <img src="https://www.svgrepo.com/show/152121/plus.svg" width="15" height="50" alt=""/>
+                                                <br></br>
+                                                Create App
+                                            </center>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            }
+
+                            {isLoading &&
+                                <div className="row mt-3">
+                                    {[1,2,3,4].map((key) => 
+                                        <div className="col-sm-6 col-lg-3" key={key}>
+                                            <div className="card p-5" role="button">
+                                                <Skeleton count={3}/> 
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            }
 
                             {apps && 
                                 <>
