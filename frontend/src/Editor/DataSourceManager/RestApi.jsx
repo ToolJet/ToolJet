@@ -121,7 +121,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                         <SelectSearch 
                             options={[
                                 {name: 'Client Credentials', value: 'client_credentials'},
-                                {name: 'Authorization Code', value: 'auth_code'}
+                                {name: 'Authorization Code', value: 'authorization_code'}
                             ]}
                             value={options.grant_type} 
                             search={false}
@@ -183,7 +183,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                         <input type="text" className="form-control" onChange={(e) => optionchanged('scopes', e.target.value)} value={options.scopes} />
                     </div>
 
-                    {(grantType === 'auth_code') && 
+                    {(grantType === 'authorization_code') && 
                         <div>
                             <div className="col-md-12">
                                 <label className="form-label text-muted mt-3">Authorization URL</label>
