@@ -18,24 +18,35 @@ class DataSourceManager extends React.Component {
     constructor(props) {
         super(props);
 
+        let selectedDataSource = null;
+        let options = {};
+        let dataSourceMeta = {};
+
+        if(props.selectedDataSource) {
+            selectedDataSource = props.selectedDataSource;
+            options = selectedDataSource.options
+            dataSourceMeta = DataSourceTypes.find(source => source.kind === selectedDataSource.kind);
+        }
+
         this.state = {
             currentUser: authenticationService.currentUserValue,
-            showModal: false,
+            showModal: true,
             appId: props.appId,
-            options: {}
+            selectedDataSource,
+            options,
+            dataSourceMeta
         };
     }
 
     componentDidMount() {
-        console.log('props',this.props);
         this.setState({
             appId: this.props.appId,
-            selectedDataSource: null
         })
     }
 
     selectDataSource = (source) => { 
         this.setState({ 
+            dataSourceMeta: source,
             selectedDataSource: source,
             options: defaultOptions[source.kind],
             name: source.kind
@@ -44,39 +55,54 @@ class DataSourceManager extends React.Component {
 
     onNameChanged = (newName) => {
         this.setState({
-            name: newName
+            selectedDataSource: {
+                ...this.state.selectedDataSource,
+                name: newName
+            }
         })
     }
 
     optionchanged = (option, value) => {
-        this.setState( { options: { ...this.state.options, [option]: value } } );
+        this.setState( { 
+            options: { 
+                ...this.state.options, 
+                [option]: { value }
+            }
+        });
     }
 
     hideModal = () => {
-        this.setState({ 
-            showModal: false,
-        });
+        this.props.hideModal()
     }
 
     createDataSource = () => {
         let _self = this;
 
-        const  { appId, options, selectedDataSource, name } = this.state;
+        const  { appId, options, selectedDataSource } = this.state;
+        const name = selectedDataSource.name;
         const kind = selectedDataSource.kind;
 
-        const parsedOptions = Object.keys(options).map((key) =>  { 
-            console.log('ky', key);
+        const parsedOptions = Object.keys(options).map((key) => { 
             return {
-            key: key,
-            value: options[key],
-            encrypted: selectedDataSource.options[key].encrypted
-        }});
-
-        datasourceService.create(appId, name, kind, parsedOptions).then((data) => {
-            this.setState( { showModal: false } );
-            toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
-            this.props.dataSourcesChanged();
+                key: key,
+                value: options[key].value,
+                encrypted: selectedDataSource.options[key].encrypted
+            }
         });
+
+        if(selectedDataSource.id) {
+            datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then((data) => {
+                this.hideModal();
+                toast.success('Datasource Saved', { hideProgressBar: true, position: "top-center", });
+                this.props.dataSourcesChanged();
+            });
+        } else { 
+            datasourceService.create(appId, name, kind, parsedOptions).then((data) => {
+                this.hideModal();
+                toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
+                this.props.dataSourcesChanged();
+            });
+        }
     }
     
     testDataSource = () => {
@@ -98,15 +124,13 @@ class DataSourceManager extends React.Component {
     }
    
     render() {
-        const { showModal, selectedDataSource, options } = this.state;
+        const { dataSourceMeta, selectedDataSource, options } = this.state;
 
         return (
             <div>
 
-                {!showModal && <button className="btn btn-light btn-sm" onClick={() => this.setState({ showModal: true, selectedDataSource: null })}>+</button>}
-
                 <Modal
-                    show={this.state.showModal}
+                    show={this.props.showDataSourceManagerModal}
                     size="lg"
                     className="mt-5"
                     // onHide={handleClose}
@@ -117,12 +141,12 @@ class DataSourceManager extends React.Component {
                             <Modal.Title>
                              {selectedDataSource &&
                              <div className="row">
-                                <img src={selectedDataSource.icon} height="25" width="25" className="mt-2 col-md-2"></img>
+                                <img src={dataSourceMeta.icon} height="25" width="25" className="mt-2 col-md-2"></img>
                                 <input 
                                     type="text" 
                                     onChange={(e) => this.onNameChanged(e.target.value)}
                                     class="form-control-plaintext form-control-plaintext-sm col" 
-                                    value={this.state.name}
+                                    value={selectedDataSource.name}
                                     autoFocus
                                 />
                              </div>

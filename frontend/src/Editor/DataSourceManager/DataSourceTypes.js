@@ -107,26 +107,6 @@ export const apiSources = [
             api_key: { type: "string", encrypted: true }
         },
     },
-    {
-        name: 'Slack',
-        kind: 'slack',
-        icon: 'https://www.svgrepo.com/show/303320/slack-new-logo-logo.svg',
-        exposedVariables: {
-            isLoading: {},
-            data: {},
-            rawData: {}
-        }
-    },
-    {
-        name: 'Github',
-        kind: 'github',
-        icon: 'https://www.svgrepo.com/show/305241/github.svg',
-        exposedVariables: {
-            isLoading: {},
-            data: {},
-            rawData: {}
-        }
-    }
 ]
 
 export const DataSourceTypes = [
