@@ -7,6 +7,7 @@ import { Mysql } from './Mysql';
 import { Postgresql } from './Postgresql';
 import { Stripe } from './Stripe';
 import { Firestore } from './Firestore';
+import { Redis } from './Redis';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 const allSources = {
@@ -14,7 +15,8 @@ const allSources = {
     Mysql,
     Postgresql,
     Stripe,
-    Firestore
+    Firestore,
+    Redis
 }
 
 const staticDataSources = [
@@ -25,6 +27,9 @@ const staticDataSources = [
 const defaultOptions = {
     'postgresql': {
 
+    },
+    'redis': {
+        query: 'PING'
     },
     'mysql': {
 
