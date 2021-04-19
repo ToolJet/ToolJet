@@ -2,7 +2,7 @@ import React, {useState, useEffect, useCallback} from 'react';
 import Button from 'react-bootstrap/Button';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
-export const RestApi = ({ optionchanged, createDataSource, testDataSource, options  }) => {
+export const RestApi = ({ optionchanged, createDataSource, testDataSource, options, isSaving  }) => {
 
     const [authType, setAuthType] = useState(options.auth_type);
 
@@ -262,8 +262,8 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
 
                 </div>
                 <div className="col-auto">
-                    <Button className="m-2" variant="primary" onClick={createDataSource}>
-                        Save
+                    <Button className="m-2" disabled={isSaving} variant="primary" onClick={createDataSource}>
+                        {isSaving ? 'Saving...' : 'Save'}
                     </Button>
                 </div>
             </div>

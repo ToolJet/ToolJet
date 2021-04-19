@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
 
-export const Elasticsearch = ({ optionchanged, createDataSource, options  }) => {
+export const Elasticsearch = ({ optionchanged, createDataSource, options, isSaving  }) => {
 
     return (
         <div>
@@ -36,8 +36,8 @@ export const Elasticsearch = ({ optionchanged, createDataSource, options  }) => 
                     <Button className="m-2" variant="success" onClick={() => hideModal()} >
                         Test
                     </Button>
-                    <Button className="m-2" variant="primary" onClick={createDataSource}>
-                        Save
+                    <Button className="m-2" disabled={isSaving} variant="primary" onClick={createDataSource}>
+                        {isSaving ? 'Saving...' : 'Save'}
                     </Button>
                 </div>
             </div>
