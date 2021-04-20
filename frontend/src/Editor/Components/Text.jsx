@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { resolve_references } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
+import Skeleton from 'react-loading-skeleton';
 
 export const Text = function Text({ id, width, height, component, onComponentClick, currentState }) {
 
     const text = component.definition.properties.text.value;
     const color = component.definition.styles.textColor.value;
+
+    const [loadingState, setLoadingState] = useState(false);
+
+    useEffect(() => {
+
+		const loadingStateProperty = component.definition.properties.loadingState;
+		if(loadingStateProperty && currentState) { 
+			const newState = resolve_references(loadingStateProperty.value, currentState, false);
+			setLoadingState(newState);
+		}
+
+    }, [currentState]);
 
     let data = text;
     if(currentState) {
@@ -22,7 +35,6 @@ export const Text = function Text({ id, width, height, component, onComponentCli
 
     }
 
-
     const computedStyles = {
         color,
         width,
@@ -31,9 +43,16 @@ export const Text = function Text({ id, width, height, component, onComponentCli
 
     return (
         <div style={computedStyles} onClick={() => onComponentClick(id, component) }>
-            <div
-                dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(data)}}
-            />
+            {!loadingState &&
+                <div
+                    dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(data)}}
+                />
+            }
+            {loadingState &&
+                <div>
+                    <Skeleton count={1}/> 
+                </div>
+            }
         </div>
     );
 };
