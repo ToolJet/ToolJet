@@ -9,6 +9,7 @@ import arrayMove from "array-move";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { EventSelector } from '../EventSelector';
+import { Color } from '../Elements/Color';
 
 class Table extends React.Component {
     constructor(props) {
@@ -69,7 +70,7 @@ class Table extends React.Component {
             <Popover id="popover-basic">
                 <Popover.Title as="h3">Column Settings</Popover.Title>
                 <Popover.Content>
-                <div className="field mb-2">
+                    <div className="field mb-2">
                         <label class="form-label">name</label>
                         <input 
                             type="text"  
@@ -108,6 +109,16 @@ class Table extends React.Component {
                             value={action.buttonText} 
                         />
                     </div>
+                    <Color 
+                        param={{name: 'backgroundColor'}}
+                        definition={{ value: action.backgroundColor }}
+                        onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
+                    />
+                    <Color 
+                        param={{name: 'textColor'}}
+                        definition={{ value: action.textColor }}
+                        onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
+                    />
                     <EventSelector 
                         param={ { name: 'onClick' } }
                         definition={action.onClick}
