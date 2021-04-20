@@ -127,8 +127,12 @@ class Viewer extends React.Component {
                         if(data.error.code === "oauth2_needs_auth") {
                             const url = data.error.data.auth_url; // Backend generates and return sthe auth url
                             this.fetchOAuthToken(url, dataQuery.data_source_id);
+                            return;
                         }
-                        return;
+                    }
+
+                    if(data.status === 'failed') {
+                        toast.error(data.error.message, { hideProgressBar: true, autoClose: 3000 })
                     }
 
                     let rawData = data.data;
