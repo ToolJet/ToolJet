@@ -13,7 +13,7 @@ class RedisQueryService
 
     def process
 
-        password = source_options["username"]
+        password = source_options["password"]
         password = nil if password.blank?
 
         if $connections.include? data_source.id
