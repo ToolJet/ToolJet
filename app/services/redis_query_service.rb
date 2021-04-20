@@ -41,6 +41,6 @@ class RedisQueryService
             error = e.message
         end
 
-        { status: error ? 'error' : 'success', data: result, error: error }
+        { status: error ? 'failed' : 'success', data: result, error: { message: error } }
     end
 end
