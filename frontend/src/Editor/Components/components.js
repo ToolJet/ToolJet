@@ -282,7 +282,8 @@ export const componentTypes = [
         component: 'Text',
         properties: {
             text: { type: 'string'} ,
-            visible: { type: 'string' } 
+            visible: { type: 'string' } ,
+            loadingState: { type: 'string' },
         },
         defaultSize: {
             width: 100,
@@ -299,6 +300,7 @@ export const componentTypes = [
             properties: {
                 'text': { value: 'Text goes here !' },
                 'visible': { value: true },
+                loadingState: { value: false }
             },
             events: {
                 onClick: { } 
