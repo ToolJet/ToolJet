@@ -205,19 +205,21 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 				</tr>
 				))}
 			</thead>
-			<tbody {...getTableBodyProps()}>
-				{console.log('page', page)}
-				{page.map((row, i) => {
-				prepareRow(row);
-				return (
-					<tr className="table-row" {...row.getRowProps()} onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, data: row.original }); }}>
-					{row.cells.map(cell => {
-						return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
+			{!loadingState && 
+				<tbody {...getTableBodyProps()}>
+					{console.log('page', page)}
+					{page.map((row, i) => {
+					prepareRow(row);
+					return (
+						<tr className="table-row" {...row.getRowProps()} onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, data: row.original }); }}>
+						{row.cells.map(cell => {
+							return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
+						})}
+						</tr>
+					);
 					})}
-					</tr>
-				);
-				})}
-			</tbody>
+				</tbody>
+			}
 			</table>
 			{loadingState && 
                 <div style={{width: '100%'}} className="p-2">
