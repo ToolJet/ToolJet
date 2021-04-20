@@ -301,6 +301,11 @@ class Viewer extends React.Component {
                                     <img src="/images/logo.svg" width="110" height="32" class="navbar-brand-image"/>
                                     </a>
                                 </h1>
+                                {this.state.app &&
+                                    <span>
+                                        {this.state.app.name}
+                                    </span>
+                                }
                                 <div class="navbar-nav flex-row order-md-last">
                                     
                                 </div>
