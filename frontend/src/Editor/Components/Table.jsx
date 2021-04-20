@@ -55,6 +55,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 			return actions.value.map((action) => 
 				<button 
 					className="btn btn-sm m-1 btn-light"
+					style={{background: action.backgroundColor, color: action.textColor}}
 					onClick={(e) => { e.stopPropagation(); onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action }); }}
 				>
 						{action.buttonText}
