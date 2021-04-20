@@ -13,26 +13,34 @@ class RedisQueryService
 
     def process
 
+        error = nil
         password = source_options["password"]
         password = nil if password.blank?
 
-        if $connections.include? data_source.id
-            connection = $connections[data_source.id][:connection]
-        else
-            connection = Redis.new(
-                host: source_options["host"], 
-                port: source_options["port"], 
-                user: source_options["username"],
-                password: password
-            )
+        begin
 
-            $connections[data_source.id] = { connection: connection }
+            if $connections.include? data_source.id
+                connection = $connections[data_source.id][:connection]
+            else
+                connection = Redis.new(
+                    host: source_options["host"], 
+                    port: source_options["port"], 
+                    user: source_options["username"],
+                    password: password
+                )
+
+                $connections[data_source.id] = { connection: connection }
+            end
+
+            query_text = options["query"]
+        
+            result = connection.call(query_text.split(" "))
+
+        rescue => e
+            puts e
+            error = e.message
         end
 
-        query_text = options["query"]
-
-        result = connection.call(query_text.split(" "))
-
-        { status: 'success', data: result }
+        { status: error ? 'error' : 'success', data: result, error: error }
     end
 end
