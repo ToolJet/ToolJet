@@ -16,16 +16,22 @@ class RedisQueryService
         password = source_options["username"]
         password = nil if password.blank?
 
-        redis = Redis.new(
-            host: source_options["host"], 
-            port: source_options["port"], 
-            user: source_options["username"],
-            password: password
-        )
+        if $connections.include? data_source.id
+            connection = $connections[data_source.id][:connection]
+        else
+            connection = Redis.new(
+                host: source_options["host"], 
+                port: source_options["port"], 
+                user: source_options["username"],
+                password: password
+            )
+
+            $connections[data_source.id] = { connection: connection }
+        end
 
         query_text = options["query"]
 
-        result = redis.call(query_text.split(" "))
+        result = connection.call(query_text.split(" "))
 
         { status: 'success', data: result }
     end

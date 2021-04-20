@@ -11,17 +11,23 @@ class PostgresqlQueryService
     end
 
     def process
-        conn = PG.connect( 
-            dbname: source_options["database"], 
-            user: source_options["username"],
-            password:source_options["password"],
-            host: source_options["host"],
-            port: source_options["port"]
-        )
-
         query_text = options["query"]
 
-        result = conn.exec( query_text )
+        if $connections.include? data_source.id
+            connection = $connections[data_source.id][:connection]
+        else
+            connection = PG.connect( 
+                dbname: source_options["database"], 
+                user: source_options["username"],
+                password:source_options["password"],
+                host: source_options["host"],
+                port: source_options["port"]
+            )
+
+            $connections[data_source.id] = { connection: connection }
+        end
+
+        result = connection.exec( query_text )
         { status: 'success', data: result.to_a }
     end
 end
