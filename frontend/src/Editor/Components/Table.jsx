@@ -12,7 +12,7 @@ import {
 import { resolve, resolve_references } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
-export function Table({ id, width, height, component, onComponentClick, currentState, onEvent, paramUpdated }) {
+export function Table({ id, width, height, component, onComponentClick, currentState, onEvent, paramUpdated, changeCanDrag }) {
 
 	const color = component.definition.styles.textColor.value;
 	const actions = component.definition.properties.actions || { value: []};
@@ -71,7 +71,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					style={{background: action.backgroundColor, color: action.textColor}}
 					onClick={(e) => { e.stopPropagation(); onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action }); }}
 				>
-						{action.buttonText}
+					{action.buttonText}
 				</button>
 			)
 		}
@@ -132,7 +132,10 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	
 	useEffect(() => {
 		if(!state.columnResizing.isResizingColumn) {
+			changeCanDrag(true);
 			paramUpdated(id, 'columnSizes', state.columnResizing.columnWidths);
+		} else {
+			changeCanDrag(false);
 		}
 	}, [state.columnResizing]);
 
@@ -165,8 +168,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		)
 	}
 
-
-      return (
+    return (
 		<div className="card" style={{width: `${width + 16}px`, height: `${height+3}px`}} onClick={() => onComponentClick(id, component) }>
 		<div className="card-body border-bottom py-3 jet-data-table-header">
 		  <div className="d-flex">
@@ -209,9 +211,9 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		<table {...getTableProps()} className="table table-vcenter table-nowrap table-bordered" style={computedStyles}>
 			<thead>
 				{headerGroups.map(headerGroup => (
-				<tr {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">
+				<tr {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr" onDragEnd={(e) => { alert('ss'); e.preventDefault(); e.stopPropagation(); } }>
 					{headerGroup.headers.map(column => (
-					<th className="th"
+					<th className="th" onDragEnd={(e) => { alert('ss'); e.preventDefault(); e.stopPropagation(); }}
 						{...column.getHeaderProps(column.getSortByToggleProps())}
 						className={
 							column.isSorted
@@ -222,7 +224,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 						}
 					>
 						{column.render("Header")}
-						<div
+						<div draggable="true" onDragEnd={(e) => { alert('ss'); e.preventDefault(); e.stopPropagation(); } }
 							{...column.getResizerProps()}
 							className={`resizer ${
 								column.isResizing ? 'isResizing' : ''
