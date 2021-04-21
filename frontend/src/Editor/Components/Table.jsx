@@ -64,6 +64,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		id: 'actions',
 		Header: 'Actions',
 		accessor: 'edit',
+		width: columnSizes['actions'] ||  defaultColumn.width,
 		Cell: (cell) => {
 			return actions.value.map((action) => 
 				<button 
