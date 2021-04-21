@@ -76,7 +76,7 @@ export const Container = ({ mode, snapToGrid, onComponentClick, onEvent, appDefi
                 componentData = JSON.parse(JSON.stringify(componentMeta));
                 componentData.name = computeComponentName(componentData.component, boxes);
 
-                left = Math.round(item.left + delta.x + document.body.offsetWidth - (document.body.offsetWidth * ((leftSideBarWidth + rightSideBarWidth)/100)));
+                left = Math.round(delta.x + document.body.offsetWidth - (document.body.offsetWidth * ((leftSideBarWidth + rightSideBarWidth)/100)));
                 
                 top = Math.round(monitor.getInitialSourceClientOffset().y - item.top + delta.y);
 
