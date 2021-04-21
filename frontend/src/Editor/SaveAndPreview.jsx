@@ -43,30 +43,34 @@ class SaveAndPreview extends React.Component {
     createVersion = () => {
         const newVersionName = this.state.newVersionName;
         const appId = this.props.appId;
+        this.setState({ creatingVersion: true });
 
         appVersionService.create(appId, newVersionName).then(data => { 
-            this.setState({ showVersionForm: false, })
+            this.setState({ showVersionForm: false, creatingVersion: false })
             toast.success('Version Created', { hideProgressBar: true, position: "top-center", });
             this.fetchVersions();
         });    
     }
 
     saveVersion = (versionId) => {
+        this.setState({ isSaving: true });
         appVersionService.save(this.props.appId, versionId, this.props.appDefinition).then(data => { 
-            this.setState({ showVersionForm: false, })
+            this.setState({ showVersionForm: false, isSaving: false})
             toast.success('Version Saved', { hideProgressBar: true, position: "top-center", });
             this.fetchVersions();
         });    
     }
 
     deployVersion = (versionId) => {
+        this.setState({ isDeploying: true });
         appService.saveApp(this.props.appId, this.props.appName ,undefined, versionId).then(data => { 
+            this.setState({ isDeploying: false });
             toast.success('Version Deployed', { hideProgressBar: true, position: "top-center", });
         });    
     }
    
     render() {
-        const { showModal, isLoading, versions , showVersionForm} = this.state;
+        const { showModal, isLoading, versions , showVersionForm, isSaving, isDeploying, creatingVersion } = this.state;
 
         return (
             <div>
@@ -113,8 +117,8 @@ class SaveAndPreview extends React.Component {
                                         />
                                     </div>
                                     <div className="col-auto">
-                                        <Button variant="primary" onClick={() => this.createVersion()}>
-                                            create
+                                        <Button variant="primary" onClick={() => this.createVersion()} disabled={creatingVersion}>
+                                            {creatingVersion ? 'Creating...': 'Create'}
                                         </Button>
                                     </div>
                                 </div>
@@ -145,8 +149,9 @@ class SaveAndPreview extends React.Component {
                                                             <button 
                                                                 className="btn btn-sm"
                                                                 onClick={() => this.saveVersion(version.id)}
+                                                                disabled={isSaving}
                                                             >
-                                                                save
+                                                                {isSaving ? 'saving...' : 'save'}
                                                             </button>
                                                         </div>
                                                         <div className="col">
@@ -154,7 +159,7 @@ class SaveAndPreview extends React.Component {
                                                             className="btn btn-primary btn-sm mx-2"
                                                             onClick={() => this.deployVersion(version.id)}
                                                         >
-                                                            deploy
+                                                            {isDeploying ? 'deploying...' : 'deploy'}
                                                         </button>
                                                         </div>
                                                     </div>
