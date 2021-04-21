@@ -49,7 +49,8 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	const columnSizes = component.definition.properties.columnSizes;
 
     const columnData = component.definition.properties.columns.value.map((column) => { 
-      return { Header: column.name, accessor: column.key || column.name, width: columnSizes ? `${columnSizes[column.key] || columnSizes[column.name]}` : defaultColumn.width } 
+		const columnSize = columnSizes[column.key] || columnSizes[column.name];
+    	return { Header: column.name, accessor: column.key || column.name, width: columnSize ? columnSize : defaultColumn.width} 
     })
 
     let tableData = []
