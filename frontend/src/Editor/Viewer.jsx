@@ -327,6 +327,7 @@ class Viewer extends React.Component {
                                         appDefinitionChanged={this.appDefinitionChanged}
                                         snapToGrid={true} 
                                         onEvent={this.onEvent}
+                                        mode="view"
                                         currentState={this.state.currentState}
                                         onComponentClick={this.onComponentClick}
                                         onComponentOptionChanged={this.onComponentOptionChanged}

@@ -22,7 +22,7 @@ function uuidv4() {
     );
 }
 
-export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition, appDefinitionChanged, currentState, onComponentOptionChanged}) => {
+export const Container = ({ mode, snapToGrid, onComponentClick, onEvent, appDefinition, appDefinitionChanged, currentState, onComponentOptionChanged}) => {
 
     const components = appDefinition.components || [];
 
@@ -146,6 +146,7 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 onResizeStop={onResizeStop}
                 paramUpdated={paramUpdated}
                 id={key} {...boxes[key]} 
+                mode={mode}
                 inCanvas={true} />))}
 		</div>);
 };

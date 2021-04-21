@@ -29,12 +29,13 @@ const AllComponents = {
     Multiselect
 }
 
-let styles = {
-    cursor: 'move',
-};
 
-export const Box = function Box({ id, width, height, yellow, preview, component, inCanvas, onComponentClick, onEvent, currentState, onComponentOptionChanged, paramUpdated }) {
+export const Box = function Box({ id, mode, width, height, yellow, preview, component, inCanvas, onComponentClick, onEvent, currentState, onComponentOptionChanged, paramUpdated }) {
     const backgroundColor = yellow ? 'yellow' : '';
+
+    let styles = {
+        cursor: mode === "edit" ? 'move' : '',
+    };
 
     console.log('rendering box', component);
     console.log('width, height', width, height);
