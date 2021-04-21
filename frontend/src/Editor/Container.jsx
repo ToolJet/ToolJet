@@ -148,5 +148,11 @@ export const Container = ({ mode, snapToGrid, onComponentClick, onEvent, appDefi
                 id={key} {...boxes[key]} 
                 mode={mode}
                 inCanvas={true} />))}
+
+            {Object.keys(boxes).length == 0 && 
+                <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
+                    <center>You haven't added any components yet. Drag components from the right sidebar and drop here.</center>
+                </div>
+            }
 		</div>);
 };
