@@ -20,7 +20,6 @@ const allSources = {
 }
 
 const staticDataSources = [
-    { kind: 'js-code', id: 'js-code', name: 'Custom JS Code' },
     { kind: 'restapi', id: 'restapi', name: 'REST API' },
 ]
 

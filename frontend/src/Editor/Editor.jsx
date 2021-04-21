@@ -407,7 +407,19 @@ class Editor extends React.Component {
                                                             </tbody>
                                                         </table>
                                                     </div>
-                                                    
+                                                    {dataQueries.length == 0 && 
+                                                        <div>
+                                                            <center>
+                                                                You haven't created queries yet. <br/>
+                                                                <button 
+                                                                    className="btn btn-sm btn-light mt-3" 
+                                                                    onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true})}
+                                                                >
+                                                                    create query
+                                                                </button>
+                                                            </center>
+                                                        </div>
+                                                    }
                                                 </div>
                                             }
                                     </div>
@@ -470,27 +482,36 @@ class Editor extends React.Component {
 
                             <hr/>
 
-                            <div className="col-md-9">
-                                <h5 className="text-muted">Queries</h5>
-                            </div>
+                            
                             {dataQueries && 
                                 <>
-                                    {dataQueries.map((query => 
-                                        this.renderQueryVariables(query)
-                                    ))}
+                                    {dataQueries.length > 0 && 
+                                        <>
+                                            <div className="col-md-9">
+                                                <h5 className="text-muted">Queries</h5>
+                                            </div>
+                                            {dataQueries.map((query => 
+                                                this.renderQueryVariables(query)
+                                            ))}
+                                             <hr/>
+                                        </>
+                                    }
                                 </>
                             }
 
-                            <hr/>
-
-                            <div className="col-md-9">
-                                <h5 className="text-muted">Components</h5>
-                            </div>
                             {appDefinition.components && 
                                 <>
-                                    {Object.keys(appDefinition.components).map((key => 
-                                        this.renderComponentVariables(key, appDefinition.components[key])
-                                    ))}
+                                    {appDefinition.components.length > 0 && 
+                                        <>
+                                            <div className="col-md-9">
+                                                <h5 className="text-muted">Components</h5>
+                                            </div>
+                                            {Object.keys(appDefinition.components).map((key => 
+                                                this.renderComponentVariables(key, appDefinition.components[key])
+                                            ))}
+                                             <hr/>
+                                        </>
+                                    }
                                 </>
                             }
 
@@ -527,6 +548,17 @@ class Editor extends React.Component {
                                                     className="table table-vcenter table-nowrap">
                                                 <tbody>
                                                     {this.state.dataSources.map((source) => this.renderDataSource(source))}
+                                                    {dataSources.length == 0 && 
+                                                            <center className="p-2">
+                                                                You haven't added data sources yet. <br/>
+                                                                <button 
+                                                                    className="btn btn-sm btn-light mt-3" 
+                                                                    onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })}
+                                                                >
+                                                                    Add datasource
+                                                                </button>
+                                                            </center>
+                                                    }
                                                 </tbody>
                                             </table>
                                         </div>
