@@ -32,7 +32,7 @@ function getStyles(left, top, isDragging) {
     };
 }
 
-export const DraggableBox = function DraggableBox({ id, title, left, top, width, height, component, index, inCanvas, onEvent, onComponentClick, currentState, onComponentOptionChanged, onResizeStop, paramUpdated  }) {
+export const DraggableBox = function DraggableBox({ id, mode, title, left, top, width, height, component, index, inCanvas, onEvent, onComponentClick, currentState, onComponentOptionChanged, onResizeStop, paramUpdated  }) {
 
     const [isResizing, setResizing] = useState(false);
 
@@ -61,6 +61,14 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
         padding: '5px'
     };
 
+    let refProps = {};
+
+    if( mode === "edit") {
+        refProps = {
+            ref: drag
+        }
+    }
+
     return (
         <div>
             {inCanvas ?
@@ -78,12 +86,13 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
                             onResizeStop(id, width, height, e, direction, ref, d);
                         }}
                         >
-                        <div ref={drag} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
+                        <div {...refProps} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
 
                             <Box 
                                 component={component} 
                                 id={id} 
                                 width={width}
+                                mode={mode}
                                 height={height}
                                 inCanvas={inCanvas} 
                                 paramUpdated={paramUpdated}
@@ -100,7 +109,8 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
             <div ref={drag} role="DraggableBox">
                 <Box 
                     component={component} 
-                    id={id} 
+                    id={id}
+                    mode={mode}
                     inCanvas={inCanvas} 
                     onEvent={onEvent}
                     paramUpdated={paramUpdated}

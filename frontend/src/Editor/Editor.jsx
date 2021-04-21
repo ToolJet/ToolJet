@@ -374,6 +374,7 @@ class Editor extends React.Component {
                                     appDefinition={appDefinition}
                                     appDefinitionChanged={this.appDefinitionChanged}
                                     snapToGrid={true} 
+                                    mode={"edit"}
                                     onComponentClick={this.onComponentClick}/>
                                 <CustomDragLayer snapToGrid={true}/>
                             </div>
