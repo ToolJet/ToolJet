@@ -656,7 +656,7 @@ body {
     border-color: rgba(101,109,119,.24);
 }
 
-.btn:focus,.btn:active, .form-check-input:focus, .form-check-input:active, .form-control:focus {
+.btn:focus,.btn:active, .form-check-input:focus, .form-check-input:active, .form-control:focus, th:focus, tr:focus {
     outline: none !important;
     box-shadow: none;
  }
