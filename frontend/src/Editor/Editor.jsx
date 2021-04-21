@@ -116,9 +116,9 @@ class Editor extends React.Component {
     }
 
     appDefinitionChanged = (newDefinition) => { 
+        console.log('currentDefinition', this.state.appDefinition);
         console.log('newDefinition', newDefinition);
         this.setState({ appDefinition: newDefinition })
-        console.log('app definition', this.state.appDefinition);
     }
 
     removeComponent = (component) => {
@@ -131,8 +131,15 @@ class Editor extends React.Component {
     componentDefinitionChanged = (newDefinition) => { 
         console.log('new component definition', newDefinition);
         console.log('app definition', this.state.appDefinition);
+        debugger
         this.setState( { 
-            appDefinition: { ...this.state.appDefinition, [newDefinition.id]: { component: newDefinition.component } }
+            appDefinition: {
+                 ...this.state.appDefinition, 
+                 components: {
+                    ...this.state.appDefinition.components,
+                    [newDefinition.id]: { component: newDefinition.component } 
+                 }
+            }
         })
     }
 

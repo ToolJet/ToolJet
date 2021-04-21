@@ -32,7 +32,7 @@ function getStyles(left, top, isDragging) {
     };
 }
 
-export const DraggableBox = function DraggableBox({ id, title, left, top, width, height, component, index, inCanvas, onEvent, onComponentClick, currentState, onComponentOptionChanged, onResizeStop  }) {
+export const DraggableBox = function DraggableBox({ id, title, left, top, width, height, component, index, inCanvas, onEvent, onComponentClick, currentState, onComponentOptionChanged, onResizeStop, paramUpdated  }) {
 
     const [isResizing, setResizing] = useState(false);
 
@@ -78,7 +78,7 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
                             onResizeStop(id, width, height, e, direction, ref, d);
                         }}
                         >
-                        <div ref={drag} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
+                        <div role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
 
                             <Box 
                                 component={component} 
@@ -86,6 +86,7 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
                                 width={width}
                                 height={height}
                                 inCanvas={inCanvas} 
+                                paramUpdated={paramUpdated}
                                 onEvent={onEvent}
                                 onComponentOptionChanged={onComponentOptionChanged}
                                 onComponentClick={onComponentClick} 
@@ -102,6 +103,7 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
                     id={id} 
                     inCanvas={inCanvas} 
                     onEvent={onEvent}
+                    paramUpdated={paramUpdated}
                     onComponentOptionChanged={onComponentOptionChanged}
                     onComponentClick={onComponentClick} 
                     currentState={currentState} 

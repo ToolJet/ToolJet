@@ -115,6 +115,27 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
         }));
     }
 
+    function paramUpdated(id, param, value) {
+        if(Object.keys(value).length > 0) {
+             setBoxes(update(boxes, {
+                [id]: {
+                    $merge: { 
+                        component: {
+                            ...boxes[id].component,
+                            definition: {
+                                ...boxes[id].component.definition,
+                                properties: {
+                                    ...boxes[id].component.definition.properties,
+                                    [param]: value
+                                }
+                            }
+                        }
+                    } 
+                },
+            }));
+        }
+    }
+
     return (<div ref={drop} style={styles}>
 			{Object.keys(boxes).map((key) => (<DraggableBox 
                 onComponentClick={onComponentClick} 
@@ -123,6 +144,7 @@ export const Container = ({ snapToGrid, onComponentClick, onEvent, appDefinition
                 key={key} 
                 currentState={currentState}
                 onResizeStop={onResizeStop}
+                paramUpdated={paramUpdated}
                 id={key} {...boxes[key]} 
                 inCanvas={true} />))}
 		</div>);

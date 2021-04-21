@@ -694,3 +694,27 @@ body {
     font-size: 14px;
     padding: 4px 7px 2px;
 }
+
+.jet-data-table {
+    display: inline-block;
+
+    .th,
+    .td {
+      .resizer {
+        display: inline-block;
+        width: 5px;
+        height: 100%;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transform: translateX(50%);
+        z-index: 1;
+        touch-action:none;
+
+        &.isResizing {
+          background: rgb(179, 173, 173);
+        }
+      }
+    }
+  }
+  

@@ -5,12 +5,14 @@ import {
 	useSortBy, 
 	useGlobalFilter, 
 	useAsyncDebounce,
-	usePagination
+	usePagination,
+	useBlockLayout,
+	useResizeColumns
 } from "react-table";
 import { resolve, resolve_references } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
-export function Table({ id, width, height, component, onComponentClick, currentState, onEvent }) {
+export function Table({ id, width, height, component, onComponentClick, currentState, onEvent, paramUpdated }) {
 
 	const color = component.definition.styles.textColor.value;
 	const actions = component.definition.properties.actions || { value: []};
@@ -34,9 +36,20 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		setFilter("name", value); 
 		setFilterInput(value);
 	};
-    
+
+	const defaultColumn = React.useMemo(
+		() => ({
+		  minWidth: 30,
+		  width: 250,
+		  maxWidth: 400,
+		}),
+		[]
+	)
+
+	const columnSizes = component.definition.properties.columnSizes;
+
     const columnData = component.definition.properties.columns.value.map((column) => { 
-      return { Header: column.name, accessor: column.key || column.name  } 
+      return { Header: column.name, accessor: column.key || column.name, width: columnSizes ? `${columnSizes[column.key] || columnSizes[column.name]}` : defaultColumn.width } 
     })
 
     let tableData = []
@@ -63,7 +76,6 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 			)
 		}
 	}] : [];
-
 
     const columns = useMemo(
 		() =>
@@ -107,13 +119,22 @@ export function Table({ id, width, height, component, onComponentClick, currentS
     } = useTable( {
         columns,
         data,
+		defaultColumn,
 		initialState: { pageIndex: 0 },
     },
 	useFilters,
 	useGlobalFilter,
 	useSortBy,
-	usePagination
+	usePagination,
+	useBlockLayout,
+	useResizeColumns
 	);
+	
+	useEffect(() => {
+		if(!state.columnResizing.isResizingColumn) {
+			paramUpdated(id, 'columnSizes', state.columnResizing.columnWidths);
+		}
+	}, [state.columnResizing]);
 
 	function GlobalFilter({
 		preGlobalFilteredRows,
@@ -188,19 +209,25 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		<table {...getTableProps()} className="table table-vcenter table-nowrap table-bordered" style={computedStyles}>
 			<thead>
 				{headerGroups.map(headerGroup => (
-				<tr {...headerGroup.getHeaderGroupProps()} tabIndex="0">
+				<tr {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">
 					{headerGroup.headers.map(column => (
-					<th 
+					<th className="th"
 						{...column.getHeaderProps(column.getSortByToggleProps())}
 						className={
 							column.isSorted
 							  ? column.isSortedDesc
-								? "sort-desc"
-								: "sort-asc"
-							  : ""
+								? "sort-desc th"
+								: "sort-asc th"
+							  : "th"
 						}
 					>
 						{column.render("Header")}
+						<div
+							{...column.getResizerProps()}
+							className={`resizer ${
+								column.isResizing ? 'isResizing' : ''
+							}`}
+						/>
 					</th>
 					))}
 				</tr>
