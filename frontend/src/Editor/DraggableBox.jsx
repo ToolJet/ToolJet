@@ -35,6 +35,7 @@ function getStyles(left, top, isDragging) {
 export const DraggableBox = function DraggableBox({ id, mode, title, left, top, width, height, component, index, inCanvas, onEvent, onComponentClick, currentState, onComponentOptionChanged, onResizeStop, paramUpdated  }) {
 
     const [isResizing, setResizing] = useState(false);
+    const [canDrag, setCanDrag] = useState(true);
 
     // useEffect(() => {
     //     setBoxes(component);
@@ -63,10 +64,14 @@ export const DraggableBox = function DraggableBox({ id, mode, title, left, top, 
 
     let refProps = {};
 
-    if( mode === "edit") {
+    if( mode === "edit" && canDrag ) {
         refProps = {
             ref: drag
         }
+    }
+
+    function changeCanDrag(newState) {
+        setCanDrag(newState);
     }
 
     return (
@@ -94,6 +99,7 @@ export const DraggableBox = function DraggableBox({ id, mode, title, left, top, 
                                 width={width}
                                 mode={mode}
                                 height={height}
+                                changeCanDrag={changeCanDrag}
                                 inCanvas={inCanvas} 
                                 paramUpdated={paramUpdated}
                                 onEvent={onEvent}

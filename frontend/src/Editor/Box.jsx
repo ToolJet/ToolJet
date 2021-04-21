@@ -30,7 +30,7 @@ const AllComponents = {
 }
 
 
-export const Box = function Box({ id, mode, width, height, yellow, preview, component, inCanvas, onComponentClick, onEvent, currentState, onComponentOptionChanged, paramUpdated }) {
+export const Box = function Box({ id, mode, width, height, yellow, preview, component, inCanvas, onComponentClick, onEvent, currentState, onComponentOptionChanged, paramUpdated, changeCanDrag }) {
     const backgroundColor = yellow ? 'yellow' : '';
 
     let styles = {
@@ -59,6 +59,7 @@ export const Box = function Box({ id, mode, width, height, yellow, preview, comp
                     id={id}
                     paramUpdated={paramUpdated}
                     width={width}
+                    changeCanDrag={changeCanDrag}
                     height={height}
                     component={component}>
                 </ComponentToRender>
