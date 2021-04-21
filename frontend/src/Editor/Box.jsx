@@ -64,7 +64,7 @@ export const Box = function Box({ id, mode, width, height, yellow, preview, comp
                     component={component}>
                 </ComponentToRender>
             :
-                <div className="row p-1 m-1">
+                <div className="row p-1 m-1" style={{cursor: 'move'}}>
                     <div className="col-md-3 component-image-holder">
                         <center><img src={component.icon}/></center>
                     </div>

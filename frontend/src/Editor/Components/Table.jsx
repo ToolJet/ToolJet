@@ -211,9 +211,9 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		<table {...getTableProps()} className="table table-vcenter table-nowrap table-bordered" style={computedStyles}>
 			<thead>
 				{headerGroups.map(headerGroup => (
-				<tr {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr" onDragEnd={(e) => { alert('ss'); e.preventDefault(); e.stopPropagation(); } }>
+				<tr {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">
 					{headerGroup.headers.map(column => (
-					<th className="th" onDragEnd={(e) => { alert('ss'); e.preventDefault(); e.stopPropagation(); }}
+					<th className="th"
 						{...column.getHeaderProps(column.getSortByToggleProps())}
 						className={
 							column.isSorted
@@ -224,7 +224,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 						}
 					>
 						{column.render("Header")}
-						<div draggable="true" onDragEnd={(e) => { alert('ss'); e.preventDefault(); e.stopPropagation(); } }
+						<div draggable="true"
 							{...column.getResizerProps()}
 							className={`resizer ${
 								column.isResizing ? 'isResizing' : ''
