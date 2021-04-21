@@ -131,13 +131,15 @@ class Editor extends React.Component {
     componentDefinitionChanged = (newDefinition) => { 
         console.log('new component definition', newDefinition);
         console.log('app definition', this.state.appDefinition);
-        debugger
         this.setState( { 
             appDefinition: {
                  ...this.state.appDefinition, 
                  components: {
                     ...this.state.appDefinition.components,
-                    [newDefinition.id]: { component: newDefinition.component } 
+                    [newDefinition.id]: { 
+                        ...this.state.appDefinition.components[newDefinition.id],
+                        component: newDefinition.component 
+                    } 
                  }
             }
         })

@@ -78,7 +78,7 @@ export const DraggableBox = function DraggableBox({ id, title, left, top, width,
                             onResizeStop(id, width, height, e, direction, ref, d);
                         }}
                         >
-                        <div role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
+                        <div ref={drag} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
 
                             <Box 
                                 component={component} 
