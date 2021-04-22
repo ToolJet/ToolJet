@@ -28,3 +28,4 @@
 .DS_Store
 /frontend/.firebaserc
 /frontend/.firebase
+/.env
