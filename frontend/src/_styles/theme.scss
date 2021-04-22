@@ -722,3 +722,9 @@ body {
 .no-components-box {
     border: 1px dashed rgb(74, 196, 214);
 }
+
+.form-control-plaintext:focus-visible {
+    outline: none;
+    outline-width:thin; outline-style:solid;
+    outline-color: #4ac4d6;
+}

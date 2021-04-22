@@ -46,7 +46,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		[]
 	)
 
-	const columnSizes = component.definition.properties.columnSizes;
+	const columnSizes = component.definition.properties.columnSizes || {};
 
     const columnData = component.definition.properties.columns.value.map((column) => { 
 		const columnSize = columnSizes[column.key] || columnSizes[column.name];
