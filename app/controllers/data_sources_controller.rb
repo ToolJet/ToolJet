@@ -7,6 +7,22 @@ class DataSourcesController < ApplicationController
     def create
         options = params[:options]
 
+        # Fetch necessary access token if OAuth2 based data source
+        if options.find { |option| option["key"]=="oauth2" }
+            provider = 'google'
+            service_class = "#{provider.capitalize}OauthService".constantize
+            access_info = service_class.fetch_access_token(options.find { |option| option["key"] === 'code' } ["value"])
+            options.reject! { |option| option["key"] == "code" }
+            
+            access_info.each do |info|
+                option = {}
+                option["key"] = info[0]
+                option["value"] = info[1]
+                option["encrypted"] = true
+                options << option
+            end
+        end
+
         options_to_save = {}
         options.each do |option|
 
@@ -100,5 +116,13 @@ class DataSourcesController < ApplicationController
         )
 
         render json: { success: true }
+    end
+
+    def fetch_oauth2_base_url
+        provider = params[:provider]
+        service_class = "#{provider.capitalize}OauthService".constantize
+        url = service_class.generate_base_auth_url
+
+        render json: { url: url }
     end
 end

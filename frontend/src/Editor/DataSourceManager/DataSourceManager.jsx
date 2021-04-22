@@ -12,6 +12,7 @@ import { Mysql } from './Mysql';
 import { Stripe } from './Stripe';
 import { Firestore } from './Firestore';
 import { RestApi } from './RestApi';
+import { Googlesheets } from './Googlesheets';
 import { defaultOptions } from './DefaultOptions';
 
 class DataSourceManager extends React.Component {
@@ -63,8 +64,14 @@ class DataSourceManager extends React.Component {
         })
     }
 
+    setStateAsync = (state) => {
+        return new Promise((resolve) => {
+            this.setState(state, resolve)
+        });
+    }
+
     optionchanged = (option, value) => {
-        this.setState( { 
+        return this.setStateAsync( { 
             options: { 
                 ...this.state.options, 
                 [option]: { value }
@@ -84,10 +91,11 @@ class DataSourceManager extends React.Component {
         const kind = selectedDataSource.kind;
 
         const parsedOptions = Object.keys(options).map((key) => { 
+            const keyMeta = selectedDataSource.options[key];
             return {
                 key: key,
                 value: options[key].value,
-                encrypted: selectedDataSource.options[key].encrypted
+                encrypted: keyMeta ? keyMeta.encrypted : false
             }
         });
 
@@ -150,7 +158,7 @@ class DataSourceManager extends React.Component {
                                 <input 
                                     type="text" 
                                     onChange={(e) => this.onNameChanged(e.target.value)}
-                                    class="form-control-plaintext form-control-plaintext-sm col" 
+                                    class="form-control-plaintext form-control-plaintext-sm col mx-2" 
                                     value={selectedDataSource.name}
                                     autoFocus
                                 />
@@ -266,6 +274,16 @@ class DataSourceManager extends React.Component {
 
                                 {selectedDataSource.kind === 'restapi' && 
                                     <RestApi
+                                        optionchanged={this.optionchanged}
+                                        createDataSource={this.createDataSource}
+                                        options={options}
+                                        isSaving={isSaving}
+                                        hideModal={this.hideModal}
+                                    />
+                                }
+
+                                {selectedDataSource.kind === 'googlesheets' && 
+                                    <Googlesheets
                                         optionchanged={this.optionchanged}
                                         createDataSource={this.createDataSource}
                                         options={options}

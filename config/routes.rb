@@ -10,6 +10,7 @@ Rails.application.routes.draw do
     post '/authorize_oauth2', to: "data_sources#authorize_oauth2"
     collection do
         post '/test_connection', to: 'data_sources#test_connection'
+        post '/fetch_oauth2_base_url', to: "data_sources#fetch_oauth2_base_url"
     end
   end
 
