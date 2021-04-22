@@ -1,7 +1,6 @@
 import React from 'react';
 import { appService, authenticationService } from '@/_services';
 import { Link } from 'react-router-dom';
-import { ManageOrgUsers } from './ManageOrgUsers';
 import Skeleton from 'react-loading-skeleton';
 
 class HomePage extends React.Component {
@@ -47,7 +46,9 @@ class HomePage extends React.Component {
                     <div className="navbar-nav flex-row order-md-last">
                     <div class="nav-item d-none d-md-flex me-3">
                         <div class="btn-list">
-                            <ManageOrgUsers/>
+                            <Link to={`/users`}>
+                                <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}> Manage Users</button>
+                            </Link>
                         </div>
                         </div>
                         <div className="nav-item dropdown d-none d-md-flex me-3">
