@@ -45,5 +45,8 @@ export const defaultOptions = {
         client_auth: { value: 'header'},
         headers: { value: [['', '']]},
         custom_auth_params: { value: [['', '']] }
+    },
+    'googlesheets': {
+        access_type: { value: 'read' }
     }
 }

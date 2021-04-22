@@ -113,6 +113,19 @@ export const apiSources = [
             api_key: { type: "string", encrypted: true }
         },
     },
+    {
+        name: 'Google Sheets',
+        kind: 'googlesheets',
+        icon: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg',
+        exposedVariables: {
+            isLoading: {},
+            data: {},
+            rawData: {}
+        },
+        options: {
+            api_key: { type: "string", encrypted: true }
+        },
+    },
 ]
 
 export const DataSourceTypes = [

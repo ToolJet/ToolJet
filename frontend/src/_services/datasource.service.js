@@ -6,7 +6,8 @@ export const datasourceService = {
     getAll,
     test,
     setOauth2Token,
-    save
+    save,
+    fetchOauth2BaseUrl
 };
 
 function getAll(appId) {
@@ -69,4 +70,14 @@ function setOauth2Token(dataSourceId, body) {
 
     const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/data_sources/${dataSourceId}/authorize_oauth2`, requestOptions).then(handleResponse);
+}
+
+function fetchOauth2BaseUrl(provider) {
+    const headers = {
+        ...authHeader(),
+        'Content-Type': 'application/json'
+    }
+
+    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify({provider}) };
+    return fetch(`${config.apiUrl}/data_sources/fetch_oauth2_base_url`, requestOptions).then(handleResponse);
 }

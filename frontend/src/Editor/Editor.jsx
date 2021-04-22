@@ -548,19 +548,19 @@ class Editor extends React.Component {
                                                     className="table table-vcenter table-nowrap">
                                                 <tbody>
                                                     {this.state.dataSources.map((source) => this.renderDataSource(source))}
-                                                    {dataSources.length == 0 && 
-                                                            <center className="p-2">
-                                                                You haven't added data sources yet. <br/>
-                                                                <button 
-                                                                    className="btn btn-sm btn-light mt-3" 
-                                                                    onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })}
-                                                                >
-                                                                    Add datasource
-                                                                </button>
-                                                            </center>
-                                                    }
                                                 </tbody>
                                             </table>
+                                            {dataSources.length == 0 && 
+                                                <center className="p-2">
+                                                    You haven't added data sources yet. <br/>
+                                                    <button 
+                                                        className="btn btn-sm btn-light mt-3" 
+                                                        onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })}
+                                                    >
+                                                        Add datasource
+                                                    </button>
+                                                </center>
+                                            }
                                         </div>
                                         
                                     </div>
