@@ -388,7 +388,43 @@ body {
         color: inherit;
         text-decoration:none; 
     }
+
+    .app-action-buttons { 
+        display: none;
+    }
+
+    .app-name {
+        line-height: 20px;
+    }
+
+    .app-card { 
+        height: 155px;
+        max-height: 155px;
+    }
+
+    .create-app {
+        background: #eefcfe7a;
+        border: 1px dashed #9d9d9d;
+    }
+
+    .create-app:hover {
+        background: #4ac4d600;
+    }
+
+    .app-card:hover { 
+        background: #4ac4d600;
+
+        .app-action-buttons { 
+            display: inline-flex;
+        }
+
+        .app-name {
+            display: none;
+        }
+    }
 }
+
+
 
 .datasource-picker {
     .select-search {
