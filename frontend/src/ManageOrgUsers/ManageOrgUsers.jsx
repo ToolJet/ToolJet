@@ -45,37 +45,44 @@ class ManageOrgUsers extends React.Component {
                         <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image"/>
                         </a>
                     </h1>
-                    <div className="navbar-nav flex-row order-md-last">
-                    <div class="nav-item d-none d-md-flex me-3">
-                        <div class="btn-list">
-                            <Link to={`/users`}>
-                                <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}> Manage Users</button>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <Link to={`/`} className="nav-link">
+                                <span class="nav-link-title">
+                                    Apps
+                                </span>
                             </Link>
-                        </div>
-                        </div>
+                        </li>
+                        <li class="nav-item">
+                            <Link to={`/users`} className="nav-link active">
+                                <span class="nav-link-title">
+                                    Users
+                                </span>
+                            </Link>
+                        </li>
+                    </ul>
+                    <div className="navbar-nav flex-row order-md-last">
                         <div className="nav-item dropdown d-none d-md-flex me-3">
-                        
-                        <div className="dropdown-menu dropdown-menu-end dropdown-menu-card">
-                            <div className="card">
-                            <div className="card-body">
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus ad amet consectetur exercitationem fugiat in ipsa ipsum, natus odio quidem quod repudiandae sapiente. Amet debitis et magni maxime necessitatibus ullam.
-                            </div>
-                            </div>
-                        </div>
-                        </div>
-                        <div className="nav-item dropdown">
-                            <a href="#" className="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
-                                <div className="d-none d-xl-block ps-2">
-                                <div>{this.state.currentUser.first_name}</div>
-                                <div className="mt-1 small text-muted">Admin</div>
+                            <div className="dropdown-menu dropdown-menu-end dropdown-menu-card">
+                                <div className="card">
+                                    <div className="card-body">
+                                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus ad amet consectetur exercitationem fugiat in ipsa ipsum, natus odio quidem quod repudiandae sapiente. Amet debitis et magni maxime necessitatibus ullam.
+                                    </div>
                                 </div>
-                            </a>
-                            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                <a href="#" className="dropdown-item">Settings</a>
-                                <a href="#" className="dropdown-item">Logout</a>
-                            </div>
                             </div>
                         </div>
+                            <div className="nav-item dropdown">
+                                <a href="#" className="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+                                    <div className="d-none d-xl-block ps-2">
+                                    <div>{this.state.currentUser.first_name}</div>
+                                    </div>
+                                </a>
+                                <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                    <a href="#" className="dropdown-item">Settings</a>
+                                    <a href="#" className="dropdown-item">Logout</a>
+                                </div>
+                                </div>
+                            </div>
                     </div>
                 </header>
 
