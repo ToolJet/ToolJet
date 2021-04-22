@@ -10,6 +10,7 @@ import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ManageOrgUsers } from '@/ManageOrgUsers';
 
 class App extends React.Component {
     constructor(props) {
@@ -45,6 +46,7 @@ class App extends React.Component {
                     <PrivateRoute exact path="/apps/:id" component={Editor} />
                     <PrivateRoute exact path="/applications/:id" component={Viewer} />
                     <PrivateRoute exact path="/oauth2/authorize" component={Authorize} />
+                    <PrivateRoute exact path="/users" component={ManageOrgUsers} />
                                 
                 </div>
             </Router>
