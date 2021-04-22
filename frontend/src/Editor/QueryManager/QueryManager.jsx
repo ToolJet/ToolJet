@@ -8,6 +8,7 @@ import { Postgresql } from './Postgresql';
 import { Stripe } from './Stripe';
 import { Firestore } from './Firestore';
 import { Redis } from './Redis';
+import { Googlesheets } from './Googlesheets';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 const allSources = {
@@ -16,7 +17,8 @@ const allSources = {
     Postgresql,
     Stripe,
     Firestore,
-    Redis
+    Redis,
+    Googlesheets
 }
 
 const staticDataSources = [
@@ -45,6 +47,9 @@ const defaultOptions = {
         body: [ ['', ''] ],
     },
     'stripe': {
+    },
+    'googlesheets': {
+        operation: 'read'
     }
 }
 
