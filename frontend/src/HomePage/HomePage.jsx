@@ -73,7 +73,7 @@ class HomePage extends React.Component {
                         <div className="nav-item dropdown">
                             <a href="#" className="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
                                 <div className="d-none d-xl-block ps-2">
-                                <div>{this.state.currentUser.first_name}</div>
+                                    <div>{this.state.currentUser.first_name}</div>
                                 </div>
                             </a>
                             <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -110,9 +110,9 @@ class HomePage extends React.Component {
                         <div className="row row-deck row-cards">
 
                             {!isLoading &&
-                                <div className="col-sm-6 col-lg-3">
-                                    <div className="card" role="button" onClick={this.createApp}>
-                                        <div className="card-body p-5">
+                                <div className="col-sm-6 col-lg-3 ">
+                                    <div className="card create-app" role="button" onClick={this.createApp}>
+                                        <div className="card-body create-app-body" style={{maxHeight: '155px', marginTop: '10px'}}>
                                             <center>
                                                 <img src="https://www.svgrepo.com/show/152121/plus.svg" width="15" height="50" alt=""/>
                                                 <br></br>
@@ -139,32 +139,34 @@ class HomePage extends React.Component {
                                 <>
                                     {apps.map((app) => 
                                         <div className="col-sm-6 col-lg-3">
-                                            <div className="card">
-                                                <Link 
-                                                    to={`/apps/${app.id}`} 
-                                                    className="">
-
-                                                        <div className="card-body p-5" >
-                                                            <div className="row align-items-center">
-                                                                <center>{app.name}</center>
-                                                                
-                                                                <small className="text-muted mt-2">
-                                                                    An application to view whatever data whatever action etc etc. 
-                                                                </small>
+                                            <div className="card app-card">
+                                                <div 
+                                                    // to={`/apps/${app.id}`} 
+                                                    className=""
+                                                >
+                                                    <div className="card-body p-5" >
+                                                        <div className="row align-items-center">
+                                                            <center className="app-name">{app.name}</center>
+                                                            <div className="app-action-buttons row">
+                                                                <div className="col-md-6">
+                                                                    <Link 
+                                                                        to={`/applications/${app.id}`} 
+                                                                        target="_blank"
+                                                                        className="btn btn-primary text-white mx-2">
+                                                                        Launch
+                                                                    </Link>
+                                                                </div>
+                                                                <div className="col-md-6">
+                                                                    <Link 
+                                                                        to={`/apps/${app.id}`} 
+                                                                        className="btn btn-primary text-white mx-2">
+                                                                        Edit
+                                                                    </Link>
+                                                                </div>
                                                             </div>
                                                         </div>
-
-                                                </Link>
-                                                {/* <div className="card-footer">
-                                                    <div className="row">
-                                                        <Link 
-                                                            to={`/applications/${app.id}`} 
-                                                            target="_blank"
-                                                            className="btn btn-ghost-primary btn-sm mt-2">
-                                                            <img width="20" height="20" src="https://www.svgrepo.com/show/56347/rocket-launch.svg" alt=""/> Launch
-                                                        </Link>
                                                     </div>
-                                                </div> */}
+                                                </div>
                                             </div>
                                         </div>
                                     )}
