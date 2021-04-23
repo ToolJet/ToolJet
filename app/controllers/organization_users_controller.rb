@@ -15,13 +15,19 @@ class OrganizationUsersController < ApplicationController
             email: email,
             password: password,
             password_confirmation: password,
-            organization: org
+            organization: org,
+            invitation_token: SecureRandom.uuid
         )
 
-        OrganizationUser.create(
+        org_user = OrganizationUser.new(
             role: role, 
             user: user,
             organization: org
         )
+
+        if org_user.save
+            UserMailer.with(user: user, sender: @current_user).invitation_email.deliver
+        end
+
     end
 end
