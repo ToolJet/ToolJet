@@ -7,25 +7,30 @@ module.exports = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'ToolJet', // Usually your GitHub org/user name.
+  projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
+    colorMode: {
+      switchConfig: {
+        darkIcon: '\00a0 ',
+        lightIcon: '\00a0',
+        darkIconStyle: {
+          display: 'none',
+        },
+        lightIconStyle: {
+          display: 'none',
+        },
+      },
+    },
     navbar: {
-      title: 'My Site',
+      title: 'ToolJet',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'ToolJet Logo',
         src: 'img/logo.svg',
       },
       items: [
         {
-          type: 'doc',
-          docId: 'intro',
-          position: 'left',
-          label: 'Tutorial',
-        },
-        {to: '/blog', label: 'Blog', position: 'left'},
-        {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/ToolJet/ToolJet',
           label: 'GitHub',
           position: 'right',
         },
@@ -64,17 +69,13 @@ module.exports = {
           title: 'More',
           items: [
             {
-              label: 'Blog',
-              to: '/blog',
-            },
-            {
               label: 'GitHub',
               href: 'https://github.com/facebook/docusaurus',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} ToolJet.`,
     },
   },
   presets: [
