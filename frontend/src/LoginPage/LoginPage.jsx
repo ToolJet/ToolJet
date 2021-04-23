@@ -1,5 +1,6 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
+import { toast } from 'react-toastify';
 
 class LoginPage extends React.Component {
     constructor(props) {
@@ -27,7 +28,7 @@ class LoginPage extends React.Component {
                     this.props.history.push(from);
                 },
                 error => {
-                    alert('Invalid username or password');
+                    toast.error('Invalid username or password', { hideProgressBar: true, position: "top-center" });
                 }
             );
     }
