@@ -24,5 +24,11 @@ Rails.application.routes.draw do
 
   resources :organization_users, only: [:create]
 
+  resources :user do 
+    collection do
+      post '/set_password_from_token', to: 'users#set_password_from_token'
+    end
+  end
+
   post 'authenticate', to: 'authentication#authenticate'
 end
