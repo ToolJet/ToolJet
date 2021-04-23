@@ -45,8 +45,8 @@ class HomePage extends React.Component {
                     </h1>
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <Link to={`/`} className="nav-link">
-                                <span class="nav-link-title active">
+                            <Link to={`/`} className="nav-link active">
+                                <span class="nav-link-title">
                                     Apps
                                 </span>
                             </Link>

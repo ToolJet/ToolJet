@@ -1,9 +1,10 @@
 import React from 'react';
-import { organizationService } from '@/_services';
-import { authenticationService } from '@/_services';
+import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { toast } from 'react-toastify';
 
 class ManageOrgUsers extends React.Component {
     constructor(props) {
@@ -11,27 +12,53 @@ class ManageOrgUsers extends React.Component {
 
         this.state = {
             currentUser: authenticationService.currentUserValue,
-            showModal: false,
             isLoading: true,
-            addingUser: false
+            showNewUserForm: false,
+            creatingUser: false,
+            newUser: {}
         };
     }
 
     componentDidMount() {
+        this.fetchUsers();
+    }
+
+    fetchUsers = () => {
+        this.setState({
+            isLoading: true
+        });
+
         organizationService.getUsers(null).then(data => this.setState({ 
             users: data.users, 
             isLoading: false,
-        }));    
+        }));   
     }
 
-    hideModal = () => {
-        this.setState({ 
-            showModal: false
-        });
+    changeNewUserOption = (option, value) => {
+        this.setState({
+            newUser: {
+                ...this.state.newUser,
+                [option]: value
+            }
+        })
     }
-   
+
+    createUser = () => {
+        this.setState({
+            creatingUser: true
+        });
+
+        const { first_name, last_name, email, role } = this.state.newUser;
+
+        organizationUserService.create(first_name, last_name, email, role).then(data =>  {
+            this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
+            toast.success('User has been created', { hideProgressBar: true, position: "top-center", });
+            this.fetchUsers();
+        });    
+    }
+
     render() {
-        const { isLoading, users } = this.state;
+        const { isLoading, showNewUserForm, creatingUser, users, newUser } = this.state;
 
         return (
             <div className="wrapper">
@@ -45,17 +72,17 @@ class ManageOrgUsers extends React.Component {
                         <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image"/>
                         </a>
                     </h1>
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
+                    <ul className="navbar-nav">
+                        <li className="nav-item">
                             <Link to={`/`} className="nav-link">
-                                <span class="nav-link-title">
+                                <span className="nav-link-title">
                                     Apps
                                 </span>
                             </Link>
                         </li>
-                        <li class="nav-item">
+                        <li className="nav-item">
                             <Link to={`/users`} className="nav-link active">
-                                <span class="nav-link-title">
+                                <span className="nav-link-title">
                                     Users
                                 </span>
                             </Link>
@@ -92,14 +119,13 @@ class ManageOrgUsers extends React.Component {
                         <div className="row align-items-center">
                         <div className="col">
                             <div className="page-pretitle">
-                            {/* Dashboard */}
                             </div>
                             <h2 className="page-title">
                                 Users & Permissions
                             </h2>
                         </div>
                         <div className="col-auto ms-auto d-print-none">
-                            <div className="btn btn-primary">
+                            <div className="btn btn-primary" onClick={() => this.setState({ showNewUserForm: true })}>
                                 Add User
                             </div>
                         </div>
@@ -108,45 +134,123 @@ class ManageOrgUsers extends React.Component {
                 </div>
 
                 <div className="page-body">
-                    <div className="container-xl">
-                    {isLoading ? 
-                        <div style={{width: '100%'}} className="p-5">
-                            <Skeleton count={5}/> 
-                        </div>
-                    :
-                        <div className="card">
-                            <div class="card-table table-responsive table-bordered">
-                                <table
-                                        class="table table-vcenter">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Role</th>
-                                            <th class="w-1"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {users.map((user) => 
-                                            <tr>
-                                                <td >{user.name}</td>
-                                                <td class="text-muted" >
-                                                    <a href="#" class="text-reset">{user.email}</a>
-                                                </td>
-                                                <td class="text-muted" >
-                                                    {user.role}
-                                                </td>
-                                                <td>
-                                                    <a href="#">Remove</a>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                    {showNewUserForm && 
+                        <div className="container-xl">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="card-title">Add new user</h3>
+                                </div>
+                                <div className="card-body">
+                                    <form>
+                                        <div className="form-group mb-3 ">
+                                            <div className="row">
+                                                <div className="col">
+                                                    <input 
+                                                        type="text" 
+                                                        className="form-control" 
+                                                        placeholder="Enter First Name"
+                                                        onChange={(e) => { this.changeNewUserOption('first_name', e.target.value)}}
+                                                    />
+                                                </div>
+                                                <div className="col">
+                                                    <input 
+                                                        type="text" 
+                                                        className="form-control" 
+                                                        placeholder="Enter Last Name"
+                                                        onChange={(e) => { this.changeNewUserOption('last_name', e.target.value)}}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="form-group mb-3 ">
+                                            <label className="form-label">Email address</label>
+                                            <div>
+                                                <input 
+                                                    type="email" 
+                                                    className="form-control" 
+                                                    aria-describedby="emailHelp" 
+                                                    placeholder="Enter email"
+                                                    onChange={(e) => { this.changeNewUserOption('email', e.target.value)}}
+                                                />
+                                                <small className="form-hint">We'll never share your email with anyone else.</small>
+                                            </div>
+                                        </div>
+                                        <div className="form-group mb-3 ">
+                                            <label className="form-label">Role</label>
+                                            <div>
+                                                <SelectSearch 
+                                                    options={['Admin', 'Developer', 'Viewer'].map(role => { return { name: role, value: role.toLowerCase() } } )}
+                                                    value={newUser.role} 
+                                                    search={true}
+                                                    onChange={(value) => { this.changeNewUserOption('role', value)}}
+                                                    filterOptions={fuzzySearch}
+                                                    placeholder="Select.." 
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="form-footer">
+                                            <button 
+                                                className="btn btn-light mr-2"
+                                                onClick={() => this.setState({ showNewUserForm: false, newUser: {} })}
+                                                disabled={creatingUser}
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button 
+                                                className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
+                                                onClick={this.createUser}
+                                                disabled={creatingUser}
+                                            >
+                                                Create User
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     }
-                    </div>
+
+                    {!showNewUserForm && 
+                        <div className="container-xl">
+                            {isLoading ? 
+                                <div style={{width: '100%'}} className="p-5">
+                                    <Skeleton count={5}/> 
+                                </div>
+                            :
+                                <div className="card">
+                                    <div className="card-table table-responsive table-bordered">
+                                        <table
+                                                className="table table-vcenter">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Role</th>
+                                                    <th className="w-1"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {users.map((user) => 
+                                                    <tr>
+                                                        <td >{user.name}</td>
+                                                        <td className="text-muted" >
+                                                            <a href="#" className="text-reset">{user.email}</a>
+                                                        </td>
+                                                        <td className="text-muted" >
+                                                            {user.role}
+                                                        </td>
+                                                        <td>
+                                                            <a href="#">Remove</a>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         </div>
