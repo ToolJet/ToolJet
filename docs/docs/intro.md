@@ -2,34 +2,37 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Introduction
 
-Let's discover **Docusaurus in less than 5 minutes**.
+ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources such as databases ( like PostgreSQL, Redis, etc ), API endpoints ( ToolJet supports importing OpenAPI spec & OAuth2 authorization) and external services ( like Stripe, Google Sheets ) and use our pre-built UI widgets to build internal tools.
+
+![Docs Version Dropdown](/img/intro.gif)
+
+## How ToolJet works
+
+ToolJet has just 3 fundamental principles to build apps:
+
+- **Connect to data sources:** Connect to your existing data sources such as PostgreSQL, MySQL, Firestore, Stripe, Google Sheets and more.
+- **Build queries:** ToolJet comes with query builders for all supported data sources. You can also use JS code to transform the query results.
+- **Customise widgets:** Widgets are the UI components that can be edited using ToolJet's visual app builder. Widgets has events such as onClick, onRowSelected etc.
+
+ToolJet binds together the data sources, queries and widgets to convert business logic into apps. 
+
+Here is a video explaining how to build a Redis GUI using ToolJet in 3 minutes:
 
 ## Getting Started
 
-Get started by **creating a new site**.
+These resources will help you to quickly build and deploy apps using ToolJet:
 
-Or **try Docusaurus immediately** with **[new.docusaurus.io](https://new.docusaurus.io)**.
+- **[Setup](https://new.docusaurus.io)** - Learn how to setup ToolJet locally using docker.
+- **[Basic Tutorial](https://new.docusaurus.io)** - Learn how to build simple UI and connect to data sources.
+- **[Deploy](https://new.docusaurus.io)** - Learn how to deploy TooLjet on Heroku, Kubernetes, etc 
 
-## Generate a new site
+The references for datasources and widgets:
 
-Generate a new Docusaurus site using the **classic template**:
+- [Datasource Reference](https://new.docusaurus.io)
+- [Widget Reference](https://new.docusaurus.io)
 
-```shell
-npx @docusaurus/init@latest init my-website classic
-```
-
-## Start your site
-
-Run the development server:
-
-```shell
-cd my-website
-
-npx docusaurus start
-```
-
-Your site starts at `http://localhost:3000`.
-
-Open `docs/getting-started.md` and edit some lines: the site **reloads automatically** and display your changes.
+## Help and Support
+We have extensively documented the features of ToolJet, but in case you are stuck, please feel to mail us: hello@tooljet.io. 
+If you have found a bug, please create a GitHub issue for the same. 

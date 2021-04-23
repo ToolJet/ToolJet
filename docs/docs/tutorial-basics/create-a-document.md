@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Create a Document
+# MySQL
 
 Documents are **groups of pages** connected through:
 
