@@ -5,6 +5,7 @@ import { authenticationService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
+import { InvitationPage } from '@/InvitationPage';
 import { Authorize } from '@/Oauth2';
 import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
@@ -43,6 +44,7 @@ class App extends React.Component {
                     
                     <PrivateRoute exact path="/" component={HomePage} />
                     <Route path="/login" component={LoginPage} />
+                    <Route path="/invitations/:token" component={InvitationPage} />
                     <PrivateRoute exact path="/apps/:id" component={Editor} />
                     <PrivateRoute exact path="/applications/:id" component={Viewer} />
                     <PrivateRoute exact path="/oauth2/authorize" component={Authorize} />
