@@ -30,4 +30,9 @@ class OrganizationUsersController < ApplicationController
         end
 
     end
+
+    def change_role
+        org_user = OrganizationUser.find params[:organization_user_id]
+        org_user.update(role: params[:role])
+    end
 end
