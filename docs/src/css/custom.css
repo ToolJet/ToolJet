@@ -24,8 +24,51 @@
   padding: 0 var(--ifm-pre-padding);
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
 body {
   font-family: 'Roboto', sans-serif;
+}
+
+@media screen and (max-width: 996px) {
+  :root {
+    --ifm-font-size-base: 18px;
+  }
+  article header h1 {
+    font-size: 1.5rem !important;
+  }
+
+  article h2 {
+    font-size: 1.2rem !important;
+  }
+  .hero .hero__title {
+    font-size: 2.5rem;
+  }
+}
+
+@media screen and (min-width: 997px) {
+  :root {
+    --ifm-font-size-base: 17px;
+  }
+  article  h1 {
+    font-size: 2rem !important;
+  }
+
+  article  h2 {
+    font-size: 1.5rem !important;
+  }
+}
+
+.menu__list {
+  font-size: 0.9rem;
+}
+
+.menu__link--sublist:after {
+  height: 1rem;
+  width: 1rem;
+}
+
+.menu::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
 }
