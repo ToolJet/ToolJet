@@ -15,7 +15,8 @@ class ManageOrgUsers extends React.Component {
             isLoading: true,
             showNewUserForm: false,
             creatingUser: false,
-            newUser: {}
+            newUser: {},
+            idChangingRole: null
         };
     }
 
@@ -43,6 +44,18 @@ class ManageOrgUsers extends React.Component {
         })
     }
 
+    changeNewUserRole = (id, role) => {
+        this.setState( { idChangingRole: id })
+
+        organizationUserService.changeRole(id, role).then(data =>  {
+            toast.success('User role has been updated', { hideProgressBar: true, position: "top-center", });
+            this.setState( { idChangingRole: null })
+        }).catch(error => {
+            toast.error(error, { hideProgressBar: true, position: "top-center" });
+            this.setState( { idChangingRole: null })
+        });;    
+    }
+
     createUser = () => {
         this.setState({
             creatingUser: true
@@ -58,7 +71,7 @@ class ManageOrgUsers extends React.Component {
     }
 
     render() {
-        const { isLoading, showNewUserForm, creatingUser, users, newUser } = this.state;
+        const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole } = this.state;
 
         return (
             <div className="wrapper">
@@ -172,7 +185,6 @@ class ManageOrgUsers extends React.Component {
                                                     placeholder="Enter email"
                                                     onChange={(e) => { this.changeNewUserOption('email', e.target.value)}}
                                                 />
-                                                <small className="form-hint">We'll never share your email with anyone else.</small>
                                             </div>
                                         </div>
                                         <div className="form-group mb-3 ">
@@ -220,12 +232,13 @@ class ManageOrgUsers extends React.Component {
                                 <div className="card">
                                     <div className="card-table table-responsive table-bordered">
                                         <table
-                                                className="table table-vcenter">
+                                                className="table table-vcenter" disabled={true}>
                                             <thead>
                                                 <tr>
                                                     <th>Name</th>
                                                     <th>Email</th>
-                                                    <th>Role</th>
+                                                    <th><center>Role</center></th>
+                                                    <th>Status</th>
                                                     <th className="w-1"></th>
                                                 </tr>
                                             </thead>
@@ -236,8 +249,27 @@ class ManageOrgUsers extends React.Component {
                                                         <td className="text-muted" >
                                                             <a href="#" className="text-reset">{user.email}</a>
                                                         </td>
+                                                        <td className="text-muted" style={{width: '280px'}} >
+                                                            <center className="mx-5">
+                                                                <SelectSearch 
+                                                                    options={['Admin', 'Developer', 'Viewer'].map(role => { return { name: role, value: role.toLowerCase() } } )}
+                                                                    value={user.role} 
+                                                                    search={false}
+                                                                    disabled={idChangingRole === user.id}
+                                                                    onChange={(value) => { this.changeNewUserRole(user.id, value)}}
+                                                                    filterOptions={fuzzySearch}
+                                                                    placeholder="Select.." 
+                                                                />
+                                                                {idChangingRole === user.id && 
+                                                                    <small>Updating role...</small>
+                                                                }
+                                                            </center>
+                                                            
+                                                        </td>
                                                         <td className="text-muted" >
-                                                            {user.role}
+                                                            <span class={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`} >
+                                                            </span>
+                                                            <small>{user.status}</small>
                                                         </td>
                                                         <td>
                                                             <a href="#">Remove</a>

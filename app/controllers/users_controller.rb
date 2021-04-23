@@ -5,7 +5,7 @@ class UsersController < ApplicationController
         user = User.where(invitation_token: params[:token]).first
 
         if user
-            user.update(password: params[:password], invitation_token: nil)
+            user.update(password: params[:password], invitation_token: nil, status: 'active')
         else
             render json: { message: 'Invalid Invitation Token' }, status: :bad_request
         end
