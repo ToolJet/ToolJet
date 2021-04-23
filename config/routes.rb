@@ -22,5 +22,7 @@ Rails.application.routes.draw do
     get '/users', to: 'organizations#users'
   end
 
+  resources :organization_users, only: [:create]
+
   post 'authenticate', to: 'authentication#authenticate'
 end
