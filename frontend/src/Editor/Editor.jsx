@@ -501,7 +501,7 @@ class Editor extends React.Component {
 
                             {appDefinition.components && 
                                 <>
-                                    {appDefinition.components.length > 0 && 
+                                    {Object.keys(appDefinition.components).length > 0 && 
                                         <>
                                             <div className="col-md-9">
                                                 <h5 className="text-muted">Components</h5>

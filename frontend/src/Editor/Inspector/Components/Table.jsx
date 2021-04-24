@@ -10,6 +10,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { EventSelector } from '../EventSelector';
 import { Color } from '../Elements/Color';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 class Table extends React.Component {
     constructor(props) {
@@ -71,11 +72,26 @@ class Table extends React.Component {
                 <Popover.Title as="h3">Column Settings</Popover.Title>
                 <Popover.Content>
                     <div className="field mb-2">
-                        <label class="form-label">name</label>
+                        <label class="form-label">Column type</label>
+                        <SelectSearch 
+                            options={[
+                                { name: 'Default', value: 'default' },
+                                { name: 'String', value: 'string' },
+                            ]}
+                            value={column.columnType} 
+                            search={true}
+                            closeOnSelect={true}
+                            onChange={(value) => { this.onColumnItemChange(index, 'columnType', value)}}
+                            filterOptions={fuzzySearch}
+                            placeholder="Select.." 
+                        />
+                    </div>
+                    <div className="field mb-2">
+                        <label class="form-label">Column name</label>
                         <input 
                             type="text"  
                             class="form-control text-field" 
-                            onChange={(e) => { e.stopPropagation(); this.onColumnItemChange(index, 'name', e) }} 
+                            onChange={(e) => { e.stopPropagation(); this.onColumnItemChange(index, 'name', e.target.value) }} 
                             value={column.name} 
                         />
                     </div>
@@ -84,10 +100,22 @@ class Table extends React.Component {
                         <input 
                             type="text"  
                             class="form-control text-field" 
-                            onChange={(e) => { e.stopPropagation(); this.onColumnItemChange(index, 'key', e) }} 
+                            onChange={(e) => { e.stopPropagation(); this.onColumnItemChange(index, 'key', e.target.value) }} 
                             value={column.key} 
                         />
                     </div>
+
+                    {column.columnType === "string" && 
+                         <label className="form-check form-switch my-2">
+                            <input 
+                                className="form-check-input" 
+                                type="checkbox" 
+                                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
+                                checked={column.isEditable} 
+                            />
+                         <span className="form-check-label">make editable</span>
+                     </label>
+                    }
                    
                     <button className="btn btn-sm btn-danger col" onClick={() => this.removeAction(index)}>Remove</button>
                 </Popover.Content>
@@ -178,10 +206,8 @@ class Table extends React.Component {
         this.props.paramUpdated ({name: 'actions'}, 'value', newValue, 'properties');
     }
 
-    onColumnItemChange = (index, item, e) => {
-        e.preventDefault();
+    onColumnItemChange = (index, item, value) => {
         const columns = this.state.component.component.definition.properties.columns;
-        const value = e.target.value;
         const column = columns.value[index];
         column[item] = value;
         const newColumns = columns.value;
