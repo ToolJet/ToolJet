@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActionTypes } from '../ActionTypes';
 
-export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpdated, dataQueries, extraData }) => {
+export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpdated, dataQueries, extraData, options }) => {
 
     console.log('dq', dataQueries);
 
@@ -59,7 +59,7 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
                     {definition.actionId === 'run-query' && 
                         <div className="p-3">
                             <label class="form-label mt-2">Query</label>
-                            <select class="form-select" onChange={onChange} >
+                            <select class="form-select" onChange={onChange} value={definition.options.queryId}>
                                 {dataQueries.map((query) => (<option value={query.id}>{query.name}</option>))}
                             </select>
                         </div>
