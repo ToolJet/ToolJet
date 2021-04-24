@@ -12,7 +12,7 @@ import {
 import { resolve, resolve_references } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
-export function Table({ id, width, height, component, onComponentClick, currentState, onEvent, paramUpdated, changeCanDrag }) {
+export function Table({ id, width, height, component, onComponentClick, currentState = { components: { } }, onEvent, paramUpdated, changeCanDrag, onComponentOptionChanged }) {
 
 	const color = component.definition.styles.textColor.value;
 	const actions = component.definition.properties.actions || { value: []};
@@ -29,6 +29,13 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
     }, [currentState]);
 
+	const [componentState, setcomponentState] = useState(currentState.components[component.component] || {});
+
+	useEffect(() => {
+		setcomponentState(currentState.components[component.name] || {})
+
+    }, [currentState.components[component.name]]);
+
     const [filterInput, setFilterInput] = useState("");
 
 	const handleFilterChange = e => {
@@ -40,7 +47,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	const defaultColumn = React.useMemo(
 		() => ({
 		  minWidth: 30,
-		  width: 250,
+		  width: 268,
 		  maxWidth: 400,
 		}),
 		[]
@@ -48,9 +55,53 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 	const columnSizes = component.definition.properties.columnSizes || {};
 
-    const columnData = component.definition.properties.columns.value.map((column) => { 
+	function handleCellValueChange(index, name, value) {
+		const changeSet = componentState.changeSet;
+
+		let newChangeset = {
+			...changeSet,
+			[index]: {
+				...changeSet ? changeSet[index] : {},
+				[name]: value
+			}
+		}
+		onComponentOptionChanged(component, 'changeSet', newChangeset);
+	}
+
+	const changeSet = componentState ? componentState.changeSet : {};
+
+	const columnData = component.definition.properties.columns.value.map((column) => { 
 		const columnSize = columnSizes[column.key] || columnSizes[column.name];
-    	return { Header: column.name, accessor: column.key || column.name, width: columnSize ? columnSize : defaultColumn.width} 
+		const columnType = column.columnType;
+		
+    	return { Header: 
+			column.name, 
+			accessor: column.key || column.name, 
+			width: columnSize ? columnSize : defaultColumn.width,
+
+			Cell: function (cell) {
+				const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
+				const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
+
+				if(columnType === undefined || columnType === 'default') {
+					return cellValue;
+				} else if(columnType === 'string') {
+					if(column.isEditable) {
+						return <input 
+							type="text" 
+							onKeyDown={(e) => { if(e.key === "Enter") { handleCellValueChange(cell.row.index, column.name, e.target.value) }}}
+							onBlur={ (e) => { handleCellValueChange(cell.row.index, column.name, e.target.value) } }
+							className="form-control-plaintext form-control-plaintext-sm" 
+							defaultValue={cellValue} 
+						/>;
+					} else {
+						return cellValue;
+					}
+				} else {
+					return cellValue;
+				}
+			}
+		} 
     })
 
     let tableData = []
@@ -85,7 +136,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 				...columnData,
 				...actionsCellData
 			],
-		[columnData.length, actionsCellData.length]
+		[columnData.length, actionsCellData.length, componentState.changeSet]
     );
 
 	const data = useMemo(
@@ -245,7 +296,17 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					return (
 						<tr className="table-row" {...row.getRowProps()} onClick={(e) => { e.stopPropagation(); onEvent('onRowClicked',  { component, data: row.original }); }}>
 						{row.cells.map(cell => {
-							return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
+							
+							let cellProps = cell.getCellProps();
+
+							if(componentState.changeSet) {
+								if(componentState.changeSet[cell.row.index]) {
+									if(componentState.changeSet[cell.row.index][cell.column.Header]) {
+										cellProps['style']['backgroundColor'] =  '#ffffde';
+									}
+								}
+							}
+							return <td {...cellProps}>{cell.render("Cell")}</td>;
 						})}
 						</tr>
 					);
@@ -275,6 +336,13 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					{'>>'}
 					</button>{' '}
 				</div>
+
+				{componentState.changeSet && 
+					<div className="col">
+						<button className="btn btn-primary btn-sm">Save Changes</button>
+						<button className="btn btn-light btn-sm mx-2">Cancel</button>
+					</div>
+				}
 
 				<div className="page-stats col-auto">
 					<span className="p-1">
