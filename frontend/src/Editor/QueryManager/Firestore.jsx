@@ -2,6 +2,7 @@ import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import { Transformation } from './Transformation';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 class Firestore extends React.Component {
     constructor(props) {
@@ -57,21 +58,23 @@ class Firestore extends React.Component {
                     <div>
                         <div class="mb-3 mt-2">
                             <label className="form-label">Operation</label>
-                            <select 
-                                onChange={(e) => { e.stopPropagation(); this.changeOperation(e.target.value)}}
-                                placeholder="Select a value"
+                            <SelectSearch 
+                                options={[
+                                    { value: 'get_document', name: 'Get Document'},
+                                    { value: 'update_document', name: 'Update Document'},
+                                    { value: 'set_document', name: 'Set Document'},
+                                    { value: 'query_collection', name: 'Query collection'},
+                                    { value: 'bulk_update', name: 'Bulk update using document id'},
+                                    // { value: 'add_document', name: 'Add Document to Collection'},
+                                    // { value: 'update_document', name: 'Update Document'},
+                                    // { value: 'delete_document', name: 'Delete Document'},
+                                ]}
                                 value={this.state.options.operation}
-                                class="form-select">
-                                    <option value="get_document">Get Document</option>
-                                    <option value="update_document">Update Document</option>
-                                    <option value="set_document">Set Document</option>
-                                    <option value="query_collection">Query collection</option>
-                                    {/* <option value="set_document">Set Document</option>
-                                    
-                                    <option value="add_document">Add Document to Collection</option>
-                                    <option value="update_document">Update Document</option>
-                                    <option value="delete_document">Delete Document</option> */}
-                            </select>
+                                search={true}
+                                onChange={(value) => { this.changeOperation(value)}}
+                                filterOptions={fuzzySearch}
+                                placeholder="Select.." 
+                            />
                         </div>
                         {this.state.options.operation === 'get_document' && 
                             <div>
@@ -108,6 +111,44 @@ class Firestore extends React.Component {
                                         options={{
                                             theme: 'duotone-light',
                                             mode: 'json',
+                                            lineWrapping: true,
+                                            scrollbarStyle: null,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        }
+                        {(this.state.options.operation === 'bulk_update')&& 
+                            <div>
+                                <div class="mb-3 mt-2">
+                                    <label className="form-label">Collection</label>
+                                    <input 
+                                        type="text" 
+                                        value={this.state.options.collection}
+                                        onChange={(e) => { this.changeOption('collection', e.target.value)}}
+                                        className="form-control"
+                                    />
+                                </div>
+                                <div class="mb-3 mt-2">
+                                    <label className="form-label">Key for document Id</label>
+                                    <input 
+                                        type="text" 
+                                        value={this.state.options.document_id_key}
+                                        onChange={(e) => { this.changeOption('document_id_key', e.target.value)}}
+                                        className="form-control"
+                                    />
+                                </div>
+                                <div class="mb-3 mt-2">
+                                    <label className="form-label">Records</label>
+                                    <CodeMirror
+                                        height ="100px"
+                                        fontSize="2"
+                                        value={this.state.options.records}
+                                        onChange={ (instance, change) => this.changeOption('records', instance.getValue()) }
+                                        placeholder="{ }"
+                                        options={{
+                                            theme: 'duotone-light',
+                                            mode: 'javascript',
                                             lineWrapping: true,
                                             scrollbarStyle: null,
                                         }}

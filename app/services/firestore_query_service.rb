@@ -24,6 +24,20 @@ class FirestoreQueryService
             firestore = Google::Cloud::Firestore.new
 
             operation = data_query.options["operation"]
+
+            update_document(options["path"], options["body"].as_json, firestore) if operation == 'update_document'
+
+            if operation == "bulk_update"
+                records = options["records"]
+                collection = options["collection"]
+                doc_key_id = options["document_id_key"]
+
+                records.each do |record|
+                    path = "#{collection}/#{record[doc_key_id]}"
+                    record.delete(doc_key_id)
+                    update_document(path, record.as_json, firestore)
+                end
+            end
         
             if operation == 'get_document'
                 path = data_query.options["path"]
@@ -37,13 +51,6 @@ class FirestoreQueryService
                 body = options["body"].as_json
                 doc_ref = firestore.doc path
                 doc_ref.set body
-            end
-
-            if operation == 'update_document'
-                path = options["path"]
-                body = options["body"].as_json
-                doc_ref = firestore.doc path
-                doc_ref.update body
             end
 
             if operation == 'query_collection'
@@ -62,4 +69,10 @@ class FirestoreQueryService
         
         { data: data, error: error}
     end
+
+    private
+        def update_document(path, body, firestore)
+            doc_ref = firestore.doc path
+            doc_ref.update body
+        end
 end

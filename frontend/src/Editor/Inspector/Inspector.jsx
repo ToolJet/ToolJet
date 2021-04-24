@@ -65,7 +65,9 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
         console.log('eventOptionUpdated', event, option, value)
         
         let newDefinition = { ...component.component.definition };
-        newDefinition.events[event.name].options = {...newDefinition.events[event.name].options, [option]: value}
+        let eventDefinition = newDefinition.events[event.name] || { options: { }};
+
+        newDefinition.events[event.name] = { options: {...eventDefinition.options, [option]: value} }
 
         let newComponent = { 
             ...component

@@ -341,9 +341,12 @@ class Table extends React.Component {
                     <div className="field mb-2 mt-2">
                         <label class="form-label mt-2">Bulk update query</label>
 
-                        <select class="form-select" onChange={(e) => {
-                            eventOptionUpdated({name: 'onBulkUpdate'}, 'queryId', e.target.value, {});
-                        }} >
+                        <select 
+                            class="form-select" 
+                            onChange={(e) => {
+                                eventOptionUpdated({name: 'onBulkUpdate'}, 'queryId', e.target.value, {});
+                            }} 
+                        >
                             {dataQueries.map((query) => (<option value={query.id}>{query.name}</option>))}
                         </select>
                     </div>
