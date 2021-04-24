@@ -11,6 +11,7 @@ import {
 } from "react-table";
 import { resolve, resolve_references } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export function Table({ id, width, height, component, onComponentClick, currentState = { components: { } }, onEvent, paramUpdated, changeCanDrag, onComponentOptionChanged }) {
 
@@ -97,6 +98,15 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	const columnData = component.definition.properties.columns.value.map((column) => { 
 		const columnSize = columnSizes[column.key] || columnSizes[column.name];
 		const columnType = column.columnType;
+
+		const columnOptions = {};
+		if(columnType === 'dropdown') {
+			const values = resolve_references(column.values, currentState, []);
+			const labels = resolve_references(column.labels, currentState, []);
+			columnOptions['selectOptions'] = labels.map((label, index) => {
+				return { name: label, value: values[index]};
+			});
+		}
 		
     	return { Header: 
 			column.name, 
@@ -121,6 +131,15 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					} else {
 						return cellValue;
 					}
+				} else if(columnType === 'dropdown') {
+					return <SelectSearch 
+						options={columnOptions['selectOptions']}
+						value={cellValue} 
+						search={true}
+						onChange={(value) => { handleCellValueChange(cell.row.index, column.name, value, cell.row.original) }}
+						filterOptions={fuzzySearch}
+						placeholder="Select.." 
+                	/>
 				} else {
 					return cellValue;
 				}

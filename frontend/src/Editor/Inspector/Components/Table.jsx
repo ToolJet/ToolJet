@@ -77,6 +77,7 @@ class Table extends React.Component {
                             options={[
                                 { name: 'Default', value: 'default' },
                                 { name: 'String', value: 'string' },
+                                { name: 'Dropdown', value: 'dropdown' },
                             ]}
                             value={column.columnType} 
                             search={true}
@@ -104,6 +105,31 @@ class Table extends React.Component {
                             value={column.key} 
                         />
                     </div>
+
+                    {column.columnType === "dropdown" && 
+                        <div>
+                            <div className="field mb-2">
+                                <label class="form-label">Values</label>
+                                <input 
+                                    type="text"
+                                    class="form-control text-field" 
+                                    onChange={(e) => { e.stopPropagation(); this.onColumnItemChange(index, 'values', e.target.value) }} 
+                                    value={column.values} 
+                                    placeholder={`{{[1, 2, 3]}}`}
+                                />
+                            </div>
+                            <div className="field mb-2">
+                                <label class="form-label">Labels</label>
+                                <input 
+                                    type="text"  
+                                    class="form-control text-field" 
+                                    onChange={(e) => { e.stopPropagation(); this.onColumnItemChange(index, 'labels', e.target.value) }} 
+                                    value={column.labels} 
+                                    placeholder={`{{["one", "two", "three"]}}`}
+                                />
+                            </div>
+                        </div>
+                    }
 
                     {column.columnType === "string" && 
                          <label className="form-check form-switch my-2">
