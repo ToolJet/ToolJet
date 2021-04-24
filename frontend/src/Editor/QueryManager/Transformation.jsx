@@ -25,6 +25,11 @@ return data.filter(row => row.amount > 1000);`;
                 />
                 <span class="form-check-label">Transformations</span>
             </label>
+            {!options.enableTransformation && 
+                <div class="alert alert-secondary" role="alert">
+                    Transformations can be used to transform the results of queries. 
+                </div>
+            }
             <br></br>
             {options.enableTransformation && 
                 <CodeMirror

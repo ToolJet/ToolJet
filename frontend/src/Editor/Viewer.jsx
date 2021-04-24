@@ -119,50 +119,56 @@ class Viewer extends React.Component {
             }
         }
 
-        this.setState({currentState: newState}, () => {
-            dataqueryService.run(queryId, options).then(data => 
-                {
+        let _self = this
 
-                    if(data.error) {
-                        if(data.error.code === "oauth2_needs_auth") {
-                            const url = data.error.data.auth_url; // Backend generates and return sthe auth url
-                            this.fetchOAuthToken(url, dataQuery.data_source_id);
-                            return;
-                        }
-                    }
+        return new Promise(function(resolve, reject) {
+            _self.setState({currentState: newState}, () => {
+                dataqueryService.run(queryId, options).then(data => 
+                    {
 
-                    if(data.status === 'failed') {
-                        toast.error(data.error.message, { hideProgressBar: true, autoClose: 3000 })
-                    }
+                        resolve();
 
-                    let rawData = data.data;
-                    let finalData = data.data;
-
-                    if(options.enableTransformation) {
-                        finalData = this.runTransformation(rawData, options.transformation);
-                    }
-    
-                    if(options.showSuccessNotification) {
-                        const notificationDuration = options.notificationDuration || 5;
-                        toast.success(options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 })
-                    }
-    
-                    this.setState({
-                        currentState: {
-                            ...this.state.currentState, 
-                            queries: {
-                                ...this.state.currentState.queries, 
-                                [queryName]: {
-                                    ...this.state.currentState.queries[queryName],
-                                    data: finalData,
-                                    rawData,
-                                    isLoading: false
-                                }
+                        if(data.error) {
+                            if(data.error.code === "oauth2_needs_auth") {
+                                const url = data.error.data.auth_url; // Backend generates and return sthe auth url
+                                _self.fetchOAuthToken(url, dataQuery.data_source_id);
+                                return;
                             }
                         }
-                    })
-                }
-            );
+
+                        if(data.status === 'failed') {
+                            toast.error(data.error.message, { hideProgressBar: true, autoClose: 3000 })
+                        }
+
+                        let rawData = data.data;
+                        let finalData = data.data;
+
+                        if(options.enableTransformation) {
+                            finalData = _self.runTransformation(rawData, options.transformation);
+                        }
+        
+                        if(options.showSuccessNotification) {
+                            const notificationDuration = options.notificationDuration || 5;
+                            toast.success(options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 })
+                        }
+        
+                        _self.setState({
+                            currentState: {
+                                ..._self.state.currentState, 
+                                queries: {
+                                    ..._self.state.currentState.queries, 
+                                    [queryName]: {
+                                        ..._self.state.currentState.queries[queryName],
+                                        data: finalData,
+                                        rawData,
+                                        isLoading: false
+                                    }
+                                }
+                            }
+                        })
+                    }
+                );
+            });
         });
     }
 
@@ -179,7 +185,7 @@ class Viewer extends React.Component {
 
             if(event.actionId === 'run-query') {
                 const { queryId, queryName } = event.options;
-                this.runQuery(queryId, queryName);
+                return this.runQuery(queryId, queryName);
             }
         }
     }
@@ -191,6 +197,8 @@ class Viewer extends React.Component {
     }
 
     onEvent = (eventName, options) => {
+
+        let _self = this;
 
         if (eventName === 'onRowClicked') {
             const { component, data } = options;
@@ -236,6 +244,16 @@ class Viewer extends React.Component {
             if(event.actionId) {
                 this.executeAction(event);
             }
+        }
+
+        if (eventName === 'onBulkUpdate') {
+            return new Promise(function(resolve, reject) {
+                _self.onComponentOptionChanged(options.component, 'isSavingChanges', true);
+                _self.executeAction({ actionId: 'run-query', ...options.component.definition.events.onBulkUpdate }).then(() => {
+                    _self.onComponentOptionChanged(options.component, 'isSavingChanges', false);
+                    resolve();
+                });
+            });
         }
     }
 
