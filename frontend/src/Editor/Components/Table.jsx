@@ -55,8 +55,9 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 	const columnSizes = component.definition.properties.columnSizes || {};
 
-	function handleCellValueChange(index, name, value) {
+	function handleCellValueChange(index, name, value, rowData) {
 		const changeSet = componentState.changeSet;
+		const dataUpdates = componentState.dataUpdates || [];
 
 		let newChangeset = {
 			...changeSet,
@@ -65,7 +66,17 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 				[name]: value
 			}
 		}
+
+		let newDataUpdates = [
+			...dataUpdates,
+			{ ...rowData, [name]: value }
+		]
 		onComponentOptionChanged(component, 'changeSet', newChangeset);
+		onComponentOptionChanged(component, 'dataUpdates', newDataUpdates);
+	}
+
+	function handleChangesSaved() {
+		// Handle events after changes are saved
 	}
 
 	const changeSet = componentState ? componentState.changeSet : {};
@@ -89,8 +100,8 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					if(column.isEditable) {
 						return <input 
 							type="text" 
-							onKeyDown={(e) => { if(e.key === "Enter") { handleCellValueChange(cell.row.index, column.name, e.target.value) }}}
-							onBlur={ (e) => { handleCellValueChange(cell.row.index, column.name, e.target.value) } }
+							onKeyDown={(e) => { if(e.key === "Enter") { handleCellValueChange(cell.row.index, column.name, e.target.value, cell.row.original) }}}
+							onBlur={ (e) => { handleCellValueChange(cell.row.index, column.name, e.target.value, cell.row.original) } }
 							className="form-control-plaintext form-control-plaintext-sm" 
 							defaultValue={cellValue} 
 						/>;
@@ -339,7 +350,14 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 				{componentState.changeSet && 
 					<div className="col">
-						<button className="btn btn-primary btn-sm">Save Changes</button>
+						<button 
+							className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+							onClick={(e) => onEvent('onBulkUpdate',  { component } ).then(() => {
+								handleChangesSaved();
+							})}
+						>
+							Save Changes
+						</button>
 						<button className="btn btn-light btn-sm mx-2">Cancel</button>
 					</div>
 				}

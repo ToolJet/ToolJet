@@ -17,20 +17,23 @@ export const componentTypes = [
             height: 300
         },
         events: [
-            'onRowClicked'
+            'onRowClicked',
+            'onBulkUpdate'
         ],
         styles: {
             textColor: { type: 'color'} 
         },
         exposedVariables: {
             'selectedRow': {},
-            'changeSet': {}
+            'changeSet': {},
+            'dataUpdates': {}
         },
         definition: {
             properties: {
                 'title': { value: 'Table' },
                 'visible': { value: true },
                 loadingState: { value: false },
+                'data': { value: '{{[]}}' },
                 'columns': { value: [
                     { name: 'id' },
                     { name: 'name' },
@@ -39,6 +42,11 @@ export const componentTypes = [
             },
             events: {
                onRowClicked: {
+                   options: {
+
+                   }
+               },
+               onBulkUpdate: {
                    options: {
 
                    }
