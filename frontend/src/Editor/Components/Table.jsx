@@ -105,11 +105,14 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 		const columnOptions = {};
 		if(columnType === 'dropdown') {
-			const values = resolve_references(column.values, currentState, []);
-			const labels = resolve_references(column.labels, currentState, []);
-			columnOptions['selectOptions'] = labels.map((label, index) => {
-				return { name: label, value: values[index]};
-			});
+			const values = resolve_references(column.values, currentState) || [];
+			const labels = resolve_references(column.labels, currentState, []) || [];
+
+			if(typeof labels === "object") {
+				columnOptions['selectOptions'] = labels.map((label, index) => {
+					return { name: label, value: values[index]};
+				});
+			}
 		}
 		
     	return { Header: 
@@ -140,7 +143,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 						options={columnOptions['selectOptions']}
 						value={cellValue} 
 						search={true}
-						onChange={(value) => { handleCellValueChange(cell.row.index, column.name, value, cell.row.original) }}
+						onChange={(value) => { handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original) }}
 						filterOptions={fuzzySearch}
 						placeholder="Select.." 
                 	/>
