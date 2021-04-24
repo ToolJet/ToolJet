@@ -23,7 +23,8 @@ export const componentTypes = [
             textColor: { type: 'color'} 
         },
         exposedVariables: {
-            'selectedRow': {}
+            'selectedRow': {},
+            'changeSet': {}
         },
         definition: {
             properties: {
