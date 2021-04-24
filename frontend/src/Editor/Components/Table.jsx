@@ -76,7 +76,20 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	}
 
 	function handleChangesSaved() {
-		// Handle events after changes are saved
+		Object.keys(changeSet).map(key => {
+			tableData[key] = {
+				...tableData[key],
+				...changeSet[key]
+			}
+		});
+
+		onComponentOptionChanged(component, 'changeSet', {});
+		onComponentOptionChanged(component, 'dataUpdates', []);
+	}
+
+	function handleChangesDiscarded() {
+		onComponentOptionChanged(component, 'changeSet', {});
+		onComponentOptionChanged(component, 'dataUpdates', []);
 	}
 
 	const changeSet = componentState ? componentState.changeSet : {};
@@ -348,7 +361,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					</button>{' '}
 				</div>
 
-				{componentState.changeSet && 
+				{Object.keys(componentState.changeSet || {}).length > 0 && 
 					<div className="col">
 						<button 
 							className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
@@ -358,7 +371,12 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 						>
 							Save Changes
 						</button>
-						<button className="btn btn-light btn-sm mx-2">Cancel</button>
+						<button 
+							className="btn btn-light btn-sm mx-2"
+							onClick={(e) => handleChangesDiscarded()}
+						>
+							Cancel
+						</button>
 					</div>
 				}
 
