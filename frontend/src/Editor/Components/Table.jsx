@@ -12,6 +12,7 @@ import {
 import { resolve, resolve_references } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+var _ = require('lodash');
 
 export function Table({ id, width, height, component, onComponentClick, currentState = { components: { } }, onEvent, paramUpdated, changeCanDrag, onComponentOptionChanged }) {
 
@@ -56,21 +57,25 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 	const columnSizes = component.definition.properties.columnSizes || {};
 
-	function handleCellValueChange(index, name, value, rowData) {
+	function handleCellValueChange(index, key, value, rowData) {
 		const changeSet = componentState.changeSet;
 		const dataUpdates = componentState.dataUpdates || [];
+
+		let obj = changeSet ? changeSet[index] : {};
+		obj = _.set(obj, key, value);
 
 		let newChangeset = {
 			...changeSet,
 			[index]: {
-				...changeSet ? changeSet[index] : {},
-				[name]: value
+				...obj
 			}
 		}
 
+		obj = _.set(rowData, key, value);
+
 		let newDataUpdates = [
 			...dataUpdates,
-			{ ...rowData, [name]: value }
+			{ ...obj }
 		]
 		onComponentOptionChanged(component, 'changeSet', newChangeset);
 		onComponentOptionChanged(component, 'dataUpdates', newDataUpdates);
@@ -79,8 +84,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	function handleChangesSaved() {
 		Object.keys(changeSet).map(key => {
 			tableData[key] = {
-				...tableData[key],
-				...changeSet[key]
+				..._.merge(tableData[key], changeSet[key])
 			}
 		});
 
@@ -118,18 +122,18 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 				const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
 
 				if(columnType === undefined || columnType === 'default') {
-					return cellValue;
+					return cellValue || '';
 				} else if(columnType === 'string') {
 					if(column.isEditable) {
 						return <input 
 							type="text" 
-							onKeyDown={(e) => { if(e.key === "Enter") { handleCellValueChange(cell.row.index, column.name, e.target.value, cell.row.original) }}}
-							onBlur={ (e) => { handleCellValueChange(cell.row.index, column.name, e.target.value, cell.row.original) } }
+							onKeyDown={(e) => { if(e.key === "Enter") { handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original) }}}
+							onBlur={ (e) => { handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original) } }
 							className="form-control-plaintext form-control-plaintext-sm" 
 							defaultValue={cellValue} 
 						/>;
 					} else {
-						return cellValue;
+						return cellValue || '';
 					}
 				} else if(columnType === 'dropdown') {
 					return <SelectSearch 
@@ -141,7 +145,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 						placeholder="Select.." 
                 	/>
 				} else {
-					return cellValue;
+					return cellValue || '';
 				}
 			}
 		} 
@@ -344,7 +348,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 							if(componentState.changeSet) {
 								if(componentState.changeSet[cell.row.index]) {
-									if(componentState.changeSet[cell.row.index][cell.column.Header]) {
+									if( _.get(componentState.changeSet[cell.row.index], cell.column.id, undefined )) {
 										cellProps['style']['backgroundColor'] =  '#ffffde';
 									}
 								}
