@@ -1,12 +1,11 @@
 import React from 'react';
 import { ActionTypes } from '../ActionTypes';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpdated, dataQueries, extraData, options }) => {
 
-    console.log('dq', dataQueries);
-
-    function onChange(e) {
-        const query = dataQueries.find(query => query.id === e.target.value) 
+    function onChange(value) {
+        const query = dataQueries.find(query => query.id === value) 
         eventOptionUpdated(param, 'queryId', query.id, extraData);
         eventOptionUpdated(param, 'queryName', query.name, extraData);
     }
@@ -24,10 +23,14 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
     return (
         <div className="field mb-2 mt-1">
             <label class="form-label">{param.name}</label>
-            <select onClick={(e) => {  e.stopPropagation(); e.preventDefault() } } onChange={(e) => { e.stopPropagation(); eventUpdated(param, e.target.value, extraData)}} value={definition.actionId} class="form-select" >
-                <option value="none">None</option>
-                {ActionTypes.map((action) => (<option value={action.id}>{action.name}</option>))}
-            </select>
+            <SelectSearch 
+                options={ActionTypes.map((action) => { return { name: action.name, value: action.id } }) }
+                value={definition.actionId} 
+                search={true}
+                onChange={(value) => eventUpdated(param, value, extraData) }
+                filterOptions={fuzzySearch}
+                placeholder="Select.." 
+            />
 
             {definition && 
                 <div>
@@ -59,9 +62,14 @@ export const EventSelector = ({ param, definition, eventUpdated, eventOptionUpda
                     {definition.actionId === 'run-query' && 
                         <div className="p-3">
                             <label class="form-label mt-2">Query</label>
-                            <select class="form-select" onChange={onChange} value={definition.options.queryId}>
-                                {dataQueries.map((query) => (<option value={query.id}>{query.name}</option>))}
-                            </select>
+                            <SelectSearch 
+                                options={dataQueries.map((query) => { return { name: query.name, value: query.id } }) }
+                                value={definition.options.queryId} 
+                                search={true}
+                                onChange={(value) => { onChange(value)}}
+                                filterOptions={fuzzySearch}
+                                placeholder="Select.." 
+                            />
                         </div>
                     }
                 </div> 
