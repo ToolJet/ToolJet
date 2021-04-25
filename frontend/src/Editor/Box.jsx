@@ -65,10 +65,11 @@ export const Box = function Box({ id, mode, width, height, yellow, preview, comp
                 </ComponentToRender>
             :
                 <div className="row p-1 m-1" style={{cursor: 'move'}}>
-                    <div className="col-md-3 component-image-holder">
-                        <center><img src={component.icon}/></center>
+                    <div className="col-auto component-image-holder p-3">
+                           <div style={{width: '20px', height: '20px', backgroundSize: 'contain', backgroundImage: `url(${component.icon})`}}>
+                           </div>
                     </div>
-                    <div className="col-md-9">
+                    <div className="col">
                         <span className="component-title" >{component.displayName}</span>
                         <small className="component-description">{component.description}</small>
                     </div>
