@@ -214,7 +214,7 @@ class Editor extends React.Component {
                                 <small role="button col-auto">{variable}</small>
                             </div>
                             <div className="col-auto">
-                                <CopyToClipboard className="query-copy-button" text={`{{${type}.${name}.${variable}}}`}
+                                <CopyToClipboard data-tip="Copy Reference" className="query-copy-button" text={`{{${type}.${name}.${variable}}}`}
                                     onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
                                     <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
                                 </CopyToClipboard>
@@ -390,10 +390,11 @@ class Editor extends React.Component {
                                                     <h5 className="p-1 text-muted">QUERIES</h5>
                                                     </div>
                                                 <div className="col-auto">
-                                                    {<button className="btn btn-sm btn-light mx-2">
+                                                    {/* {<button className="btn btn-sm btn-light mx-2">
                                                         <img className="p-1" src="https://www.svgrepo.com/show/13682/search.svg" width="17" height="17"/>
-                                                    </button>}
-                                                    {<button className="btn btn-sm btn-light" onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true})}>+</button>}
+                                                    </button>} */}
+
+                                                    <button data-tip="Add new query" className="btn btn-sm btn-light" onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true})}>+</button>
                                                 </div>
                                         </div>
                                         
@@ -461,7 +462,7 @@ class Editor extends React.Component {
                                                 <small role="button col-auto">name</small>
                                             </div>
                                             <div className="col-auto">
-                                                <CopyToClipboard className="query-copy-button" text={`{{globals.current_user.name}}`}
+                                                <CopyToClipboard className="query-copy-button" data-tip="Copy Reference" text={`{{globals.current_user.name}}`}
                                                     onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
                                                     <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
                                                 </CopyToClipboard>
@@ -472,7 +473,7 @@ class Editor extends React.Component {
                                                 <small role="button col-auto">email</small>
                                             </div>
                                             <div className="col-auto">
-                                                <CopyToClipboard className="query-copy-button" text={`{{globals.current_user.email}}`}
+                                                <CopyToClipboard className="query-copy-button" data-tip="Copy Reference" text={`{{globals.current_user.email}}`}
                                                     onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
                                                     <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
                                                 </CopyToClipboard>
@@ -527,6 +528,7 @@ class Editor extends React.Component {
                                     </div>
                                         <div className="col-md-3">
                                         <button className="btn btn-light btn-sm" 
+                                            data-tip="Add new datasource"
                                             onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })}>
                                                 +
                                         </button>
