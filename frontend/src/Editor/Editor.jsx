@@ -145,10 +145,11 @@ class Editor extends React.Component {
         })
     }
 
-    saveApp = () => {
-        const { app, appDefinition } = this.state;
-        appService.saveApp(app.id, app.name, appDefinition).then((data) => {
-            toast.success('App saved & deployed sucessfully', { hideProgressBar: true, position: "top-center" })
+    saveApp = (id, attributes, notify = false) => {
+        appService.saveApp(id, attributes).then((data) => {
+            if(notify){
+                toast.success('App saved sucessfully', { hideProgressBar: true, position: "top-center" })
+            }
         });
     }
 
@@ -282,6 +283,7 @@ class Editor extends React.Component {
                                     type="text" 
                                     style={{width: '200px', left: '80px', position: 'absolute'}}
                                     onChange={(e) => this.onNameChanged(e.target.value)}
+                                    onBlur={(e) => this.saveApp(this.state.app.id, { name: e.target.value })}
                                     className="form-control-plaintext form-control-plaintext-sm" 
                                     value={this.state.app.name}
                                 />
