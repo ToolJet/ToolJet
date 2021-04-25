@@ -18,7 +18,7 @@ class AppsController < ApplicationController
 
     def update
         @app = App.find params[:id]
-        @app.update(definition: params[:definition], name: params[:name], current_version_id: params['currentVersion'])
+        @app.update(params["app"].permit("name", "current_version_id"))
     end
 
     def users

@@ -31,19 +31,13 @@ function getApp(id) {
 }
 
 
-function saveApp(id, name, definition, currentVersion) {
+function saveApp(id, attributes) {
     const headers = {
         ...authHeader(),
         'Content-Type': 'application/json'
     }
 
-    const body = {
-        definition,
-        name,
-        currentVersion
-    };
-
-    const requestOptions = { method: 'PUT', headers: headers, body: JSON.stringify(body) };
+    const requestOptions = { method: 'PUT', headers: headers, body: JSON.stringify({app: attributes}) };
     return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
 }
 

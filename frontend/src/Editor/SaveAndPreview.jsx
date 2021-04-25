@@ -63,7 +63,7 @@ class SaveAndPreview extends React.Component {
 
     deployVersion = (versionId) => {
         this.setState({ isDeploying: true });
-        appService.saveApp(this.props.appId, this.props.appName ,undefined, versionId).then(data => { 
+        appService.saveApp(this.props.appId, { name: this.props.appName, current_version_id: versionId }).then(data => { 
             this.setState({ isDeploying: false });
             toast.success('Version Deployed', { hideProgressBar: true, position: "top-center", });
         });    
