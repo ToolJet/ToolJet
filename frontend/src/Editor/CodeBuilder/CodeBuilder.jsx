@@ -77,7 +77,6 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
     return (
         <div className="code-builder">
             <CodeMirror
-                height ="25px"
                 fontSize="2"
                 onCursorActivity={ (instance) => setCursorPosition(instance.getCursor().ch)}
                 onChange={ (instance, change) => computeIfDropDownCanBeShown(instance) }
