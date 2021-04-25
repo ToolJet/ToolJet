@@ -2,6 +2,8 @@ class OrganizationUsersController < ApplicationController
     
     def create
 
+        authorize OrganizationUser
+
         first_name = params[:first_name]
         last_name = params[:last_name]
         email = params[:email]
@@ -33,6 +35,7 @@ class OrganizationUsersController < ApplicationController
 
     def change_role
         org_user = OrganizationUser.find params[:organization_user_id]
+        authorize org_user
         org_user.update(role: params[:role])
     end
 end
