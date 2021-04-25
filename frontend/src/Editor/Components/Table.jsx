@@ -12,6 +12,9 @@ import {
 import { resolve, resolve_references } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { useExportData } from "react-table-plugins";
+import Papa from "papaparse";
+
 var _ = require('lodash');
 
 export function Table({ id, width, height, component, onComponentClick, currentState = { components: { } }, onEvent, paramUpdated, changeCanDrag, onComponentOptionChanged }) {
@@ -79,6 +82,12 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		]
 		onComponentOptionChanged(component, 'changeSet', newChangeset);
 		onComponentOptionChanged(component, 'dataUpdates', newDataUpdates);
+	}
+
+	function getExportFileBlob({ columns, data, fileType, fileName }) {
+		const headerNames = columns.map((col) => col.exportValue);
+		const csvString = Papa.unparse({ fields: headerNames, data });
+		return new Blob([csvString], { type: "text/csv" });
 	}
 
 	function handleChangesSaved() {
@@ -218,25 +227,29 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		setFilter,
 		preGlobalFilteredRows,
     	setGlobalFilter,
-		state: { pageIndex, pageSize }
+		state: { pageIndex, pageSize },
+		exportData
     } = useTable( {
         columns,
         data,
 		defaultColumn,
 		initialState: { pageIndex: 0 },
+		getExportFileBlob
     },
 	useFilters,
 	useGlobalFilter,
 	useSortBy,
 	usePagination,
 	useBlockLayout,
-	useResizeColumns
+	useResizeColumns,
+	useExportData
 	);
 	
 	useEffect(() => {
 		if(!state.columnResizing.isResizingColumn) {
 			changeCanDrag(true);
 			paramUpdated(id, 'columnSizes', state.columnResizing.columnWidths);
+			debugger
 		} else {
 			changeCanDrag(false);
 		}
@@ -269,6 +282,10 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 			/>
 		  </div>
 		)
+	}
+
+	function computeExportData() {
+		debugger
 	}
 
     return (
@@ -379,6 +396,12 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					<button className="btn btn-light btn-sm" onClick={() => previousPage()} disabled={!canPreviousPage}>
 					{'<'}
 					</button>{' '}
+					<span className="p-1">
+						Page{' '}
+						<strong>
+							{pageIndex + 1} of {pageOptions.length}
+						</strong>{' '}
+					</span>
 					<button className="btn btn-light btn-sm"  onClick={() => nextPage()} disabled={!canNextPage}>
 					{'>'}
 					</button>{' '}
@@ -406,16 +429,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					</div>
 				}
 
-				<div className="page-stats col-auto">
-					<span className="p-1">
-						Page{' '}
-						<strong>
-							{pageIndex + 1} of {pageOptions.length}
-						</strong>{' '}
-						</span>
-				</div>
-				
-				<div className="goto-page col-auto">
+				{/* <div className="goto-page col-auto">
 					<div className="row">
 						<div className="col">
 							| Go to page:{' '}
@@ -433,6 +447,12 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 						/>
 						</div>
 					</div>
+				</div> */}
+
+				<div className="col-auto">
+						<button className="btn btn-light btn-sm p-1" onClick={() => exportData("csv", true)} >
+							<img src="https://www.svgrepo.com/show/27716/download.svg" width="12" height="12" />
+						</button>
 				</div>
 			</div>
 		</div>
