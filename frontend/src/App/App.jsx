@@ -12,6 +12,7 @@ import '@/_styles/theme.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
+import ReactTooltip from 'react-tooltip';
 
 class App extends React.Component {
     constructor(props) {
@@ -41,6 +42,7 @@ class App extends React.Component {
                     }
 
                     <ToastContainer/>
+                    <ReactTooltip type="dark" effect="solid"/>
                     
                     <PrivateRoute exact path="/" component={HomePage} />
                     <Route path="/login" component={LoginPage} />
