@@ -7,15 +7,15 @@ class User < ApplicationRecord
     validates :email, presence: true, uniqueness: true
     validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
 
-    def admin?
-        role == "admin"
+    def org_admin?
+        organization_users.find_by(organization_id: organization_id).admin?
     end
 
-    def developer?
-        role == "developer"
+    def org_developer?
+        organization_users.find_by(organization_id: organization_id).developer?
     end
 
-    def viewer?
-        role == "viewer"
+    def org_viewer?
+        organization_users.find_by(organization_id: organization_id).viewer?
     end
 end
