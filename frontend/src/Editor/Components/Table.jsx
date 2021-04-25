@@ -56,16 +56,13 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		const newFilters = filters;
 		newFilters[index][option] = value;
 		setFilters(newFilters);
-
-		for(const filter of newFilters) {
-			setFilter(filter.field, filter.value); 
-		}
+		setAllFilters(newFilters.filter((filter) => filter.id != ''));
 	}
 
 	function addFilter(){
 		setFilters([
 			...filters, 
-			{ field: '', value: '' }
+			{ id: '', value: '' }
 		]);
 	}
 
@@ -73,6 +70,12 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		let newFilters = filters;
 		newFilters.splice(index, 1);
 		setFilters(newFilters);
+		setAllFilters(newFilters);
+	}
+
+	function clearFilters() {
+		setFilters([]);
+		setAllFilters([]);
 	}
 
 	const defaultColumn = React.useMemo(
@@ -251,6 +254,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		state,
         prepareRow,
 		setFilter,
+		setAllFilters,
 		preGlobalFilteredRows,
     	setGlobalFilter,
 		state: { pageIndex, pageSize },
@@ -504,9 +508,9 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 								<div className="col">
 								<SelectSearch 
 									options={columnData.map((column) => { return { name: column.Header, value: column.accessor } } )}
-									value={filter.field} 
+									value={filter.id} 
 									search={true}
-									onChange={(value) => { filterOptionChanged(index, 'field', value) }}
+									onChange={(value) => { filterOptionChanged(index, 'id', value) }}
 									filterOptions={fuzzySearch}
 									placeholder="Select.." 
 								/>
@@ -538,7 +542,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 						<button onClick={addFilter} className="btn btn-light btn-sm text-muted">
 							+ add filter
 						</button>
-						<button className="btn btn-light btn-sm mx-2 text-muted">
+						<button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2 text-muted">
 							clear filters
 						</button>
 					</div>
