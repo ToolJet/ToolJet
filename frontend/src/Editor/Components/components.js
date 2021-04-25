@@ -7,7 +7,7 @@ export const componentTypes = [
         component: 'Table',
         properties: {
             title: { type: 'string'} ,
-            data: { type: 'json'},
+            data: { type: 'code'},
             visible: { type: 'string' },
             loadingState: { type: 'string' },
             columns: { type: 'array' } 

@@ -244,6 +244,10 @@ body {
                 // background-image: url(/public/images/tile.png);
                 background-repeat: repeat;
 
+                .resizer {
+                    border: solid 1px transparent;
+                }
+
                 .resizer:hover { 
                     border: solid 1px rgb(70, 165, 253);
 
@@ -813,4 +817,21 @@ body {
     right: 0;
     height: 300px;
     z-index: 100;
+}
+
+
+.code-builder {
+    border: solid 1px #dadcde;
+    border-radius: 2px;
+
+    .variables-dropdown { 
+        position: absolute;
+        right: 0;
+        width: 100%;
+        z-index: 200;
+
+        .group-header {
+            background: #f4f6fa;
+        }
+    }
 }
