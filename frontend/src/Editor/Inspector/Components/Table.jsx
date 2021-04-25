@@ -16,18 +16,18 @@ class Table extends React.Component {
     constructor(props) {
         super(props);
 
-        const { dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated } = props;
+        const { dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components } = props;
 
         this.state = {
-            dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated
+            dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components
          };
     }
 
     componentDidMount() {
-        const { dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated } = this.props;
+        const { dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components } = this.props;
 
         this.setState({
-            dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated
+            dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components
          });
     }
 
@@ -250,7 +250,7 @@ class Table extends React.Component {
 
 
     render() {
-        const { dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated } = this.state;
+        const { dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components } = this.state;
 
         const columns = component.component.definition.properties.columns;
         const actions = component.component.definition.properties.actions || { value: [] };
@@ -258,7 +258,7 @@ class Table extends React.Component {
         return (
             <div className="properties-container p-2">
                 {renderElement(component, componentMeta, paramUpdated, dataQueries, 'title', 'properties')}
-                {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties')}
+                {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', components)}
 
                 <div className="field mb-2 mt-3">
                     <div class="row g-2">

@@ -2,16 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';
+import { Code } from './Elements/Code';
 import { TypeMapping } from './TypeMapping';
 import { EventSelector } from './EventSelector';
 
 const AllElements = { 
     Color,
     Json,
-    Text
+    Text,
+    Code
 }
 
-export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType) {
+export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, components = {}) {
 
     const definition = component.component.definition[paramType][param];
     const meta = componentMeta[paramType][param];
@@ -25,6 +27,7 @@ export function renderElement(component, componentMeta, paramUpdated, dataQuerie
             dataQueries={dataQueries}
             onChange={paramUpdated}
             paramType={paramType}
+            components={components}
         />
     )
 }

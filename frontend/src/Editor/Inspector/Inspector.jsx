@@ -16,7 +16,7 @@ const AllElements = {
     Text
 }
 
-export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQueries, removeComponent }) => {
+export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQueries, removeComponent, components }) => {
 
     const [component, setComponent] = useState(selectedComponent);
     const componentMeta = componentTypes.find(comp => component.component.component === comp.component);
@@ -124,6 +124,7 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
                     componentMeta={componentMeta}
                     eventUpdated={eventUpdated}
                     eventOptionUpdated={eventOptionUpdated}
+                    components={components}
                 />
             :
                 <div className="properties-container p-2">

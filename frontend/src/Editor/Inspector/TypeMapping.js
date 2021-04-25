@@ -2,6 +2,7 @@ export const TypeMapping = {
     'text': 'Text',
     'string': 'Text',
     'color': 'Color',
-    'json': 'Json'
+    'json': 'Json',
+    'code': 'Code'
 }
  
