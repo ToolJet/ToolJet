@@ -775,3 +775,13 @@ body {
 .form-control-plaintext {
     padding: 5px;
 }
+
+.table-filters {
+    position: absolute;
+    bottom: 0;
+    width: 80%;
+    max-width: 600px;
+    margin-right: 10%;
+    right: 0;
+    height: 300px;
+}

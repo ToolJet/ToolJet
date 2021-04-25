@@ -41,13 +41,39 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
     }, [currentState.components[component.name]]);
 
-    const [filterInput, setFilterInput] = useState("");
+	const [isFiltersVisible, setFiltersVisibility] = useState(false);
+	const [filters, setFilters] = useState([]);
+	
+	function showFilters() {
+		setFiltersVisibility(true);
+	}
 
-	const handleFilterChange = e => {
-		const value = e.target.value || undefined;
-		setFilter("name", value); 
-		setFilterInput(value);
-	};
+	function hideFilters() {
+		setFiltersVisibility(false);
+	}
+
+    function filterOptionChanged(index, option, value) {
+		const newFilters = filters;
+		newFilters[index][option] = value;
+		setFilters(newFilters);
+
+		for(const filter of newFilters) {
+			setFilter(filter.field, filter.value); 
+		}
+	}
+
+	function addFilter(){
+		setFilters([
+			...filters, 
+			{ field: '', value: '' }
+		]);
+	}
+
+	function removeFilter(index) {
+		let newFilters = filters;
+		newFilters.splice(index, 1);
+		setFilters(newFilters);
+	}
 
 	const defaultColumn = React.useMemo(
 		() => ({
@@ -249,7 +275,6 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		if(!state.columnResizing.isResizingColumn) {
 			changeCanDrag(true);
 			paramUpdated(id, 'columnSizes', state.columnResizing.columnWidths);
-			debugger
 		} else {
 			changeCanDrag(false);
 		}
@@ -450,12 +475,75 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 				</div> */}
 
 				<div className="col-auto">
-						<button className="btn btn-light btn-sm p-1" onClick={() => exportData("csv", true)} >
-							<img src="https://www.svgrepo.com/show/27716/download.svg" width="12" height="12" />
-						</button>
+					<button className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()} >
+						<img src="https://www.svgrepo.com/show/264090/filter.svg" width="13" height="13" />
+					</button>
+					<button className="btn btn-light btn-sm p-1" onClick={() => exportData("csv", true)} >
+						<img src="https://www.svgrepo.com/show/27716/download.svg" width="13" height="13" />
+					</button>
+					
 				</div>
 			</div>
 		</div>
+			{isFiltersVisible &&
+				<div className="table-filters card">
+					<div class="card-header row">
+						<div className="col">
+							<h4 class="text-muted">Filters</h4>
+						</div>
+						<div className="col-auto">
+							<button onClick={() => hideFilters()} className="btn btn-light btn-sm">x</button>
+						</div>
+					</div>
+					<div className="card-body">
+						{filters.map((filter, index) => 
+							<div className="row mb-2" key={index}>
+								<div className="col p-2" style={{maxWidth: '80px'}}>
+									{index > 0 ? 'and' : 'where'}
+								</div>
+								<div className="col">
+								<SelectSearch 
+									options={columnData.map((column) => { return { name: column.Header, value: column.accessor } } )}
+									value={filter.field} 
+									search={true}
+									onChange={(value) => { filterOptionChanged(index, 'field', value) }}
+									filterOptions={fuzzySearch}
+									placeholder="Select.." 
+								/>
+								</div>
+								<div className="col" style={{maxWidth: '100px'}}>
+									<input type="text" value="matches" disabled className="form-control"/>
+								</div>
+								<div className="col">
+									<input 
+										type="text" 
+										value={filter.value}
+										placeholder="value" 
+										className="form-control" 
+										onChange={(e) => filterOptionChanged(index, 'value', e.target.value)}
+									/>
+								</div>
+								<div className="col-auto">
+									<button 
+										onClick={ () => removeFilter(index) }
+										className="btn btn-light btn-sm p-2 text-danger"
+									>
+										x
+									</button>
+								</div>
+							</div>
+						)}
+					</div>
+					<div class="card-footer">
+						<button onClick={addFilter} className="btn btn-light btn-sm text-muted">
+							+ add filter
+						</button>
+						<button className="btn btn-light btn-sm mx-2 text-muted">
+							clear filters
+						</button>
+					</div>
+				</div>
+			}
 	  </div>
       );
 
