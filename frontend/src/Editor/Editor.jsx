@@ -206,29 +206,22 @@ class Editor extends React.Component {
     renderVariables = (type, name, variables) => {
         return (
             <div className="mb-2">
-                {name} <small className="text-muted"> {variables.length} keys</small>
-                <div className="p-2 bg-light w-100">
-                    {variables.map((variable, index) => 
-                        <div className="row" key={`${name}-${index}`}>
-                            <div className="col">
-                                <small role="button col-auto">{variable}</small>
-                            </div>
-                            <div className="col-auto">
-                                <CopyToClipboard data-tip="Copy Reference" className="query-copy-button" text={`{{${type}.${name}.${variable}}}`}
-                                    onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
-                                    <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
-                                </CopyToClipboard>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <ReactJson 
+                    src={variables} 
+                    name={name} 
+                    style={{fontSize: '0.75rem'}}
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    collapsed={true}
+                    sortKeys={true}
+                />
             </div>
         )
     }
 
     renderQueryVariables = (query) => { 
         const dataSourceMeta = DataSourceTypes.find(source => query.kind === source.kind);
-        const exposedVariables = Object.keys(dataSourceMeta.exposedVariables);
+        const exposedVariables = dataSourceMeta.exposedVariables;
 
         return this.renderVariables('queries', query.name, exposedVariables);
     }
@@ -236,7 +229,7 @@ class Editor extends React.Component {
     renderComponentVariables = (id, component) => { 
         const componentType = component.component.component;
         const componentMeta = componentTypes.find(comp => componentType === comp.component);
-        const exposedVariables = Object.keys(componentMeta.exposedVariables);
+        const exposedVariables = componentMeta.exposedVariables;
 
         return this.renderVariables('components', component.component.name, exposedVariables);
     }
@@ -455,31 +448,23 @@ class Editor extends React.Component {
                             <div className="col-md-12">
                                 <h5 className="text-muted">Globals</h5>
                                 <div className="mb-2">
-                                    currentUser <small className="text-muted">  2 keys</small>
-                                    <div className="p-2 bg-light w-100">
-                                    <div className="row">
-                                            <div className="col">
-                                                <small role="button col-auto">name</small>
-                                            </div>
-                                            <div className="col-auto">
-                                                <CopyToClipboard className="query-copy-button" data-tip="Copy Reference" text={`{{globals.current_user.name}}`}
-                                                    onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
-                                                    <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
-                                                </CopyToClipboard>
-                                            </div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col">
-                                                <small role="button col-auto">email</small>
-                                            </div>
-                                            <div className="col-auto">
-                                                <CopyToClipboard className="query-copy-button" data-tip="Copy Reference" text={`{{globals.current_user.email}}`}
-                                                    onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
-                                                    <img src="https://www.svgrepo.com/show/86790/copy.svg" width="8" height="8" role="button"></img>
-                                                </CopyToClipboard>
-                                            </div>
-                                        </div>
-                                    </div>
+                                
+                                    <ReactJson 
+                                        style={{fontSize: '0.75rem'}}
+                                        enableClipboard={false}
+                                        src={{
+                                            globals: {
+                                                currentUser: {
+                                                    name: '',
+                                                    email: '',
+                                                }
+                                            }
+                                        }} 
+                                        name={'globals'} 
+                                        displayDataTypes={false}
+                                        collapsed={true}
+                                        sortKeys={true}
+                                    />
                                 </div>
                             </div>
 
