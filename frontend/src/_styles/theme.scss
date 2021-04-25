@@ -23,6 +23,10 @@ body {
        }
     }
 
+    .left-sidebar { 
+        scrollbar-width: none;
+    }
+
     .left-sidebar::-webkit-scrollbar {
         width: 0;
         background: transparent;
@@ -67,6 +71,10 @@ body {
             background: transparent;
         }
         
+        .variables-container, .datasources-container{
+            scrollbar-width: none;
+        }
+
         .variables-container::-webkit-scrollbar-thumb, .datasources-container::-webkit-scrollbar-thumb {
             background: #FF0000;
         }
@@ -161,6 +169,10 @@ body {
             background: transparent;
         }
 
+        .components-container{
+            scrollbar-width: none;
+        }
+
         .components-container { 
 
             height: 88%;
@@ -197,6 +209,10 @@ body {
         margin-left: 12%; 
         margin-right: 13%; 
         padding: 0px 10px;
+
+        .canvas-container{
+            scrollbar-width: none;
+        }
 
         .canvas-container::-webkit-scrollbar {
             width: 0;
@@ -242,6 +258,10 @@ body {
             
         }
 
+        .query-pane {
+            scrollbar-width: none;
+        }
+
         .query-pane::-webkit-scrollbar {
             width: 0;
             background: transparent;
@@ -266,6 +286,10 @@ body {
             background-clip: border-box;
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 1px 0px 0px 0px;
+
+            .table-responsive {
+                scrollbar-width: none;
+            }
 
             .table-responsive::-webkit-scrollbar {
                 width: 0;
@@ -340,6 +364,10 @@ body {
 
     .main {
         padding: 0px 10px;
+
+        .canvas-container {
+            scrollbar-width: none;
+        }
 
         .canvas-container::-webkit-scrollbar {
             width: 0;
