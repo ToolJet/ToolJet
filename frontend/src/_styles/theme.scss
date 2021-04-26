@@ -30,7 +30,7 @@ body {
     .left-sidebar::-webkit-scrollbar {
         width: 0;
         background: transparent;
-    }
+    }    
 
     .left-sidebar {
 
@@ -62,9 +62,16 @@ body {
             overflow-y: scroll;
         }
 
+        .variables-container::-webkit-scrollbar-thumb, .datasources-container::-webkit-scrollbar-thumb {
+            background: transparent;
+            height: 0;
+            width: 0;
+        }
+
         .variables-container::-webkit-scrollbar, .datasources-container::-webkit-scrollbar {
             width: 0;
             background: transparent;
+            height: 0;
         }
         
         .variables-container, .datasources-container{
