@@ -236,6 +236,11 @@ class QueryManager extends React.Component {
                         }
                     </div>
                     <div className="col-auto">
+                        {((addingQuery || editingQuery) && selectedQuery) && 
+                            <button onClick={() => this.props.runQuery(selectedQuery.id, selectedQuery.name)} className="btn btn-light m-1 float-right">
+                                Run
+                            </button>
+                        }
                         {(addingQuery || editingQuery) && 
                             <button onClick={this.createOrUpdateDataQuery} disabled={buttonDisabled} className="btn btn-primary m-1 float-right">
                                 { buttonText }

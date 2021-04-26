@@ -16,7 +16,15 @@ import { toast } from 'react-toastify';
 import { Router, Route, Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
 import { SaveAndPreview } from './SaveAndPreview';
-import { onComponentOptionChanged, onComponentClick, onEvent, onQueryConfirm, onQueryCancel } from '@/_helpers/appUtils';
+import { 
+    onComponentOptionChanged, 
+    onComponentOptionsChanged,
+    onComponentClick, 
+    onEvent, 
+    onQueryConfirm, 
+    onQueryCancel,
+    runQuery
+} from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 
 class Editor extends React.Component {
@@ -459,6 +467,7 @@ class Editor extends React.Component {
                                     mode={"edit"}
                                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
                                     onComponentOptionChanged={(component, option_name, value) => onComponentOptionChanged(this, component, option_name, value)}
+                                    onComponentOptionsChanged={(component, options) => onComponentOptiosnChanged(this, component, options)}
                                     currentState={this.state.currentState}
                                     onComponentClick={(id, component) =>  { 
                                         this.setState( { selectedComponent: { id, component } } )
@@ -531,6 +540,7 @@ class Editor extends React.Component {
                                                     selectedQuery={selectedQuery}
                                                     dataQueriesChanged={this.dataQueriesChanged}
                                                     appId={appId}
+                                                    runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
                                                     addingQuery={addingQuery}
                                                     editingQuery={editingQuery}
                                                     queryPaneHeight={queryPaneHeight}
