@@ -3,6 +3,29 @@ import { toast } from 'react-toastify';
 import { resolve_references } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 
+function setStateAsync(_ref, state) {
+    return new Promise((resolve) => {
+        _ref.setState(state, resolve)
+    });
+}
+
+export function onComponentOptionsChanged (_ref, component, options) {
+
+    console.log('changeset', options)
+
+    const componentName = component.name;
+    const components = _ref.state.currentState.components;
+    let componentData = components[componentName];
+    componentData = componentData ? componentData : { };
+
+    for (const option of options) {
+        componentData[option[0]] = option[1];
+    }
+
+    return setStateAsync(_ref, {
+        currentState: { ..._ref.state.currentState, components: {...components, [componentName]: componentData }}
+    })
+}
 
 export function onComponentOptionChanged (_ref, component, option_name, value) {
 
@@ -12,7 +35,7 @@ export function onComponentOptionChanged (_ref, component, option_name, value) {
     componentData = componentData ? componentData : { };
     componentData[option_name] = value;
 
-    _ref.setState({
+    return setStateAsync(_ref, {
         currentState: { ..._ref.state.currentState, components: {...components, [componentName]: componentData }}
     })
 }

@@ -17,7 +17,7 @@ import Papa from "papaparse";
 
 var _ = require('lodash');
 
-export function Table({ id, width, height, component, onComponentClick, currentState = { components: { } }, onEvent, paramUpdated, changeCanDrag, onComponentOptionChanged }) {
+export function Table({ id, width, height, component, onComponentClick, currentState = { components: { } }, onEvent, paramUpdated, changeCanDrag, onComponentOptionChanged, onComponentOptionsChanged }) {
 
 	const color = component.definition.styles.textColor.value;
 	const actions = component.definition.properties.actions || { value: []};
@@ -93,7 +93,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		const changeSet = componentState.changeSet;
 		const dataUpdates = componentState.dataUpdates || [];
 
-		let obj = changeSet ? changeSet[index] : {};
+		let obj = changeSet ? changeSet[index] || {} : {};
 		obj = _.set(obj, key, value);
 
 		let newChangeset = {
@@ -109,8 +109,11 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 			...dataUpdates,
 			{ ...obj }
 		]
-		onComponentOptionChanged(component, 'changeSet', newChangeset);
-		onComponentOptionChanged(component, 'dataUpdates', newDataUpdates);
+
+		onComponentOptionsChanged(component, [
+			['dataUpdates', newDataUpdates],
+			['changeSet', newChangeset]
+		]);
 	}
 
 	function getExportFileBlob({ columns, data, fileType, fileName }) {
@@ -410,6 +413,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 							if(componentState.changeSet) {
 								if(componentState.changeSet[cell.row.index]) {
 									if( _.get(componentState.changeSet[cell.row.index], cell.column.id, undefined )) {
+										console.log('componentState.changeSet', componentState.changeSet);
 										cellProps['style']['backgroundColor'] =  '#ffffde';
 									}
 								}
