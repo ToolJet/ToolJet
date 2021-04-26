@@ -26,6 +26,7 @@ import {
     runQuery
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
+import ReactTooltip from 'react-tooltip';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -322,6 +323,7 @@ class Editor extends React.Component {
 
         return (
             <div className="editor wrapper">
+                <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
                 
                 {/* This is for viewer to show query confirmations */}
                 <Confirm 
@@ -358,21 +360,21 @@ class Editor extends React.Component {
                                 />
                             }
                             <div className="editor-buttons">
-                                <button className="btn btn-light mx-2" onClick={this.toggleLeftSidebar} data-tip={showLeftSidebar ? 'Hide left sidebar' : 'Show left sidebar'}>
+                                <span className="btn btn-light mx-2" onClick={this.toggleLeftSidebar} data-tip={showLeftSidebar ? 'Hide left sidebar' : 'Show left sidebar'}>
                                     <img 
                                         src="https://www.svgrepo.com/show/315785/sidebar-open.svg" 
                                         width="12" 
                                         height="12"
                                     />
-                                </button>
-                                <button className="btn btn-light mx-2" onClick={this.toggleQueryEditor} data-tip={showQueryEditor ? 'Hide query editor' : 'Show query editor'}>
+                                </span>
+                                <span className="btn btn-light mx-2" onClick={this.toggleQueryEditor} data-tip={showQueryEditor ? 'Hide query editor' : 'Show query editor'}>
                                     <img 
                                         style={{transform: 'rotate(-90deg)'}}
                                         src="https://www.svgrepo.com/show/315785/sidebar-open.svg" 
                                         width="12" 
                                         height="12"
                                     />
-                                </button>
+                                </span>
                             </div>
                             <div className="navbar-nav flex-row order-md-last">
                                 <div className="nav-item dropdown d-none d-md-flex me-3">
@@ -495,7 +497,7 @@ class Editor extends React.Component {
                                                         <img className="p-1" src="https://www.svgrepo.com/show/13682/search.svg" width="17" height="17"/>
                                                     </button>} */}
 
-                                                    <button data-tip="Add new query" className="btn btn-sm btn-light" onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true})}>+</button>
+                                                    <span data-tip="Add new query" className="btn btn-sm btn-light" onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true})}>+</span>
                                                 </div>
                                         </div>
                                         
@@ -609,11 +611,11 @@ class Editor extends React.Component {
                                        <h5 className="p-1 text-muted">DATASOURCES</h5>
                                     </div>
                                         <div className="col-md-3">
-                                        <button className="btn btn-light btn-sm" 
+                                        <span className="btn btn-light btn-sm" 
                                             data-tip="Add new datasource"
                                             onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })}>
                                                 +
-                                        </button>
+                                        </span>
                                         {this.state.showDataSourceManagerModal && 
                                             <DataSourceManager 
                                                 appId={appId}
