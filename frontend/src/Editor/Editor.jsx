@@ -561,7 +561,7 @@ class Editor extends React.Component {
                         </div>
                     </div>
                     <Resizable
-                        minWidth="11.8%"
+                        minWidth={showLeftSidebar ? '12%': '0%'}
                         style={{
                             position: 'fixed',
                             display: "flex",
@@ -570,13 +570,14 @@ class Editor extends React.Component {
                             background: "#f0f0f0",
                             zIndex: '200'
                         }}
+                        maxWidth={showLeftSidebar ? '30%': '0%'}
                         defaultSize={{
-                            width: '11.8%',
+                            width: '12%',
                             height: '99%',
                         }}
                         >
 
-                    <div className="left-sidebar" style={{width: showLeftSidebar ? '': '0%'}}>
+                    <div className="left-sidebar">
                         <div className="variables-container p-3">
                             <div className="col-md-12">
                                 <div className="mb-2">
