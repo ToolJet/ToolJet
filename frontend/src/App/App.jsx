@@ -42,7 +42,7 @@ class App extends React.Component {
                     }
 
                     <ToastContainer/>
-                    <ReactTooltip type="dark" effect="solid"/>
+                    <ReactTooltip type="dark" effect="solid" delayShow={1500} />
                     
                     <PrivateRoute exact path="/" component={HomePage} />
                     <Route path="/login" component={LoginPage} />
