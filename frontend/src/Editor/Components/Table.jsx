@@ -180,14 +180,16 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 						return cellValue || '';
 					}
 				} else if(columnType === 'dropdown') {
-					return <SelectSearch 
-						options={columnOptions['selectOptions']}
-						value={cellValue} 
-						search={true}
-						onChange={(value) => { handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original) }}
-						filterOptions={fuzzySearch}
-						placeholder="Select.." 
-                	/>
+					return <div>
+						<SelectSearch 
+							options={columnOptions['selectOptions']}
+							value={cellValue} 
+							search={true}
+							onChange={(value) => { handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original) }}
+							filterOptions={fuzzySearch}
+							placeholder="Select.." 
+						/>
+					</div>
 				} else if(columnType === 'multiselect') {
 					return <div>
 						<SelectSearch
