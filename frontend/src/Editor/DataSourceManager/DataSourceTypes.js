@@ -39,8 +39,8 @@ export const dataBaseSources = [
         icon: 'https://static.invertase.io/assets/firebase/cloud-firestore.svg',
         exposedVariables: {
             isLoading: {},
-            data: {},
-            rawData: {}
+            data: [],
+            rawData: []
         },
         options: {
             gcp_key: { type: "string", encrypted: true }

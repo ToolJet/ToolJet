@@ -78,6 +78,7 @@ class Table extends React.Component {
                                 { name: 'Default', value: 'default' },
                                 { name: 'String', value: 'string' },
                                 { name: 'Dropdown', value: 'dropdown' },
+                                { name: 'Multiselect', value: 'multiselect' },
                             ]}
                             value={column.columnType} 
                             search={true}
@@ -106,7 +107,7 @@ class Table extends React.Component {
                         />
                     </div>
 
-                    {column.columnType === "dropdown" && 
+                    {(column.columnType === "dropdown" || column.columnType === "multiselect") && 
                         <div>
                             <div className="field mb-2">
                                 <label class="form-label">Values</label>

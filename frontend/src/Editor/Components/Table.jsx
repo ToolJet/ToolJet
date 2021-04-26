@@ -142,7 +142,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		const columnType = column.columnType;
 
 		const columnOptions = {};
-		if(columnType === 'dropdown') {
+		if(columnType === 'dropdown' || columnType === 'multiselect') {
 			const values = resolve_references(column.values, currentState) || [];
 			const labels = resolve_references(column.labels, currentState, []) || [];
 
@@ -185,6 +185,18 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 						filterOptions={fuzzySearch}
 						placeholder="Select.." 
                 	/>
+				} else if(columnType === 'multiselect') {
+					return <div>
+						<SelectSearch
+							printOptions="on-focus"
+							multiple
+							search={true}
+							placeholder="Select.."
+							options={columnOptions['selectOptions']}
+							value={cellValue}
+							onChange={(value) => { handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original) }}
+						/>
+					</div>
 				} else {
 					return cellValue || '';
 				}
