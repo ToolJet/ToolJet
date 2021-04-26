@@ -6,8 +6,16 @@ import { Container } from './Container';
 import 'react-toastify/dist/ReactToastify.css';
 import { getDynamicVariables, resolve, resolve_references } from '@/_helpers/utils';
 import { Confirm } from './Viewer/Confirm';
-import moment from 'moment';
-import { toast } from 'react-toastify';
+import { 
+    onComponentOptionChanged, 
+    fetchOAuthToken, 
+    runTransformation, 
+    onComponentClick,
+    onQueryConfirm,
+    onQueryCancel,
+    onEvent,
+    runQuery
+} from '@/_helpers/appUtils';
 
 class Viewer extends React.Component {
     constructor(props) {
@@ -34,14 +42,14 @@ class Viewer extends React.Component {
         
         const id = this.props.match.params.id;
 
-        appService.getApp(id).then(data => this.setState({ 
+        appService.getApp(id).then(data => this.setState({
             app: data, 
             isLoading: false,
             appDefinition: data.definition
         }, () => {
             data.data_queries.map((query) => {
                 if(query.options.runOnPageLoad) {
-                    this.runQuery(query.id, query.name);
+                    runQuery(this, query.id, query.name);
                 }
             })
         }));
@@ -65,250 +73,17 @@ class Viewer extends React.Component {
             }
         });
     }
-
-    switchSidebarTab = (tabIndex) => { 
-        this.setState({
-            currentSidebarTab: tabIndex
-        });
-    }
-
-    runTransformation = (rawData, transformation) => {
-        const data = rawData;
-        const evalFunction = Function(['data', 'moment', 'currentState'], transformation);
-        let result = [];
-
-        try { 
-            result = evalFunction(data, moment, this.state.currentState);
-        } catch(err) {
-            toast.error(err.message, { hideProgressBar: true });
-        }
-
-        return result;
-    }
-
-    fetchOAuthToken = (authUrl, dataSourceId) => {
-        localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
-        window.open(authUrl);
-    }
-
-    runQuery = (queryId, queryName, confirmed = undefined ) => {
-        const dataQuery = JSON.parse(JSON.stringify(this.state.app.data_queries.find(query => query.id === queryId)));
-
-        const options = resolve_references(dataQuery.options, this.state.currentState);
-
-        if(options.requestConfirmation) {
-            if(confirmed === undefined) {
-                this.setState({ 
-                    showQueryConfirmation: true,
-                    queryConfirmationData : {
-                        queryId, queryName
-                    }
-                });
-                return;
-            }
-        }
-
-        const newState = {
-            ...this.state.currentState, 
-            queries: {
-                ...this.state.currentState.queries, 
-                [queryName]: {
-                    ...this.state.currentState.queries[queryName],
-                    isLoading: true
-                }
-            }
-        }
-
-        let _self = this
-
-        return new Promise(function(resolve, reject) {
-            _self.setState({currentState: newState}, () => {
-                dataqueryService.run(queryId, options).then(data => 
-                    {
-
-                        resolve();
-
-                        if(data.error) {
-                            if(data.error.code === "oauth2_needs_auth") {
-                                const url = data.error.data.auth_url; // Backend generates and return sthe auth url
-                                _self.fetchOAuthToken(url, dataQuery.data_source_id);
-                                return;
-                            }
-                        }
-
-                        if(data.status === 'failed') {
-                            toast.error(data.error.message, { hideProgressBar: true, autoClose: 3000 })
-                        }
-
-                        let rawData = data.data;
-                        let finalData = data.data;
-
-                        if(options.enableTransformation) {
-                            finalData = _self.runTransformation(rawData, options.transformation);
-                        }
-        
-                        if(options.showSuccessNotification) {
-                            const notificationDuration = options.notificationDuration || 5;
-                            toast.success(options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 })
-                        }
-        
-                        _self.setState({
-                            currentState: {
-                                ..._self.state.currentState, 
-                                queries: {
-                                    ..._self.state.currentState.queries, 
-                                    [queryName]: {
-                                        ..._self.state.currentState.queries[queryName],
-                                        data: finalData,
-                                        rawData,
-                                        isLoading: false
-                                    }
-                                }
-                            }
-                        })
-                    }
-                );
-            });
-        });
-    }
-
-    executeAction = (event) => {
-        if(event) {
-            if(event.actionId === 'show-alert') {
-                toast(event.options.message, { hideProgressBar: true })
-            }
-
-            if(event.actionId === 'open-webpage') {
-                const url = resolve_references(event.options.url, this.state.currentState);
-                window.open(url, '_blank');
-            }
-
-            if(event.actionId === 'run-query') {
-                const { queryId, queryName } = event.options;
-                return this.runQuery(queryId, queryName);
-            }
-        }
-    }
-
-    onComponentClick = (id, component) => {
-        console.log(component);
-        const onClickEvent = component.definition.events.onClick;
-        this.executeAction(onClickEvent);
-    }
-
-    onEvent = (eventName, options) => {
-
-        let _self = this;
-
-        if (eventName === 'onRowClicked') {
-            const { component, data } = options;
-            const event = component.definition.events[eventName];
-            this.setState({
-                currentState: {...this.state.currentState, 
-                    components: {
-                        ...this.state.currentState.components, 
-                        [component.name]: {
-                            ...this.state.currentState.components[component.name],
-                            selectedRow: data
-                        }}}
-            }, () => {
-                if(event.actionId) {
-                    this.executeAction(event);
-                }
-            });
-        }
-
-        if(eventName === 'onTableActionButtonClicked') { 
-            const { component, data, action } = options;
-            const event = action.onClick;
-
-            this.setState({
-                currentState: {...this.state.currentState, 
-                    components: {
-                        ...this.state.currentState.components, 
-                        [component.name]: {
-                            ...this.state.currentState.components[component.name],
-                            selectedRow: data
-                        }}}
-            }, () => {
-                if(event.actionId) {
-                    this.executeAction(event);
-                }
-            });
-        }
-
-        if(eventName === 'onCheck' || eventName === 'onUnCheck') { 
-            const { component, data, action } = options;
-            const event = (eventName === 'onCheck') ? component.definition.events.onCheck : component.definition.events.onUnCheck;
-
-            if(event.actionId) {
-                this.executeAction(event);
-            }
-        }
-
-        if (eventName === 'onBulkUpdate') {
-            return new Promise(function(resolve, reject) {
-                _self.onComponentOptionChanged(options.component, 'isSavingChanges', true);
-                _self.executeAction({ actionId: 'run-query', ...options.component.definition.events.onBulkUpdate }).then(() => {
-                    _self.onComponentOptionChanged(options.component, 'isSavingChanges', false);
-                    resolve();
-                });
-            });
-        }
-    }
-
-    onComponentOptionChanged = (component, option_name, value) => {
-
-        const componentName = component.name;
-        const components = this.state.currentState.components;
-        let componentData = components[componentName];
-        componentData = componentData ? componentData : { };
-        componentData[option_name] = value;
-
-        this.setState({
-            currentState: { ...this.state.currentState, components: {...components, [componentName]: componentData }}
-        })
-    }
-
-    appDefinitionChanged = (newDefinition) => { 
-        console.log('newDefinition', newDefinition);
-        this.setState({ appDefinition: newDefinition })
-        console.log('app definition', this.state.appDefinition);
-    }
-
-    componentDefinitionChanged = (newDefinition) => { 
-        console.log('new component definition', newDefinition);
-        console.log('app definition', this.state.appDefinition);
-        this.setState( { 
-            appDefinition: { ...this.state.appDefinition, [newDefinition.id]: { component: newDefinition.component } }
-        })
-    }
-
-    onQueryConfirm = (queryConfirmationData) => {
-        this.setState({
-            showQueryConfirmation: false
-        })
-        this.runQuery(queryConfirmationData.queryId, queryConfirmationData.queryName, true);
-    }
-
-    onQueryCancel = () => {
-        this.setState({
-            showQueryConfirmation: false
-        })
-    }
-
+   
     render() {
-        const { currentSidebarTab, selectedComponent, appDefinition, showQueryConfirmation } = this.state;
-
-        console.log(appDefinition);
+        const { appDefinition, showQueryConfirmation } = this.state;
 
         return (
             <div class="viewer wrapper">
                 <Confirm 
                     show={showQueryConfirmation} 
                     message={'Do you want to run this query?'}
-                    onConfirm={this.onQueryConfirm}
-                    onCancel={this.onQueryCancel}
+                    onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
+                    onCancel={() => onQueryCancel(this)}
                     queryConfirmationData={this.state.queryConfirmationData}
                 />
                 <DndProvider backend={HTML5Backend}>
@@ -342,13 +117,13 @@ class Viewer extends React.Component {
                                 <div className="canvas-area">
                                     <Container 
                                         appDefinition={appDefinition}
-                                        appDefinitionChanged={this.appDefinitionChanged}
+                                        appDefinitionChanged={() => false } // function not relevant in viewer
                                         snapToGrid={true} 
-                                        onEvent={this.onEvent}
+                                        onEvent={(eventName, options) => onEvent(this, eventName, options)}
                                         mode="view"
                                         currentState={this.state.currentState}
-                                        onComponentClick={this.onComponentClick}
-                                        onComponentOptionChanged={this.onComponentOptionChanged}
+                                        onComponentClick={(id, component) => onComponentClick(this, id, component)}
+                                        onComponentOptionChanged={(component, option_name, value) => onComponentOptionChanged(this, component, option_name, value)}
                                     />
                                 </div>
                             }

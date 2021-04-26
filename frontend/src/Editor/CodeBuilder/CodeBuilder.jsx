@@ -71,7 +71,7 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
         const dataSourceMeta = DataSourceTypes.find(source => query.kind === source.kind);
         const exposedVariables = dataSourceMeta.exposedVariables;
         
-        return renderVariables('components', query.name, Object.keys(exposedVariables));
+        return renderVariables('queries', query.name, Object.keys(exposedVariables));
     }
 
     return (
