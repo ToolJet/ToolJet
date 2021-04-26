@@ -34,6 +34,8 @@ class Editor extends React.Component {
             appId,
             loadingDataSources: true,
             loadingDataQueries: true,
+            showQueryEditor: true,
+            showLeftSidebar: true,
             appDefinition: {
                 components: null
             },
@@ -239,6 +241,14 @@ class Editor extends React.Component {
         return this.renderVariables('components', component.component.name, exposedVariables);
     }
 
+    toggleQueryEditor = () => {
+        this.setState({ showQueryEditor: !this.state.showQueryEditor});
+    }
+
+    toggleLeftSidebar = () => {
+        this.setState({ showLeftSidebar: !this.state.showLeftSidebar});
+    }
+
     render() {
         const { 
             currentSidebarTab, 
@@ -255,7 +265,9 @@ class Editor extends React.Component {
             app,
             componentTypes,
             showQueryConfirmation,
-            queryPaneHeight
+            queryPaneHeight,
+            showQueryEditor,
+            showLeftSidebar
         } = this.state;
 
         const appLink = `/applications/${appId}`;
@@ -297,6 +309,23 @@ class Editor extends React.Component {
                                     value={this.state.app.name}
                                 />
                             }
+                            <div className="editor-buttons">
+                                <button className="btn btn-light mx-2" onClick={this.toggleLeftSidebar} data-tip={showLeftSidebar ? 'Hide left sidebar' : 'Show left sidebar'}>
+                                    <img 
+                                        src="https://www.svgrepo.com/show/315785/sidebar-open.svg" 
+                                        width="12" 
+                                        height="12"
+                                    />
+                                </button>
+                                <button className="btn btn-light mx-2" onClick={this.toggleQueryEditor} data-tip={showQueryEditor ? 'Hide query editor' : 'Show query editor'}>
+                                    <img 
+                                        style={{transform: 'rotate(-90deg)'}}
+                                        src="https://www.svgrepo.com/show/315785/sidebar-open.svg" 
+                                        width="12" 
+                                        height="12"
+                                    />
+                                </button>
+                            </div>
                             <div className="navbar-nav flex-row order-md-last">
                                 <div className="nav-item dropdown d-none d-md-flex me-3">
                                     <ManageAppUsers 
@@ -400,7 +429,11 @@ class Editor extends React.Component {
                                 <CustomDragLayer snapToGrid={true}/>
                             </div>
                         </div>
-                        <div className="query-pane" style={{height: this.state.queryPaneHeight}}>
+                        <div className="query-pane" style={{
+                                height: showQueryEditor ? this.state.queryPaneHeight : '0px',
+                                width: !showLeftSidebar ? '85%': '',
+                                left: !showLeftSidebar ? '0': '',
+                            }}>
                             <div className="row main-row">
                                 <div className="col-md-3 data-pane">
                                     <div className="queries-container">
@@ -469,7 +502,7 @@ class Editor extends React.Component {
                             </div>
                         </div>
                     </div>
-                    <div className="left-sidebar">
+                    <div className="left-sidebar" style={{width: showLeftSidebar ? '': '0%'}}>
                         <div className="variables-container p-3">
                             <div className="col-md-12">
                                 <h5 className="text-muted">Globals</h5>
