@@ -44,7 +44,7 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
 
     function renderVariable(type, key, variable) {
         return (
-            <div className="item my-1" role="button" onClick={() => handleVariableSelection(type, key, variable)}>
+            <div className="item my-1" role="button" onMouseDown={(e) => { e.preventDefault(); handleVariableSelection(type, key, variable) }}>
                 <div className="row">
                     <div className="col">
                         {key}.{variable}
@@ -82,7 +82,7 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
                 onChange={ (instance, change) => computeIfDropDownCanBeShown(instance) }
                 value={currentValue}
                 onFocus={(instance) => handleOnFocus(instance)} 
-                // onBlur={() => { setShowDropdown(false)}}
+                onBlur={(e) => { setShowDropdown(false)}}
                 options={{
                     mode: 'json',
                     lineWrapping: true,
