@@ -31,16 +31,12 @@ body {
         width: 0;
         background: transparent;
     }
-    
-    .left-sidebar::-webkit-scrollbar-thumb {
-        background: #FF0000;
-    }
 
     .left-sidebar {
 
         height: 100%; 
         width: 12%; 
-        position: fixed; 
+        // position: fixed; 
         z-index: 1; 
         left: 0;
         overflow-x: hidden; 
@@ -75,9 +71,6 @@ body {
             scrollbar-width: none;
         }
 
-        .variables-container::-webkit-scrollbar-thumb, .datasources-container::-webkit-scrollbar-thumb {
-            background: #FF0000;
-        }
 
         .datasources-container { 
             bottom: 0;
@@ -218,10 +211,6 @@ body {
             width: 0;
             background: transparent;
         }
-        
-        .canvas-container::-webkit-scrollbar-thumb {
-            background: #FF0000;
-        }
 
         .canvas-container { 
             height: 100%;
@@ -271,10 +260,6 @@ body {
             background: transparent;
         }
         
-        .query-pane::-webkit-scrollbar-thumb {
-            background: #FF0000;
-        }
-
         .query-pane {
             height: 350px; 
             width: 73%; 
@@ -300,10 +285,6 @@ body {
                 background: transparent;
             }
             
-            .table-responsive::-webkit-scrollbar-thumb {
-                background: #FF0000;
-            }
-
             .query-row {
                 cursor: pointer;
                 .query-copy-button {
@@ -379,10 +360,6 @@ body {
             background: transparent;
         }
         
-        .canvas-container::-webkit-scrollbar-thumb {
-            background: #FF0000;
-        }
-
         .canvas-container { 
             height: 100%;
             width: 100%;
