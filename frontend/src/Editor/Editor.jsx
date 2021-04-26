@@ -27,6 +27,7 @@ import {
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
+import { Resizable } from "re-resizable";
 
 class Editor extends React.Component {
     constructor(props) {
@@ -559,6 +560,22 @@ class Editor extends React.Component {
                             </div>
                         </div>
                     </div>
+                    <Resizable
+                        minWidth="11.8%"
+                        style={{
+                            position: 'fixed',
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: "#f0f0f0",
+                            zIndex: '200'
+                        }}
+                        defaultSize={{
+                            width: '11.8%',
+                            height: '99%',
+                        }}
+                        >
+
                     <div className="left-sidebar" style={{width: showLeftSidebar ? '': '0%'}}>
                         <div className="variables-container p-3">
                             <div className="col-md-12">
@@ -583,11 +600,12 @@ class Editor extends React.Component {
                                     <ReactJson 
                                         src={currentState.components} 
                                         name={'components'} 
-                                        style={{fontSize: '0.75rem'}}
+                                        style={{fontSize: '0.7rem'}}
                                         enableClipboard={false}
                                         displayDataTypes={false}
                                         collapsed={true}
                                         sortKeys={true}
+                                        indentWidth={1}
                                     />
                                 </div>
 
@@ -656,6 +674,7 @@ class Editor extends React.Component {
                                 
                             </div>
                         </div>
+                        </Resizable>
                     </div>
                 </DndProvider>    
             </div>
