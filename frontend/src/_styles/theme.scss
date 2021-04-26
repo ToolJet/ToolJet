@@ -98,7 +98,7 @@ body {
         height: 100%; 
         width: 15%; 
         position: fixed; 
-        z-index: 10; 
+        z-index: 1; 
         right: 0;
         overflow-x: hidden; 
 
@@ -305,6 +305,7 @@ body {
             }
 
             .query-row {
+                cursor: pointer;
                 .query-copy-button {
                     display: none;
                 }
@@ -834,4 +835,8 @@ body {
             background: #f4f6fa;
         }
     }
+}
+
+.__react_component_tooltip {
+    z-index: 10000
 }

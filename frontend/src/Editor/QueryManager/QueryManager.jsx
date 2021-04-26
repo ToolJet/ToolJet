@@ -10,6 +10,7 @@ import { Firestore } from './Firestore';
 import { Redis } from './Redis';
 import { Googlesheets } from './Googlesheets';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import ReactTooltip from 'react-tooltip';
 
 const allSources = {
     Restapi,
@@ -71,21 +72,26 @@ class QueryManager extends React.Component {
             dataQueries: props.dataQueries,
             mode: props.mode,
             currentTab: 1,
+            addingQuery: props.addingQuery, 
+            editingQuery: props.editingQuery,
+            queryPaneHeight: props.queryPaneHeight
+        }, () => {
+            if(this.props.mode === 'edit') {
+                const source = props.dataSources.find(source => source.id === selectedQuery.data_source_id) 
+    
+                this.setState({
+                    options: selectedQuery.options,
+                    selectedDataSource: source,
+                    selectedQuery,
+                })
+            } else { 
+                this.setState({
+                    options: {},
+                    selectedDataSource: null,
+                    selectedQuery: null,
+                })
+            }
         });
-
-        if(this.props.mode === 'edit') {
-            const source = props.dataSources.find(source => source.id === selectedQuery.data_source_id) 
-
-            this.setState({
-                options: selectedQuery.options,
-                selectedDataSource: source,
-                selectedQuery
-            })
-        } else { 
-            this.setState({
-                options: {},
-            })
-        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -174,7 +180,18 @@ class QueryManager extends React.Component {
     }
 
     render() {
-        const { dataSources, selectedDataSource, mode, currentTab, isUpdating, isCreating } = this.state;
+        const { 
+            dataSources, 
+            selectedDataSource, 
+            mode, 
+            currentTab, 
+            isUpdating, 
+            isCreating, 
+            addingQuery, 
+            editingQuery, 
+            selectedQuery,
+            queryPaneHeight
+        } = this.state;
 
         let ElementToRender = '';
 
@@ -190,147 +207,162 @@ class QueryManager extends React.Component {
         if(isCreating) { buttonText = 'Creating...'}
 
         return (
-            <div className="query-manager" key={this.props.selectedQuery.id}>
-
+            <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
+                <ReactTooltip type="dark" effect="solid"/>
                 <div className="row header">
                     <div className="col">
-                        <div className="nav-header">
-                            <ul className="nav nav-tabs" data-bs-toggle="tabs">
-                                <li className="nav-item">
-                                    <a 
-                                        onClick={() => this.switchCurrentTab(1)} 
-                                        className={currentTab === 1 ? 'nav-link active' : 'nav-link'} 
-                                    >
-                                        &nbsp; General
-                                    </a>
-                                </li>
-                                <li className="nav-item">
-                                    <a 
-                                        onClick={() => this.switchCurrentTab(2)} 
-                                        className={currentTab === 2 ? 'nav-link active' : 'nav-link'}  
-                                    >
-                                        &nbsp; Advanced
-                                    </a>
-                                </li>
-                                
-                            </ul>
-                        </div>
+                        {(addingQuery || editingQuery) && 
+                            <div className="nav-header">
+                                <ul className="nav nav-tabs" data-bs-toggle="tabs">
+                                    <li className="nav-item">
+                                        <a 
+                                            onClick={() => this.switchCurrentTab(1)} 
+                                            className={currentTab === 1 ? 'nav-link active' : 'nav-link'} 
+                                        >
+                                            &nbsp; General
+                                        </a>
+                                    </li>
+                                    <li className="nav-item">
+                                        <a 
+                                            onClick={() => this.switchCurrentTab(2)} 
+                                            className={currentTab === 2 ? 'nav-link active' : 'nav-link'}  
+                                        >
+                                            &nbsp; Advanced
+                                        </a>
+                                    </li>
+                                    
+                                </ul>
+                            </div>
+                        }
                     </div>
                     <div className="col-auto">
-                        <button className="btn btn-light" onClick={this.props.toggleQueryPaneHeight}>
-                            <img src="https://www.svgrepo.com/show/129993/expand.svg" width="12" height="12"/>
-                        </button>
-                        <button onClick={this.createOrUpdateDataQuery} disabled={buttonDisabled} className="btn btn-primary m-1 float-right">
-                            { buttonText }
-                        </button>
+                        {(addingQuery || editingQuery) && 
+                            <button onClick={this.createOrUpdateDataQuery} disabled={buttonDisabled} className="btn btn-primary m-1 float-right">
+                                { buttonText }
+                            </button>
+                        }
+                        {queryPaneHeight === '30%' ?
+                            <button className="btn btn-light m-1" onClick={this.props.toggleQueryPaneHeight} data-tip="Maximize query editor">
+                                <img src="https://www.svgrepo.com/show/129993/expand.svg" width="12" height="12"/>
+                            </button>
+                            :
+                            <button className="btn btn-light m-1" onClick={this.props.toggleQueryPaneHeight} data-tip="Minimize query editor">
+                                <img src="https://www.svgrepo.com/show/310476/arrow-minimize.svg" width="12" height="12"/>
+                            </button>
+                        }
+                        
                     </div>
                 </div>
-                
-                {currentTab === 1 && 
-                    <div className="row row-deck p-3">
-                        {(dataSources && mode ==='create') && 
-                            <div className="datasource-picker mb-2">
-                                <label className="form-label col-md-2">Datasource</label>
-                                <SelectSearch 
-                                    options={[
-                                        ...dataSources.map(source => { return  { name: source.name, value: source.id } }),
-                                        ...staticDataSources.map(source => { return  {name: source.name, value: source.id} }),
-                                    ]}
-                                    value={selectedDataSource ? selectedDataSource.id : ''} 
-                                    search={true}
-                                    onChange={(value) => this.changeDataSource(value) }
-                                    filterOptions={fuzzySearch}
-                                    renderOption={this.renderDataSourceOption}
-                                    placeholder="Select a data source" 
-                                />
-                            </div>
-                        }   
 
-                        {selectedDataSource && 
-                            <div>
-                            
-                                    <ElementToRender
-                                        options={this.state.options}
-                                        optionsChanged={this.optionsChanged}
-                                    />
-                                
+                {(addingQuery || editingQuery) && 
+                    <div>
+                        {currentTab === 1 && 
+                            <div className="row row-deck p-3">
+                                {(dataSources && mode ==='create') && 
+                                    <div className="datasource-picker mb-2">
+                                        <label className="form-label col-md-2">Datasource</label>
+                                        <SelectSearch 
+                                            options={[
+                                                ...dataSources.map(source => { return  { name: source.name, value: source.id } }),
+                                                ...staticDataSources.map(source => { return  {name: source.name, value: source.id} }),
+                                            ]}
+                                            value={selectedDataSource ? selectedDataSource.id : ''} 
+                                            search={true}
+                                            onChange={(value) => this.changeDataSource(value) }
+                                            filterOptions={fuzzySearch}
+                                            renderOption={this.renderDataSourceOption}
+                                            placeholder="Select a data source" 
+                                        />
+                                    </div>
+                                }   
+
+                                {selectedDataSource && 
+                                    <div>
+                                    
+                                            <ElementToRender
+                                                options={this.state.options}
+                                                optionsChanged={this.optionsChanged}
+                                            />
+                                        
+                                    </div>
+                                }
+
                             </div>
                         }
 
-                    </div>
-                }
+                        {currentTab === 2 && 
+                            <div className="advanced-options-container p-2 m-2">
+                                <label className="form-check form-switch">
+                                    <input 
+                                        className="form-check-input" 
+                                        type="checkbox" 
+                                        onClick={() => this.toggleOption('runOnPageLoad')}
+                                        checked={this.state.options.runOnPageLoad} 
+                                    />
+                                    <span className="form-check-label">Run this query on page load?</span>
+                                </label>
+                                <label className="form-check form-switch">
+                                    <input 
+                                        className="form-check-input" 
+                                        type="checkbox" 
+                                        onClick={() => this.toggleOption('requestConfirmation')}
+                                        checked={this.state.options.requestConfirmation} 
+                                    />
+                                    <span className="form-check-label">Request confirmation before running query?</span>
+                                </label>
 
-                {currentTab === 2 && 
-                    <div className="advanced-options-container p-2 m-2">
-                        <label className="form-check form-switch">
-                            <input 
-                                className="form-check-input" 
-                                type="checkbox" 
-                                onClick={() => this.toggleOption('runOnPageLoad')}
-                                checked={this.state.options.runOnPageLoad} 
-                            />
-                            <span className="form-check-label">Run this query on page load?</span>
-                        </label>
-                        <label className="form-check form-switch">
-                            <input 
-                                className="form-check-input" 
-                                type="checkbox" 
-                                onClick={() => this.toggleOption('requestConfirmation')}
-                                checked={this.state.options.requestConfirmation} 
-                            />
-                            <span className="form-check-label">Request confirmation before running query?</span>
-                        </label>
+                                <hr/>
 
-                        <hr/>
+                                <label className="form-check form-switch">
+                                    <input 
+                                        className="form-check-input" 
+                                        type="checkbox" 
+                                        onClick={() => this.toggleOption('showSuccessNotification')}
+                                        checked={this.state.options.showSuccessNotification} 
+                                    />
+                                    <span className="form-check-label">Show notification on success?</span>
 
-                        <label className="form-check form-switch">
-                            <input 
-                                className="form-check-input" 
-                                type="checkbox" 
-                                onClick={() => this.toggleOption('showSuccessNotification')}
-                                checked={this.state.options.showSuccessNotification} 
-                            />
-                            <span className="form-check-label">Show notification on success?</span>
+                                </label>
 
-                        </label>
+                                <div class="row mt-3">
+                                    <div class="col-auto">
+                                        <label class="form-label p-2">Success Message</label>
+                                    </div>
+                                    <div class="col">
+                                        <input 
+                                            type="text" 
+                                            disabled={!this.state.options.showSuccessNotification}
+                                            value={this.state.options.successMessage}
+                                            onChange={(e) => this.optionchanged('successMessage', e.target.value)}
+                                            placeholder="Query ran successfully"
+                                            class="form-control" 
+                                            value={this.state.options.successMessage} 
+                                        />
+                                    </div>
+                                </div>
 
-                        <div class="row mt-3">
-                            <div class="col-auto">
-                                <label class="form-label p-2">Success Message</label>
+                                <hr/>
+
+                                <div class="row mt-3">
+                                    <div class="col-auto">
+                                        <label class="form-label p-2">Notification duration (s)</label>
+                                    </div>
+                                    <div class="col">
+                                        <input 
+                                            type="number" 
+                                            disabled={!this.state.options.showSuccessNotification}
+                                            value={this.state.options.notificationDuration}
+                                            onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
+                                            placeholder={5}
+                                            class="form-control" 
+                                            value={this.state.options.notificationDuration} 
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col">
-                                <input 
-                                    type="text" 
-                                    disabled={!this.state.options.showSuccessNotification}
-                                    value={this.state.options.successMessage}
-                                    onChange={(e) => this.optionchanged('successMessage', e.target.value)}
-                                    placeholder="Query ran successfully"
-                                    class="form-control" 
-                                    value={this.state.options.successMessage} 
-                                />
-                            </div>
-                        </div>
-
-                        <hr/>
-
-                        <div class="row mt-3">
-                            <div class="col-auto">
-                                <label class="form-label p-2">Notification duration (s)</label>
-                            </div>
-                            <div class="col">
-                                <input 
-                                    type="number" 
-                                    disabled={!this.state.options.showSuccessNotification}
-                                    value={this.state.options.notificationDuration}
-                                    onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
-                                    placeholder={5}
-                                    class="form-control" 
-                                    value={this.state.options.notificationDuration} 
-                                />
-                            </div>
-                        </div>
-                    </div>
-                }
+                        }
+                </div>
+            }
             </div>
         )
     }
