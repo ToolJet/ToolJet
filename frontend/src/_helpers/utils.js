@@ -45,10 +45,10 @@ export function resolve_references(object, state) {
     if (typeof object === "string") {
         if(object.startsWith("{{") && object.endsWith("}}")) {
             const code = object.replace('{{', '').replace('}}', '');
-            const evalFunction = Function(['components', 'queries', 'globals', 'moment'], `return ${code}`);
             let result = '';
     
             try { 
+                const evalFunction = Function(['components', 'queries', 'globals', 'moment'], `return ${code}`);
                 result = evalFunction(state.components, state.queries, state.globals, moment);
             } catch(err) {
                 console.log('eval_error', err);
