@@ -540,10 +540,15 @@ class Editor extends React.Component {
                                                     selectedQuery={selectedQuery}
                                                     dataQueriesChanged={this.dataQueriesChanged}
                                                     appId={appId}
-                                                    runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
+                                                    runQuery={(queryId, queryName) =>  { 
+                                                        runQuery(this, queryId, queryName).then(() =>  { 
+                                                            toast.info('Query (queryName) completed.', { hideProgressBar: true, position: "bottom-center" })
+                                                        });
+                                                    }}
                                                     addingQuery={addingQuery}
                                                     editingQuery={editingQuery}
                                                     queryPaneHeight={queryPaneHeight}
+                                                    currentState={currentState}
                                                 />
                                             </div>
                                         </div>

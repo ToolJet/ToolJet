@@ -187,7 +187,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined ) {
             ..._ref.state.currentState.queries, 
             [queryName]: {
                 ..._ref.state.currentState.queries[queryName],
-                isLoading: _ref
+                isLoading: true
             }
         }
     }
