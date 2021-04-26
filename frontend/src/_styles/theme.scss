@@ -826,10 +826,11 @@ body {
     border-radius: 2px;
 
     .variables-dropdown { 
-        position: absolute;
+        position: fixed;
         right: 0;
-        width: 100%;
+        width: 400px;
         z-index: 200;
+        border: solid 1px #dadcde;
 
         .group-header {
             background: #f4f6fa;
