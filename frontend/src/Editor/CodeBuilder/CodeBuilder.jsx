@@ -3,6 +3,8 @@ import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import { componentTypes } from '../Components/components';
 import { DataSourceTypes } from '../DataSourceManager/DataSourceTypes';
+import { debounce, throttle } from 'lodash';
+import Fuse from 'fuse.js';
 
 export function CodeBuilder({ initialValue, onChange, components, dataQueries }) {
 
@@ -10,6 +12,15 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
     const [cursorPosition, setCursorPosition] = useState(0);
     const [currentValue, setCurrentValue] = useState(initialValue);
     const [codeMirrorInstance, setCodeMirrorInstance] = useState(null);
+    const [currentWord, setCurrentWord] = useState('');
+
+    function computeCurrentWord(value, _cursorPosition) {
+        const sliced = value.replace('{{', '').replace('}}', '').slice(0, _cursorPosition - 2);
+        const split = sliced.split(' ')
+        return split[split.length - 1];
+    }
+
+    const delayedHandleChange = debounce(instance => computeIfDropDownCanBeShown(instance), 500);
 
     function computeIfDropDownCanBeShown(instance) {
         const value = instance.getValue();
@@ -25,13 +36,18 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
         if(isCode && value != initialValue ){
             setShowDropdown(true);
             setCursorPosition(instance.getCursor().ch);
+            setCurrentWord(computeCurrentWord(value, instance.getCursor().ch));
         }
     }
 
     function handleVariableSelection(type, key, variable) {
-        const slice1 = currentValue.slice(0, cursorPosition);
+        let slice1 = currentValue.slice(0, cursorPosition);
         const slice2 = currentValue.slice(cursorPosition);
         const slice3 = `${type}.${key}.${variable}`;
+
+        if(currentWord != '') {
+            slice1 = currentValue.slice(0, cursorPosition - currentWord.length);
+        }
         
         const newValue = `${slice1}${slice3}${slice2}`;
         codeMirrorInstance.setValue(newValue);
@@ -56,7 +72,16 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
     }
 
     function renderVariables(type, key, variables) {
-        return variables.map((variable, index) => renderVariable(type, key, variable))
+        const filterableData = variables.map(variable => { return { name: variable, key } })
+        const fuse = new Fuse(filterableData, { keys: ['name', 'key'] });
+        let filteredVariables = []
+        if(['', ' ', '{{', '{}}', '{{}', '{{}}', '{', '}'].includes(currentWord)) { 
+            filteredVariables = filterableData.map(item => { return { item: item } });
+        } else {
+            console.log(currentWord)
+            filteredVariables = fuse.search(currentWord);
+        }
+        return filteredVariables.map((variable, index) => renderVariable(type, key, variable.item.name))
     }
 
     function renderComponentVariables(component) {
@@ -79,12 +104,13 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
             <CodeMirror
                 fontSize="2"
                 onCursorActivity={ (instance) => setCursorPosition(instance.getCursor().ch)}
-                onChange={ (instance, change) => computeIfDropDownCanBeShown(instance) }
+                // onChange={ (instance, change) => computeIfDropDownCanBeShown(instance) }
+                onChange={ (instance, change) => delayedHandleChange(instance)}
                 value={currentValue}
                 onFocus={(instance) => handleOnFocus(instance)} 
                 onBlur={(e) => { setShowDropdown(false)}}
                 options={{
-                    mode: 'json',
+                    mode: 'javascript',
                     lineWrapping: true,
                     scrollbarStyle: null,
                     lineNumbers: false,
