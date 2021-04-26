@@ -134,7 +134,15 @@ export function onEvent(_ref, eventName, options) {
 }
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined ) {
-    const dataQuery = JSON.parse(JSON.stringify(_ref.state.app.data_queries.find(query => query.id === queryId)));
+    const query = _ref.state.app.data_queries.find(query => query.id === queryId);
+    let dataQuery = {};
+
+    if(query) {
+        dataQuery = JSON.parse(JSON.stringify(query));
+    } else {
+        toast.error('No query has been associated with the action.', { hideProgressBar: true, autoClose: 3000 })
+        return;
+    }
 
     const options = resolve_references(dataQuery.options, _ref.state.currentState);
 
