@@ -85,10 +85,47 @@ class Editor extends React.Component {
         this.setState({
             loadingDataQueries: true
         }, () => {
-            dataqueryService.getAll(this.state.appId).then(data => this.setState({ 
-                dataQueries: data.data_queries, 
-                loadingDataQueries: false
-            }));
+            dataqueryService.getAll(this.state.appId).then(data => {
+                this.setState({ 
+                    dataQueries: data.data_queries, 
+                    loadingDataQueries: false
+                }, () => { 
+
+                    let queryState = {};
+                    data.data_queries.map(query => { 
+                        queryState[query.name] =  DataSourceTypes.find(source => source.kind === query.kind).exposedVariables;
+                    }),
+
+                    this.setState({
+                        currentState: {
+                            ...this.state.currentState,
+                            queries: {
+                                ...queryState,
+                                ...this.state.currentState.queries
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    }
+
+    computeComponentState = (components) => {
+        let componentState = { };
+        Object.keys(components).map(key => {
+            const component = components[key];
+            const componentMeta = componentTypes.find(comp => component.component.component === comp.component);
+            componentState[component.component.name] = componentMeta.exposedVariables;
+        })
+
+        this.setState({
+            currentState: {
+                ...this.state.currentState,
+                components: {
+                    ...componentState,
+                    ...this.state.currentState.components
+                }
+            }
         });
     }
 
@@ -125,7 +162,9 @@ class Editor extends React.Component {
     appDefinitionChanged = (newDefinition) => { 
         console.log('currentDefinition', this.state.appDefinition);
         console.log('newDefinition', newDefinition);
-        this.setState({ appDefinition: newDefinition })
+        
+        this.setState({ appDefinition: newDefinition });
+        this.computeComponentState(newDefinition.components);
     }
 
     removeComponent = (component) => {
@@ -267,7 +306,8 @@ class Editor extends React.Component {
             showQueryConfirmation,
             queryPaneHeight,
             showQueryEditor,
-            showLeftSidebar
+            showLeftSidebar,
+            currentState
         } = this.state;
 
         const appLink = `/applications/${appId}`;
@@ -505,18 +545,14 @@ class Editor extends React.Component {
                     <div className="left-sidebar" style={{width: showLeftSidebar ? '': '0%'}}>
                         <div className="variables-container p-3">
                             <div className="col-md-12">
-                                <h5 className="text-muted">Globals</h5>
                                 <div className="mb-2">
-                                
                                     <ReactJson 
                                         style={{fontSize: '0.75rem'}}
                                         enableClipboard={false}
                                         src={{
-                                            globals: {
-                                                currentUser: {
-                                                    name: '',
-                                                    email: '',
-                                                }
+                                            currentUser: {
+                                                name: '',
+                                                email: '',
                                             }
                                         }} 
                                         name={'globals'} 
@@ -525,45 +561,32 @@ class Editor extends React.Component {
                                         sortKeys={true}
                                     />
                                 </div>
+
+                                <div className="mb-2">
+                                    <ReactJson 
+                                        src={currentState.components} 
+                                        name={'components'} 
+                                        style={{fontSize: '0.75rem'}}
+                                        enableClipboard={false}
+                                        displayDataTypes={false}
+                                        collapsed={true}
+                                        sortKeys={true}
+                                    />
+                                </div>
+
+                                <div className="mb-2">
+                                    <ReactJson 
+                                        src={currentState.queries} 
+                                        name={'queries'} 
+                                        style={{fontSize: '0.75rem'}}
+                                        enableClipboard={false}
+                                        displayDataTypes={false}
+                                        collapsed={true}
+                                        sortKeys={true}
+                                    />
+                                </div>
                             </div>
-
-                            <hr/>
-
-                            
-                            {dataQueries && 
-                                <>
-                                    {dataQueries.length > 0 && 
-                                        <>
-                                            <div className="col-md-9">
-                                                <h5 className="text-muted">Queries</h5>
-                                            </div>
-                                            {dataQueries.map((query => 
-                                                this.renderQueryVariables(query)
-                                            ))}
-                                             <hr/>
-                                        </>
-                                    }
-                                </>
-                            }
-
-                            {appDefinition.components && 
-                                <>
-                                    {Object.keys(appDefinition.components).length > 0 && 
-                                        <>
-                                            <div className="col-md-9">
-                                                <h5 className="text-muted">Components</h5>
-                                            </div>
-                                            {Object.keys(appDefinition.components).map((key => 
-                                                this.renderComponentVariables(key, appDefinition.components[key])
-                                            ))}
-                                             <hr/>
-                                        </>
-                                    }
-                                </>
-                            }
-
                         </div>
-                        
                         
                         <div className="datasources-container w-100 mt-3">
                                 <div className="row m-2 datasources-header ">
