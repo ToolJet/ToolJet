@@ -254,7 +254,8 @@ class Editor extends React.Component {
             editingQuery,
             app,
             componentTypes,
-            showQueryConfirmation
+            showQueryConfirmation,
+            queryPaneHeight
         } = this.state;
 
         const appLink = `/applications/${appId}`;
@@ -447,21 +448,21 @@ class Editor extends React.Component {
                                 </div>
                                 <div className="col-md-9">
                                     {!loadingDataSources &&
-                                        <div className="query-definition-pane">
-                                            {(addingQuery || editingQuery) && 
-                                                <div>
-                                                    {console.log('sq', editingQuery ? 'edit' : 'create')}
-                                                    <QueryManager 
-                                                        dataSources={dataSources}
-                                                        toggleQueryPaneHeight={this.toggleQueryPaneHeight}
-                                                        dataQueries={dataQueries}
-                                                        mode={editingQuery ? 'edit' : 'create'}
-                                                        selectedQuery={selectedQuery}
-                                                        dataQueriesChanged={this.dataQueriesChanged}
-                                                        appId={appId}
-                                                    />
-                                                </div>
-                                            }
+                                        <div className="query-definition-pane">                                            
+                                            <div>
+                                                <QueryManager 
+                                                    dataSources={dataSources}
+                                                    toggleQueryPaneHeight={this.toggleQueryPaneHeight}
+                                                    dataQueries={dataQueries}
+                                                    mode={editingQuery ? 'edit' : 'create'}
+                                                    selectedQuery={selectedQuery}
+                                                    dataQueriesChanged={this.dataQueriesChanged}
+                                                    appId={appId}
+                                                    addingQuery={addingQuery}
+                                                    editingQuery={editingQuery}
+                                                    queryPaneHeight={queryPaneHeight}
+                                                />
+                                            </div>
                                         </div>
                                     }
                                 </div>
