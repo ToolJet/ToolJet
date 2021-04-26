@@ -16,6 +16,8 @@ import { toast } from 'react-toastify';
 import { Router, Route, Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
 import { SaveAndPreview } from './SaveAndPreview';
+import { onComponentOptionChanged, onComponentClick, onEvent, onQueryConfirm, onQueryCancel } from '@/_helpers/appUtils';
+import { Confirm } from './Viewer/Confirm';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -34,6 +36,14 @@ class Editor extends React.Component {
             loadingDataQueries: true,
             appDefinition: {
                 components: null
+            },
+            currentState: {
+                queries: {},
+                components: {},
+                globals: {
+                    current_user: {},
+                    urlparams: {}
+                }
             }
         };
     }
@@ -93,11 +103,6 @@ class Editor extends React.Component {
         this.setState({
             currentSidebarTab: tabIndex
         });
-    }
-
-    onComponentClick = (id, component) => {
-        this.setState( { selectedComponent: { id, component } } )
-        this.switchSidebarTab(1);
     }
 
     renderComponentCard = (component, index) => {
@@ -248,13 +253,23 @@ class Editor extends React.Component {
             selectedQuery,
             editingQuery,
             app,
-            componentTypes
+            componentTypes,
+            showQueryConfirmation
         } = this.state;
 
         const appLink = `/applications/${appId}`;
 
         return (
             <div className="editor wrapper">
+                
+                {/* This is for viewer to show query confirmations */}
+                <Confirm 
+                    show={showQueryConfirmation} 
+                    message={'Do you want to run this query?'}
+                    onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
+                    onCancel={() => onQueryCancel(this)}
+                    queryConfirmationData={this.state.queryConfirmationData}
+                />
                 <DndProvider backend={HTML5Backend}>
                     <div className="header">
                         <header className="navbar navbar-expand-md navbar-light d-print-none">
@@ -372,7 +387,15 @@ class Editor extends React.Component {
                                     appDefinitionChanged={this.appDefinitionChanged}
                                     snapToGrid={true} 
                                     mode={"edit"}
-                                    onComponentClick={this.onComponentClick}/>
+                                    onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                                    onComponentOptionChanged={(component, option_name, value) => onComponentOptionChanged(this, component, option_name, value)}
+                                    currentState={this.state.currentState}
+                                    onComponentClick={(id, component) =>  { 
+                                        this.setState( { selectedComponent: { id, component } } )
+                                        this.switchSidebarTab(1);
+                                        onComponentClick(this, id, component)}
+                                    }
+                                    />
                                 <CustomDragLayer snapToGrid={true}/>
                             </div>
                         </div>

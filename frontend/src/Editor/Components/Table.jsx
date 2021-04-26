@@ -194,7 +194,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
     let tableData = []
     if(currentState) {
-        tableData = resolve(component.definition.properties.data.value, currentState, []);
+        tableData = resolve_references(component.definition.properties.data.value, currentState, []);
         console.log('resolved param', tableData);
     }
 
