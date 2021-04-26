@@ -238,8 +238,15 @@ class QueryManager extends React.Component {
                         }
                     </div>
                     <div className="col-auto">
+                        <img
+                            src="https://www.svgrepo.com/show/69354/info.svg"
+                            height="20"
+                            width="20"
+                            className="mx-2"
+                            data-tip="NOTE: Query should be saved before running." 
+                        />
                         {((addingQuery || editingQuery) && selectedQuery) && 
-                            <button 
+                            <button
                                 onClick={() => this.props.runQuery(selectedQuery.id, selectedQuery.name)} 
                                 className={`btn btn-secondary m-1 float-right1 ${currentState.queries[selectedQuery.name].isLoading === true ? ' btn-loading' : '' }`}
                             >
