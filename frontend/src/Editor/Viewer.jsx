@@ -75,7 +75,9 @@ class Viewer extends React.Component {
     }
    
     render() {
-        const { appDefinition, showQueryConfirmation } = this.state;
+        const { appDefinition, showQueryConfirmation, currentState } = this.state;
+
+        console.log('currentState', currentState);
 
         return (
             <div class="viewer wrapper">
