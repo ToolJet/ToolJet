@@ -128,8 +128,8 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
                 />
             :
                 <div className="properties-container p-2">
-                    {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties'))}
-                    {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles'))}
+                    {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', components))}
+                    {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', components))}
                     <hr></hr>
                     {componentMeta.events.map((event) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, event))}
                 </div>

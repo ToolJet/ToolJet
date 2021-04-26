@@ -65,7 +65,7 @@ export const componentTypes = [
         component: 'Button',
         defaultSize: {
             width: 80,
-            height: 40
+            height: 30
         },
         properties: {
             text: { type: 'string'} ,
@@ -106,8 +106,8 @@ export const componentTypes = [
         description: 'Text field for forms',
         component: 'TextInput',
         defaultSize: {
-            width: 100,
-            height: 60
+            width: 200,
+            height: 30
         },
         properties: {
             placeholder: { type: 'string'}
@@ -290,7 +290,7 @@ export const componentTypes = [
         description: 'Display markdown or HTML',
         component: 'Text',
         properties: {
-            text: { type: 'string'} ,
+            text: { type: 'code'} ,
             visible: { type: 'string' } ,
             loadingState: { type: 'string' },
         },
