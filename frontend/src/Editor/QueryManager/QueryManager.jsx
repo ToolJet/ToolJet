@@ -74,7 +74,8 @@ class QueryManager extends React.Component {
             currentTab: 1,
             addingQuery: props.addingQuery, 
             editingQuery: props.editingQuery,
-            queryPaneHeight: props.queryPaneHeight
+            queryPaneHeight: props.queryPaneHeight,
+            currentState: props.currentState
         }, () => {
             if(this.props.mode === 'edit') {
                 const source = props.dataSources.find(source => source.id === selectedQuery.data_source_id) 
@@ -190,7 +191,8 @@ class QueryManager extends React.Component {
             addingQuery, 
             editingQuery, 
             selectedQuery,
-            queryPaneHeight
+            queryPaneHeight,
+            currentState
         } = this.state;
 
         let ElementToRender = '';
@@ -237,7 +239,10 @@ class QueryManager extends React.Component {
                     </div>
                     <div className="col-auto">
                         {((addingQuery || editingQuery) && selectedQuery) && 
-                            <button onClick={() => this.props.runQuery(selectedQuery.id, selectedQuery.name)} className="btn btn-light m-1 float-right">
+                            <button 
+                                onClick={() => this.props.runQuery(selectedQuery.id, selectedQuery.name)} 
+                                className={`btn btn-secondary m-1 float-right1 ${currentState.queries[selectedQuery.name].isLoading === true ? ' btn-loading' : '' }`}
+                            >
                                 Run
                             </button>
                         }
