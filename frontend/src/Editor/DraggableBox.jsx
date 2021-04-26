@@ -32,7 +32,7 @@ function getStyles(left, top, isDragging) {
     };
 }
 
-export const DraggableBox = function DraggableBox({ id, mode, title, left, top, width, height, component, index, inCanvas, onEvent, onComponentClick, currentState, onComponentOptionChanged, onResizeStop, paramUpdated  }) {
+export const DraggableBox = function DraggableBox({ id, mode, title, left, top, width, height, component, index, inCanvas, onEvent, onComponentClick, currentState, onComponentOptionChanged, onComponentOptionsChanged, onResizeStop, paramUpdated  }) {
 
     const [isResizing, setResizing] = useState(false);
     const [canDrag, setCanDrag] = useState(true);
@@ -104,6 +104,7 @@ export const DraggableBox = function DraggableBox({ id, mode, title, left, top, 
                                 paramUpdated={paramUpdated}
                                 onEvent={onEvent}
                                 onComponentOptionChanged={onComponentOptionChanged}
+                                onComponentOptionsChanged={onComponentOptionsChanged}
                                 onComponentClick={onComponentClick} 
                                 currentState={currentState} 
                             />
@@ -121,6 +122,7 @@ export const DraggableBox = function DraggableBox({ id, mode, title, left, top, 
                     onEvent={onEvent}
                     paramUpdated={paramUpdated}
                     onComponentOptionChanged={onComponentOptionChanged}
+                    onComponentOptionsChanged={onComponentOptionsChanged}
                     onComponentClick={onComponentClick} 
                     currentState={currentState} 
                 />

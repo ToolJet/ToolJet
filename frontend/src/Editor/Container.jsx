@@ -22,7 +22,17 @@ function uuidv4() {
     );
 }
 
-export const Container = ({ mode, snapToGrid, onComponentClick, onEvent, appDefinition, appDefinitionChanged, currentState, onComponentOptionChanged}) => {
+export const Container = ({ 
+        mode, 
+        snapToGrid, 
+        onComponentClick, 
+        onEvent, 
+        appDefinition, 
+        appDefinitionChanged, 
+        currentState, 
+        onComponentOptionChanged, 
+        onComponentOptionsChanged
+    }) => {
 
     const components = appDefinition.components || [];
 
@@ -141,6 +151,7 @@ export const Container = ({ mode, snapToGrid, onComponentClick, onEvent, appDefi
                 onComponentClick={onComponentClick} 
                 onEvent={onEvent}
                 onComponentOptionChanged={onComponentOptionChanged}
+                onComponentOptionsChanged={onComponentOptionsChanged}
                 key={key} 
                 currentState={currentState}
                 onResizeStop={onResizeStop}

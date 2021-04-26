@@ -8,6 +8,7 @@ import { getDynamicVariables, resolve, resolve_references } from '@/_helpers/uti
 import { Confirm } from './Viewer/Confirm';
 import { 
     onComponentOptionChanged, 
+    onComponentOptionsChanged,
     fetchOAuthToken, 
     runTransformation, 
     onComponentClick,
@@ -126,6 +127,7 @@ class Viewer extends React.Component {
                                         currentState={this.state.currentState}
                                         onComponentClick={(id, component) => onComponentClick(this, id, component)}
                                         onComponentOptionChanged={(component, option_name, value) => onComponentOptionChanged(this, component, option_name, value)}
+                                        onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)}
                                     />
                                 </div>
                             }
