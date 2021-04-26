@@ -210,7 +210,7 @@ class QueryManager extends React.Component {
 
         return (
             <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
-                <ReactTooltip type="dark" effect="solid"/>
+                <ReactTooltip type="dark" effect="solid" delayShow={250} />
                 <div className="row header">
                     <div className="col">
                         {(addingQuery || editingQuery) && 
@@ -238,20 +238,14 @@ class QueryManager extends React.Component {
                         }
                     </div>
                     <div className="col-auto">
-                        <img
-                            src="https://www.svgrepo.com/show/69354/info.svg"
-                            height="20"
-                            width="20"
-                            className="mx-2"
-                            data-tip="NOTE: Query should be saved before running." 
-                        />
                         {((addingQuery || editingQuery) && selectedQuery) && 
-                            <button
+                            <span
+                                data-tip="NOTE: Query should be saved before running." 
                                 onClick={() => this.props.runQuery(selectedQuery.id, selectedQuery.name)} 
                                 className={`btn btn-secondary m-1 float-right1 ${currentState.queries[selectedQuery.name].isLoading === true ? ' btn-loading' : '' }`}
                             >
                                 Run
-                            </button>
+                            </span>
                         }
                         {(addingQuery || editingQuery) && 
                             <button onClick={this.createOrUpdateDataQuery} disabled={buttonDisabled} className="btn btn-primary m-1 float-right">
@@ -259,13 +253,13 @@ class QueryManager extends React.Component {
                             </button>
                         }
                         {queryPaneHeight === '30%' ?
-                            <button className="btn btn-light m-1" onClick={this.props.toggleQueryPaneHeight} data-tip="Maximize query editor">
+                            <span className="btn btn-light m-1" onClick={this.props.toggleQueryPaneHeight} data-tip="Maximize query editor">
                                 <img src="https://www.svgrepo.com/show/129993/expand.svg" width="12" height="12"/>
-                            </button>
+                            </span>
                             :
-                            <button className="btn btn-light m-1" onClick={this.props.toggleQueryPaneHeight} data-tip="Minimize query editor">
+                            <span className="btn btn-light m-1" onClick={this.props.toggleQueryPaneHeight} data-tip="Minimize query editor">
                                 <img src="https://www.svgrepo.com/show/310476/arrow-minimize.svg" width="12" height="12"/>
-                            </button>
+                            </span>
                         }
                         
                     </div>
