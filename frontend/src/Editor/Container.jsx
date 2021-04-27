@@ -31,7 +31,8 @@ export const Container = ({
         appDefinitionChanged, 
         currentState, 
         onComponentOptionChanged, 
-        onComponentOptionsChanged
+        onComponentOptionsChanged,
+        appLoading
     }) => {
 
     const components = appDefinition.components || [];
@@ -160,9 +161,18 @@ export const Container = ({
                 mode={mode}
                 inCanvas={true} />))}
 
-            {Object.keys(boxes).length == 0 && 
+            {(Object.keys(boxes).length == 0 && !appLoading) && 
                 <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
                     <center>You haven't added any components yet. Drag components from the right sidebar and drop here.</center>
+                </div>
+            }
+            {appLoading && 
+                <div className="mx-auto mt-5 w-50 p-5 ">
+                    <center>
+                        <div class="progress progress-sm w-50">
+                            <div class="progress-bar progress-bar-indeterminate"></div>
+                        </div>
+                    </center>
                 </div>
             }
 		</div>);
