@@ -426,9 +426,9 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					);
 					})}
 				</tbody>
-			}
+		}
 			</table>
-			{loadingState && 
+			{loadingState === true && 
                 <div style={{width: '100%'}} className="p-2">
                     <Skeleton count={5}/> 
                 </div>

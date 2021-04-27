@@ -26,7 +26,7 @@ export const componentTypes = [
         exposedVariables: {
             'selectedRow': {},
             'changeSet': {},
-            'dataUpdates': {}
+            'dataUpdates': []
         },
         definition: {
             properties: {

@@ -470,7 +470,7 @@ class Editor extends React.Component {
                                     mode={"edit"}
                                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
                                     onComponentOptionChanged={(component, option_name, value) => onComponentOptionChanged(this, component, option_name, value)}
-                                    onComponentOptionsChanged={(component, options) => onComponentOptiosnChanged(this, component, options)}
+                                    onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)}
                                     currentState={this.state.currentState}
                                     onComponentClick={(id, component) =>  { 
                                         this.setState( { selectedComponent: { id, component } } )
