@@ -48,7 +48,7 @@ export const Text = function Text({ id, width, height, component, onComponentCli
                     dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(data)}}
                 />
             }
-            {loadingState &&
+            {loadingState === true &&
                 <div>
                     <Skeleton count={1}/> 
                 </div>
