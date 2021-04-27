@@ -18,4 +18,16 @@ class User < ApplicationRecord
     def org_viewer?
         organization_users.find_by(organization_id: organization_id).viewer?
     end
+
+    def app_admin?(app)
+        app_users.find_by(app_id: app.id)&.admin?
+    end
+
+    def app_developer?(app)
+        app_users.find_by(app_id: app.id)&.developer?
+    end
+
+    def app_viewer?(app)
+        app_users.find_by(app_id: app.id)&.viewer?
+    end
 end
