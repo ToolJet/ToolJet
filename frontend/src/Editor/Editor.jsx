@@ -405,7 +405,7 @@ class Editor extends React.Component {
                     <div className="sub-section">
                     <div className="editor-sidebar">
                         <div className="col-md-12">
-                            <div className="card">
+                            <div>
                                 <ul className="nav nav-tabs" data-bs-toggle="tabs">
                                     <li className="nav-item col-md-6">
                                         <a onClick={() => this.switchSidebarTab(1)} className={currentSidebarTab === 1 ? 'nav-link active' : 'nav-link'} data-bs-toggle="tab">
