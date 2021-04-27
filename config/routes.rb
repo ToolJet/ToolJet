@@ -26,6 +26,8 @@ Rails.application.routes.draw do
     post '/change_role', to: 'organization_users#change_role'
   end
 
+  resources :app_users, only: [:create]
+
   resources :user do 
     collection do
       post '/set_password_from_token', to: 'users#set_password_from_token'

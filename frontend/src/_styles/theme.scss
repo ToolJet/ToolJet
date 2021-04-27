@@ -826,3 +826,10 @@ body {
 .__react_component_tooltip {
     z-index: 10000
 }
+
+.select-search__value::after {
+    top: calc(50% - 2px);
+    right: 15px;
+    width: 5px;
+    height: 5px;
+}
