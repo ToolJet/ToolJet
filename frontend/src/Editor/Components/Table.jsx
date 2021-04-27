@@ -14,6 +14,7 @@ import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from "react-table-plugins";
 import Papa from "papaparse";
+import { filter } from "lodash";
 
 var _ = require('lodash');
 
@@ -52,9 +53,29 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		setFiltersVisibility(false);
 	}
 
-    function filterOptionChanged(index, option, value) {
+	function filterColumnChanged(index, value) {
 		const newFilters = filters;
-		newFilters[index][option] = value;
+		newFilters[index]['id'] = value;
+		setFilters(newFilters);
+		setAllFilters(newFilters.filter((filter) => filter.id != ''));
+	}
+
+	function filterOperationChanged(index, value) {
+		const newFilters = filters;
+		newFilters[index]['value'] = {
+			...newFilters[index]['value'],
+			'operation': value
+		};
+		setFilters(newFilters);
+		setAllFilters(newFilters.filter((filter) => filter.id != ''));
+	}
+
+	function filterValueChanged(index, value) {
+		const newFilters = filters;
+		newFilters[index]['value'] = {
+			...newFilters[index]['value'],
+			'value': value
+		};
 		setFilters(newFilters);
 		setAllFilters(newFilters.filter((filter) => filter.id != ''));
 	}
@@ -62,7 +83,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	function addFilter(){
 		setFilters([
 			...filters, 
-			{ id: '', value: '' }
+			{ id: '', value: { operation: 'contains', value: ''} }
 		]);
 	}
 
@@ -138,6 +159,14 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 		onComponentOptionChanged(component, 'dataUpdates', []);
 	}
 
+	function customFilter(rows, columnIds, filterValue) {
+		debugger
+		if(filterValue.operation === 'equals') {
+			return rows.filter(row => row.values[columnIds[0]] === filterValue.value); 
+		}
+		return rows.filter(row => row.values[columnIds[0]].includes(filterValue.value)); // contains operation becomes the default 
+	}
+
 	const changeSet = componentState ? componentState.changeSet : {};
 
 	const columnData = component.definition.properties.columns.value.map((column) => { 
@@ -159,6 +188,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
     	return { Header: 
 			column.name, 
 			accessor: column.key || column.name, 
+			filter: customFilter,
 			width: columnSize ? columnSize : defaultColumn.width,
 
 			Cell: function (cell) {
@@ -329,10 +359,6 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 			/>
 		  </div>
 		)
-	}
-
-	function computeExportData() {
-		debugger
 	}
 
     return (
@@ -524,25 +550,36 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 									{index > 0 ? 'and' : 'where'}
 								</div>
 								<div className="col">
-								<SelectSearch 
-									options={columnData.map((column) => { return { name: column.Header, value: column.accessor } } )}
-									value={filter.id} 
-									search={true}
-									onChange={(value) => { filterOptionChanged(index, 'id', value) }}
-									filterOptions={fuzzySearch}
-									placeholder="Select.." 
-								/>
+									<SelectSearch 
+										options={columnData.map((column) => { return { name: column.Header, value: column.accessor } } )}
+										value={filter.id} 
+										search={true}
+										onChange={(value) => { filterColumnChanged(index, value) }}
+										filterOptions={fuzzySearch}
+										placeholder="Select.." 
+									/>
 								</div>
-								<div className="col" style={{maxWidth: '100px'}}>
-									<input type="text" value="matches" disabled className="form-control"/>
+								<div className="col" style={{maxWidth: '120px'}}>
+									<SelectSearch 
+										options={[
+											{ name: 'contains', value: 'contains'},
+											{ name: 'equals', value: 'equals'},
+
+										]}
+										value={filter.value.id} 
+										search={true}
+										onChange={(value) => { filterOperationChanged(index, value) }}
+										filterOptions={fuzzySearch}
+										placeholder="Select.." 
+									/>
 								</div>
 								<div className="col">
 									<input 
 										type="text" 
-										value={filter.value}
+										value={filter.value.value}
 										placeholder="value" 
 										className="form-control" 
-										onChange={(e) => filterOptionChanged(index, 'value', e.target.value)}
+										onChange={(e) => filterValueChanged(index, e.target.value)}
 									/>
 								</div>
 								<div className="col-auto">
@@ -555,6 +592,13 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 								</div>
 							</div>
 						)}
+						{filters.length == 0 &&
+							<div>
+								<center>
+									<span className="text-muted">no filters yet.</span>
+								</center>
+							</div>
+						}
 					</div>
 					<div class="card-footer">
 						<button onClick={addFilter} className="btn btn-light btn-sm text-muted">
