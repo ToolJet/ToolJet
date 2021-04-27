@@ -582,7 +582,7 @@ class Editor extends React.Component {
                             <div className="col-md-12">
                                 <div className="mb-2">
                                     <ReactJson 
-                                        style={{fontSize: '0.75rem'}}
+                                        style={{fontSize: '0.7rem'}}
                                         enableClipboard={false}
                                         src={{
                                             currentUser: {
@@ -594,6 +594,7 @@ class Editor extends React.Component {
                                         displayDataTypes={false}
                                         collapsed={true}
                                         sortKeys={true}
+                                        indentWidth={1}
                                     />
                                 </div>
 
@@ -606,7 +607,7 @@ class Editor extends React.Component {
                                         displayDataTypes={false}
                                         collapsed={true}
                                         sortKeys={true}
-                                        indentWidth={1}
+                                        indentWidth={0.5}
                                     />
                                 </div>
 
@@ -614,11 +615,12 @@ class Editor extends React.Component {
                                     <ReactJson 
                                         src={currentState.queries} 
                                         name={'queries'} 
-                                        style={{fontSize: '0.75rem'}}
+                                        style={{fontSize: '0.7rem'}}
                                         enableClipboard={false}
                                         displayDataTypes={false}
                                         collapsed={true}
                                         sortKeys={true}
+                                        indentWidth={1}
                                     />
                                 </div>
                             </div>
