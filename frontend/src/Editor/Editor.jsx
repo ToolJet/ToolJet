@@ -11,7 +11,6 @@ import ReactJson from 'react-json-view';
 import { DataSourceManager }  from './DataSourceManager';
 import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
 import { QueryManager } from './QueryManager';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { toast } from 'react-toastify';
 import { Router, Route, Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
@@ -68,6 +67,12 @@ class Editor extends React.Component {
             app: data, 
             isLoading: false,
             appDefinition: { ...this.state.appDefinition, ...data.definition }
+        }, () => {
+            data.data_queries.map((query) => {
+                if(query.options.runOnPageLoad) {
+                    runQuery(this, query.id, query.name);
+                }
+            })
         }));
 
         this.fetchDataSources();
@@ -236,12 +241,6 @@ class Editor extends React.Component {
                         {data_query.name}
                     </span>
                     
-                </td>
-                <td>
-                    <CopyToClipboard className="query-copy-button" text={`{{queries.${data_query.name}}}`}
-                        onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
-                        <img src="https://www.svgrepo.com/show/86790/copy.svg" width="12" height="12" role="button"></img>
-                    </CopyToClipboard>
                 </td>
             </tr>
         )
