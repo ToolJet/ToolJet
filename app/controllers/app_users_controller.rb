@@ -15,6 +15,8 @@ class AppUsersController < ApplicationController
             user_id: org_user.user_id,
         )
 
+        authorize app_user
+
         if app_user.save
             render json: { success: true }
         else
