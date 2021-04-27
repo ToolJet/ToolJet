@@ -212,7 +212,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
     let tableData = []
     if(currentState) {
         tableData = resolve_references(component.definition.properties.data.value, currentState, []);
-		if( typeof tableData === 'string' ) tableData = [];
+		if( !Array.isArray(tableData)) tableData = [];
         console.log('resolved param', tableData);
     }
 

@@ -30,7 +30,7 @@ export const Button = function Button({ id, width, height, component, onComponen
 
     return (
         <button 
-            class={`btn btn-primary p-1 ${loadingState ? ' btn-loading' : ''}`}
+            class={`btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
             style={computedStyles}
             onClick={() => onComponentClick(id, component) }>
             {text}
