@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
 import { renderElement, renderEvent } from './Utils';
@@ -82,10 +81,6 @@ export const Inspector = ({ selectedComponent, componentDefinitionChanged, dataQ
             <div className="header p-2">
                 <span className="component-name">
                     <span className="p-2">{component.component.name}</span>
-                    <CopyToClipboard text={`{{components.${component.component.name}}}`}
-                        onCopy={() => toast.success('Reference copied to clipboard', { hideProgressBar: true, position: "bottom-center", })}>
-                        <img src="https://www.svgrepo.com/show/86790/copy.svg" width="10" height="10" role="button"></img>
-                    </CopyToClipboard>
                 </span>
                 
 

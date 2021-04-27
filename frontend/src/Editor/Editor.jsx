@@ -544,7 +544,7 @@ class Editor extends React.Component {
                                                     appId={appId}
                                                     runQuery={(queryId, queryName) =>  { 
                                                         runQuery(this, queryId, queryName).then(() =>  { 
-                                                            toast.info('Query (queryName) completed.', { hideProgressBar: true, position: "bottom-center" })
+                                                            toast.info(`Query (${queryName}) completed.`, { hideProgressBar: true, position: "bottom-center" })
                                                         });
                                                     }}
                                                     addingQuery={addingQuery}
