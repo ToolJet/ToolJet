@@ -443,12 +443,12 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					<button className="btn btn-light btn-sm" onClick={() => previousPage()} disabled={!canPreviousPage}>
 					{'<'}
 					</button>{' '}
-					<span className="p-1">
+					<small className="p-1">
 						Page{' '}
 						<strong>
 							{pageIndex + 1} of {pageOptions.length}
 						</strong>{' '}
-					</span>
+					</small>
 					<button className="btn btn-light btn-sm"  onClick={() => nextPage()} disabled={!canNextPage}>
 					{'>'}
 					</button>{' '}
@@ -497,13 +497,12 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 				</div> */}
 
 				<div className="col-auto">
-					<button className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()} >
+					<span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()} >
 						<img src="https://www.svgrepo.com/show/264090/filter.svg" width="13" height="13" />
-					</button>
-					<button className="btn btn-light btn-sm p-1" onClick={() => exportData("csv", true)} >
+					</span>
+					<span data-tip="Download as CSV" className="btn btn-light btn-sm p-1" onClick={() => exportData("csv", true)} >
 						<img src="https://www.svgrepo.com/show/27716/download.svg" width="13" height="13" />
-					</button>
-					
+					</span>
 				</div>
 			</div>
 		</div>
