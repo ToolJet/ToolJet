@@ -27,6 +27,7 @@ import {
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
 import { Resizable } from "re-resizable";
+import Skeleton from 'react-loading-skeleton';
 
 class Editor extends React.Component {
     constructor(props) {
@@ -39,6 +40,7 @@ class Editor extends React.Component {
             allComponentTypes: componentTypes,
             componentTypes: componentTypes,
             queryPaneHeight: '30%',
+            isLoading: true,
             users: null,
             appId,
             loadingDataSources: true,
@@ -316,7 +318,8 @@ class Editor extends React.Component {
             queryPaneHeight,
             showQueryEditor,
             showLeftSidebar,
-            currentState
+            currentState,
+            isLoading
         } = this.state;
 
         const appLink = `/applications/${appId}`;
@@ -467,6 +470,7 @@ class Editor extends React.Component {
                                     appDefinitionChanged={this.appDefinitionChanged}
                                     snapToGrid={true} 
                                     mode={"edit"}
+                                    appLoading={isLoading}
                                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
                                     onComponentOptionChanged={(component, option_name, value) => onComponentOptionChanged(this, component, option_name, value)}
                                     onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)}
@@ -502,7 +506,9 @@ class Editor extends React.Component {
                                         </div>
                                         
                                         {loadingDataQueries ?  
-                                                <div>Loading queries...</div>
+                                                <div className="m-3">
+                                                    <Skeleton count={8}/> 
+                                                </div>
                                                 : 
                                                 <div className="m-2">
                                                     <div className="table-responsive">
@@ -648,7 +654,9 @@ class Editor extends React.Component {
                                     </div>
                                 </div>
                                 {loadingDataSources ?  
-                                    <div>Loading datasources...</div>
+                                    <div className="m-3">
+                                        <Skeleton count={8}/> 
+                                    </div>
                                     : 
                                     <div className="m-2">
                                         <div className="table-responsive">
