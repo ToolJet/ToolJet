@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import { renderElement, renderEvent } from '../Utils';
@@ -69,7 +69,6 @@ class Table extends React.Component {
     columnPopover = (column, index) => {
         return (
             <Popover id="popover-basic">
-                <Popover.Title as="h3">Column Settings</Popover.Title>
                 <Popover.Content>
                     <div className="field mb-2">
                         <label class="form-label">Column type</label>
@@ -153,7 +152,6 @@ class Table extends React.Component {
     actionPopOver = (action, index) => {
         return (
             <Popover id="popover-basic">
-                <Popover.Title as="h3">{action.name}</Popover.Title>
                 <Popover.Content>
                     <div className="field mb-2">
                         <label class="form-label">Button Text</label>
@@ -192,6 +190,7 @@ class Table extends React.Component {
         return <OverlayTrigger 
             trigger="click" 
             placement="left" 
+            rootClose
             overlay={this.actionPopOver(action, index)}>
 
             <div className="card p-2 bg-light" role="button">
@@ -282,8 +281,9 @@ class Table extends React.Component {
                                 
                                 <div className="card p-2 bg-light">
                                     <OverlayTrigger 
-                                        trigger="click" 
+                                        trigger="click"
                                         placement="left" 
+                                        rootClose
                                         overlay={this.columnPopover(item, index)}>
 
                                         <div className="row bg-light" role="button">
