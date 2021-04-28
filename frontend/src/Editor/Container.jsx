@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { useDrop } from 'react-dnd';
+import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
@@ -8,13 +8,10 @@ import { componentTypes } from './Components/components';
 import {computeComponentName } from '@/_helpers/utils';
 
 const styles = {
-    width: 1280,
+    width: 1290,
     height: 1200,
-    position: 'relative',
+    position: 'absolute',
 };
-
-const leftSideBarWidth = 12;
-const rightSideBarWidth = 15;
 
 function uuidv4() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -38,6 +35,8 @@ export const Container = ({
     const components = appDefinition.components || [];
 
     const [boxes, setBoxes] = useState(components);
+    const [isDragging, setIsDragging] = useState(false);
+    const [isResizing, setIsResizing] = useState(false);
 
     useEffect(() => {
         setBoxes(components);
@@ -56,6 +55,14 @@ export const Container = ({
         console.log('new boxes - 2', boxes);
         appDefinitionChanged({...appDefinition, components: boxes});
     }, [boxes]);
+
+    const { draggingState} = useDragLayer((monitor) => ({
+        draggingState: monitor.isDragging(),
+    }));
+
+    useEffect(() => {
+        setIsDragging(draggingState);
+    }, [draggingState]);
 
     const [, drop] = useDrop(() => ({
         accept: ItemTypes.BOX,
@@ -149,7 +156,7 @@ export const Container = ({
         }
     }
 
-    return (<div ref={drop} style={styles} className="real-canvas">
+    return (<div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
 			{Object.keys(boxes).map((key) => (<DraggableBox 
                 onComponentClick={onComponentClick} 
                 onEvent={onEvent}
@@ -161,15 +168,17 @@ export const Container = ({
                 paramUpdated={paramUpdated}
                 id={key} {...boxes[key]} 
                 mode={mode}
-                inCanvas={true} />))}
+                resizingStatusChanged={(isResizing) => setIsResizing(isResizing)}
+                inCanvas={true} />
+            ))}
 
-            {(Object.keys(boxes).length == 0 && !appLoading) && 
+            {(Object.keys(boxes).length == 0 && !appLoading && !isDragging) && 
                 <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
                     <center>You haven't added any components yet. Drag components from the right sidebar and drop here.</center>
                 </div>
             }
             {appLoading && 
-                <div className="mx-auto mt-5 w-50 p-5 ">
+                <div className="mx-auto mt-5 w-50 p-5">
                     <center>
                         <div class="progress progress-sm w-50">
                             <div class="progress-bar progress-bar-indeterminate"></div>

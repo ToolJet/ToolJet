@@ -94,7 +94,7 @@ export const componentTypes = [
                 } 
             },
             styles: {
-                backgroundColor: { value: '#3c92dc' },
+                backgroundColor: { value: '#4ac4d6' },
                 textColor: { value: '#fff' }
             }
         }

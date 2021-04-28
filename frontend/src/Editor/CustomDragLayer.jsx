@@ -13,9 +13,6 @@ const layerStyles = {
     height: '100%',
 };
 
-const leftSideBarWidth = 12;
-const rightSideBarWidth = 15;
-
 function getItemStyles(differential, item, initialOffset, currentOffset, isSnapToGrid) {
     if (!initialOffset || !currentOffset) {
         return {
