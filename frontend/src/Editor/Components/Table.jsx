@@ -160,22 +160,44 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	}
 
 	function customFilter(rows, columnIds, filterValue) {
-		if(filterValue.operation === 'equals') {
-			return rows.filter(row => row.values[columnIds[0]] === filterValue.value); 
-		}
 
-		let value = filterValue.value;
-		if(typeof value === 'string') {
-			value = value.toLowerCase();
-		}
+		try {
 
-		return rows.filter(row => { 
-			let rowValue = row.values[columnIds[0]];
-			if(typeof rowValue === 'string') {
-				rowValue = rowValue.toLowerCase();
+			if(filterValue.operation === 'equals') {
+				return rows.filter(row => row.values[columnIds[0]] === filterValue.value); 
 			}
-			return rowValue.includes(value);
-		});
+
+			if(filterValue.operation === 'gt') {
+				return rows.filter(row => row.values[columnIds[0]] > filterValue.value); 
+			}
+
+			if(filterValue.operation === 'lt') {
+				return rows.filter(row => row.values[columnIds[0]] < filterValue.value); 
+			}
+
+			if(filterValue.operation === 'gte') {
+				return rows.filter(row => row.values[columnIds[0]] >= filterValue.value); 
+			}
+
+			if(filterValue.operation === 'lte') {
+				return rows.filter(row => row.values[columnIds[0]] <= filterValue.value); 
+			}
+
+			let value = filterValue.value;
+			if(typeof value === 'string') {
+				value = value.toLowerCase();
+			}
+
+			return rows.filter(row => { 
+				let rowValue = row.values[columnIds[0]];
+				if(typeof rowValue === 'string') {
+					rowValue = rowValue.toLowerCase();
+				}
+				return rowValue.includes(value);
+			});
+		} catch {
+			return rows;
+		}
 	}
 
 	const changeSet = componentState ? componentState.changeSet : {};
@@ -557,8 +579,8 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 					<div className="card-body">
 						{filters.map((filter, index) => 
 							<div className="row mb-2" key={index}>
-								<div className="col p-2" style={{maxWidth: '80px'}}>
-									{index > 0 ? 'and' : 'where'}
+								<div className="col p-2" style={{maxWidth: '70px'}}>
+									<small>{index > 0 ? 'and' : 'where'}</small>
 								</div>
 								<div className="col">
 									<SelectSearch 
@@ -570,16 +592,20 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 										placeholder="Select.." 
 									/>
 								</div>
-								<div className="col" style={{maxWidth: '120px'}}>
+								<div className="col" style={{maxWidth: '180px'}}>
 									<SelectSearch 
 										options={[
 											{ name: 'contains', value: 'contains'},
 											{ name: 'equals', value: 'equals'},
+											{ name: 'greater than', value: 'gt'},
+											{ name: 'less than', value: 'lt'},
+											{ name: 'greater than or equals', value: 'gte'},
+											{ name: 'less than or equals', value: 'lte'},
 
 										]}
 										value={filter.value.operation} 
 										search={true}
-										onChange={(value) => { filterOperationChanged(index, value) }}
+										onChange={(value) => { debugger; filterOperationChanged(index, value) }}
 										filterOptions={fuzzySearch}
 										placeholder="Select.." 
 									/>
