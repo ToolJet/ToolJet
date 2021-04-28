@@ -11,6 +11,7 @@ import { Redis } from './Redis';
 import { Googlesheets } from './Googlesheets';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
+import { Elasticsearch } from './Elasticsearch';
 
 const allSources = {
     Restapi,
@@ -19,7 +20,8 @@ const allSources = {
     Stripe,
     Firestore,
     Redis,
-    Googlesheets
+    Googlesheets,
+    Elasticsearch
 }
 
 const staticDataSources = [
@@ -38,7 +40,9 @@ const defaultOptions = {
     },
     'firestore': {
         path: '',
-
+    },
+    'elasticsearch': {
+        query: '',
     },
     'restapi': {
         method: 'GET',
