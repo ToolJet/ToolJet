@@ -47,13 +47,19 @@ export const dataBaseSources = [
         },
     },
     {
-        name: 'ElasticSearch',
+        name: 'Elasticsearch',
         kind: 'elasticsearch',
         icon: 'https://www.svgrepo.com/show/305988/elasticsearch.svg',
         exposedVariables: {
             isLoading: {},
             data: {},
             rawData: {}
+        },
+        options: {
+            host: { type: "string" },
+            port: { type: "string" },
+            username: { type: "string" },
+            password: { type: "string", encrypted: true }
         }
     },
     {

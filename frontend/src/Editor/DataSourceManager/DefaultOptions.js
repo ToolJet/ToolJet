@@ -21,7 +21,7 @@ export const defaultOptions = {
     },
     'elasticsearch': {
         host: { value: 'localhost' },
-        port: { value: 9000 },
+        port: { value: 9200 },
         username: { value: '' },
         password: { value: '' },
     },
