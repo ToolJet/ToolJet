@@ -72,8 +72,8 @@ export const Container = ({
 
             const delta = monitor.getDifferenceFromInitialOffset();
 
-            let left = 20;
-            let top = 60;
+            let left = 0;
+            let top = 0;
 
             // Component already exists and this is just a reposition event
             if(id) {
@@ -87,16 +87,17 @@ export const Container = ({
                 componentData = JSON.parse(JSON.stringify(componentMeta));
                 componentData.name = computeComponentName(componentData.component, boxes);
 
-                const offsetFromTopOfWindow = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect().y;
+                const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+                const offsetFromTopOfWindow = canvasBoundingRect.y - 56;
+                const offsetFromLeftOfWindow = canvasBoundingRect.x;
 
-                left = Math.round(delta.x + document.body.offsetWidth - (document.body.offsetWidth * ((leftSideBarWidth + rightSideBarWidth)/100)));
-                top = Math.round(monitor.getInitialSourceClientOffset().y - item.top + delta.y - offsetFromTopOfWindow + 50);
+                left = Math.round(monitor.getSourceClientOffset().x - offsetFromLeftOfWindow);
+                top = Math.round(monitor.getSourceClientOffset().y - 56 - offsetFromTopOfWindow);
 
                 id = uuidv4();
             }
 
             if (snapToGrid) {
-                ;
                 [left, top] = doSnapToGrid(left, top);
             }
 
@@ -148,7 +149,7 @@ export const Container = ({
         }
     }
 
-    return (<div ref={drop} style={styles}>
+    return (<div ref={drop} style={styles} className="real-canvas">
 			{Object.keys(boxes).map((key) => (<DraggableBox 
                 onComponentClick={onComponentClick} 
                 onEvent={onEvent}

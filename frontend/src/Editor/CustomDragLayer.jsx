@@ -12,7 +12,11 @@ const layerStyles = {
     width: '100%',
     height: '100%',
 };
-function getItemStyles(initialOffset, currentOffset, isSnapToGrid) {
+
+const leftSideBarWidth = 12;
+const rightSideBarWidth = 15;
+
+function getItemStyles(differential, item, initialOffset, currentOffset, isSnapToGrid) {
     if (!initialOffset || !currentOffset) {
         return {
             display: 'none',
@@ -20,12 +24,20 @@ function getItemStyles(initialOffset, currentOffset, isSnapToGrid) {
     }
     let { x, y } = currentOffset;
     if (isSnapToGrid) {
-        x -= initialOffset.x;
-        y -= initialOffset.y;
+        const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+        const offsetFromTopOfWindow = canvasBoundingRect.y - 56;
+        const offsetFromLeftOfWindow = canvasBoundingRect.x;
+
+        x = currentOffset.x - offsetFromLeftOfWindow;
+        y = currentOffset.y - offsetFromTopOfWindow;
+
+
         [x, y] = snapToGrid(x, y);
-        x += initialOffset.x;
-        y += initialOffset.y;
+
+        x = x + offsetFromLeftOfWindow;
+        y = y + offsetFromTopOfWindow;
     }
+
     const transform = `translate(${x}px, ${y}px)`;
     return {
         transform,
@@ -33,12 +45,13 @@ function getItemStyles(initialOffset, currentOffset, isSnapToGrid) {
     };
 }
 export const CustomDragLayer = (props) => {
-    const { itemType, isDragging, item, initialOffset, currentOffset, } = useDragLayer((monitor) => ({
+    const { itemType, isDragging, item, initialOffset, currentOffset, differential} = useDragLayer((monitor) => ({
         item: monitor.getItem(),
         itemType: monitor.getItemType(),
         initialOffset: monitor.getInitialSourceClientOffset(),
         currentOffset: monitor.getSourceClientOffset(),
         isDragging: monitor.isDragging(),
+        differential: monitor.getDifferenceFromInitialOffset()
     }));
     function renderItem() {
         switch (itemType) {
@@ -52,7 +65,7 @@ export const CustomDragLayer = (props) => {
         return null;
     }
     return (<div style={layerStyles}>
-			<div style={getItemStyles(initialOffset, currentOffset, props.snapToGrid)}>
+			<div style={getItemStyles(differential, item, initialOffset, currentOffset, props.snapToGrid)}>
 				{renderItem()}
 			</div>
 		</div>);
