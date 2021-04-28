@@ -32,16 +32,29 @@ function getStyles(left, top, isDragging) {
     };
 }
 
-export const DraggableBox = function DraggableBox({ id, mode, title, left, top, width, height, component, index, inCanvas, onEvent, onComponentClick, currentState, onComponentOptionChanged, onComponentOptionsChanged, onResizeStop, paramUpdated  }) {
+export const DraggableBox = function DraggableBox({ 
+    id, 
+    mode, 
+    title, 
+    left, 
+    top, 
+    width, 
+    height, 
+    component, 
+    index, 
+    inCanvas, 
+    onEvent, 
+    onComponentClick, 
+    currentState, 
+    onComponentOptionChanged, 
+    onComponentOptionsChanged, 
+    onResizeStop, 
+    paramUpdated, 
+    resizingStatusChanged
+    }) {
 
     const [isResizing, setResizing] = useState(false);
     const [canDrag, setCanDrag] = useState(true);
-
-    // useEffect(() => {
-    //     setBoxes(component);
-    // }, []);
-
-    console.log('Rendering draggable box');
 
     const [{ isDragging }, drag, preview] = useDrag(() => ({
         type: ItemTypes.BOX,
@@ -54,6 +67,12 @@ export const DraggableBox = function DraggableBox({ id, mode, title, left, top, 
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
     }, []);
+
+    useEffect(() => {
+        if(resizingStatusChanged) {
+            resizingStatusChanged(isResizing);
+        }
+    }, [isResizing]);
 
     const style = {
         display: "inline-block",

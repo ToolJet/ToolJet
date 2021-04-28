@@ -229,16 +229,19 @@ body {
             -webkit-box-align: center;
             align-items: center;
 
+            .show-grid { 
+                background-size: 30px 30px;
+                background-image:
+                    linear-gradient(to right, rgba(194, 191, 191, 0.2) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(194, 191, 191, 0.2) 1px, transparent 1px);
+            }
+
             .canvas-area {
-                width: 1280px;
+                width: 1292px;
                 min-height: 1600px;
                 background: #edeff5;
                 margin: 0px auto;
-                // margin-left: 50px;
-                background-size: 80px 80px;
-                // background-image: url(/public/images/tile.png);
-                background-repeat: repeat;
-
+                
                 .resizer {
                     border: solid 1px transparent;
                 }
