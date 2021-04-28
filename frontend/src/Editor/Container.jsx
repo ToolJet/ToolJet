@@ -87,9 +87,10 @@ export const Container = ({
                 componentData = JSON.parse(JSON.stringify(componentMeta));
                 componentData.name = computeComponentName(componentData.component, boxes);
 
+                const offsetFromTopOfWindow = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect().y;
+
                 left = Math.round(delta.x + document.body.offsetWidth - (document.body.offsetWidth * ((leftSideBarWidth + rightSideBarWidth)/100)));
-                
-                top = Math.round(monitor.getInitialSourceClientOffset().y - item.top + delta.y);
+                top = Math.round(monitor.getInitialSourceClientOffset().y - item.top + delta.y - offsetFromTopOfWindow + 50);
 
                 id = uuidv4();
             }
