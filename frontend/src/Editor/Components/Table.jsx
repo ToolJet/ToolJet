@@ -160,11 +160,22 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 	}
 
 	function customFilter(rows, columnIds, filterValue) {
-		debugger
 		if(filterValue.operation === 'equals') {
 			return rows.filter(row => row.values[columnIds[0]] === filterValue.value); 
 		}
-		return rows.filter(row => row.values[columnIds[0]].includes(filterValue.value)); // contains operation becomes the default 
+
+		let value = filterValue.value;
+		if(typeof value === 'string') {
+			value = value.toLowerCase();
+		}
+
+		return rows.filter(row => { 
+			let rowValue = row.values[columnIds[0]];
+			if(typeof rowValue === 'string') {
+				rowValue = rowValue.toLowerCase();
+			}
+			return rowValue.includes(value);
+		});
 	}
 
 	const changeSet = componentState ? componentState.changeSet : {};
@@ -566,7 +577,7 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 											{ name: 'equals', value: 'equals'},
 
 										]}
-										value={filter.value.id} 
+										value={filter.value.operation} 
 										search={true}
 										onChange={(value) => { filterOperationChanged(index, value) }}
 										filterOptions={fuzzySearch}
