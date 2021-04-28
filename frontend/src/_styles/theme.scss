@@ -700,8 +700,9 @@ body {
 }
 
 .btn-primary {
-    --tblr-btn-color: 74, 196, 214;
-    --tblr-btn-color-darker: 60,158,173
+    --tblr-btn-color: 60, 146, 220;
+    --tblr-btn-color-darker: 60,158,173;
+    border-color: none;
 }
 
 .form-check-input:checked {

@@ -9,16 +9,27 @@ import {
 	useBlockLayout,
 	useResizeColumns
 } from "react-table";
-import { resolve, resolve_references } from '@/_helpers/utils';
+import { resolve_references } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from "react-table-plugins";
 import Papa from "papaparse";
-import { filter } from "lodash";
 
 var _ = require('lodash');
 
-export function Table({ id, width, height, component, onComponentClick, currentState = { components: { } }, onEvent, paramUpdated, changeCanDrag, onComponentOptionChanged, onComponentOptionsChanged }) {
+export function Table({ 
+	id, 
+	width, 
+	height, 
+	component, 
+	onComponentClick, 
+	currentState = { components: { } }, 
+	onEvent, 
+	paramUpdated, 
+	changeCanDrag, 
+	onComponentOptionChanged, 
+	onComponentOptionsChanged 
+	}) {
 
 	const color = component.definition.styles.textColor.value;
 	const actions = component.definition.properties.actions || { value: []};
@@ -101,9 +112,8 @@ export function Table({ id, width, height, component, onComponentClick, currentS
 
 	const defaultColumn = React.useMemo(
 		() => ({
-		  minWidth: 30,
+		  minWidth: 60,
 		  width: 268,
-		  maxWidth: 400,
 		}),
 		[]
 	)
