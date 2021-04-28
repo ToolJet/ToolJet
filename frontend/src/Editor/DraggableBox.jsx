@@ -59,7 +59,7 @@ export const DraggableBox = function DraggableBox({ id, mode, title, left, top, 
         display: "inline-block",
         alignItems: "center",
         justifyContent: "center",
-        padding: '5px'
+        padding: '2px'
     };
 
     let refProps = {};

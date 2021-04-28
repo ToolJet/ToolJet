@@ -231,9 +231,8 @@ body {
 
             .canvas-area {
                 width: 1280px;
-                min-height: 2200px;
+                min-height: 1600px;
                 background: #edeff5;
-                padding: 10px;
                 margin: 0px auto;
                 // margin-left: 50px;
                 background-size: 80px 80px;
@@ -382,7 +381,6 @@ body {
                 width: 1280px;
                 min-height: 1200px;
                 background: #edeff5;
-                padding: 10px;
                 margin: 0px auto;
                 background-size: 80px 80px;
                 // background-image: url(/public/images/tile.png);
@@ -720,6 +718,7 @@ body {
 .select-search__option {
     color: rgb(90, 89, 89);
 }
+
 
 .select-search__option.is-selected {
     background: #9ce5f0;

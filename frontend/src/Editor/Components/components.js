@@ -178,8 +178,8 @@ export const componentTypes = [
         description: 'Select a date range',
         component: 'DaterangePicker',
         defaultSize: {
-            width: 100,
-            height: 60
+            width: 300,
+            height: 32
         },
         properties: {
             format: { type: 'string'}

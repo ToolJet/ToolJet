@@ -17,7 +17,10 @@ export const BoxDragPreview = memo(function BoxDragPreview({ item }) {
     }
 
     return (
-        <div style={{ background: '#438fd7', opacity: '0.7', height, width }}>
+        <div style={{ height, width, border: 'solid 1px rgb(70, 165, 253)'}}>
+            <div style={{ background: '#438fd7', opacity: '0.7', height: '100%', width: '100%'}}>
+
+            </div>
 		</div>
     );
 });
