@@ -167,7 +167,9 @@ class Firestore extends React.Component {
                                         className="form-control"
                                     />
                                 </div>
-                               <div className="row">
+                                <hr/>
+                                <div className="row">
+                                    <h3 className="text-muted">Where condition</h3>
                                     <div class="col">
                                         <label className="form-label">Field</label>
                                         <input 
@@ -180,11 +182,13 @@ class Firestore extends React.Component {
                                     <div className="col">
                                         <label className="form-label">Operator</label>
                                         <select 
-                                            onChange={(e) => { e.stopPropagation(); this.changeOption('where_operation')}}
+                                            onChange={(e) => { e.stopPropagation(); this.changeOption('where_operation', e.target.value)}}
                                             placeholder="Select a value"
+                                            value={this.state.options.where_operation}
                                             class="form-select">
                                                 <option value="==">==</option>
                                                 <option value="<">{'<'}</option>
+                                                <option value="<">{'>'}</option>
                                                 <option value="<=">{'<='}</option>
                                                 <option value=">=">{'>='}</option>
                                                 <option value="array-contains">{'array-contains'}</option>
