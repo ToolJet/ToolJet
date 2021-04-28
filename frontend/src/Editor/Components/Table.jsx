@@ -315,7 +315,7 @@ export function Table({
 				...columnData,
 				...actionsCellData
 			],
-		[columnData.length, actionsCellData.length, componentState.changeSet]
+		[JSON.stringify(columnData), actionsCellData.length, componentState.changeSet] // Hack: need to fix 
     );
 
 	const data = useMemo(
