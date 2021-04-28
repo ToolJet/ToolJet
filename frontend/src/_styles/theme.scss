@@ -629,7 +629,6 @@ body {
     border-color: #2FCC8B;
 }
 
-
 .select-search:not(.select-search--multiple) .select-search__select {
     position: absolute;
     z-index: 2;
@@ -718,9 +717,13 @@ body {
     border-radius: 8px;
 }
 
+.select-search__option {
+    color: rgb(90, 89, 89);
+}
+
 .select-search__option.is-selected {
     background: #9ce5f0;
-    color: rgb(51, 50, 50);
+    color: rgb(90, 89, 89);
 }
 
 .select-search__option.is-highlighted.is-selected, .select-search__option.is-selected:hover {
@@ -797,7 +800,7 @@ body {
     position: absolute;
     bottom: 0;
     width: 80%;
-    max-width: 600px;
+    max-width: 700px;
     margin-right: 10%;
     right: 0;
     height: 300px;
