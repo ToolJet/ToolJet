@@ -72,3 +72,7 @@ body {
   width: 0;
   background: transparent;
 }
+
+.hero--primary {
+  --ifm-hero-background-color: #00bcd4;
+}
