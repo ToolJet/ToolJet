@@ -787,7 +787,13 @@ body {
 .form-control-plaintext:focus-visible {
     outline: none;
     outline-width:thin; outline-style:solid;
-    outline-color: #4ac4d6;
+    outline-color: #3c92dc;
+}
+
+.form-control-plaintext:hover {
+    outline: none;
+    outline-width:thin; outline-style:solid;
+    outline-color: #3c92dc;
 }
 
 .select-search__input:focus-visible {
@@ -851,5 +857,17 @@ body {
 .popover-body {
     .form-label {
         font-size: 12px;
+    }
+}
+
+.query-name-field {
+    .input-icon-addon {
+        display: none;
+    }
+}
+
+.query-name-field:hover {
+    .input-icon-addon {
+        display:flex;
     }
 }
