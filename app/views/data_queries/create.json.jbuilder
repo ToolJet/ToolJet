@@ -1,1 +1,1 @@
-json.id  @data_query.id
+json.id @data_query.id

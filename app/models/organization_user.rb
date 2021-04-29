@@ -3,15 +3,14 @@ class OrganizationUser < ApplicationRecord
   belongs_to :user
 
   def admin?
-    role == "admin"
+    role == 'admin'
   end
 
   def developer?
-      role == "developer"
+    role == 'developer'
   end
 
   def viewer?
-      role == "viewer"
+    role == 'viewer'
   end
-
 end

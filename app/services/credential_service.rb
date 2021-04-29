@@ -1,22 +1,18 @@
 class CredentialService
+  def initialize; end
 
-    def initialize
+  def decrypt_options(options)
+    parsed_options = {}
+    options.keys.each do |key|
+      option = options[key]
+
+      parsed_options[key] = if option['encrypted']
+                              Credential.find(option['credential_id']).value
+                            else
+                              option['value']
+                            end
     end
 
-    def decrypt_options(options)
-        parsed_options = {}
-        options.keys.each do |key|
-            option = options[key]
-
-            if option["encrypted"]
-                parsed_options[key] = Credential.find(option["credential_id"]).value
-            else
-                parsed_options[key] = option["value"]
-            end
-        end
-
-        parsed_options
-    end
-
-
+    parsed_options
+  end
 end
