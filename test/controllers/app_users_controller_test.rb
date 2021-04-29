@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class OrganizationUsersControllerTest < ActionDispatch::IntegrationTest
+class AppUsersControllerTest < ActionDispatch::IntegrationTest
   def setup
     @org = Organization.create({ name: 'ToolJet Test' })
     @org_admin = User.create({ first_name: 'Admin', email: 'admin@example.com', password: 'password',
