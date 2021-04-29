@@ -1,7 +1,7 @@
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'ToolJet - Documentation',
-  tagline: 'Built and deploy internal tools.',
+  tagline: 'Build and deploy internal tools.',
   url: 'https://tooljet.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -53,15 +53,7 @@ module.exports = {
           items: [
             {
               label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-            },
-            {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-            {
-              label: 'Twitter',
-              href: 'https://twitter.com/docusaurus',
+              href: 'https://stackoverflow.com/questions/tagged/tooljet',
             },
           ],
         },
@@ -70,7 +62,7 @@ module.exports = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              href: 'https://github.com/ToolJet/ToolJet',
             },
           ],
         },
