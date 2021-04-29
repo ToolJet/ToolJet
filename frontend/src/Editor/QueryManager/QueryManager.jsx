@@ -266,15 +266,20 @@ class QueryManager extends React.Component {
                         }
                     </div>
                     {(addingQuery || editingQuery) && 
-                        <div className="col">
-                            <input 
-                                type="text" 
-                                onChange={(e) => this.setState({ queryName: e.target.value })}
-                                class="form-control-plaintext form-control-plaintext-sm mt-1" 
-                                style={{width: '160px'}}
-                                value={queryName}
-                                autoFocus
-                            />
+                        <div className="col query-name-field">
+                            <div className="input-icon" style={{width: '160px'}}>
+                                <input 
+                                    type="text" 
+                                    onChange={(e) => this.setState({ queryName: e.target.value })}
+                                    class="form-control-plaintext form-control-plaintext-sm mt-1" 
+                                    value={queryName}
+                                    style={{width: '160px'}}
+                                    autoFocus
+                                />
+                                <span class="input-icon-addon">
+                                    <img src="https://www.svgrepo.com/show/149235/edit.svg" width="12" height="12"/>
+                                </span>
+                            </div>
                         </div>
                     }
                     <div className="col-auto">
