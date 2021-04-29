@@ -29,9 +29,10 @@ function create(app_id, name, kind, options, data_source_id) {
     return fetch(`${config.apiUrl}/data_queries`, requestOptions).then(handleResponse);
 }
 
-function update(id, options) {
+function update(id, name, options) {
     const body =  {
         options,
+        name
     }
     const headers = {
         ...authHeader(),
