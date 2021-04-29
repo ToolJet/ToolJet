@@ -15,7 +15,7 @@ class DataQueriesController < ApplicationController
 
   def update
     @data_query = DataQuery.find params[:id]
-    @data_query.update(options: params[:options])
+    @data_query.update(options: params[:options], name: params[:name])
   end
 
   def run

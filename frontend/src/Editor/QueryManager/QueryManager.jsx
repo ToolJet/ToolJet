@@ -24,6 +24,8 @@ const allSources = {
     Elasticsearch
 }
 
+const queryNameRegex = new RegExp("^[A-Za-z0-9_-]*$");
+
 const staticDataSources = [
     { kind: 'restapi', id: 'restapi', name: 'REST API' },
 ]
@@ -88,6 +90,7 @@ class QueryManager extends React.Component {
                     options: selectedQuery.options,
                     selectedDataSource: source,
                     selectedQuery,
+                    queryName: selectedQuery.name
                 })
             } else { 
                 this.setState({
@@ -109,13 +112,28 @@ class QueryManager extends React.Component {
 
     changeDataSource = (sourceId) => {
         const source = [...this.state.dataSources, ...staticDataSources].find(source => source.id === sourceId);
-        this.setState({ selectedDataSource: source, options: defaultOptions[source.kind] });
+        this.setState({ selectedDataSource: source, options: defaultOptions[source.kind], queryName: this.computeQueryName(source.kind) });
     }
 
     switchCurrentTab = (tab) => {
         this.setState({
             currentTab: tab
         });
+    }
+
+    validateQueryName = () => {
+        const { queryName, dataQueries, mode, selectedQuery} = this.state;
+
+        if(mode === 'create') { 
+            return (dataQueries.find(query => query.name === queryName) === undefined) && queryNameRegex.test(queryName);
+        } else {
+            const existingQuery = dataQueries.find(query => query.name === queryName);
+            if (existingQuery) {
+                return (existingQuery.id === selectedQuery.id) && queryNameRegex.test(queryName);
+            } else {
+                queryNameRegex.test(queryName);
+            }
+        }
     }
 
     computeQueryName = (kind) => {
@@ -137,22 +155,27 @@ class QueryManager extends React.Component {
     }
 
     createOrUpdateDataQuery = () => {
-        const  { appId, options, selectedDataSource, mode } = this.state;
-        const name = this.computeQueryName(selectedDataSource.kind);
+        const  { appId, options, selectedDataSource, mode, queryName } = this.state;
         const kind = selectedDataSource.kind;
         const dataSourceId = selectedDataSource.id;
 
+        const isQueryNameValid = this.validateQueryName();
+        if(!isQueryNameValid) {
+            toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.', { hideProgressBar: true, position: "bottom-center", });
+            return;
+        }
+
         if ( mode === 'edit') {
             this.setState({ isUpdating: true });
-            dataqueryService.update(this.state.selectedQuery.id, options).then((data) => {
-                toast.success('Datasource Updated', { hideProgressBar: true, position: "top-center", });
+            dataqueryService.update(this.state.selectedQuery.id, queryName, options).then((data) => {
+                toast.success('Query Updated', { hideProgressBar: true, position: "bottom-center", });
                 this.setState({ isUpdating: false });
                 this.props.dataQueriesChanged();
             });
         } else { 
             this.setState({ isCreating: true });
-            dataqueryService.create(appId, name, kind, options, dataSourceId).then((data) => {
-                toast.success('Datasource Added', { hideProgressBar: true, position: "top-center", });
+            dataqueryService.create(appId, queryName, kind, options, dataSourceId).then((data) => {
+                toast.success('Query Added', { hideProgressBar: true, position: "bottom-center", });
                 this.setState({ isCreating: false });
                 this.props.dataQueriesChanged();
             });
@@ -196,7 +219,8 @@ class QueryManager extends React.Component {
             editingQuery, 
             selectedQuery,
             queryPaneHeight,
-            currentState
+            currentState,
+            queryName
         } = this.state;
 
         let ElementToRender = '';
@@ -241,6 +265,18 @@ class QueryManager extends React.Component {
                             </div>
                         }
                     </div>
+                    {(addingQuery || editingQuery) && 
+                        <div className="col">
+                            <input 
+                                type="text" 
+                                onChange={(e) => this.setState({ queryName: e.target.value })}
+                                class="form-control-plaintext form-control-plaintext-sm mt-1" 
+                                style={{width: '160px'}}
+                                value={queryName}
+                                autoFocus
+                            />
+                        </div>
+                    }
                     <div className="col-auto">
                         {((addingQuery || editingQuery) && selectedQuery) && 
                             <span
