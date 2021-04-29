@@ -1,0 +1,50 @@
+{
+    "name": "ToolJet",
+    "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
+    "website": "https://tooljet.io/",
+    "repository": "https://github.com/tooljet/tooljet",
+    "logo": "https://app.tooljet.io/images/logo.svg",
+    "success_url": "/",
+    "env": {
+      "RAILS_ENV": {
+        "description": "Environment for rails middleware.",
+        "value": "production"
+      },
+      "RACK_ENV": {
+        "description": "Environment for rack middleware.",
+        "value": "production"
+      },
+      "TOOLJET_HOST": {
+        "description": "Public URL of ToolJet installtion.",
+        "value": "https://app.tooljet.io"
+      },
+      "ENCRYPTION_SERVICE_SALT": {
+        "description": "Salt for encrypting datasource credentials.",
+        "value": ""
+      },
+      "SECRET_KEY_BASE": {
+        "description": "Used by ruby on rails as the input secret to the application's key generator.",
+        "value": ""
+      }
+    },
+    "formation": {
+      "web": {
+        "quantity": 1,
+        "size": "FREE"
+      }
+    },
+    "image": "heroku/ruby",
+    "addons": ["heroku-postgresql"],
+    "buildpacks": [
+      {
+        "url": "heroku/ruby"
+      }
+    ],
+    "environments": {
+      "test": {
+        "scripts": {
+          "test": "bundle exec rake test"
+        }
+      }
+    }
+}
