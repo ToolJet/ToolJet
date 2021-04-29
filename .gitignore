@@ -29,3 +29,5 @@
 /frontend/.firebaserc
 /frontend/.firebase
 /.env
+/docs/.firebase
+/docs/.firebaserc
