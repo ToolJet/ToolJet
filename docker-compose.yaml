@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  base: &base
+    build:
+      context: .
+      dockerfile: ./docker/server.Dockerfile
+      args:
+        RAILS_ENV: 'development'
+    tty: true
+    stdin_open: true
+    image: tooljet:development
+    env_file: .env
+
+  client:
+    <<: *base
+    build:
+      context: ./frontend
+      dockerfile: ../docker/client.Dockerfile
+    image: tooljet-client:development
+    volumes:
+      - ./frontend:/app:delegated
+      - /app/node_modules/
+    ports:
+      - 8082:8082
+    environment:
+      - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
+      - NODE_ENV=development
+    command: npm start
+
+  server:
+    <<: *base
+    build:
+      context: .
+      dockerfile: ./docker/server.Dockerfile
+    image: tooljet-server:development
+    volumes:
+      - ./:/app:delegated
+      # - bundle:/usr/local/bundle
+    depends_on:
+      - postgres
+    ports:
+      - 3000:3000
+    env_file: .env
+    environment:
+      - RAILS_ENV=development
+      - DB_PASSWORD=postgres
+      - DB_HOST=postgres
+    command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+
+  postgres:
+    image: postgres:12
+    restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres:/data/postgres
+    environment:
+      - POSTGRES_DB=tooljet_development
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+volumes:
+  postgres:
+  node_modules:
+  cache:
+  bundle:
