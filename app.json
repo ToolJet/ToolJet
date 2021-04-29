@@ -10,9 +10,21 @@
         "description": "Environment for rails middleware.",
         "value": "production"
       },
+      "RACK_ENV": {
+        "description": "Environment for rack middleware.",
+        "value": "production"
+      },
       "TOOLJET_HOST": {
         "description": "Public URL of ToolJet installtion.",
         "value": "https://app.tooljet.io"
+      },
+      "ENCRYPTION_SERVICE_SALT": {
+        "description": "Salt for encrypting datasource credentials.",
+        "value": ""
+      },
+      "SECRET_KEY_BASE": {
+        "description": "Used by ruby on rails as the input secret to the application's key generator.",
+        "value": ""
       }
     },
     "formation": {
