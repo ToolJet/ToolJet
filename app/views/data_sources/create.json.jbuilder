@@ -1,1 +1,1 @@
-json.id  @data_source.id
+json.id @data_source.id
