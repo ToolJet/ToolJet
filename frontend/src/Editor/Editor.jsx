@@ -48,6 +48,7 @@ class Editor extends React.Component {
       loadingDataQueries: true,
       showQueryEditor: true,
       showLeftSidebar: true,
+      zoomLevel: 1.0,
       appDefinition: {
         components: null
       },
@@ -183,7 +184,7 @@ class Editor extends React.Component {
   };
 
   renderComponentCard = (component, index) => {
-    return <DraggableBox key={index} index={index} component={component} />;
+    return <DraggableBox key={index} index={index} component={component} zoomLevel={this.state.zoomLevel}/>;
   };
 
   filterComponents = (event) => {
@@ -348,7 +349,8 @@ class Editor extends React.Component {
       showQueryEditor,
       showLeftSidebar,
       currentState,
-      isLoading
+      isLoading,
+      zoomLevel
     } = this.state;
 
     const appLink = `/applications/${appId}`;
@@ -413,6 +415,35 @@ class Editor extends React.Component {
                       height="12"
                     />
                   </span>
+                </div>
+                <div className="canvas-buttons">
+                    <button
+                        className="btn btn-light mx-2"
+                        onClick={() => this.setState({ zoomLevel: zoomLevel - 0.1 })}
+                        disabled={zoomLevel <= 0.6}
+                        role="button"
+                    >
+                        <img
+                            src="https://www.svgrepo.com/show/126011/zoom-out.svg"
+                            width="12"
+                            height="12"
+                        />
+                    </button>
+                    <small>
+                        {zoomLevel * 100}%
+                    </small>
+                    <button
+                        className="btn btn-light mx-2"
+                        onClick={() => this.setState({ zoomLevel: zoomLevel + 0.1 })}
+                        disabled={zoomLevel === 1}
+                        role="button"
+                    >
+                        <img
+                        src="https://www.svgrepo.com/show/45597/zoom-in.svg"
+                        width="12"
+                        height="12"
+                        />
+                  </button>
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
                   <div className="nav-item dropdown d-none d-md-flex me-3">
@@ -551,13 +582,14 @@ class Editor extends React.Component {
               </div>
             </Resizable>
             <div className="main">
-              <div className="canvas-container align-items-center">
+              <div className="canvas-container align-items-center" style={{ transform: `scale(${zoomLevel})` }}>
                 <div className="canvas-area">
                   <Container
                     appDefinition={appDefinition}
                     appDefinitionChanged={this.appDefinitionChanged}
                     snapToGrid={true}
                     mode={'edit'}
+                    zoomLevel={zoomLevel}
                     appLoading={isLoading}
                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
                     onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
