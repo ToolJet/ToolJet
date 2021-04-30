@@ -138,18 +138,18 @@ class QueryManager extends React.Component {
     const { dataQueries } = this.state;
     const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
     let found = false;
-    let name = '';
+    let newName = '';
     let currentNumber = currentQueriesForKind.length + 1;
 
     while (!found) {
-      name = `${kind}${currentNumber}`;
-      if (dataQueries.find((query) => query.name === name) === undefined) {
+      newName = `${kind}${currentNumber}`;
+      if (dataQueries.find((query) => query.name === newName) === undefined) {
         found = true;
       }
       currentNumber += 1;
     }
 
-    return name;
+    return newName;
   };
 
   createOrUpdateDataQuery = () => {
@@ -174,6 +174,9 @@ class QueryManager extends React.Component {
         toast.success('Query Updated', { hideProgressBar: true, position: 'bottom-center' });
         this.setState({ isUpdating: false });
         this.props.dataQueriesChanged();
+      }).catch((error) => {
+        this.setState({ isUpdating: false });
+        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
       });
     } else {
       this.setState({ isCreating: true });
@@ -181,6 +184,9 @@ class QueryManager extends React.Component {
         toast.success('Query Added', { hideProgressBar: true, position: 'bottom-center' });
         this.setState({ isCreating: false });
         this.props.dataQueriesChanged();
+      }).catch((error) => {
+        this.setState({ isCreating: false });
+        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
       });
     }
   };

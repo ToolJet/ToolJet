@@ -11,15 +11,27 @@ class DataQueriesController < ApplicationController
       app_id: params[:app_id],
       data_source_id: params[:data_source_id]
     )
+
+    if @data_query.errors.present?
+      render json: { message: 'Query could not be created' }, status: 500
+    else
+      render json: { message: 'success' }
+    end
+
   end
 
   def update
     @data_query = DataQuery.find params[:id]
     @data_query.update(options: params[:options], name: params[:name])
+
+    if @data_query.errors.present?
+      render json: { message: 'Query could not be updated' }, status: 500
+    else 
+      render json: { message: 'success' }
+    end
   end
 
   def run
-    sleep(1) # Just to see the loading state in action
     @data_query = DataQuery.find params[:data_query_id]
     query_service = QueryService.new @data_query, params[:options], @current_user
     result = query_service.process
