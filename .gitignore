@@ -31,3 +31,4 @@
 /.env
 /docs/.firebase
 /docs/.firebaserc
+/node_modules
