@@ -9,6 +9,16 @@ class PostgresqlQueryService
     @current_user = current_user
   end
 
+  def self.connection options
+    PG.connect( 
+        dbname: options.dig('database', 'value'),
+        user: options.dig('username', 'value'),
+        password: options.dig('password', 'value'),
+        host: options.dig('host', 'value'),
+        port: options.dig('port', 'value'),
+    )
+  end
+
   def process
     query_text = ''
     query_text = if options['mode'] === 'gui'

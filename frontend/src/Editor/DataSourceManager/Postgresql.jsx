@@ -1,7 +1,6 @@
 import React from 'react';
-import Button from 'react-bootstrap/Button';
 
-export const Postgresql = ({ optionchanged, createDataSource, testDataSource, options, testingConnection, isSaving  }) => {
+export const Postgresql = ({ optionchanged, options }) => {
 
     return (
         <div>
@@ -33,22 +32,6 @@ export const Postgresql = ({ optionchanged, createDataSource, testDataSource, op
                         </small>
                     </label>
                     <input type="text" className="form-control" onChange={(e) => optionchanged('password', e.target.value)}  value={options.password.value} />
-                </div>
-            </div>
-            <div className="row mt-3">
-                <div className="col">
-
-                </div>
-                <div className="col-auto">
-                    <Button className="m-2" variant="light" onClick={() => hideModal()} >
-                        Cancel
-                    </Button>
-                    <Button className="m-2" variant="success" onClick={testDataSource} disabled={testingConnection}>
-                        {testingConnection ? 'Testing in progress..' :  'Test Connection' }
-                    </Button>
-                    <Button className="m-2" disabled={isSaving} variant="primary" onClick={createDataSource}>
-                        {isSaving ? 'Saving...' : 'Save'}
-                    </Button>
                 </div>
             </div>
         </div>

@@ -11,6 +11,21 @@ class RedisQueryService
     @current_user = current_user
   end
 
+  def self.connection options
+
+    password = options.dig('password', 'value')
+    password = nil if password.blank?
+
+    connection = Redis.new(
+      host: options.dig('host', 'value'),
+      port: options.dig('port', 'value'),
+      user: options.dig('username', 'value'),
+      password: password
+    )
+
+    connection.ping
+  end
+
   def process
     error = nil
     password = source_options['password']

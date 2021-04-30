@@ -2,8 +2,7 @@ import React from 'react';
 import { datasourceService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import { dataBaseSources, apiSources, DataSourceTypes } from './DataSourceTypes';
 import { Elasticsearch } from './Elasticsearch';
 import { Redis } from './Redis';
@@ -14,6 +13,7 @@ import { Firestore } from './Firestore';
 import { RestApi } from './RestApi';
 import { Googlesheets } from './Googlesheets';
 import { defaultOptions } from './DefaultOptions';
+import { TestConnection } from './TestConnection';
 
 class DataSourceManager extends React.Component {
     constructor(props) {
@@ -118,24 +118,6 @@ class DataSourceManager extends React.Component {
         }
     }
     
-    testDataSource = () => {
-        let _self = this;
-
-        const  { appId, options, selectedDataSource, name } = this.state;
-        const kind = selectedDataSource.kind;
-
-        this.setState({ testingConnection: true });
-
-        datasourceService.test(appId, name, kind, options).then((data) => {
-            this.setState({ testingConnection: false })
-            toast.success('Datasource Connection Tested, Successfully!', { hideProgressBar: true, position: "top-center", });
-        },(error) => {
-            this.setState({ testingConnection: false })
-            toast.error('Datasource Connection Error', { hideProgressBar: true, position: "top-center", });
-
-        });
-    }
-   
     render() {
         const { dataSourceMeta, selectedDataSource, options, isSaving } = this.state;
 
@@ -297,9 +279,26 @@ class DataSourceManager extends React.Component {
 
                         </Modal.Body>
 
-                        <Modal.Footer>
-                        
-                        </Modal.Footer>
+                        {selectedDataSource &&
+                            <Modal.Footer>
+                                <div className="col">
+                                    <small>
+                                        <a href={`https://docs.tooljet.io/data-sources/${selectedDataSource.kind}`}>Read documentation</a>
+                                    </small>
+                                </div>
+                                <div className="col-auto">
+                                    <TestConnection
+                                        kind={selectedDataSource.kind}
+                                        options={options}
+                                    />
+                                </div>
+                                <div className="col-auto">
+                                    <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                                        {isSaving ? 'Saving...' : 'Save'}
+                                    </Button>
+                                </div>
+                            </Modal.Footer>
+                        }
                 </Modal>
             </div>
             
