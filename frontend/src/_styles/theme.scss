@@ -202,6 +202,13 @@ body {
   .main {
     margin-left: 12%;
     width: 73%;
+    top: 0;
+
+    .canvas-container::-webkit-scrollbar {
+        width: 0;
+        background: transparent;
+        height: 0;
+    }
 
     .canvas-container {
       scrollbar-width: none;
@@ -215,6 +222,7 @@ body {
     .canvas-container {
       height: 100%;
       width: 73%;
+      top: 56px;
       position: fixed;
       overflow-y: auto;
       overflow-x: scroll;

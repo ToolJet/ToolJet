@@ -58,7 +58,8 @@ export const DraggableBox = function DraggableBox({
   onComponentOptionsChanged,
   onResizeStop,
   paramUpdated,
-  resizingStatusChanged
+  resizingStatusChanged,
+  zoomLevel
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -67,13 +68,13 @@ export const DraggableBox = function DraggableBox({
     () => ({
       type: ItemTypes.BOX,
       item: {
-        id, left, top, width, height, title, component
+        id, left, top, width, height, title, component, zoomLevel
       },
       collect: (monitor) => ({
         isDragging: monitor.isDragging()
       })
     }),
-    [id, left, top, height, width, title, component, index]
+    [id, left, top, height, width, title, component, index, zoomLevel]
   );
 
   useEffect(() => {

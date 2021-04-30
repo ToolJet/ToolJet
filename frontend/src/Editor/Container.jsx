@@ -27,7 +27,8 @@ export const Container = ({
   currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  appLoading
+  appLoading,
+  zoomLevel
 }) => {
   const components = appDefinition.components || [];
 
@@ -70,22 +71,16 @@ export const Container = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
-        if (item.left === undefined || item.top === undefined) {
-          item.left = 20;
-          item.top = 60;
-        }
-
         let componentData = {};
         let componentMeta = {};
         let id = item.id;
-
-        const delta = monitor.getDifferenceFromInitialOffset();
 
         let left = 0;
         let top = 0;
 
         // Component already exists and this is just a reposition event
         if (id) {
+          const delta = monitor.getDifferenceFromInitialOffset();
           componentData = item.component;
           left = Math.round(item.left + delta.x);
           top = Math.round(item.top + delta.y);
@@ -96,12 +91,14 @@ export const Container = ({
           componentData = JSON.parse(JSON.stringify(componentMeta));
           componentData.name = computeComponentName(componentData.component, boxes);
 
-          const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-          const offsetFromTopOfWindow = canvasBoundingRect.y - 56;
-          const offsetFromLeftOfWindow = canvasBoundingRect.x;
+          const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+          const offsetFromTopOfWindow = canvasBoundingRect.top;
+          const offsetFromLeftOfWindow = canvasBoundingRect.left;
 
-          left = Math.round(monitor.getSourceClientOffset().x - offsetFromLeftOfWindow);
-          top = Math.round(monitor.getSourceClientOffset().y - 56 - offsetFromTopOfWindow);
+          const currentOffset = monitor.getSourceClientOffset();
+
+          left = Math.round(currentOffset.x + (currentOffset.x * (1 - zoomLevel)) - offsetFromLeftOfWindow);
+          top = Math.round(currentOffset.y + (currentOffset.y * (1 - zoomLevel)) - offsetFromTopOfWindow);
 
           id = uuidv4();
         }
@@ -180,6 +177,7 @@ export const Container = ({
           mode={mode}
           resizingStatusChanged={(status) => setIsResizing(status)}
           inCanvas={true}
+          zoomLevel={zoomLevel}
         />
       ))}
 
