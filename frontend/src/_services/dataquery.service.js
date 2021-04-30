@@ -21,11 +21,8 @@ function create(app_id, name, kind, options, data_source_id) {
         options,
         data_source_id
     }
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/data_queries`, requestOptions).then(handleResponse);
 }
 
@@ -34,11 +31,8 @@ function update(id, name, options) {
         options,
         name
     }
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'PATCH', headers: headers, body: JSON.stringify(body) };
+
+    const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
 }
 
@@ -46,10 +40,7 @@ function run(queryId, options) {
     const body =  {
         options: options
     }
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/data_queries/${queryId}/run`, requestOptions).then(handleResponse);
 }

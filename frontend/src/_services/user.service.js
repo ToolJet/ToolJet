@@ -20,20 +20,13 @@ function createUser(first_name, last_name, email, role) {
         email, 
         role
     }
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+    
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/users`, requestOptions).then(handleResponse);
 }
 
 function deleteUser(id) {
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'DELETE', headers: headers, body: JSON.stringify({}) };
+    const requestOptions = { method: 'DELETE', headers: authHeader(), body: JSON.stringify({}) };
     return fetch(`${config.apiUrl}/users/${id}`, requestOptions).then(handleResponse);
 }
 
@@ -42,11 +35,8 @@ function setPasswordFromToken(token, password) {
         token,
         password
     }
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+    
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/user/set_password_from_token`, requestOptions).then(handleResponse);
 
 }

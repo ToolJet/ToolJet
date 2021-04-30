@@ -18,11 +18,8 @@ function getAll() {
 function createApp() {
     const body =  {
     }
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+   
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
 }
 
@@ -33,12 +30,7 @@ function getApp(id) {
 
 
 function saveApp(id, attributes) {
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-
-    const requestOptions = { method: 'PUT', headers: headers, body: JSON.stringify({app: attributes}) };
+    const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify({app: attributes}) };
     return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
 }
 
@@ -53,10 +45,7 @@ function createAppUser(app_id, org_user_id, role) {
         org_user_id,
         role
     }
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/app_users`, requestOptions).then(handleResponse);
 }
