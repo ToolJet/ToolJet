@@ -201,8 +201,7 @@ body {
 
   .main {
     margin-left: 12%;
-    margin-right: 13%;
-    padding: 0px 10px;
+    width: 73%;
 
     .canvas-container {
       scrollbar-width: none;
@@ -215,9 +214,10 @@ body {
 
     .canvas-container {
       height: 100%;
+      width: 73%;
       position: fixed;
       overflow-y: auto;
-      overflow-x: auto;
+      overflow-x: scroll;
       -webkit-box-pack: center;
       justify-content: center;
       -webkit-box-align: center;
@@ -876,4 +876,9 @@ tr:focus {
     .input-icon-addon {
         display: flex;
       }
+}
+
+.sub-section {
+    width: 100%;
+    display: block;
 }

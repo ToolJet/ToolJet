@@ -433,204 +433,6 @@ class Editor extends React.Component {
             </header>
           </div>
           <div className="sub-section">
-            <div className="editor-sidebar">
-              <div className="col-md-12">
-                <div>
-                  <ul className="nav nav-tabs" data-bs-toggle="tabs">
-                    <li className="nav-item col-md-6">
-                      <a
-                        onClick={() => this.switchSidebarTab(1)}
-                        className={currentSidebarTab === 1 ? 'nav-link active' : 'nav-link'}
-                        data-bs-toggle="tab"
-                      >
-                        <img
-                          src="https://www.svgrepo.com/show/308964/search-look-inspect-magnifying-glass.svg"
-                          width="16"
-                          height="16"
-                        />
-                        &nbsp; Inspect
-                      </a>
-                    </li>
-                    <li className="nav-item col-md-6">
-                      <a
-                        onClick={() => this.switchSidebarTab(2)}
-                        className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}
-                        data-bs-toggle="tab"
-                      >
-                        <img src="https://www.svgrepo.com/show/274200/insert.svg" width="16" height="16" />
-                        &nbsp; Insert
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              {currentSidebarTab === 1 && (
-                <div className="pages-container">
-                  {selectedComponent ? (
-                    <Inspector
-                      componentDefinitionChanged={this.componentDefinitionChanged}
-                      dataQueries={dataQueries}
-                      removeComponent={this.removeComponent}
-                      selectedComponent={selectedComponent}
-                      components={appDefinition.components}
-                    ></Inspector>
-                  ) : (
-                    <div className="mt-5 p-2">Please select a component to inspect</div>
-                  )}
-                </div>
-              )}
-
-              {currentSidebarTab === 2 && (
-                <div className="components-container m-2">
-                  <div className="input-icon">
-                    <span className="input-icon-addon">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="icon"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2"
-                        stroke="currentColor"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <circle cx="10" cy="10" r="7" />
-                        <line x1="21" y1="21" x2="15" y2="15" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      className="form-control mb-2"
-                      placeholder="Search…"
-                      aria-label="Search in website"
-                      onBlur={(event) => this.filterComponents(event)}
-                    />
-                  </div>
-                  <div className="col-sm-12 col-lg-12">
-                    {componentTypes.map((component, i) => this.renderComponentCard(component, i))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="main">
-              <div className="canvas-container align-items-center">
-                <div className="canvas-area">
-                  <Container
-                    appDefinition={appDefinition}
-                    appDefinitionChanged={this.appDefinitionChanged}
-                    snapToGrid={true}
-                    mode={'edit'}
-                    appLoading={isLoading}
-                    onEvent={(eventName, options) => onEvent(this, eventName, options)}
-                    onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
-                    }
-                    onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
-                    }
-                    currentState={this.state.currentState}
-                    onComponentClick={(id, component) => {
-                      this.setState({ selectedComponent: { id, component } });
-                      this.switchSidebarTab(1);
-                      onComponentClick(this, id, component);
-                    }}
-                  />
-                  <CustomDragLayer snapToGrid={true} />
-                </div>
-              </div>
-              <div
-                className="query-pane"
-                style={{
-                  height: showQueryEditor ? this.state.queryPaneHeight : '0px',
-                  width: !showLeftSidebar ? '85%' : '',
-                  left: !showLeftSidebar ? '0' : ''
-                }}
-              >
-                <div className="row main-row">
-                  <div className="col-md-3 data-pane">
-                    <div className="queries-container">
-                      <div className="queries-header row m-2">
-                        <div className="col">
-                          <h5 className="p-1 text-muted">QUERIES</h5>
-                        </div>
-                        <div className="col-auto">
-                          {/* {<button className="btn btn-sm btn-light mx-2">
-                                                        <img className="p-1" src="https://www.svgrepo.com/show/13682/search.svg" width="17" height="17"/>
-                                                    </button>} */}
-
-                          <span
-                            data-tip="Add new query"
-                            className="btn btn-sm btn-light"
-                            onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })}
-                          >
-                            +
-                          </span>
-                        </div>
-                      </div>
-
-                      {loadingDataQueries ? (
-                        <div className="m-3">
-                          <Skeleton count={8} />
-                        </div>
-                      ) : (
-                        <div className="m-2">
-                          <div className="table-responsive">
-                            <table className="table table-vcenter table-nowrap">
-                              <tbody>{dataQueries.map((query) => this.renderDataQuery(query))}</tbody>
-                            </table>
-                          </div>
-                          {dataQueries.length === 0 && (
-                            <div>
-                              <center>
-                                You haven&apos;t created queries yet. <br />
-                                <button
-                                  className="btn btn-sm btn-light mt-3"
-                                  onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
-                                  }
-                                >
-                                  create query
-                                </button>
-                              </center>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="col-md-9">
-                    {!loadingDataSources && (
-                      <div className="query-definition-pane">
-                        <div>
-                          <QueryManager
-                            dataSources={dataSources}
-                            toggleQueryPaneHeight={this.toggleQueryPaneHeight}
-                            dataQueries={dataQueries}
-                            mode={editingQuery ? 'edit' : 'create'}
-                            selectedQuery={selectedQuery}
-                            dataQueriesChanged={this.dataQueriesChanged}
-                            appId={appId}
-                            runQuery={(queryId, queryName) => {
-                              runQuery(this, queryId, queryName).then(() => {
-                                toast.info(`Query (${queryName}) completed.`, {
-                                  hideProgressBar: true,
-                                  position: 'bottom-center'
-                                });
-                              });
-                            }}
-                            addingQuery={addingQuery}
-                            editingQuery={editingQuery}
-                            queryPaneHeight={queryPaneHeight}
-                            currentState={currentState}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
             <Resizable
               minWidth={showLeftSidebar ? '12%' : '0%'}
               style={{
@@ -748,6 +550,204 @@ class Editor extends React.Component {
                 </div>
               </div>
             </Resizable>
+            <div className="main">
+              <div className="canvas-container align-items-center">
+                <div className="canvas-area">
+                  <Container
+                    appDefinition={appDefinition}
+                    appDefinitionChanged={this.appDefinitionChanged}
+                    snapToGrid={true}
+                    mode={'edit'}
+                    appLoading={isLoading}
+                    onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                    onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
+                    }
+                    onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
+                    }
+                    currentState={this.state.currentState}
+                    onComponentClick={(id, component) => {
+                      this.setState({ selectedComponent: { id, component } });
+                      this.switchSidebarTab(1);
+                      onComponentClick(this, id, component);
+                    }}
+                  />
+                  <CustomDragLayer snapToGrid={true} />
+                </div>
+              </div>
+              <div
+                className="query-pane"
+                style={{
+                  height: showQueryEditor ? this.state.queryPaneHeight : '0px',
+                  width: !showLeftSidebar ? '85%' : '',
+                  left: !showLeftSidebar ? '0' : ''
+                }}
+              >
+                <div className="row main-row">
+                  <div className="col-md-3 data-pane">
+                    <div className="queries-container">
+                      <div className="queries-header row m-2">
+                        <div className="col">
+                          <h5 className="p-1 text-muted">QUERIES</h5>
+                        </div>
+                        <div className="col-auto">
+                          {/* {<button className="btn btn-sm btn-light mx-2">
+                                                        <img className="p-1" src="https://www.svgrepo.com/show/13682/search.svg" width="17" height="17"/>
+                                                    </button>} */}
+
+                          <span
+                            data-tip="Add new query"
+                            className="btn btn-sm btn-light"
+                            onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })}
+                          >
+                            +
+                          </span>
+                        </div>
+                      </div>
+
+                      {loadingDataQueries ? (
+                        <div className="m-3">
+                          <Skeleton count={8} />
+                        </div>
+                      ) : (
+                        <div className="m-2">
+                          <div className="table-responsive">
+                            <table className="table table-vcenter table-nowrap">
+                              <tbody>{dataQueries.map((query) => this.renderDataQuery(query))}</tbody>
+                            </table>
+                          </div>
+                          {dataQueries.length === 0 && (
+                            <div>
+                              <center>
+                                You haven&apos;t created queries yet. <br />
+                                <button
+                                  className="btn btn-sm btn-light mt-3"
+                                  onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
+                                  }
+                                >
+                                  create query
+                                </button>
+                              </center>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-md-9">
+                    {!loadingDataSources && (
+                      <div className="query-definition-pane">
+                        <div>
+                          <QueryManager
+                            dataSources={dataSources}
+                            toggleQueryPaneHeight={this.toggleQueryPaneHeight}
+                            dataQueries={dataQueries}
+                            mode={editingQuery ? 'edit' : 'create'}
+                            selectedQuery={selectedQuery}
+                            dataQueriesChanged={this.dataQueriesChanged}
+                            appId={appId}
+                            runQuery={(queryId, queryName) => {
+                              runQuery(this, queryId, queryName).then(() => {
+                                toast.info(`Query (${queryName}) completed.`, {
+                                  hideProgressBar: true,
+                                  position: 'bottom-center'
+                                });
+                              });
+                            }}
+                            addingQuery={addingQuery}
+                            editingQuery={editingQuery}
+                            queryPaneHeight={queryPaneHeight}
+                            currentState={currentState}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="editor-sidebar">
+              <div className="col-md-12">
+                <div>
+                  <ul className="nav nav-tabs" data-bs-toggle="tabs">
+                    <li className="nav-item col-md-6">
+                      <a
+                        onClick={() => this.switchSidebarTab(1)}
+                        className={currentSidebarTab === 1 ? 'nav-link active' : 'nav-link'}
+                        data-bs-toggle="tab"
+                      >
+                        <img
+                          src="https://www.svgrepo.com/show/308964/search-look-inspect-magnifying-glass.svg"
+                          width="16"
+                          height="16"
+                        />
+                        &nbsp; Inspect
+                      </a>
+                    </li>
+                    <li className="nav-item col-md-6">
+                      <a
+                        onClick={() => this.switchSidebarTab(2)}
+                        className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}
+                        data-bs-toggle="tab"
+                      >
+                        <img src="https://www.svgrepo.com/show/274200/insert.svg" width="16" height="16" />
+                        &nbsp; Insert
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {currentSidebarTab === 1 && (
+                <div className="pages-container">
+                  {selectedComponent ? (
+                    <Inspector
+                      componentDefinitionChanged={this.componentDefinitionChanged}
+                      dataQueries={dataQueries}
+                      removeComponent={this.removeComponent}
+                      selectedComponent={selectedComponent}
+                      components={appDefinition.components}
+                    ></Inspector>
+                  ) : (
+                    <div className="mt-5 p-2">Please select a component to inspect</div>
+                  )}
+                </div>
+              )}
+
+              {currentSidebarTab === 2 && (
+                <div className="components-container m-2">
+                  <div className="input-icon">
+                    <span className="input-icon-addon">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="icon"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        stroke="currentColor"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <circle cx="10" cy="10" r="7" />
+                        <line x1="21" y1="21" x2="15" y2="15" />
+                      </svg>
+                    </span>
+                    <input
+                      type="text"
+                      className="form-control mb-2"
+                      placeholder="Search…"
+                      aria-label="Search in website"
+                      onBlur={(event) => this.filterComponents(event)}
+                    />
+                  </div>
+                  <div className="col-sm-12 col-lg-12">
+                    {componentTypes.map((component, i) => this.renderComponentCard(component, i))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </DndProvider>
       </div>
