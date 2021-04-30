@@ -45,10 +45,8 @@ function save(id, app_id, name, options) {
 }
 
 
-function test(app_id, name, kind, options) {
+function test(kind, options) {
     const body =  {
-        app_id,
-        name,
         kind,
         options
     };

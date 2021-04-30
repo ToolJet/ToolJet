@@ -80,7 +80,8 @@ class DataSourcesController < ApplicationController
     service.process
     render json: { status: 200 }
   rescue StandardError => e
-    render json: { error: e }, status: 500
+    puts e
+    render json: { message: e }, status: 500
   end
 
   def authorize_oauth2
