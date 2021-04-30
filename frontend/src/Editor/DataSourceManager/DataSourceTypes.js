@@ -104,7 +104,8 @@ export const apiSources = [
             isLoading: {},
             data: {},
             rawData: {}
-        }
+        },
+        customTesting: true
     },
     {
         name: 'Stripe',
@@ -118,6 +119,7 @@ export const apiSources = [
         options: {
             api_key: { type: "string", encrypted: true }
         },
+        customTesting: true
     },
     {
         name: 'Google Sheets',
@@ -131,6 +133,7 @@ export const apiSources = [
         options: {
             api_key: { type: "string", encrypted: true }
         },
+        customTesting: true
     },
 ]
 
