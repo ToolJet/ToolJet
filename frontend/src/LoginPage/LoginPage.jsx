@@ -22,11 +22,11 @@ class LoginPage extends React.Component {
     const { email, password } = this.state;
 
     authenticationService.login(email, password).then(
-      (user) => {
+      () => {
         const { from } = this.props.location.state || { from: { pathname: '/' } };
         this.props.history.push(from);
       },
-      (error) => {
+      () => {
         toast.error('Invalid username or password', { hideProgressBar: true, position: 'top-center' });
       }
     );
@@ -87,7 +87,7 @@ class LoginPage extends React.Component {
             </div>
           </form>
           <div className="text-center text-muted mt-3">
-            Don't have account yet?{' '}
+            Don&apos;t have account yet?
             <a href="./sign-up.html" tabIndex="-1">
               Sign up
             </a>

@@ -1,26 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Text } from './Elements/Text';
-import { Color } from './Elements/Color';
-import { Json } from './Elements/Json';
 import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
 import { renderElement, renderEvent } from './Utils';
-import { toast } from 'react-toastify';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-
-const AllElements = {
-  Color,
-  Json,
-  Text,
-};
 
 export const Inspector = ({
   selectedComponent,
   componentDefinitionChanged,
   dataQueries,
   removeComponent,
-  components,
+  components
 }) => {
   const [component, setComponent] = useState(selectedComponent);
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
@@ -43,7 +33,7 @@ export const Inspector = ({
     newDefinition[paramType][param.name][attr] = value;
 
     let newComponent = {
-      ...component,
+      ...component
     };
 
     setComponent(newComponent);
@@ -55,7 +45,7 @@ export const Inspector = ({
     newDefinition.events[event.name] = { actionId };
 
     let newComponent = {
-      ...component,
+      ...component
     };
 
     setComponent(newComponent);
@@ -71,7 +61,7 @@ export const Inspector = ({
     newDefinition.events[event.name] = { ...eventDefinition, options: { ...eventDefinition.options, [option]: value } };
 
     let newComponent = {
-      ...component,
+      ...component
     };
 
     setComponent(newComponent);
@@ -125,16 +115,10 @@ export const Inspector = ({
         />
       ) : (
         <div className="properties-container p-2">
-          {Object.keys(componentMeta.properties).map((property) =>
-            renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', components)
-          )}
-          {Object.keys(componentMeta.styles).map((style) =>
-            renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', components)
-          )}
+          {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', components))}
+          {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', components))}
           <hr></hr>
-          {componentMeta.events.map((event) =>
-            renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, event)
-          )}
+          {componentMeta.events.map((event) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, event))}
         </div>
       )}
     </div>

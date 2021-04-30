@@ -21,18 +21,18 @@ class Authorize extends React.Component {
 
     this.setState({
       details,
-      isLoading: true,
+      isLoading: true
     });
 
     const sourceId = localStorage.getItem('sourceWaitingForOAuth');
 
-    if (sourceId != 'newSource') {
+    if (sourceId !== 'newSource') {
       datasourceService
         .setOauth2Token(sourceId, details)
         .then(() => {
           this.setState({
             isLoading: false,
-            authSucess: true,
+            authSucess: true
           });
         })
         .catch(function (error) {

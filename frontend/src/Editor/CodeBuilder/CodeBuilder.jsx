@@ -1,12 +1,14 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import { componentTypes } from '../Components/components';
 import { DataSourceTypes } from '../DataSourceManager/DataSourceTypes';
-import { debounce, throttle } from 'lodash';
+import { debounce } from 'lodash';
 import Fuse from 'fuse.js';
 
-export function CodeBuilder({ initialValue, onChange, components, dataQueries }) {
+export function CodeBuilder({
+  initialValue, onChange, components, dataQueries
+}) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [currentValue, setCurrentValue] = useState(initialValue);
@@ -35,7 +37,7 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
     if (value.startsWith('{{') && value.endsWith('}}')) isCode = true;
     console.log('[CB]', 'isCode', isCode);
 
-    if (isCode && value != initialValue) {
+    if (isCode && value !== initialValue) {
       setShowDropdown(true);
       setCursorPosition(instance.getCursor().ch);
       setCurrentWord(computeCurrentWord(value, instance.getCursor().ch));
@@ -47,7 +49,7 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
     const slice2 = currentValue.slice(cursorPosition);
     const slice3 = `${type}.${key}.${variable}`;
 
-    if (currentWord != '') {
+    if (currentWord !== '') {
       slice1 = currentValue.slice(0, cursorPosition - currentWord.length);
     }
 
@@ -94,7 +96,7 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
       console.log(currentWord);
       filteredVariables = fuse.search(currentWord);
     }
-    return filteredVariables.map((variable, index) => renderVariable(type, key, variable.item.name));
+    return filteredVariables.map((variable) => renderVariable(type, key, variable.item.name));
   }
 
   function renderComponentVariables(component) {
@@ -118,17 +120,17 @@ export function CodeBuilder({ initialValue, onChange, components, dataQueries })
         fontSize="2"
         onCursorActivity={(instance) => setCursorPosition(instance.getCursor().ch)}
         // onChange={ (instance, change) => computeIfDropDownCanBeShown(instance) }
-        onChange={(instance, change) => delayedHandleChange(instance)}
+        onChange={(instance) => delayedHandleChange(instance)}
         value={currentValue}
         onFocus={(instance) => handleOnFocus(instance)}
-        onBlur={(e) => {
+        onBlur={() => {
           setShowDropdown(false);
         }}
         options={{
           mode: 'javascript',
           lineWrapping: true,
           scrollbarStyle: null,
-          lineNumbers: false,
+          lineNumbers: false
         }}
       />
       {showDropdown && (

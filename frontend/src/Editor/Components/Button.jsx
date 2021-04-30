@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { resolve, resolve_references } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 
-export const Button = function Button({ id, width, height, component, onComponentClick, currentState }) {
+export const Button = function Button({
+  id, width, height, component, onComponentClick, currentState
+}) {
   console.log('currentState', currentState);
 
   const [loadingState, setLoadingState] = useState(false);
@@ -9,7 +11,7 @@ export const Button = function Button({ id, width, height, component, onComponen
   useEffect(() => {
     const loadingStateProperty = component.definition.properties.loadingState;
     if (loadingStateProperty && currentState) {
-      const newState = resolve_references(loadingStateProperty.value, currentState, false);
+      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
       setLoadingState(newState);
     }
   }, [currentState]);
@@ -22,12 +24,12 @@ export const Button = function Button({ id, width, height, component, onComponen
     backgroundColor,
     color,
     width,
-    height,
+    height
   };
 
   return (
     <button
-      class={`btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
+      className={`btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
       style={computedStyles}
       onClick={() => onComponentClick(id, component)}
     >

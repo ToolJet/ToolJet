@@ -1,21 +1,19 @@
 import React from 'react';
-import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import { Transformation } from './Transformation';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 class Googlesheets extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      options: this.props.options,
+      options: this.props.options
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options,
+      options: this.props.options
     });
   }
 
@@ -24,8 +22,8 @@ class Googlesheets extends React.Component {
       {
         options: {
           ...this.state.options,
-          [option]: value,
-        },
+          [option]: value
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -38,8 +36,8 @@ class Googlesheets extends React.Component {
       {
         options: {
           ...this.state.options,
-          [option]: JSON.parse(value),
-        },
+          [option]: JSON.parse(value)
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -52,8 +50,8 @@ class Googlesheets extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation,
-        },
+          operation
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -68,7 +66,7 @@ class Googlesheets extends React.Component {
       <div>
         {options && (
           <div>
-            <div class="mb-3 mt-2">
+            <div className="mb-3 mt-2">
               <label className="form-label">Operation</label>
               <select
                 onChange={(e) => {
@@ -77,7 +75,7 @@ class Googlesheets extends React.Component {
                 }}
                 placeholder="Select a value"
                 value={this.state.options.operation}
-                class="form-select"
+                className="form-select"
               >
                 <option value="read">Read from a spreadsheet</option>
                 <option value="list">List all spreadsheets</option>
@@ -85,16 +83,16 @@ class Googlesheets extends React.Component {
             </div>
             {this.state.options.operation === 'read' && (
               <div>
-                <div class="mb-3 mt-2 row">
+                <div className="mb-3 mt-2 row">
                   <div className="col">
                     <label className="form-label">Spreadsheet ID</label>
-                    {/* <SelectSearch 
+                    {/* <SelectSearch
                                             options={[]}
-                                            value={null} 
+                                            value={null}
                                             search={true}
                                             onChange={(value) => { onComponentOptionChanged(component, 'value', value)}}
                                             filterOptions={fuzzySearch}
-                                            placeholder="Select.." 
+                                            placeholder="Select.."
                                         /> */}
                     <input
                       type="text"

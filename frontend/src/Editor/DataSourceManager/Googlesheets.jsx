@@ -2,22 +2,23 @@ import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import { datasourceService } from '@/_services';
 
-export const Googlesheets = ({ optionchanged, createDataSource, options, isSaving }) => {
+export const Googlesheets = ({
+  optionchanged, createDataSource, options, isSaving
+}) => {
   const [authStatus, setAuthStatus] = useState(null);
 
   function authGoogle() {
     const provider = 'google';
     setAuthStatus('waiting_for_url');
 
-    const scope =
-      options.access_type === 'read'
-        ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
-        : 'https://www.googleapis.com/auth/spreadsheets';
+    const scope = options.access_type === 'read'
+      ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
+      : 'https://www.googleapis.com/auth/spreadsheets';
 
     datasourceService.fetchOauth2BaseUrl(provider).then((data) => {
       const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
       localStorage.setItem('sourceWaitingForOAuth', 'newSource');
-      optionchanged('provider', provider).then((option) => {
+      optionchanged('provider', provider).then(() => {
         optionchanged('oauth2', true);
       });
       setAuthStatus('waiting_for_token');
@@ -26,7 +27,7 @@ export const Googlesheets = ({ optionchanged, createDataSource, options, isSavin
   }
 
   function saveDataSource() {
-    optionchanged('code', localStorage.getItem('OAuthCode')).then((option) => {
+    optionchanged('code', localStorage.getItem('OAuthCode')).then(() => {
       createDataSource();
     });
   }
@@ -35,32 +36,32 @@ export const Googlesheets = ({ optionchanged, createDataSource, options, isSavin
     <div>
       <div className="row">
         <div className="col-md-12">
-          <div class="mb-3">
-            <div class="form-label">Authorize</div>
+          <div className="mb-3">
+            <div className="form-label">Authorize</div>
             <p>If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access</p>
             <div>
-              <label class="form-check mt-3">
+              <label className="form-check mt-3">
                 <input
-                  class="form-check-input"
+                  className="form-check-input"
                   type="radio"
-                  onClick={(e) => optionchanged('access_type', 'read')}
+                  onClick={() => optionchanged('access_type', 'read')}
                   checked={options.access_type.value === 'read'}
                   disabled={authStatus === 'waiting_for_token'}
                 />
-                <span class="form-check-label">
+                <span className="form-check-label">
                   Read only <br />
                   <small className="text-muted">Your ToolJet apps can only read data from Google sheets</small>
                 </span>
               </label>
-              <label class="form-check mt2">
+              <label className="form-check mt2">
                 <input
-                  class="form-check-input"
+                  className="form-check-input"
                   type="radio"
-                  onClick={(e) => optionchanged('access_type', 'write')}
+                  onClick={() => optionchanged('access_type', 'write')}
                   checked={options.access_type.value === 'write'}
                   disabled={authStatus === 'waiting_for_token'}
                 />
-                <span class="form-check-label">
+                <span className="form-check-label">
                   Read and write <br />
                   <small className="text-muted">
                     Your ToolJet apps can read data from sheets, modify sheets, and more.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolve_references } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const Multiselect = function Multiselect({
@@ -9,21 +9,21 @@ export const Multiselect = function Multiselect({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged,
+  onComponentOptionChanged
 }) {
   console.log('currentState', currentState);
 
   const label = component.definition.properties.label.value;
   const values = component.definition.properties.option_values.value;
-  const display_values = component.definition.properties.display_values.value;
+  const displayValues = component.definition.properties.display_values.value;
 
-  const parsed_values = JSON.parse(values);
-  const parsed_display_values = JSON.parse(display_values);
+  const parsedValues = JSON.parse(values);
+  const parsedDisplayValues = JSON.parse(displayValues);
 
   const selectOptions = [
-    ...parsed_values.map((value, index) => {
-      return { name: parsed_display_values[index], value: value };
-    }),
+    ...parsedValues.map((value, index) => {
+      return { name: parsedDisplayValues[index], value: value };
+    })
   ];
 
   const currentValueProperty = component.definition.properties.values;
@@ -32,7 +32,7 @@ export const Multiselect = function Multiselect({
 
   let newValue = value;
   if (currentValueProperty && currentState) {
-    newValue = resolve_references(currentValueProperty.value, currentState, '');
+    newValue = resolveReferences(currentValueProperty.value, currentState, '');
   }
 
   useEffect(() => {
@@ -51,9 +51,8 @@ export const Multiselect = function Multiselect({
           search={true}
           multiple={true}
           printOptions="on-focus"
-          onChange={(values) => {
-            debugger;
-            onComponentOptionChanged(component, 'values', values);
+          onChange={(newValues) => {
+            onComponentOptionChanged(component, 'values', newValues);
           }}
           filterOptions={fuzzySearch}
           placeholder="Select.."

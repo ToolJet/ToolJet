@@ -2,6 +2,7 @@ import React from 'react';
 import { appService, authenticationService } from '@/_services';
 import { Link } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton';
+import { history } from '@/_helpers';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -10,17 +11,15 @@ class HomePage extends React.Component {
     this.state = {
       currentUser: authenticationService.currentUserValue,
       users: null,
-      isLoading: true,
+      isLoading: true
     };
   }
 
   componentDidMount() {
-    appService.getAll().then((data) =>
-      this.setState({
-        apps: data.apps,
-        isLoading: false,
-      })
-    );
+    appService.getAll().then((data) => this.setState({
+      apps: data.apps,
+      isLoading: false
+    }));
   }
 
   createApp = () => {
@@ -31,13 +30,15 @@ class HomePage extends React.Component {
     });
   };
 
-  logout() {
+  logout = () => {
     authenticationService.logout();
     history.push('/login');
   }
 
   render() {
-    const { currentUser, users, apps, isLoading } = this.state;
+    const {
+      apps, isLoading
+    } = this.state;
     return (
       <div className="wrapper">
         <header className="navbar navbar-expand-md navbar-light d-print-none">
@@ -50,15 +51,15 @@ class HomePage extends React.Component {
                 <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
               </a>
             </h1>
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <Link to={`/`} className="nav-link active">
-                  <span class="nav-link-title">Apps</span>
+            <ul className="navbar-nav">
+              <li className="nav-item">
+                <Link to={'/'} className="nav-link active">
+                  <span className="nav-link-title">Apps</span>
                 </Link>
               </li>
-              <li class="nav-item">
-                <Link to={`/users`} className="nav-link">
-                  <span class="nav-link-title">Users</span>
+              <li className="nav-item">
+                <Link to={'/users'} className="nav-link">
+                  <span className="nav-link-title">Users</span>
                 </Link>
               </li>
             </ul>
@@ -144,7 +145,7 @@ class HomePage extends React.Component {
               {apps && (
                 <>
                   {apps.map((app) => (
-                    <div className="col-sm-6 col-lg-3">
+                    <div className="col-sm-6 col-lg-3" key={app.id}>
                       <div className="card app-card">
                         <div
                           // to={`/apps/${app.id}`}

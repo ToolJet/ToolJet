@@ -1,7 +1,9 @@
 import React from 'react';
 import { resolve } from '@/_helpers/utils';
 
-export const Image = function Image({ id, width, height, component, onComponentClick, currentState }) {
+export const Image = function Image({
+  id, width, height, component, onComponentClick, currentState
+}) {
   const source = component.definition.properties.source.value;
 
   let data = source;

@@ -9,13 +9,13 @@ class Postgresql extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options,
+      options: this.props.options
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options,
+      options: this.props.options
     });
   }
 
@@ -33,11 +33,11 @@ class Postgresql extends React.Component {
       <div>
         {options && (
           <div>
-            <div class="mb-3 mt-2 col-md-2">
+            <div className="mb-3 mt-2 col-md-2">
               <SelectSearch
                 options={[
                   { name: 'SQL mode', value: 'sql' },
-                  { name: 'GUI mode', value: 'gui' },
+                  { name: 'GUI mode', value: 'gui' }
                 ]}
                 value={options.mode}
                 search={true}
@@ -50,18 +50,18 @@ class Postgresql extends React.Component {
             </div>
 
             {options.mode === 'sql' && (
-              <div class="mb-3 mt-2">
+              <div className="mb-3 mt-2">
                 <CodeMirror
                   height="100px"
                   fontSize="2"
                   value={options.query}
-                  onChange={(instance, change) => this.changeOption('query', instance.getValue())}
+                  onChange={(instance) => this.changeOption('query', instance.getValue())}
                   placeholder="SELECT * FROM customers;"
                   options={{
                     theme: 'duotone-light',
                     mode: 'sql',
                     lineWrapping: true,
-                    scrollbarStyle: null,
+                    scrollbarStyle: null
                   }}
                 />
               </div>
@@ -69,7 +69,7 @@ class Postgresql extends React.Component {
             {options.mode === 'gui' && (
               <div>
                 <div className="row">
-                  <div class="col">
+                  <div className="col">
                     <label className="form-label">Table</label>
                     <input
                       type="text"
@@ -80,7 +80,7 @@ class Postgresql extends React.Component {
                       className="form-control"
                     />
                   </div>
-                  <div class="col">
+                  <div className="col">
                     <label className="form-label">Operation</label>
                     <SelectSearch
                       options={[{ name: 'Bulk update using primary key', value: 'bulk_update_pkey' }]}
@@ -97,7 +97,7 @@ class Postgresql extends React.Component {
 
                 {options.operation === 'bulk_update_pkey' && (
                   <div>
-                    <div class="mb-3 mt-2">
+                    <div className="mb-3 mt-2">
                       <label className="form-label">Primary key column</label>
                       <input
                         type="text"
@@ -108,19 +108,19 @@ class Postgresql extends React.Component {
                         className="form-control"
                       />
                     </div>
-                    <div class="mb-3 mt-2">
+                    <div className="mb-3 mt-2">
                       <label className="form-label">Records to update</label>
                       <CodeMirror
                         height="100px"
                         fontSize="2"
                         value={options.records}
-                        onChange={(instance, change) => this.changeOption('records', instance.getValue())}
+                        onChange={(instance) => this.changeOption('records', instance.getValue())}
                         placeholder="{{ [ ] }}"
                         options={{
                           theme: 'duotone-light',
                           mode: 'javascript',
                           lineWrapping: true,
-                          scrollbarStyle: null,
+                          scrollbarStyle: null
                         }}
                       />
                     </div>

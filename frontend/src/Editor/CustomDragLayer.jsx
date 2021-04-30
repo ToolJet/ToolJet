@@ -10,13 +10,13 @@ const layerStyles = {
   left: 0,
   top: 0,
   width: '100%',
-  height: '100%',
+  height: '100%'
 };
 
 function getItemStyles(differential, item, initialOffset, currentOffset, isSnapToGrid) {
   if (!initialOffset || !currentOffset) {
     return {
-      display: 'none',
+      display: 'none'
     };
   }
   let { x, y } = currentOffset;
@@ -30,24 +30,26 @@ function getItemStyles(differential, item, initialOffset, currentOffset, isSnapT
 
     [x, y] = snapToGrid(x, y);
 
-    x = x + offsetFromLeftOfWindow;
-    y = y + offsetFromTopOfWindow;
+    x += offsetFromLeftOfWindow;
+    y += offsetFromTopOfWindow;
   }
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
     transform,
-    WebkitTransform: transform,
+    WebkitTransform: transform
   };
 }
 export const CustomDragLayer = (props) => {
-  const { itemType, isDragging, item, initialOffset, currentOffset, differential } = useDragLayer((monitor) => ({
+  const {
+    itemType, isDragging, item, initialOffset, currentOffset, differential
+  } = useDragLayer((monitor) => ({
     item: monitor.getItem(),
     itemType: monitor.getItemType(),
     initialOffset: monitor.getInitialSourceClientOffset(),
     currentOffset: monitor.getSourceClientOffset(),
     isDragging: monitor.isDragging(),
-    differential: monitor.getDifferenceFromInitialOffset(),
+    differential: monitor.getDifferenceFromInitialOffset()
   }));
   function renderItem() {
     switch (itemType) {

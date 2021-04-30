@@ -1,21 +1,18 @@
 import React from 'react';
-import { appService, dataqueryService, authenticationService } from '@/_services';
+import { appService, authenticationService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import 'react-toastify/dist/ReactToastify.css';
-import { getDynamicVariables, resolve, resolve_references } from '@/_helpers/utils';
 import { Confirm } from './Viewer/Confirm';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  fetchOAuthToken,
-  runTransformation,
   onComponentClick,
   onQueryConfirm,
   onQueryCancel,
   onEvent,
-  runQuery,
+  runQuery
 } from '@/_helpers/appUtils';
 
 class Viewer extends React.Component {
@@ -26,38 +23,36 @@ class Viewer extends React.Component {
       currentUser: authenticationService.currentUserValue,
       users: null,
       appDefinition: {
-        components: null,
+        components: null
       },
       currentState: {
         queries: {},
         components: {},
         globals: {
           current_user: {},
-          urlparams: {},
-        },
-      },
+          urlparams: {}
+        }
+      }
     };
   }
 
   componentDidMount() {
     const id = this.props.match.params.id;
 
-    appService.getApp(id).then((data) =>
-      this.setState(
-        {
-          app: data,
-          isLoading: false,
-          appDefinition: data.definition,
-        },
-        () => {
-          data.data_queries.map((query) => {
-            if (query.options.runOnPageLoad) {
-              runQuery(this, query.id, query.name);
-            }
-          });
-        }
-      )
-    );
+    appService.getApp(id).then((data) => this.setState(
+      {
+        app: data,
+        isLoading: false,
+        appDefinition: data.definition
+      },
+      () => {
+        data.data_queries.forEach((query) => {
+          if (query.options.runOnPageLoad) {
+            runQuery(this, query.id, query.name);
+          }
+        });
+      }
+    ));
 
     const currentUser = authenticationService.currentUserValue;
 
@@ -71,11 +66,11 @@ class Viewer extends React.Component {
           current_user: {
             email: currentUser.email,
             first_name: currentUser.first_name,
-            last_name: currentUser.last_name,
+            last_name: currentUser.last_name
           },
-          urlparams: {},
-        },
-      },
+          urlparams: {}
+        }
+      }
     });
   }
 
@@ -85,7 +80,7 @@ class Viewer extends React.Component {
     console.log('currentState', currentState);
 
     return (
-      <div class="viewer wrapper">
+      <div className="viewer wrapper">
         <Confirm
           show={showQueryConfirmation}
           message={'Do you want to run this query?'}
@@ -95,18 +90,18 @@ class Viewer extends React.Component {
         />
         <DndProvider backend={HTML5Backend}>
           <div className="header">
-            <header class="navbar navbar-expand-md navbar-light d-print-none">
-              <div class="container-xl header-container">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-                  <span class="navbar-toggler-icon"></span>
+            <header className="navbar navbar-expand-md navbar-light d-print-none">
+              <div className="container-xl header-container">
+                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                  <span className="navbar-toggler-icon"></span>
                 </button>
-                <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                   <a href="/">
-                    <img src="/images/logo.svg" width="110" height="32" class="navbar-brand-image" />
+                    <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
                   </a>
                 </h1>
                 {this.state.app && <span>{this.state.app.name}</span>}
-                <div class="navbar-nav flex-row order-md-last"></div>
+                <div className="navbar-nav flex-row order-md-last"></div>
               </div>
             </header>
           </div>
@@ -123,11 +118,9 @@ class Viewer extends React.Component {
                       mode="view"
                       currentState={this.state.currentState}
                       onComponentClick={(id, component) => onComponentClick(this, id, component)}
-                      onComponentOptionChanged={(component, option_name, value) =>
-                        onComponentOptionChanged(this, component, option_name, value)
+                      onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
                       }
-                      onComponentOptionsChanged={(component, options) =>
-                        onComponentOptionsChanged(this, component, options)
+                      onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
                       }
                     />
                   </div>

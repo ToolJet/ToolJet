@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { resolve_references } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 import Skeleton from 'react-loading-skeleton';
 
-export const Text = function Text({ id, width, height, component, onComponentClick, currentState }) {
+export const Text = function Text({
+  id, width, height, component, onComponentClick, currentState
+}) {
   const text = component.definition.properties.text.value;
   const color = component.definition.styles.textColor.value;
 
@@ -12,7 +14,7 @@ export const Text = function Text({ id, width, height, component, onComponentCli
   useEffect(() => {
     const loadingStateProperty = component.definition.properties.loadingState;
     if (loadingStateProperty && currentState) {
-      const newState = resolve_references(loadingStateProperty.value, currentState, false);
+      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
       setLoadingState(newState);
     }
   }, [currentState]);
@@ -23,7 +25,7 @@ export const Text = function Text({ id, width, height, component, onComponentCli
 
     if (matchedParams) {
       for (const param of matchedParams) {
-        const resolvedParam = resolve_references(param, currentState, '');
+        const resolvedParam = resolveReferences(param, currentState, '');
         console.log('resolved param', param, resolvedParam);
         data = data.replace(param, resolvedParam);
       }
@@ -33,7 +35,7 @@ export const Text = function Text({ id, width, height, component, onComponentCli
   const computedStyles = {
     color,
     width,
-    height,
+    height
   };
 
   return (

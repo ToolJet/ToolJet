@@ -8,13 +8,13 @@ class Redis extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options,
+      options: this.props.options
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options,
+      options: this.props.options
     });
   }
 
@@ -32,18 +32,18 @@ class Redis extends React.Component {
       <div>
         {options && (
           <div>
-            <div class="mb-3 mt-2">
+            <div className="mb-3 mt-2">
               <CodeMirror
                 height="100px"
                 fontSize="2"
                 value={options.query}
-                onChange={(instance, change) => this.changeOption('query', instance.getValue())}
+                onChange={(instance) => this.changeOption('query', instance.getValue())}
                 placeholder="PING"
                 options={{
                   theme: 'duotone-light',
                   mode: 'sql',
                   lineWrapping: true,
-                  scrollbarStyle: null,
+                  scrollbarStyle: null
                 }}
               />
             </div>
