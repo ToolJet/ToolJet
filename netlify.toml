@@ -1,0 +1,6 @@
+[build]
+  base = "frontend/"
+  publish = "build/"
+
+[template.environment]
+  NODE_ENV = "production"  
