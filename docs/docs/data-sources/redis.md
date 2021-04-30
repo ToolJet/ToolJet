@@ -3,7 +3,7 @@ sidebar_position: 1
 ---
 
 # Redis
-ToolJet can run Redis commands on your Redis instances.We have created a video tutorial on building a Redis GUI using ToolJet: [Link](https://redis.io/commands)
+ToolJet can run Redis commands on your Redis instances.
 
 ## Connection
 
