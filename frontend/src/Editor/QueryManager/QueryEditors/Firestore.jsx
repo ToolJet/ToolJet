@@ -17,7 +17,7 @@ class Firestore extends React.Component {
     });
   }
 
-  changeOption(option, value) {
+  changeOption = (option, value) => {
     this.setState(
       {
         options: {

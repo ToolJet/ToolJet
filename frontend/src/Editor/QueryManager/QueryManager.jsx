@@ -2,27 +2,10 @@ import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Restapi } from './Restapi';
-import { Mysql } from './Mysql';
-import { Postgresql } from './Postgresql';
-import { Stripe } from './Stripe';
-import { Firestore } from './Firestore';
-import { Redis } from './Redis';
-import { Googlesheets } from './Googlesheets';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
-import { Elasticsearch } from './Elasticsearch';
-
-const allSources = {
-  Restapi,
-  Mysql,
-  Postgresql,
-  Stripe,
-  Firestore,
-  Redis,
-  Googlesheets,
-  Elasticsearch
-};
+import { allSources } from './QueryEditors';
+import { Transformation } from './Transformation';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -277,7 +260,7 @@ class QueryManager extends React.Component {
               </div>
             )}
           </div>
-          {(addingQuery || editingQuery) && (
+          {((addingQuery || editingQuery) && selectedDataSource) && (
             <div className="col query-name-field">
               <div className="input-icon" style={{ width: '160px' }}>
                 <input
@@ -364,6 +347,10 @@ class QueryManager extends React.Component {
                 {selectedDataSource && (
                   <div>
                     <ElementToRender options={this.state.options} optionsChanged={this.optionsChanged} />
+                    <hr></hr>
+                    <div className="mb-3 mt-2">
+                      <Transformation changeOption={this.optionchanged} options={this.state.options} />
+                    </div>
                   </div>
                 )}
               </div>
