@@ -860,14 +860,20 @@ tr:focus {
   }
 }
 
-.query-name-field {
-  .input-icon-addon {
-    display: none;
-  }
+.input-icon {
+    .input-icon-addon {
+        display: none;
+      }
 }
 
-.query-name-field:hover {
-  .input-icon-addon {
-    display: flex;
-  }
+.input-icon:hover  {
+    .input-icon-addon {
+        display: flex;
+      }
+}
+
+.input-icon:focus  {
+    .input-icon-addon {
+        display: flex;
+      }
 }
