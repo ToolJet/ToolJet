@@ -25,7 +25,9 @@ module.exports = {
     "max-len": 0,
     "no-bitwise": 0,
     "no-use-before-define": ["error", { "variables": false, "functions": false }],
-    "no-nested-ternary": 0
+    "no-nested-ternary": 0,
+    "no-loop-func": 0,
+    
   },
   settings: {
     react: {

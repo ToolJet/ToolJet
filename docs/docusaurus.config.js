@@ -4,7 +4,7 @@ module.exports = {
   tagline: 'Build and deploy internal tools.',
   url: 'https://tooljet.io',
   baseUrl: '/',
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/logo.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.

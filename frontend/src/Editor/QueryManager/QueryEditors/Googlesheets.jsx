@@ -1,6 +1,5 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
-import { Transformation } from './Transformation';
 
 class Googlesheets extends React.Component {
   constructor(props) {
@@ -118,11 +117,6 @@ class Googlesheets extends React.Component {
                 </div>
               </div>
             )}
-
-            <hr></hr>
-            <div className="mb-3 mt-2">
-              <Transformation changeOption={this.changeOption} options={options} />
-            </div>
           </div>
         )}
       </div>

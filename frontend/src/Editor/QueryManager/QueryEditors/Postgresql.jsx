@@ -1,7 +1,6 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
-import { Transformation } from './Transformation';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 class Postgresql extends React.Component {
@@ -128,10 +127,6 @@ class Postgresql extends React.Component {
                 )}
               </div>
             )}
-            <hr></hr>
-            <div className="mb-3 mt-2">
-              <Transformation changeOption={this.changeOption} options={options} />
-            </div>
           </div>
         )}
       </div>

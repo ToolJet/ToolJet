@@ -1,5 +1,4 @@
 import React from 'react';
-import { Transformation } from './Transformation';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -127,10 +126,6 @@ class Restapi extends React.Component {
               </div>
             </div>
           ))}
-        </div>
-        <hr></hr>
-        <div className="mb-3 mt-2">
-          <Transformation changeOption={this.changeOption} options={options} />
         </div>
       </div>
     );
