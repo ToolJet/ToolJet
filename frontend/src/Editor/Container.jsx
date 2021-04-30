@@ -10,13 +10,11 @@ import { computeComponentName } from '@/_helpers/utils';
 const styles = {
   width: 1290,
   height: 1200,
-  position: 'absolute',
+  position: 'absolute'
 };
 
 function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
-  );
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16));
 }
 
 export const Container = ({
@@ -29,7 +27,7 @@ export const Container = ({
   currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  appLoading,
+  appLoading
 }) => {
   const components = appDefinition.components || [];
 
@@ -46,8 +44,8 @@ export const Container = ({
       setBoxes(
         update(boxes, {
           [id]: {
-            $merge: { left, top },
-          },
+            $merge: { left, top }
+          }
         })
       );
       console.log('new boxes - 1', boxes);
@@ -61,7 +59,7 @@ export const Container = ({
   }, [boxes]);
 
   const { draggingState } = useDragLayer((monitor) => ({
-    draggingState: monitor.isDragging(),
+    draggingState: monitor.isDragging()
   }));
 
   useEffect(() => {
@@ -119,25 +117,25 @@ export const Container = ({
             left: left,
             width: item.width > 0 ? item.width : componentMeta.defaultSize.width,
             height: item.height > 0 ? item.height : componentMeta.defaultSize.height,
-            component: componentData,
-          },
+            component: componentData
+          }
         });
 
         return undefined;
-      },
+      }
     }),
     [moveBox]
   );
 
   function onResizeStop(id, width, height, e, direction, ref, d) {
-    const delta_width = d.width;
-    const dela_height = d.height;
+    const deltaWidth = d.width;
+    const deltaHeight = d.height;
 
     setBoxes(
       update(boxes, {
         [id]: {
-          $merge: { width: delta_width + width, height: dela_height + height },
-        },
+          $merge: { width: deltaWidth + width, height: deltaHeight + height }
+        }
       })
     );
   }
@@ -154,12 +152,12 @@ export const Container = ({
                   ...boxes[id].component.definition,
                   properties: {
                     ...boxes[id].component.definition.properties,
-                    [param]: value,
-                  },
-                },
-              },
-            },
-          },
+                    [param]: value
+                  }
+                }
+              }
+            }
+          }
         })
       );
     }
@@ -180,21 +178,21 @@ export const Container = ({
           id={key}
           {...boxes[key]}
           mode={mode}
-          resizingStatusChanged={(isResizing) => setIsResizing(isResizing)}
+          resizingStatusChanged={(status) => setIsResizing(status)}
           inCanvas={true}
         />
       ))}
 
-      {Object.keys(boxes).length == 0 && !appLoading && !isDragging && (
+      {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
-          <center>You haven't added any components yet. Drag components from the right sidebar and drop here.</center>
+          <center>You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.</center>
         </div>
       )}
       {appLoading && (
         <div className="mx-auto mt-5 w-50 p-5">
           <center>
-            <div class="progress progress-sm w-50">
-              <div class="progress-bar progress-bar-indeterminate"></div>
+            <div className="progress progress-sm w-50">
+              <div className="progress-bar progress-bar-indeterminate"></div>
             </div>
           </center>
         </div>

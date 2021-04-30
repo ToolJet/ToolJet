@@ -6,13 +6,13 @@ class Restapi extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options,
+      options: this.props.options
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options,
+      options: this.props.options
     });
   }
 
@@ -28,7 +28,7 @@ class Restapi extends React.Component {
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
 
     this.setState({
-      options: newOptions,
+      options: newOptions
     });
     this.props.optionsChanged(newOptions);
   };
@@ -41,11 +41,11 @@ class Restapi extends React.Component {
     this.props.optionsChanged(options);
   };
 
-  keyValuePairValueChanged = (e, key_index, option, index) => {
+  keyValuePairValueChanged = (e, keyIndex, option, index) => {
     const value = e.target.value;
     const { options } = this.state;
 
-    options[option][index][key_index] = value;
+    options[option][index][keyIndex] = value;
 
     this.setState({ options });
     this.props.optionsChanged(options);
@@ -56,12 +56,12 @@ class Restapi extends React.Component {
 
     return (
       <div>
-        <div class="mb-3 mt-2">
-          <div class="mb-3">
-            <div class="row g-2">
-              <div class="col-auto">
+        <div className="mb-3 mt-2">
+          <div className="mb-3">
+            <div className="row g-2">
+              <div className="col-auto">
                 <select
-                  class="form-select"
+                  className="form-select"
                   value={options.method}
                   onChange={(e) => this.changeOption('method', e.target.value)}
                 >
@@ -72,10 +72,10 @@ class Restapi extends React.Component {
                   <option value="delete">DELETE</option>
                 </select>
               </div>
-              <div class="col">
+              <div className="col">
                 <input
                   type="text"
-                  class="form-control"
+                  className="form-control"
                   value={options.url}
                   onChange={(e) => this.changeOption('url', e.target.value)}
                   placeholder="https://api.example.com/v2/endpoint.json"
@@ -85,34 +85,34 @@ class Restapi extends React.Component {
           </div>
 
           {['url_params', 'headers', 'body'].map((option) => (
-            <div class="mb-3">
-              <div class="row g-2">
-                <div class="col-md-2">
-                  <label class="form-label pt-2">{option}</label>
+            <div className="mb-3" key={option}>
+              <div className="row g-2">
+                <div className="col-md-2">
+                  <label className="form-label pt-2">{option}</label>
                 </div>
                 <div className="col-md-10">
                   {options[option].map((pair, index) => (
-                    <div class="input-group">
+                    <div className="input-group" key={index}>
                       <input
                         type="text"
                         value={pair[0]}
-                        class="form-control"
+                        className="form-control"
                         placeholder="key"
-                        autocomplete="off"
+                        autoComplete="off"
                         onChange={(e) => this.keyValuePairValueChanged(e, 0, option, index)}
                       />
                       <input
                         type="text"
                         value={pair[1]}
-                        class="form-control"
+                        className="form-control"
                         placeholder="value"
-                        autocomplete="off"
+                        autoComplete="off"
                         onChange={(e) => this.keyValuePairValueChanged(e, 1, option, index)}
                       />
                       <span
-                        class="input-group-text"
+                        className="input-group-text"
                         role="button"
-                        onClick={(e) => {
+                        onClick={() => {
                           this.removeKeyValuePair(option, index);
                         }}
                       >

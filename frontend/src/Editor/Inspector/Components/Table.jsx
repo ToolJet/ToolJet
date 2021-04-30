@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
-import CodeMirror from '@uiw/react-codemirror';
-import 'codemirror/theme/duotone-light.css';
+import React from 'react';
 import { renderElement, renderEvent } from '../Utils';
 import { computeActionName } from '@/_helpers/utils';
 import SortableList, { SortableItem } from 'react-easy-sort';
@@ -15,7 +13,9 @@ class Table extends React.Component {
   constructor(props) {
     super(props);
 
-    const { dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components } = props;
+    const {
+      dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components
+    } = props;
 
     this.state = {
       dataQueries,
@@ -24,7 +24,7 @@ class Table extends React.Component {
       componentMeta,
       eventUpdated,
       eventOptionUpdated,
-      components,
+      components
     };
   }
 
@@ -36,7 +36,7 @@ class Table extends React.Component {
       componentMeta,
       eventUpdated,
       eventOptionUpdated,
-      components,
+      components
     } = this.props;
 
     this.setState({
@@ -46,7 +46,7 @@ class Table extends React.Component {
       componentMeta,
       eventUpdated,
       eventOptionUpdated,
-      components,
+      components
     });
   }
 
@@ -58,12 +58,11 @@ class Table extends React.Component {
 
   actionButtonEventUpdated = (event, value, extraData) => {
     const actions = this.state.component.component.definition.properties.actions;
-    const actionButton = extraData.actionButton;
     const index = extraData.index;
 
     let newValues = actions.value;
     newValues[index][event.name] = {
-      actionId: value,
+      actionId: value
     };
 
     this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties');
@@ -78,7 +77,7 @@ class Table extends React.Component {
 
     newValues[index][event.name].options = {
       ...options,
-      [option]: value,
+      [option]: value
     };
 
     this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties');
@@ -89,13 +88,13 @@ class Table extends React.Component {
       <Popover id="popover-basic">
         <Popover.Content>
           <div className="field mb-2">
-            <label class="form-label">Column type</label>
+            <label className="form-label">Column type</label>
             <SelectSearch
               options={[
                 { name: 'Default', value: 'default' },
                 { name: 'String', value: 'string' },
                 { name: 'Dropdown', value: 'dropdown' },
-                { name: 'Multiselect', value: 'multiselect' },
+                { name: 'Multiselect', value: 'multiselect' }
               ]}
               value={column.columnType}
               search={true}
@@ -108,10 +107,10 @@ class Table extends React.Component {
             />
           </div>
           <div className="field mb-2">
-            <label class="form-label">Column name</label>
+            <label className="form-label">Column name</label>
             <input
               type="text"
-              class="form-control text-field"
+              className="form-control text-field"
               onChange={(e) => {
                 e.stopPropagation();
                 this.onColumnItemChange(index, 'name', e.target.value);
@@ -120,10 +119,10 @@ class Table extends React.Component {
             />
           </div>
           <div className="field mb-2">
-            <label class="form-label">key</label>
+            <label className="form-label">key</label>
             <input
               type="text"
-              class="form-control text-field"
+              className="form-control text-field"
               onChange={(e) => {
                 e.stopPropagation();
                 this.onColumnItemChange(index, 'key', e.target.value);
@@ -135,29 +134,29 @@ class Table extends React.Component {
           {(column.columnType === 'dropdown' || column.columnType === 'multiselect') && (
             <div>
               <div className="field mb-2">
-                <label class="form-label">Values</label>
+                <label className="form-label">Values</label>
                 <input
                   type="text"
-                  class="form-control text-field"
+                  className="form-control text-field"
                   onChange={(e) => {
                     e.stopPropagation();
                     this.onColumnItemChange(index, 'values', e.target.value);
                   }}
                   value={column.values}
-                  placeholder={`{{[1, 2, 3]}}`}
+                  placeholder={'{{[1, 2, 3]}}'}
                 />
               </div>
               <div className="field mb-2">
-                <label class="form-label">Labels</label>
+                <label className="form-label">Labels</label>
                 <input
                   type="text"
-                  class="form-control text-field"
+                  className="form-control text-field"
                   onChange={(e) => {
                     e.stopPropagation();
                     this.onColumnItemChange(index, 'labels', e.target.value);
                   }}
                   value={column.labels}
-                  placeholder={`{{["one", "two", "three"]}}`}
+                  placeholder={'{{["one", "two", "three"]}}'}
                 />
               </div>
             </div>
@@ -188,10 +187,10 @@ class Table extends React.Component {
       <Popover id="popover-basic">
         <Popover.Content>
           <div className="field mb-2">
-            <label class="form-label">Button Text</label>
+            <label className="form-label">Button Text</label>
             <input
               type="text"
-              class="form-control text-field"
+              className="form-control text-field"
               onChange={(e) => {
                 e.stopPropagation();
                 this.onActionButtonPropertyChanged(index, 'buttonText', e.target.value);
@@ -231,7 +230,7 @@ class Table extends React.Component {
         <div className="card p-2 bg-light" role="button">
           <div className="row bg-light">
             <div className="col-auto">
-              <div class="text">{action.buttonText}</div>
+              <div className="text">{action.buttonText}</div>
             </div>
           </div>
         </div>
@@ -289,7 +288,7 @@ class Table extends React.Component {
       componentMeta,
       eventUpdated,
       eventOptionUpdated,
-      components,
+      components
     } = this.state;
 
     const columns = component.component.definition.properties.columns;
@@ -301,11 +300,11 @@ class Table extends React.Component {
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', components)}
 
         <div className="field mb-2 mt-3">
-          <div class="row g-2">
-            <div class="col">
-              <label class="form-label col pt-1">Columns</label>
+          <div className="row g-2">
+            <div className="col">
+              <label className="form-label col pt-1">Columns</label>
             </div>
-            <div class="col-auto">
+            <div className="col-auto">
               <button onClick={this.addNewColumn} className="btn btn-sm btn-light col-auto">
                 + Add column
               </button>
@@ -314,7 +313,7 @@ class Table extends React.Component {
           <div>
             <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
               {columns.value.map((item, index) => (
-                <div className="card p-2 bg-light">
+                <div className="card p-2 bg-light" key={index}>
                   <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.columnPopover(item, index)}>
                     <div className="row bg-light" role="button">
                       <div className="col-auto">
@@ -328,10 +327,10 @@ class Table extends React.Component {
                         </SortableItem>
                       </div>
                       <div className="col">
-                        <div class="text">{item.name}</div>
+                        <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <div class="btn btn-sm text-danger" onClick={() => this.removeColumn(index)}>
+                        <div className="btn btn-sm text-danger" onClick={() => this.removeColumn(index)}>
                           x
                         </div>
                       </div>
@@ -344,11 +343,11 @@ class Table extends React.Component {
 
           <hr></hr>
           <div className="field mb-2 mt-2">
-            <div class="row g-2">
-              <div class="col">
-                <label class="form-label col pt-1">Actions</label>
+            <div className="row g-2">
+              <div className="col">
+                <label className="form-label col pt-1">Actions</label>
               </div>
-              <div class="col-auto">
+              <div className="col-auto">
                 <button onClick={this.addNewAction} className="btn btn-sm btn-light col-auto">
                   + Action
                 </button>
@@ -361,16 +360,16 @@ class Table extends React.Component {
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked')}
 
           <div className="field mb-2 mt-2">
-            <label class="form-label mt-2">Bulk update query</label>
+            <label className="form-label mt-2">Bulk update query</label>
 
             <select
-              class="form-select"
+              className="form-select"
               onChange={(e) => {
                 eventOptionUpdated({ name: 'onBulkUpdate' }, 'queryId', e.target.value, {});
               }}
             >
               {dataQueries.map((query) => (
-                <option value={query.id}>{query.name}</option>
+                <option key={query.id} value={query.id}>{query.name}</option>
               ))}
             </select>
           </div>

@@ -26,7 +26,7 @@ export const TestConnection = ({ kind, options }) => {
     setTestingStatus(true);
 
     datasourceService.test(kind, options).then(
-      (data) => {
+      () => {
         setTestingStatus(false);
         setConnectionStatus('success');
         toast.success('Datasource Connection Tested, Successfully!', { hideProgressBar: true, position: 'top-center' });
@@ -49,7 +49,7 @@ export const TestConnection = ({ kind, options }) => {
         <Button
           className="m-2"
           variant="success"
-          disabled={isTesting || (!isTesting && !(connectionStatus != 'success'))}
+          disabled={isTesting || (!isTesting && !(connectionStatus !== 'success'))}
           onClick={testDataSource}
         >
           {buttonText}

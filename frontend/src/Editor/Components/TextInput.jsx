@@ -7,7 +7,7 @@ export const TextInput = function TextInput({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged,
+  onComponentOptionChanged
 }) {
   console.log('currentState', currentState);
 
@@ -18,7 +18,7 @@ export const TextInput = function TextInput({
       onClick={() => onComponentClick(id, component)}
       onChange={(e) => onComponentOptionChanged(component, 'value', e.target.value)}
       type="text"
-      class="form-control"
+      className="form-control"
       placeholder={placeholder}
       style={{ width, height }}
     />

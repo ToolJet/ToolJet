@@ -1,6 +1,6 @@
 import React from 'react';
-import { dataqueryService, authenticationService } from '@/_services';
-import { ToastContainer, toast } from 'react-toastify';
+import { dataqueryService } from '@/_services';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Restapi } from './Restapi';
 import { Mysql } from './Mysql';
@@ -21,7 +21,7 @@ const allSources = {
   Firestore,
   Redis,
   Googlesheets,
-  Elasticsearch,
+  Elasticsearch
 };
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
@@ -31,26 +31,26 @@ const staticDataSources = [{ kind: 'restapi', id: 'restapi', name: 'REST API' }]
 const defaultOptions = {
   postgresql: {},
   redis: {
-    query: 'PING',
+    query: 'PING'
   },
   mysql: {},
   firestore: {
-    path: '',
+    path: ''
   },
   elasticsearch: {
-    query: '',
+    query: ''
   },
   restapi: {
     method: 'GET',
     url: null,
     url_params: [['', '']],
     headers: [['', '']],
-    body: [['', '']],
+    body: [['', '']]
   },
   stripe: {},
   googlesheets: {
-    operation: 'read',
-  },
+    operation: 'read'
+  }
 };
 
 class QueryManager extends React.Component {
@@ -73,23 +73,23 @@ class QueryManager extends React.Component {
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         queryPaneHeight: props.queryPaneHeight,
-        currentState: props.currentState,
+        currentState: props.currentState
       },
       () => {
         if (this.props.mode === 'edit') {
-          const source = props.dataSources.find((source) => source.id === selectedQuery.data_source_id);
+          const source = props.dataSources.find((datasource) => datasource.id === selectedQuery.data_source_id);
 
           this.setState({
             options: selectedQuery.options,
             selectedDataSource: source,
             selectedQuery,
-            queryName: selectedQuery.name,
+            queryName: selectedQuery.name
           });
         } else {
           this.setState({
             options: {},
             selectedDataSource: null,
-            selectedQuery: null,
+            selectedQuery: null
           });
         }
       }
@@ -105,33 +105,33 @@ class QueryManager extends React.Component {
   }
 
   changeDataSource = (sourceId) => {
-    const source = [...this.state.dataSources, ...staticDataSources].find((source) => source.id === sourceId);
+    const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
     this.setState({
       selectedDataSource: source,
       options: defaultOptions[source.kind],
-      queryName: this.computeQueryName(source.kind),
+      queryName: this.computeQueryName(source.kind)
     });
   };
 
   switchCurrentTab = (tab) => {
     this.setState({
-      currentTab: tab,
+      currentTab: tab
     });
   };
 
   validateQueryName = () => {
-    const { queryName, dataQueries, mode, selectedQuery } = this.state;
+    const {
+      queryName, dataQueries, mode, selectedQuery
+    } = this.state;
 
     if (mode === 'create') {
       return dataQueries.find((query) => query.name === queryName) === undefined && queryNameRegex.test(queryName);
-    } else {
-      const existingQuery = dataQueries.find((query) => query.name === queryName);
-      if (existingQuery) {
-        return existingQuery.id === selectedQuery.id && queryNameRegex.test(queryName);
-      } else {
-        queryNameRegex.test(queryName);
-      }
     }
+    const existingQuery = dataQueries.find((query) => query.name === queryName);
+    if (existingQuery) {
+      return existingQuery.id === selectedQuery.id && queryNameRegex.test(queryName);
+    }
+    return queryNameRegex.test(queryName);
   };
 
   computeQueryName = (kind) => {
@@ -146,14 +146,16 @@ class QueryManager extends React.Component {
       if (dataQueries.find((query) => query.name === name) === undefined) {
         found = true;
       }
-      currentNumber = currentNumber + 1;
+      currentNumber += 1;
     }
 
     return name;
   };
 
   createOrUpdateDataQuery = () => {
-    const { appId, options, selectedDataSource, mode, queryName } = this.state;
+    const {
+      appId, options, selectedDataSource, mode, queryName
+    } = this.state;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id;
 
@@ -161,21 +163,21 @@ class QueryManager extends React.Component {
     if (!isQueryNameValid) {
       toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.', {
         hideProgressBar: true,
-        position: 'bottom-center',
+        position: 'bottom-center'
       });
       return;
     }
 
     if (mode === 'edit') {
       this.setState({ isUpdating: true });
-      dataqueryService.update(this.state.selectedQuery.id, queryName, options).then((data) => {
+      dataqueryService.update(this.state.selectedQuery.id, queryName, options).then(() => {
         toast.success('Query Updated', { hideProgressBar: true, position: 'bottom-center' });
         this.setState({ isUpdating: false });
         this.props.dataQueriesChanged();
       });
     } else {
       this.setState({ isCreating: true });
-      dataqueryService.create(appId, queryName, kind, options, dataSourceId).then((data) => {
+      dataqueryService.create(appId, queryName, kind, options, dataSourceId).then(() => {
         toast.success('Query Added', { hideProgressBar: true, position: 'bottom-center' });
         this.setState({ isCreating: false });
         this.props.dataQueriesChanged();
@@ -221,7 +223,7 @@ class QueryManager extends React.Component {
       selectedQuery,
       queryPaneHeight,
       currentState,
-      queryName,
+      queryName
     } = this.state;
 
     let ElementToRender = '';
@@ -275,12 +277,12 @@ class QueryManager extends React.Component {
                 <input
                   type="text"
                   onChange={(e) => this.setState({ queryName: e.target.value })}
-                  class="form-control-plaintext form-control-plaintext-sm mt-1"
+                  className="form-control-plaintext form-control-plaintext-sm mt-1"
                   value={queryName}
                   style={{ width: '160px' }}
                   autoFocus
                 />
-                <span class="input-icon-addon">
+                <span className="input-icon-addon">
                   <img src="https://www.svgrepo.com/show/149235/edit.svg" width="12" height="12" />
                 </span>
               </div>
@@ -341,7 +343,7 @@ class QueryManager extends React.Component {
                         }),
                         ...staticDataSources.map((source) => {
                           return { name: source.name, value: source.id };
-                        }),
+                        })
                       ]}
                       value={selectedDataSource ? selectedDataSource.id : ''}
                       search={true}
@@ -394,18 +396,17 @@ class QueryManager extends React.Component {
                   <span className="form-check-label">Show notification on success?</span>
                 </label>
 
-                <div class="row mt-3">
-                  <div class="col-auto">
-                    <label class="form-label p-2">Success Message</label>
+                <div className="row mt-3">
+                  <div className="col-auto">
+                    <label className="form-label p-2">Success Message</label>
                   </div>
-                  <div class="col">
+                  <div className="col">
                     <input
                       type="text"
                       disabled={!this.state.options.showSuccessNotification}
-                      value={this.state.options.successMessage}
                       onChange={(e) => this.optionchanged('successMessage', e.target.value)}
                       placeholder="Query ran successfully"
-                      class="form-control"
+                      className="form-control"
                       value={this.state.options.successMessage}
                     />
                   </div>
@@ -413,18 +414,17 @@ class QueryManager extends React.Component {
 
                 <hr />
 
-                <div class="row mt-3">
-                  <div class="col-auto">
-                    <label class="form-label p-2">Notification duration (s)</label>
+                <div className="row mt-3">
+                  <div className="col-auto">
+                    <label className="form-label p-2">Notification duration (s)</label>
                   </div>
-                  <div class="col">
+                  <div className="col">
                     <input
                       type="number"
                       disabled={!this.state.options.showSuccessNotification}
-                      value={this.state.options.notificationDuration}
                       onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
                       placeholder={5}
-                      class="form-control"
+                      className="form-control"
                       value={this.state.options.notificationDuration}
                     />
                   </div>

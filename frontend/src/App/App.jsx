@@ -1,5 +1,5 @@
 import React from 'react';
-import { Router, Route, Link } from 'react-router-dom';
+import { Router, Route } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService } from '@/_services';
 import { PrivateRoute } from '@/_components';
@@ -9,17 +9,16 @@ import { InvitationPage } from '@/InvitationPage';
 import { Authorize } from '@/Oauth2';
 import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
-import ReactTooltip from 'react-tooltip';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      currentUser: null,
+      currentUser: null
     };
   }
 
@@ -27,7 +26,7 @@ class App extends React.Component {
     authenticationService.currentUser.subscribe((x) => this.setState({ currentUser: x }));
   }
 
-  logout() {
+  logout = () => {
     authenticationService.logout();
     history.push('/login');
   }

@@ -1,22 +1,20 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
-import { Transformation } from './Transformation';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
-import { CodeBuilder } from '../CodeBuilder/CodeBuilder';
 
 class Elasticsearch extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      options: this.props.options,
+      options: this.props.options
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options,
+      options: this.props.options
     });
   }
 
@@ -25,8 +23,8 @@ class Elasticsearch extends React.Component {
       {
         options: {
           ...this.state.options,
-          [option]: value,
-        },
+          [option]: value
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -39,8 +37,8 @@ class Elasticsearch extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation,
-        },
+          operation
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -55,11 +53,11 @@ class Elasticsearch extends React.Component {
       <div>
         {options && (
           <div>
-            <div class="mb-3 mt-2">
+            <div className="mb-3 mt-2">
               <label className="form-label">Operation</label>
               <SelectSearch
                 options={[
-                  { value: 'search', name: 'Search' },
+                  { value: 'search', name: 'Search' }
                   // { value: 'index', name: 'Index'},
                   // { value: 'create', name: 'Create'},
                   // { value: 'update', name: 'Update'},
@@ -75,7 +73,7 @@ class Elasticsearch extends React.Component {
             </div>
             {options.operation === 'search' && (
               <div>
-                <div class="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label text-muted">Index</label>
                   <input
                     type="text"
@@ -86,19 +84,19 @@ class Elasticsearch extends React.Component {
                     className="form-control"
                   />
                 </div>
-                <div class="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label text-reset">Query</label>
                   <CodeMirror
                     height="100px"
                     fontSize="2"
-                    placeholder={`{ "name": "" }`}
+                    placeholder={'{ "name": "" }'}
                     value={options.query}
-                    onChange={(instance, change) => this.changeOption('query', instance.getValue())}
+                    onChange={(instance) => this.changeOption('query', instance.getValue())}
                     options={{
                       theme: 'duotone-light',
                       mode: 'javascript',
                       lineWrapping: true,
-                      scrollbarStyle: null,
+                      scrollbarStyle: null
                     }}
                   />
                 </div>

@@ -36,13 +36,13 @@ class DataSourceManager extends React.Component {
       selectedDataSource,
       options,
       dataSourceMeta,
-      isSaving: false,
+      isSaving: false
     };
   }
 
   componentDidMount() {
     this.setState({
-      appId: this.props.appId,
+      appId: this.props.appId
     });
   }
 
@@ -51,7 +51,7 @@ class DataSourceManager extends React.Component {
       dataSourceMeta: source,
       selectedDataSource: source,
       options: defaultOptions[source.kind],
-      name: source.kind,
+      name: source.kind
     });
   };
 
@@ -59,8 +59,8 @@ class DataSourceManager extends React.Component {
     this.setState({
       selectedDataSource: {
         ...this.state.selectedDataSource,
-        name: newName,
-      },
+        name: newName
+      }
     });
   };
 
@@ -74,8 +74,8 @@ class DataSourceManager extends React.Component {
     return this.setStateAsync({
       options: {
         ...this.state.options,
-        [option]: { value },
-      },
+        [option]: { value }
+      }
     });
   };
 
@@ -84,8 +84,6 @@ class DataSourceManager extends React.Component {
   };
 
   createDataSource = () => {
-    let _self = this;
-
     const { appId, options, selectedDataSource } = this.state;
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
@@ -95,13 +93,13 @@ class DataSourceManager extends React.Component {
       return {
         key: key,
         value: options[key].value,
-        encrypted: keyMeta ? keyMeta.encrypted : false,
+        encrypted: keyMeta ? keyMeta.encrypted : false
       };
     });
 
     if (selectedDataSource.id) {
       this.setState({ isSaving: true });
-      datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then((data) => {
+      datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
         this.setState({ isSaving: false });
         this.hideModal();
         toast.success('Datasource Saved', { hideProgressBar: true, position: 'top-center' });
@@ -109,7 +107,7 @@ class DataSourceManager extends React.Component {
       });
     } else {
       this.setState({ isSaving: true });
-      datasourceService.create(appId, name, kind, parsedOptions).then((data) => {
+      datasourceService.create(appId, name, kind, parsedOptions).then(() => {
         this.setState({ isSaving: false });
         this.hideModal();
         toast.success('Datasource Added', { hideProgressBar: true, position: 'top-center' });
@@ -119,7 +117,9 @@ class DataSourceManager extends React.Component {
   };
 
   render() {
-    const { dataSourceMeta, selectedDataSource, options, isSaving } = this.state;
+    const {
+      dataSourceMeta, selectedDataSource, options, isSaving
+    } = this.state;
 
     return (
       <div>
@@ -145,7 +145,7 @@ class DataSourceManager extends React.Component {
                   <input
                     type="text"
                     onChange={(e) => this.onNameChanged(e.target.value)}
-                    class="form-control-plaintext form-control-plaintext-sm col mx-2"
+                    className="form-control-plaintext form-control-plaintext-sm col mx-2"
                     value={selectedDataSource.name}
                     autoFocus
                   />
@@ -160,12 +160,12 @@ class DataSourceManager extends React.Component {
           <Modal.Body>
             {!selectedDataSource && (
               <div>
-                <div class="row row-deck">
+                <div className="row row-deck">
                   <h4 className="text-muted mb-2">DATABASES</h4>
                   {dataBaseSources.map((dataSource) => (
-                    <div class="col-md-3" key={dataSource.name}>
-                      <div class="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
-                        <div class="card-body">
+                    <div className="col-md-3" key={dataSource.name}>
+                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
+                        <div className="card-body">
                           <center>
                             <img src={dataSource.icon} width="50" height="50" alt="" />
                             <br></br>
@@ -177,12 +177,12 @@ class DataSourceManager extends React.Component {
                     </div>
                   ))}
                 </div>
-                <div class="row row-deck mt-5">
+                <div className="row row-deck mt-5">
                   <h4 className="text-muted mb-2">APIS</h4>
                   {apiSources.map((dataSource) => (
-                    <div class="col-md-3" key={dataSource.name}>
-                      <div class="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
-                        <div class="card-body">
+                    <div className="col-md-3" key={dataSource.name}>
+                      <div className="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
+                        <div className="card-body">
                           <center>
                             <img src={dataSource.icon} width="50" height="50" alt="" />
                             <br></br>

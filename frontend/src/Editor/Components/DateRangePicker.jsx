@@ -1,10 +1,8 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import Datetime from 'react-datetime';
+import React, { useState } from 'react';
 import 'react-datetime/css/react-datetime.css';
-import { DateRangePicker, SingleDatePicker, DayPickerRangeController } from 'react-dates';
+import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
-import { START_DATE, END_DATE } from 'react-dates/constants';
 
 export const DaterangePicker = function DaterangePicker({
   id,
@@ -13,7 +11,7 @@ export const DaterangePicker = function DaterangePicker({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged,
+  onComponentOptionChanged
 }) {
   console.log('currentState', currentState);
 
@@ -23,19 +21,19 @@ export const DaterangePicker = function DaterangePicker({
 
   const [focusedInput, setFocusedInput] = useState(null);
   const [startDate, setStartDate] = useState(startDateProp ? startDateProp.value : null);
-  const [endDate, setEendDate] = useState(endDateProp ? endDateProp.value : null);
+  const [endDate, setEndDate] = useState(endDateProp ? endDateProp.value : null);
 
-  function onDateChange({ startDate, endDate }) {
-    if (startDate) {
+  function onDateChange({ start, end }) {
+    if (start) {
       onComponentOptionChanged(component, 'startDate', startDate.format(formatProp.value));
     }
 
-    if (endDate) {
+    if (end) {
       onComponentOptionChanged(component, 'endDate', endDate.format(formatProp.value));
     }
 
-    setStartDate(startDate);
-    setEendDate(endDate);
+    setStartDate(start);
+    setEndDate(end);
   }
 
   function focusChanged(focus) {
@@ -50,7 +48,7 @@ export const DaterangePicker = function DaterangePicker({
         isOutsideRange={() => false}
         endDate={endDate}
         endDateId="endDate"
-        onDatesChange={({ startDate, endDate }) => onDateChange({ startDate, endDate })}
+        onDatesChange={({ start, end }) => onDateChange({ start, end })}
         onFocusChange={(focus) => focusChanged(focus)}
         focusedInput={focusedInput}
       />

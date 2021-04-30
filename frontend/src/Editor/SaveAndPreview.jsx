@@ -14,7 +14,7 @@ class SaveAndPreview extends React.Component {
       showModal: false,
       appId: props.appId,
       isLoading: true,
-      showVersionForm: false,
+      showVersionForm: false
     };
   }
 
@@ -27,17 +27,15 @@ class SaveAndPreview extends React.Component {
   }
 
   fetchVersions = () => {
-    appVersionService.getAll(this.props.appId).then((data) =>
-      this.setState({
-        versions: data.versions,
-        isLoading: false,
-      })
-    );
+    appVersionService.getAll(this.props.appId).then((data) => this.setState({
+      versions: data.versions,
+      isLoading: false
+    }));
   };
 
   hideModal = () => {
     this.setState({
-      showModal: false,
+      showModal: false
     });
   };
 
@@ -46,7 +44,7 @@ class SaveAndPreview extends React.Component {
     const appId = this.props.appId;
     this.setState({ creatingVersion: true });
 
-    appVersionService.create(appId, newVersionName).then((data) => {
+    appVersionService.create(appId, newVersionName).then(() => {
       this.setState({ showVersionForm: false, creatingVersion: false });
       toast.success('Version Created', { hideProgressBar: true, position: 'top-center' });
       this.fetchVersions();
@@ -55,7 +53,7 @@ class SaveAndPreview extends React.Component {
 
   saveVersion = (versionId) => {
     this.setState({ isSaving: true });
-    appVersionService.save(this.props.appId, versionId, this.props.appDefinition).then((data) => {
+    appVersionService.save(this.props.appId, versionId, this.props.appDefinition).then(() => {
       this.setState({ showVersionForm: false, isSaving: false });
       toast.success('Version Saved', { hideProgressBar: true, position: 'top-center' });
       this.fetchVersions();
@@ -64,14 +62,16 @@ class SaveAndPreview extends React.Component {
 
   deployVersion = (versionId) => {
     this.setState({ isDeploying: true });
-    appService.saveApp(this.props.appId, { name: this.props.appName, current_version_id: versionId }).then((data) => {
+    appService.saveApp(this.props.appId, { name: this.props.appName, current_version_id: versionId }).then(() => {
       this.setState({ isDeploying: false });
       toast.success('Version Deployed', { hideProgressBar: true, position: 'top-center' });
     });
   };
 
   render() {
-    const { showModal, isLoading, versions, showVersionForm, isSaving, isDeploying, creatingVersion } = this.state;
+    const {
+      showModal, isLoading, versions, showVersionForm, isSaving, isDeploying, creatingVersion
+    } = this.state;
 
     return (
       <div>
@@ -121,11 +121,11 @@ class SaveAndPreview extends React.Component {
                 <Skeleton count={5} />
               </div>
             ) : (
-              <div class="table-responsive">
-                <table class="table table-vcenter">
+              <div className="table-responsive">
+                <table className="table table-vcenter">
                   <tbody>
                     {versions.map((version) => (
-                      <tr>
+                      <tr key={version.id}>
                         <td>
                           {version.name}
                           {version.id === this.props.app.current_version_id && (

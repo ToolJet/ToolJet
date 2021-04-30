@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
+import { history } from '@/_helpers';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -16,7 +17,7 @@ class ManageOrgUsers extends React.Component {
       showNewUserForm: false,
       creatingUser: false,
       newUser: {},
-      idChangingRole: null,
+      idChangingRole: null
     };
   }
 
@@ -26,23 +27,21 @@ class ManageOrgUsers extends React.Component {
 
   fetchUsers = () => {
     this.setState({
-      isLoading: true,
+      isLoading: true
     });
 
-    organizationService.getUsers(null).then((data) =>
-      this.setState({
-        users: data.users,
-        isLoading: false,
-      })
-    );
+    organizationService.getUsers(null).then((data) => this.setState({
+      users: data.users,
+      isLoading: false
+    }));
   };
 
   changeNewUserOption = (option, value) => {
     this.setState({
       newUser: {
         ...this.state.newUser,
-        [option]: value,
-      },
+        [option]: value
+      }
     });
   };
 
@@ -51,7 +50,7 @@ class ManageOrgUsers extends React.Component {
 
     organizationUserService
       .changeRole(id, role)
-      .then((data) => {
+      .then(() => {
         toast.success('User role has been updated', { hideProgressBar: true, position: 'top-center' });
         this.setState({ idChangingRole: null });
       })
@@ -63,25 +62,29 @@ class ManageOrgUsers extends React.Component {
 
   createUser = () => {
     this.setState({
-      creatingUser: true,
+      creatingUser: true
     });
 
-    const { first_name, last_name, email, role } = this.state.newUser;
+    const {
+      firstName, lastName, email, role
+    } = this.state.newUser;
 
-    organizationUserService.create(first_name, last_name, email, role).then((data) => {
+    organizationUserService.create(firstName, lastName, email, role).then(() => {
       this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
       toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
       this.fetchUsers();
     });
   };
 
-  logout() {
+  logout = () => {
     authenticationService.logout();
     history.push('/login');
   }
 
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole } = this.state;
+    const {
+      isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole
+    } = this.state;
 
     return (
       <div className="wrapper">
@@ -97,12 +100,12 @@ class ManageOrgUsers extends React.Component {
             </h1>
             <ul className="navbar-nav">
               <li className="nav-item">
-                <Link to={`/`} className="nav-link">
+                <Link to={'/'} className="nav-link">
                   <span className="nav-link-title">Apps</span>
                 </Link>
               </li>
               <li className="nav-item">
-                <Link to={`/users`} className="nav-link active">
+                <Link to={'/users'} className="nav-link active">
                   <span className="nav-link-title">Users</span>
                 </Link>
               </li>
@@ -178,7 +181,7 @@ class ManageOrgUsers extends React.Component {
                               className="form-control"
                               placeholder="Enter First Name"
                               onChange={(e) => {
-                                this.changeNewUserOption('first_name', e.target.value);
+                                this.changeNewUserOption('firstName', e.target.value);
                               }}
                             />
                           </div>
@@ -188,7 +191,7 @@ class ManageOrgUsers extends React.Component {
                               className="form-control"
                               placeholder="Enter Last Name"
                               onChange={(e) => {
-                                this.changeNewUserOption('last_name', e.target.value);
+                                this.changeNewUserOption('lastName', e.target.value);
                               }}
                             />
                           </div>
@@ -270,7 +273,7 @@ class ManageOrgUsers extends React.Component {
                         </thead>
                         <tbody>
                           {users.map((user) => (
-                            <tr>
+                            <tr key={user.id}>
                               <td>{user.name}</td>
                               <td className="text-muted">
                                 <a href="#" className="text-reset">
@@ -297,7 +300,7 @@ class ManageOrgUsers extends React.Component {
                               </td>
                               <td className="text-muted">
                                 <span
-                                  class={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
+                                  className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
                                 ></span>
                                 <small>{user.status}</small>
                               </td>

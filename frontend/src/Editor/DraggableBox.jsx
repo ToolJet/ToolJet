@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -9,14 +9,22 @@ const resizerClasses = {
   topRight: 'top-right',
   bottomRight: 'bottom-right',
   bottomLeft: 'bottom-left',
-  topLeft: 'top-left',
+  topLeft: 'top-left'
 };
 
 const resizerStyles = {
-  topRight: { width: '12px', height: '12px', right: '-6px', top: '-6px' },
-  bottomRight: { width: '12px', height: '12px', right: '-6px', bottom: '-6px' },
-  bottomLeft: { width: '12px', height: '12px', left: '-6px', bottom: '-6px' },
-  topLeft: { width: '12px', height: '12px', left: '-6px', top: '-6px' },
+  topRight: {
+    width: '12px', height: '12px', right: '-6px', top: '-6px'
+  },
+  bottomRight: {
+    width: '12px', height: '12px', right: '-6px', bottom: '-6px'
+  },
+  bottomLeft: {
+    width: '12px', height: '12px', left: '-6px', bottom: '-6px'
+  },
+  topLeft: {
+    width: '12px', height: '12px', left: '-6px', top: '-6px'
+  }
 };
 
 function getStyles(left, top, isDragging) {
@@ -28,7 +36,7 @@ function getStyles(left, top, isDragging) {
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
-    height: isDragging ? 0 : '',
+    height: isDragging ? 0 : ''
   };
 }
 
@@ -50,7 +58,7 @@ export const DraggableBox = function DraggableBox({
   onComponentOptionsChanged,
   onResizeStop,
   paramUpdated,
-  resizingStatusChanged,
+  resizingStatusChanged
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -58,10 +66,12 @@ export const DraggableBox = function DraggableBox({
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: ItemTypes.BOX,
-      item: { id, left, top, width, height, title, component },
+      item: {
+        id, left, top, width, height, title, component
+      },
       collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
+        isDragging: monitor.isDragging()
+      })
     }),
     [id, left, top, height, width, title, component, index]
   );
@@ -80,14 +90,14 @@ export const DraggableBox = function DraggableBox({
     display: 'inline-block',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '2px',
+    padding: '2px'
   };
 
   let refProps = {};
 
   if (mode === 'edit' && canDrag) {
     refProps = {
-      ref: drag,
+      ref: drag
     };
   }
 
@@ -103,7 +113,7 @@ export const DraggableBox = function DraggableBox({
             style={{ ...style }}
             defaultSize={{}}
             className="resizer"
-            onResize={(e) => setResizing(true)}
+            onResize={() => setResizing(true)}
             handleClasses={resizerClasses}
             handleStyles={resizerStyles}
             onResizeStop={(e, direction, ref, d) => {
