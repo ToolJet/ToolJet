@@ -18,7 +18,7 @@ class ManageAppUsers extends React.Component {
       isLoading: true,
       addingUser: false,
       organizationUsers: [],
-      newUser: {},
+      newUser: {}
     };
   }
 
@@ -27,40 +27,36 @@ class ManageAppUsers extends React.Component {
 
     this.fetchAppUsers();
 
-    organizationService.getUsers(null).then((data) =>
-      this.setState({
-        organizationUsers: data.users,
-      })
-    );
+    organizationService.getUsers(null).then((data) => this.setState({
+      organizationUsers: data.users
+    }));
 
     this.setState({ appId });
   }
 
   fetchAppUsers = () => {
-    appService.getAppUsers(this.props.appId).then((data) =>
-      this.setState({
-        users: data.users,
-        isLoading: false,
-      })
-    );
+    appService.getAppUsers(this.props.appId).then((data) => this.setState({
+      users: data.users,
+      isLoading: false
+    }));
   };
 
   hideModal = () => {
     this.setState({
-      showModal: false,
+      showModal: false
     });
   };
 
   addUser = () => {
     this.setState({
-      addingUser: true,
+      addingUser: true
     });
 
     const { organizationUserId, role } = this.state.newUser;
 
     appService
       .createAppUser(this.state.appId, organizationUserId, role)
-      .then((data) => {
+      .then(() => {
         this.setState({ addingUser: false, newUser: {} });
         toast.success('Added user successfully', { hideProgressBar: true, position: 'top-center' });
         this.fetchAppUsers();
@@ -72,7 +68,9 @@ class ManageAppUsers extends React.Component {
   };
 
   render() {
-    const { addingUser, isLoading, users, organizationUsers, newUser } = this.state;
+    const {
+      addingUser, isLoading, users, organizationUsers, newUser
+    } = this.state;
     const shareableLink = `${window.location.origin}/applications/${this.state.appId}`;
 
     return (
@@ -115,16 +113,15 @@ class ManageAppUsers extends React.Component {
                   <label className="form-label">
                     <small>Get shareable link for this application</small>
                   </label>
-                  <div class="input-group">
-                    <input type="text" class="form-control form-control-sm" value={shareableLink} />
-                    <span class="input-group-text">
+                  <div className="input-group">
+                    <input type="text" className="form-control form-control-sm" value={shareableLink} />
+                    <span className="input-group-text">
                       <CopyToClipboard
                         text={shareableLink}
-                        onCopy={() =>
-                          toast.success('Link copied to clipboard', {
-                            hideProgressBar: true,
-                            position: 'bottom-center',
-                          })
+                        onCopy={() => toast.success('Link copied to clipboard', {
+                          hideProgressBar: true,
+                          position: 'bottom-center'
+                        })
                         }
                       >
                         <button className="btn btn-light btn-sm">Copy</button>
@@ -140,7 +137,7 @@ class ManageAppUsers extends React.Component {
                         options={organizationUsers.map((user) => {
                           return {
                             name: `${user.name} ( ${user.email} )`,
-                            value: user.id,
+                            value: user.id
                           };
                         })}
                         value={newUser.organizationUserId}
@@ -157,7 +154,7 @@ class ManageAppUsers extends React.Component {
                         options={[
                           { name: 'Admin', value: 'admin' },
                           { name: 'Developer', value: 'developer' },
-                          { name: 'Viewer', value: 'role' },
+                          { name: 'Viewer', value: 'role' }
                         ]}
                         value={newUser.role}
                         search={false}
@@ -179,24 +176,24 @@ class ManageAppUsers extends React.Component {
                     </div>
                   </div>
                 </div>
-                <div class="table-responsive">
-                  <table class="table table-vcenter">
+                <div className="table-responsive">
+                  <table className="table table-vcenter">
                     <thead>
                       <tr>
                         <th>Name</th>
                         <th>Email</th>
                         <th>Role</th>
-                        <th class="w-1"></th>
+                        <th className="w-1"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {users.map((user) => (
-                        <tr>
+                        <tr key={user.email}>
                           <td>{user.name}</td>
-                          <td class="text-muted">
+                          <td className="text-muted">
                             <span lass="text-reset">{user.email}</span>
                           </td>
-                          <td class="text-muted">{user.role}</td>
+                          <td className="text-muted">{user.role}</td>
                           <td>
                             <a>Remove</a>
                           </td>

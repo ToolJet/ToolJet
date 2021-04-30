@@ -9,11 +9,9 @@ export const RichTextEditor = function RichTextEditor({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged,
+  onComponentOptionChanged
 }) {
   console.log('currentState', currentState);
-
-  const placeholder = component.definition.properties.placeholder.value;
 
   return (
     <div style={{ width: `${width}px`, height: `${height}px` }} onClick={() => onComponentClick(id, component)}>
@@ -32,8 +30,8 @@ export const RichTextEditor = function RichTextEditor({
             'bulletedList',
             'link',
             'blockQuote',
-            'insertTable',
-          ],
+            'insertTable'
+          ]
         }}
         onReady={(editor) => {
           // You can store the "editor" and use when it is needed.

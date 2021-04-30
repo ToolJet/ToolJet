@@ -2,7 +2,9 @@ import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 
-export const Json = ({ param, definition, onChange, paramType }) => {
+export const Json = ({
+  param, definition, onChange, paramType
+}) => {
   const value = definition
     ? definition.value
     : `[{
@@ -13,17 +15,17 @@ export const Json = ({ param, definition, onChange, paramType }) => {
 
   return (
     <div className="field mb-2">
-      <label class="form-label">{param.name}</label>
+      <label className="form-label">{param.name}</label>
       <CodeMirror
         height="300px"
         fontSize="2"
-        onChange={(instance, change) => onChange(param, 'value', instance.getValue(), paramType)}
+        onChange={(instance) => onChange(param, 'value', instance.getValue(), paramType)}
         value={value}
         options={{
           theme: 'duotone-light',
           mode: 'json',
           lineWrapping: true,
-          scrollbarStyle: null,
+          scrollbarStyle: null
         }}
       />
     </div>

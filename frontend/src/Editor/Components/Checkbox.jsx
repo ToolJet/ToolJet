@@ -1,5 +1,4 @@
 import React from 'react';
-import { resolve, resolve_references } from '@/_helpers/utils';
 
 export const Checkbox = function Checkbox({
   id,
@@ -9,7 +8,7 @@ export const Checkbox = function Checkbox({
   onComponentClick,
   currentState,
   onComponentOptionChanged,
-  onEvent,
+  onEvent
 }) {
   console.log('currentState', currentState);
 
@@ -27,15 +26,15 @@ export const Checkbox = function Checkbox({
 
   return (
     <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
-      <label class="form-check form-check-inline">
+      <label className="form-check form-check-inline">
         <input
-          class="form-check-input"
+          className="form-check-input"
           type="checkbox"
           onClick={(e) => {
             toggleValue(e);
           }}
         />
-        <span class="form-check-label">{label}</span>
+        <span className="form-check-label">{label}</span>
       </label>
     </div>
   );

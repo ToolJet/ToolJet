@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
-export const RestApi = ({ optionchanged, createDataSource, testDataSource, options, isSaving }) => {
+export const RestApi = ({
+  optionchanged, createDataSource, options, isSaving
+}) => {
   const [authType, setAuthType] = useState(options.auth_type);
 
   useEffect(() => {
@@ -31,9 +33,9 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
     optionchanged(option, options[option].value);
   }
 
-  function keyValuePairValueChanged(e, key_index, option, index) {
+  function keyValuePairValueChanged(e, keyIndex, option, index) {
     const value = e.target.value;
-    options[option].value[index][key_index] = value;
+    options[option].value[index][keyIndex] = value;
     optionchanged(option, options[option].value);
   }
 
@@ -52,10 +54,10 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
         </div>
       </div>
       <div className="row mt-3">
-        <div class="row g-2">
-          <div class="row">
+        <div className="row g-2">
+          <div className="row">
             <div className="col">
-              <label class="form-label pt-2">Headers</label>
+              <label className="form-label pt-2">Headers</label>
             </div>
             <div className="col-auto">
               <button className="btn btn-outline-primary btn-sm" onClick={() => addNewKeyValuePair('headers')}>
@@ -65,27 +67,27 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
           </div>
           <div className="col-md-12 mb-3">
             {options.headers.value.map((pair, index) => (
-              <div class="input-group">
+              <div className="input-group">
                 <input
                   type="text"
                   value={pair[0]}
-                  class="form-control"
+                  className="form-control"
                   placeholder="key"
-                  autocomplete="off"
+                  autoComplete="off"
                   onChange={(e) => keyValuePairValueChanged(e, 0, 'headers', index)}
                 />
                 <input
                   type="text"
                   value={pair[1]}
-                  class="form-control"
+                  className="form-control"
                   placeholder="value"
-                  autocomplete="off"
+                  autoComplete="off"
                   onChange={(e) => keyValuePairValueChanged(e, 1, 'headers', index)}
                 />
                 <span
-                  class="input-group-text"
+                  className="input-group-text"
                   role="button"
-                  onClick={(e) => {
+                  onClick={() => {
                     removeKeyValuePair('headers', index);
                   }}
                 >
@@ -99,7 +101,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
         <SelectSearch
           options={[
             { name: 'None', value: 'none' },
-            { name: 'OAuth 2.0', value: 'oauth2' },
+            { name: 'OAuth 2.0', value: 'oauth2' }
           ]}
           value={options.auth_type.value}
           search={false}
@@ -120,7 +122,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
             <SelectSearch
               options={[
                 { name: 'Client Credentials', value: 'client_credentials' },
-                { name: 'Authorization Code', value: 'authorization_code' },
+                { name: 'Authorization Code', value: 'authorization_code' }
               ]}
               value={options.grant_type.value}
               search={false}
@@ -135,7 +137,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
             <SelectSearch
               options={[
                 { name: 'Request Header', value: 'header' },
-                { name: 'Request URL', value: 'url' },
+                { name: 'Request URL', value: 'url' }
               ]}
               value={options.add_token_to.value}
               search={false}
@@ -219,9 +221,9 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
                 />
               </div>
 
-              <div class="row mt-3">
+              <div className="row mt-3">
                 <div className="col">
-                  <label class="form-label pt-2">Custom Authentication Parameters</label>
+                  <label className="form-label pt-2">Custom Authentication Parameters</label>
                 </div>
                 <div className="col-auto">
                   <button
@@ -234,27 +236,27 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
               </div>
               <div className="col-md-12 mb-3">
                 {options.custom_auth_params.value.map((pair, index) => (
-                  <div class="input-group">
+                  <div className="input-group" key={index}>
                     <input
                       type="text"
                       value={pair[0]}
-                      class="form-control"
+                      className="form-control"
                       placeholder="key"
-                      autocomplete="off"
+                      autoComplete="off"
                       onChange={(e) => keyValuePairValueChanged(e, 0, 'custom_auth_params', index)}
                     />
                     <input
                       type="text"
                       value={pair[1]}
-                      class="form-control"
+                      className="form-control"
                       placeholder="value"
-                      autocomplete="off"
+                      autoComplete="off"
                       onChange={(e) => keyValuePairValueChanged(e, 1, 'custom_auth_params', index)}
                     />
                     <span
-                      class="input-group-text"
+                      className="input-group-text"
                       role="button"
-                      onClick={(e) => {
+                      onClick={() => {
                         removeKeyValuePair('custom_auth_params', index);
                       }}
                     >
@@ -268,7 +270,7 @@ export const RestApi = ({ optionchanged, createDataSource, testDataSource, optio
               <SelectSearch
                 options={[
                   { name: 'Send as Basic Auth header', value: 'header' },
-                  { name: 'Send client credentials in body ', value: 'body' },
+                  { name: 'Send client credentials in body ', value: 'body' }
                 ]}
                 value={options.client_auth.value}
                 search={false}

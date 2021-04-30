@@ -1,7 +1,5 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import 'codemirror/theme/duotone-light.css';
-import { Transformation } from './Transformation';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 class Firestore extends React.Component {
@@ -9,13 +7,13 @@ class Firestore extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options,
+      options: this.props.options
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options,
+      options: this.props.options
     });
   }
 
@@ -24,8 +22,8 @@ class Firestore extends React.Component {
       {
         options: {
           ...this.state.options,
-          [option]: value,
-        },
+          [option]: value
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -38,8 +36,8 @@ class Firestore extends React.Component {
       {
         options: {
           ...this.state.options,
-          [option]: JSON.parse(value),
-        },
+          [option]: JSON.parse(value)
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -52,8 +50,8 @@ class Firestore extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation,
-        },
+          operation
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -68,7 +66,7 @@ class Firestore extends React.Component {
       <div>
         {options && (
           <div>
-            <div class="mb-3 mt-2">
+            <div className="mb-3 mt-2">
               <label className="form-label">Operation</label>
               <SelectSearch
                 options={[
@@ -76,7 +74,7 @@ class Firestore extends React.Component {
                   { value: 'update_document', name: 'Update Document' },
                   { value: 'set_document', name: 'Set Document' },
                   { value: 'query_collection', name: 'Query collection' },
-                  { value: 'bulk_update', name: 'Bulk update using document id' },
+                  { value: 'bulk_update', name: 'Bulk update using document id' }
                   // { value: 'add_document', name: 'Add Document to Collection'},
                   // { value: 'update_document', name: 'Update Document'},
                   // { value: 'delete_document', name: 'Delete Document'},
@@ -92,7 +90,7 @@ class Firestore extends React.Component {
             </div>
             {this.state.options.operation === 'get_document' && (
               <div>
-                <div class="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label">Path</label>
                   <input
                     type="text"
@@ -105,10 +103,10 @@ class Firestore extends React.Component {
                 </div>
               </div>
             )}
-            {(this.state.options.operation === 'set_document' ||
-              this.state.options.operation === 'update_document') && (
+            {(this.state.options.operation === 'set_document'
+              || this.state.options.operation === 'update_document') && (
               <div>
-                <div class="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label">Path</label>
                   <input
                     type="text"
@@ -119,19 +117,19 @@ class Firestore extends React.Component {
                     className="form-control"
                   />
                 </div>
-                <div class="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label">Body</label>
                   <CodeMirror
                     height="100px"
                     fontSize="2"
                     value={JSON.stringify(this.state.options.body)}
-                    onChange={(instance, change) => this.changeJsonOption('body', instance.getValue())}
+                    onChange={(instance) => this.changeJsonOption('body', instance.getValue())}
                     placeholder="{ }"
                     options={{
                       theme: 'duotone-light',
                       mode: 'json',
                       lineWrapping: true,
-                      scrollbarStyle: null,
+                      scrollbarStyle: null
                     }}
                   />
                 </div>
@@ -139,7 +137,7 @@ class Firestore extends React.Component {
             )}
             {this.state.options.operation === 'bulk_update' && (
               <div>
-                <div class="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label">Collection</label>
                   <input
                     type="text"
@@ -150,7 +148,7 @@ class Firestore extends React.Component {
                     className="form-control"
                   />
                 </div>
-                <div class="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label">Key for document Id</label>
                   <input
                     type="text"
@@ -161,19 +159,19 @@ class Firestore extends React.Component {
                     className="form-control"
                   />
                 </div>
-                <div class="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label">Records</label>
                   <CodeMirror
                     height="100px"
                     fontSize="2"
                     value={this.state.options.records}
-                    onChange={(instance, change) => this.changeOption('records', instance.getValue())}
+                    onChange={(instance) => this.changeOption('records', instance.getValue())}
                     placeholder="{ }"
                     options={{
                       theme: 'duotone-light',
                       mode: 'javascript',
                       lineWrapping: true,
-                      scrollbarStyle: null,
+                      scrollbarStyle: null
                     }}
                   />
                 </div>
@@ -181,7 +179,7 @@ class Firestore extends React.Component {
             )}
             {this.state.options.operation === 'query_collection' && (
               <div>
-                <div class="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label">Path</label>
                   <input
                     type="text"
@@ -195,7 +193,7 @@ class Firestore extends React.Component {
                 <hr />
                 <div className="row">
                   <h3 className="text-muted">Where condition</h3>
-                  <div class="col">
+                  <div className="col">
                     <label className="form-label">Field</label>
                     <input
                       type="text"
@@ -215,7 +213,7 @@ class Firestore extends React.Component {
                       }}
                       placeholder="Select a value"
                       value={this.state.options.where_operation}
-                      class="form-select"
+                      className="form-select"
                     >
                       <option value="==">==</option>
                       <option value="<">{'<'}</option>
@@ -227,7 +225,7 @@ class Firestore extends React.Component {
                       <option value="array-contains-any">{'array-contains-any'}</option>
                     </select>
                   </div>
-                  <div class="col">
+                  <div className="col">
                     <label className="form-label">Value</label>
                     <input
                       type="text"

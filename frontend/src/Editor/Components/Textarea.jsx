@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolve, resolve_references } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const TextArea = function TextArea({
   id,
@@ -8,7 +8,7 @@ export const TextArea = function TextArea({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged,
+  onComponentOptionChanged
 }) {
   console.log('currentState', currentState);
 
@@ -18,7 +18,7 @@ export const TextArea = function TextArea({
   const textProperty = component.definition.properties.value;
   let newText = value;
   if (textProperty && currentState) {
-    newText = resolve_references(textProperty.value, currentState, '');
+    newText = resolveReferences(textProperty.value, currentState, '');
   }
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export const TextArea = function TextArea({
         onComponentOptionChanged(component, 'value', e.target.value);
       }}
       type="text"
-      class="form-control"
+      className="form-control"
       placeholder={placeholder}
       style={{ width, height }}
       value={text}

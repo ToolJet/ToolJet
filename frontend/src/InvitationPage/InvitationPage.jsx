@@ -7,7 +7,7 @@ class InvitationPage extends React.Component {
     super(props);
 
     this.state = {
-      isLoading: false,
+      isLoading: false
     };
   }
 
@@ -25,7 +25,7 @@ class InvitationPage extends React.Component {
 
     userService
       .setPasswordFromToken(token, password)
-      .then((data) => {
+      .then(() => {
         this.setState({ isLoading: false });
         toast.success('Password has been set successfully.', { hideProgressBar: true, position: 'top-center' });
         this.props.history.push('/login');

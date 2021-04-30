@@ -2,7 +2,9 @@ import React from 'react';
 import { resolve, findProp } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
-export const Table = function Table({ id, component, onComponentClick, currentState, onEvent }) {
+export const Table = function Table({
+  id, component, onComponentClick, currentState, onEvent
+}) {
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const color = component.definition.styles.textColor.value;
   const columns = component.definition.properties.columns.value;
@@ -26,30 +28,29 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
   function findColumnValue(row, column) {
     if (column.key) {
       return findProp(row, column.key);
-    } else {
-      return findProp(row, column.name);
     }
+    return findProp(row, column.name);
   }
 
   // Quick fix, need to remove later
-  data = data ? data : [];
+  data = data || [];
 
   const computedStyles = {
     backgroundColor,
-    color,
+    color
   };
 
   return (
     <div
-      class="table-responsive table-bordered"
+      className="table-responsive table-bordered"
       style={{ ...computedStyles, width: '700px' }}
       onClick={() => onComponentClick(id, component)}
     >
-      <table class="table table-vcenter table-nowrap">
+      <table className="table table-vcenter table-nowrap">
         <thead>
           <tr>
             {columns.map((column) => (
-              <th>{column.name}</th>
+              <th key={column.name}>{column.name}</th>
             ))}
             {actions.value.length > 0 && <th>Actions</th>}
           </tr>
@@ -71,7 +72,7 @@ export const Table = function Table({ id, component, onComponentClick, currentSt
                 <td>
                   {actions.value.map((action) => (
                     <button
-                      class="btn btn-sm m-1 btn-light"
+                      className="btn btn-sm m-1 btn-light"
                       onClick={(e) => {
                         e.stopPropagation();
                         onEvent('onTableActionButtonClicked', { component, data: row, action });

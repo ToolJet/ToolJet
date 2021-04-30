@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -26,7 +26,7 @@ const AllComponents = {
   Checkbox,
   Datepicker,
   DaterangePicker,
-  Multiselect,
+  Multiselect
 };
 
 export const Box = function Box({
@@ -44,12 +44,12 @@ export const Box = function Box({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   paramUpdated,
-  changeCanDrag,
+  changeCanDrag
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
   let styles = {
-    cursor: mode === 'edit' ? 'move' : '',
+    cursor: mode === 'edit' ? 'move' : ''
   };
 
   console.log('rendering box', component);
@@ -57,7 +57,7 @@ export const Box = function Box({
 
   if (inCanvas) {
     styles = {
-      ...styles,
+      ...styles
     };
   }
 
@@ -87,7 +87,7 @@ export const Box = function Box({
                 width: '20px',
                 height: '20px',
                 backgroundSize: 'contain',
-                backgroundImage: `url(${component.icon})`,
+                backgroundImage: `url(${component.icon})`
               }}
             ></div>
           </div>

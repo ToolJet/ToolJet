@@ -1,7 +1,7 @@
 import React from 'react';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
-import { resolve_references } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const Datepicker = function Datepicker({
   id,
@@ -10,7 +10,7 @@ export const Datepicker = function Datepicker({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged,
+  onComponentOptionChanged
 }) {
   console.log('currentState', currentState);
 
@@ -18,11 +18,11 @@ export const Datepicker = function Datepicker({
   const enableTimeProp = component.definition.properties.enableTime;
   const enableDateProp = component.definition.properties.enableDate;
 
-  const enableTime = resolve_references(enableTimeProp.value, currentState, false);
+  const enableTime = resolveReferences(enableTimeProp.value, currentState, false);
 
   let enableDate = true;
   if (enableDateProp) {
-    enableDate = resolve_references(enableDateProp.value, currentState, true);
+    enableDate = resolveReferences(enableDateProp.value, currentState, true);
   }
 
   function onDateChange(event) {

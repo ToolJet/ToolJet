@@ -1,5 +1,7 @@
 import React from 'react';
-import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
+import {
+  datasourceService, dataqueryService, appService, authenticationService
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -12,7 +14,7 @@ import { DataSourceManager } from './DataSourceManager';
 import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
 import { QueryManager } from './QueryManager';
 import { toast } from 'react-toastify';
-import { Router, Route, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
 import { SaveAndPreview } from './SaveAndPreview';
 import {
@@ -22,7 +24,7 @@ import {
   onEvent,
   onQueryConfirm,
   onQueryCancel,
-  runQuery,
+  runQuery
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -38,7 +40,6 @@ class Editor extends React.Component {
     this.state = {
       currentUser: authenticationService.currentUserValue,
       allComponentTypes: componentTypes,
-      componentTypes: componentTypes,
       queryPaneHeight: '30%',
       isLoading: true,
       users: null,
@@ -48,38 +49,36 @@ class Editor extends React.Component {
       showQueryEditor: true,
       showLeftSidebar: true,
       appDefinition: {
-        components: null,
+        components: null
       },
       currentState: {
         queries: {},
         components: {},
         globals: {
           current_user: {},
-          urlparams: {},
-        },
-      },
+          urlparams: {}
+        }
+      }
     };
   }
 
   componentDidMount() {
     const appId = this.props.match.params.id;
 
-    appService.getApp(appId).then((data) =>
-      this.setState(
-        {
-          app: data,
-          isLoading: false,
-          appDefinition: { ...this.state.appDefinition, ...data.definition },
-        },
-        () => {
-          data.data_queries.map((query) => {
-            if (query.options.runOnPageLoad) {
-              runQuery(this, query.id, query.name);
-            }
-          });
-        }
-      )
-    );
+    appService.getApp(appId).then((data) => this.setState(
+      {
+        app: data,
+        isLoading: false,
+        appDefinition: { ...this.state.appDefinition, ...data.definition }
+      },
+      () => {
+        data.data_queries.forEach((query) => {
+          if (query.options.runOnPageLoad) {
+            runQuery(this, query.id, query.name);
+          }
+        });
+      }
+    ));
 
     this.fetchDataSources();
     this.fetchDataQueries();
@@ -87,22 +86,20 @@ class Editor extends React.Component {
     this.setState({
       appId,
       currentSidebarTab: 2,
-      selectedComponent: null,
+      selectedComponent: null
     });
   }
 
   fetchDataSources = () => {
     this.setState(
       {
-        loadingDataSources: true,
+        loadingDataSources: true
       },
       () => {
-        datasourceService.getAll(this.state.appId).then((data) =>
-          this.setState({
-            dataSources: data.data_sources,
-            loadingDataSources: false,
-          })
-        );
+        datasourceService.getAll(this.state.appId).then((data) => this.setState({
+          dataSources: data.data_sources,
+          loadingDataSources: false
+        }));
       }
     );
   };
@@ -110,18 +107,18 @@ class Editor extends React.Component {
   fetchDataQueries = () => {
     this.setState(
       {
-        loadingDataQueries: true,
+        loadingDataQueries: true
       },
       () => {
         dataqueryService.getAll(this.state.appId).then((data) => {
           this.setState(
             {
               dataQueries: data.data_queries,
-              loadingDataQueries: false,
+              loadingDataQueries: false
             },
             () => {
               let queryState = {};
-              data.data_queries.map((query) => {
+              data.data_queries.forEach((query) => {
                 queryState[query.name] = DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables;
               });
 
@@ -129,7 +126,8 @@ class Editor extends React.Component {
               let selectedQuery = null;
               let editingQuery = false;
               if (data.data_queries.length > 0) {
-                (selectedQuery = data.data_queries[0]), (editingQuery = true);
+                selectedQuery = data.data_queries[0];
+                editingQuery = true;
               }
 
               this.setState({
@@ -139,9 +137,9 @@ class Editor extends React.Component {
                   ...this.state.currentState,
                   queries: {
                     ...queryState,
-                    ...this.state.currentState.queries,
-                  },
-                },
+                    ...this.state.currentState.queries
+                  }
+                }
               });
             }
           );
@@ -152,7 +150,7 @@ class Editor extends React.Component {
 
   computeComponentState = (components) => {
     let componentState = {};
-    Object.keys(components).map((key) => {
+    Object.keys(components).forEach((key) => {
       const component = components[key];
       const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
       componentState[component.component.name] = componentMeta.exposedVariables;
@@ -163,9 +161,9 @@ class Editor extends React.Component {
         ...this.state.currentState,
         components: {
           ...componentState,
-          ...this.state.currentState.components,
-        },
-      },
+          ...this.state.currentState.components
+        }
+      }
     });
   };
 
@@ -180,7 +178,7 @@ class Editor extends React.Component {
 
   switchSidebarTab = (tabIndex) => {
     this.setState({
-      currentSidebarTab: tabIndex,
+      currentSidebarTab: tabIndex
     });
   };
 
@@ -188,12 +186,12 @@ class Editor extends React.Component {
     return <DraggableBox key={index} index={index} component={component} />;
   };
 
-  filterComponents = (event, value) => {
+  filterComponents = (event) => {
     const searchText = event.currentTarget.value;
     let filteredComponents = this.state.allComponentTypes;
 
     if (searchText !== '') {
-      filteredComponents = this.state.allComponentTypes.filter((e) => e.name.toLowerCase() == searchText.toLowerCase());
+      filteredComponents = this.state.allComponentTypes.filter((e) => e.name.toLowerCase() === searchText.toLowerCase());
     }
 
     this.setState({ componentTypes: filteredComponents });
@@ -224,58 +222,57 @@ class Editor extends React.Component {
           ...this.state.appDefinition.components,
           [newDefinition.id]: {
             ...this.state.appDefinition.components[newDefinition.id],
-            component: newDefinition.component,
-          },
-        },
-      },
+            component: newDefinition.component
+          }
+        }
+      }
     });
   };
 
   saveApp = (id, attributes, notify = false) => {
-    appService.saveApp(id, attributes).then((data) => {
+    appService.saveApp(id, attributes).then(() => {
       if (notify) {
         toast.success('App saved sucessfully', { hideProgressBar: true, position: 'top-center' });
       }
     });
   };
 
-  renderDataSource = (data_source) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === data_source.kind);
+  renderDataSource = (dataSource) => {
+    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
     return (
       <tr
         role="button"
-        key={data_source.name}
+        key={dataSource.name}
         onClick={() => {
-          console.log('dss', data_source);
-          this.setState({ selectedDataSource: data_source, showDataSourceManagerModal: true });
+          console.log('dss', dataSource);
+          this.setState({ selectedDataSource: dataSource, showDataSourceManagerModal: true });
         }}
       >
         <td>
-          <img src={sourceMeta.icon} width="20" height="20" /> {data_source.name}
+          <img src={sourceMeta.icon} width="20" height="20" /> {dataSource.name}
         </td>
       </tr>
     );
   };
 
-  renderDataQuery = (data_query) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === data_query.kind);
+  renderDataQuery = (dataQuery) => {
+    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {
-      isSeletedQuery = data_query.id === this.state.selectedQuery.id;
+      isSeletedQuery = dataQuery.id === this.state.selectedQuery.id;
     }
 
     return (
       <tr
         className={'query-row' + (isSeletedQuery ? ' query-row-selected' : '')}
-        key={data_query.name}
-        className="query-row"
-        onClick={() => this.setState({ editingQuery: true, selectedQuery: data_query })}
+        key={dataQuery.name}
+        onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
       >
         <td>
           <img src={sourceMeta.icon} width="20" height="20" />
-          <span className="p-3">{data_query.name}</span>
+          <span className="p-3">{dataQuery.name}</span>
         </td>
       </tr>
     );
@@ -283,13 +280,13 @@ class Editor extends React.Component {
 
   onNameChanged = (newName) => {
     this.setState({
-      app: { ...this.state.app, name: newName },
+      app: { ...this.state.app, name: newName }
     });
   };
 
   toggleQueryPaneHeight = () => {
     this.setState({
-      queryPaneHeight: this.state.queryPaneHeight === '30%' ? '80%' : '30%',
+      queryPaneHeight: this.state.queryPaneHeight === '30%' ? '80%' : '30%'
     });
   };
 
@@ -346,13 +343,12 @@ class Editor extends React.Component {
       selectedQuery,
       editingQuery,
       app,
-      componentTypes,
       showQueryConfirmation,
       queryPaneHeight,
       showQueryEditor,
       showLeftSidebar,
       currentState,
-      isLoading,
+      isLoading
     } = this.state;
 
     const appLink = `/applications/${appId}`;
@@ -382,7 +378,7 @@ class Editor extends React.Component {
                   <span className="navbar-toggler-icon"></span>
                 </button>
                 <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-                  <Link to={`/`} className="">
+                  <Link to={'/'} className="">
                     <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
                   </Link>
                   <a href="/"></a>
@@ -530,11 +526,9 @@ class Editor extends React.Component {
                     mode={'edit'}
                     appLoading={isLoading}
                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
-                    onComponentOptionChanged={(component, option_name, value) =>
-                      onComponentOptionChanged(this, component, option_name, value)
+                    onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
                     }
-                    onComponentOptionsChanged={(component, options) =>
-                      onComponentOptionsChanged(this, component, options)
+                    onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
                     }
                     currentState={this.state.currentState}
                     onComponentClick={(id, component) => {
@@ -551,7 +545,7 @@ class Editor extends React.Component {
                 style={{
                   height: showQueryEditor ? this.state.queryPaneHeight : '0px',
                   width: !showLeftSidebar ? '85%' : '',
-                  left: !showLeftSidebar ? '0' : '',
+                  left: !showLeftSidebar ? '0' : ''
                 }}
               >
                 <div className="row main-row">
@@ -587,14 +581,13 @@ class Editor extends React.Component {
                               <tbody>{dataQueries.map((query) => this.renderDataQuery(query))}</tbody>
                             </table>
                           </div>
-                          {dataQueries.length == 0 && (
+                          {dataQueries.length === 0 && (
                             <div>
                               <center>
-                                You haven't created queries yet. <br />
+                                You haven&apos;t created queries yet. <br />
                                 <button
                                   className="btn btn-sm btn-light mt-3"
-                                  onClick={() =>
-                                    this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
+                                  onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
                                   }
                                 >
                                   create query
@@ -622,7 +615,7 @@ class Editor extends React.Component {
                               runQuery(this, queryId, queryName).then(() => {
                                 toast.info(`Query (${queryName}) completed.`, {
                                   hideProgressBar: true,
-                                  position: 'bottom-center',
+                                  position: 'bottom-center'
                                 });
                               });
                             }}
@@ -646,12 +639,12 @@ class Editor extends React.Component {
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: '#f0f0f0',
-                zIndex: '200',
+                zIndex: '200'
               }}
               maxWidth={showLeftSidebar ? '30%' : '0%'}
               defaultSize={{
                 width: '12%',
-                height: '99%',
+                height: '99%'
               }}
             >
               <div className="left-sidebar">
@@ -664,8 +657,8 @@ class Editor extends React.Component {
                         src={{
                           currentUser: {
                             name: '',
-                            email: '',
-                          },
+                            email: ''
+                          }
                         }}
                         name={'globals'}
                         displayDataTypes={false}
@@ -737,13 +730,12 @@ class Editor extends React.Component {
                         <table className="table table-vcenter table-nowrap">
                           <tbody>{this.state.dataSources.map((source) => this.renderDataSource(source))}</tbody>
                         </table>
-                        {dataSources.length == 0 && (
+                        {dataSources.length === 0 && (
                           <center className="p-2">
-                            You haven't added data sources yet. <br />
+                            You haven&apos;t added data sources yet. <br />
                             <button
                               className="btn btn-sm btn-light mt-3"
-                              onClick={() =>
-                                this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })
+                              onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })
                               }
                             >
                               Add datasource

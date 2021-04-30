@@ -11,7 +11,7 @@ class Mysql extends React.Component {
 
   componentDidMount() {
     this.setState({
-      options: this.props.options,
+      options: this.props.options
     });
   }
 
@@ -33,13 +33,13 @@ class Mysql extends React.Component {
               height="100px"
               fontSize="2"
               value={options.query}
-              onChange={(instance, change) => this.changeOption('query', instance.getValue())}
+              onChange={(instance) => this.changeOption('query', instance.getValue())}
               placeholder="SELECT * FROM customers;"
               options={{
                 theme: 'duotone-light',
                 mode: 'sql',
                 lineWrapping: true,
-                scrollbarStyle: null,
+                scrollbarStyle: null
               }}
             />
           </div>

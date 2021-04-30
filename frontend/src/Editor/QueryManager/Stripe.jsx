@@ -8,7 +8,7 @@ const operationColorMapping = {
   get: 'azure',
   post: 'green',
   delete: 'red',
-  put: 'yellow',
+  put: 'yellow'
 };
 
 class Stripe extends React.Component {
@@ -23,9 +23,9 @@ class Stripe extends React.Component {
         params: {
           path: {},
           query: {},
-          request: {},
-        },
-      },
+          request: {}
+        }
+      }
     });
   }
 
@@ -33,8 +33,8 @@ class Stripe extends React.Component {
     this.setState({
       options: {
         ...this.state.options,
-        [option]: value,
-      },
+        [option]: value
+      }
     });
   }
 
@@ -48,8 +48,8 @@ class Stripe extends React.Component {
         options: {
           ...this.state.options,
           path,
-          operation,
-        },
+          operation
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -65,13 +65,13 @@ class Stripe extends React.Component {
         ...options.params,
         [paramType]: {
           ...options.params[paramType],
-          [paramName]: value,
-        },
-      },
+          [paramName]: value
+        }
+      }
     };
 
     this.setState({
-      options: newOptions,
+      options: newOptions
     });
 
     this.props.optionsChanged(newOptions);
@@ -82,7 +82,7 @@ class Stripe extends React.Component {
       <button {...props} className={className} type="button">
         <div className="row">
           <div className="col-md-1">
-            <span class={`badge bg-${operationColorMapping[option.operation]}`}>{option.operation}</span>
+            <span className={`badge bg-${operationColorMapping[option.operation]}`}>{option.operation}</span>
           </div>
 
           <div className="col-md-8">
@@ -101,7 +101,7 @@ class Stripe extends React.Component {
         options.push({
           value: `${operation},${path}`,
           name: path,
-          operation: operation,
+          operation: operation
         });
       }
     }
@@ -130,12 +130,12 @@ class Stripe extends React.Component {
     return (
       <div>
         {options && (
-          <div class="mb-3 mt-2">
-            <div class="row g-2">
-              <div class="col-auto">
-                <label class="form-label pt-2">Operation</label>
+          <div className="mb-3 mt-2">
+            <div className="row g-2">
+              <div className="col-auto">
+                <label className="form-label pt-2">Operation</label>
               </div>
-              <div class="col">
+              <div className="col">
                 <SelectSearch
                   options={this.computeOperationSelectionOptions(specJson.paths)}
                   value="sv"
@@ -161,16 +161,16 @@ class Stripe extends React.Component {
                   <div>
                     <h5 className="text-muted">PATH</h5>
                     {pathParams.map((param) => (
-                      <div class="input-group">
-                        <input type="text" value={param.name} class="form-control form-control-sm" placeholder="key" />
+                      <div className="input-group" key={param.name}>
+                        <input type="text" value={param.name} className="form-control form-control-sm" placeholder="key" />
                         <input
                           type="text"
-                          value={this.state.options.params['path'][param.name]}
-                          class="form-control form-control-sm"
+                          value={this.state.options.params.path[param.name]}
+                          className="form-control form-control-sm"
                           placeholder="value"
                           onChange={(e) => this.changeParam('path', param.name, e.target.value)}
                         />
-                        <span class="input-group-text" role="button">
+                        <span className="input-group-text" role="button">
                           x
                         </span>
                       </div>
@@ -182,22 +182,22 @@ class Stripe extends React.Component {
                   <div>
                     <h5 className="text-muted">QUERY</h5>
                     {queryParams.map((param) => (
-                      <div class="input-group">
+                      <div className="input-group" key={param.name}>
                         <input
                           type="text"
                           value={param.name}
-                          class="form-control form-control-sm"
+                          className="form-control form-control-sm"
                           placeholder="key"
                           disabled
                         />
                         <input
                           type="text"
-                          value={this.state.options.params['query'][param.name]}
-                          class="form-control form-control-sm"
+                          value={this.state.options.params.query[param.name]}
+                          className="form-control form-control-sm"
                           placeholder="value"
                           onChange={(e) => this.changeParam('query', param.name, e.target.value)}
                         />
-                        <span class="input-group-text" role="button">
+                        <span className="input-group-text" role="button">
                           x
                         </span>
                       </div>
@@ -209,22 +209,22 @@ class Stripe extends React.Component {
                   <div>
                     <h5 className="text-muted">REQUEST BODY</h5>
                     {Object.keys(requestBody.schema.properties).map((param) => (
-                      <div class="input-group">
+                      <div className="input-group" key={param.name}>
                         <input
                           type="text"
                           value={param}
-                          class="form-control form-control-sm"
+                          className="form-control form-control-sm"
                           placeholder="key"
                           disabled
                         />
                         <input
                           type="text"
-                          value={this.state.options.params['request'][param.name]}
-                          class="form-control form-control-sm"
+                          value={this.state.options.params.request[param.name]}
+                          className="form-control form-control-sm"
                           placeholder="value"
                           onChange={(e) => this.changeParam('request', param.name, e.target.value)}
                         />
-                        <span class="input-group-text" role="button">
+                        <span className="input-group-text" role="button">
                           x
                         </span>
                       </div>

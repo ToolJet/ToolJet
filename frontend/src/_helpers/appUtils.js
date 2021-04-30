@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { toast } from 'react-toastify';
-import { resolve_references } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 
 function setStateAsync(_ref, state) {
@@ -82,7 +82,7 @@ function executeAction(_ref, event) {
     }
 
     if (event.actionId === 'open-webpage') {
-      const url = resolve_references(event.options.url, _ref.state.currentState);
+      const url = resolveReferences(event.options.url, _ref.state.currentState);
       window.open(url, '_blank');
     }
 
@@ -170,7 +170,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
     return;
   }
 
-  const options = resolve_references(dataQuery.options, _ref.state.currentState);
+  const options = resolveReferences(dataQuery.options, _ref.state.currentState);
 
   if (options.requestConfirmation) {
     if (confirmed === undefined) {

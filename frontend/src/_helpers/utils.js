@@ -33,7 +33,7 @@ export function resolveAll(data, state) {
 
 }
 
-export function resolve_references(object, state) {
+export function resolveReferences(object, state) {
   if (typeof object === 'string') {
     if (object.startsWith('{{') && object.endsWith('}}')) {
       const code = object.replace('{{', '').replace('}}', '');
@@ -67,7 +67,7 @@ export function resolve_references(object, state) {
     const new_array = [];
 
     object.forEach((element, index) => {
-      const resolved_object = resolve_references(element, state);
+      const resolved_object = resolveReferences(element, state);
       new_array[index] = resolved_object;
     });
 
@@ -75,7 +75,7 @@ export function resolve_references(object, state) {
   } if (typeof object === 'object') {
     console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
     Object.keys(object).forEach((key, index) => {
-      const resolved_object = resolve_references(object[key], state);
+      const resolved_object = resolveReferences(object[key], state);
       object[key] = resolved_object;
     });
 

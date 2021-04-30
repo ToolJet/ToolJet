@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 
-export const Color = ({ param, definition, onChange, paramType }) => {
+export const Color = ({
+  param, definition, onChange, paramType
+}) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const coverStyles = {
@@ -9,12 +11,12 @@ export const Color = ({ param, definition, onChange, paramType }) => {
     top: '0px',
     right: '0px',
     bottom: '0px',
-    left: '0px',
+    left: '0px'
   };
 
   return (
     <div className="field mb-2">
-      <label class="form-label">{param.name}</label>
+      <label className="form-label">{param.name}</label>
 
       {showPicker && (
         <div>
@@ -31,7 +33,7 @@ export const Color = ({ param, definition, onChange, paramType }) => {
         onFocus={() => setShowPicker(true)}
         type="text"
         onChange={(e) => onChange(param, 'value', e.target.value, paramType)}
-        class="form-control text-field"
+        className="form-control text-field"
         name=""
         value={definition.value}
       />

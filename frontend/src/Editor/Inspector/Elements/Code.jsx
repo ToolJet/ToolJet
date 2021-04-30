@@ -1,7 +1,9 @@
 import React from 'react';
 import { CodeBuilder } from '../../CodeBuilder/CodeBuilder';
 
-export const Code = ({ param, definition, onChange, paramType, dataQueries, components }) => {
+export const Code = ({
+  param, definition, onChange, paramType, dataQueries, components
+}) => {
   const initialValue = definition ? definition.value : '';
 
   function handleCodeChanged(value) {
@@ -10,7 +12,7 @@ export const Code = ({ param, definition, onChange, paramType, dataQueries, comp
 
   return (
     <div className="field mb-2">
-      <label class="form-label">{param.name}</label>
+      <label className="form-label">{param.name}</label>
       <CodeBuilder
         initialValue={initialValue}
         components={components}
