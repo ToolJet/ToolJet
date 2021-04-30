@@ -136,7 +136,7 @@ class DataSourceManager extends React.Component {
                             <Modal.Title>
                              {selectedDataSource &&
                              <div className="row">
-                                <img src={dataSourceMeta.icon} style={{objectFit: 'contain'}}height="25" width="25" className="mt-2 col-md-2"></img>
+                                <img src={dataSourceMeta.icon} style={{objectFit: 'contain'}}height="25" width="25" className="mt-1 col-md-2"></img>
                                 <input 
                                     type="text" 
                                     onChange={(e) => this.onNameChanged(e.target.value)}
@@ -279,7 +279,7 @@ class DataSourceManager extends React.Component {
 
                         </Modal.Body>
 
-                        {selectedDataSource &&
+                        {(selectedDataSource && !dataSourceMeta.customTesting) &&
                             <Modal.Footer>
                                 <div className="col">
                                     <small>
