@@ -10,6 +10,18 @@ class FirestoreQueryService
     @current_user = current_user
   end
 
+  def self.connection options
+    gcp_key = JSON.parse(options.dig('gcp_key', 'value'))
+
+    Google::Cloud::Firestore.configure do |config|
+        config.credentials = gcp_key
+    end
+
+    firestore = Google::Cloud::Firestore.new
+
+    firestore.cols # Try to fetch collections
+  end
+
   def process
     credential_json = JSON.parse(source_options['gcp_key'])
     data = {}

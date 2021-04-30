@@ -11,6 +11,17 @@ class ElasticsearchQueryService
     @data_source = data_query.data_source
   end
 
+  def self.connection options
+    client = Elasticsearch::Client.new(
+        url: "#{options.dig('host', 'value')}:#{options.dig('port', 'value')}",
+        retry_on_failure: 5,
+        request_timeout: 30,
+        adapter: :typhoeus
+    )
+    
+    client.info # Try to fetch cluster info
+  end
+
   def process
     data = {}
     error = nil

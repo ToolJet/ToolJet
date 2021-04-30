@@ -35,22 +35,6 @@ export const Mysql = ({ optionchanged, createDataSource, options, isSaving }) =>
                     <input type="text" class="form-control" onChange={(e) => optionchanged('password', e.target.value)}  value={options.password.value} />
                 </div>
             </div>
-            <div className="row mt-3">
-                <div className="col">
-
-                </div>
-                <div className="col-auto">
-                    <Button className="m-2" variant="light" onClick={() => hideModal()} >
-                        Cancel
-                    </Button>
-                    <Button className="m-2" variant="success" onClick={() => hideModal()} >
-                        Test
-                    </Button>
-                    <Button className="m-2" disabled={isSaving} variant="primary" onClick={createDataSource}>
-                        {isSaving ? 'Saving...' : 'Save'}
-                    </Button>
-                </div>
-            </div>
         </div>
     );
 }
