@@ -4,16 +4,9 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
 import { dataBaseSources, apiSources, DataSourceTypes } from './DataSourceTypes';
-import { Elasticsearch } from './Elasticsearch';
-import { Redis } from './Redis';
-import { Postgresql } from './Postgresql';
-import { Mysql } from './Mysql';
-import { Stripe } from './Stripe';
-import { Firestore } from './Firestore';
-import { RestApi } from './RestApi';
-import { Googlesheets } from './Googlesheets';
 import { defaultOptions } from './DefaultOptions';
 import { TestConnection } from './TestConnection';
+import { SourceComponents } from './SourceComponents';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -116,6 +109,22 @@ class DataSourceManager extends React.Component {
     }
   };
 
+  renderSourceComponent = (kind) => {
+    const {
+        options, isSaving
+    } = this.state;
+
+    const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
+    const ComponentToRender = SourceComponents[sourceComponentName];
+    return <ComponentToRender 
+        optionchanged={this.optionchanged}
+        createDataSource={this.createDataSource}
+        options={options}
+        isSaving={isSaving}
+        hideModal={this.hideModal}
+    />
+  }
+
   render() {
     const {
       dataSourceMeta, selectedDataSource, options, isSaving
@@ -142,17 +151,23 @@ class DataSourceManager extends React.Component {
                     width="25"
                     className="mt-1 col-md-2"
                   ></img>
-                  <input
-                    type="text"
-                    onChange={(e) => this.onNameChanged(e.target.value)}
-                    className="form-control-plaintext form-control-plaintext-sm col mx-2"
-                    value={selectedDataSource.name}
-                    autoFocus
-                  />
+                  <div className="input-icon" style={{ width: '160px' }}>
+                    <input
+                      type="text"
+                      onChange={(e) => this.onNameChanged(e.target.value)}
+                      className="form-control-plaintext form-control-plaintext-sm"
+                      value={selectedDataSource.name}
+                      style={{ width: '160px' }}
+                      autoFocus
+                    />
+                    <span className="input-icon-addon">
+                      <img src="https://www.svgrepo.com/show/149235/edit.svg" width="12" height="12" />
+                    </span>
+                  </div>
                 </div>
               )}
             </Modal.Title>
-            <Button variant="light" onClick={() => this.hideModal()}>
+            <Button variant="light" size="sm" onClick={() => this.hideModal()}>
               x
             </Button>
           </Modal.Header>
@@ -199,85 +214,7 @@ class DataSourceManager extends React.Component {
 
             {selectedDataSource && (
               <div>
-                {selectedDataSource.kind === 'elasticsearch' && (
-                  <Elasticsearch
-                    optionchanged={this.optionchanged}
-                    createDataSource={this.createDataSource}
-                    options={options}
-                    isSaving={isSaving}
-                    hideModal={this.hideModal}
-                  />
-                )}
-                {selectedDataSource.kind === 'redis' && (
-                  <Redis
-                    optionchanged={this.optionchanged}
-                    createDataSource={this.createDataSource}
-                    options={options}
-                    isSaving={isSaving}
-                    hideModal={this.hideModal}
-                  />
-                )}
-                {selectedDataSource.kind === 'postgresql' && (
-                  <Postgresql
-                    optionchanged={this.optionchanged}
-                    createDataSource={this.createDataSource}
-                    testDataSource={this.testDataSource}
-                    testingConnection={this.state.testingConnection}
-                    options={options}
-                    isSaving={isSaving}
-                    hideModal={this.hideModal}
-                  />
-                )}
-
-                {selectedDataSource.kind === 'mysql' && (
-                  <Mysql
-                    optionchanged={this.optionchanged}
-                    createDataSource={this.createDataSource}
-                    options={options}
-                    isSaving={isSaving}
-                    hideModal={this.hideModal}
-                  />
-                )}
-
-                {selectedDataSource.kind === 'stripe' && (
-                  <Stripe
-                    optionchanged={this.optionchanged}
-                    createDataSource={this.createDataSource}
-                    options={options}
-                    isSaving={isSaving}
-                    hideModal={this.hideModal}
-                  />
-                )}
-
-                {selectedDataSource.kind === 'firestore' && (
-                  <Firestore
-                    optionchanged={this.optionchanged}
-                    createDataSource={this.createDataSource}
-                    options={options}
-                    isSaving={isSaving}
-                    hideModal={this.hideModal}
-                  />
-                )}
-
-                {selectedDataSource.kind === 'restapi' && (
-                  <RestApi
-                    optionchanged={this.optionchanged}
-                    createDataSource={this.createDataSource}
-                    options={options}
-                    isSaving={isSaving}
-                    hideModal={this.hideModal}
-                  />
-                )}
-
-                {selectedDataSource.kind === 'googlesheets' && (
-                  <Googlesheets
-                    optionchanged={this.optionchanged}
-                    createDataSource={this.createDataSource}
-                    options={options}
-                    isSaving={isSaving}
-                    hideModal={this.hideModal}
-                  />
-                )}
+                {this.renderSourceComponent(selectedDataSource.kind)}
               </div>
             )}
           </Modal.Body>
