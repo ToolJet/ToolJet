@@ -15,7 +15,7 @@ export const Stripe = ({ optionchanged, createDataSource, options, isSaving  }) 
                         </small>
                     </label>
                     <input type="text" class="form-control" onChange={(e) => optionchanged('api_key', e.target.value)} value={options.api_key.value} />
-                    <small className="text-muted">For creating API keys, visit: <a href="https://dashboard.stripe.com/account/apikeys" target="_blank">Stripe Developers</a></small>
+                    <small className="text-muted">For creating API keys, visit: <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" rel="noreferrer">Stripe Developers</a></small>
                 </div>
             </div>
             <div className="row mt-3">
