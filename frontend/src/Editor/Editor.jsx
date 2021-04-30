@@ -396,7 +396,7 @@ class Editor extends React.Component {
                                     />
                                 </div>
                                 <div className="nav-item dropdown d-none d-md-flex me-3">
-                                    <a href={appLink} target="_blank" className="btn btn-sm">Launch</a>    
+                                    <a href={appLink} target="_blank" className="btn btn-sm" rel="noreferrer">Launch</a>    
                                 </div>
                                 <div className="nav-item dropdown me-2">
                                     {this.state.app &&

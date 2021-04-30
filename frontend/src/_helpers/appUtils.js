@@ -137,7 +137,7 @@ export function onEvent(_ref, eventName, options) {
     }
 
     if(eventName === 'onCheck' || eventName === 'onUnCheck') { 
-        const { component, data, action } = options;
+        const { component } = options;
         const event = (eventName === 'onCheck') ? component.definition.events.onCheck : component.definition.events.onUnCheck;
 
         if(event.actionId) {

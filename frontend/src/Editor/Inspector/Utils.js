@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';

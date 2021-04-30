@@ -15,7 +15,7 @@ export function findProp(obj, prop, defval){
                 obj = undefined;
             }
         } else {
-            if(obj != undefined) {
+            if(obj !== undefined) {
                 if(typeof obj[prop[i]] == 'undefined')
                 return defval;
             obj = obj[prop[i]];
@@ -38,10 +38,6 @@ export function resolveAll(data, state) {
 
 export function resolve_references(object, state) {
         
-    console.log(`[Resolver] Resolving: ${object}`);
-
-    let resolved = null;
-
     if (typeof object === "string") {
         if(object.startsWith("{{") && object.endsWith("}}")) {
             const code = object.replace('{{', '').replace('}}', '');
@@ -59,7 +55,7 @@ export function resolve_references(object, state) {
         
         const dynamicVariables = getDynamicVariables(object);
         if (dynamicVariables) {
-            if(dynamicVariables.length == 1 && dynamicVariables[0] === object) {
+            if(dynamicVariables.length === 1 && dynamicVariables[0] === object) {
                 object = resolve(dynamicVariables[0], state)
             } else {
                 for(const dynamicVariable of dynamicVariables) {
@@ -107,17 +103,17 @@ export function computeComponentName(componentType, currentComponents) {
     
     const currentComponentsForKind = Object.values(currentComponents).filter(component => component.component.component === componentType);
     let found = false;
-    let name = '';
+    let componentName = '';
     let currentNumber = currentComponentsForKind.length + 1;
 
     while(!found) { 
-        name = `${componentType.toLowerCase()}${currentNumber}`;
-        if(Object.values(currentComponents).find(component => component.name === name) === undefined) {
+        componentName = `${componentType.toLowerCase()}${currentNumber}`;
+        if(Object.values(currentComponents).find(component => component.name === componentName) === undefined) {
             found = true;
         }
     }
 
-    return name;
+    return componentName;
 }
 
 export function computeActionName(actions) {
