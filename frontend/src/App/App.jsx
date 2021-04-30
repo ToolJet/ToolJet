@@ -15,46 +15,43 @@ import { ManageOrgUsers } from '@/ManageOrgUsers';
 import ReactTooltip from 'react-tooltip';
 
 class App extends React.Component {
-    constructor(props) {
-        super(props);
+  constructor(props) {
+    super(props);
 
-        this.state = {
-            currentUser: null
-        };
-    }
+    this.state = {
+      currentUser: null,
+    };
+  }
 
-    componentDidMount() {
-        authenticationService.currentUser.subscribe(x => this.setState({ currentUser: x }));
-    }
+  componentDidMount() {
+    authenticationService.currentUser.subscribe((x) => this.setState({ currentUser: x }));
+  }
 
-    logout() {
-        authenticationService.logout();
-        history.push('/login');
-    }
+  logout() {
+    authenticationService.logout();
+    history.push('/login');
+  }
 
-    render() {
-        const { currentUser } = this.state;
-        return (
-            <Router history={history}>
-                <div>
-                    {currentUser &&
-                        <div></div>
-                    }
+  render() {
+    const { currentUser } = this.state;
+    return (
+      <Router history={history}>
+        <div>
+          {currentUser && <div></div>}
 
-                    <ToastContainer/>
-                    
-                    <PrivateRoute exact path="/" component={HomePage} />
-                    <Route path="/login" component={LoginPage} />
-                    <Route path="/invitations/:token" component={InvitationPage} />
-                    <PrivateRoute exact path="/apps/:id" component={Editor} />
-                    <PrivateRoute exact path="/applications/:id" component={Viewer} />
-                    <PrivateRoute exact path="/oauth2/authorize" component={Authorize} />
-                    <PrivateRoute exact path="/users" component={ManageOrgUsers} />
-                                
-                </div>
-            </Router>
-        );
-    }
+          <ToastContainer />
+
+          <PrivateRoute exact path="/" component={HomePage} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/invitations/:token" component={InvitationPage} />
+          <PrivateRoute exact path="/apps/:id" component={Editor} />
+          <PrivateRoute exact path="/applications/:id" component={Viewer} />
+          <PrivateRoute exact path="/oauth2/authorize" component={Authorize} />
+          <PrivateRoute exact path="/users" component={ManageOrgUsers} />
+        </div>
+      </Router>
+    );
+  }
 }
 
-export { App }; 
+export { App };
