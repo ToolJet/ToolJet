@@ -22,11 +22,8 @@ function create(app_id, name, kind, options) {
         kind,
         options
     }
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/data_sources`, requestOptions).then(handleResponse);
 }
 
@@ -36,11 +33,8 @@ function save(id, app_id, name, options) {
         name,
         options
     }
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-    const requestOptions = { method: 'PUT', headers: headers, body: JSON.stringify(body) };
+
+    const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
 }
 
@@ -51,31 +45,16 @@ function test(kind, options) {
         options
     };
 
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/data_sources/test_connection`, requestOptions).then(handleResponse);
 }
 
 function setOauth2Token(dataSourceId, body) {
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify(body) };
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
     return fetch(`${config.apiUrl}/data_sources/${dataSourceId}/authorize_oauth2`, requestOptions).then(handleResponse);
 }
 
 function fetchOauth2BaseUrl(provider) {
-    const headers = {
-        ...authHeader(),
-        'Content-Type': 'application/json'
-    }
-
-    const requestOptions = { method: 'POST', headers: headers, body: JSON.stringify({provider}) };
+    const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify({provider}) };
     return fetch(`${config.apiUrl}/data_sources/fetch_oauth2_base_url`, requestOptions).then(handleResponse);
 }
