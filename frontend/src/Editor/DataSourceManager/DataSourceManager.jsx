@@ -111,18 +111,18 @@ class DataSourceManager extends React.Component {
 
   renderSourceComponent = (kind) => {
     const {
-        options, isSaving
+      options, isSaving
     } = this.state;
 
     const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
     const ComponentToRender = SourceComponents[sourceComponentName];
-    return <ComponentToRender 
+    return <ComponentToRender
         optionchanged={this.optionchanged}
         createDataSource={this.createDataSource}
         options={options}
         isSaving={isSaving}
         hideModal={this.hideModal}
-    />
+    />;
   }
 
   render() {
@@ -135,10 +135,10 @@ class DataSourceManager extends React.Component {
         <Modal
           show={this.props.showDataSourceManagerModal}
           size="lg"
+          onEscapeKeyDown={this.hideModal}
           className="mt-5"
           // onHide={handleClose}
           backdrop="static"
-          keyboard={false}
         >
           <Modal.Header>
             <Modal.Title>

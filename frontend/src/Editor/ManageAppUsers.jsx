@@ -80,7 +80,7 @@ class ManageAppUsers extends React.Component {
           Share
         </button>
 
-        <Modal show={this.state.showModal} size="lg" backdrop="static" centered={true} keyboard={true}>
+        <Modal show={this.state.showModal} size="lg" backdrop="static" centered={true} keyboard={true} onEscapeKeyDown={this.hideModal}>
           <Modal.Header>
             <Modal.Title>Users and permissions</Modal.Title>
             <div>
