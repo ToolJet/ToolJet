@@ -283,7 +283,7 @@ class QueryManager extends React.Component {
                 data-tip="NOTE: Query should be saved before running."
                 onClick={() => this.props.runQuery(selectedQuery.id, selectedQuery.name)}
                 className={`btn btn-secondary m-1 float-right1 ${
-                  currentState.queries[selectedQuery.name].isLoading === true ? ' btn-loading' : ''
+                  (currentState.queries[selectedQuery.name] ? currentState.queries[selectedQuery.name].isLoading  :  false) === true ? ' btn-loading' : ''
                 }`}
               >
                 Run

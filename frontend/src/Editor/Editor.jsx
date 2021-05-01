@@ -138,7 +138,6 @@ class Editor extends React.Component {
                   ...this.state.currentState,
                   queries: {
                     ...queryState,
-                    ...this.state.currentState.queries
                   }
                 }
               });
@@ -151,18 +150,22 @@ class Editor extends React.Component {
 
   computeComponentState = (components) => {
     let componentState = {};
+    const currentComponents = this.state.currentState.components
     Object.keys(components).forEach((key) => {
       const component = components[key];
       const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
-      componentState[component.component.name] = componentMeta.exposedVariables;
+
+      const existingComponentName = Object.keys(currentComponents).find(comp => currentComponents[comp].id === key);
+      const existingValues = currentComponents[existingComponentName];
+
+      componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
     });
 
     this.setState({
       currentState: {
         ...this.state.currentState,
         components: {
-          ...componentState,
-          ...this.state.currentState.components
+          ...componentState
         }
       }
     });
@@ -302,37 +305,6 @@ class Editor extends React.Component {
     this.setState({
       queryPaneHeight: this.state.queryPaneHeight === '30%' ? '80%' : '30%'
     });
-  };
-
-  renderVariables = (type, name, variables) => {
-    return (
-      <div className="mb-2">
-        <ReactJson
-          src={variables}
-          name={name}
-          style={{ fontSize: '0.75rem' }}
-          enableClipboard={false}
-          displayDataTypes={false}
-          collapsed={true}
-          sortKeys={true}
-        />
-      </div>
-    );
-  };
-
-  renderQueryVariables = (query) => {
-    const dataSourceMeta = DataSourceTypes.find((source) => query.kind === source.kind);
-    const exposedVariables = dataSourceMeta.exposedVariables;
-
-    return this.renderVariables('queries', query.name, exposedVariables);
-  };
-
-  renderComponentVariables = (id, component) => {
-    const componentType = component.component.component;
-    const componentMeta = componentTypes.find((comp) => componentType === comp.component);
-    const exposedVariables = componentMeta.exposedVariables;
-
-    return this.renderVariables('components', component.component.name, exposedVariables);
   };
 
   toggleQueryEditor = () => {
@@ -532,11 +504,7 @@ class Editor extends React.Component {
                         src={currentState.queries}
                         name={'queries'}
                         style={{ fontSize: '0.7rem' }}
-                        enableClipboard={false}
-                        displayDataTypes={false}
-                        collapsed={true}
-                        sortKeys={true}
-                        indentWidth={1}
+                      
                       />
                     </div>
                   </div>
