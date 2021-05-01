@@ -23,13 +23,17 @@ function getItemStyles(delta, item, initialOffset, currentOffset) {
 
   let id = item.id;
 
+  const canvasContainerBoundingRect = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
+  const realCanvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+
+  const realCanvasDelta = realCanvasBoundingRect.x - canvasContainerBoundingRect.x;
+
   if (id) { // Dragging within the canvas
     x = Math.round(item.left + delta.x);
     y = Math.round(item.top + delta.y);
   } else { // New component being dragged  from components sidebar
-    const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-    const offsetFromTopOfWindow = canvasBoundingRect.top;
-    const offsetFromLeftOfWindow = canvasBoundingRect.left;
+    const offsetFromTopOfWindow = realCanvasBoundingRect.top;
+    const offsetFromLeftOfWindow = realCanvasBoundingRect.left;
     const zoomLevel = item.zoomLevel;
 
     x = Math.round(currentOffset.x + (currentOffset.x * (1 - zoomLevel)) - offsetFromLeftOfWindow);
@@ -37,6 +41,8 @@ function getItemStyles(delta, item, initialOffset, currentOffset) {
   }
 
   [x, y] = snapToGrid(x, y);
+
+  x += realCanvasDelta;
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
