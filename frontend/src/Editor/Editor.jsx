@@ -214,8 +214,6 @@ class Editor extends React.Component {
   };
 
   componentDefinitionChanged = (newDefinition) => {
-    console.log('new component definition', newDefinition);
-    console.log('app definition', this.state.appDefinition);
     this.setState({
       appDefinition: {
         ...this.state.appDefinition,
@@ -229,6 +227,21 @@ class Editor extends React.Component {
       }
     });
   };
+
+  componentChanged = (newComponent) => {
+    this.setState({
+      appDefinition: {
+        ...this.state.appDefinition,
+        components: {
+          ...this.state.appDefinition.components,
+          [newComponent.id]: {
+            ...this.state.appDefinition.components[newComponent.id],
+            ...newComponent
+          }
+        }
+      }
+    });
+  }
 
   saveApp = (id, attributes, notify = false) => {
     appService.saveApp(id, attributes).then(() => {
@@ -735,6 +748,7 @@ class Editor extends React.Component {
                     <Inspector
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
+                      componentChanged={this.componentChanged}
                       removeComponent={this.removeComponent}
                       selectedComponent={selectedComponent}
                       components={appDefinition.components}
