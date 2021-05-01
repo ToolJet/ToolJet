@@ -34,7 +34,7 @@ export const EventSelector = ({
           return { name: action.name, value: action.id };
         })}
         value={definition.actionId}
-        search={true}
+        search={false}
         onChange={(value) => eventUpdated(param, value, extraData)}
         filterOptions={fuzzySearch}
         placeholder="Select.."
