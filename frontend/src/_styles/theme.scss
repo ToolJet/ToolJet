@@ -13,6 +13,7 @@ body {
     }
 
     .nav-header {
+      color: #3e525b;
       .nav-tabs {
         border-bottom: 0;
       }
@@ -53,6 +54,10 @@ body {
     .datasources-container {
       height: 50%;
       overflow-y: scroll;
+
+      tr {
+        border-color: #f1f1f1;
+      }
     }
 
     .variables-container {
@@ -109,6 +114,7 @@ body {
     border-width: 0px 0px 0px 1px;
 
     .nav-tabs .nav-link {
+       color:  #3e525b;
       border-top-left-radius: 0px;
       border-top-right-radius: 0px;
     }
@@ -190,6 +196,7 @@ body {
         font-weight: 500;
         margin-top: 5px;
         font-size: 0.8rem;
+        color: #3e525b;
       }
 
       .component-description {
@@ -334,6 +341,10 @@ body {
           .queries-header {
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 0px 0px 1px 0px;
+          }
+
+          tr {
+            border-color: #f1f1f1;
           }
         }
 
@@ -701,7 +712,7 @@ body {
 
 .btn-primary {
   --tblr-btn-color: 60, 146, 220;
-  --tblr-btn-color-darker: 60, 158, 173;
+  --tblr-btn-color-darker: 60, 133, 200;
   border-color: none;
 }
 
@@ -788,7 +799,7 @@ tr:focus {
 }
 
 .no-components-box {
-  border: 1px dashed rgb(74, 196, 214);
+  border: 1px dashed #3e525b;
 }
 
 .form-control-plaintext:focus-visible {
@@ -889,4 +900,16 @@ tr:focus {
 .sub-section {
     width: 100%;
     display: block;
+}
+
+.text-muted { 
+    color: #3e525b!important;
+}
+
+body {
+    color: #3e525b
+}
+
+.navbar-brand-image {
+    height: 1.6rem;
 }
