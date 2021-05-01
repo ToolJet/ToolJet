@@ -381,7 +381,7 @@ class Editor extends React.Component {
                 </button>
                 <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
                   <Link to={'/'} className="">
-                    <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
+                    <img src="/images/logo.svg" width="99" height="30" className="navbar-brand-image" />
                   </Link>
                   <a href="/"></a>
                 </h1>

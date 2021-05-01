@@ -60,7 +60,7 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/243604/buy-click.svg',
+    icon: 'https://www.svgrepo.com/show/255901/cursor-click.svg',
     name: 'Button',
     displayName: 'Button',
     description: 'Trigger actions: queries, alerts etc',
@@ -356,7 +356,7 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/239864/grid.svg',
+    icon: 'https://www.svgrepo.com/show/14343/table.svg',
     name: 'Container',
     displayName: 'Container',
     description: 'Wrapper for multiple components',
