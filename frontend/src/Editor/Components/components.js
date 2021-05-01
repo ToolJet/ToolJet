@@ -70,9 +70,9 @@ export const componentTypes = [
       height: 30
     },
     properties: {
-      text: { type: 'string', displayName: 'Button Text' },
+      text: { type: 'code', displayName: 'Button Text' },
       visible: { type: 'string', displayName: 'Show when', tip: 'Widget will be hidden if the value of this field is false.' },
-      loadingState: { type: 'string', displayName: 'Loading State'}
+      loadingState: { type: 'code', displayName: 'Loading State'}
     },
     events: {
       onClick: { displayName: 'On click'},
@@ -84,9 +84,9 @@ export const componentTypes = [
     exposedVariables: {},
     definition: {
       properties: {
-        text: { value: 'Button' },
+        text: { value: `Button` },
         visible: { value: true },
-        loadingState: { value: false }
+        loadingState: { value: `{{false}}` }
       },
       events: {
         onClick: {
@@ -112,7 +112,7 @@ export const componentTypes = [
       height: 30
     },
     properties: {
-      placeholder: { type: 'string', displayName: 'Placeholder' }
+      placeholder: { type: 'code', displayName: 'Placeholder' }
     },
     events: {},
     styles: {
@@ -144,9 +144,9 @@ export const componentTypes = [
       height: 60
     },
     properties: {
-      format: { type: 'string', displayName: 'Format' },
-      enableTime: { type: 'string', displayName: 'Enable time selection?' },
-      enableDate: { type: 'string', displayName: 'Enable date selection?' }
+      format: { type: 'code', displayName: 'Format' },
+      enableTime: { type: 'code', displayName: 'Enable time selection?' },
+      enableDate: { type: 'code', displayName: 'Enable date selection?' }
     },
     events: {},
     styles: {
@@ -180,7 +180,7 @@ export const componentTypes = [
       height: 32
     },
     properties: {
-      format: { type: 'string', displayName: 'Format' }
+      format: { type: 'code', displayName: 'Format' }
     },
     events: {},
     styles: {
@@ -213,7 +213,7 @@ export const componentTypes = [
       height: 60
     },
     properties: {
-      label: { type: 'string', displayName: 'Label' }
+      label: { type: 'code', displayName: 'Label' }
     },
     events: {
         onCheck: { displayName: 'On check'},
@@ -255,8 +255,8 @@ export const componentTypes = [
       height: 100
     },
     properties: {
-      value: { type: 'string', displayName: 'Value' },
-      placeholder: { type: 'string', displayName: 'Placeholder' }
+      value: { type: 'code', displayName: 'Default value' },
+      placeholder: { type: 'code', displayName: 'Placeholder' }
     },
     events: {},
     styles: {
@@ -287,7 +287,7 @@ export const componentTypes = [
     properties: {
       text: { type: 'code', displayName: 'Text' },
       visible: { type: 'string', displayName: 'Show when' },
-      loadingState: { type: 'string', displayName: 'Show loading state' }
+      loadingState: { type: 'code', displayName: 'Show loading state' }
     },
     defaultSize: {
       width: 100,
@@ -325,7 +325,7 @@ export const componentTypes = [
     },
     component: 'Image',
     properties: {
-      source: { type: 'string', displayName: 'URL' },
+      source: { type: 'code', displayName: 'URL' },
       visible: { type: 'string', displayName: 'Show when' }
     },
     events: {
@@ -387,10 +387,10 @@ export const componentTypes = [
     },
     component: 'DropDown',
     properties: {
-      label: { type: 'string', displayName: 'Label' },
-      value: { type: 'string', displayName: 'Default value' },
-      values: { type: 'json', displayName: 'Option values' },
-      display_values: { type: 'string', displayName: 'Option labels' }
+      label: { type: 'code', displayName: 'Label' },
+      value: { type: 'code', displayName: 'Default value' },
+      values: { type: 'code', displayName: 'Option values' },
+      display_values: { type: 'code', displayName: 'Option labels' }
     },
     events: {
         onSelect: { displayName: 'On select'},
@@ -428,10 +428,10 @@ export const componentTypes = [
     },
     component: 'Multiselect',
     properties: {
-        label: { type: 'string', displayName: 'Label' },
-        value: { type: 'string', displayName: 'Default value' },
-        values: { type: 'json', displayName: 'Option values' },
-        display_values: { type: 'string', displayName: 'Option labels' }
+        label: { type: 'code', displayName: 'Label' },
+        value: { type: 'code', displayName: 'Default value' },
+        values: { type: 'code', displayName: 'Option values' },
+        display_values: { type: 'code', displayName: 'Option labels' }
     },
     events: {
         onSelect: { displayName: 'On select'},
@@ -469,7 +469,7 @@ export const componentTypes = [
       height: 100
     },
     properties: {
-      placeholder: { type: 'string', displayName: 'Placeholder' }
+      placeholder: { type: 'code', displayName: 'Placeholder' }
     },
     events: {},
     styles: {
