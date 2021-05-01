@@ -8,7 +8,7 @@ import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
 
 const styles = {
-  width: 1290,
+  width: 1292,
   height: 1200,
   position: 'absolute'
 };
@@ -78,6 +78,8 @@ export const Container = ({
         let left = 0;
         let top = 0;
 
+        const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+
         // Component already exists and this is just a reposition event
         if (id) {
           const delta = monitor.getDifferenceFromInitialOffset();
@@ -91,10 +93,8 @@ export const Container = ({
           componentData = JSON.parse(JSON.stringify(componentMeta));
           componentData.name = computeComponentName(componentData.component, boxes);
 
-          const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
           const offsetFromTopOfWindow = canvasBoundingRect.top;
           const offsetFromLeftOfWindow = canvasBoundingRect.left;
-
           const currentOffset = monitor.getSourceClientOffset();
 
           left = Math.round(currentOffset.x + (currentOffset.x * (1 - zoomLevel)) - offsetFromLeftOfWindow);
