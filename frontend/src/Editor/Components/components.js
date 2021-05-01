@@ -481,7 +481,7 @@ export const componentTypes = [
         placeholder: { value: 'Placeholder text' }
       },
       events: {
-
+        
       },
       styles: {
 

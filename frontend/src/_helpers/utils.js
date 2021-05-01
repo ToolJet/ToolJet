@@ -122,3 +122,8 @@ export function computeActionName(actions) {
 
   return actionName;
 }
+
+export function validateQueryName(name){
+    const nameRegex = new RegExp('^[A-Za-z0-9_-]*$');
+    return nameRegex.test(name);
+};
