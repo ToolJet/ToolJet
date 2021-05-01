@@ -27,17 +27,19 @@ export function renderElement(component, componentMeta, paramUpdated, dataQuerie
             onChange={paramUpdated}
             paramType={paramType}
             components={components}
+            componentMeta={componentMeta}
         />
   );
 }
 
-export function renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, param) {
-  let definition = component.component.definition.events[param];
+export function renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, eventMeta) {
+  let definition = component.component.definition.events[eventName];
   definition = definition || { };
 
   return (
         <EventSelector
-            param={{ name: param, ...component.component.properties[param] }}
+            param={{ name: eventName }}
+            eventMeta={eventMeta}
             definition={definition}
             eventUpdated={eventUpdated}
             dataQueries={dataQueries}

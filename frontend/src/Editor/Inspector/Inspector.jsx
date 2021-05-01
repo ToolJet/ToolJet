@@ -4,6 +4,7 @@ import { Table } from './Components/Table';
 import { renderElement, renderEvent } from './Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import ReactTooltip from 'react-tooltip';
 
 export const Inspector = ({
   selectedComponent,
@@ -70,6 +71,7 @@ export const Inspector = ({
 
   return (
     <div className="inspector">
+    <ReactTooltip type="dark" effect="solid" place="left" eventOff="click" />
       <div className="header p-2">
         <span className="component-name">
           <span className="p-2">{component.component.name}</span>
@@ -118,7 +120,7 @@ export const Inspector = ({
           {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', components))}
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', components))}
           <hr></hr>
-          {componentMeta.events.map((event) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, event))}
+          {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName]))}
         </div>
       )}
     </div>

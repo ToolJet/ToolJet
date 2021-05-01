@@ -199,17 +199,18 @@ class Table extends React.Component {
             />
           </div>
           <Color
-            param={{ name: 'backgroundColor' }}
+            param="backgroundColor"
             definition={{ value: action.backgroundColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
           />
           <Color
-            param={{ name: 'textColor' }}
+            param="textColor"
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
           />
           <EventSelector
-            param={{ name: 'onClick' }}
+            param="onClick"
+            eventMeta={{ displayName: 'On click'}}
             definition={action.onClick}
             eventUpdated={this.actionButtonEventUpdated}
             dataQueries={this.state.dataQueries}
@@ -357,7 +358,7 @@ class Table extends React.Component {
           </div>
           <hr></hr>
 
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked')}
+          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events['onRowClicked'])}
 
           <div className="field mb-2 mt-2">
             <label className="form-label mt-2">Bulk update query</label>

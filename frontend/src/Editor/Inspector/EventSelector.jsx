@@ -8,7 +8,8 @@ export const EventSelector = ({
   eventUpdated,
   eventOptionUpdated,
   dataQueries,
-  extraData
+  extraData,
+  eventMeta
 }) => {
   function onChange(value) {
     const query = dataQueries.find((dataquery) => dataquery.id === value);
@@ -28,7 +29,7 @@ export const EventSelector = ({
 
   return (
     <div className="field mb-2 mt-1">
-      <label className="form-label">{param.name}</label>
+      <label className="form-label">{eventMeta.displayName}</label>
       <SelectSearch
         options={ActionTypes.map((action) => {
           return { name: action.name, value: action.id };
