@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
+import { getToolTipProps } from './utils';
 
 export const Color = ({
-  param, definition, onChange, paramType
+  param, definition, onChange, paramType, componentMeta
 }) => {
   const [showPicker, setShowPicker] = useState(false);
 
@@ -14,9 +15,12 @@ export const Color = ({
     left: '0px'
   };
 
+  const paramMeta = componentMeta[paramType][param.name];
+  const displayName = paramMeta.displayName || param.name;
+
   return (
     <div className="field mb-2">
-      <label className="form-label">{param.name}</label>
+      <label {...getToolTipProps(paramMeta)} className="form-label">{displayName}</label>
 
       {showPicker && (
         <div>

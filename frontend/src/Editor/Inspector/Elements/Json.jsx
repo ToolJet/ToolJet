@@ -1,9 +1,10 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
+import { getToolTipProps } from './utils';
 
 export const Json = ({
-  param, definition, onChange, paramType
+  param, definition, onChange, paramType, componentMeta
 }) => {
   const value = definition
     ? definition.value
@@ -13,9 +14,12 @@ export const Json = ({
         "email": "hanson@example.com"
       }]`;
 
+  const paramMeta = componentMeta[paramType][param.name];
+  const displayName = paramMeta.displayName || param.name;      
+
   return (
     <div className="field mb-2">
-      <label className="form-label">{param.name}</label>
+      <label {...getToolTipProps(paramMeta)} className="form-label">{displayName}</label>
       <CodeMirror
         height="300px"
         fontSize="2"

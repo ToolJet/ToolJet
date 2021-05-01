@@ -6,22 +6,22 @@ export const componentTypes = [
     description: 'Display paginated tabular data',
     component: 'Table',
     properties: {
-      title: { type: 'string' },
-      data: { type: 'code' },
-      visible: { type: 'string' },
-      loadingState: { type: 'string' },
-      columns: { type: 'array' }
+      title: { type: 'string', displayName: 'Title' },
+      data: { type: 'code', displayName: 'Table Data' },
+      visible: { type: 'string', displayName: 'Show when' },
+      loadingState: { type: 'string', displayName: 'Loading state' },
+      columns: { type: 'array', displayName: 'Table Columns' }
     },
     defaultSize: {
-      width: 800,
+      width: 810,
       height: 300
     },
-    events: [
-      'onRowClicked',
-      'onBulkUpdate'
-    ],
+    events: {
+      onRowClicked: { displayName: 'On row clicked'},
+      onBulkUpdate: { displayName: 'Bulk update query'}
+    },
     styles: {
-      textColor: { type: 'color' }
+      textColor: { type: 'color', displayName: 'Text Color' }
     },
     exposedVariables: {
       selectedRow: {},
@@ -70,16 +70,16 @@ export const componentTypes = [
       height: 30
     },
     properties: {
-      text: { type: 'string' },
-      visible: { type: 'string' },
-      loadingState: { type: 'string' }
+      text: { type: 'string', displayName: 'Button Text' },
+      visible: { type: 'string', displayName: 'Show when', tip: 'Widget will be hidden if the value of this field is false.' },
+      loadingState: { type: 'string', displayName: 'Loading State'}
     },
-    events: [
-      'onClick'
-    ],
+    events: {
+      onClick: { displayName: 'On click'},
+    },
     styles: {
-      backgroundColor: { type: 'color' },
-      textColor: { type: 'color' }
+      backgroundColor: { type: 'color', displayName: 'Background color' },
+      textColor: { type: 'color', displayName: 'Text color' }
     },
     exposedVariables: {},
     definition: {
@@ -112,11 +112,9 @@ export const componentTypes = [
       height: 30
     },
     properties: {
-      placeholder: { type: 'string' }
+      placeholder: { type: 'string', displayName: 'Placeholder' }
     },
-    events: [
-
-    ],
+    events: {},
     styles: {
 
     },
@@ -146,13 +144,11 @@ export const componentTypes = [
       height: 60
     },
     properties: {
-      format: { type: 'string' },
-      enableTime: { type: 'string' },
-      enableDate: { type: 'string' }
+      format: { type: 'string', displayName: 'Format' },
+      enableTime: { type: 'string', displayName: 'Enable time selection?' },
+      enableDate: { type: 'string', displayName: 'Enable date selection?' }
     },
-    events: [
-
-    ],
+    events: {},
     styles: {
 
     },
@@ -184,11 +180,9 @@ export const componentTypes = [
       height: 32
     },
     properties: {
-      format: { type: 'string' }
+      format: { type: 'string', displayName: 'Format' }
     },
-    events: [
-
-    ],
+    events: {},
     styles: {
 
     },
@@ -219,11 +213,12 @@ export const componentTypes = [
       height: 60
     },
     properties: {
-      label: { type: 'string' }
+      label: { type: 'string', displayName: 'Label' }
     },
-    events: [
-      'onCheck', 'onUnCheck'
-    ],
+    events: {
+        onCheck: { displayName: 'On check'},
+        onUnCheck: { displayName: 'On uncheck'},
+    },
     styles: {
 
     },
@@ -260,12 +255,10 @@ export const componentTypes = [
       height: 100
     },
     properties: {
-      value: { type: 'string' },
-      placeholder: { type: 'string' }
+      value: { type: 'string', displayName: 'Value' },
+      placeholder: { type: 'string', displayName: 'Placeholder' }
     },
-    events: [
-
-    ],
+    events: {},
     styles: {
 
     },
@@ -292,9 +285,9 @@ export const componentTypes = [
     description: 'Display markdown or HTML',
     component: 'Text',
     properties: {
-      text: { type: 'code' },
-      visible: { type: 'string' },
-      loadingState: { type: 'string' }
+      text: { type: 'code', displayName: 'Text' },
+      visible: { type: 'string', displayName: 'Show when' },
+      loadingState: { type: 'string', displayName: 'Show loading state' }
     },
     defaultSize: {
       width: 100,
@@ -304,7 +297,7 @@ export const componentTypes = [
 
     ],
     styles: {
-      textColor: { type: 'color' }
+      textColor: { type: 'color', displayName: 'Text Color' }
     },
     exposedVariables: {},
     definition: {
@@ -332,12 +325,12 @@ export const componentTypes = [
     },
     component: 'Image',
     properties: {
-      source: { type: 'string' },
-      visible: { type: 'string' }
+      source: { type: 'string', displayName: 'URL' },
+      visible: { type: 'string', displayName: 'Show when' }
     },
-    events: [
-      'onClick'
-    ],
+    events: {
+        onClick: { displayName: 'On click'},
+    },
     styles: {
 
     },
@@ -366,11 +359,9 @@ export const componentTypes = [
     },
     component: 'Container',
     properties: {
-      visible: { type: 'string' }
+      visible: { type: 'string', displayName: 'Show when' }
     },
-    events: [
-
-    ],
+    events: {},
     styles: {
       backgroundColor: { type: 'color' }
     },
@@ -396,14 +387,14 @@ export const componentTypes = [
     },
     component: 'DropDown',
     properties: {
-      label: { type: 'string' },
-      value: { type: 'string' },
-      values: { type: 'json' },
-      display_values: { type: 'string' }
+      label: { type: 'string', displayName: 'Label' },
+      value: { type: 'string', displayName: 'Default value' },
+      values: { type: 'json', displayName: 'Option values' },
+      display_values: { type: 'string', displayName: 'Option labels' }
     },
-    events: [
-      'onSelect'
-    ],
+    events: {
+        onSelect: { displayName: 'On select'},
+    },
     styles: {
 
     },
@@ -437,14 +428,14 @@ export const componentTypes = [
     },
     component: 'Multiselect',
     properties: {
-      label: { type: 'string' },
-      values: { type: 'string' },
-      option_values: { type: 'string' },
-      display_values: { type: 'string' }
+        label: { type: 'string', displayName: 'Label' },
+        value: { type: 'string', displayName: 'Default value' },
+        values: { type: 'json', displayName: 'Option values' },
+        display_values: { type: 'string', displayName: 'Option labels' }
     },
-    events: [
-      'onSelect'
-    ],
+    events: {
+        onSelect: { displayName: 'On select'},
+    },
     styles: {
 
     },
@@ -468,40 +459,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/16476/map.svg',
-    name: 'Map',
-    displayName: 'Map',
-    description: 'Display maps with markers.',
-    component: 'Map',
-    properties: {
-      label: { type: 'string' },
-      values: { type: 'string' },
-      display_values: { type: 'string' }
-    },
-    events: [
-      'onMarkerClick', 'onMarkerCreate'
-    ],
-    styles: {
-
-    },
-    exposedVariables: {},
-    definition: {
-      properties: {
-        label: { value: 'https://www.svgrepo.com/show/46775/drop-down-list.svg' },
-        values: [1, 2, 3],
-        display_values: ['one', 'two', 'three'],
-        visible: { value: true }
-      },
-      events: {
-        onMarkerClick: { },
-        onMarkerCreate: { }
-      },
-      styles: {
-
-      }
-    }
-  },
-  {
     icon: 'https://www.svgrepo.com/show/5908/text-document.svg',
     name: 'RichTextEditor',
     displayName: 'Rich Text Editor',
@@ -512,11 +469,9 @@ export const componentTypes = [
       height: 100
     },
     properties: {
-      placeholder: { type: 'string' }
+      placeholder: { type: 'string', displayName: 'Placeholder' }
     },
-    events: [
-
-    ],
+    events: {},
     styles: {
 
     },

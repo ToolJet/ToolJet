@@ -1,10 +1,13 @@
 import React from 'react';
 import { CodeBuilder } from '../../CodeBuilder/CodeBuilder';
+import { getToolTipProps } from './utils';
 
 export const Code = ({
-  param, definition, onChange, paramType, dataQueries, components
+  param, definition, onChange, paramType, dataQueries, components, componentMeta
 }) => {
   const initialValue = definition ? definition.value : '';
+  const paramMeta = componentMeta[paramType][param.name];
+  const displayName = paramMeta.displayName || param.name;
 
   function handleCodeChanged(value) {
     onChange(param, 'value', value, paramType);
@@ -12,7 +15,7 @@ export const Code = ({
 
   return (
     <div className="field mb-2">
-      <label className="form-label">{param.name}</label>
+      <label {...getToolTipProps(paramMeta)}  className="form-label">{displayName}</label>
       <CodeBuilder
         initialValue={initialValue}
         components={components}
