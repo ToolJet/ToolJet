@@ -15,7 +15,7 @@ return data.filter(row => row.amount > 1000);`;
   }, [defaultValue]);
 
   return (
-    <div className="field mb-2">
+    <div className="field mb-2 transformation-editor">
       <label className="form-check form-switch my-2">
         <input
           className="form-check-input"
@@ -32,18 +32,21 @@ return data.filter(row => row.amount > 1000);`;
       )}
       <br></br>
       {options.enableTransformation && (
-        <CodeMirror
-          height="200px"
-          fontSize="1"
-          onChange={(instance) => changeOption('transformation', instance.getValue())}
-          value={value}
-          options={{
-            theme: 'duotone-light',
-            mode: 'javascript',
-            lineWrapping: true,
-            scrollbarStyle: null
-          }}
-        />
+        <div>
+          <CodeMirror
+            height="auto"
+            fontSize="1"
+            onChange={(instance) => changeOption('transformation', instance.getValue())}
+            value={value}
+            options={{
+              theme: 'duotone-light',
+              mode: 'javascript',
+              lineWrapping: true,
+              scrollbarStyle: null
+            }}
+          />
+        </div>
+
       )}
     </div>
   );
