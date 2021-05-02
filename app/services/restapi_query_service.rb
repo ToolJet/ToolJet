@@ -38,12 +38,12 @@ class RestapiQueryService
 
     response = if method.downcase === 'get'
                  HTTParty.send(method.downcase,
-                               data_query.options['url'],
+                               url,
                                headers: headers,
                                query: url_params.to_h)
                else
                  HTTParty.send(method.downcase,
-                               data_query.options['url'],
+                               url,
                                headers: headers,
                                query: url_params.to_h,
                                body: body.to_h)
