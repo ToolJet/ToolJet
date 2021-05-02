@@ -716,6 +716,7 @@ body {
 }
 
 .jet-data-table:hover {
+    overflow-x: scroll;
     overflow-y: scroll;
 }
 
@@ -723,11 +724,15 @@ body {
     overflow: hidden;
 
     thead {
-        position: fixed;    
-        top: 51px;
+        position: sticky;
+        top: 0px;
+        display: inline-block;
+
+        tr { 
+            border-top: none;
+        }
     }
     tbody {
-        padding-top: 29px;
         display: inline-block;
     }
 }
