@@ -3,5 +3,6 @@ export const TypeMapping = {
   string: 'Text',
   color: 'Color',
   json: 'Json',
-  code: 'Code'
+  code: 'Code',
+  toggle: 'Toggle'
 };

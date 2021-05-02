@@ -3,6 +3,7 @@ import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';
 import { Code } from './Elements/Code';
+import { Toggle } from './Elements/Toggle';
 import { TypeMapping } from './TypeMapping';
 import { EventSelector } from './EventSelector';
 
@@ -10,7 +11,8 @@ const AllElements = {
   Color,
   Json,
   Text,
-  Code
+  Code,
+  Toggle
 };
 
 export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, components = {}) {
