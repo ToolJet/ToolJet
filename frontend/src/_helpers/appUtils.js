@@ -240,6 +240,19 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
             }
           }
         });
+      }).catch(error => {
+        toast.error(error, { hideProgressBar: true, autoClose: 3000 });
+        _self.setState({
+          currentState: {
+            ..._self.state.currentState,
+            queries: {
+              ..._self.state.currentState.queries,
+              [queryName]: {
+                isLoading: false
+              }
+            }
+          }
+        });
       });
     });
   });
