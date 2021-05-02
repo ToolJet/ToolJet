@@ -367,7 +367,7 @@ export function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0 },
+      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : 10}, // pageSize should be unset if server-side pagination is enabled
 	  pageCount: -1,
 	  manualPagination: false,
       getExportFileBlob
@@ -515,6 +515,7 @@ export function Table({
                 autoGotoPage={gotoPage}
                 autoCanNextPage={canNextPage}
                 autoPageCount={pageCount}
+                autoPageOptions={pageOptions}
                 onPageIndexChanged={onPageIndexChanged}
             />
           </div>
