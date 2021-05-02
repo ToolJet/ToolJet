@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
-import { Table } from './Components/Table';
+import { Table } from './Components/Table/Table';
 import { TextInput } from './Components/TextInput';
 import { TextArea } from './Components/TextArea';
 import { Container } from './Components/Container';

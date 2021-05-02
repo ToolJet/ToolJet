@@ -7,10 +7,11 @@ export const componentTypes = [
     component: 'Table',
     properties: {
       title: { type: 'string', displayName: 'Title' },
-      data: { type: 'code', displayName: 'Table Data' },
+      data: { type: 'code', displayName: 'Table data' },
       visible: { type: 'string', displayName: 'Show when' },
       loadingState: { type: 'string', displayName: 'Loading state' },
-      columns: { type: 'array', displayName: 'Table Columns' }
+      columns: { type: 'array', displayName: 'Table Columns' },
+      serverSidePagination: { type: 'toggle', displayName: 'Server Side Pagination'}
     },
     defaultSize: {
       width: 810,
@@ -18,7 +19,8 @@ export const componentTypes = [
     },
     events: {
       onRowClicked: { displayName: 'On row clicked'},
-      onBulkUpdate: { displayName: 'Bulk update query'}
+      onBulkUpdate: { displayName: 'Bulk update query'},
+      onPageChanged: { displayName: 'On page changed query'}
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' }
@@ -34,6 +36,7 @@ export const componentTypes = [
         visible: { value: true },
         loadingState: { value: false },
         data: { value: '{{[]}}' },
+        serverSidePagination: { value: false },
         columns: {
           value: [
             { name: 'id' },
@@ -49,10 +52,15 @@ export const componentTypes = [
           }
         },
         onBulkUpdate: {
-          options: {
-
+            options: {
+  
+            }
+        },
+        onPageChanged: {
+            options: {
+  
+            }
           }
-        }
       },
       styles: {
         textColor: { value: '' }

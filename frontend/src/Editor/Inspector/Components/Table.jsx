@@ -297,7 +297,6 @@ class Table extends React.Component {
 
     return (
       <div className="properties-container p-2">
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'title', 'properties')}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', components)}
 
         <div className="field mb-2 mt-3">
@@ -358,7 +357,12 @@ class Table extends React.Component {
           </div>
           <hr></hr>
 
+          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties')}
+          
+          <hr></hr>
+
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events['onRowClicked'])}
+          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events['onPageChanged'])}
 
           <div className="field mb-2 mt-2">
             <label className="form-label mt-2">Bulk update query</label>
