@@ -87,7 +87,7 @@ class Elasticsearch extends React.Component {
                 <div className="mb-3 mt-2">
                   <label className="form-label text-reset">Query</label>
                   <CodeMirror
-                    height="100px"
+                    height="auto"
                     fontSize="2"
                     placeholder={'{ "name": "" }'}
                     value={options.query}
