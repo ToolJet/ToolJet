@@ -65,8 +65,8 @@ class Viewer extends React.Component {
         globals: {
           current_user: {
             email: currentUser.email,
-            first_name: currentUser.first_name,
-            last_name: currentUser.last_name
+            firstName: currentUser.first_name,
+            lastName: currentUser.last_name
           },
           urlparams: {}
         }
