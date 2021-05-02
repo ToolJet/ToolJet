@@ -465,8 +465,8 @@ export const componentTypes = [
     description: 'Rich text editor',
     component: 'RichTextEditor',
     defaultSize: {
-      width: 250,
-      height: 100
+      width: 600,
+      height: 210
     },
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' }
@@ -475,7 +475,9 @@ export const componentTypes = [
     styles: {
 
     },
-    exposedVariables: {},
+    exposedVariables: {
+        value: {}
+    },
     definition: {
       properties: {
         placeholder: { value: 'Placeholder text' }
