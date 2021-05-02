@@ -712,6 +712,24 @@ body {
     left: 6px;
     bottom: 8px;
   }
+  
+}
+
+.jet-data-table:hover {
+    overflow-y: scroll;
+}
+
+.jet-data-table {
+    overflow: hidden;
+
+    thead {
+        position: fixed;    
+        top: 51px;
+    }
+    tbody {
+        padding-top: 29px;
+        display: inline-block;
+    }
 }
 
 .btn-primary {
@@ -1029,4 +1047,8 @@ body {
     background: #83b8e7;
     border: 1px double #83b8e7;
     color: #fff;
+}
+
+.table-responsive {
+    margin-bottom: 0rem;
 }

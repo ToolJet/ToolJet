@@ -418,7 +418,7 @@ export function Table({
   return (
     <div
       className="card"
-      style={{ width: `${width + 16}px`, height: `${height + 3}px` }}
+      style={{ width: `${width}px`, height: `${height + 3}px` }}
       onClick={() => onComponentClick(id, component)}
     >
       <div className="card-body border-bottom py-3 jet-data-table-header">
