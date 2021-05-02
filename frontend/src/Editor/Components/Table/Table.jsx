@@ -14,6 +14,7 @@ import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
+import { Pagination } from './Pagination';
 
 var _ = require('lodash');
 
@@ -32,6 +33,8 @@ export function Table({
 }) {
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
+  const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
+  const serverSidePagination = serverSidePaginationProperty ? serverSidePaginationProperty.value : false;
 
   const [loadingState, setLoadingState] = useState(false);
 
@@ -143,6 +146,12 @@ export function Table({
     const headerNames = columns.map((col) => col.exportValue);
     const csvString = Papa.unparse({ fields: headerNames, data });
     return new Blob([csvString], { type: 'text/csv' });
+  }
+
+  function onPageIndexChanged(page) {
+    onComponentOptionChanged(component, 'pageIndex', page).then(() => {
+        onEvent('onPageChanged', { component, data: {} });
+    });
   }
 
   function handleChangesSaved() {
@@ -359,6 +368,8 @@ export function Table({
       data,
       defaultColumn,
       initialState: { pageIndex: 0 },
+	  pageCount: -1,
+	  manualPagination: false,
       getExportFileBlob
     },
     useFilters,
@@ -497,30 +508,15 @@ export function Table({
         )}
       </div>
       <div className="card-footer d-flex align-items-center jet-table-footer">
-        <div className="pagination row">
-          <div className="pagination-buttons col">
-            <button className="btn btn-sm btn-light" onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-              {'<<'}
-            </button>{' '}
-            <button className="btn btn-light btn-sm" onClick={() => previousPage()} disabled={!canPreviousPage}>
-              {'<'}
-            </button>{' '}
-            <small className="p-1">
-              Page{' '}
-              <strong>
-                {pageIndex + 1} of {pageOptions.length}
-              </strong>{' '}
-            </small>
-            <button className="btn btn-light btn-sm" onClick={() => nextPage()} disabled={!canNextPage}>
-              {'>'}
-            </button>{' '}
-            <button
-              className="btn btn-light btn-sm mr-5"
-              onClick={() => gotoPage(pageCount - 1)}
-              disabled={!canNextPage}
-            >
-              {'>>'}
-            </button>{' '}
+        <div className="table-footer row">
+          <div className="col">
+            <Pagination
+                serverSide={serverSidePagination}
+                autoGotoPage={gotoPage}
+                autoCanNextPage={canNextPage}
+                autoPageCount={pageCount}
+                onPageIndexChanged={onPageIndexChanged}
+            />
           </div>
 
           {Object.keys(componentState.changeSet || {}).length > 0 && (

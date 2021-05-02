@@ -95,6 +95,7 @@ function executeAction(_ref, event) {
 
 export function onEvent(_ref, eventName, options) {
   let _self = _ref;
+  console.log('Event: ', eventName);
 
   if (eventName === 'onRowClicked') {
     const { component, data } = options;
@@ -148,6 +149,15 @@ export function onEvent(_ref, eventName, options) {
     }
   }
 
+  if (eventName === 'onPageChanged') {
+    const { component } = options;
+    const event = component.definition.events.onPageChanged;
+
+    if (event.actionId) {
+      executeAction(_self, event);
+    }
+  }
+
   if (eventName === 'onBulkUpdate') {
     return new Promise(function (resolve, reject) {
       onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
@@ -190,7 +200,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
       ..._ref.state.currentState.queries,
       [queryName]: {
         ..._ref.state.currentState.queries[queryName],
-        isLoading: true
+        isLoading: true,
+        data: [],
+        rawData: []
       }
     }
   };
