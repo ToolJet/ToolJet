@@ -723,6 +723,7 @@ class Editor extends React.Component {
                       removeComponent={this.removeComponent}
                       selectedComponent={selectedComponent}
                       components={appDefinition.components}
+                      key={selectedComponent.id}
                     ></Inspector>
                   ) : (
                     <div className="mt-5 p-2">Please select a component to inspect</div>
