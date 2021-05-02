@@ -777,6 +777,9 @@ tr:focus {
   font-weight: 300;
   font-size: 14px;
   padding: 4px 7px 2px;
+  padding: 4px 7px 2px;
+  width: 100px!important;
+  margin-left: 10px;
 }
 
 .jet-data-table {
@@ -984,8 +987,46 @@ body {
     color: #5890ff;
   }
   
-  .transformation-editor {
+.transformation-editor {
     .CodeMirror {
         min-height: 70px;
     }
-  }
+}
+
+.rdt {
+    .form-control {
+        height: 100%;
+    }
+}
+
+.DateInput_input__focused {
+    border-bottom: 2px solid #3c92dc;
+}
+
+.CalendarDay__selected, .CalendarDay__selected:active, .CalendarDay__selected:hover {
+    background: #3c92dc;
+    border: 1px double #3c92dc;
+}
+
+.CalendarDay__selected_span {
+    background: #3c92dcc2;
+    border: #3c92dcc2;
+}
+
+.CalendarDay__selected_span:active, .CalendarDay__selected_span:hover {
+    background: #3c92dc;
+    border: 1px double #3c92dc;
+    color: #fff;
+}
+
+.CalendarDay__hovered_span:active, .CalendarDay__hovered_span:hover {
+    background: #3c92dc;
+    border: 1px double #3c92dc;
+    color: #fff;
+}
+
+.CalendarDay__hovered_span {
+    background: #83b8e7;
+    border: 1px double #83b8e7;
+    color: #fff;
+}

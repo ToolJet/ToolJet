@@ -140,8 +140,8 @@ export const componentTypes = [
     description: 'Select a date and time',
     component: 'Datepicker',
     defaultSize: {
-      width: 100,
-      height: 60
+      width: 150,
+      height: 30
     },
     properties: {
       format: { type: 'code', displayName: 'Format' },

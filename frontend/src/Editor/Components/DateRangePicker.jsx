@@ -23,13 +23,16 @@ export const DaterangePicker = function DaterangePicker({
   const [startDate, setStartDate] = useState(startDateProp ? startDateProp.value : null);
   const [endDate, setEndDate] = useState(endDateProp ? endDateProp.value : null);
 
-  function onDateChange({ start, end }) {
+  function onDateChange(dates) {
+    const start = dates.startDate;
+    const end = dates.endDate;
+
     if (start) {
-      onComponentOptionChanged(component, 'startDate', startDate.format(formatProp.value));
+      onComponentOptionChanged(component, 'startDate', start.format(formatProp.value));
     }
 
     if (end) {
-      onComponentOptionChanged(component, 'endDate', endDate.format(formatProp.value));
+      onComponentOptionChanged(component, 'endDate', end.format(formatProp.value));
     }
 
     setStartDate(start);
@@ -48,9 +51,10 @@ export const DaterangePicker = function DaterangePicker({
         isOutsideRange={() => false}
         endDate={endDate}
         endDateId="endDate"
-        onDatesChange={({ start, end }) => onDateChange({ start, end })}
+        onDatesChange={(dates) => onDateChange(dates)}
         onFocusChange={(focus) => focusChanged(focus)}
         focusedInput={focusedInput}
+        hideKeyboardShortcutsPanel={true}
       />
     </div>
   );
