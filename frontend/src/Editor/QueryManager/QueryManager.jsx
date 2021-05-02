@@ -269,7 +269,7 @@ class QueryManager extends React.Component {
                   className="form-control-plaintext form-control-plaintext-sm mt-1"
                   value={queryName}
                   style={{ width: '160px' }}
-                  autoFocus
+                  autoFocus={false}
                 />
                 <span className="input-icon-addon">
                   <img src="https://www.svgrepo.com/show/149235/edit.svg" width="12" height="12" />

@@ -21,6 +21,10 @@ body {
 
     .advanced-options-container {
     }
+
+    .CodeMirror {
+        min-height: 70px;
+    }
   }
 
   .left-sidebar {
@@ -978,4 +982,10 @@ body {
   
   .RichEditor-activeButton {
     color: #5890ff;
+  }
+  
+  .transformation-editor {
+    .CodeMirror {
+        min-height: 70px;
+    }
   }
