@@ -36,6 +36,7 @@ class Editor extends React.Component {
     super(props);
 
     const appId = this.props.match.params.id;
+    const currentUser = authenticationService.currentUserValue;
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -56,7 +57,11 @@ class Editor extends React.Component {
         queries: {},
         components: {},
         globals: {
-          current_user: {},
+          currentUser: {
+            firstName: currentUser.first_name,
+            lastName: currentUser.last_name,
+            email: currentUser.email
+          },
           urlparams: {}
         }
       }
@@ -472,12 +477,7 @@ class Editor extends React.Component {
                       <ReactJson
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
-                        src={{
-                          currentUser: {
-                            name: '',
-                            email: ''
-                          }
-                        }}
+                        src={currentState.globals}
                         name={'globals'}
                         displayDataTypes={false}
                         collapsed={true}
