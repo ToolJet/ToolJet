@@ -137,7 +137,7 @@ class Editor extends React.Component {
                 currentState: {
                   ...this.state.currentState,
                   queries: {
-                    ...queryState,
+                    ...queryState
                   }
                 }
               });
@@ -150,7 +150,7 @@ class Editor extends React.Component {
 
   computeComponentState = (components) => {
     let componentState = {};
-    const currentComponents = this.state.currentState.components
+    const currentComponents = this.state.currentState.components;
     Object.keys(components).forEach((key) => {
       const component = components[key];
       const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
@@ -504,7 +504,10 @@ class Editor extends React.Component {
                         src={currentState.queries}
                         name={'queries'}
                         style={{ fontSize: '0.7rem' }}
-                      
+                        enableClipboard={false}
+                        displayDataTypes={false}
+                        collapsed={true}
+                        sortKeys={true}
                       />
                     </div>
                   </div>
