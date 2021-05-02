@@ -5,7 +5,8 @@ export const Pagination = function Pagination({
   serverSide,
   autoGotoPage,
   autoCanNextPage,
-  autoPageCount
+  autoPageCount,
+  autoPageOptions
 }) {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageCount, setPageCount] = useState(autoPageCount);
@@ -45,14 +46,22 @@ export const Pagination = function Pagination({
               {'<'}
             </button>{' '}
             <small className="p-1 mx-2">
-              <strong>
-                {pageIndex}
-              </strong>
+              
+              {serverSide && 
+                <strong>
+                  {pageIndex}
+                </strong>
+              }
+              {!serverSide && 
+                <strong>
+                  {pageIndex} of {autoPageOptions.length}
+                </strong>
+              }
             </small>
             <button
                 className="btn btn-light btn-sm"
                 onClick={() => goToNextPage()}
-                disabled={!autoCanNextPage}
+                disabled={!autoCanNextPage && !serverSide}
             >
               {'>'}
             </button>{' '}
