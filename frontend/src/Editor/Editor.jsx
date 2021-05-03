@@ -722,6 +722,7 @@ class Editor extends React.Component {
                       componentChanged={this.componentChanged}
                       removeComponent={this.removeComponent}
                       selectedComponent={selectedComponent}
+                      currentState={currentState}
                       components={appDefinition.components}
                       key={selectedComponent.id}
                     ></Inspector>

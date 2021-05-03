@@ -6,7 +6,6 @@ import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { onBeforeChange, handleChange } from './utils';
 
-
 export function CodeHinter({
   initialValue, onChange, currentState
 }) {

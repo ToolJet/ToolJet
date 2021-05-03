@@ -14,7 +14,7 @@ class Table extends React.Component {
     super(props);
 
     const {
-      dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components
+      dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components, currentState
     } = props;
 
     this.state = {
@@ -24,7 +24,8 @@ class Table extends React.Component {
       componentMeta,
       eventUpdated,
       eventOptionUpdated,
-      components
+      components,
+      currentState
     };
   }
 
@@ -36,7 +37,8 @@ class Table extends React.Component {
       componentMeta,
       eventUpdated,
       eventOptionUpdated,
-      components
+      components,
+      currentState
     } = this.props;
 
     this.setState({
@@ -46,7 +48,8 @@ class Table extends React.Component {
       componentMeta,
       eventUpdated,
       eventOptionUpdated,
-      components
+      components,
+      currentState
     });
   }
 
@@ -289,7 +292,8 @@ class Table extends React.Component {
       componentMeta,
       eventUpdated,
       eventOptionUpdated,
-      components
+      components,
+      currentState
     } = this.state;
 
     const columns = component.component.definition.properties.columns;
@@ -297,7 +301,7 @@ class Table extends React.Component {
 
     return (
       <div className="properties-container p-2">
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', components)}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', currentState, components)}
 
         <div className="field mb-2 mt-3">
           <div className="row g-2">
@@ -357,7 +361,7 @@ class Table extends React.Component {
           </div>
           <hr></hr>
 
-          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties')}
+          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
           
           <hr></hr>
 
@@ -382,9 +386,9 @@ class Table extends React.Component {
           <hr></hr>
         </div>
 
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'visible', 'properties')}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties')}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles')}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'visible', 'properties', currentState)}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
       </div>
     );
   }

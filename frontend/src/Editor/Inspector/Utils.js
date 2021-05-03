@@ -15,7 +15,7 @@ const AllElements = {
   Toggle
 };
 
-export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, components = {}) {
+export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState, components = {}) {
   const definition = component.component.definition[paramType][param];
   const meta = componentMeta[paramType][param];
   console.log('definition', definition);
@@ -30,6 +30,7 @@ export function renderElement(component, componentMeta, paramUpdated, dataQuerie
             paramType={paramType}
             components={components}
             componentMeta={componentMeta}
+            currentState={currentState}
         />
   );
 }
