@@ -43,8 +43,7 @@ class Restapi extends React.Component {
     this.props.optionsChanged(options);
   };
 
-  keyValuePairValueChanged = (e, keyIndex, option, index) => {
-    const value = e.target.value;
+  keyValuePairValueChanged = (value, keyIndex, option, index) => {
     const { options } = this.state;
 
     options[option][index][keyIndex] = value;
@@ -100,21 +99,15 @@ class Restapi extends React.Component {
                 <div className="col-md-10">
                   {options[option].map((pair, index) => (
                     <div className="input-group" key={index}>
-                      <input
-                        type="text"
-                        value={pair[0]}
-                        className="form-control"
-                        placeholder="key"
-                        autoComplete="off"
-                        onChange={(e) => this.keyValuePairValueChanged(e, 0, option, index)}
+                      <CodeHinter
+                        currentState={this.props.currentState}
+                        initialValue={pair[0]}
+                        onChange={(value) => this.keyValuePairValueChanged(value, 0, option, index)}
                       />
-                      <input
-                        type="text"
-                        value={pair[1]}
-                        className="form-control"
-                        placeholder="value"
-                        autoComplete="off"
-                        onChange={(e) => this.keyValuePairValueChanged(e, 1, option, index)}
+                      <CodeHinter
+                        currentState={this.props.currentState}
+                        initialValue={pair[1]}
+                        onChange={(value) => this.keyValuePairValueChanged(value, 1, option, index)}
                       />
                       <span
                         className="input-group-text"

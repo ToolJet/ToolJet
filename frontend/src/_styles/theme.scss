@@ -1062,12 +1062,11 @@ body {
     margin-bottom: 0rem;
 }
 
-.code-hinter {
-    .form-control {
-        padding: 0.1775rem .75rem;
-        height: 36px;
-    }
 
+.code-hinter {
+
+    padding: 0.1775rem .75rem;
+    height: 36px;
 
     .CodeMirror {
         font-family: 'Roboto', sans-serif;
