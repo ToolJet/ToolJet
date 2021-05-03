@@ -601,7 +601,7 @@ class Editor extends React.Component {
                 <div className="row main-row">
                   <div className="col-md-3 data-pane">
                     <div className="queries-container">
-                      <div className="queries-header row m-2">
+                      <div className="queries-header row mx-2 mt-2">
                         <div className="col">
                           <h5 className="p-1 text-muted">QUERIES</h5>
                         </div>
@@ -625,7 +625,7 @@ class Editor extends React.Component {
                           <Skeleton count={8} />
                         </div>
                       ) : (
-                        <div className="m-2">
+                        <div className="">
                           <div className="table-responsive">
                             <table className="table table-vcenter table-nowrap">
                               <tbody>{dataQueries.map((query) => this.renderDataQuery(query))}</tbody>

@@ -1,8 +1,7 @@
 import React from 'react';
-import { CodeBuilder } from '../../CodeBuilder/CodeBuilder';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -62,48 +61,32 @@ class Restapi extends React.Component {
         <div className="mb-3 mt-2">
           <div className="mb-3">
             <div className="row g-2">
-              <div className="col-auto">
-                <select
-                  className="form-select"
+              <div className="col-auto" style={{width: '120px'}} >
+                <SelectSearch
+                  options={[
+                    { name: 'GET', value: 'get' },
+                    { name: 'POST', value: 'post' },
+                    { name: 'PUT', value: 'put' },
+                    { name: 'PATCH', value: 'patch' },
+                    { name: 'DELETE', value: 'delete' }
+                  ]}
                   value={options.method}
-                  onChange={(e) => this.changeOption('method', e.target.value)}
-                >
-                  <option value="get">GET</option>
-                  <option value="post">POST</option>
-                  <option value="put">PUT</option>
-                  <option value="patch">PATCH</option>
-                  <option value="delete">DELETE</option>
-                </select>
+                  search={false}
+                  closeOnSelect={true}
+                  onChange={(value) => {
+                    this.changeOption('method', value);
+                  }}
+                  filterOptions={fuzzySearch}
+                  placeholder="Method"
+                />
               </div>
+              
               <div className="col">
-                {/* <input
-                  type="text"
-                  className="form-control"
-                  value={options.url}
-                  onChange={(e) => { this.changeOption('url', e.target.value)}}
-                  placeholder="https://api.example.com/v2/endpoint.json"
-                /> */}
                 <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={options.url}
                   onChange={(value) => { this.changeOption('url', value)}}
                 />
-                {/* <CodeMirror
-                  fontSize="2"
-                  // onCursorActivity={(instance) => setCursorPosition(instance.getCursor().ch)}
-                  // onChange={(instance) => delayedHandleChange(instance)}
-                  value={options.url}
-                  // onFocus={(instance) => handleOnFocus(instance)}
-                  // onBlur={() => {
-                  //   setShowDropdown(false);
-                  // }}
-                  options={{
-                    mode: 'javascript',
-                    lineWrapping: true,
-                    scrollbarStyle: null,
-                    lineNumbers: false
-                  }}
-                /> */}
               </div>
             </div>
           </div>
@@ -144,7 +127,7 @@ class Restapi extends React.Component {
                       </span>
                     </div>
                   ))}
-                  <button className="btn btn-outline-primary btn-sm" onClick={() => this.addNewKeyValuePair(option)}>
+                  <button className="btn btn-outline-azure btn-sm" onClick={() => this.addNewKeyValuePair(option)}>
                     + Add new
                   </button>
                 </div>

@@ -21,7 +21,7 @@ export const Image = function Image({
 
   return (
     <div onClick={() => onComponentClick(id, component)}>
-      <img src={data} width={width} height={height} />
+      <img style={{objectFit: 'contain'}} src={data} width={width} height={height} />
     </div>
   );
 };
