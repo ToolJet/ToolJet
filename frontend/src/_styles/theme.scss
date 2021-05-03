@@ -314,7 +314,7 @@ body {
       }
 
       .query-row-selected {
-        background: #faf8f5;
+        background: rgba(66,153,225,.1)!important;
       }
 
       .query-row:hover {
@@ -469,7 +469,6 @@ body {
 .select-search {
   width: 100%;
   position: relative;
-  font-family: 'Nunito Sans', sans-serif;
   box-sizing: border-box;
 }
 
@@ -573,10 +572,6 @@ body {
   height: 48px;
 }
 
-.select-search__option.is-selected {
-  background: #2fcc8b;
-  color: #fff;
-}
 
 .select-search__option.is-highlighted,
 .select-search__option:not(.is-selected):hover {
@@ -777,19 +772,19 @@ tr:focus {
 }
 
 .select-search__option.is-selected {
-  background: #9ce5f0;
+  background: rgba(66,153,225,.4);
   color: rgb(90, 89, 89);
 }
 
 .select-search__option.is-highlighted.is-selected,
 .select-search__option.is-selected:hover {
-  background: #9ce5f0;
+  background: rgba(66,153,225,.1);
   color: rgb(44, 43, 43);
 }
 
 .select-search__option.is-highlighted,
 .select-search__option:hover {
-  background: #c4f1f7;
+  background: rgba(66,153,225,.1);
 }
 
 .select-search__options {
@@ -798,11 +793,11 @@ tr:focus {
 
 .select-search__option.is-highlighted,
 .select-search__option:not(.is-selected):hover {
-  background: #d7f1f5;
+  background: rgba(66,153,225,.1);
 }
 
 .select-search:not(.select-search--multiple) .select-search__input:hover {
-  border-color: #49c3d6;
+  border-color: rgba(66,153,225,.1);
 }
 
 .DateInput_input {
