@@ -21,10 +21,6 @@ body {
 
     .advanced-options-container {
     }
-
-    .CodeMirror {
-        // min-height: 70px;
-    }
   }
 
   .left-sidebar {
@@ -1113,4 +1109,10 @@ body {
     color:  #3e525b;
    border-top-left-radius: 0px;
    border-top-right-radius: 0px;
+ }
+
+ .transformation-editor {
+     .CodeMirror {
+         min-height: 220px;
+     }
  }
