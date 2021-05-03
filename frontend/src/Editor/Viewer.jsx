@@ -39,6 +39,8 @@ class Viewer extends React.Component {
   componentDidMount() {
     const id = this.props.match.params.id;
 
+    this.setState({isLoading: true});
+
     appService.getApp(id).then((data) => this.setState(
       {
         app: data,
@@ -75,7 +77,7 @@ class Viewer extends React.Component {
   }
 
   render() {
-    const { appDefinition, showQueryConfirmation, currentState } = this.state;
+    const { appDefinition, showQueryConfirmation, currentState, isLoading } = this.state;
 
     console.log('currentState', currentState);
 
@@ -108,23 +110,22 @@ class Viewer extends React.Component {
           <div className="sub-section">
             <div className="main">
               <div className="canvas-container align-items-center">
-                {appDefinition.components && (
-                  <div className="canvas-area">
-                    <Container
-                      appDefinition={appDefinition}
-                      appDefinitionChanged={() => false} // function not relevant in viewer
-                      snapToGrid={true}
-                      onEvent={(eventName, options) => onEvent(this, eventName, options)}
-                      mode="view"
-                      currentState={this.state.currentState}
-                      onComponentClick={(id, component) => onComponentClick(this, id, component)}
-                      onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
-                      }
-                      onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
-                      }
-                    />
-                  </div>
-                )}
+                <div className="canvas-area">
+                <Container
+                    appDefinition={appDefinition}
+                    appDefinitionChanged={() => false} // function not relevant in viewer
+                    snapToGrid={true}
+                    appLoading={isLoading}
+                    onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                    mode="view"
+                    currentState={this.state.currentState}
+                    onComponentClick={(id, component) => onComponentClick(this, id, component)}
+                    onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
+                    }
+                    onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
+                    }
+                />
+                </div>
               </div>
             </div>
           </div>
