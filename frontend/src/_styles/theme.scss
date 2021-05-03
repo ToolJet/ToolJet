@@ -847,7 +847,7 @@ tr:focus {
   outline: none;
   outline-width: thin;
   outline-style: solid;
-  outline-color: #3c92dc;
+  outline-color: rgba(66,153,225,.8);
 }
 
 .select-search__input:focus-visible {
@@ -900,7 +900,7 @@ tr:focus {
 }
 
 .progress-bar {
-  background-color: #4ac4d6;
+  background-color: rgba(66,153,225,.7);
 }
 
 .popover-header {
@@ -1109,3 +1109,9 @@ body {
     color: #4299e1!important;
     background: rgba(66,153,225,.1)!important;
 }
+
+.nav-tabs .nav-link {
+    color:  #3e525b;
+   border-top-left-radius: 0px;
+   border-top-right-radius: 0px;
+ }
