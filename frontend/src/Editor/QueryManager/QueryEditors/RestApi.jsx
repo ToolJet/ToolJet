@@ -1,4 +1,8 @@
 import React from 'react';
+import { CodeBuilder } from '../../CodeBuilder/CodeBuilder';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import CodeMirror from '@uiw/react-codemirror';
+import 'codemirror/theme/duotone-light.css';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -72,13 +76,34 @@ class Restapi extends React.Component {
                 </select>
               </div>
               <div className="col">
-                <input
+                {/* <input
                   type="text"
                   className="form-control"
                   value={options.url}
-                  onChange={(e) => this.changeOption('url', e.target.value)}
+                  onChange={(e) => { this.changeOption('url', e.target.value)}}
                   placeholder="https://api.example.com/v2/endpoint.json"
+                /> */}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={options.url}
+                  onChange={(value) => { this.changeOption('url', value)}}
                 />
+                {/* <CodeMirror
+                  fontSize="2"
+                  // onCursorActivity={(instance) => setCursorPosition(instance.getCursor().ch)}
+                  // onChange={(instance) => delayedHandleChange(instance)}
+                  value={options.url}
+                  // onFocus={(instance) => handleOnFocus(instance)}
+                  // onBlur={() => {
+                  //   setShowDropdown(false);
+                  // }}
+                  options={{
+                    mode: 'javascript',
+                    lineWrapping: true,
+                    scrollbarStyle: null,
+                    lineNumbers: false
+                  }}
+                /> */}
               </div>
             </div>
           </div>

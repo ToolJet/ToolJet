@@ -347,7 +347,7 @@ class QueryManager extends React.Component {
 
                 {selectedDataSource && (
                   <div>
-                    <ElementToRender options={this.state.options} optionsChanged={this.optionsChanged} />
+                    <ElementToRender options={this.state.options} optionsChanged={this.optionsChanged} currentState={currentState}/>
                     <hr></hr>
                     <div className="mb-3 mt-2">
                       <Transformation changeOption={this.optionchanged} options={this.state.options} />
