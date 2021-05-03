@@ -14,13 +14,11 @@ export const Inspector = ({
   dataQueries,
   removeComponent,
   components,
-  componentChanged
+  componentChanged,
+  currentState
 }) => {
   const [component, setComponent] = useState(selectedComponent);
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
-
-  console.log('rendering inspector');
-  console.log(selectedComponent);
 
   useEffect(() => {
     setComponent(selectedComponent);
@@ -140,11 +138,12 @@ export const Inspector = ({
           eventUpdated={eventUpdated}
           eventOptionUpdated={eventOptionUpdated}
           components={components}
+          currentState={currentState}
         />
       ) : (
         <div className="properties-container p-2">
-          {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', components))}
-          {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', components))}
+          {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components))}
+          {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <hr></hr>
           {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName]))}
         </div>

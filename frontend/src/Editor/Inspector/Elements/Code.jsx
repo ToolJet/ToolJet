@@ -1,9 +1,9 @@
 import React from 'react';
-import { CodeBuilder } from '../../CodeBuilder/CodeBuilder';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { getToolTipProps } from './utils';
 
 export const Code = ({
-  param, definition, onChange, paramType, dataQueries, components, componentMeta
+  param, definition, onChange, paramType, dataQueries, components, componentMeta, currentState
 }) => {
   const initialValue = definition ? definition.value : '';
   const paramMeta = componentMeta[paramType][param.name];
@@ -16,12 +16,11 @@ export const Code = ({
   return (
     <div className="field mb-2">
       <label {...getToolTipProps(paramMeta)}  className="form-label">{displayName}</label>
-      <CodeBuilder
-        initialValue={initialValue}
-        components={components}
-        dataQueries={dataQueries}
-        onChange={handleCodeChanged}
-      />
+        <CodeHinter
+            currentState={currentState}
+            initialValue={initialValue}
+            onChange={(value) => handleCodeChanged(value)}
+        />
     </div>
   );
 };
