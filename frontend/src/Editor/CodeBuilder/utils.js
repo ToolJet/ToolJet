@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Fuse from 'fuse.js';
 
-export function generateHints(word, currentState) {
+export function getSuggestionKeys(currentState) {
   let suggestions = [];
   _.keys(currentState).forEach((key) => {
     _.keys(currentState[key]).forEach((key2) => {
@@ -10,6 +10,10 @@ export function generateHints(word, currentState) {
       })
     })
   });
+  return suggestions;
+}
+
+export function generateHints(word, suggestions) {
 
   if(word === '') {
     return suggestions;
@@ -69,7 +73,7 @@ export function canShowHint(editor) {
   return value.slice(ch, ch + 2) === '}}';
 }
 
-export function handleChange(editor, onChange, currentState) {
+export function handleChange(editor, onChange, suggestions) {
 
   const value = editor.getValue();
   onChange(value);
@@ -79,7 +83,7 @@ export function handleChange(editor, onChange, currentState) {
 
   const cursor = editor.getCursor();
   const currentWord = computeCurrentWord(editor, cursor.ch);
-  const hints = generateHints(currentWord, currentState);
+  const hints = generateHints(currentWord, suggestions);
 
   const options = {
     alignWithWord: true,
