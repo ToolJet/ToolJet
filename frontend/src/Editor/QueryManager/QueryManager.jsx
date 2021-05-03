@@ -350,7 +350,7 @@ class QueryManager extends React.Component {
                     <ElementToRender options={this.state.options} optionsChanged={this.optionsChanged} currentState={currentState}/>
                     <hr></hr>
                     <div className="mb-3 mt-2">
-                      <Transformation changeOption={this.optionchanged} options={this.state.options} />
+                      <Transformation changeOption={this.optionchanged} options={this.state.options} currentState={currentState}/>
                     </div>
                   </div>
                 )}
