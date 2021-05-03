@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/base16-light.css';
-import { handleChange, onBeforeChange } from '../CodeBuilder/utils';
+import { handleChange, onBeforeChange, getSuggestionKeys } from '../CodeBuilder/utils';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
@@ -22,6 +22,8 @@ return data.filter(row => row.amount > 1000);`;
   function codeChanged(value) {
     changeOption('transformation', value);
   }
+
+  let suggestions = useMemo(() => getSuggestionKeys(currentState), [currentState.components, currentState.queries]);
 
   return (
     <div className="field mb-2 transformation-editor">
@@ -45,7 +47,7 @@ return data.filter(row => row.amount > 1000);`;
           <CodeMirror
             height="220px"
             fontSize="1"
-            onChange={(editor) => handleChange(editor, codeChanged, currentState)}
+            onChange={(editor) => handleChange(editor, codeChanged, suggestions)}
             onBeforeChange={(editor, change) => onBeforeChange(editor, change)}
             value={value}
             options={{
