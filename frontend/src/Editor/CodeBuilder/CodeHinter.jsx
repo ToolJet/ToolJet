@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 // assuming a setup with webpack/create-react-app import the additional js/css files
-import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/handlebars/handlebars';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css'; // without this css hints won't show
@@ -16,7 +16,7 @@ export function CodeHinter({
     let suggestions = [];
     _.keys(currentState).forEach((key) => {
       _.keys(currentState[key]).forEach((key2) => {
-        _.keys(currentState[key]).forEach((key3) => {
+        _.keys(currentState[key][key2]).forEach((key3) => {
           suggestions.push(`${key}.${key2}.${key3}`)
         })
       })
@@ -47,9 +47,27 @@ export function CodeHinter({
     }}
   }
 
+  function onBeforeChange(editor, change) {
+    const value = editor.getValue();
+    const isLastCharacterBrace = value.slice( editor.getCursor().ch - 1, value.length) === '{';
+
+    if(isLastCharacterBrace && change.origin === '+input') {
+      change.text[0] = '{}}'
+      editor.setCursor({line: 0, ch: editor.getCursor().ch})
+    }
+
+    return change;
+  }
+
+  function canShowHint(editor) {
+    const value = editor.getValue()
+    return value.slice(editor.getCursor().ch, editor.getCursor().ch + 2) === '}}';
+  }
+
   function handleChange (editor) { 
 
-    onChange(editor.getValue());
+    const value = editor.getValue();
+    onChange(value);
 
     let state = editor.state.matchHighlighter;
     editor.addOverlay(state.overlay = makeOverlay( state.options.style));
@@ -68,13 +86,15 @@ export function CodeHinter({
         }
       }
     };  
-    editor.showHint(options) 
+    if(canShowHint(editor)) {
+      editor.showHint(options);
+    }
   };
 
     const options = {
       lineNumbers: false,
       singleLine: true,
-      mode: 'text',
+      mode: 'handlebars',
       tabSize: 2,
       readOnly: false,
       highlightSelectionMatches: true
@@ -85,7 +105,9 @@ export function CodeHinter({
         <div className="form-control">
           <CodeMirror
             value={initialValue}
+            scrollbarStyle={null}
             onChange={handleChange}
+            onBeforeChange={onBeforeChange}
             options={options}
           />
         </div>

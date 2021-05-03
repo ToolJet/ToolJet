@@ -753,7 +753,7 @@ body {
 }
 
 .form-check-input:checked {
-  background-color: #4ac4d6;
+  background-color: #3c92dc;
   border-color: rgba(101, 109, 119, 0.24);
 }
 
@@ -1070,11 +1070,28 @@ body {
 .code-hinter {
     .form-control {
         padding: 0.1775rem .75rem;
+        height: 36px;
     }
-}
 
-.CodeMirror {
-    font-family: 'Roboto', sans-serif;
+
+    .CodeMirror {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .CodeMirror-focused {
+        padding-top: 3px;
+    }
+
+    .CodeMirror-vscrollbar, .CodeMirror-hscrollbar {
+      background: transparent;
+      height: 0;
+      width: 0;
+    }
+
+    .CodeMirror-scroll {
+        overflow:hidden !important;
+        margin-bottom: 0px;
+    }
 }
 
 .CodeMirror-hints {
@@ -1094,6 +1111,6 @@ body {
 }
 
 .cm-matchhighlight {
-    color: #2fb344!important;
-    background: rgba(47,179,68,.1)!important;
+    color: #4299e1!important;
+    background: rgba(66,153,225,.1)!important;
 }
