@@ -23,7 +23,7 @@ body {
     }
 
     .CodeMirror {
-        min-height: 70px;
+        // min-height: 70px;
     }
   }
 
@@ -715,6 +715,11 @@ body {
   
 }
 
+.jet-data-table::-webkit-scrollbar {
+      background: transparent;
+      height: 0;
+    }
+
 .jet-data-table:hover {
     overflow-x: scroll;
     overflow-y: scroll;
@@ -722,6 +727,10 @@ body {
 
 .jet-data-table {
     overflow: hidden;
+
+    .table-row {
+        cursor: pointer;
+    }
 
     thead {
         position: sticky;
@@ -1056,4 +1065,35 @@ body {
 
 .table-responsive {
     margin-bottom: 0rem;
+}
+
+.code-hinter {
+    .form-control {
+        padding: 0.1775rem .75rem;
+    }
+}
+
+.CodeMirror {
+    font-family: 'Roboto', sans-serif;
+}
+
+.CodeMirror-hints {
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.9rem;
+    padding: 0px;
+
+    li.CodeMirror-hint-active {
+        background: #3c92dc;
+    }
+
+    .CodeMirror-hint {
+        padding: 4px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+.cm-matchhighlight {
+    color: #2fb344!important;
+    background: rgba(47,179,68,.1)!important;
 }
