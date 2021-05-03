@@ -101,8 +101,7 @@ export function CodeHinter({
     };
 
     return (
-      <dib className="code-hinter">
-        <div className="form-control">
+        <div className="code-hinter form-control">
           <CodeMirror
             value={initialValue}
             scrollbarStyle={null}
@@ -111,6 +110,5 @@ export function CodeHinter({
             options={options}
           />
         </div>
-      </dib>
     );
 }
