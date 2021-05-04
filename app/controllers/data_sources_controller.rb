@@ -8,7 +8,7 @@ class DataSourcesController < ApplicationController
 
     # Fetch necessary access token if OAuth2 based data source
     if options.find { |option| option['key'] == 'oauth2' }
-      provider = 'google'
+      provider = options.find { |option| option['key'] === 'provider' } ['value']
       service_class = "#{provider.capitalize}OauthService".constantize
       access_info = service_class.fetch_access_token(options.find { |option| option['key'] === 'code' } ['value'])
       options.reject! { |option| option['key'] == 'code' }
