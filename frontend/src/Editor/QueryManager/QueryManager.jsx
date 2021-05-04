@@ -33,6 +33,9 @@ const defaultOptions = {
   stripe: {},
   googlesheets: {
     operation: 'read'
+  },
+  slack: {
+    
   }
 };
 

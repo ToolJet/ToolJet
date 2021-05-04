@@ -48,5 +48,8 @@ export const defaultOptions = {
   },
   googlesheets: {
     access_type: { value: 'read' }
+  },
+  slack: {
+    access_type: { value: 'read' }
   }
 };
