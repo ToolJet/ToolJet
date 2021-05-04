@@ -1,6 +1,7 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Slack extends React.Component {
   constructor(props) {
@@ -71,6 +72,7 @@ class Slack extends React.Component {
               <SelectSearch
                 options={[
                   { name: 'List members', value: 'list_users' },
+                  { name: 'Send message', value: 'send_message' }
                 ]}
                 value={this.state.options.operation}
                 search={false}
@@ -81,6 +83,42 @@ class Slack extends React.Component {
                 placeholder="Select.."
               />
             </div>
+
+            {this.state.options.operation === 'send_message'
+              && <div>
+                <div className="mb-3 mt-2 row">
+                  <div className="col">
+                    <label className="form-label">Channel</label>
+                      <CodeHinter
+                        currentState={this.props.currentState}
+                        initialValue={this.state.options.channel}
+                        onChange={(value) => this.changeOption('channel', value)}
+                      />
+                  </div>
+                </div>
+                <div className="mb-3 mt-2 row">
+                  <div className="col">
+                    <label className="form-label">Message</label>
+                      <CodeHinter
+                        currentState={this.props.currentState}
+                        initialValue={options.message}
+                        onChange={(value) => this.changeOption('message', value)}
+                      />
+                  </div>
+                </div>
+                <div className="mb-3 mt-2 mx-1 row">
+                  <label className="form-check form-switch my-2">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      onClick={() => this.changeOption('sendAsUser', !options.sendAsUser)}
+                      checked={options.sendAsUser}
+                    />
+                    <span className="form-check-label">Send as user</span>
+                  </label>
+                </div>
+              </div>
+            }
           </div>
         )}
       </div>
