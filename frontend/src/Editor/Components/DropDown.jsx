@@ -20,13 +20,13 @@ export const DropDown = function DropDown({
   let parsedValues = values;
 
   try {
-    parsedValues = JSON.parse(values);
+    parsedValues = resolveReferences(values, currentState, []);
   } catch (err) { console.log(err); }
 
   let parsedDisplayValues = displayValues;
 
   try {
-    parsedDisplayValues = JSON.parse(displayValues);
+    parsedDisplayValues = resolveReferences(displayValues, currentState, []);
   } catch (err) { console.log(err); }
 
   let selectOptions = [];
