@@ -66,6 +66,7 @@ GEM
     bcrypt (3.1.16)
     bootsnap (1.7.3)
       msgpack (~> 1.0)
+    bson (4.12.0)
     builder (3.2.4)
     byebug (11.1.3)
     concurrent-ruby (1.1.8)
@@ -161,6 +162,8 @@ GEM
     mini_mime (1.0.3)
     mini_portile2 (2.5.0)
     minitest (5.14.4)
+    mongo (2.14.0)
+      bson (>= 4.8.2, < 5.0.0)
     msgpack (1.4.2)
     multi_json (1.15.0)
     multi_xml (0.6.0)
@@ -276,6 +279,7 @@ DEPENDENCIES
   jwt
   listen (~> 3.3)
   lograge
+  mongo
   mysql2
   pg (~> 1.1)
   puma (~> 5.0)
