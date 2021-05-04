@@ -34,6 +34,22 @@ export const dataBaseSources = [
     }
   },
   {
+    name: 'MongoDB',
+    kind: 'mongodb',
+    icon: 'https://cdn.worldvectorlogo.com/logos/mongodb-icon-1.svg',
+    exposedVariables: {
+      isLoading: {},
+      data: {},
+      rawData: {}
+    },
+    options: {
+      host: { type: 'string' },
+      port: { type: 'string' },
+      username: { type: 'string' },
+      password: { type: 'string' },
+    }
+  },
+  {
     name: 'Firestore',
     kind: 'firestore',
     icon: 'https://static.invertase.io/assets/firebase/cloud-firestore.svg',
@@ -49,7 +65,7 @@ export const dataBaseSources = [
   {
     name: 'Elasticsearch',
     kind: 'elasticsearch',
-    icon: 'https://www.svgrepo.com/show/305988/elasticsearch.svg',
+    icon: 'https://cdn.worldvectorlogo.com/logos/elastic-elasticsearch.svg',
     exposedVariables: {
       isLoading: {},
       data: {},

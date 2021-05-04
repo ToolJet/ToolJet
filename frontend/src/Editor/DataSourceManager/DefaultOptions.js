@@ -19,6 +19,14 @@ export const defaultOptions = {
     username: { value: '' },
     password: { value: '' }
   },
+  mongodb: {
+    database: { value: '' },
+    host: { value: 'localhost' },
+    port: { value: 27017 },
+    username: { value: '' },
+    password: { value: '' }
+  },
+  
   elasticsearch: {
     host: { value: 'localhost' },
     port: { value: 9200 },
