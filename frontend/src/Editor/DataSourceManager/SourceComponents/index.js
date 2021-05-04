@@ -7,6 +7,7 @@ import { Firestore } from './Firestore';
 import { Restapi } from './Restapi';
 import { Googlesheets } from './Googlesheets';
 import { Slack } from './Slack';
+import { Mongodb } from './Mongodb';
 
 export const SourceComponents = {
     Elasticsearch,
@@ -17,5 +18,6 @@ export const SourceComponents = {
     Firestore,
     Restapi,
     Googlesheets,
-    Slack
+    Slack,
+    Mongodb
 };

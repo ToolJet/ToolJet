@@ -7,6 +7,7 @@ import { Redis } from './Redis';
 import { Googlesheets } from './Googlesheets';
 import { Elasticsearch } from './Elasticsearch';
 import { Slack } from './Slack';
+import { Mongodb } from './Mongodb';
 
 export const allSources = {
   Restapi,
@@ -17,5 +18,6 @@ export const allSources = {
   Redis,
   Googlesheets,
   Elasticsearch,
-  Slack
+  Slack,
+  Mongodb
 };
