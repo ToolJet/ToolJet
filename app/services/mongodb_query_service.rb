@@ -12,7 +12,24 @@ class MongodbQueryService
   end
 
   def self.connection options
+    host = options.dig('host', 'value')
+    port = options.dig('port', 'value')
+    user = options.dig('username', 'value')
+    password = options.dig('password', 'value')
+    database = options.dig('database', 'value')
 
+    user = nil if user.blank?
+    password = nil if password.blank?
+
+    connection = Mongo::Client.new(
+      [ "#{host}:#{port}" ],
+      database: database,
+      server_selection_timeout: 5,
+      user: user,
+      password: password
+    )
+    
+    connection.collections
   end
 
   def process
