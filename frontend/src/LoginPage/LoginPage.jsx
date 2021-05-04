@@ -91,7 +91,7 @@ class LoginPage extends React.Component {
             </div>
           </form>
           <div className="text-center text-muted mt-3">
-            Don&apos;t have account yet?
+            Don&apos;t have account yet? 
             <a href="./sign-up.html" tabIndex="-1">
               Sign up
             </a>

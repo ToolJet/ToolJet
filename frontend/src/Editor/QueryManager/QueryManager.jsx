@@ -31,6 +31,7 @@ const defaultOptions = {
     body: [['', '']]
   },
   stripe: {},
+  mongodb: {},
   googlesheets: {
     operation: 'read'
   },
