@@ -167,6 +167,9 @@ class DataSourceManager extends React.Component {
                   </div>
                 </div>
               )}
+              <span className="text-muted">
+                Add new datasource
+              </span>
             </Modal.Title>
             <Button variant="light" size="sm" onClick={() => this.hideModal()}>
               x
