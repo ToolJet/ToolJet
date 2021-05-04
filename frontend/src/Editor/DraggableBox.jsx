@@ -27,12 +27,13 @@ const resizerStyles = {
   }
 };
 
-function getStyles(left, top, isDragging) {
+function getStyles(left, top, isDragging, component) {
   const transform = `translate3d(${left}px, ${top}px, 0)`;
   return {
     position: 'absolute',
     transform,
     WebkitTransform: transform,
+    zIndex: component.component === 'DropDown' ? 2 : 1,
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
@@ -109,7 +110,7 @@ export const DraggableBox = function DraggableBox({
   return (
     <div>
       {inCanvas ? (
-        <div style={getStyles(left, top, isDragging)}>
+        <div style={getStyles(left, top, isDragging, component)}>
           <Resizable
             style={{ ...style }}
             defaultSize={{}}

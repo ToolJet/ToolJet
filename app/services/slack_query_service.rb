@@ -21,6 +21,23 @@ class SlackQueryService
       data = JSON.parse(result.body)
     end
 
+    if operation === 'send_message'
+
+      body = {
+        channel: options["channel"],
+        text: options["message"],
+        as_user: options["sendAsUser"]
+      }.to_json
+      
+
+      result = HTTParty.post("https://slack.com/api/chat.postMessage",
+        body: body,
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer #{access_token}" }
+      )
+
+       data = JSON.parse(result.body)
+    end
+
     { status: 'success', data: data }
   end
 end
