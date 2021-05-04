@@ -122,6 +122,7 @@ class DataSourceManager extends React.Component {
         options={options}
         isSaving={isSaving}
         hideModal={this.hideModal}
+        selectedDataSource={this.state.selectedDataSource}
     />;
   }
 

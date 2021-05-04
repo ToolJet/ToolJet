@@ -4,8 +4,9 @@ import { Postgresql } from './Postgresql';
 import { Mysql } from './Mysql';
 import { Stripe } from './Stripe';
 import { Firestore } from './Firestore';
-import { RestApi } from './RestApi';
+import { Restapi } from './Restapi';
 import { Googlesheets } from './Googlesheets';
+import { Slack } from './Slack';
 
 export const SourceComponents = {
     Elasticsearch,
@@ -14,6 +15,7 @@ export const SourceComponents = {
     Mysql,
     Stripe,
     Firestore,
-    RestApi,
-    Googlesheets
+    Restapi,
+    Googlesheets,
+    Slack
 };

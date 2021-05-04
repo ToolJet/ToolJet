@@ -134,6 +134,20 @@ export const apiSources = [
       api_key: { type: 'string', encrypted: true }
     },
     customTesting: true
+  },
+  {
+    name: 'Slack',
+    kind: 'slack',
+    icon: 'https://www.svgrepo.com/show/303320/slack-new-logo-logo.svg',
+    exposedVariables: {
+      isLoading: {},
+      data: {},
+      rawData: {}
+    },
+    options: {
+      api_key: { type: 'string', encrypted: true }
+    },
+    customTesting: true
   }
 ];
 
