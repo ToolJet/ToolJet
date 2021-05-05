@@ -287,9 +287,20 @@ class Table extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.state.component.component.definition.properties.columns;
     const column = columns.value[index];
+
+    if(item === 'name') {
+      const newColumnSizes = JSON.parse(JSON.stringify(this.state.component.component.definition.properties.columnSizes));
+      if(newColumnSizes[column.name]) {
+        newColumnSizes[value] = newColumnSizes[column.name];
+        this.props.paramUpdated({ name: 'columnSizes' }, null, newColumnSizes, 'properties');
+      }
+      column['width'] = newColumnSizes[column.name]
+    }
+
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
+
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
 
@@ -325,7 +336,7 @@ class Table extends React.Component {
               <label className="form-label col pt-1">Columns</label>
             </div>
             <div className="col-auto">
-              <button onClick={this.addNewColumn} className="btn btn-sm btn-light col-auto">
+              <button onClick={this.addNewColumn} className="btn btn-sm btn-outline-azure col-auto">
                 + Add column
               </button>
             </div>
@@ -368,7 +379,7 @@ class Table extends React.Component {
                 <label className="form-label col pt-1">Actions</label>
               </div>
               <div className="col-auto">
-                <button onClick={this.addNewAction} className="btn btn-sm btn-light col-auto">
+                <button onClick={this.addNewAction} className="btn btn-sm btn-outline-azure col-auto">
                   + Action
                 </button>
               </div>
@@ -385,21 +396,6 @@ class Table extends React.Component {
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged)}
 
           {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
-
-          <div className="field mb-2 mt-2">
-            <label className="form-label mt-2">Bulk update query</label>
-
-            <select
-              className="form-select"
-              onChange={(e) => {
-                eventOptionUpdated({ name: 'onBulkUpdate' }, 'queryId', e.target.value, {});
-              }}
-            >
-              {dataQueries.map((query) => (
-                <option key={query.id} value={query.id}>{query.name}</option>
-              ))}
-            </select>
-          </div>
 
           <hr></hr>
         </div>

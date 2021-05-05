@@ -43,7 +43,12 @@ export const Inspector = ({
     if (!paramObject) {
       newDefinition[paramType][param.name] = {};
     }
-    newDefinition[paramType][param.name][attr] = value;
+
+    if(attr) {
+      newDefinition[paramType][param.name][attr] = value;
+    } else {
+      newDefinition[paramType][param.name] = value;
+    }
 
     let newComponent = {
       ...component

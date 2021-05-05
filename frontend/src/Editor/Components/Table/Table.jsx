@@ -388,7 +388,7 @@ export function Table({
     } else {
       changeCanDrag(false);
     }
-  }, [state.columnResizing]);
+  }, [state.columnResizing.isResizingColumn]);
 
   function GlobalFilter() {
     const count = preGlobalFilteredRows.length;
