@@ -213,7 +213,7 @@ class Table extends React.Component {
           />
           <EventSelector
             param="onClick"
-            eventMeta={{ displayName: 'On click'}}
+            eventMeta={{ displayName: 'On click' }}
             definition={action.onClick}
             eventUpdated={this.actionButtonEventUpdated}
             dataQueries={this.state.dataQueries}
@@ -248,10 +248,26 @@ class Table extends React.Component {
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
 
+  generateNewColumnName = (columns) => {
+    let found = false;
+    let columnName = '';
+    let currentNumber = 1;
+
+    while (!found) {
+      columnName = `new_column${currentNumber}`;
+      if (columns.find(column => column.name === columnName) === undefined) {
+        found = true;
+      }
+      currentNumber += 1;
+    }
+
+    return columnName;
+  }
+
   addNewColumn = () => {
     const columns = this.state.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: 'new_column' });
+    newValue.push({ name: this.generateNewColumnName(columns.value) });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
   };
 
@@ -362,11 +378,11 @@ class Table extends React.Component {
           <hr></hr>
 
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
-          
+
           <hr></hr>
 
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events['onRowClicked'])}
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events['onPageChanged'])}
+          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked)}
+          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged)}
 
           <div className="field mb-2 mt-2">
             <label className="form-label mt-2">Bulk update query</label>

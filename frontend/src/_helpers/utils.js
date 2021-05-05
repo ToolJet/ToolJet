@@ -100,6 +100,7 @@ export function computeComponentName(componentType, currentComponents) {
     if (Object.values(currentComponents).find(component => component.name === componentName) === undefined) {
       found = true;
     }
+    currentNumber = currentNumber + 1;
   }
 
   return componentName;
