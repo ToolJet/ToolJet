@@ -120,7 +120,11 @@ class Editor extends React.Component {
           this.setState(
             {
               dataQueries: data.data_queries,
-              loadingDataQueries: false
+              loadingDataQueries: false,
+              app: {
+                ...this.state.app,
+                data_queries: data.data_queries
+              }
             },
             () => {
               let queryState = {};
