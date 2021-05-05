@@ -6,6 +6,7 @@ import { Code } from './Elements/Code';
 import { Toggle } from './Elements/Toggle';
 import { TypeMapping } from './TypeMapping';
 import { EventSelector } from './EventSelector';
+import { QuerySelector } from './QuerySelector';
 
 const AllElements = {
   Color,
@@ -14,6 +15,19 @@ const AllElements = {
   Code,
   Toggle
 };
+
+export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
+  let definition = component.component.definition.events[eventName];
+  definition = definition || { };
+
+  return (<QuerySelector
+    param={{ name: eventName }}
+    definition={definition}
+    eventMeta={eventMeta}
+    dataQueries={dataQueries}
+    eventOptionUpdated={eventOptionUpdated}
+  />)
+}
 
 export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState, components = {}) {
   const definition = component.component.definition[paramType][param];

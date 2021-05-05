@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderElement, renderEvent } from '../Utils';
+import { renderElement, renderEvent, renderQuerySelector } from '../Utils';
 import { computeActionName } from '@/_helpers/utils';
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
@@ -383,6 +383,8 @@ class Table extends React.Component {
 
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked)}
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged)}
+
+          {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
 
           <div className="field mb-2 mt-2">
             <label className="form-label mt-2">Bulk update query</label>
