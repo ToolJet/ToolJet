@@ -384,7 +384,7 @@ export function Table({
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', state.columnResizing.columnWidths);
+      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths});
     } else {
       changeCanDrag(false);
     }
