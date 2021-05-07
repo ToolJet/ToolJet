@@ -11,7 +11,8 @@ class HomePage extends React.Component {
     this.state = {
       currentUser: authenticationService.currentUserValue,
       users: null,
-      isLoading: true
+      isLoading: true,
+      apps: []
     };
   }
 
@@ -100,36 +101,23 @@ class HomePage extends React.Component {
           </div>
         </header>
 
-        <div className="page-wrapper">
-          <div className="container-xl">
-            <div className="page-header d-print-none">
-              <div className="row align-items-center">
-                <div className="col">
-                  <div className="page-pretitle">{/* Dashboard */}</div>
-                  <h2 className="page-title">Your Applications</h2>
+        {apps.length > 0 && (
+          <div className="page-wrapper">
+            <div className="container-xl">
+              <div className="page-header d-print-none">
+                <div className="row align-items-center">
+                  <div className="col">
+                    <h2 className="page-title">Your Applications</h2>
+                  </div>
+                  <div className="col-auto ms-auto d-print-none"></div>
                 </div>
-                <div className="col-auto ms-auto d-print-none"></div>
               </div>
             </div>
           </div>
-        </div>
+        )}
         <div className="page-body homepage-body">
           <div className="container-xl">
             <div className="row row-deck row-cards">
-              {!isLoading && (
-                <div className="col-sm-6 col-lg-3 ">
-                  <div className="card create-app" role="button" onClick={this.createApp}>
-                    <div className="card-body create-app-body" style={{ maxHeight: '155px', marginTop: '10px' }}>
-                      <center>
-                        <img src="https://www.svgrepo.com/show/152121/plus.svg" width="15" height="50" alt="" />
-                        <br></br>
-                        Create App
-                      </center>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {isLoading && (
                 <div className="row mt-3">
                   {[1, 2, 3, 4].map((key) => (
@@ -142,8 +130,47 @@ class HomePage extends React.Component {
                 </div>
               )}
 
-              {apps && (
+              {!isLoading && apps.length === 0 && 
+                <div class="page-wrapper">
+                  <div class="container-xl">
+                  </div>
+                  <div class="page-body">
+                    <div class="container-xl d-flex flex-column justify-content-center">
+                      <div class="empty">
+                        <div class="empty-img"><img src="/assets/images/blank.svg" height="128"  alt=""/>
+                        </div>
+                        <p class="empty-title">You haven't created any apps yet.</p>
+                        <p class="empty-subtitle text-muted">
+                          Try adjusting your search or filter to find what you're looking for.
+                        </p>
+                        <div class="empty-action">
+                          <a onClick={this.createApp} class="btn btn-primary text-light">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                           Create your first app
+                          </a>
+                          <a href="https://docs.tooljet.io" class="btn btn-primary text-light mx-2">
+                           Read documentation
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              {apps.length > 0 && (
                 <>
+                  <div className="col-sm-6 col-lg-3 ">
+                    <div className="card create-app" role="button" onClick={this.createApp}>
+                      <div className="card-body create-app-body" style={{ maxHeight: '155px', marginTop: '10px' }}>
+                        <center>
+                          <img src="https://www.svgrepo.com/show/152121/plus.svg" width="15" height="50" alt="" />
+                          <br></br>
+                          Create App
+                        </center>
+                      </div>
+                    </div>
+                  </div>
                   {apps.map((app) => (
                     <div className="col-sm-6 col-lg-3" key={app.id}>
                       <div className="card app-card">
