@@ -560,14 +560,14 @@ class Editor extends React.Component {
                           <tbody>{this.state.dataSources.map((source) => this.renderDataSource(source))}</tbody>
                         </table>
                         {dataSources.length === 0 && (
-                          <center className="p-2">
+                          <center className="p-2 text-muted">
                             You haven&apos;t added data sources yet. <br />
                             <button
-                              className="btn btn-sm btn-light mt-3"
+                              className="btn btn-sm btn-outline-azure mt-3"
                               onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })
                               }
                             >
-                              Add datasource
+                              add datasource
                             </button>
                           </center>
                         )}
@@ -644,11 +644,11 @@ class Editor extends React.Component {
                             </table>
                           </div>
                           {dataQueries.length === 0 && (
-                            <div>
+                            <div className="mt-5">
                               <center>
-                                You haven&apos;t created queries yet. <br />
+                                <span className="text-muted">You haven&apos;t created queries yet.</span> <br />
                                 <button
-                                  className="btn btn-sm btn-light mt-3"
+                                  className="btn btn-sm btn-outline-azure mt-3"
                                   onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
                                   }
                                 >

@@ -180,7 +180,7 @@ class HomePage extends React.Component {
                         >
                           <div className="card-body p-5">
                             <div className="row align-items-center">
-                              <center className="app-name">{app.name}</center>
+                              <center className="app-name text-muted">{app.name}</center>
                               <div className="app-action-buttons row">
                                 <div className="col-md-6">
                                   <Link
