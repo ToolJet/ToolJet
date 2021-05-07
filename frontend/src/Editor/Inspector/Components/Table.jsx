@@ -217,7 +217,7 @@ class Table extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
           />
           <EventSelector
-            param="onClick"
+            param={{ name: 'onClick' }}
             eventMeta={{ displayName: 'On click' }}
             definition={action.onClick}
             eventUpdated={this.actionButtonEventUpdated}
