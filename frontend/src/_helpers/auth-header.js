@@ -9,5 +9,7 @@ export function authHeader() {
       'Content-Type': 'application/json'
     };
   }
-  return {};
+  return {
+    'Content-Type': 'application/json'
+  };
 }
