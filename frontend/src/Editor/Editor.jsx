@@ -441,7 +441,9 @@ class Editor extends React.Component {
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
                   <div className="nav-item dropdown d-none d-md-flex me-3">
-                    <ManageAppUsers appId={appId} />
+                    {app && 
+                      <ManageAppUsers app={app} />
+                    }
                   </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
                     <a href={appLink} target="_blank" className="btn btn-sm" rel="noreferrer">

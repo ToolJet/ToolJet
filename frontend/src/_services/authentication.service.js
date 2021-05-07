@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-
+import { history } from '@/_helpers';
 import config from 'config';
 import { handleResponse } from '@/_helpers';
 
@@ -34,4 +34,5 @@ function logout() {
   // remove user from local storage to log user out
   localStorage.removeItem('currentUser');
   currentUserSubject.next(null);
+  history.push('/login');
 }

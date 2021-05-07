@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_23_085452) do
+ActiveRecord::Schema.define(version: 2021_04_27_100209) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -43,6 +43,7 @@ ActiveRecord::Schema.define(version: 2021_04_23_085452) do
     t.uuid "organization_id", null: false
     t.json "definition"
     t.uuid "current_version_id"
+    t.boolean "is_public", default: false
     t.index ["current_version_id"], name: "index_apps_on_current_version_id"
     t.index ["organization_id"], name: "index_apps_on_organization_id"
   end

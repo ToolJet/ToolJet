@@ -14,7 +14,7 @@ class ManageAppUsers extends React.Component {
 
     this.state = {
       showModal: false,
-      appId: props.appId,
+      app: props.app,
       isLoading: true,
       addingUser: false,
       organizationUsers: [],
@@ -23,7 +23,7 @@ class ManageAppUsers extends React.Component {
   }
 
   componentDidMount() {
-    const appId = this.props.appId;
+    const appId = this.props.app.id;
 
     this.fetchAppUsers();
 
@@ -35,7 +35,7 @@ class ManageAppUsers extends React.Component {
   }
 
   fetchAppUsers = () => {
-    appService.getAppUsers(this.props.appId).then((data) => this.setState({
+    appService.getAppUsers(this.state.app.id).then((data) => this.setState({
       users: data.users,
       isLoading: false
     }));
@@ -55,7 +55,7 @@ class ManageAppUsers extends React.Component {
     const { organizationUserId, role } = this.state.newUser;
 
     appService
-      .createAppUser(this.state.appId, organizationUserId, role)
+      .createAppUser(this.state.app.id, organizationUserId, role)
       .then(() => {
         this.setState({ addingUser: false, newUser: {} });
         toast.success('Added user successfully', { hideProgressBar: true, position: 'top-center' });
@@ -67,11 +67,41 @@ class ManageAppUsers extends React.Component {
       });
   };
 
+  toggleAppVisibility = () => {
+    const newState =  !this.state.app.is_public;
+    this.setState({
+        ischangingVisibility: true
+    });
+
+    appService.setVisibility(this.state.app.id, newState).then(data =>  { 
+      this.setState({ 
+        ischangingVisibility: false,
+        app: {
+          ...this.state.app,
+          is_public: newState
+        }
+      });
+
+      if(newState) {
+        toast.success('Application is now public.', {
+          hideProgressBar: true,
+          position: 'top-center'
+        });
+      } else {
+        toast.success('Application visibility set to private', {
+          hideProgressBar: true,
+          position: 'top-center'
+        });
+      }
+      
+    });
+  }
+
   render() {
     const {
       addingUser, isLoading, users, organizationUsers, newUser
     } = this.state;
-    const shareableLink = `${window.location.origin}/applications/${this.state.appId}`;
+    const shareableLink = `${window.location.origin}/applications/${this.state.app.id}`;
 
     return (
       <div>
@@ -102,9 +132,9 @@ class ManageAppUsers extends React.Component {
                     <input
                       className="form-check-input"
                       type="checkbox"
-                      onClick={() => this.toggleOption('runOnPageLoad')}
-                      checked={false}
-                      disabled={true}
+                      onClick={() => this.toggleAppVisibility()}
+                      checked={this.state.app.is_public}
+                      disabled={this.state.ischangingVisibility}
                     />
                     <span className="form-check-label">Make application public ?</span>
                   </label>

@@ -57,6 +57,16 @@ class Viewer extends React.Component {
     ));
 
     const currentUser = authenticationService.currentUserValue;
+    let userVars = { };
+
+    if(currentUser) {
+      userVars = {
+        email: currentUser.email,
+        firstName: currentUser.first_name,
+        lastName: currentUser.last_name
+      };
+    }
+
 
     this.setState({
       currentSidebarTab: 2,
@@ -65,11 +75,7 @@ class Viewer extends React.Component {
         queries: {},
         components: {},
         globals: {
-          current_user: {
-            email: currentUser.email,
-            firstName: currentUser.first_name,
-            lastName: currentUser.last_name
-          },
+          current_user: userVars,
           urlparams: {}
         }
       }
