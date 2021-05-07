@@ -1,27 +1,26 @@
 import React from 'react';
-import { resolve } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
+import LazyLoad from 'react-lazyload';
 
 export const Image = function Image({
   id, width, height, component, onComponentClick, currentState
 }) {
   const source = component.definition.properties.source.value;
 
-  let data = source;
-  if (currentState) {
-    const matchedParams = source.match(/\{\{(.*?)\}\}/g);
+  let data = resolveReferences(source, currentState, null);
+  if (data === '') data = null;
 
-    if (matchedParams) {
-      for (const param of matchedParams) {
-        const resolvedParam = resolve(param, currentState, '');
-        console.log('resolved param', param, resolvedParam);
-        data = data.replace(param, resolvedParam);
-      }
-    }
+  function Placeholder() {
+    return (
+      <div className="skeleton-image" style={{ objectFit: 'contain', width, height }}></div>
+    );
   }
 
   return (
     <div onClick={() => onComponentClick(id, component)}>
-      <img style={{objectFit: 'contain'}} src={data} width={width} height={height} />
+      <LazyLoad width={width} height={height} placeholder={<Placeholder/>} debounce={500}>
+        <img style={{ objectFit: 'contain' }} src={data} width={width} height={height} />
+      </LazyLoad>
     </div>
   );
 };
