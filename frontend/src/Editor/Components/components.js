@@ -11,7 +11,9 @@ export const componentTypes = [
       visible: { type: 'string', displayName: 'Show when' },
       loadingState: { type: 'string', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
-      serverSidePagination: { type: 'toggle', displayName: 'Server Side Pagination'}
+      serverSidePagination: { type: 'toggle', displayName: 'Server Side Pagination'},
+      actionButtonBackgroundColor: { type: 'color', displayName: 'Background Color'},
+      actionButtonTextColor: { type: 'color', displayName: 'Text Color'}
     },
     defaultSize: {
       width: 810,
@@ -28,7 +30,8 @@ export const componentTypes = [
     exposedVariables: {
       selectedRow: {},
       changeSet: {},
-      dataUpdates: []
+      dataUpdates: [],
+      pageIndex: 0
     },
     definition: {
       properties: {
@@ -298,8 +301,8 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Show loading state' }
     },
     defaultSize: {
-      width: 100,
-      height: 60
+      width: 210,
+      height: 24
     },
     events: [
 

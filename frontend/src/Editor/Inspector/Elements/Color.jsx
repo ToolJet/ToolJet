@@ -15,7 +15,7 @@ export const Color = ({
     left: '0px'
   };
 
-  const paramMeta = componentMeta[paramType][param.name];
+  const paramMeta = componentMeta[paramType][param.name] || {};
   const displayName = paramMeta.displayName || param.name;
 
   return (

@@ -134,8 +134,12 @@ export function onEvent(_ref, eventName, options) {
         }
       }
     }, () => {
-      if (event.actionId) {
-        executeAction(_self, event);
+      if(event) {
+        if (event.actionId) {
+          executeAction(_self, event);
+        }
+      } else { 
+        console.log('No action is associated with this event');
       }
     });
   }
