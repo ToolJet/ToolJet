@@ -4,7 +4,7 @@ import { Postgresql } from './Postgresql';
 import { Mysql } from './Mysql';
 import { Stripe } from './Stripe';
 import { Firestore } from './Firestore';
-import { Restapi } from './Restapi';
+import { RestApi } from './RestApi';
 import { Googlesheets } from './Googlesheets';
 import { Slack } from './Slack';
 import { Mongodb } from './Mongodb';
@@ -16,7 +16,7 @@ export const SourceComponents = {
     Mysql,
     Stripe,
     Firestore,
-    Restapi,
+    RestApi,
     Googlesheets,
     Slack,
     Mongodb
