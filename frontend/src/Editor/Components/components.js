@@ -9,7 +9,7 @@ export const componentTypes = [
       title: { type: 'string', displayName: 'Title' },
       data: { type: 'code', displayName: 'Table data' },
       visible: { type: 'string', displayName: 'Show when' },
-      loadingState: { type: 'string', displayName: 'Loading state' },
+      loadingState: { type: 'code', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
       serverSidePagination: { type: 'toggle', displayName: 'Server Side Pagination'},
       actionButtonBackgroundColor: { type: 'color', displayName: 'Background Color'},

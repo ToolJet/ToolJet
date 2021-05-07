@@ -183,7 +183,7 @@ export const Container = ({
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
-          <center>You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.</center>
+          <center className="text-muted">You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.</center>
         </div>
       )}
       {appLoading && (
