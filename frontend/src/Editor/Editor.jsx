@@ -36,7 +36,17 @@ class Editor extends React.Component {
     super(props);
 
     const appId = this.props.match.params.id;
+
     const currentUser = authenticationService.currentUserValue;
+    let userVars = { };
+
+    if(currentUser) {
+      userVars = {
+        email: currentUser.email,
+        firstName: currentUser.first_name,
+        lastName: currentUser.last_name
+      };
+    }
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
@@ -57,11 +67,7 @@ class Editor extends React.Component {
         queries: {},
         components: {},
         globals: {
-          currentUser: {
-            firstName: currentUser.first_name,
-            lastName: currentUser.last_name,
-            email: currentUser.email
-          },
+          currentUser: userVars,
           urlparams: {}
         }
       }

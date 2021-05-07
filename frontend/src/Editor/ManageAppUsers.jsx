@@ -35,7 +35,7 @@ class ManageAppUsers extends React.Component {
   }
 
   fetchAppUsers = () => {
-    appService.getAppUsers(this.state.app.id).then((data) => this.setState({
+    appService.getAppUsers(this.props.app.id).then((data) => this.setState({
       users: data.users,
       isLoading: false
     }));
