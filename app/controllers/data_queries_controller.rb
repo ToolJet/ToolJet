@@ -1,4 +1,6 @@
 class DataQueriesController < ApplicationController
+  skip_before_action :authenticate_request, only: [:run]
+
   def index
     @data_queries = DataQuery.where(app_id: params[:app_id])
   end
@@ -33,6 +35,11 @@ class DataQueriesController < ApplicationController
 
   def run
     @data_query = DataQuery.find params[:data_query_id]
+
+    unless @data_query.app.is_public
+      authenticate_request
+    end
+
     query_service = QueryService.new @data_query, params[:options], @current_user
     result = query_service.process
 

@@ -7,7 +7,8 @@ export const appService = {
   getApp,
   saveApp,
   getAppUsers,
-  createAppUser
+  createAppUser,
+  setVisibility
 };
 
 function getAll() {
@@ -47,4 +48,9 @@ function createAppUser(app_id, org_user_id, role) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/app_users`, requestOptions).then(handleResponse);
+}
+
+function setVisibility(appId, visibility) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify({ app: { is_public: visibility } }) };
+  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }

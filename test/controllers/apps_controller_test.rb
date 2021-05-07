@@ -91,4 +91,11 @@ class AppsControllerTest < ActionDispatch::IntegrationTest
     assert_response 200
     assert_equal 1, JSON.parse(response.body)['apps'].size
   end
+
+  test 'anyone can view public apps' do
+    app = App.create(name: 'Test App', organization: @org, is_public: true)
+    get app_url(app.id), headers: { 'Content-Type': 'application/json' },
+                         xhr: true
+    assert_response 200
+  end
 end
