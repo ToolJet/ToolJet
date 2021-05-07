@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
-export const Restapi = ({
+export const RestApi = ({
   optionchanged, createDataSource, options, isSaving
 }) => {
   const [authType, setAuthType] = useState(options.auth_type);

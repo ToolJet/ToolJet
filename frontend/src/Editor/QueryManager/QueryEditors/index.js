@@ -1,4 +1,4 @@
-import { Restapi } from './Restapi';
+import { RestApi } from './RestApi';
 import { Mysql } from './Mysql';
 import { Postgresql } from './Postgresql';
 import { Stripe } from './Stripe';
@@ -10,7 +10,7 @@ import { Slack } from './Slack';
 import { Mongodb } from './Mongodb';
 
 export const allSources = {
-  Restapi,
+  RestApi,
   Mysql,
   Postgresql,
   Stripe,
