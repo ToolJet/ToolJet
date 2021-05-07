@@ -3,7 +3,7 @@ import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
-class Restapi extends React.Component {
+class RestApi extends React.Component {
   constructor(props) {
     super(props);
 
@@ -79,7 +79,7 @@ class Restapi extends React.Component {
                   placeholder="Method"
                 />
               </div>
-              
+
               <div className="col">
                 <CodeHinter
                   currentState={this.props.currentState}
@@ -133,4 +133,4 @@ class Restapi extends React.Component {
   }
 }
 
-export { Restapi };
+export { RestApi };
