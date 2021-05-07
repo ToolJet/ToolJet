@@ -202,12 +202,17 @@ class Table extends React.Component {
             />
           </div>
           <Color
-            param="backgroundColor"
+            param={{ name: 'actionButtonBackgroundColor' }}
+            paramType="properties"
+            componentMeta={this.state.componentMeta}
             definition={{ value: action.backgroundColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
           />
+
           <Color
-            param="textColor"
+            param={{ name: 'actionButtonTextColor' }}
+            paramType="properties"
+            componentMeta={this.state.componentMeta}
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
           />
@@ -288,13 +293,16 @@ class Table extends React.Component {
     const columns = this.state.component.component.definition.properties.columns;
     const column = columns.value[index];
 
-    if(item === 'name') {
-      const newColumnSizes = JSON.parse(JSON.stringify(this.state.component.component.definition.properties.columnSizes));
-      if(newColumnSizes[column.name]) {
-        newColumnSizes[value] = newColumnSizes[column.name];
-        this.props.paramUpdated({ name: 'columnSizes' }, null, newColumnSizes, 'properties');
+    if (item === 'name') {
+      const columnSizes = this.state.component.component.definition.properties.columnSizes;
+
+      if (columnSizes) {
+        const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
+        if (newColumnSizes[column.name]) {
+          newColumnSizes[value] = newColumnSizes[column.name];
+          this.props.paramUpdated({ name: 'columnSizes' }, null, newColumnSizes, 'properties');
+        }
       }
-      column['width'] = newColumnSizes[column.name]
     }
 
     column[item] = value;
