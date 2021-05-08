@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActionTypes } from '../ActionTypes';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { CodeHinter } from '../CodeBuilder/CodeHinter';
 
 export const EventSelector = ({
   param,
@@ -9,7 +10,8 @@ export const EventSelector = ({
   eventOptionUpdated,
   dataQueries,
   extraData,
-  eventMeta
+  eventMeta,
+  currentState
 }) => {
   function onChange(value) {
     const query = dataQueries.find((dataquery) => dataquery.id === value);
@@ -59,12 +61,10 @@ export const EventSelector = ({
           {definition.actionId === 'open-webpage' && (
             <div className="p-3">
               <label className="form-label mt-2">URL</label>
-              <input
-                onChange={(e) => eventOptionUpdated(param, 'url', e.target.value, extraData)}
-                value={message}
-                type="text"
-                className="form-control form-control-sm"
-                placeholder="https://example.com"
+              <CodeHinter
+                currentState={currentState}
+                initialValue={definition.options.url}
+                onChange={(value) => eventOptionUpdated(param, 'url', value, extraData)}
               />
             </div>
           )}
