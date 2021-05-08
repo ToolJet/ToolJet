@@ -223,9 +223,10 @@ class Table extends React.Component {
             eventUpdated={this.actionButtonEventUpdated}
             dataQueries={this.state.dataQueries}
             eventOptionUpdated={this.actionButtonEventOptionUpdated}
+            currentState={this.state.currentState}
             extraData={{ actionButton: action, index: index }} // This data is returned in the callbacks
           />
-          <button className="btn btn-sm btn-danger col" onClick={() => this.removeAction(index)}>
+          <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
             Remove
           </button>
         </Popover.Content>
@@ -400,8 +401,8 @@ class Table extends React.Component {
 
           <hr></hr>
 
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked)}
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged)}
+          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked, currentState)}
+          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged, currentState)}
 
           {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
 

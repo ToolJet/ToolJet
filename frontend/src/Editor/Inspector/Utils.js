@@ -49,7 +49,7 @@ export function renderElement(component, componentMeta, paramUpdated, dataQuerie
   );
 }
 
-export function renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, eventMeta) {
+export function renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, eventMeta, currentState) {
   let definition = component.component.definition.events[eventName];
   definition = definition || { };
 
@@ -61,6 +61,7 @@ export function renderEvent(component, eventUpdated, dataQueries, eventOptionUpd
             eventUpdated={eventUpdated}
             dataQueries={dataQueries}
             eventOptionUpdated={eventOptionUpdated}
+            currentState={currentState}
         />
   );
 }
