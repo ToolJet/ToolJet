@@ -167,7 +167,7 @@ class DataSourceManager extends React.Component {
                   </div>
                 </div>
               )}
-              {selectedDataSource && (
+              {!selectedDataSource && (
                 <span className="text-muted">
                   Add new datasource
                 </span>
