@@ -52,10 +52,10 @@ export function resolveReferences(object, state) {
     const dynamicVariables = getDynamicVariables(object);
     if (dynamicVariables) {
       if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-        object = resolve(dynamicVariables[0], state);
+        object = resolveReferences(dynamicVariables[0], state);
       } else {
         for (const dynamicVariable of dynamicVariables) {
-          const value = resolve(dynamicVariable, state);
+          const value = resolveReferences(dynamicVariable, state);
           object = object.replace(dynamicVariable, value);
         }
       }
