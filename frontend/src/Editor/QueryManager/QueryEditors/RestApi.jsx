@@ -3,7 +3,7 @@ import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
-class RestApi extends React.Component {
+class Restapi extends React.Component {
   constructor(props) {
     super(props);
 
@@ -60,7 +60,7 @@ class RestApi extends React.Component {
         <div className="mb-3 mt-2">
           <div className="mb-3">
             <div className="row g-2">
-              <div className="col-auto" style={{width: '120px'}} >
+              <div className="col-auto" style={{ width: '120px' }} >
                 <SelectSearch
                   options={[
                     { name: 'GET', value: 'get' },
@@ -84,7 +84,7 @@ class RestApi extends React.Component {
                 <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={options.url}
-                  onChange={(value) => { this.changeOption('url', value)}}
+                  onChange={(value) => { this.changeOption('url', value); }}
                 />
               </div>
             </div>
@@ -133,4 +133,4 @@ class RestApi extends React.Component {
   }
 }
 
-export { RestApi };
+export { Restapi };
