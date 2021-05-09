@@ -1,19 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/mode/handlebars/handlebars';
+import 'codemirror/mode/sql/sql';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
+import 'codemirror/theme/base16-light.css';
+import 'codemirror/theme/duotone-light.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 
 export function CodeHinter({
-  initialValue, onChange, currentState
+  initialValue, onChange, currentState, mode, theme, lineNumbers, className
 }) {
   const options = {
-    lineNumbers: false,
+    lineNumbers: lineNumbers,
     singleLine: true,
-    mode: 'handlebars',
+    mode: mode || 'handlebars',
     tabSize: 2,
+    theme: theme || 'default',
     readOnly: false,
     highlightSelectionMatches: true
   };
@@ -29,7 +33,7 @@ export function CodeHinter({
   }, [currentState.components, currentState.queries]);
 
   return (
-    <div className="code-hinter form-control">
+    <div className={`code-hinter ${className || 'codehinter-default-input'}`}>
       <CodeMirror
         value={initialValue}
         realState={realState}
