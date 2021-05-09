@@ -15,6 +15,7 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
 import { Pagination } from './Pagination';
+import { CustomSelect } from './CustomSelect';
 
 var _ = require('lodash');
 
@@ -216,7 +217,7 @@ export function Table({
     const columnType = column.columnType;
 
     const columnOptions = {};
-    if (columnType === 'dropdown' || columnType === 'multiselect') {
+    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge') {
       const values = resolveReferences(column.values, currentState) || [];
       const labels = resolveReferences(column.labels, currentState, []) || [];
 
@@ -281,6 +282,18 @@ export function Table({
                 multiple
                 search={true}
                 placeholder="Select.."
+                options={columnOptions.selectOptions}
+                value={cellValue}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+              />
+            </div>
+          );
+        } if (columnType === 'badge') {
+          return (
+            <div>
+              <CustomSelect
                 options={columnOptions.selectOptions}
                 value={cellValue}
                 onChange={(value) => {

@@ -809,6 +809,16 @@ tr:focus {
     width: 100%;
   }
 
+  .select-search:not(.is-loading):not(.select-search--multiple) .select-search__value::after {
+    display: none;
+  }
+
+  .custom-select { 
+    .select-search:not(.select-search--multiple) .select-search__select {
+      top: 0px;
+    }
+  }
+
   .th,
   .td {
     .resizer {
