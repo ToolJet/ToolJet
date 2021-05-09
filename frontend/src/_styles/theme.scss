@@ -1216,3 +1216,10 @@ body {
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
   height: 36px;
  }
+
+ .modal-component { 
+   margin-top: 150px;
+  .modal-body {
+    padding: 0;
+  }
+ }

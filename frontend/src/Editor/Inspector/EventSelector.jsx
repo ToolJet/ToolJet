@@ -11,7 +11,8 @@ export const EventSelector = ({
   dataQueries,
   extraData,
   eventMeta,
-  currentState
+  currentState,
+  components
 }) => {
   function onChange(value) {
     const query = dataQueries.find((dataquery) => dataquery.id === value);
@@ -28,6 +29,20 @@ export const EventSelector = ({
   }
 
   const message = definition.options.message;
+
+  function getModalOptions() {
+    let modalOptions = [];
+    Object.keys(components || {}).forEach((key) => {
+      if(components[key].component.component === 'Modal') {
+        modalOptions.push({
+          name: components[key].component.name,
+          value: key
+        })
+      }
+    })
+    
+    return modalOptions;
+  }
 
   return (
     <div className="field mb-2 mt-1">
@@ -65,6 +80,22 @@ export const EventSelector = ({
                 currentState={currentState}
                 initialValue={definition.options.url}
                 onChange={(value) => eventOptionUpdated(param, 'url', value, extraData)}
+              />
+            </div>
+          )}
+
+          {definition.actionId === 'show-modal' && (
+            <div className="p-3">
+              <label className="form-label mt-2">Modal</label>
+              <SelectSearch
+                options={getModalOptions()}
+                value={definition.options.model}
+                search={true}
+                onChange={(value) => {
+                  eventOptionUpdated(param, 'model', value, extraData);
+                }}
+                filterOptions={fuzzySearch}
+                placeholder="Select.."
               />
             </div>
           )}

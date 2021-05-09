@@ -49,6 +49,7 @@ export const DraggableBox = function DraggableBox({
   top,
   width,
   height,
+  parent,
   component,
   index,
   inCanvas,
@@ -60,7 +61,8 @@ export const DraggableBox = function DraggableBox({
   onResizeStop,
   paramUpdated,
   resizingStatusChanged,
-  zoomLevel
+  zoomLevel,
+  containerProps
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -69,13 +71,13 @@ export const DraggableBox = function DraggableBox({
     () => ({
       type: ItemTypes.BOX,
       item: {
-        id, left, top, width, height, title, component, zoomLevel
+        id, left, top, width, height, title, component, zoomLevel, parent
       },
       collect: (monitor) => ({
         isDragging: monitor.isDragging()
       })
     }),
-    [id, left, top, height, width, title, component, index, zoomLevel]
+    [id, left, top, height, width, title, component, index, zoomLevel, parent]
   );
 
   useEffect(() => {
@@ -138,6 +140,7 @@ export const DraggableBox = function DraggableBox({
                 onComponentOptionsChanged={onComponentOptionsChanged}
                 onComponentClick={onComponentClick}
                 currentState={currentState}
+                containerProps={containerProps}
               />
             </div>
           </Resizable>

@@ -90,6 +90,24 @@ function executeAction(_ref, event) {
       const { queryId, queryName } = event.options;
       return runQuery(_ref, queryId, queryName);
     }
+
+    if (event.actionId === 'show-modal') {
+      const modalId = event.options.modal;
+      const modalMeta = _ref.state.appDefinition.components[modalId];
+
+      _ref.setState({
+        currentState: { 
+          ..._ref.state.currentState,
+          components: {
+            ..._ref.state.currentState,
+            [modalMeta.component.name]: {
+              ..._ref.state.currentState.components[modalMeta.component.name],
+              show: true
+            }
+          }
+        }
+      })
+    }
   }
 }
 
