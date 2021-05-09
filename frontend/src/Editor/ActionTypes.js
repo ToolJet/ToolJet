@@ -19,5 +19,12 @@ export const ActionTypes = [
     options: [
       { name: 'url', type: 'text', default: 'https://example.com' }
     ]
+  },
+  {
+    name: 'Show Modal',
+    id: 'show-modal',
+    options: [
+      { name: 'modal', type: 'text', default: '' }
+    ]
   }
 ];

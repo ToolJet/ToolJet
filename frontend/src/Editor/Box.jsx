@@ -12,6 +12,7 @@ import { Checkbox } from './Components/Checkbox';
 import { Datepicker } from './Components/Datepicker';
 import { DaterangePicker } from './Components/DaterangePicker';
 import { Multiselect } from './Components/Multiselect';
+import { Modal } from './Components/Modal';
 
 const AllComponents = {
   Button,
@@ -26,7 +27,8 @@ const AllComponents = {
   Checkbox,
   Datepicker,
   DaterangePicker,
-  Multiselect
+  Multiselect,
+  Modal
 };
 
 export const Box = function Box({
@@ -44,7 +46,8 @@ export const Box = function Box({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   paramUpdated,
-  changeCanDrag
+  changeCanDrag,
+  containerProps
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -78,6 +81,7 @@ export const Box = function Box({
           onComponentOptionsChanged={onComponentOptionsChanged}
           height={height}
           component={component}
+          containerProps={containerProps}
         ></ComponentToRender>
       ) : (
         <div className="row p-1 m-1" style={{ cursor: 'move' }}>

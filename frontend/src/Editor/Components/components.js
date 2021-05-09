@@ -113,6 +113,38 @@ export const componentTypes = [
     }
   },
   {
+    icon: 'https://cdn.iconscout.com/icon/free/png-256/modal-10-444862.png',
+    name: 'Modal',
+    displayName: 'Modal',
+    description: 'Modal triggered by events',
+    component: 'Modal',
+    defaultSize: {
+      width: 600,
+      height: 400
+    },
+    properties: {
+      
+    },
+    events: {},
+    styles: {
+
+    },
+    exposedVariables: {
+      show: null
+    },
+    definition: {
+      properties: {
+        
+      },
+      events: {
+
+      },
+      styles: {
+
+      }
+    }
+  },
+  {
     icon: 'https://www.svgrepo.com/show/38828/text.svg',
     name: 'TextInput',
     displayName: 'Text Input',

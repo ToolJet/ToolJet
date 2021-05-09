@@ -4,7 +4,6 @@ import { ItemTypes } from './ItemTypes';
 import { BoxDragPreview } from './BoxDragPreview';
 import { snapToGrid } from './snapToGrid';
 const layerStyles = {
-  position: 'fixed',
   pointerEvents: 'none',
   zIndex: 100,
   left: 0,
@@ -13,8 +12,8 @@ const layerStyles = {
   height: '100%'
 };
 
-function getItemStyles(delta, item, initialOffset, currentOffset) {
-  if (!initialOffset || !currentOffset) {
+function getItemStyles(delta, item, initialOffset, currentOffset, parentRef) {
+  if (!initialOffset || !currentOffset || !parentRef.current) {
     return {
       display: 'none'
     };
@@ -23,10 +22,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset) {
 
   let id = item.id;
 
-  const canvasContainerBoundingRect = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
-  const realCanvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-
-  const realCanvasDelta = realCanvasBoundingRect.x - canvasContainerBoundingRect.x;
+  const realCanvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
   if (id) { // Dragging within the canvas
     x = Math.round(item.left + delta.x);
@@ -42,15 +38,13 @@ function getItemStyles(delta, item, initialOffset, currentOffset) {
 
   [x, y] = snapToGrid(x, y);
 
-  x += realCanvasDelta;
-
   const transform = `translate(${x}px, ${y}px)`;
   return {
     transform,
     WebkitTransform: transform
   };
 }
-export const CustomDragLayer = () => {
+export const SubCustomDragLayer = ({parentRef}) => {
   const {
     itemType, isDragging, item, initialOffset, currentOffset, delta
   } = useDragLayer((monitor) => ({
@@ -69,14 +63,13 @@ export const CustomDragLayer = () => {
         return null;
     }
   }
-
-  if (!isDragging || !item || item.parent) {
+  if (!isDragging) {
     return null;
   }
 
   return (
-    <div style={layerStyles}>
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset)}>
+    <div style={layerStyles} className="sub-custom-drag-layer">
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, parentRef)}>
         {renderItem()}
       </div>
     </div>

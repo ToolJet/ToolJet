@@ -8,8 +8,8 @@ import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
 
 const styles = {
-  width: 1292,
-  height: 2400,
+  width: '100%',
+  height: '100%',
   position: 'absolute'
 };
 
@@ -17,7 +17,7 @@ function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16));
 }
 
-export const Container = ({
+export const SubContainer = ({
   mode,
   snapToGrid,
   onComponentClick,
@@ -28,17 +28,30 @@ export const Container = ({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
-  zoomLevel
+  zoomLevel,
+  parent,
+  parentRef,
 }) => {
-  const components = appDefinition.components || [];
+  zoomLevel = zoomLevel || 1;
 
-  const [boxes, setBoxes] = useState(components);
+  const allComponents = appDefinition ? appDefinition.components : {};
+
+  let childComponents = []
+
+  Object.keys(allComponents).forEach((key) => {
+    if(allComponents[key].parent === parent) {
+      childComponents[key] = allComponents[key]
+      }
+    }
+  );
+
+  const [boxes, setBoxes] = useState(allComponents);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
-    setBoxes(components);
-  }, [components]);
+    setBoxes(allComponents);
+  }, [allComponents]);
 
   const moveBox = useCallback(
     (id, left, top) => {
@@ -56,7 +69,9 @@ export const Container = ({
 
   useEffect(() => {
     console.log('new boxes - 2', boxes);
-    appDefinitionChanged({ ...appDefinition, components: boxes });
+    if(appDefinitionChanged) {
+      appDefinitionChanged({ ...appDefinition, components: boxes });
+    }
   }, [boxes]);
 
   const { draggingState } = useDragLayer((monitor) => ({
@@ -71,7 +86,6 @@ export const Container = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
-
         let componentData = {};
         let componentMeta = {};
         let id = item.id;
@@ -79,7 +93,7 @@ export const Container = ({
         let left = 0;
         let top = 0;
 
-        const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+        const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
         // Component already exists and this is just a reposition event
         if (id) {
@@ -115,7 +129,8 @@ export const Container = ({
             left: left,
             width: item.width > 0 ? item.width : componentMeta.defaultSize.width,
             height: item.height > 0 ? item.height : componentMeta.defaultSize.height,
-            component: componentData
+            component: componentData,
+            parent: parent
           }
         });
 
@@ -163,44 +178,28 @@ export const Container = ({
 
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
-      {Object.keys(boxes).map((key) => {
-        if(!boxes[key].parent) {
-          return <DraggableBox
-            onComponentClick={onComponentClick}
-            onEvent={onEvent}
-            onComponentOptionChanged={onComponentOptionChanged}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            key={key}
-            currentState={currentState}
-            onResizeStop={onResizeStop}
-            paramUpdated={paramUpdated}
-            id={key}
-            {...boxes[key]}
-            mode={mode}
-            resizingStatusChanged={(status) => setIsResizing(status)}
-            inCanvas={true}
-            zoomLevel={zoomLevel}
-            containerProps={{
-              mode,
-              snapToGrid,
-              onComponentClick,
-              onEvent,
-              appDefinition,
-              appDefinitionChanged,
-              currentState,
-              onComponentOptionChanged,
-              onComponentOptionsChanged,
-              appLoading,
-              zoomLevel
-            }}
-          />
-        }
-        }
-      )}
+      {Object.keys(childComponents).map((key) => (
+        <DraggableBox
+          onComponentClick={onComponentClick}
+          onEvent={onEvent}
+          onComponentOptionChanged={onComponentOptionChanged}
+          onComponentOptionsChanged={onComponentOptionsChanged}
+          key={key}
+          currentState={currentState}
+          onResizeStop={onResizeStop}
+          paramUpdated={paramUpdated}
+          id={key}
+          {...boxes[key]}
+          mode={'edit'}
+          resizingStatusChanged={(status) => setIsResizing(status)}
+          inCanvas={true}
+          zoomLevel={zoomLevel}
+        />
+      ))}
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
-          <center className="text-muted">You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.</center>
+          <center className="text-muted">Drag components from the right sidebar and drop here.</center>
         </div>
       )}
       {appLoading && (
