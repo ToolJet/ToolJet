@@ -178,6 +178,10 @@ export function Table({
         return rows.filter((row) => row.values[columnIds[0]] === filterValue.value);
       }
 
+      if (filterValue.operation === 'matches') {
+        return rows.filter((row) => row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase()));
+      }
+
       if (filterValue.operation === 'gt') {
         return rows.filter((row) => row.values[columnIds[0]] > filterValue.value);
       }
@@ -627,6 +631,7 @@ export function Table({
                   <SelectSearch
                     options={[
                       { name: 'contains', value: 'contains' },
+                      { name: 'matches', value: 'matches' },
                       { name: 'equals', value: 'equals' },
                       { name: 'greater than', value: 'gt' },
                       { name: 'less than', value: 'lt' },
