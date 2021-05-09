@@ -2,6 +2,7 @@ import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Postgresql extends React.Component {
   constructor(props) {
@@ -52,7 +53,7 @@ class Postgresql extends React.Component {
               <div className="mb-3 mt-2">
                 <CodeMirror
                   height="auto"
-                  style={{minHeight: '100px'}}
+                  style={{ minHeight: '100px' }}
                   fontSize="2"
                   value={options.query}
                   onChange={(instance) => this.changeOption('query', instance.getValue())}
@@ -71,14 +72,11 @@ class Postgresql extends React.Component {
                 <div className="row">
                   <div className="col">
                     <label className="form-label">Table</label>
-                    <input
-                      type="text"
-                      value={this.state.options.table}
-                      onChange={(e) => {
-                        this.changeOption('table', e.target.value);
-                      }}
-                      className="form-control"
-                    />
+                    <CodeHinter
+                        currentState={this.props.currentState}
+                        initialValue={this.state.options.table}
+                        onChange={(value) => this.changeOption('table', value)}
+                      />
                   </div>
                   <div className="col">
                     <label className="form-label">Operation</label>
@@ -99,13 +97,10 @@ class Postgresql extends React.Component {
                   <div>
                     <div className="mb-3 mt-2">
                       <label className="form-label">Primary key column</label>
-                      <input
-                        type="text"
-                        value={options.primary_key_column}
-                        onChange={(e) => {
-                          this.changeOption('primary_key_column', e.target.value);
-                        }}
-                        className="form-control"
+                      <CodeHinter
+                        currentState={this.props.currentState}
+                        initialValue={options.primary_key_column}
+                        onChange={(value) => this.changeOption('primary_key_column', value)}
                       />
                     </div>
                     <div className="mb-3 mt-2">
