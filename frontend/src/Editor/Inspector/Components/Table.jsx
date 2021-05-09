@@ -177,7 +177,7 @@ class Table extends React.Component {
             </label>
           )}
 
-          <button className="btn btn-sm btn-danger col" onClick={() => this.removeAction(index)}>
+          <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
             Remove
           </button>
         </Popover.Content>

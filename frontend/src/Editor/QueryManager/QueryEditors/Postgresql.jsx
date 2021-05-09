@@ -51,19 +51,14 @@ class Postgresql extends React.Component {
 
             {options.mode === 'sql' && (
               <div className="mb-3 mt-2">
-                <CodeMirror
-                  height="auto"
-                  style={{ minHeight: '100px' }}
-                  fontSize="2"
-                  value={options.query}
-                  onChange={(instance) => this.changeOption('query', instance.getValue())}
-                  placeholder="SELECT * FROM customers;"
-                  options={{
-                    theme: 'duotone-light',
-                    mode: 'sql',
-                    lineWrapping: true,
-                    scrollbarStyle: null
-                  }}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={options.query}
+                  mode="sql"
+                  theme="duotone-light"
+                  lineNumbers={true}
+                  className="query-hinter"
+                  onChange={(value) => this.changeOption('query', value)}
                 />
               </div>
             )}

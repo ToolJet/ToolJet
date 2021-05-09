@@ -1,6 +1,7 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Mysql extends React.Component {
   constructor(props) {
@@ -29,18 +30,14 @@ class Mysql extends React.Component {
       <div>
         {options && (
           <div className="mb-3 mt-2">
-            <CodeMirror
-              height="auto"
-              fontSize="2"
-              value={options.query}
-              onChange={(instance) => this.changeOption('query', instance.getValue())}
-              placeholder="SELECT * FROM customers;"
-              options={{
-                theme: 'duotone-light',
-                mode: 'sql',
-                lineWrapping: true,
-                scrollbarStyle: null
-              }}
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={options.query}
+              mode="sql"
+              theme="duotone-light"
+              lineNumbers={true}
+              className="query-hinter"
+              onChange={(value) => this.changeOption('query', value)}
             />
           </div>
         )}
