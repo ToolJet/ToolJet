@@ -98,6 +98,7 @@ class Table extends React.Component {
                 { name: 'String', value: 'string' },
                 { name: 'Badge', value: 'badge' },
                 { name: 'Multiple badges', value: 'badges' },
+                { name: 'Tags', value: 'tags' },
                 { name: 'Dropdown', value: 'dropdown' },
                 { name: 'Multiselect', value: 'multiselect' }
               ]}

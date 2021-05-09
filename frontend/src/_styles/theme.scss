@@ -816,6 +816,48 @@ tr:focus {
   .custom-select { 
     .select-search:not(.select-search--multiple) .select-search__select {
       top: 0px;
+      border: solid #9fa0a1 1px;
+    }
+  }
+
+  .tags { 
+    .add-tag-button {
+      display: none;
+    }
+
+    .tag { 
+
+      font-weight: 400;
+      font-size: 0.85rem;
+      letter-spacing: .04em;
+      text-transform: none;
+
+      .remove-tag-button {
+        margin-left: 5px;
+        margin-right: -7px;
+        display: none;
+      }
+    }
+
+    .form-control-plaintext {
+      font-size: 12px;
+    }
+
+    .form-control-plaintext:hover, .form-control-plaintext:focus-visible {
+      outline: none;
+      
+    }
+  }
+
+  .tags:hover { 
+    .add-tag-button {
+      display: inline-flex;
+    }
+  }
+
+  .tag:hover {
+    .remove-tag-button {
+      display: inline-flex;
     }
   }
 
