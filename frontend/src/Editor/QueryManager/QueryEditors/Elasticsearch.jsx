@@ -85,18 +85,15 @@ class Elasticsearch extends React.Component {
                 </div>
                 <div className="mb-3 mt-2">
                   <label className="form-label text-reset">Query</label>
-                  <CodeMirror
-                    height="auto"
-                    fontSize="2"
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={options.query}
+                    mode="sql"
                     placeholder={'{ "name": "" }'}
-                    value={options.query}
-                    onChange={(instance) => this.changeOption('query', instance.getValue())}
-                    options={{
-                      theme: 'duotone-light',
-                      mode: 'javascript',
-                      lineWrapping: true,
-                      scrollbarStyle: null
-                    }}
+                    theme="duotone-light"
+                    lineNumbers={true}
+                    className="query-hinter"
+                    onChange={(value) => this.changeOption('query', value)}
                   />
                 </div>
               </div>

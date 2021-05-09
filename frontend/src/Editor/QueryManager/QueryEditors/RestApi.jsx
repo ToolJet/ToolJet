@@ -83,6 +83,7 @@ class Restapi extends React.Component {
               <div className="col">
                 <CodeHinter
                   currentState={this.props.currentState}
+                  className="form-control"
                   initialValue={options.url}
                   onChange={(value) => { this.changeOption('url', value); }}
                 />
@@ -102,10 +103,12 @@ class Restapi extends React.Component {
                       <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={pair[0]}
+                        className="form-control"
                         onChange={(value) => this.keyValuePairValueChanged(value, 0, option, index)}
                       />
                       <CodeHinter
                         currentState={this.props.currentState}
+                        className="form-control"
                         initialValue={pair[1]}
                         onChange={(value) => this.keyValuePairValueChanged(value, 1, option, index)}
                       />

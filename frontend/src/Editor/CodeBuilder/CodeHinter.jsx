@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/mode/handlebars/handlebars';
+import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/sql/sql';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
