@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/mode/handlebars/handlebars';
 import 'codemirror/addon/hint/show-hint';
@@ -18,12 +18,21 @@ export function CodeHinter({
     highlightSelectionMatches: true
   };
 
-  let suggestions = useMemo(() => getSuggestionKeys(currentState), [currentState.components, currentState.queries]);
+  const [realState, setRealState] = useState(currentState);
+
+  useEffect(() => {
+    setRealState(currentState);
+  }, [currentState.components]);
+
+  let suggestions = useMemo(() => {
+    return getSuggestionKeys(currentState);
+  }, [currentState.components, currentState.queries]);
 
   return (
     <div className="code-hinter form-control">
       <CodeMirror
         value={initialValue}
+        realState={realState}
         scrollbarStyle={null}
         onChange={(editor) => handleChange(editor, onChange, suggestions)}
         onBeforeChange={(editor, change) => onBeforeChange(editor, change)}
