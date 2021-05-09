@@ -26,9 +26,9 @@ const defaultOptions = {
   restapi: {
     method: 'GET',
     url: null,
-    url_params: [['', '']],
-    headers: [['', '']],
-    body: [['', '']]
+    url_params: [],
+    headers: [],
+    body: []
   },
   stripe: {},
   mongodb: {},

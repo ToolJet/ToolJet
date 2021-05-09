@@ -1124,6 +1124,7 @@ body {
  }
 
  .codehinter-default-input {
+  font-family: 'Roboto', sans-serif;
   padding: 0.0475rem .75rem;
   display: block;
   width: 100%;
@@ -1139,4 +1140,23 @@ body {
   border-radius: 4px;
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
   height: 30px;
+ }
+
+ .codehinter-query-editor-input {
+  font-family: 'Roboto', sans-serif;
+  padding: 0.1775rem .75rem;
+  display: block;
+  width: 100%;
+  font-size: .875rem;
+  font-weight: 400;
+  color: #232e3c;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #dadcde;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 4px;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  height: 36px;
  }
