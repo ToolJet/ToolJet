@@ -1,6 +1,7 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Firestore extends React.Component {
   constructor(props) {
@@ -92,13 +93,10 @@ class Firestore extends React.Component {
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Path</label>
-                  <input
-                    type="text"
-                    value={this.state.options.path}
-                    onChange={(e) => {
-                      this.changeOption('path', e.target.value);
-                    }}
-                    className="form-control"
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.path}
+                    onChange={(value) => this.changeOption('path', value)}
                   />
                 </div>
               </div>
@@ -108,13 +106,10 @@ class Firestore extends React.Component {
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Path</label>
-                  <input
-                    type="text"
-                    value={this.state.options.path}
-                    onChange={(e) => {
-                      this.changeOption('path', e.target.value);
-                    }}
-                    className="form-control"
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.path}
+                    onChange={(value) => this.changeOption('path', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -139,24 +134,18 @@ class Firestore extends React.Component {
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Collection</label>
-                  <input
-                    type="text"
-                    value={this.state.options.collection}
-                    onChange={(e) => {
-                      this.changeOption('collection', e.target.value);
-                    }}
-                    className="form-control"
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.collection}
+                    onChange={(value) => this.changeOption('collection', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Key for document Id</label>
-                  <input
-                    type="text"
-                    value={this.state.options.document_id_key}
-                    onChange={(e) => {
-                      this.changeOption('document_id_key', e.target.value);
-                    }}
-                    className="form-control"
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.document_id_key}
+                    onChange={(value) => this.changeOption('document_id_key', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -181,13 +170,10 @@ class Firestore extends React.Component {
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Path</label>
-                  <input
-                    type="text"
-                    value={this.state.options.path}
-                    onChange={(e) => {
-                      this.changeOption('path', e.target.value);
-                    }}
-                    className="form-control"
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.path}
+                    onChange={(value) => this.changeOption('path', value)}
                   />
                 </div>
                 <hr />
@@ -195,13 +181,10 @@ class Firestore extends React.Component {
                   <h3 className="text-muted">Where condition</h3>
                   <div className="col">
                     <label className="form-label">Field</label>
-                    <input
-                      type="text"
-                      value={this.state.options.where_field}
-                      onChange={(e) => {
-                        this.changeOption('where_field', e.target.value);
-                      }}
-                      className="form-control"
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={this.state.options.where_field}
+                      onChange={(value) => this.changeOption('where_field', value)}
                     />
                   </div>
                   <div className="col">
@@ -227,13 +210,10 @@ class Firestore extends React.Component {
                   </div>
                   <div className="col">
                     <label className="form-label">Value</label>
-                    <input
-                      type="text"
-                      value={this.state.options.where_value}
-                      onChange={(e) => {
-                        this.changeOption('where_value', e.target.value);
-                      }}
-                      className="form-control"
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={this.state.options.where_value}
+                      onChange={(value) => this.changeOption('where_value', value)}
                     />
                   </div>
                 </div>

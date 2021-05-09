@@ -2,6 +2,7 @@ import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Elasticsearch extends React.Component {
   constructor(props) {
@@ -75,14 +76,12 @@ class Elasticsearch extends React.Component {
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label text-muted">Index</label>
-                  <input
-                    type="text"
-                    value={this.state.options.index}
-                    onChange={(e) => {
-                      this.changeOption('index', e.target.value);
-                    }}
-                    className="form-control"
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.index}
+                    onChange={(value) => this.changeOption('index', value)}
                   />
+
                 </div>
                 <div className="mb-3 mt-2">
                   <label className="form-label text-reset">Query</label>
