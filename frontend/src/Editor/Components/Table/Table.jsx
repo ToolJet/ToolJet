@@ -423,25 +423,27 @@ export function Table({
     >
       <div className="card-body border-bottom py-3 jet-data-table-header">
         <div className="d-flex">
-          <div className="text-muted">
-            Show
-            <div className="mx-2 d-inline-block">
-              <select
-                value={pageSize}
-                className="form-control form-control-sm"
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                }}
-              >
-                {[10, 20, 30, 40, 50].map((itemsCount) => (
-                  <option key={itemsCount} value={itemsCount}>
-                    {itemsCount}
-                  </option>
-                ))}
-              </select>
+          {!serverSidePagination &&
+            <div className="text-muted">
+              Show
+              <div className="mx-2 d-inline-block">
+                <select
+                  value={pageSize}
+                  className="form-control form-control-sm"
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                  }}
+                >
+                  {[10, 20, 30, 40, 50].map((itemsCount) => (
+                    <option key={itemsCount} value={itemsCount}>
+                      {itemsCount}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              entries
             </div>
-            entries
-          </div>
+          }
           <div className="ms-auto text-muted">
             <GlobalFilter />
           </div>
