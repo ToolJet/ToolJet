@@ -83,8 +83,8 @@ class Restapi extends React.Component {
               <div className="col">
                 <CodeHinter
                   currentState={this.props.currentState}
-                  className="form-control"
                   initialValue={options.url}
+                  className="codehinter-query-editor-input"
                   onChange={(value) => { this.changeOption('url', value); }}
                 />
               </div>
@@ -103,17 +103,17 @@ class Restapi extends React.Component {
                       <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={pair[0]}
-                        className="form-control"
+                        className="form-control codehinter-query-editor-input"
                         onChange={(value) => this.keyValuePairValueChanged(value, 0, option, index)}
                       />
                       <CodeHinter
                         currentState={this.props.currentState}
-                        className="form-control"
+                        className="form-control codehinter-query-editor-input"
                         initialValue={pair[1]}
                         onChange={(value) => this.keyValuePairValueChanged(value, 1, option, index)}
                       />
                       <span
-                        className="input-group-text"
+                        className="input-group-text btn-sm"
                         role="button"
                         onClick={() => {
                           this.removeKeyValuePair(option, index);
