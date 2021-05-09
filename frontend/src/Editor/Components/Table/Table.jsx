@@ -217,7 +217,7 @@ export function Table({
     const columnType = column.columnType;
 
     const columnOptions = {};
-    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge') {
+    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges') {
       const values = resolveReferences(column.values, currentState) || [];
       const labels = resolveReferences(column.labels, currentState, []) || [];
 
@@ -296,6 +296,19 @@ export function Table({
               <CustomSelect
                 options={columnOptions.selectOptions}
                 value={cellValue}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+              />
+            </div>
+          );
+        } if (columnType === 'badges') {
+          return (
+            <div>
+              <CustomSelect
+                options={columnOptions.selectOptions}
+                value={cellValue}
+                multiple={true}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
