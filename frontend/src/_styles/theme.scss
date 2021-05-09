@@ -805,6 +805,10 @@ tr:focus {
 .jet-data-table {
   display: inline-block;
 
+  thead {
+    width: 100%;
+  }
+
   .th,
   .td {
     .resizer {
