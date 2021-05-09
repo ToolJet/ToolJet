@@ -16,6 +16,7 @@ import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
 import { Pagination } from './Pagination';
 import { CustomSelect } from './CustomSelect';
+import { Tags } from './Tags';
 
 var _ = require('lodash');
 
@@ -309,6 +310,17 @@ export function Table({
                 options={columnOptions.selectOptions}
                 value={cellValue}
                 multiple={true}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+              />
+            </div>
+          );
+        } if (columnType === 'tags') {
+          return (
+            <div>
+              <Tags
+                value={cellValue}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
