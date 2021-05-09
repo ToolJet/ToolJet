@@ -9,7 +9,7 @@ import { computeComponentName } from '@/_helpers/utils';
 
 const styles = {
   width: 1292,
-  height: 1200,
+  height: 2400,
   position: 'absolute'
 };
 
