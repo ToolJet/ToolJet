@@ -190,7 +190,7 @@ export const SubContainer = ({
           paramUpdated={paramUpdated}
           id={key}
           {...boxes[key]}
-          mode={'edit'}
+          mode={mode}
           resizingStatusChanged={(status) => setIsResizing(status)}
           inCanvas={true}
           zoomLevel={zoomLevel}
