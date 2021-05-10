@@ -3,6 +3,7 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
+import { ConfigHandle } from '../ConfigHandle';
 
 export const Modal = function Modal({
   id,
@@ -44,6 +45,11 @@ export const Modal = function Modal({
         animation={false}
         onEscapeKeyDown={() => showModal(false)}
       >
+        <ConfigHandle 
+          id={id} 
+          component={component}
+          configHandleClicked={containerProps.onComponentClick}
+        /> 
         <BootstrapModal.Header>
           <BootstrapModal.Title>
             {title}
