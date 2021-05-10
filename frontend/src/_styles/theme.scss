@@ -697,7 +697,7 @@ body {
       padding: 10px;
       margin-left: -9px;
       background: white;
-      border: solid 1px #e6e8e9;
+      border: solid 1px #abadad;
       white-space: initial;
     }
 
@@ -707,8 +707,6 @@ body {
   }
 
   td { 
-    overflow: scroll;
-
     .text-container::-webkit-scrollbar {
       background: transparent;
       height: 0;
