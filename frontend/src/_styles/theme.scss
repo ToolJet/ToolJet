@@ -715,7 +715,6 @@ body {
 
 .jet-data-table {
     overflow: hidden;
-
     .table-row {
         cursor: pointer;
     }
@@ -804,6 +803,7 @@ tr:focus {
 
 .jet-data-table {
   display: inline-block;
+  height: 100%;
 
   thead {
     width: 100%;
