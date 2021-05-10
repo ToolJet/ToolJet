@@ -35,12 +35,11 @@ export const Modal = function Modal({
       <BootstrapModal
         contentClassName="modal-component"
         show={show}
-        container={document.getElementsByClassName('real-canvas')[0]}
+        container={document.getElementsByClassName('canvas-area')[0]}
         size={size}
-        backdrop="static"
+        backdrop={false}
         keyboard={true}
         animation={false}
-        onClick={() => containerProps.onComponentClick(id, component)}
         onEscapeKeyDown={() => showModal(false)}
       >
         <BootstrapModal.Header>

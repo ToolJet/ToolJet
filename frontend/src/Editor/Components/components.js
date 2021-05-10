@@ -123,7 +123,8 @@ export const componentTypes = [
       height: 400
     },
     properties: {
-      
+      title: { type: 'string', displayName: 'Title' },
+      size: { type: 'string', displayName: 'Size' },
     },
     events: {},
     styles: {
@@ -134,7 +135,8 @@ export const componentTypes = [
     },
     definition: {
       properties: {
-        
+        title: { value: 'This title can be changed' },
+        size: { value: 'md' },
       },
       events: {
 
