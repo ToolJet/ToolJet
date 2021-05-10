@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_27_100209) do
+ActiveRecord::Schema.define(version: 2021_05_10_191558) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -44,8 +44,10 @@ ActiveRecord::Schema.define(version: 2021_04_27_100209) do
     t.json "definition"
     t.uuid "current_version_id"
     t.boolean "is_public", default: false
+    t.uuid "user_id"
     t.index ["current_version_id"], name: "index_apps_on_current_version_id"
     t.index ["organization_id"], name: "index_apps_on_organization_id"
+    t.index ["user_id"], name: "index_apps_on_user_id"
   end
 
   create_table "credentials", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -86,6 +88,26 @@ ActiveRecord::Schema.define(version: 2021_04_27_100209) do
     t.index ["app_id"], name: "index_data_sources_on_app_id"
   end
 
+  create_table "endpoints", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "identifier"
+    t.string "path"
+    t.string "method"
+    t.text "description"
+    t.json "request_schema"
+    t.json "response_schema"
+    t.uuid "integration_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["integration_id"], name: "index_endpoints_on_integration_id"
+  end
+
+  create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "identifier"
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "organization_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "organization_id", null: false
     t.uuid "user_id", null: false
@@ -113,6 +135,7 @@ ActiveRecord::Schema.define(version: 2021_04_27_100209) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "role"
     t.uuid "organization_id"
+    t.text "image"
     t.string "invitation_token"
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
@@ -122,11 +145,13 @@ ActiveRecord::Schema.define(version: 2021_04_27_100209) do
   add_foreign_key "app_versions", "apps"
   add_foreign_key "apps", "app_versions", column: "current_version_id"
   add_foreign_key "apps", "organizations"
+  add_foreign_key "apps", "users"
   add_foreign_key "data_queries", "apps"
   add_foreign_key "data_queries", "data_sources"
   add_foreign_key "data_source_user_oauth2s", "data_sources"
   add_foreign_key "data_source_user_oauth2s", "users"
   add_foreign_key "data_sources", "apps"
+  add_foreign_key "endpoints", "integrations"
   add_foreign_key "organization_users", "organizations"
   add_foreign_key "organization_users", "users"
 end

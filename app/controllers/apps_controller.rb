@@ -11,7 +11,8 @@ class AppsController < ApplicationController
     @app = App.create({
                         name: 'Untitled app',
                         organization: @current_user.organization,
-                        current_version: AppVersion.new(name: 'v0')
+                        current_version: AppVersion.new(name: 'v0'),
+                        user: @current_user
                       })
   end
 
