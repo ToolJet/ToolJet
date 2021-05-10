@@ -267,7 +267,17 @@ export function Table({
           }
           return <span>{cellValue}</span>;
         } if (columnType === 'text') {
-          return <span className="text-container" style={{minWidth: width}}>{cellValue}</span>;
+          return <textarea 
+              rows="1" 
+              className="form-control-plaintext text-container text-muted"
+              readOnly={!column.isEditable}
+              style={{maxWidth: width, minWidth: width - 10}}
+              onBlur={(e) => {
+                handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+              }}
+            >
+              {cellValue}
+          </textarea>;
         } if (columnType === 'dropdown') {
           return (
             <div>
