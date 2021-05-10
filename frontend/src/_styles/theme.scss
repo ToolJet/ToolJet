@@ -1223,3 +1223,22 @@ body {
     padding: 0;
   }
  }
+
+ .draggable-box {
+  .config-handle {
+    top: -20px;
+    position: fixed;
+    
+    display: none;
+    .badge {
+      font-size: 9px;
+    }
+  }
+}
+
+
+.draggable-box:hover {
+  .config-handle {
+    display: block;
+  }
+}

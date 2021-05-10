@@ -4,6 +4,7 @@ import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { Resizable } from 're-resizable';
+import { ConfigHandle } from './ConfigHandle';
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -109,10 +110,21 @@ export const DraggableBox = function DraggableBox({
     setCanDrag(newState);
   }
 
+  function configHandleClicked(id, component) {
+    onComponentClick(id, component)
+  }
+
   return (
     <div>
       {inCanvas ? (
-        <div style={getStyles(left, top, isDragging, component)}>
+        <div style={getStyles(left, top, isDragging, component)} className="draggable-box">
+          {mode === 'edit' && 
+            <ConfigHandle 
+              id={id} 
+              component={component}
+              configHandleClicked={configHandleClicked}
+            /> 
+          }
           <Resizable
             style={{ ...style }}
             defaultSize={{}}
