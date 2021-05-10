@@ -3,6 +3,7 @@ class User < ApplicationRecord
   has_many :organization_users
   belongs_to :organization
   has_many :app_users
+  has_many :apps
 
   validates :email, presence: true, uniqueness: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
