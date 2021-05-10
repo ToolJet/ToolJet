@@ -3,7 +3,7 @@ class AppsController < ApplicationController
 
   def index
     authorize App
-    @apps = App.where(organization: @current_user.organization).order('created_at desc')
+    @apps = App.where(organization: @current_user.organization).order('created_at desc').includes(:user)
   end
 
   def create
