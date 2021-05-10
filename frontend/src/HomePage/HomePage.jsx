@@ -101,35 +101,9 @@ class HomePage extends React.Component {
           </div>
         </header>
 
-        {apps.length > 0 && (
-          <div className="page-wrapper">
-            <div className="container-xl">
-              <div className="page-header d-print-none">
-                <div className="row align-items-center">
-                  <div className="col">
-                    <h2 className="page-title">Your Applications</h2>
-                  </div>
-                  <div className="col-auto ms-auto d-print-none"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
         <div className="page-body homepage-body">
           <div className="container-xl">
             <div className="row row-deck row-cards">
-              {isLoading && (
-                <div className="row mt-3">
-                  {[1, 2, 3, 4].map((key) => (
-                    <div className="col-sm-6 col-lg-3" key={key}>
-                      <div className="card p-5" role="button">
-                        <Skeleton count={3} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {!isLoading && apps.length === 0 && 
                 <div class="page-wrapper">
                   <div class="container-xl">
@@ -158,53 +132,64 @@ class HomePage extends React.Component {
                 </div>
               }
 
-              {apps.length > 0 && (
-                <>
-                  <div className="col-sm-6 col-lg-3 ">
-                    <div className="card create-app" role="button" onClick={this.createApp}>
-                      <div className="card-body create-app-body" style={{ maxHeight: '155px', marginTop: '10px' }}>
-                        <center>
-                          <img src="https://www.svgrepo.com/show/152121/plus.svg" width="15" height="50" alt="" />
-                          <br></br>
-                          Create App
-                        </center>
+              <div className="col-md-2">
+
+              </div>
+
+              <div className="col-md-8">
+                {isLoading && (
+                  <div className="row mt-3 w-100">
+                    <Skeleton count={3} />
+                  </div>
+                )}
+                {apps.length > 0 && (
+                    <div className="w-100 mb-5">
+                      <div className="row align-items-center">
+                        <div className="col">
+                          <h2 className="page-title">Your Applications</h2>
+                        </div>
+                      <div className="col-auto ms-auto d-print-none">
+                        <button className="btn btn-primary" onClick={this.createApp}>+ App</button>
                       </div>
+                    </div>
+
+                    <div class="table-responsive bg-white w-100 apps-table mt-3">
+                      <table
+                        class="table table-vcenter">
+                        <tbody>
+                          {apps.map((app) => (
+                          <tr class="row">
+                            <td class="col p-3">
+                              <span className="app-title mb-3">{app.name}</span> <br />
+                              <small className="pt-2">created {app.created_at} ago by {app.user.first_name} {app.user.last_name} </small>
+                            </td>
+                            <td class="text-muted col-auto pt-4">
+                              <Link
+                                to={`/applications/${app.id}`}
+                                target="_blank"
+                              >
+                                <span class="badge bg-blue-lt mx-2">launch</span>
+
+                              </Link>
+                          
+                              <Link
+                                to={`/apps/${app.id}`}
+                              >
+                                <span class="badge bg-green-lt">Edit</span>
+
+                              </Link>
+                          
+                              <span class="badge bg-red-lt mx-2">archive</span>
+                            </td>
+                          </tr>))
+                          }
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                  {apps.map((app) => (
-                    <div className="col-sm-6 col-lg-3" key={app.id}>
-                      <div className="card app-card">
-                        <div
-                          // to={`/apps/${app.id}`}
-                          className=""
-                        >
-                          <div className="card-body p-5">
-                            <div className="row align-items-center">
-                              <center className="app-name text-muted">{app.name}</center>
-                              <div className="app-action-buttons row">
-                                <div className="col-md-6">
-                                  <Link
-                                    to={`/applications/${app.id}`}
-                                    target="_blank"
-                                    className="btn btn-primary text-white mx-2"
-                                  >
-                                    Launch
-                                  </Link>
-                                </div>
-                                <div className="col-md-6">
-                                  <Link to={`/apps/${app.id}`} className="btn btn-primary text-white mx-2">
-                                    Edit
-                                  </Link>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
+                )}
+              </div>
+
             </div>
           </div>
         </div>
