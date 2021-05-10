@@ -233,18 +233,20 @@ export function Table({
       }
     }
 
+    const width = columnSize || defaultColumn.width;
+
     return {
       Header: column.name,
       accessor: column.key || column.name,
       filter: customFilter,
-      width: columnSize || defaultColumn.width,
+      width: width,
 
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
 
         if (columnType === undefined || columnType === 'default') {
-          return cellValue || '';
+          return <span>{cellValue}</span>;
         } if (columnType === 'string') {
           if (column.isEditable) {
             return (
@@ -263,7 +265,9 @@ export function Table({
               />
             );
           }
-          return cellValue || '';
+          return <span>{cellValue}</span>;
+        } if (columnType === 'text') {
+          return <span className="text-container" style={{minWidth: width}}>{cellValue}</span>;
         } if (columnType === 'dropdown') {
           return (
             <div>
