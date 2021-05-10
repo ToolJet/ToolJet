@@ -676,17 +676,28 @@ body {
     background: rgba(lightBlue, 0.25);
   }
 
+  td {
+    .text-container:focus-visible, .text-container:focus, .text-container:focus-within, .text-container:hover   {
+      outline: none;
+      height: 30px;
+    }
+  }
+
   td:hover { 
     .text-container {
       position: fixed;
-      max-height: 200px;
+      height: 100%;
       overflow-y: scroll;
       margin-top: -10px;
       padding: 10px;
-      margin-left: -10px;
+      margin-left: -9px;
       background: white;
       border: solid 1px #e6e8e9;
       white-space: initial;
+    }
+
+    .text-container:focus-visible, .text-container:focus, .text-container:focus-within, .text-container:hover   {
+      outline: none;
     }
   }
 

@@ -169,7 +169,7 @@ class Table extends React.Component {
             </div>
           )}
 
-          {column.columnType === 'string' && (
+          {column.columnType === 'string' || column.columnType === 'text' && (
             <label className="form-check form-switch my-2">
               <input
                 className="form-check-input"
