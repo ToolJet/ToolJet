@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { default as BootstrapModal} from 'react-bootstrap/Modal';
+import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
@@ -10,9 +10,14 @@ export const Modal = function Modal({
   height,
   containerProps
 }) {
-
   const [show, showModal] = useState(false);
   const parentRef = useRef(null);
+
+  const titleProp = component.definition.properties.title;
+  const title = titleProp ? titleProp.value : '';
+
+  const sizeProp = component.definition.properties.size;
+  const size = sizeProp ? sizeProp.value : 'lg';
 
   useEffect(() => {
     const componentState = containerProps.currentState.components[component.name];
@@ -27,19 +32,21 @@ export const Modal = function Modal({
 
   return (
     <div>
-      <BootstrapModal 
+      <BootstrapModal
         contentClassName="modal-component"
-        show={show} 
+        show={show}
         container={document.getElementsByClassName('real-canvas')[0]}
-        size="lg" 
-        backdrop="static" 
-        keyboard={true} 
+        size={size}
+        backdrop="static"
+        keyboard={true}
         animation={false}
-        
+        onClick={() => containerProps.onComponentClick(id, component)}
         onEscapeKeyDown={() => showModal(false)}
       >
         <BootstrapModal.Header>
-          <BootstrapModal.Title></BootstrapModal.Title>
+          <BootstrapModal.Title>
+            {title}
+          </BootstrapModal.Title>
           <div>
             <Button variant="light" size="sm" onClick={hideModal}>
               x
@@ -47,14 +54,14 @@ export const Modal = function Modal({
           </div>
         </BootstrapModal.Header>
 
-        <BootstrapModal.Body style={{height}} ref={parentRef}>
+        <BootstrapModal.Body style={{ height }} ref={parentRef}>
             <SubContainer
               parent={id}
               {...containerProps}
               parentRef={parentRef}
             />
-            <SubCustomDragLayer 
-              snapToGrid={true} 
+            <SubCustomDragLayer
+              snapToGrid={true}
               parentRef={parentRef}
             />
         </BootstrapModal.Body>
