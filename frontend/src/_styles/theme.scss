@@ -1282,6 +1282,16 @@ body {
   }
 }
 
+.modal-content {
+  .config-handle {
+    position: absolute;
+
+    .badge {
+      font-size: 9px;
+    }
+  }
+}
+
 
 .draggable-box:hover {
   .config-handle {
