@@ -3,6 +3,7 @@ import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';
 import { Code } from './Elements/Code';
+import { Select } from './Elements/Select';
 import { Toggle } from './Elements/Toggle';
 import { TypeMapping } from './TypeMapping';
 import { EventSelector } from './EventSelector';
@@ -13,7 +14,8 @@ const AllElements = {
   Json,
   Text,
   Code,
-  Toggle
+  Toggle,
+  Select
 };
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
