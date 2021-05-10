@@ -1302,3 +1302,14 @@ body {
     font-size: 1rem;
   }
 }
+
+.home-page, .org-users-page {
+  .navbar .navbar-nav .active>.nav-link, .navbar .navbar-nav .nav-link.active, .navbar .navbar-nav .nav-link.show, .navbar .navbar-nav .show>.nav-link {
+    color: #2c6ba2;
+  }
+
+  .nav-item { 
+    font-size: 0.9rem;
+  }
+
+}

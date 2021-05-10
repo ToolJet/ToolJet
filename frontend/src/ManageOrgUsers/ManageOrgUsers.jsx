@@ -87,7 +87,7 @@ class ManageOrgUsers extends React.Component {
     } = this.state;
 
     return (
-      <div className="wrapper">
+      <div className="wrapper org-users-page">
         <header className="navbar navbar-expand-md navbar-light d-print-none">
           <div className="container-xl">
             <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
@@ -101,12 +101,16 @@ class ManageOrgUsers extends React.Component {
             <ul className="navbar-nav">
               <li className="nav-item">
                 <Link to={'/'} className="nav-link">
-                  <span className="nav-link-title">Apps</span>
+                  <span className="nav-link-title">
+                    <img src="https://www.svgrepo.com/show/309806/office-apps.svg" className="mx-2" width="12" height="12" /> Apps
+                  </span>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link to={'/users'} className="nav-link active">
-                  <span className="nav-link-title">Users</span>
+                  <span className="nav-link-title">
+                    <img src="https://www.svgrepo.com/show/154834/users.svg" className="mx-2" width="12" height="12" />Users
+                    </span>
                 </Link>
               </li>
             </ul>
