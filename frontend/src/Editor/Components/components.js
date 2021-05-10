@@ -124,7 +124,11 @@ export const componentTypes = [
     },
     properties: {
       title: { type: 'string', displayName: 'Title' },
-      size: { type: 'string', displayName: 'Size' },
+      size: { type: 'select', displayName: 'Modal size', options: [
+        { name: 'small', value: 'sm' },
+        { name: 'medium', value: 'md' },
+        { name: 'large', value: 'lg' }
+      ] },
     },
     events: {},
     styles: {
