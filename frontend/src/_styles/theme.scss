@@ -676,6 +676,16 @@ body {
     background: rgba(lightBlue, 0.25);
   }
 
+  td { 
+    overflow: scroll;
+  }
+
+  td::-webkit-scrollbar {
+    background: transparent;
+    height: 0;
+    width: 0;
+  }
+
   th:after {
     content: ' ';
     position: relative;
@@ -1228,7 +1238,7 @@ body {
   .config-handle {
     top: -20px;
     position: fixed;
-    
+
     display: none;
     .badge {
       font-size: 9px;
