@@ -8,6 +8,7 @@ export const Modal = function Modal({
   id,
   component,
   height,
+  mode,
   containerProps
 }) {
   const [show, showModal] = useState(false);
