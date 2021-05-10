@@ -37,8 +37,9 @@ export const Modal = function Modal({
         show={show}
         container={document.getElementsByClassName('canvas-area')[0]}
         size={size}
-        backdrop={false}
+        backdrop={true}
         keyboard={true}
+        enforceFocus={false}
         animation={false}
         onEscapeKeyDown={() => showModal(false)}
       >
