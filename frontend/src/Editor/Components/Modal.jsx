@@ -45,11 +45,13 @@ export const Modal = function Modal({
         animation={false}
         onEscapeKeyDown={() => showModal(false)}
       >
-        <ConfigHandle 
-          id={id} 
-          component={component}
-          configHandleClicked={containerProps.onComponentClick}
-        /> 
+        {containerProps.mode === 'edit' && 
+          <ConfigHandle 
+            id={id} 
+            component={component}
+            configHandleClicked={containerProps.onComponentClick}
+          /> 
+        }
         <BootstrapModal.Header>
           <BootstrapModal.Title>
             {title}
