@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { SubCustomDragLayer } from '../SubCustomDragLayer';
+import { SubContainer } from '../SubContainer';
 
 export const Container = function Container({
-  id, width, height, component, onComponentClick
+  id,
+  component,
+  height,
+  containerProps,
+  width
 }) {
+
   const backgroundColor = component.definition.styles.backgroundColor.value;
 
   const computedStyles = {
@@ -11,5 +18,19 @@ export const Container = function Container({
     height
   };
 
-  return <div className="jet-container" onClick={() => onComponentClick(id, component)} style={computedStyles}></div>;
+  const parentRef = useRef(null);
+
+  return (
+    <div className="jet-container" ref={parentRef} onClick={() => containerProps.onComponentClick(id, component)} style={computedStyles}>
+            <SubContainer
+              parent={id}
+              {...containerProps}
+              parentRef={parentRef}
+            />
+            <SubCustomDragLayer 
+              snapToGrid={true} 
+              parentRef={parentRef}
+            />
+    </div>
+  );
 };

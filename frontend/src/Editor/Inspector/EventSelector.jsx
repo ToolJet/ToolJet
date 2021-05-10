@@ -92,7 +92,7 @@ export const EventSelector = ({
                 value={definition.options.model}
                 search={true}
                 onChange={(value) => {
-                  eventOptionUpdated(param, 'model', value, extraData);
+                  eventOptionUpdated(param, 'modal', value, extraData);
                 }}
                 filterOptions={fuzzySearch}
                 placeholder="Select.."
