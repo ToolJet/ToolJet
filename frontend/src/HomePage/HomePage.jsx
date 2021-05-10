@@ -12,6 +12,7 @@ class HomePage extends React.Component {
       currentUser: authenticationService.currentUserValue,
       users: null,
       isLoading: true,
+      creatingApp: false,
       apps: []
     };
   }
@@ -25,6 +26,7 @@ class HomePage extends React.Component {
 
   createApp = () => {
     let _self = this;
+    _self.setState({ creatingApp: true });
     appService.createApp().then((data) => {
       console.log(data);
       _self.props.history.push(`/apps/${data.id}`);
@@ -38,7 +40,7 @@ class HomePage extends React.Component {
 
   render() {
     const {
-      apps, isLoading
+      apps, isLoading, creatingApp
     } = this.state;
     return (
       <div className="wrapper">
@@ -149,7 +151,7 @@ class HomePage extends React.Component {
                           <h2 className="page-title">Your Applications</h2>
                         </div>
                       <div className="col-auto ms-auto d-print-none">
-                        <button className="btn btn-primary" onClick={this.createApp}>+ App</button>
+                        <button className={`btn btn-primary ${ creatingApp ? 'btn-loading' : ''}`} onClick={this.createApp}>+ App</button>
                       </div>
                     </div>
 
