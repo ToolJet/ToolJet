@@ -96,6 +96,7 @@ class Table extends React.Component {
               options={[
                 { name: 'Default', value: 'default' },
                 { name: 'String', value: 'string' },
+                { name: 'Text', value: 'text' },
                 { name: 'Badge', value: 'badge' },
                 { name: 'Multiple badges', value: 'badges' },
                 { name: 'Tags', value: 'tags' },

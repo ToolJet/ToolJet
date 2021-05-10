@@ -676,8 +676,28 @@ body {
     background: rgba(lightBlue, 0.25);
   }
 
+  td:hover { 
+    .text-container {
+      position: fixed;
+      max-height: 200px;
+      overflow-y: scroll;
+      margin-top: -10px;
+      padding: 10px;
+      margin-left: -10px;
+      background: white;
+      border: solid 1px #e6e8e9;
+      white-space: initial;
+    }
+  }
+
   td { 
     overflow: scroll;
+
+    .text-container::-webkit-scrollbar {
+      background: transparent;
+      height: 0;
+      width: 0;
+    }
   }
 
   td::-webkit-scrollbar {
