@@ -59,9 +59,17 @@ export const Container = ({
     appDefinitionChanged({ ...appDefinition, components: boxes });
   }, [boxes]);
 
-  const { draggingState } = useDragLayer((monitor) => ({
-    draggingState: monitor.isDragging()
-  }));
+  const { draggingState } = useDragLayer((monitor) => {
+    if(monitor.isDragging()) {
+      if(!monitor.getItem().parent && !parent) {
+        return { draggingState: true }
+      } else { 
+        return { draggingState: false }
+      }
+    } else { 
+      return { draggingState: false }
+    }
+  });
 
   useEffect(() => {
     setIsDragging(draggingState);
@@ -71,6 +79,10 @@ export const Container = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
+
+        if(item.parent) {
+          return;
+        }
 
         let componentData = {};
         let componentMeta = {};
@@ -84,9 +96,17 @@ export const Container = ({
         // Component already exists and this is just a reposition event
         if (id) {
           const delta = monitor.getDifferenceFromInitialOffset();
+          let deltaX = 0;
+          let deltaY = 0;
+
+          if(delta) {
+            deltaX = delta.x;
+            deltaY = delta.y;
+          }
+
           componentData = item.component;
-          left = Math.round(item.left + delta.x);
-          top = Math.round(item.top + delta.y);
+          left = Math.round(item.left + deltaX);
+          top = Math.round(item.top + deltaY);
         } else {
           //  This is a new component
           componentMeta = componentTypes.find((component) => component.component === item.component.component);
