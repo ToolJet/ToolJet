@@ -686,17 +686,24 @@ body {
     background: rgba(lightBlue, 0.25);
   }
 
+  td { 
+    .text-container {
+      padding: 0px;
+      margin-bottom: 3px;
+    }
+  }
+
   td {
     .text-container:focus-visible, .text-container:focus, .text-container:focus-within, .text-container:hover   {
       outline: none;
-      height: 30px;
+      height: 100%;
     }
   }
 
   td:hover { 
     .text-container {
       position: fixed;
-      height: 50%;
+      height: 30%;
       overflow-y: scroll;
       margin-top: -10px;
       padding: 10px;
