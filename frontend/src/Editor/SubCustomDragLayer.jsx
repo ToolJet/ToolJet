@@ -12,12 +12,19 @@ const layerStyles = {
   height: '100%'
 };
 
-function getItemStyles(delta, item, initialOffset, currentOffset, parentRef) {
+function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent) {
   if (!initialOffset || !currentOffset || !parentRef.current) {
     return {
       display: 'none'
     };
   }
+
+  if ( parent !== item.parent ) {
+    return {
+      display: 'none'
+    };
+  }
+
   let { x, y } = currentOffset;
 
   let id = item.id;
@@ -44,7 +51,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, parentRef) {
     WebkitTransform: transform
   };
 }
-export const SubCustomDragLayer = ({parentRef}) => {
+export const SubCustomDragLayer = ({parentRef, parent}) => {
   const {
     itemType, isDragging, item, initialOffset, currentOffset, delta
   } = useDragLayer((monitor) => ({
@@ -69,7 +76,7 @@ export const SubCustomDragLayer = ({parentRef}) => {
 
   return (
     <div style={layerStyles} className="sub-custom-drag-layer">
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset, parentRef)}>
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent)}>
         {renderItem()}
       </div>
     </div>
