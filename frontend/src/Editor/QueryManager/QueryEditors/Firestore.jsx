@@ -72,12 +72,11 @@ class Firestore extends React.Component {
               <SelectSearch
                 options={[
                   { value: 'get_document', name: 'Get Document' },
+                  { value: 'query_collection', name: 'Query collection' },
+                  { value: 'add_document', name: 'Add Document to Collection'},
                   { value: 'update_document', name: 'Update Document' },
                   { value: 'set_document', name: 'Set Document' },
-                  { value: 'query_collection', name: 'Query collection' },
-                  { value: 'bulk_update', name: 'Bulk update using document id' }
-                  // { value: 'add_document', name: 'Add Document to Collection'},
-                  // { value: 'update_document', name: 'Update Document'},
+                  { value: 'bulk_update', name: 'Bulk update using document id' },
                   // { value: 'delete_document', name: 'Delete Document'},
                 ]}
                 value={this.state.options.operation}
@@ -102,7 +101,7 @@ class Firestore extends React.Component {
               </div>
             )}
             {(this.state.options.operation === 'set_document'
-              || this.state.options.operation === 'update_document') && (
+              || this.state.options.operation === 'update_document' || this.state.options.operation === 'add_document') && (
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Path</label>

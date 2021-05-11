@@ -64,6 +64,13 @@ class FirestoreQueryService
         doc_ref.set body
       end
 
+      if operation == 'add_document'
+        path = options['path']
+        body = JSON.parse(options['body'])
+        col_ref = firestore.col path
+        col_ref.add body
+      end
+
       if operation == 'query_collection'
         path = options['path']
         doc_ref = firestore.col path
