@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 
 export const Tags = ({ value, onChange }) => {
 
+    value = value || [];
+
     const [ showForm, setShowForm ] = useState(false);
 
     function addTag(text) {
