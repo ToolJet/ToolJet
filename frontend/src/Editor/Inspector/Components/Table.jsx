@@ -118,11 +118,11 @@ class Table extends React.Component {
             <input
               type="text"
               className="form-control text-field"
-              onChange={(e) => {
+              onBlur={(e) => {
                 e.stopPropagation();
                 this.onColumnItemChange(index, 'name', e.target.value);
               }}
-              value={column.name}
+              defaultValue={column.name}
             />
           </div>
           <div className="field mb-2">
@@ -130,11 +130,11 @@ class Table extends React.Component {
             <input
               type="text"
               className="form-control text-field"
-              onChange={(e) => {
+              onBlur={(e) => {
                 e.stopPropagation();
                 this.onColumnItemChange(index, 'key', e.target.value);
               }}
-              value={column.key}
+              defaultValue={column.key}
             />
           </div>
 
