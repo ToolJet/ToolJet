@@ -865,6 +865,9 @@ tr:focus {
   }
 
   .tags { 
+    width: 100%;
+    min-height: 20px;
+    
     .add-tag-button {
       display: none;
     }
