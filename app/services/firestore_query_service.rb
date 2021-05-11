@@ -59,7 +59,7 @@ class FirestoreQueryService
 
       if operation == 'set_document'
         path = options['path']
-        body = options['body'].as_json
+        body = JSON.parse(options['body'])
         doc_ref = firestore.doc path
         doc_ref.set body
       end

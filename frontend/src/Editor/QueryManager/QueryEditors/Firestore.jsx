@@ -114,18 +114,13 @@ class Firestore extends React.Component {
                 </div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Body</label>
-                  <CodeMirror
-                    height="100px"
-                    fontSize="2"
-                    value={JSON.stringify(this.state.options.body)}
-                    onChange={(instance) => this.changeJsonOption('body', instance.getValue())}
-                    placeholder="{ }"
-                    options={{
-                      theme: 'duotone-light',
-                      mode: 'json',
-                      lineWrapping: true,
-                      scrollbarStyle: null
-                    }}
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={typeof this.state.options.body === 'string' ? this.state.options.body  : JSON.stringify(this.state.options.body )}
+                    theme="duotone-light"
+                    lineNumbers={true}
+                    className="query-hinter"
+                    onChange={(value) => this.changeOption('body', value)}
                   />
                 </div>
               </div>
