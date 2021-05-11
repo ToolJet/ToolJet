@@ -28,7 +28,7 @@ export const Container = function Container({
               parentRef={parentRef}
             />
             <SubCustomDragLayer 
-              snapToGrid={true} 
+              parent={id}
               parentRef={parentRef}
             />
     </div>

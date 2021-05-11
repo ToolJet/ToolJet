@@ -72,6 +72,7 @@ export const Modal = function Modal({
             <SubCustomDragLayer
               snapToGrid={true}
               parentRef={parentRef}
+              parent={id}
             />
         </BootstrapModal.Body>
       </BootstrapModal>
