@@ -55,9 +55,6 @@ export const Box = function Box({
     cursor: mode === 'edit' ? 'move' : ''
   };
 
-  console.log('rendering box', component);
-  console.log('width, height', width, height);
-
   if (inCanvas) {
     styles = {
       ...styles
