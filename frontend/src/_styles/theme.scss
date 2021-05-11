@@ -676,6 +676,11 @@ body {
 }
 
 .jet-data-table {
+
+  .markdown>table>:not(caption)>*>*, .table>:not(caption)>*>* {
+    padding-bottom: 0.2rem;
+  }
+
   .table-row:hover,
   .table-row:focus-within {
     background: rgba(lightBlue, 0.25);
@@ -867,7 +872,7 @@ tr:focus {
   .tags { 
     width: 100%;
     min-height: 20px;
-    
+
     .add-tag-button {
       display: none;
     }
