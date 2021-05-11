@@ -1301,6 +1301,10 @@ body {
   .app-title {
     font-size: 1rem;
   }
+
+  .row {
+    --tblr-gutter-x: 0rem;
+  }
 }
 
 .home-page, .org-users-page {
