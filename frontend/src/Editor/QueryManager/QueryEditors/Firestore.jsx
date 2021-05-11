@@ -77,7 +77,7 @@ class Firestore extends React.Component {
                   { value: 'update_document', name: 'Update Document' },
                   { value: 'set_document', name: 'Set Document' },
                   { value: 'bulk_update', name: 'Bulk update using document id' },
-                  // { value: 'delete_document', name: 'Delete Document'},
+                  { value: 'delete_document', name: 'Delete Document'},
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -88,7 +88,7 @@ class Firestore extends React.Component {
                 placeholder="Select.."
               />
             </div>
-            {this.state.options.operation === 'get_document' && (
+            {this.state.options.operation === 'get_document' || this.state.options.operation === 'delete_document'  && (
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Path</label>
@@ -104,7 +104,7 @@ class Firestore extends React.Component {
               || this.state.options.operation === 'update_document' || this.state.options.operation === 'add_document') && (
               <div>
                 <div className="mb-3 mt-2">
-                  <label className="form-label">Path</label>
+                  <label className="form-label">{this.state.options.operation === 'add_document' ? 'Collection' : 'Path'}</label>
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.path}

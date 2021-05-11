@@ -71,6 +71,13 @@ class FirestoreQueryService
         col_ref.add body
       end
 
+      if operation == 'delete_document'
+        path = options['path']
+        body = JSON.parse(options['body'])
+        doc_ref = firestore.doc path
+        doc_ref.delete
+      end
+
       if operation == 'query_collection'
         path = options['path']
         doc_ref = firestore.col path
