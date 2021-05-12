@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import { datasourceService } from '@/_services';
 
 export const Googlesheets = ({
-  optionchanged, createDataSource, options, isSaving
+  optionchanged, createDataSource, options, isSaving, selectedDataSource
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
 
@@ -94,7 +94,7 @@ export const Googlesheets = ({
               variant="primary"
               onClick={() => authGoogle()}
             >
-              Connect to Google Sheets
+              {selectedDataSource.id ? 'Reconnect' : 'Connect'} to Google Sheets
             </Button>
           )}
         </center>
