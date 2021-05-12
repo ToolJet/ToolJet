@@ -4,23 +4,7 @@ class DataSourcesController < ApplicationController
   end
 
   def create
-    options = params[:options]
-
-    # Fetch necessary access token if OAuth2 based data source
-    if options.find { |option| option['key'] == 'oauth2' }
-      provider = options.find { |option| option['key'] === 'provider' } ['value']
-      service_class = "#{provider.capitalize}OauthService".constantize
-      access_info = service_class.fetch_access_token(options.find { |option| option['key'] === 'code' } ['value'])
-      options.reject! { |option| option['key'] == 'code' }
-
-      access_info.each do |info|
-        option = {}
-        option['key'] = info[0]
-        option['value'] = info[1]
-        option['encrypted'] = true
-        options << option
-      end
-    end
+    options = fetch_oauth_options(params[:options])
 
     options_to_save = {}
     options.each do |option|
@@ -50,7 +34,7 @@ class DataSourcesController < ApplicationController
   def update
     @data_source = DataSource.find params[:id]
 
-    options = params[:options]
+    options = fetch_oauth_options(params[:options])
 
     options_to_save = {}
     options.each do |option|
@@ -121,4 +105,25 @@ class DataSourcesController < ApplicationController
 
     render json: { url: url }
   end
+
+  private 
+    def fetch_oauth_options(options) 
+      # Fetch necessary access token if OAuth2 based data source
+      if options.find { |option| option['key'] == 'oauth2' }
+        provider = options.find { |option| option['key'] === 'provider' } ['value']
+        service_class = "#{provider.capitalize}OauthService".constantize
+        access_info = service_class.fetch_access_token(options.find { |option| option['key'] === 'code' } ['value'])
+        options.reject! { |option| option['key'] == 'code' }
+
+        access_info.each do |info|
+          option = {}
+          option['key'] = info[0]
+          option['value'] = info[1]
+          option['encrypted'] = true
+          options << option
+        end
+      end
+
+      options
+    end
 end
