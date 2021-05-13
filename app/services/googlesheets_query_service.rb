@@ -47,8 +47,12 @@ class GooglesheetsQueryService
 
       if result.code === 200
 
-        headers = result['values'][0]
-        values = result['values'][1..]
+        headers = []
+        values = []
+        if result['values']
+          headers = result['values'][0] if 
+          values = result['values'][1..] if result['values'].size > 1
+        end
 
         data = []
         values.each do |value|
