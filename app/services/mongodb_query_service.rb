@@ -84,6 +84,12 @@ class MongodbQueryService
         result = collection.insert_one(doc)
       end
 
+      if operation === 'insert_many'
+        collection = connection[options["collection"]]
+        docs = JSON.parse(options["documents"])
+        result = collection.insert_many(docs)
+      end
+
     rescue StandardError => e
       puts e
       error = e.message
