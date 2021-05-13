@@ -8,6 +8,7 @@ import { Googlesheets } from './Googlesheets';
 import { Elasticsearch } from './Elasticsearch';
 import { Slack } from './Slack';
 import { Mongodb } from './Mongodb';
+import { Dynamodb } from './Dynamodb';
 
 export const allSources = {
   Restapi,
@@ -19,5 +20,6 @@ export const allSources = {
   Googlesheets,
   Elasticsearch,
   Slack,
-  Mongodb
+  Mongodb,
+  Dynamodb
 };
