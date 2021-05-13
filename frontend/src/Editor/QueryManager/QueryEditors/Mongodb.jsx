@@ -2,6 +2,7 @@ import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { placeholders } from './placeholders';
 
 class Mongodb extends React.Component {
   constructor(props) {
@@ -104,6 +105,7 @@ class Mongodb extends React.Component {
                     theme="duotone-light"
                     mode="javascript"
                     lineNumbers={true}
+                    placeholder={placeholders['mongodb']['insert_one']}
                     className="query-hinter"
                     onChange={(value) => this.changeOption('document', value)}
                   />
@@ -131,6 +133,7 @@ class Mongodb extends React.Component {
                     mode="javascript"
                     lineNumbers={true}
                     className="query-hinter"
+                    placeholder={placeholders['mongodb']['insert_many']}
                     onChange={(value) => this.changeOption('documents', value)}
                   />
                 </div>

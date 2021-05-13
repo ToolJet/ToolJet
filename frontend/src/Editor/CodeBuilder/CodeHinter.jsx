@@ -4,6 +4,7 @@ import 'codemirror/mode/handlebars/handlebars';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/sql/sql';
 import 'codemirror/addon/hint/show-hint';
+import 'codemirror/addon/display/placeholder';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
@@ -11,7 +12,7 @@ import 'codemirror/theme/duotone-light.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 
 export function CodeHinter({
-  initialValue, onChange, currentState, mode, theme, lineNumbers, className
+  initialValue, onChange, currentState, mode, theme, lineNumbers, className, placeholder
 }) {
   const options = {
     lineNumbers: lineNumbers,
@@ -20,7 +21,8 @@ export function CodeHinter({
     tabSize: 2,
     theme: theme || 'default',
     readOnly: false,
-    highlightSelectionMatches: true
+    highlightSelectionMatches: true,
+    placeholder
   };
 
   const [realState, setRealState] = useState(currentState);
