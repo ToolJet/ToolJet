@@ -1,6 +1,4 @@
 class MongodbQueryService
-  require 'redis'
-
   attr_accessor :data_query, :data_source, :options, :source_options, :current_user
 
   def initialize(data_query, options, source_options, current_user)
@@ -28,7 +26,7 @@ class MongodbQueryService
       user: user,
       password: password
     )
-    
+     
     connection.collections
   end
 
