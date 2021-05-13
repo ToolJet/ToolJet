@@ -57,7 +57,7 @@ export function onBeforeChange(editor, change) {
   const value = editor.getLine(line);
   const isLastCharacterBrace = value.slice(ch - 1, value.length) === '{';
 
-  if (isLastCharacterBrace && change.origin === '+input') {
+  if (isLastCharacterBrace && change.origin === '+input' && change.text[0] === '{') {
     change.text[0] = '{}}'
     // editor.setCursor({ line: 0, ch: ch })
   }
