@@ -1,5 +1,6 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 class Googlesheets extends React.Component {
   constructor(props) {
@@ -67,20 +68,21 @@ class Googlesheets extends React.Component {
           <div>
             <div className="mb-3 mt-2">
               <label className="form-label">Operation</label>
-              <select
-                onChange={(e) => {
-                  e.stopPropagation();
-                  this.changeOperation(e.target.value);
-                }}
-                placeholder="Select a value"
+              <SelectSearch
+                options={[
+                  { value: 'read', name: 'Read data from a spreadsheet' },
+                  { value: 'append', name: 'Append data to a spreadsheet' },
+                ]}
                 value={this.state.options.operation}
-                className="form-select"
-              >
-                <option value="read">Read from a spreadsheet</option>
-                <option value="list">List all spreadsheets</option>
-              </select>
+                search={true}
+                onChange={(value) => {
+                  this.changeOperation(value);
+                }}
+                filterOptions={fuzzySearch}
+                placeholder="Select.."
+              />
             </div>
-            {this.state.options.operation === 'read' && (
+            {['read', 'append'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2 row">
                   <div className="col">
