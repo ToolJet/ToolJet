@@ -24,7 +24,9 @@ export const defaultOptions = {
     host: { value: 'localhost' },
     port: { value: 27017 },
     username: { value: '' },
-    password: { value: '' }
+    password: { value: '' },
+    connection_type: { value: 'manual' },
+    connection_string: { value: ''}
   },
   
   elasticsearch: {

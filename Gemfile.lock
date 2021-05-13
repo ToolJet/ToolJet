@@ -1363,7 +1363,7 @@ DEPENDENCIES
   jwt
   listen (~> 3.3)
   lograge
-  mongo
+  mongo (~> 2)
   mysql2
   pg (~> 1.1)
   puma (~> 5.0)

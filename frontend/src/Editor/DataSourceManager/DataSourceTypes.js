@@ -47,6 +47,8 @@ export const dataBaseSources = [
       port: { type: 'string' },
       username: { type: 'string' },
       password: { type: 'string' },
+      connection_type: { type: 'options'},
+      connection_string: { type: 'string', encrypted: true }
     }
   },
   {
