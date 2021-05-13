@@ -42,7 +42,6 @@ class DataQueriesController < ApplicationController
 
     query_service = QueryService.new @data_query, params[:options], @current_user
     result = query_service.process
-
-    render json: result
+    render json: result, status: result[:code] || 200
   end
 end
