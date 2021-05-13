@@ -6,39 +6,11 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
+import { defaultOptions } from './constants';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [{ kind: 'restapi', id: 'restapi', name: 'REST API' }];
-
-const defaultOptions = {
-  postgresql: {},
-  redis: {
-    query: 'PING'
-  },
-  mysql: {},
-  firestore: {
-    path: ''
-  },
-  elasticsearch: {
-    query: ''
-  },
-  restapi: {
-    method: 'GET',
-    url: null,
-    url_params: [],
-    headers: [],
-    body: []
-  },
-  stripe: {},
-  mongodb: {},
-  googlesheets: {
-    operation: 'read'
-  },
-  slack: {
-    
-  }
-};
 
 class QueryManager extends React.Component {
   constructor(props) {

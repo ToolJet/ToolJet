@@ -22,6 +22,41 @@ class DynamodbQueryService
   end
 
   def process
-    
+    error = nil
+    data = []
+    operation = options["operation"]
+
+    begin
+      connection = get_connection
+      
+      if operation === 'list_tables'
+        tables = connection.list_tables 
+        data = tables.to_h
+      end
+
+    rescue StandardError => e
+      puts e
+      error = e.message
+    end
+
+    { status: error ? 'failed' : 'success', data: data, error: { message: error } }
   end
+
+  private 
+    def get_connection
+      if $connections.include? data_source.id
+        connection = $connections[data_source.id][:connection]
+      else
+        region = source_options['region']
+        access_key = source_options['access_key']
+        secret_key = source_options['secret_key']
+
+        credentials = Aws::Credentials.new(access_key, secret_key)
+        connection = Aws::DynamoDB::Client.new(region: region, credentials: credentials)
+
+        $connections[data_source.id] = { connection: connection }
+      end
+
+      connection
+    end
 end
