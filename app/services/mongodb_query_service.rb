@@ -45,7 +45,7 @@ class MongodbQueryService
     operation = options['operation']
 
     begin
-      if false
+      if $connections.include? data_source.id
         connection = $connections[data_source.id][:connection]
       else
         
@@ -76,6 +76,12 @@ class MongodbQueryService
 
       if operation === 'list_collections'
         connection.collections.each { |coll| data << { name: coll.name }  }
+      end
+
+      if operation === 'insert_one'
+        collection = connection[options["collection"]]
+        doc = JSON.parse(options["document"])
+        result = collection.insert_one(doc)
       end
 
     rescue StandardError => e
