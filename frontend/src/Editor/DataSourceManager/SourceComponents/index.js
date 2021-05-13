@@ -8,6 +8,7 @@ import { Restapi } from './Restapi';
 import { Googlesheets } from './Googlesheets';
 import { Slack } from './Slack';
 import { Mongodb } from './Mongodb';
+import { Dynamodb } from './Dynamodb';
 
 export const SourceComponents = {
     Elasticsearch,
@@ -19,5 +20,6 @@ export const SourceComponents = {
     Restapi,
     Googlesheets,
     Slack,
-    Mongodb
+    Mongodb,
+    Dynamodb
 };

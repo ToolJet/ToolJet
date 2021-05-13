@@ -59,5 +59,10 @@ export const defaultOptions = {
   },
   slack: {
     access_type: { value: 'read' }
+  },
+  dynamodb: {
+    region: { value: ''},
+    access_key: { value: ''},
+    secret_key: { value: ''}
   }
 };
