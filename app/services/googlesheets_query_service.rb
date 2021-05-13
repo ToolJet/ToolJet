@@ -14,6 +14,19 @@ class GooglesheetsQueryService
     access_token = source_options['access_token']
     error = false
 
+    if operation === 'info'
+      spreadsheet_id = query.options['spreadsheet_id']
+      result = get_spreadsheet_info(spreadsheet_id, access_token)
+
+      if result.code === 401
+        access_token = refresh_access_token
+        result = get_spreadsheet_info(spreadsheet_id, access_token)
+      end
+
+      data = result
+      error = result.code != 200
+    end
+
     if operation === 'append'
 
       spreadsheet_id = query.options['spreadsheet_id']
@@ -28,13 +41,6 @@ class GooglesheetsQueryService
       end
 
       error = result.code != 200
-      
-      if error
-        data = result["error"]
-        { status: 'error', code: 500, message: data["message"], data: data }
-      else
-        { status: 'success', data: data }
-      end
     end
 
     if operation === 'read'
@@ -115,6 +121,15 @@ class GooglesheetsQueryService
 
       result = HTTParty.post("https://sheets.googleapis.com/v4/spreadsheets/#{spreadsheet_id}/values/#{sheet}!A:V:append?valueInputOption=USER_ENTERED", body: data, headers: { 'Content-Type':
         'application/json', "Authorization": "Bearer #{access_token}" })
+    end
+
+    def get_spreadsheet_info(spreadsheet_id, access_token)
+
+      result = HTTParty.get("https://sheets.googleapis.com/v4/spreadsheets/#{spreadsheet_id}",
+        headers: { 'Content-Type':
+        'application/json', "Authorization": "Bearer #{access_token}" })
+
+      result
     end
 
     def refresh_access_token
