@@ -326,7 +326,7 @@ class QueryManager extends React.Component {
         {(addingQuery || editingQuery) && (
           <div>
             {currentTab === 1 && (
-              <div className="row row-deck p-3">
+              <div className="row row-deck px-2">
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mb-2">
                     <label className="form-label col-md-2">Datasource</label>
