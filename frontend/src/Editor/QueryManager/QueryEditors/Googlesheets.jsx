@@ -73,7 +73,7 @@ class Googlesheets extends React.Component {
                 options={[
                   { value: 'read', name: 'Read data from a spreadsheet' },
                   { value: 'append', name: 'Append data to a spreadsheet' },
-                  { value: 'info', name: 'Get spreadhseet info' },
+                  { value: 'info', name: 'Get spreadsheet info' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
