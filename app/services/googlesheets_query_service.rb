@@ -18,7 +18,7 @@ class GooglesheetsQueryService
       result = read_data(access_token)
 
       if result.code === 401
-        refresh_access_token
+        access_token = refresh_access_token
         result = read_data(access_token)
       end
 
@@ -33,7 +33,7 @@ class GooglesheetsQueryService
           headers.each_with_index do |header, index|
             row[header] = value[index]
           end
-          parsed_values << row
+          data << row
         end
       
       else 
@@ -62,6 +62,6 @@ class GooglesheetsQueryService
     end
 
     def refresh_access_token
-
+      GoogleOauthService.refresh_access_token(source_options['refresh_token'], @source )
     end
 end
