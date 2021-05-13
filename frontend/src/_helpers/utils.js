@@ -1,4 +1,5 @@
 import moment from 'moment';
+import _ from 'lodash';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -40,8 +41,8 @@ export function resolveReferences(object, state) {
       let result = '';
 
       try {
-        const evalFunction = Function(['components', 'queries', 'globals', 'moment'], `return ${code}`);
-        result = evalFunction(state.components, state.queries, state.globals, moment);
+        const evalFunction = Function(['components', 'queries', 'globals', 'moment', '_'], `return ${code}`);
+        result = evalFunction(state.components, state.queries, state.globals, moment, _);
       } catch (err) {
         console.log('eval_error', err);
       }
