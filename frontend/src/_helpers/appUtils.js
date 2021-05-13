@@ -1,7 +1,8 @@
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { resolveReferences } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
+import _ from 'lodash';
+import moment from 'moment';
 
 function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -45,11 +46,11 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
 
 export function runTransformation(_ref, rawData, transformation) {
   const data = rawData;
-  const evalFunction = Function(['data', 'moment', 'currentState'], transformation);
+  const evalFunction = Function(['data', 'moment', '_', 'currentState'], transformation);
   let result = [];
 
   try {
-    result = evalFunction(data, moment, _ref.state.currentState);
+    result = evalFunction(data, moment, _, _ref.state.currentState);
   } catch (err) {
     toast.error(err.message, { hideProgressBar: true });
   }

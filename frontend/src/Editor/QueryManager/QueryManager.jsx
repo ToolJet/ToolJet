@@ -362,7 +362,7 @@ class QueryManager extends React.Component {
             )}
 
             {currentTab === 2 && (
-              <div className="advanced-options-container p-2 m-2">
+              <div className="advanced-options-container m-2 py-2">
                 <label className="form-check form-switch">
                   <input
                     className="form-check-input"
