@@ -72,6 +72,7 @@ class Mongodb extends React.Component {
               <SelectSearch
                 options={[
                   { name: 'List collections', value: 'list_collections' },
+                  { name: 'Insert one document', value: 'insert_one' },
                 ]}
                 value={this.state.options.operation}
                 search={false}
@@ -83,6 +84,31 @@ class Mongodb extends React.Component {
               />
             </div>
 
+            {this.state.options.operation === 'insert_one' && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Collection</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.collection}
+                    onChange={(value) => this.changeOption('collection', value)}
+                  />
+                </div>
+
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Document</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.document}
+                    theme="duotone-light"
+                    mode="javascript"
+                    lineNumbers={true}
+                    className="query-hinter"
+                    onChange={(value) => this.changeOption('document', value)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

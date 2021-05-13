@@ -18,7 +18,9 @@ export const defaultOptions = {
     body: []
   },
   stripe: {},
-  mongodb: {},
+  mongodb: {
+    document: '{ }'
+  },
   googlesheets: {
     operation: 'read'
   },
