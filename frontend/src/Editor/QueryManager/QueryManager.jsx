@@ -296,7 +296,7 @@ class QueryManager extends React.Component {
         </div>
 
         {(addingQuery || editingQuery) && (
-          <div>
+          <div className="py-2">
             {currentTab === 1 && (
               <div className="row row-deck px-2">
                 {dataSources && mode === 'create' && (
@@ -334,7 +334,7 @@ class QueryManager extends React.Component {
             )}
 
             {currentTab === 2 && (
-              <div className="advanced-options-container m-2 py-2">
+              <div className="advanced-options-container m-2">
                 <label className="form-check form-switch">
                   <input
                     className="form-check-input"

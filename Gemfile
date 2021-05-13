@@ -35,7 +35,7 @@ gem 'pundit'
 gem 'redis'
 gem 'simple_command'
 gem 'typhoeus'
-gem 'mongo'
+gem "mongo", "~> 2"
 gem 'aws-sdk', '~> 3'
 
 group :development, :test do

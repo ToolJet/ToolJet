@@ -10,23 +10,32 @@ class MongodbQueryService
   end
 
   def self.connection options
-    host = options.dig('host', 'value')
-    port = options.dig('port', 'value')
-    user = options.dig('username', 'value')
-    password = options.dig('password', 'value')
-    database = options.dig('database', 'value')
 
-    user = nil if user.blank?
-    password = nil if password.blank?
+    connection_type = options.dig('connection_type', 'value')
 
-    connection = Mongo::Client.new(
-      [ "#{host}:#{port}" ],
-      database: database,
-      server_selection_timeout: 5,
-      user: user,
-      password: password
-    )
-     
+    if connection_type === "manual"
+
+      host = options.dig('host', 'value')
+      port = options.dig('port', 'value')
+      user = options.dig('username', 'value')
+      password = options.dig('password', 'value')
+      database = options.dig('database', 'value')
+
+      user = nil if user.blank?
+      password = nil if password.blank?
+
+      connection = Mongo::Client.new(
+        [ "#{host}:#{port}" ],
+        database: database,
+        server_selection_timeout: 5,
+        user: user,
+        password: password
+      )
+    else
+      connection_string = options.dig('connection_string', 'value')
+      connection = Mongo::Client.new(connection_string, server_selection_timeout: 5)
+    end  
+
     connection.collections
   end
 
@@ -34,26 +43,33 @@ class MongodbQueryService
     error = nil
     data = []
     operation = options['operation']
-    password = source_options['password']
-    password = nil if password.blank?
-    user = source_options['username']
-    user = nil if user.blank?
 
     begin
-      if $connections.include? data_source.id
+      if false
         connection = $connections[data_source.id][:connection]
       else
-        host = source_options['host']
-        port = source_options['port']
-        database = source_options['database']
+        
+        if source_options['connection_type'] === 'manual'
+          password = source_options['password']
+          password = nil if password.blank?
+          user = source_options['username']
+          user = nil if user.blank?
 
-        connection = Mongo::Client.new(
-          [ "#{host}:#{port}" ],
-          database: database,
-          server_selection_timeout: 5,
-          user: user,
-          password: password
-        )
+          host = source_options['host']
+          port = source_options['port']
+          database = source_options['database']
+
+          connection = Mongo::Client.new(
+            [ "#{host}:#{port}" ],
+            database: database,
+            server_selection_timeout: 5,
+            user: user,
+            password: password
+          )
+        else
+          connection_string = source_options['connection_string']
+          connection = Mongo::Client.new(connection_string, server_selection_timeout: 5)
+        end
 
         $connections[data_source.id] = { connection: connection }
       end
