@@ -63,6 +63,21 @@ export const dataBaseSources = [
     }
   },
   {
+    name: 'DynamoDB',
+    kind: 'dynamodb',
+    icon: 'https://pics.freeicons.io/uploads/icons/png/9820297401540553608-512.png',
+    exposedVariables: {
+      isLoading: {},
+      data: {},
+      rawData: {}
+    },
+    options: {
+      region: { type: 'string' },
+      access_key: { type: 'string' },
+      secret_key: { type: 'string', encrypted: true }
+    }
+  },
+  {
     name: 'Elasticsearch',
     kind: 'elasticsearch',
     icon: 'https://cdn.worldvectorlogo.com/logos/elastic-elasticsearch.svg',

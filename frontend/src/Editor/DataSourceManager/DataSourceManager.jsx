@@ -135,7 +135,7 @@ class DataSourceManager extends React.Component {
       <div>
         <Modal
           show={this.props.showDataSourceManagerModal}
-          size="lg"
+          size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
           className="mt-5"
           // onHide={handleClose}
@@ -184,7 +184,7 @@ class DataSourceManager extends React.Component {
                 <div className="row row-deck">
                   <h4 className="text-muted mb-2">DATABASES</h4>
                   {dataBaseSources.map((dataSource) => (
-                    <div className="col-md-3" key={dataSource.name}>
+                    <div className="col-md-2" key={dataSource.name}>
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
@@ -201,7 +201,7 @@ class DataSourceManager extends React.Component {
                 <div className="row row-deck mt-5">
                   <h4 className="text-muted mb-2">APIS</h4>
                   {apiSources.map((dataSource) => (
-                    <div className="col-md-3" key={dataSource.name}>
+                    <div className="col-md-2" key={dataSource.name}>
                       <div className="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
