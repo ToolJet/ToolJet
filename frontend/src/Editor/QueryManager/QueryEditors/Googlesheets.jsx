@@ -1,6 +1,7 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Googlesheets extends React.Component {
   constructor(props) {
@@ -121,6 +122,20 @@ class Googlesheets extends React.Component {
             )}
           </div>
         )}
+
+        {this.state.options.operation === 'append' && (
+          <div className="mb-3 mt-2">
+            <label className="form-label">Rows</label>
+            <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={options.rows}
+                  theme="duotone-light"
+                  lineNumbers={true}
+                  className="query-hinter"
+                  onChange={(value) => this.changeOption('rows', value)}
+            />
+          </div>
+      )}
       </div>
     );
   }
