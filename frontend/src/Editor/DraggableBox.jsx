@@ -83,7 +83,7 @@ export const DraggableBox = function DraggableBox({
 
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
-  }, []);
+  }, [isDragging]);
 
   useEffect(() => {
     if (resizingStatusChanged) {
