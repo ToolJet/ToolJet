@@ -60,7 +60,7 @@ class Elasticsearch extends React.Component {
                 options={[
                   { value: 'search', name: 'Search' },
                   { value: 'index_document', name: 'Index a document'},
-                  // { value: 'create', name: 'Create'},
+                  { value: 'get', name: 'Get a document'},
                   // { value: 'update', name: 'Update'},
                 ]}
                 value={this.state.options.operation}
@@ -72,6 +72,27 @@ class Elasticsearch extends React.Component {
                 placeholder="Select.."
               />
             </div>
+
+            {options.operation === 'get' && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Index</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.index}
+                    onChange={(value) => this.changeOption('index', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Id</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.id}
+                    onChange={(value) => this.changeOption('id', value)}
+                  />
+                </div>
+              </div>
+            )}
 
             {options.operation === 'index_document' && (
               <div>

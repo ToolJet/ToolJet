@@ -45,6 +45,14 @@ class ElasticsearchQueryService
 
         data = connection.index(index: index, body: body)
       end
+
+      if operation == 'get'
+        index = options['index']
+        id = options['id']
+
+        data = connection.get(index: index, id: id)
+      end
+
     rescue StandardError => e
       puts e
       error = e.message
