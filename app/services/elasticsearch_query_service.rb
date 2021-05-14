@@ -44,8 +44,15 @@ class ElasticsearchQueryService
 
       if operation == 'search'
         index = options['index']
-        query = options[:query].to_unsafe_h
+        query = JSON.parse(options[:query])
         data = connection.search(index: index, body: query)
+      end
+
+      if operation == 'index_document'
+        index = options['index']
+        body = options['body']
+
+        data = connection.index(index: index, body: body)
       end
     rescue StandardError => e
       puts e

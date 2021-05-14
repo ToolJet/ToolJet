@@ -58,8 +58,8 @@ class Elasticsearch extends React.Component {
               <label className="form-label">Operation</label>
               <SelectSearch
                 options={[
-                  { value: 'search', name: 'Search' }
-                  // { value: 'index', name: 'Index'},
+                  { value: 'search', name: 'Search' },
+                  { value: 'index_document', name: 'Index a document'},
                   // { value: 'create', name: 'Create'},
                   // { value: 'update', name: 'Update'},
                 ]}
@@ -72,6 +72,32 @@ class Elasticsearch extends React.Component {
                 placeholder="Select.."
               />
             </div>
+
+            {options.operation === 'index_document' && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Index</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.index}
+                    onChange={(value) => this.changeOption('index', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-reset">Body</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={options.body}
+                    mode="javascript"
+                    placeholder={'{ "name": "The Hitchhikers Guide to the Galaxy" }'}
+                    theme="duotone-light"
+                    lineNumbers={true}
+                    className="query-hinter"
+                    onChange={(value) => this.changeOption('body', value)}
+                  />
+                </div>
+              </div>
+            )}
             {options.operation === 'search' && (
               <div>
                 <div className="mb-3 mt-2">
