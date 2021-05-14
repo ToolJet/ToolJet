@@ -1,4 +1,5 @@
 class PostgresqlQueryService
+  include DatasourceUtils
   attr_accessor :data_query, :data_source, :options, :source_options, :current_user
 
   def initialize(data_query, options, source_options, current_user)
@@ -20,26 +21,16 @@ class PostgresqlQueryService
   end
 
   def process
+
+    connection = get_cached_connection(data_source)
+    connection = create_connection unless connection
+
     query_text = ''
     query_text = if options['mode'] === 'gui'
                    send("generate_#{options['operation']}_query", options)
                  else
                    options['query']
                  end
-
-    if $connections.include? data_source.id
-      connection = $connections[data_source.id][:connection]
-    else
-      connection = PG.connect(
-        dbname: source_options['database'],
-        user: source_options['username'],
-        password: source_options['password'],
-        host: source_options['host'],
-        port: source_options['port']
-      )
-
-      $connections[data_source.id] = { connection: connection }
-    end
 
     result = connection.exec(query_text)
     { status: 'success', data: result.to_a }
@@ -66,5 +57,19 @@ class PostgresqlQueryService
     end
 
     query_text
+  end
+
+  def create_connection 
+    connection = PG.connect(
+      dbname: source_options['database'],
+      user: source_options['username'],
+      password: source_options['password'],
+      host: source_options['host'],
+      port: source_options['port']
+    )
+    
+    cache_connection(data_source, connection)
+
+    connection
   end
 end
