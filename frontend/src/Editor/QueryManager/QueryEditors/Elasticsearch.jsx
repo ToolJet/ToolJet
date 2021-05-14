@@ -61,7 +61,7 @@ class Elasticsearch extends React.Component {
                   { value: 'search', name: 'Search' },
                   { value: 'index_document', name: 'Index a document'},
                   { value: 'get', name: 'Get a document'},
-                  // { value: 'update', name: 'Update'},
+                  { value: 'update', name: 'Update a document'},
                 ]}
                 value={this.state.options.operation}
                 search={false}
@@ -72,6 +72,40 @@ class Elasticsearch extends React.Component {
                 placeholder="Select.."
               />
             </div>
+
+            {options.operation === 'update' && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Index</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.index}
+                    onChange={(value) => this.changeOption('index', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Id</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.id}
+                    onChange={(value) => this.changeOption('id', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-reset">Body</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={options.body}
+                    mode="javascript"
+                    placeholder={'{ doc: { page_count: 225 } }'}
+                    theme="duotone-light"
+                    lineNumbers={true}
+                    className="query-hinter"
+                    onChange={(value) => this.changeOption('body', value)}
+                  />
+                </div>
+              </div>
+            )}
 
             {options.operation === 'get' && (
               <div>
