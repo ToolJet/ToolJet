@@ -1,4 +1,5 @@
 class ElasticsearchQueryService
+  include DatasourceUtils
   require 'elasticsearch'
 
   attr_accessor :data_query, :data_source, :options, :source_options, :current_user
@@ -26,18 +27,8 @@ class ElasticsearchQueryService
     data = {}
     error = nil
 
-    if $connections.include? data_source.id
-      connection = $connections[data_source.id][:connection]
-    else
-      connection = Elasticsearch::Client.new(
-        url: "#{source_options['host']}:#{source_options['port']}",
-        retry_on_failure: 5,
-        request_timeout: 30,
-        adapter: :typhoeus
-      )
-
-      $connections[data_source.id] = { connection: connection }
-    end
+    connection = get_cached_connection(data_source)
+    connection = create_connection unless connection
 
     begin
       operation = options['operation']
@@ -61,4 +52,17 @@ class ElasticsearchQueryService
 
     { data: data, error: error }
   end
+
+  private 
+    def create_connection
+      connection = Elasticsearch::Client.new(
+        url: "#{source_options['host']}:#{source_options['port']}",
+        retry_on_failure: 5,
+        request_timeout: 30,
+        adapter: :typhoeus
+      )
+
+      cache_connection(data_source, connection)
+      connection
+    end
 end
