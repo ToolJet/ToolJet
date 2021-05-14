@@ -550,8 +550,10 @@ class Editor extends React.Component {
                     </div>
                   </div>
                   {loadingDataSources ? (
-                    <div className="m-3">
-                      <Skeleton count={8} />
+                    <div className="p-5">
+                      <center>
+                        <div class="spinner-border text-azure" role="status"></div>
+                      </center>
                     </div>
                   ) : (
                     <div className="m-2">
@@ -633,8 +635,10 @@ class Editor extends React.Component {
                       </div>
 
                       {loadingDataQueries ? (
-                        <div className="m-3">
-                          <Skeleton count={8} />
+                        <div className="p-5">
+                          <center>
+                            <div class="spinner-border text-azure" role="status"></div>
+                          </center>
                         </div>
                       ) : (
                         <div className="">
