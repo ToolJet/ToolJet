@@ -1,10 +1,12 @@
 class FirestoreQueryService
   require 'google/cloud/firestore'
+  include DatasourceUtils
 
-  attr_accessor :data_query, :options, :source_options, :current_user
+  attr_accessor :data_query, :options, :source_options, :current_user, :data_source
 
   def initialize(data_query, options, source_options, current_user)
     @data_query = data_query
+    @data_source = data_query.data_source
     @options = options
     @source_options = source_options
     @current_user = current_user
@@ -23,16 +25,13 @@ class FirestoreQueryService
   end
 
   def process
-    credential_json = JSON.parse(source_options['gcp_key'])
     data = {}
     error = nil
 
     begin
-      Google::Cloud::Firestore.configure do |config|
-        config.credentials = credential_json
-      end
 
-      firestore = Google::Cloud::Firestore.new
+      firestore = get_cached_connection(data_source)
+      firestore = create_connection unless firestore
 
       operation = data_query.options['operation']
 
@@ -106,5 +105,16 @@ class FirestoreQueryService
   def update_document(path, body, firestore)
     doc_ref = firestore.doc path
     doc_ref.update body
+  end
+
+  def create_connection
+    credential_json = JSON.parse(source_options['gcp_key'])
+    Google::Cloud::Firestore.configure do |config|
+      config.credentials = credential_json
+    end
+    firestore = Google::Cloud::Firestore.new
+
+    cache_connection(data_source, firestore)
+    firestore
   end
 end
