@@ -1,8 +1,8 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
-import specJson from './spec3.json';
 import DOMPurify from 'dompurify';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { openapiService } from '@/_services';
 
 const operationColorMapping = {
   get: 'azure',
@@ -14,11 +14,14 @@ const operationColorMapping = {
 class Stripe extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      loadingSpec: true
+    };
   }
 
   componentDidMount() {
     this.setState({
+      loadingSpec: true, 
       options: {
         params: {
           path: {},
@@ -27,6 +30,19 @@ class Stripe extends React.Component {
         }
       }
     });
+
+    this.fetchOpenApiSpec();
+  }
+
+  fetchOpenApiSpec = () => {
+    this.setState({ loadingSpec: true });
+
+    openapiService.fetchSpecFromUrl('https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json').then((response) => {
+      response.text().then(text => {
+        const data = JSON.parse(text);
+        this.setState({ specJson: data, loadingSpec: false});
+      });
+    })
   }
 
   changeOption(option, value) {
@@ -44,7 +60,7 @@ class Stripe extends React.Component {
 
     this.setState(
       {
-        selectedOperation: specJson.paths[path][operation],
+        selectedOperation: this.state.specJson.paths[path][operation],
         options: {
           ...this.state.options,
           path,
@@ -110,7 +126,7 @@ class Stripe extends React.Component {
   };
 
   render() {
-    const { options, selectedOperation } = this.state;
+    const { options, selectedOperation, specJson, loadingSpec } = this.state;
     let pathParams = [];
     let queryParams = [];
     let requestBody = [];
@@ -129,7 +145,14 @@ class Stripe extends React.Component {
 
     return (
       <div>
-        {options && (
+        {loadingSpec &&
+          <div className="p-3">
+            <div class="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
+            Please wait whle we load the OpenAPI specification for Stripe.
+          </div>
+        }
+
+        {(options && !loadingSpec) && (
           <div className="mb-3 mt-2">
             <div className="row g-2">
               <div className="col-auto">
