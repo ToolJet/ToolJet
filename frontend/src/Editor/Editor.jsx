@@ -6,7 +6,6 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
-import { DraggableBox } from './DraggableBox';
 import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
 import ReactJson from 'react-json-view';
@@ -29,7 +28,7 @@ import {
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
 import { Resizable } from 're-resizable';
-import Skeleton from 'react-loading-skeleton';
+import { WidgetManager } from './WidgetManager';
 
 class Editor extends React.Component {
   constructor(props) {
@@ -199,10 +198,6 @@ class Editor extends React.Component {
     this.setState({
       currentSidebarTab: tabIndex
     });
-  };
-
-  renderComponentCard = (component, index) => {
-    return <DraggableBox key={index} index={index} component={component} zoomLevel={this.state.zoomLevel}/>;
   };
 
   filterComponents = (event) => {
@@ -755,38 +750,10 @@ class Editor extends React.Component {
               )}
 
               {currentSidebarTab === 2 && (
-                <div className="components-container m-2">
-                  <div className="input-icon">
-                    <span className="input-icon-addon">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="icon"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2"
-                        stroke="currentColor"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <circle cx="10" cy="10" r="7" />
-                        <line x1="21" y1="21" x2="15" y2="15" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      className="form-control mb-2"
-                      placeholder="Search…"
-                      aria-label="Search in website"
-                      onBlur={(event) => this.filterComponents(event)}
-                    />
-                  </div>
-                  <div className="col-sm-12 col-lg-12">
-                    {componentTypes.map((component, i) => this.renderComponentCard(component, i))}
-                  </div>
-                </div>
+                <WidgetManager
+                  componentTypes={componentTypes}
+                  zoomLevel={zoomLevel}
+                ></WidgetManager>
               )}
             </div>
           </div>
