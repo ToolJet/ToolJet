@@ -138,7 +138,7 @@ class DataSourceManager extends React.Component {
           size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
           className="mt-5"
-          // onHide={handleClose}
+          animation={false}
           backdrop="static"
         >
           <Modal.Header>
