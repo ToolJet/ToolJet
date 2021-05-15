@@ -29,9 +29,11 @@ export const Chart = function Chart({
   const titleProperty = component.definition.properties.title;
   const title = titleProperty.value;
 
+  const typeProperty = component.definition.properties.type;
+  const chartType = typeProperty.value;
 
   const chartData = [{
-    type: 'line',
+    type: chartType || 'line',
     x: data.map((item) => item["x"]),
     y: data.map((item) => item["y"])
   }]
