@@ -35,12 +35,14 @@ export const Chart = function Chart({
   const markerColorProperty = component.definition.properties.markerColor;
   const markerColor = markerColorProperty ? markerColorProperty.value : 'red';
 
+  const gridLinesProperty = component.definition.properties.showGridLines;
+  const showGridLines = gridLinesProperty ? gridLinesProperty.value : true;
+
   const chartData = [{
     type: chartType || 'line',
     x: data.map((item) => item["x"]),
     y: data.map((item) => item["y"]),
-    marker: { color: markerColor },
-    xaxis: { showgrid: false }
+    marker: { color: markerColor }
   }];
 
   const layout = {
@@ -48,11 +50,11 @@ export const Chart = function Chart({
     height, 
     title,
     xaxis: {
-      showgrid: true,
+      showgrid: showGridLines,
       showline: true
     },
     yaxis: {
-        showgrid: true,
+        showgrid: showGridLines,
         showline: true
     }
   }

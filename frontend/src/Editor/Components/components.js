@@ -127,6 +127,7 @@ export const componentTypes = [
       data: { type: 'json', displayName: 'Data' },
       loadingState: { type: 'code', displayName: 'Loading State'},
       markerColor: { type: 'color', displayName: 'Marker color'},
+      showGridLines: { type: 'toggle', displayName: 'Show grid lines'},
       type: { type: 'select', displayName: 'Chart type', options: [
         { name: 'Line', value: 'line' },
         { name: 'Bar', value: 'bar' }
@@ -143,6 +144,7 @@ export const componentTypes = [
       properties: {
         title: { value: 'This title can be changed' },
         markerColor: { value: 'red' },
+        showGridLines: { value: true },
         loadingState: { value: `{{false}}` },
         type: { value: `line` },
         data: { value: `[
