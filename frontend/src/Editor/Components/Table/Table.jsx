@@ -598,6 +598,9 @@ export function Table({
           <div className="col-auto">
             <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
               <img src="https://www.svgrepo.com/show/264090/filter.svg" width="13" height="13" />
+              {filters.length > 0 && 
+                <a class="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
+              }
             </span>
             <span
               data-tip="Download as CSV"
