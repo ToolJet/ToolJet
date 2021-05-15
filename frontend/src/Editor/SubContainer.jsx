@@ -75,6 +75,21 @@ export const SubContainer = ({
   }, [boxes]);
 
   const { draggingState } = useDragLayer((monitor) => {
+    // TODO: Need to move to a performant version of the block below
+    if(monitor.getItem()) {
+      if(monitor.getItem().id === undefined)  {
+        if(parentRef.current) {
+          const currentOffset = monitor.getSourceClientOffset();
+          if(currentOffset) {
+            const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+            if(currentOffset.x > canvasBoundingRect.x && currentOffset.x < canvasBoundingRect.x + canvasBoundingRect.width) {
+              return { draggingState: true }
+            }
+          }
+        }
+      }
+    }
+
     if(monitor.isDragging() && monitor.getItem().parent) {
       if(monitor.getItem().parent === parent) {
         return { draggingState: true }
