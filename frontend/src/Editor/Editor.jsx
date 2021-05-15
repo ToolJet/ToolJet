@@ -493,6 +493,8 @@ class Editor extends React.Component {
                         name={'globals'}
                         displayDataTypes={false}
                         collapsed={true}
+                        displayObjectSize={false}
+                        quotesOnKeys={false}
                         sortKeys={true}
                         indentWidth={1}
                       />
@@ -506,6 +508,8 @@ class Editor extends React.Component {
                         enableClipboard={false}
                         displayDataTypes={false}
                         collapsed={true}
+                        displayObjectSize={false}
+                        quotesOnKeys={false}
                         sortKeys={true}
                         indentWidth={0.5}
                       />
@@ -519,6 +523,8 @@ class Editor extends React.Component {
                         enableClipboard={false}
                         displayDataTypes={false}
                         collapsed={true}
+                        displayObjectSize={false}
+                        quotesOnKeys={false}
                         sortKeys={true}
                       />
                     </div>
