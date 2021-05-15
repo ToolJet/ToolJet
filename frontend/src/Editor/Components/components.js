@@ -126,6 +126,7 @@ export const componentTypes = [
       title: { type: 'string', displayName: 'Title' },
       data: { type: 'json', displayName: 'Data' },
       loadingState: { type: 'code', displayName: 'Loading State'},
+      markerColor: { type: 'color', displayName: 'Marker color'},
       type: { type: 'select', displayName: 'Chart type', options: [
         { name: 'Line', value: 'line' },
         { name: 'Bar', value: 'bar' }
@@ -141,6 +142,7 @@ export const componentTypes = [
     definition: {
       properties: {
         title: { value: 'This title can be changed' },
+        markerColor: { value: 'red' },
         loadingState: { value: `{{false}}` },
         type: { value: `line` },
         data: { value: `[
