@@ -32,11 +32,30 @@ export const Chart = function Chart({
   const typeProperty = component.definition.properties.type;
   const chartType = typeProperty.value;
 
+  const markerColorProperty = component.definition.properties.markerColor;
+  const markerColor = markerColorProperty ? markerColorProperty.value : 'red';
+
   const chartData = [{
     type: chartType || 'line',
     x: data.map((item) => item["x"]),
-    y: data.map((item) => item["y"])
-  }]
+    y: data.map((item) => item["y"]),
+    marker: { color: markerColor },
+    xaxis: { showgrid: false }
+  }];
+
+  const layout = {
+    width, 
+    height, 
+    title,
+    xaxis: {
+      showgrid: true,
+      showline: true
+    },
+    yaxis: {
+        showgrid: true,
+        showline: true
+    }
+  }
 
   return (
     <div
@@ -45,7 +64,7 @@ export const Chart = function Chart({
     >
       <Plot
         data={chartData}
-        layout={ {width: width, height: height, title } }
+        layout={layout}
       />
     </div>
   );

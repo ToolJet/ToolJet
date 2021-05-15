@@ -81,6 +81,8 @@ class Chart extends React.Component {
         </div>
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
+
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'markerColor', 'properties', currentState)}
       </div>
     );
   }
