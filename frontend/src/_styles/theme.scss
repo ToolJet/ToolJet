@@ -20,9 +20,6 @@ body {
         border-bottom: 0;
       }
     }
-
-    .advanced-options-container {
-    }
   }
 
   .left-sidebar {
@@ -1338,4 +1335,8 @@ body {
 .CodeMirror-placeholder {
   color: #9e9e9e!important;
   font-size: 0.7rem!important;
+}
+
+.btn-primary {
+  border-color: transparent;
 }
