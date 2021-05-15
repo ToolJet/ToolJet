@@ -22,22 +22,28 @@ export const Chart = function Chart({
     height
   };
 
+  const dataProperty = component.definition.properties.data;
+  const dataString = dataProperty ? dataProperty.value : [];
+  const data = JSON.parse(dataString);
+
+  const titleProperty = component.definition.properties.title;
+  const title = titleProperty.value;
+
+
+  const chartData = [{
+    type: 'line',
+    x: data.map((item) => item["x"]),
+    y: data.map((item) => item["y"])
+  }]
+
   return (
     <div
       style={computedStyles}
       onClick={() => onComponentClick(id, component)}
     >
       <Plot
-        data={[
-          {
-            x: [1, 2, 3],
-            y: [2, 6, 3],
-            type: 'scatter',
-            marker: {color: 'red'},
-          },
-          {type: 'line', x: [1, 2, 3], y: [2, 5, 3]},
-        ]}
-        layout={ {width: width, height: height, title: 'A Fancy Plot'} }
+        data={chartData}
+        layout={ {width: width, height: height, title } }
       />
     </div>
   );

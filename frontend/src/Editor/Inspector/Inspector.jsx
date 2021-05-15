@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
+import { Chart } from './Components/Chart';
 import { renderElement, renderEvent } from './Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -134,7 +135,7 @@ export const Inspector = ({
 
       </div>
 
-      {componentMeta.component === 'Table' ? (
+      {componentMeta.component === 'Table' &&
         <Table
           component={component}
           paramUpdated={paramUpdated}
@@ -145,14 +146,29 @@ export const Inspector = ({
           components={components}
           currentState={currentState}
         />
-      ) : (
+      }
+
+      {componentMeta.component === 'Chart' &&
+        <Chart
+          component={component}
+          paramUpdated={paramUpdated}
+          dataQueries={dataQueries}
+          componentMeta={componentMeta}
+          eventUpdated={eventUpdated}
+          eventOptionUpdated={eventOptionUpdated}
+          components={components}
+          currentState={currentState}
+        />
+      }
+        
+      {!['Table', 'Chart'].includes(componentMeta.component)   && 
         <div className="properties-container p-2">
           {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components))}
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <hr></hr>
           {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components))}
         </div>
-      )}
+      }
     </div>
   );
 };

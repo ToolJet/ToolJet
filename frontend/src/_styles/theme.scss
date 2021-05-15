@@ -1127,6 +1127,16 @@ body {
     }
 }
 
+.chart-data-input { 
+  .CodeMirror {
+    min-height: 370px;
+    font-size: 0.8rem;
+  }
+  .code-hinter {
+    min-height: 370px;
+  }
+}
+
 .rdt {
     .form-control {
         height: 100%;
