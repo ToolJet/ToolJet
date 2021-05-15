@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import Plot from 'react-plotly.js';
+import Skeleton from 'react-loading-skeleton';
 
 export const Chart = function Chart({
   id, width, height, component, onComponentClick, currentState
@@ -19,7 +20,8 @@ export const Chart = function Chart({
 
   const computedStyles = {
     width,
-    height
+    height,
+    backgroundColor: 'white'
   };
 
   const dataProperty = component.definition.properties.data;
@@ -64,11 +66,17 @@ export const Chart = function Chart({
       style={computedStyles}
       onClick={() => onComponentClick(id, component)}
     >
-      <Plot
-        data={chartData}
-        layout={layout}
-        config={{displayModeBar: false}}
-      />
+      {loadingState === true ? 
+        <div style={{ width: '100%' }} className="p-2">
+          <Skeleton count={5} />
+        </div>
+      :
+        <Plot
+          data={chartData}
+          layout={layout}
+          config={{displayModeBar: false}}
+        />
+      } 
     </div>
   );
 };

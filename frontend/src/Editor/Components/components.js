@@ -143,7 +143,7 @@ export const componentTypes = [
     definition: {
       properties: {
         title: { value: 'This title can be changed' },
-        markerColor: { value: 'red' },
+        markerColor: { value: '#CDE1F8' },
         showGridLines: { value: true },
         loadingState: { value: `{{false}}` },
         type: { value: `line` },
