@@ -67,6 +67,7 @@ export const Chart = function Chart({
       <Plot
         data={chartData}
         layout={layout}
+        config={{displayModeBar: false}}
       />
     </div>
   );
