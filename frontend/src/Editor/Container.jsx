@@ -61,7 +61,7 @@ export const Container = ({
 
   const { draggingState } = useDragLayer((monitor) => {
     if(monitor.isDragging()) {
-      if(!monitor.getItem().parent && !parent) {
+      if(!monitor.getItem().parent) {
         return { draggingState: true }
       } else { 
         return { draggingState: false }

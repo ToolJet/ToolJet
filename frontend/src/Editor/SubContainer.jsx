@@ -75,7 +75,7 @@ export const SubContainer = ({
   }, [boxes]);
 
   const { draggingState } = useDragLayer((monitor) => {
-    if(monitor.isDragging()) {
+    if(monitor.isDragging() && monitor.getItem().parent) {
       if(monitor.getItem().parent === parent) {
         return { draggingState: true }
       } else { 
