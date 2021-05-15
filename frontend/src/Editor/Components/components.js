@@ -113,6 +113,51 @@ export const componentTypes = [
     }
   },
   {
+    icon: 'https://www.svgrepo.com/show/36266/chart.svg',
+    name: 'Chart',
+    displayName: 'Chart',
+    description: 'Display charts',
+    component: 'Chart',
+    defaultSize: {
+      width: 600,
+      height: 400
+    },
+    properties: {
+      title: { type: 'string', displayName: 'Title' },
+      data: { type: 'json', displayName: 'Data' },
+      loadingState: { type: 'code', displayName: 'Loading State'},
+      type: { type: 'select', displayName: 'Chart type', options: [
+        { name: 'Line', value: 'line' },
+        { name: 'Bar', value: 'bar' }
+      ] },
+    },
+    events: {},
+    styles: {
+
+    },
+    exposedVariables: {
+      show: null
+    },
+    definition: {
+      properties: {
+        title: { value: 'This title can be changed' },
+        loadingState: { value: `{{false}}` },
+        type: { value: `line` },
+        data: { value: `[
+  { "x": 100, "y": "Jan"},
+  { "x": 80, "y": "Feb"}, 
+  { "x": 40, "y": "Mar"}
+]`}
+      },
+      events: {
+
+      },
+      styles: {
+
+      }
+    }
+  },
+  {
     icon: 'https://cdn.iconscout.com/icon/free/png-256/modal-10-444862.png',
     name: 'Modal',
     displayName: 'Modal',
