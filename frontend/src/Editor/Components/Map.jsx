@@ -16,7 +16,12 @@ export const Map = function Map({
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
-  const defaultMarkers = defaultMarkerValue ? JSON.parse(defaultMarkerValue) : [];
+
+  let defaultMarkers = []
+  try {
+    defaultMarkers = JSON.parse(defaultMarkerValue)
+  } catch (err) { console.log(err); }
+
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
   const canAddNewMarkers = addNewMarkersProp ? addNewMarkersProp.value : false;
 
@@ -88,6 +93,7 @@ export const Map = function Map({
           {markers.map((marker) =>
             <Marker
               position={marker}
+              label={marker.label}
             />
           )}
         </GoogleMap>
