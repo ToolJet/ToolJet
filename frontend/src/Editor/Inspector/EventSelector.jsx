@@ -62,7 +62,7 @@ export const EventSelector = ({
         <div>
           {definition.actionId === 'show-alert' && (
             <div className="p-3">
-              <label className="form-label mt-2">Message</label>
+              <label className="form-label mt-1">Message</label>
               <input
                 onChange={(e) => eventOptionUpdated(param, 'message', e.target.value, extraData)}
                 value={message}
@@ -75,7 +75,7 @@ export const EventSelector = ({
 
           {definition.actionId === 'open-webpage' && (
             <div className="p-3">
-              <label className="form-label mt-2">URL</label>
+              <label className="form-label mt-1">URL</label>
               <CodeHinter
                 currentState={currentState}
                 initialValue={definition.options.url}
@@ -86,7 +86,7 @@ export const EventSelector = ({
 
           {definition.actionId === 'show-modal' && (
             <div className="p-3">
-              <label className="form-label mt-2">Modal</label>
+              <label className="form-label mt-1">Modal</label>
               <SelectSearch
                 options={getModalOptions()}
                 value={definition.options.model}
@@ -102,7 +102,7 @@ export const EventSelector = ({
 
           {definition.actionId === 'run-query' && (
             <div className="p-3">
-              <label className="form-label mt-2">Query</label>
+              <label className="form-label mt-1">Query</label>
               <SelectSearch
                 options={dataQueries.map((query) => {
                   return { name: query.name, value: query.id };
