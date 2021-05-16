@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import config from 'config';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { Marker } from '@react-google-maps/api';
@@ -17,11 +17,25 @@ export const Map = function Map({
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
   const defaultMarkers = defaultMarkerValue ? JSON.parse(defaultMarkerValue) : [];
 
+  const [markers, setMarkers] = useState(defaultMarkers);
+
+  useEffect(() => {
+    onComponentOptionChanged(component, 'markers', markers);
+  }, [markers.length]);
+
   const containerStyle = {
     width,
     height
   };
 
+  function handleMapClick(e) {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+
+    const newMarkers = markers;
+    newMarkers.push({ lat, lng });
+    setMarkers(newMarkers);
+  }
 
   return (
     <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
@@ -37,8 +51,9 @@ export const Map = function Map({
             mapTypeControl: false
 
           }}
+          onClick={handleMapClick}
         >
-          {defaultMarkers.map((marker) =>
+          {markers.map((marker) =>
             <Marker
               position={marker}
             />
