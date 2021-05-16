@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import config from 'config';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { Marker } from '@react-google-maps/api';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const Map = function Map({
   id,
@@ -19,19 +20,19 @@ export const Map = function Map({
 
   let defaultMarkers = []
   try {
-    defaultMarkers = JSON.parse(defaultMarkerValue)
+    defaultMarkers = defaultMarkerValue
   } catch (err) { console.log(err); }
 
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
   const canAddNewMarkers = addNewMarkersProp ? addNewMarkersProp.value : false;
 
   const [gmap, setGmap] = useState(null);
-  const [mapCenter, setMapCenter] = useState(JSON.parse(center));
-  const [markers, setMarkers] = useState(defaultMarkers);
+  const [mapCenter, setMapCenter] = useState(resolveReferences(JSON.parse(center), currentState, false));
+  const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState, []));
 
   useEffect(() => {
-    onComponentOptionChanged(component, 'markers', markers);
-  }, [defaultMarkers.length]);
+    setMarkers(resolveReferences(defaultMarkers, currentState, false));
+  }, [currentState]);
 
   const containerStyle = {
     width,
@@ -69,8 +70,11 @@ export const Map = function Map({
   }
 
   const onLoad = useCallback(
-    function onLoad (mapInstance) {
+    function onLoad(mapInstance) {
       setGmap(mapInstance);
+      onComponentOptionsChanged(component, [
+        ['center', mapInstance.center.toJSON()]
+      ])
     }
   )
 
@@ -98,13 +102,17 @@ export const Map = function Map({
           onClick={handleMapClick}
           onDragEnd={handleBoundsChange}
         >
-          {markers.map((marker, index) =>
-            <Marker
-              position={marker}
-              label={marker.label}
-              onClick={(e) => handleMarkerClick(index)}
-            />
-          )}
+          {Array.isArray(markers) && 
+            <>
+              {markers.map((marker, index) =>
+                <Marker
+                  position={marker}
+                  label={marker.label}
+                  onClick={(e) => handleMarkerClick(index)}
+                />
+              )}
+            </>
+          }
         </GoogleMap>
       </LoadScript>
     </div>

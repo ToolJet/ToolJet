@@ -620,7 +620,7 @@ export const componentTypes = [
 
     },
     exposedVariables: {
-        value: {}
+        center: {}
     },
     definition: {
       properties: {
