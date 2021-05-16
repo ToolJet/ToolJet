@@ -63,7 +63,8 @@ export const DraggableBox = function DraggableBox({
   paramUpdated,
   resizingStatusChanged,
   zoomLevel,
-  containerProps
+  containerProps,
+  configHandleClicked
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -110,10 +111,6 @@ export const DraggableBox = function DraggableBox({
     setCanDrag(newState);
   }
 
-  function configHandleClicked(id, component) {
-    onComponentClick(id, component)
-  }
-
   return (
     <div>
       {inCanvas ? (
@@ -122,7 +119,7 @@ export const DraggableBox = function DraggableBox({
             <ConfigHandle 
               id={id} 
               component={component}
-              configHandleClicked={configHandleClicked}
+              configHandleClicked={(id, component) => configHandleClicked(id, component)}
             /> 
           }
           <Resizable

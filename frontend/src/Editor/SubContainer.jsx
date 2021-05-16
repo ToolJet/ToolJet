@@ -31,6 +31,7 @@ export const SubContainer = ({
   zoomLevel,
   parent,
   parentRef,
+  configHandleClicked
 }) => {
   zoomLevel = zoomLevel || 1;
 
@@ -217,6 +218,7 @@ export const SubContainer = ({
           resizingStatusChanged={(status) => setIsResizing(status)}
           inCanvas={true}
           zoomLevel={zoomLevel}
+          configHandleClicked={configHandleClicked}
         />
       ))}
 
