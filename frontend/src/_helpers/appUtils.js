@@ -181,7 +181,7 @@ export function onEvent(_ref, eventName, options) {
     }
   }
 
-  if (['onBoundsChange', 'onCreateMarker'].includes(eventName)) {
+  if (['onBoundsChange', 'onCreateMarker', 'onMarkerClick'].includes(eventName)) {
     const { component } = options;
     const event = component.definition.events[eventName];
 
