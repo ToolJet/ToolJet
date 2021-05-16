@@ -268,39 +268,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/14690/calendar.svg',
-    name: 'DateRangePicker',
-    displayName: 'Date Range Picker',
-    description: 'Select a date range',
-    component: 'DaterangePicker',
-    defaultSize: {
-      width: 300,
-      height: 32
-    },
-    properties: {
-      format: { type: 'code', displayName: 'Format' }
-    },
-    events: {},
-    styles: {
-
-    },
-    exposedVariables: {
-      endDate: {},
-      startDate: {}
-    },
-    definition: {
-      properties: {
-        format: { value: 'DD/MM/YYYY' }
-      },
-      events: {
-
-      },
-      styles: {
-
-      }
-    }
-  },
-  {
     icon: 'https://www.svgrepo.com/show/309414/checkbox-checked.svg',
     name: 'Checkbox',
     displayName: 'Checkbox',
@@ -367,6 +334,39 @@ export const componentTypes = [
       properties: {
         value: { value: '' },
         placeholder: { value: 'Placeholder text' }
+      },
+      events: {
+
+      },
+      styles: {
+
+      }
+    }
+  },
+  {
+    icon: 'https://www.svgrepo.com/show/14690/calendar.svg',
+    name: 'DateRangePicker',
+    displayName: 'Date Range Picker',
+    description: 'Select a date range',
+    component: 'DaterangePicker',
+    defaultSize: {
+      width: 300,
+      height: 32
+    },
+    properties: {
+      format: { type: 'code', displayName: 'Format' }
+    },
+    events: {},
+    styles: {
+
+    },
+    exposedVariables: {
+      endDate: {},
+      startDate: {}
+    },
+    definition: {
+      properties: {
+        format: { value: 'DD/MM/YYYY' }
       },
       events: {
 

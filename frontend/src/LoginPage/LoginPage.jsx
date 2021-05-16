@@ -1,6 +1,7 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -91,10 +92,10 @@ class LoginPage extends React.Component {
             </div>
           </form>
           <div className="text-center text-muted mt-3">
-            Don&apos;t have account yet? 
-            <a href="./sign-up.html" tabIndex="-1">
+            Don&apos;t have account yet? &nbsp;
+            <Link to={'/signup'} tabIndex="-1">
               Sign up
-            </a>
+            </Link>
           </div>
         </div>
       </div>
