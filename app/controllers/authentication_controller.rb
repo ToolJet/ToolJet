@@ -14,13 +14,18 @@ class AuthenticationController < ApplicationController
   end
 
   def signup
-    email = params[:email]
-    password = SecureRandom.uuid
-    org = Organization.create(name: 'new org')
-    user = User.create(email: email, password: password, organization: org)
+    # Check if the installation allows user signups
+    if(ENV['DISABLE_SIGNUPS'] === "true")
+      render json: {}, status: 500
+    else
+      email = params[:email]
+      password = SecureRandom.uuid
+      org = Organization.create(name: 'new org')
+      user = User.create(email: email, password: password, organization: org)
 
-    org_user = OrganizationUser.create(user: user, organization: org, role: 'admin')
+      org_user = OrganizationUser.create(user: user, organization: org, role: 'admin')
 
-    UserMailer.with(user: user, sender: @current_user).new_signup_email.deliver if org_user.save
+      UserMailer.with(user: user, sender: @current_user).new_signup_email.deliver if org_user.save
+    end
   end
 end
