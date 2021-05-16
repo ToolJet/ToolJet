@@ -1137,6 +1137,16 @@ body {
   }
 }
 
+.map-location-input {
+  .CodeMirror {
+    min-height: 120px;
+    font-size: 0.8rem;
+  }
+  .code-hinter {
+    min-height: 120px;
+  }
+}
+
 .rdt {
     .form-control {
         height: 100%;
@@ -1350,3 +1360,4 @@ body {
 .btn-primary {
   border-color: transparent;
 }
+

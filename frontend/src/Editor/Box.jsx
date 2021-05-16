@@ -14,6 +14,7 @@ import { DaterangePicker } from './Components/DaterangePicker';
 import { Multiselect } from './Components/Multiselect';
 import { Modal } from './Components/Modal';
 import { Chart } from './Components/Chart';
+import { Map } from './Components/Map';
 
 const AllComponents = {
   Button,
@@ -30,7 +31,8 @@ const AllComponents = {
   DaterangePicker,
   Multiselect,
   Modal,
-  Chart
+  Chart,
+  Map
 };
 
 export const Box = function Box({

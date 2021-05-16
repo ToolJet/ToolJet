@@ -587,5 +587,44 @@ export const componentTypes = [
 
       }
     }
-  }
+  },
+  {
+    icon: 'https://www.svgrepo.com/show/135620/map.svg',
+    name: 'Map',
+    displayName: 'Map',
+    description: 'Display Google Maps',
+    component: 'Map',
+    defaultSize: {
+      width: 400,
+      height: 400
+    },
+    properties: {
+      initialLocation: { type: 'code', displayName: 'Initial location', tip: 'This location will be the initial center of the map', options: { 
+        mode: 'javascript',
+        theme: 'duotone-light',
+        className: 'map-location-input pr-2'
+      }}
+    },
+    events: {},
+    styles: {
+
+    },
+    exposedVariables: {
+        value: {}
+    },
+    definition: {
+      properties: {
+        initialLocation: { value: `{
+  "lat": 40.7128,
+  "lng": -73.935242
+}`}
+      },
+      events: {
+        
+      },
+      styles: {
+
+      }
+    }
+  },
 ];
