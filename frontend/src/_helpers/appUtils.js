@@ -181,6 +181,15 @@ export function onEvent(_ref, eventName, options) {
     }
   }
 
+  if (['onBoundsChange', 'onCreateMarker'].includes(eventName)) {
+    const { component } = options;
+    const event = component.definition.events[eventName];
+
+    if (event.actionId) {
+      executeAction(_self, event);
+    }
+  }
+
   if (eventName === 'onBulkUpdate') {
     return new Promise(function (resolve, reject) {
       onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);

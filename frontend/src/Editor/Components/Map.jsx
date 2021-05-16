@@ -30,7 +30,7 @@ export const Map = function Map({
   const [markers, setMarkers] = useState(defaultMarkers);
 
   useEffect(() => {
-    onComponentOptionChanged(component, 'markers', markers);
+    onComponentOptionChanged(component, 'markers', markers).then(() => onEvent('onCreateMarker', { component }));
   }, [markers.length]);
 
   const containerStyle = {

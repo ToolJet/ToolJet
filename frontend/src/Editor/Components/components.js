@@ -613,6 +613,7 @@ export const componentTypes = [
     },
     events: {
       onBoundsChange: { displayName: 'On bounds change'},
+      onCreateMarker: { displayName: 'On create marker'},
   },
     styles: {
 
