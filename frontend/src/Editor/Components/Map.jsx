@@ -63,7 +63,7 @@ export const Map = function Map({
     onComponentOptionsChanged(component, [
       ['bounds', bounds],
       ['center', newCenter]
-    ]);
+    ]).then(() => onEvent('onBoundsChange', { component }));
   }
 
   const onLoad = useCallback(

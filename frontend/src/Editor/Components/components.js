@@ -611,7 +611,9 @@ export const componentTypes = [
       }},
       addNewMarkers: { type: 'toggle', displayName: 'Add new markers'},
     },
-    events: {},
+    events: {
+      onBoundsChange: { displayName: 'On bounds change'},
+  },
     styles: {
 
     },
