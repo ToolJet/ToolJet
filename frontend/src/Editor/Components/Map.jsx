@@ -1,6 +1,7 @@
 import React from 'react';
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import config from 'config';
+import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import { Marker } from '@react-google-maps/api';
 
 export const Map = function Map({
   id,
@@ -12,12 +13,7 @@ export const Map = function Map({
   onComponentOptionChanged,
   onEvent
 }) {
-  // const label = component.definition.properties.label.value;
-
-  const center = {
-    lat: 40.7128,
-    lng: -73.935242
-  };
+  const center = component.definition.properties.initialLocation.value;
 
   const containerStyle = {
     width,
@@ -31,7 +27,7 @@ export const Map = function Map({
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
       >
         <GoogleMap
-          center={center}
+          center={JSON.parse(center)}
           mapContainerStyle={containerStyle}
           zoom={12}
           options={{
@@ -40,8 +36,9 @@ export const Map = function Map({
 
           }}
         >
-          { /* Child components, such as markers, info windows, etc. */ }
-          <></>
+          <Marker
+            position={center}
+          />
         </GoogleMap>
       </LoadScript>
     </div>
