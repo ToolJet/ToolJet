@@ -13,14 +13,19 @@ export const Code = ({
     onChange(param, 'value', value, paramType);
   }
 
+  const options = paramMeta.options || {}
+
   return (
-    <div className="field mb-2">
+    <div className={`mb-2 ${options.className}`}>
       <label {...getToolTipProps(paramMeta)}  className="form-label">{displayName}</label>
-        <CodeHinter
-            currentState={currentState}
-            initialValue={initialValue}
-            onChange={(value) => handleCodeChanged(value)}
-        />
+      <CodeHinter
+          currentState={currentState}
+          initialValue={initialValue}
+          mode={options.mode}
+          theme={options.theme}
+          className={options.className}
+          onChange={(value) => handleCodeChanged(value)}
+      />
     </div>
   );
 };
