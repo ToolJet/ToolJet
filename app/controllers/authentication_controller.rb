@@ -12,4 +12,15 @@ class AuthenticationController < ApplicationController
       render json: { error: command.errors }, status: :unauthorized
     end
   end
+
+  def signup
+    email = params[:email]
+    password = SecureRandom.uuid
+    org = Organization.create(name: 'new org')
+    user = User.create(email: email, password: password, organization: org)
+
+    org_user = OrganizationUser.create(user: user, organization: org, role: 'admin')
+
+    UserMailer.with(user: user, sender: @current_user).new_signup_email.deliver if org_user.save
+  end
 end

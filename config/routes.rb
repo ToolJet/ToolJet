@@ -34,4 +34,5 @@ Rails.application.routes.draw do
   end
 
   post 'authenticate', to: 'authentication#authenticate'
+  post 'signup', to: 'authentication#signup'
 end
