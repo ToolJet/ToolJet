@@ -81,17 +81,17 @@ class SaveAndPreview extends React.Component {
           </button>
         )}
 
-        <Modal show={this.state.showModal} size="lg" backdrop="static" centered={true} keyboard={true}>
+        <Modal show={this.state.showModal} size="md" backdrop="static" centered={true} keyboard={true}>
           <Modal.Header>
             <Modal.Title>Versions and deployments</Modal.Title>
             <div>
               {!showVersionForm && (
-                <button className="btn btn-primary mx-2" onClick={() => this.setState({ showVersionForm: true })}>
-                  Create New Version
+                <button className="btn btn-primary btn-sm mx-2" onClick={() => this.setState({ showVersionForm: true })}>
+                  + Version
                 </button>
               )}
 
-              <Button variant="light" onClick={() => this.hideModal()}>
+              <Button variant="light" size="sm" onClick={() => this.hideModal()}>
                 x
               </Button>
             </div>
@@ -127,14 +127,14 @@ class SaveAndPreview extends React.Component {
                     {versions.map((version) => (
                       <tr key={version.id}>
                         <td>
-                          {version.name}
-                          {version.id === this.props.app.current_version_id && (
-                            <small className="mx-2">(current)</small>
-                          )}
-                        </td>
-                        <td>
                           <div className="row">
                             <div className="col">
+                            {version.name}
+                            {version.id === this.props.app.current_version_id && (
+                              <small className="mx-2">(current)</small>
+                            )}
+                            </div>
+                            <div className="col-auto">
                               <button
                                 className="btn btn-sm"
                                 onClick={() => this.saveVersion(version.id)}
@@ -142,8 +142,6 @@ class SaveAndPreview extends React.Component {
                               >
                                 {isSaving ? 'saving...' : 'save'}
                               </button>
-                            </div>
-                            <div className="col">
                               <button
                                 className="btn btn-primary btn-sm mx-2"
                                 onClick={() => this.deployVersion(version.id)}
