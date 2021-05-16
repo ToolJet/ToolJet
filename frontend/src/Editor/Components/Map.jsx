@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import config from 'config';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { Marker } from '@react-google-maps/api';
@@ -11,12 +11,15 @@ export const Map = function Map({
   onComponentClick,
   currentState,
   onComponentOptionChanged,
+  onComponentOptionsChanged,
   onEvent
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
   const defaultMarkers = defaultMarkerValue ? JSON.parse(defaultMarkerValue) : [];
 
+  const [gmap, setGmap] = useState(null);
+  const [mapCenter, setMapCenter] = useState(JSON.parse(center));
   const [markers, setMarkers] = useState(defaultMarkers);
 
   useEffect(() => {
@@ -37,21 +40,46 @@ export const Map = function Map({
     setMarkers(newMarkers);
   }
 
+  function handleBoundsChange() {
+    const mapBounds = gmap.getBounds();
+
+    const bounds = { 
+      northEast: mapBounds.getNorthEast().toJSON(),
+      southWest: mapBounds.getSouthWest().toJSON(),
+    }
+
+    const newCenter = gmap.center.toJSON();
+    setMapCenter(newCenter);
+    
+    onComponentOptionsChanged(component, [
+      ['bounds', bounds],
+      ['center', newCenter]
+    ]);
+  }
+
+  const onLoad = useCallback(
+    function onLoad (mapInstance) {
+      setGmap(mapInstance);
+    }
+  )
+
   return (
     <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
       <LoadScript
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
       >
         <GoogleMap
-          center={JSON.parse(center)}
+          center={mapCenter}
           mapContainerStyle={containerStyle}
           zoom={12}
           options={{
             streetViewControl: false,
-            mapTypeControl: false
-
+            mapTypeControl: false,
+            draggable: true
           }}
+          onLoad={onLoad}
           onClick={handleMapClick}
+          onDragEnd={handleBoundsChange}
         >
           {markers.map((marker) =>
             <Marker
