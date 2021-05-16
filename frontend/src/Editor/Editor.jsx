@@ -325,6 +325,10 @@ class Editor extends React.Component {
     this.setState({ showLeftSidebar: !this.state.showLeftSidebar });
   };
 
+  configHandleClicked = (id, component) => {
+    this.setState({ selectedComponent: { id, component } });
+  }
+
   render() {
     const {
       currentSidebarTab,
@@ -596,8 +600,9 @@ class Editor extends React.Component {
                     onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
                     }
                     currentState={this.state.currentState}
+                    configHandleClicked={this.configHandleClicked}
                     onComponentClick={(id, component) => {
-                      this.setState({ selectedComponent: { id, component } });
+                      // this.setState({ selectedComponent: { id, component } });
                       this.switchSidebarTab(1);
                       onComponentClick(this, id, component);
                     }}

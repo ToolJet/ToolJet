@@ -28,6 +28,7 @@ export const Container = ({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
+  configHandleClicked,
   zoomLevel
 }) => {
   const components = appDefinition.components || [];
@@ -200,6 +201,7 @@ export const Container = ({
             resizingStatusChanged={(status) => setIsResizing(status)}
             inCanvas={true}
             zoomLevel={zoomLevel}
+            configHandleClicked={configHandleClicked}
             containerProps={{
               mode,
               snapToGrid,
@@ -211,7 +213,8 @@ export const Container = ({
               onComponentOptionChanged,
               onComponentOptionsChanged,
               appLoading,
-              zoomLevel
+              zoomLevel,
+              configHandleClicked
             }}
           />
         }
