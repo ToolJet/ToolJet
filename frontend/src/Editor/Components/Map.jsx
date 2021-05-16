@@ -30,8 +30,8 @@ export const Map = function Map({
   const [markers, setMarkers] = useState(defaultMarkers);
 
   useEffect(() => {
-    onComponentOptionChanged(component, 'markers', markers).then(() => onEvent('onCreateMarker', { component }));
-  }, [markers.length]);
+    onComponentOptionChanged(component, 'markers', markers);
+  }, [defaultMarkers.length]);
 
   const containerStyle = {
     width,
@@ -47,6 +47,8 @@ export const Map = function Map({
     const newMarkers = markers;
     newMarkers.push({ lat, lng });
     setMarkers(newMarkers);
+
+    onComponentOptionChanged(component, 'markers', newMarkers).then(() => onEvent('onCreateMarker', { component }));
   }
 
   function handleBoundsChange() {
@@ -72,6 +74,12 @@ export const Map = function Map({
     }
   )
 
+  function handleMarkerClick(index) {
+    onComponentOptionChanged(component,
+      'selectedMarker', markers[index]
+    ).then(() => onEvent('onMarkerClick', { component }));
+  }
+
   return (
     <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
       <LoadScript
@@ -90,10 +98,11 @@ export const Map = function Map({
           onClick={handleMapClick}
           onDragEnd={handleBoundsChange}
         >
-          {markers.map((marker) =>
+          {markers.map((marker, index) =>
             <Marker
               position={marker}
               label={marker.label}
+              onClick={(e) => handleMarkerClick(index)}
             />
           )}
         </GoogleMap>
