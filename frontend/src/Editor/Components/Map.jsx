@@ -14,6 +14,8 @@ export const Map = function Map({
   onEvent
 }) {
   const center = component.definition.properties.initialLocation.value;
+  const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
+  const defaultMarkers = defaultMarkerValue ? JSON.parse(defaultMarkerValue) : [];
 
   const containerStyle = {
     width,
@@ -36,9 +38,11 @@ export const Map = function Map({
 
           }}
         >
-          <Marker
-            position={center}
-          />
+          {defaultMarkers.map((marker) =>
+            <Marker
+              position={marker}
+            />
+          )}
         </GoogleMap>
       </LoadScript>
     </div>
