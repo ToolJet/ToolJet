@@ -608,7 +608,8 @@ export const componentTypes = [
         mode: 'javascript',
         theme: 'duotone-light',
         className: 'map-location-input pr-2'
-      }}
+      }},
+      addNewMarkers: { type: 'toggle', displayName: 'Add new markers'},
     },
     events: {},
     styles: {
@@ -628,6 +629,7 @@ defaultMarkers: { value: `[{
   "lng": -73.935242
 }]`}
       },
+      addNewMarkers: { value: '{{false}}'},
       events: {
         
       },

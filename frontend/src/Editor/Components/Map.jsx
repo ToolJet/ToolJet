@@ -17,6 +17,8 @@ export const Map = function Map({
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
   const defaultMarkers = defaultMarkerValue ? JSON.parse(defaultMarkerValue) : [];
+  const addNewMarkersProp = component.definition.properties.addNewMarkers;
+  const canAddNewMarkers = addNewMarkersProp ? addNewMarkersProp.value : false;
 
   const [gmap, setGmap] = useState(null);
   const [mapCenter, setMapCenter] = useState(JSON.parse(center));
@@ -32,6 +34,8 @@ export const Map = function Map({
   };
 
   function handleMapClick(e) {
+    if(!canAddNewMarkers) { return }
+
     const lat = e.latLng.lat();
     const lng = e.latLng.lng();
 
