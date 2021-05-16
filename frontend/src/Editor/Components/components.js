@@ -603,6 +603,11 @@ export const componentTypes = [
         mode: 'javascript',
         theme: 'duotone-light',
         className: 'map-location-input pr-2'
+      }},
+      defaultMarkers: { type: 'code', displayName: 'Default markers', options: { 
+        mode: 'javascript',
+        theme: 'duotone-light',
+        className: 'map-location-input pr-2'
       }}
     },
     events: {},
@@ -617,7 +622,11 @@ export const componentTypes = [
         initialLocation: { value: `{
   "lat": 40.7128,
   "lng": -73.935242
-}`}
+}`},
+defaultMarkers: { value: `[{
+  "lat": 40.7128,
+  "lng": -73.935242
+}]`}
       },
       events: {
         
