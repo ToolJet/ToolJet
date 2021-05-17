@@ -96,18 +96,20 @@ function executeAction(_ref, event) {
       const modalId = event.options.modal;
       const modalMeta = _ref.state.appDefinition.components[modalId];
 
-      _ref.setState({
+      const newState = {
         currentState: { 
           ..._ref.state.currentState,
           components: {
-            ..._ref.state.currentState,
+            ..._ref.state.currentState.components,
             [modalMeta.component.name]: {
               ..._ref.state.currentState.components[modalMeta.component.name],
               show: true
             }
           }
         }
-      })
+      }
+
+      _ref.setState(newState)
     }
   }
 }
