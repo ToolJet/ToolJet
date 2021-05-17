@@ -221,6 +221,13 @@ class Editor extends React.Component {
 
   removeComponent = (component) => {
     let newDefinition = this.state.appDefinition;
+    
+    // Delete child components when parent is deleted
+    const childComponents = Object.keys(newDefinition.components).filter((key) => newDefinition.components[key].parent === component.id)
+    childComponents.forEach((componentId) => {
+      delete newDefinition.components[componentId]
+    })
+
     delete newDefinition.components[component.id];
     this.appDefinitionChanged(newDefinition);
     this.switchSidebarTab(2);
