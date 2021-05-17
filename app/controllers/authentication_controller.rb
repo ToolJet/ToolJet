@@ -25,7 +25,7 @@ class AuthenticationController < ApplicationController
 
       org_user = OrganizationUser.create(user: user, organization: org, role: 'admin')
 
-      UserMailer.with(user: user, sender: @current_user).new_signup_email.deliver if org_user.save
+      # UserMailer.with(user: user, sender: @current_user).new_signup_email.deliver if org_user.save
     end
   end
 end
