@@ -1,14 +1,17 @@
 import React from 'react';
 import { userService } from '@/_services';
 import { toast } from 'react-toastify';
+import queryString from 'query-string';
 
 class InvitationPage extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      isLoading: false
+      isLoading: false,
+      newSignup: queryString.parse(props.location.search).signup
     };
+
   }
 
   handleChange = (event) => {
@@ -19,12 +22,12 @@ class InvitationPage extends React.Component {
     e.preventDefault();
 
     const token = this.props.match.params.token;
-    const password = this.state.password;
+    const { password, organization, newSignup } = this.state;
 
     this.setState({ isLoading: true });
 
     userService
-      .setPasswordFromToken(token, password)
+      .setPasswordFromToken({ token, password, organization, newSignup })
       .then(() => {
         this.setState({ isLoading: false });
         toast.success('Password has been set successfully.', { hideProgressBar: true, position: 'top-center' });
@@ -37,7 +40,7 @@ class InvitationPage extends React.Component {
   };
 
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, newSignup } = this.state;
 
     return (
       <div className="page page-center">
@@ -50,7 +53,24 @@ class InvitationPage extends React.Component {
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
               <h2 className="card-title text-center mb-4">Set up your account</h2>
-              <div className="mb-2">
+              {newSignup === "true" && 
+                <div className="mb-3">
+                  <label className="form-label">Organization</label>
+                  <div className="input-group input-group-flat">
+                    <input
+                      onChange={this.handleChange}
+                      name="organization"
+                      type="text"
+                      className="form-control"
+                      placeholder="Organization"
+                      autoComplete="off"
+                    />
+                    <span className="input-group-text"></span>
+                  </div>
+                </div>
+              }
+              
+              <div className="mb-3">
                 <label className="form-label">Password</label>
                 <div className="input-group input-group-flat">
                   <input
@@ -64,7 +84,7 @@ class InvitationPage extends React.Component {
                   <span className="input-group-text"></span>
                 </div>
               </div>
-              <div className="mb-2">
+              <div className="mb-3">
                 <label className="form-label">Confirm Password</label>
                 <div className="input-group input-group-flat">
                   <input

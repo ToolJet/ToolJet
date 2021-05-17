@@ -21,7 +21,7 @@ class AuthenticationController < ApplicationController
       email = params[:email]
       password = SecureRandom.uuid
       org = Organization.create(name: 'new org')
-      user = User.create(email: email, password: password, organization: org)
+      user = User.create(email: email, password: password, organization: org, invitation_token: SecureRandom.uuid)
 
       org_user = OrganizationUser.create(user: user, organization: org, role: 'admin')
 
