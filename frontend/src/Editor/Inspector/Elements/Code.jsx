@@ -16,7 +16,7 @@ export const Code = ({
   const options = paramMeta.options || {}
 
   return (
-    <div className={`mb-2 ${options.className}`}>
+    <div className={`mb-2 field ${options.className}`}>
       <label {...getToolTipProps(paramMeta)}  className="form-label">{displayName}</label>
       <CodeHinter
           currentState={currentState}
