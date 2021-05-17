@@ -27,6 +27,9 @@ export const Map = function Map({
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
   const canAddNewMarkers = addNewMarkersProp ? addNewMarkersProp.value : false;
 
+  const canSearchProp = component.definition.properties.canSearch;
+  const canSearch = canSearchProp ? canSearchProp.value : false;
+
   const [gmap, setGmap] = useState(null);
   const [autoComplete, setAutoComplete] = useState(null);
   const [mapCenter, setMapCenter] = useState(resolveReferences(JSON.parse(center), currentState, false));
@@ -115,16 +118,18 @@ export const Map = function Map({
           onClick={handleMapClick}
           onDragEnd={handleBoundsChange}
         >
-          <Autocomplete
-              onPlaceChanged={onPlaceChanged}
-              onLoad={onAutocompleteLoad}
-            >
-              <input
-                type="text"
-                placeholder="Search"
-                className="place-search-input"
-              />
+          {canSearch &&
+            <Autocomplete
+                onPlaceChanged={onPlaceChanged}
+                onLoad={onAutocompleteLoad}
+              >
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="place-search-input"
+                />
             </Autocomplete>
+          }
           {Array.isArray(markers) && 
             <>
               {markers.map((marker, index) =>
