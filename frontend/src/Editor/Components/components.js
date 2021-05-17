@@ -610,6 +610,7 @@ export const componentTypes = [
         className: 'map-location-input pr-2'
       }},
       addNewMarkers: { type: 'toggle', displayName: 'Add new markers'},
+      canSearch: { type: 'toggle', displayName: 'Search for places'},
     },
     events: {
       onBoundsChange: { displayName: 'On bounds change'},
