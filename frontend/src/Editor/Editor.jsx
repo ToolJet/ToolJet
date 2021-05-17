@@ -326,6 +326,7 @@ class Editor extends React.Component {
   };
 
   configHandleClicked = (id, component) => {
+    this.switchSidebarTab(1);
     this.setState({ selectedComponent: { id, component } });
   }
 

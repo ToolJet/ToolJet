@@ -115,13 +115,7 @@ export const DraggableBox = function DraggableBox({
     <div>
       {inCanvas ? (
         <div style={getStyles(left, top, isDragging, component)} className="draggable-box">
-          {mode === 'edit' && 
-            <ConfigHandle 
-              id={id} 
-              component={component}
-              configHandleClicked={(id, component) => configHandleClicked(id, component)}
-            /> 
-          }
+          
           <Resizable
             style={{ ...style }}
             defaultSize={{}}
@@ -134,7 +128,15 @@ export const DraggableBox = function DraggableBox({
               onResizeStop(id, width, height, e, direction, ref, d);
             }}
           >
-            <div {...refProps} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
+            <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
+            {mode === 'edit' && 
+            <ConfigHandle 
+              id={id} 
+              dragRef={refProps.ref}
+              component={component}
+              configHandleClicked={(id, component) => configHandleClicked(id, component)}
+            /> 
+          }
               <Box
                 component={component}
                 id={id}
