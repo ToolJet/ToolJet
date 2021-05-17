@@ -559,7 +559,7 @@ body {
   background: #fff;
   border: none;
   outline: none;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size: 14px;
   text-align: left;
   cursor: pointer;
@@ -1189,6 +1189,12 @@ body {
     margin-bottom: 0rem;
 }
 
+.codehinter-query-editor-input {
+  .CodeMirror {
+    font-family: 'Roboto', sans-serif;
+    color: #263136;
+  }
+}
 
 .code-hinter {
 
