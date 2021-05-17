@@ -1398,3 +1398,30 @@ body {
     margin-left: -120px;
   }
 }
+
+.events-toggle-active { 
+  .toggle-icon { 
+    transform: rotate(180deg);
+  }
+}
+
+.events-toggle { 
+  .toggle-icon { 
+    display: inline-block;
+    margin-left: auto;
+    transition: .3s transform;
+  }
+
+  .toggle-icon:after {
+    content: "";
+    display: inline-block;
+    vertical-align: .306em;
+    width: .46em;
+    height: .46em;
+    border-bottom: 1px solid;
+    border-left: 1px solid;
+    margin-right: .1em;
+    margin-left: .4em;
+    transform: rotate(-45deg);
+  }
+}
