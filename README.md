@@ -5,7 +5,7 @@
 </p>
 
 
-ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources such as databases ( like PostgreSQL, Redis, etc ), API endpoints ( ToolJet supports importing OpenAPI spec & OAuth2 authorization) and external services ( like Stripe, Google Sheets ) and use our pre-built UI widgets to build internal tools.
+ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources such as databases ( like PostgreSQL, MongoDB, Elasticsearch, etc ), API endpoints ( ToolJet supports importing OpenAPI spec & OAuth2 authorization) and external services ( like Stripe, Slack, Google Sheets ) and use our pre-built UI widgets to build internal tools.
 
 <p align="center">
 Quickstart: Deploy ToolJet server to Heroku and client to Netilify.  <br>
@@ -15,7 +15,7 @@ Quickstart: Deploy ToolJet server to Heroku and client to Netilify.  <br>
 
 ## Features
 
-- Visual app builder with widgets such as tables, buttons, dropdowns and more
+- Visual app builder with widgets such as tables, charts, modals, buttons, dropdowns and more
 - Connect to databases, APIs and external services
 - Deploy on-premise
 - Granular access control on organization level and app level
@@ -24,6 +24,9 @@ Quickstart: Deploy ToolJet server to Heroku and client to Netilify.  <br>
 - Transform query results using JS code 
 - Import endpoints from OpenAPI specs 
 - Support for OAuth
+
+## Examples
+[Building a Github contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
 
 ## Documentation
 The documentation is available at https://docs.tooljet.io 
