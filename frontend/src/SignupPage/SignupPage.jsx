@@ -75,7 +75,7 @@ class SignupPage extends React.Component {
             <div className="text-center text-muted mt-3">
               Already have an account? &nbsp;
               <Link to={'/login'} tabIndex="-1">
-                Sign up
+                Sign in
               </Link>
             </div>
           }
