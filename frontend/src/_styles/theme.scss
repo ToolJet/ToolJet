@@ -1376,3 +1376,7 @@ body {
   height: 0;
   background: transparent;
 }
+
+.input-group-flat:focus-within {
+  box-shadow: none;
+}
