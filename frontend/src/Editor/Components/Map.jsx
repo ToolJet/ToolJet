@@ -3,6 +3,7 @@ import config from 'config';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { Marker } from '@react-google-maps/api';
 import { resolveReferences } from '@/_helpers/utils';
+import { Autocomplete } from '@react-google-maps/api';
 
 export const Map = function Map({
   id,
@@ -27,6 +28,7 @@ export const Map = function Map({
   const canAddNewMarkers = addNewMarkersProp ? addNewMarkersProp.value : false;
 
   const [gmap, setGmap] = useState(null);
+  const [autoComplete, setAutoComplete] = useState(null);
   const [mapCenter, setMapCenter] = useState(resolveReferences(JSON.parse(center), currentState, false));
   const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState, []));
 
@@ -84,10 +86,20 @@ export const Map = function Map({
     ).then(() => onEvent('onMarkerClick', { component }));
   }
 
+  function onPlaceChanged() {
+    const location = autoComplete.getPlace().geometry.location.toJSON();
+    setMapCenter(location);
+  }
+
+  function onAutocompleteLoad(autocompleteInstance) {
+    setAutoComplete(autocompleteInstance);
+  }
+
   return (
-    <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+    <div style={{ width, height }} onClick={() => onComponentClick(id, component)} className="map-widget">
       <LoadScript
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
+        libraries={["places"]}
       >
         <GoogleMap
           center={mapCenter}
@@ -102,6 +114,16 @@ export const Map = function Map({
           onClick={handleMapClick}
           onDragEnd={handleBoundsChange}
         >
+          <Autocomplete
+              onPlaceChanged={onPlaceChanged}
+              onLoad={onAutocompleteLoad}
+            >
+              <input
+                type="text"
+                placeholder="Search"
+                className="place-search-input"
+              />
+            </Autocomplete>
           {Array.isArray(markers) && 
             <>
               {markers.map((marker, index) =>
