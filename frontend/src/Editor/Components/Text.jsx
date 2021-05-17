@@ -39,7 +39,7 @@ export const Text = function Text({
   };
 
   return (
-    <div style={computedStyles} onClick={() => onComponentClick(id, component)}>
+    <div className="text-widget" style={computedStyles} onClick={() => onComponentClick(id, component)}>
       {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />}
       {loadingState === true && (
         <div>

@@ -1361,3 +1361,12 @@ body {
   border-color: transparent;
 }
 
+.text-widget { 
+  overflow: scroll;
+}
+
+.text-widget::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
