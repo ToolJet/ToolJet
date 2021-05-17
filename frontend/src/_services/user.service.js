@@ -30,10 +30,12 @@ function deleteUser(id) {
   return fetch(`${config.apiUrl}/users/${id}`, requestOptions).then(handleResponse);
 }
 
-function setPasswordFromToken(token, password) {
+function setPasswordFromToken({ token, password, organization, newSignup }) {
   const body = {
     token,
-    password
+    password,
+    organization,
+    new_signup: newSignup
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
