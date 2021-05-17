@@ -89,6 +89,7 @@ export const Map = function Map({
   function onPlaceChanged() {
     const location = autoComplete.getPlace().geometry.location.toJSON();
     setMapCenter(location);
+    handleBoundsChange();
   }
 
   function onAutocompleteLoad(autocompleteInstance) {
