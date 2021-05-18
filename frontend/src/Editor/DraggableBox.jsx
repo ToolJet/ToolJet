@@ -64,7 +64,8 @@ export const DraggableBox = function DraggableBox({
   resizingStatusChanged,
   zoomLevel,
   containerProps,
-  configHandleClicked
+  configHandleClicked,
+  removeComponent
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -132,6 +133,7 @@ export const DraggableBox = function DraggableBox({
             {mode === 'edit' && 
             <ConfigHandle 
               id={id} 
+              removeComponent={removeComponent}
               dragRef={refProps.ref}
               component={component}
               configHandleClicked={(id, component) => configHandleClicked(id, component)}
