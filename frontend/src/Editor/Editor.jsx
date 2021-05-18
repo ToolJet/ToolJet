@@ -609,6 +609,7 @@ class Editor extends React.Component {
                     }
                     currentState={this.state.currentState}
                     configHandleClicked={this.configHandleClicked}
+                    removeComponent={this.removeComponent}
                     onComponentClick={(id, component) => {
                       // this.setState({ selectedComponent: { id, component } });
                       // this.switchSidebarTab(1);
