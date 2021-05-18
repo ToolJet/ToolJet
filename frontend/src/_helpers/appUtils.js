@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify';
-import { resolveReferences } from '@/_helpers/utils';
+import { getDynamicVariables, resolveReferences } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
@@ -11,8 +11,6 @@ function setStateAsync(_ref, state) {
 }
 
 export function onComponentOptionsChanged(_ref, component, options) {
-  console.log('changeset', options);
-
   const componentName = component.name;
   const components = _ref.state.currentState.components;
   let componentData = components[componentName];
@@ -203,6 +201,28 @@ export function onEvent(_ref, eventName, options) {
   }
 }
 
+function getQueryVariables(options, state) { 
+
+  let queryVariables = {};
+
+  if( typeof options === 'string' ) {
+    const dynamicVariables = getDynamicVariables(options) || [];
+    dynamicVariables.forEach((variable) => { 
+      queryVariables[variable] = resolveReferences(variable, state);
+    });
+  } else if(Array.isArray(options)) { 
+    options.forEach((element) => { 
+      _.merge(queryVariables, getQueryVariables(element, state))
+    })
+  } else if(typeof options ==="object") {
+    Object.keys(options).forEach((key) => {
+      _.merge(queryVariables, getQueryVariables(options[key], state))
+    })
+  }
+
+  return queryVariables;
+}
+
 export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
   const query = _ref.state.app.data_queries.find(query => query.id === queryId);
   let dataQuery = {};
@@ -214,7 +234,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
     return;
   }
 
-  const options = resolveReferences(dataQuery.options, _ref.state.currentState);
+  const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (options.requestConfirmation) {
     if (confirmed === undefined) {

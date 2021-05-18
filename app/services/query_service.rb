@@ -21,8 +21,44 @@ class QueryService
                             end
     end if  data_source
 
+    parsed_query_options = getQueryOptions(data_query.options)
+
     service_class = "#{data_query.kind.capitalize}QueryService".constantize
-    service = service_class.new data_query, options, parsed_options, current_user
+    service = service_class.new data_query, parsed_query_options, parsed_options, current_user
     service.process
   end
+
+  private 
+    def getQueryOptions(object)
+      
+      if object.class.name === "Hash"
+
+        object.keys.each do |key|
+          object[key] = getQueryOptions(object[key])
+        end
+
+      elsif object.class.name === "String"
+        if object.start_with?('{{') && object.end_with?('}}')
+          object = options[object]
+        else
+          variables = object.scan(/\{\{(.*?)\}\}/).to_a
+
+          if variables.size > 0
+            variables.each do |variable|
+              object = object.gsub("{{#{variable[0]}}}", options["{{#{variable[0]}}}"])
+            end
+          else 
+            object = object
+          end
+        end
+      elsif object.class.name === "Array"
+
+        object.each_with_index do |element, index|
+          object[index] = getQueryOptions(element)
+        end
+
+      end
+
+      object
+    end
 end
