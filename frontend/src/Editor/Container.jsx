@@ -29,7 +29,8 @@ export const Container = ({
   onComponentOptionsChanged,
   appLoading,
   configHandleClicked,
-  zoomLevel
+  zoomLevel,
+  removeComponent
 }) => {
   const components = appDefinition.components || [];
 
@@ -202,6 +203,7 @@ export const Container = ({
             inCanvas={true}
             zoomLevel={zoomLevel}
             configHandleClicked={configHandleClicked}
+            removeComponent={removeComponent}
             containerProps={{
               mode,
               snapToGrid,
@@ -214,7 +216,8 @@ export const Container = ({
               onComponentOptionsChanged,
               appLoading,
               zoomLevel,
-              configHandleClicked
+              configHandleClicked,
+              removeComponent
             }}
           />
         }
