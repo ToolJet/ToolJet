@@ -121,6 +121,7 @@ class HomePage extends React.Component {
                   folders={this.state.folders}
                   currentFolder={currentFolder}
                   folderChanged={this.folderChanged}
+                  foldersChanged={this.foldersChanged}
                 />
               </div>
 
