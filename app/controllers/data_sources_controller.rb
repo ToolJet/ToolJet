@@ -57,6 +57,8 @@ class DataSourcesController < ApplicationController
       name: params[:name],
       options: options_to_save
     )
+
+    $connections.delete @data_source.id
   end
 
   def test_connection
