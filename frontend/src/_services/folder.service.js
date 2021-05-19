@@ -3,7 +3,8 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const folderService = {
   create,
-  getAll
+  getAll,
+  addToFolder
 };
 
 function getAll() {
@@ -18,4 +19,14 @@ function create(name) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/folders`, requestOptions).then(handleResponse);
+}
+
+function addToFolder(appId, folderId) {
+  const body = {
+    app_id: appId,
+    folder_id: folderId
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/folder_apps`, requestOptions).then(handleResponse);
 }

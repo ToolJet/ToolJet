@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { Pagination } from '@/_components';
 import { Folders } from './Folders';
+import { AppMenu } from './AppMenu';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -59,6 +60,10 @@ class HomePage extends React.Component {
   folderChanged = (folder) => {
     this.setState({'currentFolder': folder});
     this.fetchApps(0, folder.id);
+  }
+
+  foldersChanged = () => {
+    this.fetchFolders();
   }
 
   createApp = () => {
@@ -191,7 +196,7 @@ class HomePage extends React.Component {
                     <div className="w-100 mb-5">
                       <div className="row align-items-center">
                         <div className="col">
-                          <h2 className="page-title">App applications</h2>
+                          <h2 className="page-title">All applications</h2>
                         </div>
                       <div className="col-auto ms-auto d-print-none">
                         <button className={`btn btn-primary ${ creatingApp ? 'btn-loading' : ''}`} onClick={this.createApp}>+ App</button>
@@ -244,10 +249,11 @@ class HomePage extends React.Component {
 
                               </Link>
 
-                              <span className="badge bg-blue-lt mx-2">
-                                <img src="https://www.svgrepo.com/show/12267/menu.svg" width="12" height="12" />
-                              </span>
-                             
+                              <AppMenu 
+                                app={app} 
+                                folders={this.state.folders}
+                                foldersChanged={this.foldersChanged}
+                              />
                             </td>
                           </tr>))
                           }
