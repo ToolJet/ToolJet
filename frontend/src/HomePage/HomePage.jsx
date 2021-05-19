@@ -83,7 +83,7 @@ class HomePage extends React.Component {
         <Header
 
         />
-        {!isLoading && apps.length === 0 && 
+        {!isLoading && meta.total_count === 0 && 
           <div class="page-wrapper">
             <div class="container-xl">
             </div>
@@ -93,9 +93,6 @@ class HomePage extends React.Component {
                   <div class="empty-img"><img src="/assets/images/blank.svg" height="128"  alt=""/>
                   </div>
                   <p class="empty-title">You haven't created any apps yet.</p>
-                  <p class="empty-subtitle text-muted">
-                    Try adjusting your search or filter to find what you're looking for.
-                  </p>
                   <div class="empty-action">
                     <a onClick={this.createApp} class="btn btn-primary text-light">
                       <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
@@ -110,6 +107,8 @@ class HomePage extends React.Component {
             </div>
           </div>
         }
+
+        {(isLoading || meta.total_count > 0) && 
 
         <div className="page-body homepage-body">
           <div className="container-xl">
@@ -126,11 +125,11 @@ class HomePage extends React.Component {
               </div>
 
               <div className="col-md-9">
-                {meta.folder_count > 0 && (
+                
                     <div className="w-100 mb-5">
                       <div className="row align-items-center">
                         <div className="col">
-                          <h2 className="page-title">All applications</h2>
+                          <h2 className="page-title">{currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}</h2>
                         </div>
                       <div className="col-auto ms-auto d-print-none">
                         <button className={`btn btn-primary ${ creatingApp ? 'btn-loading' : ''}`} onClick={this.createApp}>+ App</button>
@@ -162,51 +161,59 @@ class HomePage extends React.Component {
                               
                             </>
                           )}
-                          {apps.map((app) => (
-                          <tr class="row">
-                            <td class="col p-3">
-                              <span className="app-title mb-3">{app.name}</span> <br />
-                              <small className="pt-2">created {app.created_at} ago by {app.user.first_name} {app.user.last_name} </small>
-                            </td>
-                            <td class="text-muted col-auto pt-4">
-                              <Link
-                                to={`/applications/${app.id}`}
-                                target="_blank"
-                              >
-                                <span class="badge bg-blue-lt mx-2">launch</span>
-                              </Link>
-                          
-                              <Link
-                                to={`/apps/${app.id}`}
-                              >
-                                <span class="badge bg-green-lt">Edit</span>
 
-                              </Link>
+                          {meta.total_count > 0 && (
+                            <>
 
-                              <AppMenu 
-                                app={app} 
-                                folders={this.state.folders}
-                                foldersChanged={this.foldersChanged}
-                              />
-                            </td>
-                          </tr>))
+                            {apps.map((app) => (
+                            <tr class="row">
+                              <td class="col p-3">
+                                <span className="app-title mb-3">{app.name}</span> <br />
+                                <small className="pt-2">created {app.created_at} ago by {app.user.first_name} {app.user.last_name} </small>
+                              </td>
+                              <td class="text-muted col-auto pt-4">
+                                <Link
+                                  to={`/applications/${app.id}`}
+                                  target="_blank"
+                                >
+                                  <span class="badge bg-blue-lt mx-2">launch</span>
+                                </Link>
+                            
+                                <Link
+                                  to={`/apps/${app.id}`}
+                                >
+                                  <span class="badge bg-green-lt">Edit</span>
+
+                                </Link>
+
+                                <AppMenu 
+                                  app={app} 
+                                  folders={this.state.folders}
+                                  foldersChanged={this.foldersChanged}
+                                />
+                              </td>
+                            </tr>))
+                            }
+                            </>)
                           }
                         </tbody>
                       </table>
                     </div>
+                    {meta.total_count > 0 && (
                       <Pagination
                         currentPage={meta.current_page}
                         count={meta.folder_count}
                         totalPages={meta.total_pages}
                         pageChanged={this.pageChanged}
                       />
+                    )}
                   </div>
-                )}
               </div>
 
             </div>
           </div>
         </div>
+        }
       </div>
     );
   }
