@@ -26,8 +26,8 @@ Rails.application.routes.draw do
   end
 
   resources :app_users, only: [:create]
-
   resources :folders, only: [:index, :create]
+  resources :folder_apps, only: [:create]
 
   resources :user do
     collection do
