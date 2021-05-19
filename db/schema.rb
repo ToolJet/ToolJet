@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_19_071114) do
+ActiveRecord::Schema.define(version: 2021_05_19_084741) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -101,6 +101,15 @@ ActiveRecord::Schema.define(version: 2021_05_19_071114) do
     t.index ["integration_id"], name: "index_endpoints_on_integration_id"
   end
 
+  create_table "folder_apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "folder_id", null: false
+    t.uuid "app_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["app_id"], name: "index_folder_apps_on_app_id"
+    t.index ["folder_id"], name: "index_folder_apps_on_folder_id"
+  end
+
   create_table "folders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.uuid "organization_id", null: false
@@ -160,6 +169,8 @@ ActiveRecord::Schema.define(version: 2021_05_19_071114) do
   add_foreign_key "data_source_user_oauth2s", "users"
   add_foreign_key "data_sources", "apps"
   add_foreign_key "endpoints", "integrations"
+  add_foreign_key "folder_apps", "apps"
+  add_foreign_key "folder_apps", "folders"
   add_foreign_key "folders", "organizations"
   add_foreign_key "organization_users", "organizations"
   add_foreign_key "organization_users", "users"

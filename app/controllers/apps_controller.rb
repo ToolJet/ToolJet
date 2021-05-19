@@ -3,11 +3,21 @@ class AppsController < ApplicationController
 
   def index
     authorize App
-    @apps = App.where(organization: @current_user.organization)
-               .order('created_at desc')
-               .page(params[:page])
-               .per(10)
-               .includes(:user)
+
+    folder_id = params[:folder]
+
+    if folder_id.blank?
+      @apps = App.where(organization: @current_user.organization)
+    else
+      @folder = Folder.find folder_id
+      @apps = @folder.apps
+    end
+
+    @apps = @apps.order('created_at desc')
+    .page(params[:page])
+    .per(10)
+    .includes(:user)
+
     @meta = { 
       total_pages: @apps.total_pages,
       count: App.count,
