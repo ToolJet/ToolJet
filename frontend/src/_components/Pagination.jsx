@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 export const Pagination = function Pagination({
   currentPage, count, totalPages, pageChanged
@@ -21,7 +21,7 @@ export const Pagination = function Pagination({
     }
 
     return (<div className="card-footer d-flex align-items-center">
-        <p className="m-0 text-muted">Showing <span>1</span> to <span>8</span> of <span>{count}</span> entries</p>
+        <p className="m-0 text-muted">Showing <span>{ (currentPage - 1) * 10 + 1}</span> to <span>{currentPage * 10}</span> of <span>{count}</span> entries</p>
         <ul className="pagination m-0 ms-auto">
             <li className={`page-item ${currentPage ===  1 ? 'disabled' : ''}`}>
                 <a style={{cursor: 'pointer'}} className="page-link" onClick={gotoPreviousPage}>
