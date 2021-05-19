@@ -27,6 +27,8 @@ Rails.application.routes.draw do
 
   resources :app_users, only: [:create]
 
+  resources :folders, only: [:create]
+
   resources :user do
     collection do
       post '/set_password_from_token', to: 'users#set_password_from_token'

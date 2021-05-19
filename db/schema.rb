@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_10_191558) do
+ActiveRecord::Schema.define(version: 2021_05_19_071114) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -101,6 +101,14 @@ ActiveRecord::Schema.define(version: 2021_05_10_191558) do
     t.index ["integration_id"], name: "index_endpoints_on_integration_id"
   end
 
+  create_table "folders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name"
+    t.uuid "organization_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["organization_id"], name: "index_folders_on_organization_id"
+  end
+
   create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "identifier"
     t.string "name"
@@ -152,6 +160,7 @@ ActiveRecord::Schema.define(version: 2021_05_10_191558) do
   add_foreign_key "data_source_user_oauth2s", "users"
   add_foreign_key "data_sources", "apps"
   add_foreign_key "endpoints", "integrations"
+  add_foreign_key "folders", "organizations"
   add_foreign_key "organization_users", "organizations"
   add_foreign_key "organization_users", "users"
 end
