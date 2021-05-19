@@ -98,7 +98,7 @@ class Restapi extends React.Component {
                   <label className="form-label pt-2">{option}</label>
                 </div>
                 <div className="col-md-10">
-                  {options[option].map((pair, index) => (
+                  {(options[option] || []).map((pair, index) => (
                     <div className="input-group" key={index}>
                       <CodeHinter
                         currentState={this.props.currentState}
