@@ -3,7 +3,7 @@ import { folderService } from '@/_services';
 import { toast } from 'react-toastify';
 
 export const Folders = function Folders({
-  folders, foldersLoading, totalCount, currentFolder, folderChanged
+  folders, foldersLoading, totalCount, currentFolder, folderChanged, foldersChanged
 }) {
 
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
@@ -27,6 +27,7 @@ export const Folders = function Folders({
       setCreationStatus(false);
       setShowForm(false);
       setNewFolderName('');
+      foldersChanged();
     })
   }
 
