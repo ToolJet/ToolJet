@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService } from '@/_services';
+import { appService, folderService, authenticationService } from '@/_services';
 import { Link } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { Pagination } from '@/_components';
@@ -15,6 +15,7 @@ class HomePage extends React.Component {
       isLoading: true,
       creatingApp: false,
       apps: [],
+      folders: [],
       meta: {
         count: 1
       }
@@ -23,6 +24,7 @@ class HomePage extends React.Component {
 
   componentDidMount() {
     this.fetchApps(0);
+    this.fetchFolders();
   }
 
   fetchApps = (page) => {
@@ -35,6 +37,17 @@ class HomePage extends React.Component {
       apps: data.apps,
       meta: data.meta,
       isLoading: false
+    }));
+  }
+
+  fetchFolders = () => {
+    this.setState({
+      foldersLoading: true
+    })
+
+    folderService.getAll().then((data) => this.setState({
+      folders: data.folders,
+      foldersLoading: false
     }));
   }
 
@@ -158,7 +171,10 @@ class HomePage extends React.Component {
             <div className="row">              
               <div className="col-3">
                 <br />
-                <Folders/>
+                <Folders
+                  foldersLoading={this.state.foldersLoading}
+                  folders={this.state.folders}
+                />
               </div>
 
               <div className="col-md-9">
