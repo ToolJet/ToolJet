@@ -2,8 +2,18 @@ class AppsController < ApplicationController
   skip_before_action :authenticate_request, only: [:show]
 
   def index
+    sleep(4)
     authorize App
-    @apps = App.where(organization: @current_user.organization).order('created_at desc').includes(:user)
+    @apps = App.where(organization: @current_user.organization)
+               .order('created_at desc')
+               .page(params[:page])
+               .per(10)
+               .includes(:user)
+    @meta = { 
+      total_pages: @apps.total_pages,
+      count: App.count,
+      current_page: @apps.current_page   
+    }               
   end
 
   def create

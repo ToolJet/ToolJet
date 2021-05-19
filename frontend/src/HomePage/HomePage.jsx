@@ -3,6 +3,7 @@ import { appService, authenticationService } from '@/_services';
 import { Link } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton';
 import { history } from '@/_helpers';
+import { Pagination } from '@/_components';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -13,15 +14,32 @@ class HomePage extends React.Component {
       users: null,
       isLoading: true,
       creatingApp: false,
-      apps: []
+      apps: [],
+      meta: {
+        count: 1
+      }
     };
   }
 
   componentDidMount() {
-    appService.getAll().then((data) => this.setState({
+    this.fetchApps(0);
+  }
+
+  fetchApps = (page) => {
+    this.setState({
+      apps: [],
+      isLoading: true
+    })
+
+    appService.getAll(page).then((data) => this.setState({
       apps: data.apps,
+      meta: data.meta,
       isLoading: false
     }));
+  }
+
+  pageChanged = (page) => {
+    this.fetchApps(page);
   }
 
   createApp = () => {
@@ -40,7 +58,7 @@ class HomePage extends React.Component {
 
   render() {
     const {
-      apps, isLoading, creatingApp
+      apps, isLoading, creatingApp, meta
     } = this.state;
     return (
       <div className="wrapper home-page">
@@ -137,22 +155,18 @@ class HomePage extends React.Component {
 
         <div className="page-body homepage-body">
           <div className="container-xl">
-            <div className="row row-deck row-cards">              
-              <div className="col-md-2">
-
+            <div className="row">              
+              <div className="col-3">
+                <br />
+              
               </div>
 
-              <div className="col-md-8">
-                {isLoading && (
-                  <div className="row mt-3 w-100">
-                    <Skeleton count={3} />
-                  </div>
-                )}
-                {apps.length > 0 && (
+              <div className="col-md-9">
+                {meta.count > 0 && (
                     <div className="w-100 mb-5">
                       <div className="row align-items-center">
                         <div className="col">
-                          <h2 className="page-title">Your Applications</h2>
+                          <h2 className="page-title">Your applications</h2>
                         </div>
                       <div className="col-auto ms-auto d-print-none">
                         <button className={`btn btn-primary ${ creatingApp ? 'btn-loading' : ''}`} onClick={this.createApp}>+ App</button>
@@ -163,6 +177,27 @@ class HomePage extends React.Component {
                       <table
                         class="table table-vcenter">
                         <tbody>
+                          {isLoading && (
+                            <>
+                              {Array.from(Array(10)).map(() => (
+                                 <tr class="row">
+                                   <td class="col-3 p-3">
+                                      <div class="skeleton-line w-10"></div>
+                                      <div class="skeleton-line w-10"></div>
+                                    </td>
+                                    <td class="col p-3">
+                                    </td>
+                                    <td class="text-muted col-auto col-1 pt-4">
+                                      <div class="skeleton-line"></div>
+                                    </td>
+                                    <td class="text-muted col-auto col-1 pt-4">
+                                      <div class="skeleton-line"></div>
+                                    </td>
+                                 </tr>
+                               ))}
+                              
+                            </>
+                          )}
                           {apps.map((app) => (
                           <tr class="row">
                             <td class="col p-3">
@@ -175,7 +210,6 @@ class HomePage extends React.Component {
                                 target="_blank"
                               >
                                 <span class="badge bg-blue-lt mx-2">launch</span>
-
                               </Link>
                           
                               <Link
@@ -185,13 +219,18 @@ class HomePage extends React.Component {
 
                               </Link>
                           
-                              <span class="badge bg-red-lt mx-2">archive</span>
                             </td>
                           </tr>))
                           }
                         </tbody>
                       </table>
                     </div>
+                      <Pagination
+                        currentPage={meta.current_page}
+                        count={meta.count}
+                        totalPages={meta.total_pages}
+                        pageChanged={this.pageChanged}
+                      />
                   </div>
                 )}
               </div>

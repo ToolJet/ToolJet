@@ -11,9 +11,9 @@ export const appService = {
   setVisibility
 };
 
-function getAll() {
+function getAll(page) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps?page=${page}`, requestOptions).then(handleResponse);
 }
 
 function createApp() {
