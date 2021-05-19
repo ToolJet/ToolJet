@@ -179,7 +179,7 @@ class HomePage extends React.Component {
                 <br />
                 <Folders
                   foldersLoading={this.state.foldersLoading}
-                  totalCount={this.state.meta.count}
+                  totalCount={this.state.meta.total_count}
                   folders={this.state.folders}
                   currentFolder={currentFolder}
                   folderChanged={this.folderChanged}
@@ -187,7 +187,7 @@ class HomePage extends React.Component {
               </div>
 
               <div className="col-md-9">
-                {meta.count > 0 && (
+                {meta.folder_count > 0 && (
                     <div className="w-100 mb-5">
                       <div className="row align-items-center">
                         <div className="col">
@@ -243,7 +243,11 @@ class HomePage extends React.Component {
                                 <span class="badge bg-green-lt">Edit</span>
 
                               </Link>
-                          
+
+                              <span className="badge bg-blue-lt mx-2">
+                                <img src="https://www.svgrepo.com/show/12267/menu.svg" width="12" height="12" />
+                              </span>
+                             
                             </td>
                           </tr>))
                           }
@@ -252,7 +256,7 @@ class HomePage extends React.Component {
                     </div>
                       <Pagination
                         currentPage={meta.current_page}
-                        count={meta.count}
+                        count={meta.folder_count}
                         totalPages={meta.total_pages}
                         pageChanged={this.pageChanged}
                       />

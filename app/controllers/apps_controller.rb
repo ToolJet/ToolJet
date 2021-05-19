@@ -20,7 +20,8 @@ class AppsController < ApplicationController
 
     @meta = { 
       total_pages: @apps.total_pages,
-      count: @scope.count,
+      folder_count: @scope.count,
+      total_count: App.count,
       current_page: @apps.current_page   
     }               
   end
