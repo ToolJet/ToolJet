@@ -15,7 +15,7 @@ class AppPolicy < ApplicationPolicy
   end
 
   def update?
-    user.org_admin? || user.org_developer?
+    (user.organization_id === app.organization_id) && user.org_admin? || user.org_developer?
   end
 
   def show?
