@@ -7,20 +7,20 @@ class AppsController < ApplicationController
     folder_id = params[:folder]
 
     if folder_id.blank?
-      @apps = App.where(organization: @current_user.organization)
+      @scope = App.where(organization: @current_user.organization)
     else
       @folder = Folder.find folder_id
-      @apps = @folder.apps
+      @scope = @folder.apps
     end
 
-    @apps = @apps.order('created_at desc')
+    @apps = @scope.order('created_at desc')
     .page(params[:page])
     .per(10)
     .includes(:user)
 
     @meta = { 
       total_pages: @apps.total_pages,
-      count: App.count,
+      count: @scope.count,
       current_page: @apps.current_page   
     }               
   end
