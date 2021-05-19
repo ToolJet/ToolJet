@@ -23,7 +23,7 @@ export const Header = function Header({
         <span className="navbar-toggler-icon"></span>
       </button>
       <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-        <Link to={'/'} className="nav-link active">
+        <Link to={'/'}>
           <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
         </Link>
       </h1>
