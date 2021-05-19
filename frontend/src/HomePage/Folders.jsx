@@ -3,7 +3,7 @@ import { folderService } from '@/_services';
 import { toast } from 'react-toastify';
 
 export const Folders = function Folders({
-  folders, foldersLoading
+  folders, foldersLoading, totalCount, currentFolder, folderChanged
 }) {
 
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
@@ -15,6 +15,7 @@ export const Folders = function Folders({
   const [showForm, setShowForm] = useState(false);
   const [isCreating, setCreationStatus] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [activeFolder, setActiveFolder] = useState(currentFolder || {})
 
   function saveFolder() {
     setCreationStatus(true);
@@ -29,6 +30,11 @@ export const Folders = function Folders({
     })
   }
 
+  function handleFolderChange(folder) {
+    setActiveFolder(folder);
+    folderChanged(folder);
+  }
+
   return (<div className="w-100 mt-4 px-3 card">
     {isLoading && (
       <div className="p-5">
@@ -41,17 +47,24 @@ export const Folders = function Folders({
     {!isLoading && (
       <div className="list-group list-group-transparent mb-3">
 
-        <a class="list-group-item list-group-item-action d-flex align-items-center active" href="#">
+        <a 
+          class={`list-group-item list-group-item-action d-flex align-items-center ${!activeFolder.id ? 'active' : ''}`}
+          
+          onClick={() => handleFolderChange({})}
+        >
           All applications
             <small className="text-muted ms-auto">
-            <span class="badge bg-azure-lt">0</span>
+            <span class="badge bg-azure-lt">{totalCount}</span>
           </small>
         </a>
         {folders.map((folder) => 
-          <a class="list-group-item list-group-item-action d-flex align-items-center" href="#">
-          {folder.name}
+          <a 
+            class={`list-group-item list-group-item-action d-flex align-items-center ${activeFolder.id === folder.id ? 'active' : ''}`} 
+            onClick={() => handleFolderChange(folder)}
+          >
+            {folder.name}
             <small className="text-muted ms-auto">
-              <span class="badge bg-azure-lt">0</span>
+              <span class="badge bg-azure-lt">{folder.count}</span>
           </small>
         </a>
         )}
