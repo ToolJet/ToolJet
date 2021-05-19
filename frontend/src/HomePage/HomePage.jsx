@@ -14,6 +14,7 @@ class HomePage extends React.Component {
       users: null,
       isLoading: true,
       creatingApp: false,
+      currentFolder: {},
       apps: [],
       folders: [],
       meta: {
@@ -23,17 +24,17 @@ class HomePage extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchApps(0);
+    this.fetchApps(0, this.state.currentFolder.id);
     this.fetchFolders();
   }
 
-  fetchApps = (page) => {
+  fetchApps = (page, folder) => {
     this.setState({
       apps: [],
       isLoading: true
     })
 
-    appService.getAll(page).then((data) => this.setState({
+    appService.getAll(page, folder).then((data) => this.setState({
       apps: data.apps,
       meta: data.meta,
       isLoading: false
@@ -52,7 +53,12 @@ class HomePage extends React.Component {
   }
 
   pageChanged = (page) => {
-    this.fetchApps(page);
+    this.fetchApps(page, this.state.currentFolder.id);
+  }
+
+  folderChanged = (folder) => {
+    this.setState({'currentFolder': folder});
+    this.fetchApps(0, folder.id);
   }
 
   createApp = () => {
@@ -71,7 +77,7 @@ class HomePage extends React.Component {
 
   render() {
     const {
-      apps, isLoading, creatingApp, meta
+      apps, isLoading, creatingApp, meta, currentFolder
     } = this.state;
     return (
       <div className="wrapper home-page">
@@ -173,7 +179,10 @@ class HomePage extends React.Component {
                 <br />
                 <Folders
                   foldersLoading={this.state.foldersLoading}
+                  totalCount={this.state.meta.count}
                   folders={this.state.folders}
+                  currentFolder={currentFolder}
+                  folderChanged={this.folderChanged}
                 />
               </div>
 
