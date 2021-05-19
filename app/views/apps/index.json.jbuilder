@@ -6,3 +6,5 @@ json.apps do
     json.user app.user || {}
   end
 end
+
+json.meta @meta.as_json
