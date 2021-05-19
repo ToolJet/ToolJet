@@ -1,9 +1,9 @@
 import React from 'react';
 import { appService, authenticationService } from '@/_services';
 import { Link } from 'react-router-dom';
-import Skeleton from 'react-loading-skeleton';
 import { history } from '@/_helpers';
 import { Pagination } from '@/_components';
+import { Folders } from './Folders';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -158,32 +158,7 @@ class HomePage extends React.Component {
             <div className="row">              
               <div className="col-3">
                 <br />
-              <div className="w-100 mt-4 px-3 card">
-
-                {isLoading && (
-                  <div className="p-5">
-                    <center>
-                      <div class="spinner-border text-azure" role="status"></div>
-                    </center>
-                  </div>
-                )}
-
-                {!isLoading && (
-                  <div class="list-group list-group-transparent mb-3">
-
-                    <a class="list-group-item list-group-item-action d-flex align-items-center active" href="#">
-                      All applications
-                      <small class="text-muted ms-auto">
-                        <span class="badge bg-azure-lt">{meta.count}</span>
-                      </small>
-                    </a>
-                    <a class="list-group-item list-group-item-action d-flex align-items-center" href="#">
-                      + Folder
-                    </a>
-                  </div>
-                )}
-                </div>
-
+                <Folders/>
               </div>
 
               <div className="col-md-9">
@@ -191,7 +166,7 @@ class HomePage extends React.Component {
                     <div className="w-100 mb-5">
                       <div className="row align-items-center">
                         <div className="col">
-                          <h2 className="page-title">Your applications</h2>
+                          <h2 className="page-title">App applications</h2>
                         </div>
                       <div className="col-auto ms-auto d-print-none">
                         <button className={`btn btn-primary ${ creatingApp ? 'btn-loading' : ''}`} onClick={this.createApp}>+ App</button>
