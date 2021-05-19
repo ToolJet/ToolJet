@@ -158,7 +158,32 @@ class HomePage extends React.Component {
             <div className="row">              
               <div className="col-3">
                 <br />
-              
+              <div className="w-100 mt-4 px-3 card">
+
+                {isLoading && (
+                  <div className="p-5">
+                    <center>
+                      <div class="spinner-border text-azure" role="status"></div>
+                    </center>
+                  </div>
+                )}
+
+                {!isLoading && (
+                  <div class="list-group list-group-transparent mb-3">
+
+                    <a class="list-group-item list-group-item-action d-flex align-items-center active" href="#">
+                      All applications
+                      <small class="text-muted ms-auto">
+                        <span class="badge bg-azure-lt">{meta.count}</span>
+                      </small>
+                    </a>
+                    <a class="list-group-item list-group-item-action d-flex align-items-center" href="#">
+                      + Folder
+                    </a>
+                  </div>
+                )}
+                </div>
+
               </div>
 
               <div className="col-md-9">
