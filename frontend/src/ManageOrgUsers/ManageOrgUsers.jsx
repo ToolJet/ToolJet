@@ -1,7 +1,7 @@
 import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import 'react-toastify/dist/ReactToastify.css';
-import { Link } from 'react-router-dom';
+import { Header } from '@/_components';
 import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
@@ -88,68 +88,8 @@ class ManageOrgUsers extends React.Component {
 
     return (
       <div className="wrapper org-users-page">
-        <header className="navbar navbar-expand-md navbar-light d-print-none">
-          <div className="container-xl">
-            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-              <span className="navbar-toggler-icon"></span>
-            </button>
-            <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-              <a href=".">
-                <img src="/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
-              </a>
-            </h1>
-            <ul className="navbar-nav">
-              <li className="nav-item">
-                <Link to={'/'} className="nav-link">
-                  <span className="nav-link-title">
-                    <img src="https://www.svgrepo.com/show/309806/office-apps.svg" className="mx-2" width="12" height="12" /> Apps
-                  </span>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to={'/users'} className="nav-link active">
-                  <span className="nav-link-title">
-                    <img src="https://www.svgrepo.com/show/154834/users.svg" className="mx-2" width="12" height="12" />Users
-                    </span>
-                </Link>
-              </li>
-            </ul>
-            <div className="navbar-nav flex-row order-md-last">
-              <div className="nav-item dropdown d-none d-md-flex me-3">
-                <div className="dropdown-menu dropdown-menu-end dropdown-menu-card">
-                  <div className="card">
-                    <div className="card-body">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus ad amet consectetur
-                      exercitationem fugiat in ipsa ipsum, natus odio quidem quod repudiandae sapiente. Amet debitis et
-                      magni maxime necessitatibus ullam.
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="nav-item dropdown">
-                <a
-                  href="#"
-                  className="nav-link d-flex lh-1 text-reset p-0"
-                  data-bs-toggle="dropdown"
-                  aria-label="Open user menu"
-                >
-                  <div className="d-none d-xl-block ps-2">
-                    {/* <div>{this.state.currentUser.first_name}</div> */}
-                    <span onClick={this.logout}>Logout</span>
-                  </div>
-                </a>
-                <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <a href="#" className="dropdown-item">
-                    Settings
-                  </a>
-                  <a href="#" className="dropdown-item">
-                    Logout
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
+
+        <Header/>   
 
         <div className="page-wrapper">
           <div className="container-xl">

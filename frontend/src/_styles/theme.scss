@@ -1425,3 +1425,16 @@ body {
     transform: rotate(-45deg);
   }
 }
+
+.nav-link-title {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.navbar-nav {
+  .dropdown:hover {
+    .dropdown-menu { 
+      display: block;
+    }
+  }
+}
