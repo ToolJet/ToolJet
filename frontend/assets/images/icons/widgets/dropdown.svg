@@ -2,7 +2,7 @@
 <svg width="156px" height="98px" viewBox="0 0 156 98" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>dropdown selector</title>
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="dropdown-selector" fill="#000000" fill-rule="nonzero">
+        <g id="dropdown-selector" fill="#434b53" fill-rule="nonzero">
             <g id="Group" transform="translate(11.000000, 50.000000)">
                 <path d="M80.003,27.916 L4.328,27.916 C2.395,27.916 0.828,26.349 0.828,24.416 C0.828,22.482 2.395,20.916 4.328,20.916 L80.003,20.916 C81.936,20.916 83.503,22.482 83.503,24.416 C83.503,26.349 81.936,27.916 80.003,27.916 Z" id="Path"></path>
                 <path d="M80.003,7.916 L4.328,7.916 C2.395,7.916 0.828,6.349 0.828,4.416 C0.828,2.482 2.395,0.916 4.328,0.916 L80.003,0.916 C81.936,0.916 83.503,2.482 83.503,4.416 C83.503,6.349 81.936,7.916 80.003,7.916 Z" id="Path"></path>

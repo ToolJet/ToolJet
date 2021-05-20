@@ -2,7 +2,7 @@
 <svg width="120px" height="106px" viewBox="0 0 120 106" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>multiselect</title>
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="multiselect" fill="#000000" fill-rule="nonzero">
+        <g id="multiselect" fill="#434b53" fill-rule="nonzero">
             <g id="Group" transform="translate(40.000000, 1.000000)">
                 <path d="M75.539,6.999 L4.392,6.999 C2.458,6.999 0.892,5.433 0.892,3.499 C0.892,1.566 2.458,-0.001 4.392,-0.001 L75.539,-0.001 C77.472,-0.001 79.039,1.566 79.039,3.499 C79.039,5.433 77.472,6.999 75.539,6.999 Z" id="Path"></path>
                 <path d="M39.966,21.999 L4.392,21.999 C2.458,21.999 0.892,20.433 0.892,18.499 C0.892,16.566 2.458,14.999 4.392,14.999 L39.966,14.999 C41.899,14.999 43.466,16.566 43.466,18.499 C43.466,20.433 41.898,21.999 39.966,21.999 Z" id="Path"></path>
