@@ -13,11 +13,11 @@ export const Transformation = ({ changeOption, options, currentState }) => {
 // return value will be set as data and the original data will be available as rawData
 return data.filter(row => row.amount > 1000);`;
 
-  const [value, setValue] = useState(defaultValue);
+  // const [value, setValue] = useState(defaultValue);
 
-  useEffect(() => {
-    setValue(defaultValue);
-  }, [defaultValue]);
+  // useEffect(() => {
+  //   setValue(defaultValue);
+  // }, [defaultValue]);
 
   function codeChanged(value) {
     changeOption('transformation', value);
@@ -49,7 +49,7 @@ return data.filter(row => row.amount > 1000);`;
             fontSize="1"
             onChange={(editor) => handleChange(editor, codeChanged, suggestions)}
             onBeforeChange={(editor, change) => onBeforeChange(editor, change)}
-            value={value}
+            value={defaultValue}
             options={{
               theme: 'base16-light',
               mode: 'javascript',
