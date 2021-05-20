@@ -1,5 +1,5 @@
 import React from 'react';
-import { getToolTipProps } from './utils';
+import { ToolTip } from './Components/ToolTip';
 
 export const Toggle = ({
   param, definition, onChange, paramType, componentMeta
@@ -17,9 +17,7 @@ export const Toggle = ({
               onClick={() => onChange(param, 'value', !value, paramType)}
               checked={value}
             />
-            <span {...getToolTipProps(paramMeta)} className="form-check-label">
-                {displayName}
-            </span>
+            <ToolTip label={displayName} meta={paramMeta} labelClass="form-check-label"/>
         </label>
     </div>
   );

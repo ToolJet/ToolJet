@@ -545,7 +545,7 @@ class Editor extends React.Component {
                     </div>
                     <div className="col-md-3">
                       <span
-                        className="btn btn-light btn-sm"
+                        className="btn btn-light btn-sm text-muted"
                         data-tip="Add new datasource"
                         onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })}
                       >
@@ -641,7 +641,7 @@ class Editor extends React.Component {
 
                           <span
                             data-tip="Add new query"
-                            className="btn btn-sm btn-light"
+                            className="btn btn-sm btn-light  text-muted"
                             onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })}
                           >
                             +
