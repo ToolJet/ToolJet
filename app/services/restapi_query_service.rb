@@ -13,6 +13,7 @@ class RestapiQueryService
     url = options['url']
     method = options['method']
     headers = options['headers'].reject { |header| header[0].empty? }
+    headers = headers.to_h
     body = options['body']
     url_params = options['url_params']
 
@@ -30,7 +31,7 @@ class RestapiQueryService
 
       if source_options['add_token_to'] === 'header'
         headers = {
-          **headers.to_h,
+          **headers,
           'Authorization': "Bearer #{token}"
         }
       end
