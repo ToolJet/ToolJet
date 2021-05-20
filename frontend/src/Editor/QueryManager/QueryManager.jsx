@@ -280,7 +280,7 @@ class QueryManager extends React.Component {
                 onClick={this.props.toggleQueryPaneHeight}
                 data-tip="Maximize query editor"
               >
-                <img src="https://www.svgrepo.com/show/129993/expand.svg" width="12" height="12" />
+                <img src="https://www.svgrepo.com/show/310311/arrow-maximize.svg" width="12" height="12" />
               </span>
             ) : (
               <span
