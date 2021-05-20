@@ -404,20 +404,20 @@ class Editor extends React.Component {
                 )}
                 <div className="editor-buttons">
                   <span
-                    className="btn btn-light mx-2"
+                    className={`btn ${showLeftSidebar ? 'btn-light' : 'btn-default'} mx-2`}
                     onClick={this.toggleLeftSidebar}
                     data-tip={showLeftSidebar ? 'Hide left sidebar' : 'Show left sidebar'}
                   >
-                    <img src="https://www.svgrepo.com/show/315785/sidebar-open.svg" width="12" height="12" />
+                    <img src="/assets/images/icons/editor/sidebar-toggle.svg" width="12" height="12" />
                   </span>
                   <span
-                    className="btn btn-light mx-2"
+                    className={`btn ${showQueryEditor ? 'btn-light' : 'btn-default'} mx-2`}
                     onClick={this.toggleQueryEditor}
                     data-tip={showQueryEditor ? 'Hide query editor' : 'Show query editor'}
                   >
                     <img
                       style={{ transform: 'rotate(-90deg)' }}
-                      src="https://www.svgrepo.com/show/315785/sidebar-open.svg"
+                      src="/assets/images/icons/editor/sidebar-toggle.svg"
                       width="12"
                       height="12"
                     />
