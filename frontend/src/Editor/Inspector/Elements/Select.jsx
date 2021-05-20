@@ -1,5 +1,5 @@
 import React from 'react';
-import { getToolTipProps } from './utils';
+import { ToolTip } from './Components/ToolTip';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const Select = ({
@@ -13,7 +13,7 @@ export const Select = ({
 
   return (
     <div className="field mb-3">
-      <label {...getToolTipProps(paramMeta)} className="form-label">{displayName}</label>
+      <ToolTip label={displayName} meta={paramMeta}/>
       <SelectSearch
         options={options}
         value={value}

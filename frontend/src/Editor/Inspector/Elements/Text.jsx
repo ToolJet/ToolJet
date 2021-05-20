@@ -1,5 +1,5 @@
 import React from 'react';
-import { getToolTipProps } from './utils';
+import { ToolTip } from './Components/ToolTip';
 
 export const Text = ({
   param, definition, onChange, paramType, componentMeta
@@ -10,7 +10,7 @@ export const Text = ({
   
   return (
     <div className="field mb-3">
-      <label {...getToolTipProps(paramMeta)} className="form-label">{displayName}</label>
+      <ToolTip label={displayName} meta={paramMeta}/>
       <input
         type="text"
         onChange={(e) => onChange(param, 'value', e.target.value, paramType)}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-import { getToolTipProps } from './utils';
+import { ToolTip } from './Components/ToolTip';
 
 export const Code = ({
   param, definition, onChange, paramType, dataQueries, components, componentMeta, currentState
@@ -17,7 +17,7 @@ export const Code = ({
 
   return (
     <div className={`mb-2 field ${options.className}`}>
-      <label {...getToolTipProps(paramMeta)}  className="form-label">{displayName}</label>
+      <ToolTip label={displayName} meta={paramMeta}/>
       <CodeHinter
           currentState={currentState}
           initialValue={initialValue}
