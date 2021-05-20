@@ -21,7 +21,7 @@ class AppsController < ApplicationController
     @meta = { 
       total_pages: @apps.total_pages,
       folder_count: @scope.count,
-      total_count: App.count,
+      total_count: App.where(organization: @current_user.organization).count,
       current_page: @apps.current_page   
     }               
   end
