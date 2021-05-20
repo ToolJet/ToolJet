@@ -32,7 +32,7 @@ return <div className="config-handle" ref={dragRef}>
           role="button"
           className="mx-2"
           height="12" 
-          onClick={removeComponent}
+          onClick={() => removeComponent({id})}
           style={{marginRight: '5px'}}
         />
     </div>
