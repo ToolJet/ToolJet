@@ -283,13 +283,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         let rawData = data.data;
         let finalData = data.data;
 
-        if (options.enableTransformation) {
-          finalData = runTransformation(_self, rawData, options.transformation);
+        if (dataQuery.options.enableTransformation) {
+          finalData = runTransformation(_self, rawData, dataQuery.options.transformation);
         }
 
-        if (options.showSuccessNotification) {
-          const notificationDuration = options.notificationDuration || 5;
-          toast.success(options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 });
+        if (dataQuery.options.showSuccessNotification) {
+          const notificationDuration = dataQuery.options.notificationDuration || 5;
+          toast.success(dataQuery.options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 });
         }
 
         _self.setState({
