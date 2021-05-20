@@ -48,8 +48,8 @@ class AppsController < ApplicationController
   end
 
   def update
-    authorize App
     @app = App.find params[:id]
+    authorize @app
     @app.update(params['app'].permit('name', 'current_version_id', 'is_public'))
   end
 
