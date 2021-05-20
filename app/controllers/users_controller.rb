@@ -5,7 +5,7 @@ class UsersController < ApplicationController
     user = User.where(invitation_token: params[:token]).first
 
     if user
-      user.update(password: params[:password], invitation_token: nil)
+      user.update(first_name: params[:first_name], last_name: params[:last_name], password: params[:password], invitation_token: nil)
       user.organization_users.first.update(status: 'active')
 
       if params[:new_signup]
