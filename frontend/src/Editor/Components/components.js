@@ -1,6 +1,5 @@
 export const componentTypes = [
   {
-    icon: 'https://www.svgrepo.com/show/54455/table.svg',
     name: 'Table',
     displayName: 'Table',
     description: 'Display paginated tabular data',
@@ -71,7 +70,7 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/255901/cursor-click.svg',
+    icon: '/assets/images/icons/button.svg',
     name: 'Button',
     displayName: 'Button',
     description: 'Trigger actions: queries, alerts etc',

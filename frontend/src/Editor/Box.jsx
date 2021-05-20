@@ -92,7 +92,8 @@ export const Box = function Box({
                 width: '20px',
                 height: '20px',
                 backgroundSize: 'contain',
-                backgroundImage: `url(${component.icon})`
+                backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                backgroundRepeat: 'no-repeat'
               }}
             ></div>
           </div>
