@@ -54,25 +54,30 @@ export const Chart = function Chart({
     }
   }
 
-  useEffect(() => {
-    let data =  resolveReferences(dataString, currentState, []);
+  const data = resolveReferences(dataString, currentState, []);
 
-    if(typeof data === 'string') {
+  useEffect(() => {
+
+    let rawData = data || [];
+    
+    if(typeof rawData === 'string') {
       try {
-        data = JSON.parse(dataString);
-      } catch (err) { data = []; }
+        rawData = JSON.parse(dataString);
+      } catch (err) { rawData = []; }
     }
+
+    if(!Array.isArray(rawData)) { rawData = []; }
 
     const newData = [{
       type: chartType || 'line',
-      x: data.map((item) => item["x"]),
-      y: data.map((item) => item["y"]),
+      x: rawData.map((item) => item["x"]),
+      y: rawData.map((item) => item["y"]),
       marker: { color: markerColor }
     }];
 
     setChartData(newData);
     
-  }, [dataString]);
+  }, [data]);
 
   return (
     <div
