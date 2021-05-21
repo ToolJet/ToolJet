@@ -138,11 +138,17 @@ class Editor extends React.Component {
               });
 
               // Select first query by default
-              let selectedQuery = null;
+              let selectedQuery = this.state.selectedQuery;
               let editingQuery = false;
-              if (data.data_queries.length > 0) {
-                selectedQuery = data.data_queries[0];
+
+              if(selectedQuery) {
+                data.data_queries.find((dq) => dq.id === selectedQuery.id);
                 editingQuery = true;
+              } else { 
+                if (data.data_queries.length > 0) {
+                  selectedQuery = data.data_queries[0];
+                  editingQuery = true;
+                }
               }
 
               this.setState({
