@@ -94,7 +94,7 @@ export const Chart = function Chart({
           layout={layout}
           config={{
             displayModeBar: false,
-            staticPlot: true
+            // staticPlot: true
           }}
         />
       } 
