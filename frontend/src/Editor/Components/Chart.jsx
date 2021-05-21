@@ -9,6 +9,7 @@ export const Chart = function Chart({
   console.log('currentState', currentState);
 
   const [loadingState, setLoadingState] = useState(false);
+  const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     const loadingStateProperty = component.definition.properties.loadingState;
@@ -27,11 +28,6 @@ export const Chart = function Chart({
   const dataProperty = component.definition.properties.data;
   const dataString = dataProperty ? dataProperty.value : [];
 
-  let data = [];
-  try {
-    data = JSON.parse(dataString);
-  } catch (err) { console.log(err); }
-
   const titleProperty = component.definition.properties.title;
   const title = titleProperty.value;
 
@@ -43,13 +39,6 @@ export const Chart = function Chart({
 
   const gridLinesProperty = component.definition.properties.showGridLines;
   const showGridLines = gridLinesProperty ? gridLinesProperty.value : true;
-
-  const chartData = [{
-    type: chartType || 'line',
-    x: data.map((item) => item["x"]),
-    y: data.map((item) => item["y"]),
-    marker: { color: markerColor }
-  }];
 
   const layout = {
     width, 
@@ -64,6 +53,26 @@ export const Chart = function Chart({
         showline: true
     }
   }
+
+  useEffect(() => {
+    let data =  resolveReferences(dataString, currentState, []);
+
+    if(typeof data === 'string') {
+      try {
+        data = JSON.parse(dataString);
+      } catch (err) { data = []; }
+    }
+
+    const newData = [{
+      type: chartType || 'line',
+      x: data.map((item) => item["x"]),
+      y: data.map((item) => item["y"]),
+      marker: { color: markerColor }
+    }];
+
+    setChartData(newData);
+    
+  }, [dataString]);
 
   return (
     <div
