@@ -91,39 +91,39 @@ class Restapi extends React.Component {
             </div>
           </div>
 
-          {['url_params', 'headers', 'body'].map((option) => (
+          {[{name: 'URL parameters', value: 'url_params'},{name: 'Headers', value: 'headers'},{name: 'Body', value: 'body'}].map((option) => (
             <div className="mb-3" key={option}>
               <div className="row g-2">
                 <div className="col-md-2">
-                  <label className="form-label pt-2">{option}</label>
+                  <label className="form-label pt-2">{option.name}</label>
                 </div>
                 <div className="col-md-10">
-                  {(options[option] || []).map((pair, index) => (
+                  {(options[option.value] || []).map((pair, index) => (
                     <div className="input-group" key={index}>
                       <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={pair[0]}
                         className="form-control codehinter-query-editor-input"
-                        onChange={(value) => this.keyValuePairValueChanged(value, 0, option, index)}
+                        onChange={(value) => this.keyValuePairValueChanged(value, 0, option.value, index)}
                       />
                       <CodeHinter
                         currentState={this.props.currentState}
                         className="form-control codehinter-query-editor-input"
                         initialValue={pair[1]}
-                        onChange={(value) => this.keyValuePairValueChanged(value, 1, option, index)}
+                        onChange={(value) => this.keyValuePairValueChanged(value, 1, option.value, index)}
                       />
                       <span
                         className="input-group-text btn-sm"
                         role="button"
                         onClick={() => {
-                          this.removeKeyValuePair(option, index);
+                          this.removeKeyValuePair(option.value, index);
                         }}
                       >
                         x
                       </span>
                     </div>
                   ))}
-                  <button className="btn btn-outline-azure btn-sm" onClick={() => this.addNewKeyValuePair(option)}>
+                  <button className="btn btn-sm btn-outline-azure" onClick={() => this.addNewKeyValuePair(option.value)}>
                     + Add new
                   </button>
                 </div>
