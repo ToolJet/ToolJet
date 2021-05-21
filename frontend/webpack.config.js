@@ -4,7 +4,7 @@ const path = require('path');
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const API_URL = {
-  production: 'https://cryptic-sea-27486.herokuapp.com',
+  production: 'https://server.tooljet.io',
   development: 'http://localhost:3000'
 };
 
