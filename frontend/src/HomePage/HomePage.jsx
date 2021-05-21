@@ -137,7 +137,7 @@ class HomePage extends React.Component {
                       </div>
                     </div>
 
-                    <div class="table-responsive bg-white w-100 apps-table mt-3">
+                    <div class="table-responsive bg-white w-100 apps-table mt-3" style={{minHeight: '600px'}}>
                       <table
                         class="table table-vcenter">
                         <tbody>
