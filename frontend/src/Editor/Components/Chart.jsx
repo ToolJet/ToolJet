@@ -26,7 +26,11 @@ export const Chart = function Chart({
 
   const dataProperty = component.definition.properties.data;
   const dataString = dataProperty ? dataProperty.value : [];
-  const data = JSON.parse(dataString);
+
+  let data = [];
+  try {
+    data = JSON.parse(dataString);
+  } catch (err) { console.log(err); }
 
   const titleProperty = component.definition.properties.title;
   const title = titleProperty.value;
