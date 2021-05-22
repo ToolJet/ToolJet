@@ -304,6 +304,7 @@ body {
 
       .query-row {
         cursor: pointer;
+        --tblr-gutter-x: 0rem;
         .query-copy-button {
           display: none;
         }
@@ -1460,5 +1461,15 @@ body {
     .dropdown-menu { 
       display: block;
     }
+  }
+}
+
+.query-manager-header { 
+  .nav-item { 
+    border-right: solid 1px #dadcde;
+  }
+
+  .nav-link { 
+    height: 39px;
   }
 }
