@@ -1,12 +1,12 @@
 class RestapiQueryService
   attr_accessor :data_query, :options, :source_options, :current_user, :data_source
 
-  def initialize(data_query, options, source_options, current_user)
+  def initialize(data_query, data_source, options, source_options, current_user)
     @data_query = data_query
     @options = options
     @source_options = source_options
     @current_user = current_user
-    @data_source = data_query.data_source
+    @data_source = data_source
   end
 
   def process

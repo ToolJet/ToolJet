@@ -1,21 +1,21 @@
 class GooglesheetsQueryService
   attr_accessor :query, :source, :options, :source_options, :current_user
 
-  def initialize(data_query, options, source_options, current_user)
+  def initialize(data_query, data_source, options, source_options, current_user)
     @query = data_query
-    @source = query.data_source
+    @source = data_source
     @options = options
     @source_options = source_options
     @current_user = current_user
   end
 
   def process
-    operation = query.options['operation']
+    operation = options['operation']
     access_token = source_options['access_token']
     error = false
 
     if operation === 'info'
-      spreadsheet_id = query.options['spreadsheet_id']
+      spreadsheet_id = options['spreadsheet_id']
       result = get_spreadsheet_info(spreadsheet_id, access_token)
 
       if result.code === 401
@@ -29,8 +29,8 @@ class GooglesheetsQueryService
 
     if operation === 'append'
 
-      spreadsheet_id = query.options['spreadsheet_id']
-      sheet = query.options['sheet']
+      spreadsheet_id = options['spreadsheet_id']
+      sheet = options['sheet']
       rows = options['rows']
 
       result = append_data_to_sheet(spreadsheet_id, sheet, rows, access_token)
@@ -94,8 +94,8 @@ class GooglesheetsQueryService
     end
 
     def read_data(access_token)
-      spreadsheet_id = query.options['spreadsheet_id']
-      sheet = query.options['sheet']
+      spreadsheet_id = options['spreadsheet_id']
+      sheet = options['sheet']
 
       read_data_from_sheet(spreadsheet_id, sheet, access_token, 'A1:V101')
     end
