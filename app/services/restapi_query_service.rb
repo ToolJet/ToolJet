@@ -12,7 +12,7 @@ class RestapiQueryService
   def process
     url = options['url']
     method = options['method']
-    headers = options['headers'].reject { |header| header[0].empty? }
+    headers = (options['headers'] || []).reject { |header| header[0].empty? }
     headers = headers.to_h
     body = options['body']
     url_params = options['url_params']
