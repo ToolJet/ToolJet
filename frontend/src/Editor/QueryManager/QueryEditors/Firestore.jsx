@@ -172,17 +172,17 @@ class Firestore extends React.Component {
                 </div>
                 <hr />
                 <div className="row">
-                  <h3 className="text-muted">Where condition</h3>
+                  <label className="form-label">Where condition</label>
                   <div className="col">
-                    <label className="form-label">Field</label>
+                    <h5 className="text-muted">Field</h5>
                     <CodeHinter
                       currentState={this.props.currentState}
                       initialValue={this.state.options.where_field}
                       onChange={(value) => this.changeOption('where_field', value)}
                     />
                   </div>
-                  <div className="col">
-                    <label className="form-label">Operator</label>
+                  <div className="col-auto">
+                    <h5 className="text-muted">Operator</h5>
                     <select
                       onChange={(e) => {
                         e.stopPropagation();
@@ -190,7 +190,7 @@ class Firestore extends React.Component {
                       }}
                       placeholder="Select a value"
                       value={this.state.options.where_operation}
-                      className="form-select"
+                      className="form-select form-select-md"
                     >
                       <option value="==">==</option>
                       <option value="<">{'<'}</option>
@@ -203,7 +203,7 @@ class Firestore extends React.Component {
                     </select>
                   </div>
                   <div className="col">
-                    <label className="form-label">Value</label>
+                    <h5 className="text-muted">Value</h5>
                     <CodeHinter
                       currentState={this.props.currentState}
                       initialValue={this.state.options.where_value}
