@@ -358,9 +358,9 @@ class QueryManager extends React.Component {
                             style={{ fontSize: '0.7rem' }}
                             enableClipboard={false}
                             src={queryPreviewData}
-                            displayDataTypes={false}
-                            collapsed={true}
-                            displayObjectSize={false}
+                            displayDataTypes={true}
+                            collapsed={false}
+                            displayObjectSize={true}
                             quotesOnKeys={false}
                             sortKeys={true}
                             indentWidth={1}
