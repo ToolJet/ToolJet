@@ -23,7 +23,7 @@ class QueryService
 
     parsed_query_options = get_query_options(data_query[:options])
 
-    service_class = "#{data_query[:kind].capitalize}QueryService".constantize
+    service_class = "#{data_source[:kind].capitalize}QueryService".constantize
     service = service_class.new data_query, data_source, parsed_query_options, parsed_options, current_user
     service.process
   end
