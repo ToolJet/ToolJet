@@ -1193,6 +1193,22 @@ body {
   .CodeMirror {
     font-family: 'Roboto', sans-serif;
     color: #263136;
+    overflow: hidden;
+    height: 50px!important;
+  }
+
+  .CodeMirror-vscrollbar {
+    overflow: hidden;
+  }
+
+  .CodeMirror-focused {
+    padding-top: 0;
+    height: 50px;
+  }
+
+  .CodeMirror-scroll { 
+    position: absolute;
+    top: 0;
   }
 }
 
@@ -1203,6 +1219,7 @@ body {
     .form-control {
       .CodeMirror {
           font-family: 'Roboto', sans-serif;
+          height: 50px!important;
       }
     }
 
