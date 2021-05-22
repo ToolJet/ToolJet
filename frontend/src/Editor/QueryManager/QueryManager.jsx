@@ -7,6 +7,7 @@ import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { defaultOptions } from './constants';
+import ReactJson from 'react-json-view';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -32,7 +33,9 @@ class QueryManager extends React.Component {
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         queryPaneHeight: props.queryPaneHeight,
-        currentState: props.currentState
+        currentState: props.currentState,
+        previewLoading: props.previewLoading,
+        queryPreviewData: props.queryPreviewData
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -188,7 +191,9 @@ class QueryManager extends React.Component {
       selectedQuery,
       queryPaneHeight,
       currentState,
-      queryName
+      queryName,
+      previewLoading,
+      queryPreviewData
     } = this.state;
 
     let ElementToRender = '';
@@ -254,7 +259,16 @@ class QueryManager extends React.Component {
             </div>
           )}
           <div className="col-auto">
-            
+            {(addingQuery || editingQuery) && selectedQuery && (
+              <span
+                onClick={() => this.props.previewQuery(selectedQuery)}
+                className={`btn btn-secondary m-1 float-right1 ${
+                  previewLoading ? ' btn-loading' : ''
+                }`}
+              >
+                Preview
+              </span>
+            )}
             {(addingQuery || editingQuery) && (
               <button
                 onClick={this.createOrUpdateDataQuery}
@@ -316,6 +330,30 @@ class QueryManager extends React.Component {
                     <hr></hr>
                     <div className="mb-3 mt-2">
                       <Transformation changeOption={this.optionchanged} options={this.state.options} currentState={currentState}/>
+                    </div>
+                    <div className="row header border-top">
+                      <div className="py-2">
+                        Preview
+                      </div>
+                    </div>
+                    <div className="mb-3 mt-2">
+                      {previewLoading && <div class="spinner-border text-azure" role="status"></div>}
+                      {previewLoading === false && 
+                        <div>
+                          <ReactJson
+                            name={false}
+                            style={{ fontSize: '0.7rem' }}
+                            enableClipboard={false}
+                            src={queryPreviewData}
+                            displayDataTypes={false}
+                            collapsed={true}
+                            displayObjectSize={false}
+                            quotesOnKeys={false}
+                            sortKeys={true}
+                            indentWidth={1}
+                          />
+                        </div>
+                      }
                     </div>
                   </div>
                 )}

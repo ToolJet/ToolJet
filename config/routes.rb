@@ -15,6 +15,10 @@ Rails.application.routes.draw do
 
   resources :data_queries, only: %i[create index update] do
     post '/run', to: 'data_queries#run'
+
+    collection do
+      post '/preview', to: 'data_queries#preview'
+    end
   end
 
   resources :organizations, only: [] do

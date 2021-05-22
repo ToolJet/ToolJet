@@ -9,7 +9,7 @@ class QueryService
 
   def process
     parsed_options = {}
-    data_source = data_query.data_source
+    data_source = DataSource.find data_query[:data_source_id]
     data_source_options = data_source.options if  data_source
     data_source_options.keys.each do |key|
       option = data_source_options[key]
@@ -21,20 +21,20 @@ class QueryService
                             end
     end if  data_source
 
-    parsed_query_options = getQueryOptions(data_query.options)
+    parsed_query_options = get_query_options(data_query[:options])
 
-    service_class = "#{data_query.kind.capitalize}QueryService".constantize
-    service = service_class.new data_query, parsed_query_options, parsed_options, current_user
+    service_class = "#{data_query[:kind].capitalize}QueryService".constantize
+    service = service_class.new data_query, data_source, parsed_query_options, parsed_options, current_user
     service.process
   end
 
   private 
-    def getQueryOptions(object)
+    def get_query_options(object)
       
       if object.class.name === "Hash"
 
         object.keys.each do |key|
-          object[key] = getQueryOptions(object[key])
+          object[key] = get_query_options(object[key])
         end
 
       elsif object.class.name === "String"
@@ -54,7 +54,7 @@ class QueryService
       elsif object.class.name === "Array"
 
         object.each_with_index do |element, index|
-          object[index] = getQueryOptions(element)
+          object[index] = get_query_options(element)
         end
 
       end

@@ -5,7 +5,8 @@ export const dataqueryService = {
   create,
   getAll,
   run,
-  update
+  update,
+  preview
 };
 
 function getAll(appId) {
@@ -43,4 +44,14 @@ function run(queryId, options) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data_queries/${queryId}/run`, requestOptions).then(handleResponse);
+}
+
+function preview(query, options) {
+  const body = {
+    query,
+    options: options
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data_queries/preview`, requestOptions).then(handleResponse);
 }

@@ -4,9 +4,9 @@ class FirestoreQueryService
 
   attr_accessor :data_query, :options, :source_options, :current_user, :data_source
 
-  def initialize(data_query, options, source_options, current_user)
+  def initialize(data_query, data_source, options, source_options, current_user)
     @data_query = data_query
-    @data_source = data_query.data_source
+    @data_source = data_source
     @options = options
     @source_options = source_options
     @current_user = current_user
@@ -33,7 +33,7 @@ class FirestoreQueryService
       firestore = get_cached_connection(data_source)
       firestore = create_connection unless firestore
 
-      operation = data_query.options['operation']
+      operation = options['operation']
 
       update_document(options['path'], options['body'].as_json, firestore) if operation == 'update_document'
 
@@ -50,7 +50,7 @@ class FirestoreQueryService
       end
 
       if operation == 'get_document'
-        path = data_query.options['path']
+        path = options['path']
         doc_ref  = firestore.doc path
         snapshot = doc_ref.get
         data = snapshot.data
