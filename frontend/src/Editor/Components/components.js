@@ -502,8 +502,8 @@ export const componentTypes = [
       properties: {
         label: { value: 'Select' },
         value: { value: '' },
-        values: { value: '[1,2,3]' },
-        display_values: { value: '["one", "two", "three"]' },
+        values: { value: '{{[1,2,3]}}' },
+        display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true }
       },
       events: {
