@@ -1,16 +1,16 @@
 class SlackQueryService
   attr_accessor :query, :ource, :options, :source_options, :current_user
 
-  def initialize(data_query, options, source_options, current_user)
+  def initialize(data_query, data_source, options, source_options, current_user)
     @query = data_query
-    @source = query.data_source
+    @source = data_source
     @options = options
     @source_options = source_options
     @current_user = current_user
   end
 
   def process
-    operation = query.options['operation']
+    operation = options['operation']
     access_token = source_options['access_token']
     data = []
 
