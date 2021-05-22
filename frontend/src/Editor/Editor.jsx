@@ -664,11 +664,11 @@ class Editor extends React.Component {
                 <div className="row main-row">
                   <div className="col-md-3 data-pane">
                     <div className="queries-container">
-                      <div className="queries-header row mx-2 mt-2">
+                      <div className="queries-header row mt-2">
                         <div className="col">
-                          <h5 className="p-1 text-muted">QUERIES</h5>
+                          <h5 className="py-1 px-3 text-muted">QUERIES</h5>
                         </div>
-                        <div className="col-auto">
+                        <div className="col-auto px-3">
                           {/* {<button className="btn btn-sm btn-light mx-2">
                                                         <img className="p-1" src="https://www.svgrepo.com/show/13682/search.svg" width="17" height="17"/>
                                                     </button>} */}
