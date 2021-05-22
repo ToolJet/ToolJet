@@ -223,6 +223,23 @@ function getQueryVariables(options, state) {
   return queryVariables;
 }
 
+export function previewQuery(_ref, query) {
+  const options = getQueryVariables(query.options, _ref.state.currentState);
+
+  _ref.setState({ previewLoading: true });
+
+  return new Promise(function (resolve, reject) {
+    dataqueryService.preview(query, options).then(data => {
+      _ref.setState({ previewLoading: false, queryPreviewData: data });
+      resolve();
+    }).catch(error => {
+      _ref.setState({ previewLoading: false, queryPreviewData: error });
+      toast.error(error, { hideProgressBar: true, autoClose: 3000 });
+      reject();
+    });;
+  });
+}
+
 export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
   const query = _ref.state.app.data_queries.find(query => query.id === queryId);
   let dataQuery = {};

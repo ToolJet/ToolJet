@@ -23,7 +23,8 @@ import {
   onEvent,
   onQueryConfirm,
   onQueryCancel,
-  runQuery
+  runQuery,
+  previewQuery
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -388,7 +389,9 @@ class Editor extends React.Component {
       showLeftSidebar,
       currentState,
       isLoading,
-      zoomLevel
+      zoomLevel,
+      previewLoading,
+      queryPreviewData
     } = this.state;
 
     const appLink = `/applications/${appId}`;
@@ -721,9 +724,11 @@ class Editor extends React.Component {
                             selectedQuery={selectedQuery}
                             dataQueriesChanged={this.dataQueriesChanged}
                             appId={appId}
-                            runQuery={(queryId, queryName) => {
-                              runQuery(this, queryId, queryName).then(() => {
-                                toast.info(`Query (${queryName}) completed.`, {
+                            previewLoading={previewLoading}
+                            queryPreviewData={queryPreviewData}
+                            previewQuery={(query) => { 
+                              previewQuery(this, query).then(() => {
+                                toast.info(`Query (${query.name}) completed.`, {
                                   hideProgressBar: true,
                                   position: 'bottom-center'
                                 });
