@@ -480,7 +480,7 @@ export const componentTypes = [
     description: 'Select one value from options',
     defaultSize: {
       width: 200,
-      height: 60
+      height: 30
     },
     component: 'DropDown',
     properties: {
