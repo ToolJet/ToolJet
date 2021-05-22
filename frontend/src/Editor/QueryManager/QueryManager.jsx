@@ -210,13 +210,6 @@ class QueryManager extends React.Component {
     let buttonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating;
 
-    if (isUpdating) {
-      buttonText = 'Saving...';
-    }
-    if (isCreating) {
-      buttonText = 'Creating...';
-    }
-
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -286,7 +279,7 @@ class QueryManager extends React.Component {
               <button
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
-                className="btn btn-primary m-1 float-right"
+                className={`btn btn-primary m-1 float-right ${isUpdating || isCreating ? 'btn-loading' : ''}`}
               >
                 {buttonText}
               </button>
