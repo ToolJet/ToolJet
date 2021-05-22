@@ -3,9 +3,9 @@ class RedisQueryService
 
   attr_accessor :data_query, :data_source, :options, :source_options, :current_user
 
-  def initialize(data_query, options, source_options, current_user)
+  def initialize(data_query, data_source, options, source_options, current_user)
     @data_query = data_query
-    @data_source = data_query.data_source
+    @data_source = data_source
     @options = options
     @source_options = source_options
     @current_user = current_user

@@ -262,7 +262,7 @@ class QueryManager extends React.Component {
           <div className="col-auto">
             {(addingQuery || editingQuery) && (
               <span
-                onClick={() => this.props.previewQuery(addingQuery ? { data_source_id: selectedDataSource.id, options: options } : selectedQuery)}
+                onClick={() => this.props.previewQuery(addingQuery ? { data_source_id: selectedDataSource.id, options: options, kind: selectedDataSource.kind } : selectedQuery)}
                 className={`btn btn-secondary m-1 float-right1 ${
                   previewLoading ? ' btn-loading' : ''
                 }`}

@@ -9,7 +9,7 @@ class QueryService
 
   def process
     parsed_options = {}
-    data_source = DataSource.find data_query[:data_source_id]
+    data_source = DataSource.find_by_id data_query[:data_source_id]
     data_source_options = data_source.options if  data_source
     data_source_options.keys.each do |key|
       option = data_source_options[key]
@@ -23,7 +23,7 @@ class QueryService
 
     parsed_query_options = get_query_options(data_query[:options])
 
-    service_class = "#{data_source[:kind].capitalize}QueryService".constantize
+    service_class = "#{data_query[:kind].capitalize}QueryService".constantize
     service = service_class.new data_query, data_source, parsed_query_options, parsed_options, current_user
     service.process
   end
