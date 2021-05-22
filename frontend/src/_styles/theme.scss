@@ -1212,6 +1212,13 @@ body {
   }
 }
 
+.field { 
+  .CodeMirror-scroll { 
+    position: static;
+    top: 0;
+  }
+}
+
 .code-hinter {
 
     height: 36px;
