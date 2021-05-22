@@ -39,7 +39,7 @@ class Editor extends React.Component {
     const currentUser = authenticationService.currentUserValue;
     let userVars = { };
 
-    if(currentUser) {
+    if (currentUser) {
       userVars = {
         email: currentUser.email,
         firstName: currentUser.first_name,
@@ -141,14 +141,12 @@ class Editor extends React.Component {
               let selectedQuery = this.state.selectedQuery;
               let editingQuery = false;
 
-              if(selectedQuery) {
+              if (selectedQuery) {
                 data.data_queries.find((dq) => dq.id === selectedQuery.id);
                 editingQuery = true;
-              } else { 
-                if (data.data_queries.length > 0) {
-                  selectedQuery = data.data_queries[0];
-                  editingQuery = true;
-                }
+              } else if (data.data_queries.length > 0) {
+                selectedQuery = data.data_queries[0];
+                editingQuery = true;
               }
 
               this.setState({
@@ -227,12 +225,12 @@ class Editor extends React.Component {
 
   removeComponent = (component) => {
     let newDefinition = this.state.appDefinition;
-    
+
     // Delete child components when parent is deleted
-    const childComponents = Object.keys(newDefinition.components).filter((key) => newDefinition.components[key].parent === component.id)
+    const childComponents = Object.keys(newDefinition.components).filter((key) => newDefinition.components[key].parent === component.id);
     childComponents.forEach((componentId) => {
-      delete newDefinition.components[componentId]
-    })
+      delete newDefinition.components[componentId];
+    });
 
     delete newDefinition.components[component.id];
     this.appDefinitionChanged(newDefinition);
@@ -460,8 +458,8 @@ class Editor extends React.Component {
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
                   <div className="nav-item dropdown d-none d-md-flex me-3">
-                    {app && 
-                      <ManageAppUsers app={app} />
+                    {app
+                      && <ManageAppUsers app={app} />
                     }
                   </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
@@ -571,7 +569,7 @@ class Editor extends React.Component {
                   {loadingDataSources ? (
                     <div className="p-5">
                       <center>
-                        <div class="spinner-border text-azure" role="status"></div>
+                        <div className="spinner-border text-azure" role="status"></div>
                       </center>
                     </div>
                   ) : (
@@ -658,7 +656,7 @@ class Editor extends React.Component {
                       {loadingDataQueries ? (
                         <div className="p-5">
                           <center>
-                            <div class="spinner-border text-azure" role="status"></div>
+                            <div className="spinner-border text-azure" role="status"></div>
                           </center>
                         </div>
                       ) : (
@@ -732,6 +730,7 @@ class Editor extends React.Component {
                           src="https://www.svgrepo.com/show/308964/search-look-inspect-magnifying-glass.svg"
                           width="16"
                           height="16"
+                          className="d-md-none d-lg-block"
                         />
                         &nbsp; Inspect
                       </a>
@@ -742,7 +741,7 @@ class Editor extends React.Component {
                         className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}
                         data-bs-toggle="tab"
                       >
-                        <img src="https://www.svgrepo.com/show/274200/insert.svg" width="16" height="16" />
+                        <img src="https://www.svgrepo.com/show/274200/insert.svg" width="16" height="16" className="d-md-none d-lg-block"/>
                         &nbsp; Insert
                       </a>
                     </li>
