@@ -724,16 +724,6 @@ class Editor extends React.Component {
                             selectedQuery={selectedQuery}
                             dataQueriesChanged={this.dataQueriesChanged}
                             appId={appId}
-                            previewLoading={previewLoading}
-                            queryPreviewData={queryPreviewData}
-                            previewQuery={(query) => { 
-                              previewQuery(this, query).then(() => {
-                                toast.info(`Query (${query.name}) completed.`, {
-                                  hideProgressBar: true,
-                                  position: 'bottom-center'
-                                });
-                              });
-                            }}
                             addingQuery={addingQuery}
                             editingQuery={editingQuery}
                             queryPaneHeight={queryPaneHeight}
