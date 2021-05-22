@@ -8,6 +8,9 @@ import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { defaultOptions } from './constants';
 import ReactJson from 'react-json-view';
+import {
+  previewQuery
+} from '@/_helpers/appUtils';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -18,6 +21,8 @@ class QueryManager extends React.Component {
     super(props);
 
     this.state = {};
+
+    this.previewPanelRef = React.createRef();
   }
 
   setStateFromProps = (props) => {
@@ -34,8 +39,6 @@ class QueryManager extends React.Component {
         editingQuery: props.editingQuery,
         queryPaneHeight: props.queryPaneHeight,
         currentState: props.currentState,
-        previewLoading: props.previewLoading,
-        queryPreviewData: props.queryPreviewData
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -262,7 +265,15 @@ class QueryManager extends React.Component {
           <div className="col-auto">
             {(addingQuery || editingQuery) && (
               <span
-                onClick={() => this.props.previewQuery(addingQuery ? { data_source_id: selectedDataSource.id, options: options, kind: selectedDataSource.kind } : selectedQuery)}
+                onClick={() => { 
+                  const query = addingQuery ? { data_source_id: selectedDataSource.id, options: options, kind: selectedDataSource.kind } : selectedQuery;
+                  previewQuery(this, query).then(() => {
+                    toast.info(`Query (${query.name}) completed.`, {
+                      hideProgressBar: true,
+                      position: 'bottom-center'
+                    });
+                  });
+                }}
                 className={`btn btn-secondary m-1 float-right1 ${
                   previewLoading ? ' btn-loading' : ''
                 }`}
@@ -332,7 +343,7 @@ class QueryManager extends React.Component {
                     <div className="mb-3 mt-2">
                       <Transformation changeOption={this.optionchanged} options={this.state.options} currentState={currentState}/>
                     </div>
-                    <div className="row header border-top">
+                    <div className="row header border-top" ref={this.previewPanelRef}>
                       <div className="py-2">
                         Preview
                       </div>
