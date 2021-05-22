@@ -215,7 +215,7 @@ class QueryManager extends React.Component {
           <div className="col">
             {(addingQuery || editingQuery) && (
               <div className="nav-header">
-                <ul className="nav nav-tabs" data-bs-toggle="tabs">
+                <ul className="nav nav-tabs query-manager-header" data-bs-toggle="tabs">
                   <li className="nav-item">
                     <a
                       onClick={() => this.switchCurrentTab(1)}
@@ -254,17 +254,7 @@ class QueryManager extends React.Component {
             </div>
           )}
           <div className="col-auto">
-            {(addingQuery || editingQuery) && selectedQuery && (
-              <span
-                data-tip="NOTE: Query should be saved before running."
-                onClick={() => this.props.runQuery(selectedQuery.id, selectedQuery.name)}
-                className={`btn btn-secondary m-1 float-right1 ${
-                  (currentState.queries[selectedQuery.name] ? currentState.queries[selectedQuery.name].isLoading  :  false) === true ? ' btn-loading' : ''
-                }`}
-              >
-                Run
-              </span>
-            )}
+            
             {(addingQuery || editingQuery) && (
               <button
                 onClick={this.createOrUpdateDataQuery}

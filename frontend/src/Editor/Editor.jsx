@@ -301,18 +301,45 @@ class Editor extends React.Component {
       isSeletedQuery = dataQuery.id === this.state.selectedQuery.id;
     }
 
+    const { currentState } = this.state;
+
+    const isLoading = currentState.queries[dataQuery.name] ? currentState.queries[dataQuery.name].isLoading  : false;
+
     return (
-      <tr
-        className={'query-row' + (isSeletedQuery ? ' query-row-selected' : '')}
+      <div 
+        className={'row query-row py-2 px-3' + (isSeletedQuery ? ' query-row-selected' : '')}
         key={dataQuery.name}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
       >
-        <td>
+        <div className="col">
           <img src={sourceMeta.icon} width="20" height="20" />
           <span className="p-3">{dataQuery.name}</span>
-        </td>
-      </tr>
+        </div>
+        <div className="col-auto">
+          {!(isLoading === true) &&
+            <button 
+              className="btn badge bg-azure-lt"
+              onClick={() => {
+                runQuery(this, dataQuery.id, dataQuery.name).then(() => {
+                  toast.info(`Query (${dataQuery.name}) completed.`, {
+                    hideProgressBar: true,
+                    position: 'bottom-center'
+                  });
+                });
+              }}
+            >
+              <div><img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" /></div>
+            </button>
+          }
+          {isLoading === true && 
+            <div 
+              className="px-2">
+              <div class="text-center spinner-border spinner-border-sm" role="status"></div>
+            </div>
+          }
+        </div>
+      </div>
     );
   };
 
@@ -645,7 +672,7 @@ class Editor extends React.Component {
 
                           <span
                             data-tip="Add new query"
-                            className="btn btn-sm btn-light  text-muted"
+                            className="btn btn-sm btn-light text-muted"
                             onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })}
                           >
                             +
@@ -661,10 +688,8 @@ class Editor extends React.Component {
                         </div>
                       ) : (
                         <div className="">
-                          <div className="table-responsive">
-                            <table className="table table-vcenter table-nowrap">
-                              <tbody>{dataQueries.map((query) => this.renderDataQuery(query))}</tbody>
-                            </table>
+                          <div>
+                            {dataQueries.map((query) => this.renderDataQuery(query))}
                           </div>
                           {dataQueries.length === 0 && (
                             <div className="mt-5">

@@ -124,7 +124,7 @@ class Restapi extends React.Component {
                     </div>
                   ))}
                   <button className="btn btn-sm btn-outline-azure" onClick={() => this.addNewKeyValuePair(option.value)}>
-                    + Add new
+                    +
                   </button>
                 </div>
               </div>
