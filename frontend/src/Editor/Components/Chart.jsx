@@ -77,7 +77,7 @@ export const Chart = function Chart({
 
     setChartData(newData);
     
-  }, [data]);
+  }, [data, chartType]);
 
   return (
     <div
