@@ -272,6 +272,7 @@ class QueryManager extends React.Component {
                       hideProgressBar: true,
                       position: 'bottom-center'
                     });
+                    this.previewPanelRef.current.scrollIntoView();
                   });
                 }}
                 className={`btn btn-secondary m-1 float-right1 ${
