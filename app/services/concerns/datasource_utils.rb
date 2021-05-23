@@ -18,5 +18,9 @@ module DatasourceUtils
     $connections[data_source.id] = { connection: connection, updated_at: data_source.updated_at }
   end
 
+  def reset_connection(data_source)
+    $connections.delete @data_source.id
+  end
+
 end
   
