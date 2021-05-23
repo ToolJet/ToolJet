@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tooljet-server-deployment
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      component: tooljet-server
+  template:
+    metadata:
+      labels:
+        component: tooljet-server
+    spec:
+      containers:
+        - name: server-container
+          image: tooljet/tooljet-server-ce:latest
+          imagePullPolicy: Always
+          command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+          resources:
+            limits:
+              memory: "1024Mi"
+              cpu: "200m"
+            requests:
+              memory: "1024Mi"
+              cpu: "200m"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /
+            successThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+          env:
+            - name: RAILS_ENV
+              value: "production"
+            - name: PG_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: host  
+            - name: PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: user
+            - name: PG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: password
+            - name: PG_DB
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: db
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: secret_key_base
+            - name: ENCRYPTION_SERVICE_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: encryption_salt                     
+
+      imagePullSecrets:
+        - name: registry-secret
