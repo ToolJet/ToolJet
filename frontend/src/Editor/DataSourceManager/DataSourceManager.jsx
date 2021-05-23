@@ -7,6 +7,7 @@ import { dataBaseSources, apiSources, DataSourceTypes } from './DataSourceTypes'
 import { defaultOptions } from './DefaultOptions';
 import { TestConnection } from './TestConnection';
 import { SourceComponents } from './SourceComponents';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 
 class DataSourceManager extends React.Component {
@@ -233,6 +234,16 @@ class DataSourceManager extends React.Component {
                 <div className="text-muted">
                   Please white-list our IP address to if your datasource is not publicly accessible.
                   IP: <span className="bg-light px-2 py-1">{config.SERVER_IP}</span>
+                  <CopyToClipboard
+                    text={config.SERVER_IP}
+                    onCopy={() => toast.success('IP copied to clipboard', {
+                      hideProgressBar: true,
+                      position: 'top-center'
+                    })
+                    }
+                  >
+                    <img src="https://www.svgrepo.com/show/135545/copy.svg" className="mx-1" width="14" height="14" role="button"/>
+                  </CopyToClipboard>
                 </div>
               </div>
               </div>
