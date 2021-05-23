@@ -30,10 +30,10 @@ spec:
               memory: "1024Mi"
               cpu: "200m"
           ports:
-            - containerPort: 8080
+            - containerPort: 3000
           readinessProbe:
             httpGet:
-              port: 8080
+              port: 3000
               path: /
             successThreshold: 1
             initialDelaySeconds: 10
