@@ -1,3 +1,4 @@
 frontend/*
 docs/*
 tmp/*
+/.env
