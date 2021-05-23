@@ -25,7 +25,7 @@ export const AppMenu = function AppMenu({
       foldersChanged();
       setIsAdding(false);
       setAddToFolder(false);
-    }).catch((error) => {
+    }).catch(({ error } ) => {
       setIsAdding(false);
       setAddToFolder(false);
       toast.error(error, { hideProgressBar: true, position: 'top-center' });

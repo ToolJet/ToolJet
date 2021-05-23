@@ -232,10 +232,10 @@ export function previewQuery(_ref, query) {
     dataqueryService.preview(query, options).then(data => {
       _ref.setState({ previewLoading: false, queryPreviewData: data });
       resolve();
-    }).catch(error => {
-      _ref.setState({ previewLoading: false, queryPreviewData: error });
+    }).catch(({ error, data } ) => {
+      _ref.setState({ previewLoading: false, queryPreviewData: data });
       toast.error(error, { hideProgressBar: true, autoClose: 3000 });
-      reject();
+      reject( { error, data });
     });;
   });
 }
@@ -323,7 +323,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
             }
           }
         });
-      }).catch(error => {
+      }).catch(( { error } ) => {
         toast.error(error, { hideProgressBar: true, autoClose: 3000 });
         _self.setState({
           currentState: {

@@ -46,7 +46,7 @@ class PostgresqlQueryService
     end
 
     if error
-      { status: 'error', code: 500, message: error[:message], data: error }
+      { status: 'error', code: 500, message: error[:message] }
     else
       { status: 'success', data: result.to_a }
     end
