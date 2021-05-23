@@ -139,7 +139,7 @@ class QueryManager extends React.Component {
         toast.success('Query Updated', { hideProgressBar: true, position: 'bottom-center' });
         this.setState({ isUpdating: false });
         this.props.dataQueriesChanged();
-      }).catch((error) => {
+      }).catch(( { error }) => {
         this.setState({ isUpdating: false });
         toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
       });
@@ -149,7 +149,7 @@ class QueryManager extends React.Component {
         toast.success('Query Added', { hideProgressBar: true, position: 'bottom-center' });
         this.setState({ isCreating: false });
         this.props.dataQueriesChanged();
-      }).catch((error) => {
+      }).catch(({ error }) => {
         this.setState({ isCreating: false });
         toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
       });
@@ -266,6 +266,8 @@ class QueryManager extends React.Component {
                       position: 'bottom-center'
                     });
                     this.previewPanelRef.current.scrollIntoView();
+                  }).catch(( { error, data } ) => { 
+                    debugger
                   });
                 }}
                 className={`btn btn-secondary m-1 float-right1 ${
