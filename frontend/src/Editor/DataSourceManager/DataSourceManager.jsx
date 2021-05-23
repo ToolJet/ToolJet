@@ -232,7 +232,7 @@ class DataSourceManager extends React.Component {
               <div className="row w-100">
                 <div className="alert alert-info" role="alert">
                 <div className="text-muted">
-                  Please white-list our IP address to if your datasource is not publicly accessible.
+                  Please white-list our IP address if your datasource is not publicly accessible.
                   IP: <span className="bg-light px-2 py-1">{config.SERVER_IP}</span>
                   <CopyToClipboard
                     text={config.SERVER_IP}
