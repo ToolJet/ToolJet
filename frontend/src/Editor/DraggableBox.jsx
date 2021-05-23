@@ -34,7 +34,7 @@ function getStyles(left, top, isDragging, component) {
     position: 'absolute',
     transform,
     WebkitTransform: transform,
-    zIndex: component.component === 'DropDown' ? 2 : 1,
+    zIndex: ['DropDown', 'Datepicker', 'DaterangePicker'].includes(component.component) ? 2 : 1,
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
