@@ -22,18 +22,32 @@ class PostgresqlQueryService
 
   def process
 
-    connection = get_cached_connection(data_source)
-    connection = create_connection unless connection
+    error = false
 
-    query_text = ''
-    query_text = if options['mode'] === 'gui'
-                   send("generate_#{options['operation']}_query", options)
-                 else
-                   options['query']
-                 end
+    begin
+      connection = get_cached_connection(data_source)
+      connection = create_connection unless connection
 
-    result = connection.exec(query_text)
-    { status: 'success', data: result.to_a }
+
+      query_text = ''
+      query_text = if options['mode'] === 'gui'
+                    send("generate_#{options['operation']}_query", options)
+                  else
+                    options['query']
+                  end
+
+      result = connection.exec(query_text)
+
+    rescue StandardError => e
+      puts e
+      error = { message: e.message } 
+    end
+
+    if error
+      { status: 'error', code: 500, message: error[:message], data: error }
+    else
+      { status: 'success', data: result.to_a }
+    end
   end
 
   private
