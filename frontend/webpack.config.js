@@ -65,7 +65,8 @@ module.exports = {
     config: JSON.stringify({
       apiUrl: API_URL[environment],
       assetPath: ASSET_PATH[environment],
-      GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY
+      GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
+      SERVER_IP: process.env.SERVER_IP
     })
   }
 };
