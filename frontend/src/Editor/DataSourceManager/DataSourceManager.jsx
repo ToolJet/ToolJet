@@ -7,6 +7,7 @@ import { dataBaseSources, apiSources, DataSourceTypes } from './DataSourceTypes'
 import { defaultOptions } from './DefaultOptions';
 import { TestConnection } from './TestConnection';
 import { SourceComponents } from './SourceComponents';
+import config from 'config';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -227,6 +228,14 @@ class DataSourceManager extends React.Component {
 
           {selectedDataSource && !dataSourceMeta.customTesting && (
             <Modal.Footer>
+              <div className="row w-100">
+                <div className="alert alert-info" role="alert">
+                <div className="text-muted">
+                  Please white-list our IP address to if your datasource is not publicly accessible.
+                  IP: <span className="bg-light px-2 py-1">{config.SERVER_IP}</span>
+                </div>
+              </div>
+              </div>
               <div className="col">
                 <small>
                   <a href={`https://docs.tooljet.io/data-sources/${selectedDataSource.kind}`}>Read documentation</a>
