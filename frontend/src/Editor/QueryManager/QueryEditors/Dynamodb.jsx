@@ -59,6 +59,7 @@ class Dynamodb extends React.Component {
                 options={[
                   { value: 'list_tables', name: 'List Tables' },
                   { value: 'get_item', name: 'Get Item' },
+                  { value: 'delete_item', name: 'Delete Item' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -70,7 +71,7 @@ class Dynamodb extends React.Component {
               />
             </div>
 
-            {(this.state.options.operation === 'get_item') && (
+            {(['get_item', 'delete_item'].includes(this.state.options.operation)) && (
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Table</label>
