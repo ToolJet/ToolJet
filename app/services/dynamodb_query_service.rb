@@ -34,6 +34,17 @@ class DynamodbQueryService
         data = tables.to_h
       end
 
+      if operation === 'get_item'
+        table = options["table"]
+        key = JSON.parse(options["key"])
+
+        item = {
+          table_name: table,
+          key: key
+        }
+        data = connection.get_item(item).to_h
+      end
+
     rescue StandardError => e
       puts e
       error = e.message
