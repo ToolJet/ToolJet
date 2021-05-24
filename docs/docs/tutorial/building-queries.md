@@ -30,7 +30,7 @@ Query results can be previewed by clicking the `preview` button. Previewing quer
 <img class="screenshot-full" src="/img/tutorial/building-queries/advanced-query.gif" alt="ToolJet - advanced query options" height="420"/>
 
 #### Run query on page load 
-If this option is enabled, the query will be run when the app is loaded for the first time. The queries can have more than one trigger, means, the same query can later be triggered again using a button's click event or table's row selected event or any other events.
+If this option is enabled, the query will be run when the app is loaded for the first time. The queries can have more than one trigger, ie the same query can later be triggered again using a button's click event or table's row selected event or any other events.
 
 #### Request confirmation before running query
 Enable this option to show a prompt to confirm the action before a query is run. The confirmation prompt will look like this:
