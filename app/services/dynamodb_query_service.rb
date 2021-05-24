@@ -27,7 +27,7 @@ class DynamodbQueryService
     operation = options["operation"]
 
     begin
-      
+
       connection = get_connection
       data = send("exec_#{operation}", connection, options)
 
@@ -83,5 +83,18 @@ class DynamodbQueryService
         key: key
       }
       data = connection.delete_item(item).to_h
+    end
+
+    def exec_query_table(connection, options)
+      query_condition = JSON.parse(options["query_condition"])
+      query_condition = query_condition.transform_keys(&:to_sym) # DynamoDB SDK requires the keys as syms
+
+      result = connection.query(query_condition)
+      data = []
+      result.items.each do |item|
+        data << item
+      end
+
+      data
     end
 end
