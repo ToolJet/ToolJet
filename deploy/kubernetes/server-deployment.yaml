@@ -25,10 +25,10 @@ spec:
           resources:
             limits:
               memory: "1024Mi"
-              cpu: "200m"
+              cpu: "1000m"
             requests:
               memory: "1024Mi"
-              cpu: "200m"
+              cpu: "1000m"
           ports:
             - containerPort: 3000
           readinessProbe:
