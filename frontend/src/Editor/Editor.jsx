@@ -690,7 +690,7 @@ class Editor extends React.Component {
                           </center>
                         </div>
                       ) : (
-                        <div className="">
+                        <div className="query-list">
                           <div>
                             {dataQueries.map((query) => this.renderDataQuery(query))}
                           </div>
