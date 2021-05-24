@@ -60,6 +60,7 @@ class Dynamodb extends React.Component {
                   { value: 'list_tables', name: 'List Tables' },
                   { value: 'get_item', name: 'Get Item' },
                   { value: 'query_table', name: 'Query Table' },
+                  { value: 'scan_table', name: 'Scan Table' },
                   { value: 'delete_item', name: 'Delete Item' }
                 ]}
                 value={this.state.options.operation}
@@ -84,6 +85,23 @@ class Dynamodb extends React.Component {
                     lineNumbers={true}
                     className="query-hinter"
                     onChange={(value) => this.changeOption('query_condition', value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {(['scan_table'].includes(this.state.options.operation)) && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Scan condition</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={typeof this.state.options.scan_condition === 'string' ? this.state.options.scan_condition  : JSON.stringify(this.state.options.scan_condition )}
+                    theme="duotone-light"
+                    mode="javascript"
+                    lineNumbers={true}
+                    className="query-hinter"
+                    onChange={(value) => this.changeOption('scan_condition', value)}
                   />
                 </div>
               </div>

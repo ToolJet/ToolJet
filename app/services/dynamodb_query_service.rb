@@ -97,4 +97,17 @@ class DynamodbQueryService
 
       data
     end
+
+    def exec_scan_table(connection, options)
+      scan_condition = JSON.parse(options["scan_condition"])
+      scan_condition = scan_condition.transform_keys(&:to_sym) # DynamoDB SDK requires the keys as syms
+
+      result = connection.scan(scan_condition)
+      data = []
+      result.items.each do |item|
+        data << item
+      end
+
+      data
+    end
 end
