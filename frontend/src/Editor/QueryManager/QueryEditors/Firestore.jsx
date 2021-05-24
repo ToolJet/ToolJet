@@ -180,7 +180,15 @@ class Firestore extends React.Component {
                     onChange={(value) => this.changeOption('order', value)}
                   />
                 </div>
-                <hr />
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Limit</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.limit}
+                    className="codehinter-query-editor-input"
+                    onChange={(value) => this.changeOption('limit', value)}
+                  />
+                </div>
                 <div className="row">
                   <label className="form-label">Where condition</label>
                   <div className="col">

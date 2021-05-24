@@ -87,8 +87,12 @@ class FirestoreQueryService
           doc_ref = doc_ref.where options['where_field'], options['where_operation'], options['where_value']
         end
 
-        if options["order"]
-          doc_ref = doc_ref.order(options["order"], "desc")
+        if options['order']
+          doc_ref = doc_ref.order(options['order'], 'desc')
+        end
+
+        if options['limit']
+          doc_ref = doc_ref.limit(options['limit'].to_i)
         end
 
         data = []
