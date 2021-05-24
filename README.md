@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://app.tooljet.io/images/logo-text.svg" width="300" />
+  <img src="https://app.tooljet.io/assets/images/logo-text.svg" width="300" />
   <br/>
   Built and deploy internal tools.
 </p>
@@ -8,7 +8,7 @@
 ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources such as databases ( like PostgreSQL, MongoDB, Elasticsearch, etc ), API endpoints ( ToolJet supports importing OpenAPI spec & OAuth2 authorization) and external services ( like Stripe, Slack, Google Sheets ) and use our pre-built UI widgets to build internal tools.
 
 <p align="center">
-  <img src="https://blog.tooljet.io/content/images/2021/05/adding-table.gif"/>
+  <img src="https://user-images.githubusercontent.com/7828962/119378233-aa8a9280-bcdb-11eb-9a71-e01dcf1595e9.gif" width="500"/>
 </p>
 
 <p align="center">
