@@ -45,6 +45,17 @@ class DynamodbQueryService
         data = connection.get_item(item).to_h
       end
 
+      if operation === 'delete_item'
+        table = options["table"]
+        key = JSON.parse(options["key"])
+
+        item = {
+          table_name: table,
+          key: key
+        }
+        data = connection.delete_item(item).to_h
+      end
+
     rescue StandardError => e
       puts e
       error = e.message
