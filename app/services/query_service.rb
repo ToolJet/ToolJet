@@ -21,7 +21,12 @@ class QueryService
                             end
     end if  data_source
 
-    parsed_query_options = get_query_options(data_query[:options].permit!.to_h)
+    query_options = data_query[:options]
+    if query_options.class.name === 'Hash'
+      parsed_query_options = get_query_options(query_options)
+    else
+      parsed_query_options = get_query_options(query_options.permit!.to_h)
+    end
 
     service_class = "#{data_query[:kind].capitalize}QueryService".constantize
     service = service_class.new data_query, data_source, parsed_query_options, parsed_options, current_user
