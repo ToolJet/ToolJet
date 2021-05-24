@@ -58,6 +58,7 @@ class Dynamodb extends React.Component {
               <SelectSearch
                 options={[
                   { value: 'list_tables', name: 'List Tables' },
+                  { value: 'get_item', name: 'Get Item' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -68,6 +69,31 @@ class Dynamodb extends React.Component {
                 placeholder="Select.."
               />
             </div>
+
+            {(this.state.options.operation === 'get_item') && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Table</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.table}
+                    onChange={(value) => this.changeOption('table', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Key</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={typeof this.state.options.key === 'string' ? this.state.options.key  : JSON.stringify(this.state.options.key )}
+                    theme="duotone-light"
+                    mode="javascript"
+                    lineNumbers={true}
+                    className="query-hinter"
+                    onChange={(value) => this.changeOption('key', value)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
