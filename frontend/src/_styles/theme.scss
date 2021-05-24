@@ -24,6 +24,10 @@ body {
         border-bottom: 0;
       }
     }
+
+    .query-details { 
+      margin-top: 34px;
+    }
   }
 
   .left-sidebar {
@@ -333,6 +337,10 @@ body {
         .header {
           border: solid rgba(0, 0, 0, 0.125);
           border-width: 0px 0px 1px 0px;
+          position: fixed;
+          z-index: 2;
+          background: white;
+          width: 54%;
         }
       }
 
@@ -342,10 +350,23 @@ body {
         border-width: 0px 1px 0px 0px;
 
         .queries-container {
+
+          position: fixed;
+          width: 18.2%;
+
           .queries-header {
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 0px 0px 1px 0px;
             --tblr-gutter-x: 0rem;
+          }
+
+          .query-list { 
+            overflow-y: scroll;
+          }
+
+          .query-list::-webkit-scrollbar {
+            width: 0;
+            background: transparent;
           }
 
           tr {
