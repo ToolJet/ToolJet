@@ -50,9 +50,11 @@ The documentation is available at https://docs.tooljet.io
 [Datasource Reference](https://docs.tooljet.io)<br>
 [Widget Reference](https://docs.tooljet.io)
 
+## Branching model
+We use the git-flow branching model. The base branch is develop. If you are looking for a stable version, please use the master or tags labelled as v1.x.x.
 
 ## Contributing
-Read our contributing guide to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to ToolJet. <br>
+Read our contributing guide (CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to ToolJet. <br>
 [Contributing Guide](https://docs.tooljet.io/contributing-guide/setup/docker)
 
 ## Licence
