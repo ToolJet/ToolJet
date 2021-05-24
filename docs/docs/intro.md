@@ -6,7 +6,7 @@ sidebar_position: 1
 
 ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources such as databases ( like PostgreSQL, Redis, etc ), API endpoints ( ToolJet supports importing OpenAPI spec & OAuth2 authorization) and external services ( like Stripe, Google Sheets ) and use pre-built UI widgets to build internal tools.
 
-![Docs Version Dropdown](/img/intro.gif)
+<img class="screenshot-full" src="/img/tutorial/adding-widget/table.gif" alt="ToolJet - Table component" height="420"/>
 
 ## How ToolJet works
 
