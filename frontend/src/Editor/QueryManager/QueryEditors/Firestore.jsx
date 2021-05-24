@@ -167,7 +167,17 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.path}
+                    className="codehinter-query-editor-input"
                     onChange={(value) => this.changeOption('path', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Order</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.order}
+                    className="codehinter-query-editor-input"
+                    onChange={(value) => this.changeOption('order', value)}
                   />
                 </div>
                 <hr />

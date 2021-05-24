@@ -87,6 +87,10 @@ class FirestoreQueryService
           doc_ref = doc_ref.where options['where_field'], options['where_operation'], options['where_value']
         end
 
+        if options["order"]
+          doc_ref = doc_ref.order(options["order"], "desc")
+        end
+
         data = []
         doc_ref.get do |doc|
           data << { data: doc.data, document_id: doc.document_id }
