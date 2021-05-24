@@ -78,6 +78,7 @@ class Dynamodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.table}
+                    className="codehinter-query-editor-input"
                     onChange={(value) => this.changeOption('table', value)}
                   />
                 </div>
