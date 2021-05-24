@@ -177,6 +177,7 @@ class Firestore extends React.Component {
                     <h5 className="text-muted">Field</h5>
                     <CodeHinter
                       currentState={this.props.currentState}
+                      className="codehinter-query-editor-input"
                       initialValue={this.state.options.where_field}
                       onChange={(value) => this.changeOption('where_field', value)}
                     />
@@ -207,6 +208,7 @@ class Firestore extends React.Component {
                     <h5 className="text-muted">Value</h5>
                     <CodeHinter
                       currentState={this.props.currentState}
+                      className="codehinter-query-editor-input"
                       initialValue={this.state.options.where_value}
                       onChange={(value) => this.changeOption('where_value', value)}
                     />
