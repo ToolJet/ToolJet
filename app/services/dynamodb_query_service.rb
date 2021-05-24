@@ -27,34 +27,9 @@ class DynamodbQueryService
     operation = options["operation"]
 
     begin
-      connection = get_connection
       
-      if operation === 'list_tables'
-        tables = connection.list_tables 
-        data = tables.to_h
-      end
-
-      if operation === 'get_item'
-        table = options["table"]
-        key = JSON.parse(options["key"])
-
-        item = {
-          table_name: table,
-          key: key
-        }
-        data = connection.get_item(item).to_h
-      end
-
-      if operation === 'delete_item'
-        table = options["table"]
-        key = JSON.parse(options["key"])
-
-        item = {
-          table_name: table,
-          key: key
-        }
-        data = connection.delete_item(item).to_h
-      end
+      connection = get_connection
+      data = send("exec_#{operation}", connection, options)
 
     rescue StandardError => e
       puts e
@@ -80,5 +55,33 @@ class DynamodbQueryService
       end
 
       connection
+    end
+
+    def exec_list_tables(connection, options)
+      tables = connection.list_tables 
+      tables.to_h
+    end
+
+    def exec_get_item(connection, options)
+      table = options["table"]
+      key = JSON.parse(options["key"])
+
+      item = {
+        table_name: table,
+        key: key
+      }
+      
+      connection.get_item(item).to_h
+    end
+
+    def exec_delete_item(connection, options)
+      table = options["table"]
+      key = JSON.parse(options["key"])
+
+      item = {
+        table_name: table,
+        key: key
+      }
+      data = connection.delete_item(item).to_h
     end
 end
