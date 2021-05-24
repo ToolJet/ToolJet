@@ -183,24 +183,25 @@ class Firestore extends React.Component {
                   </div>
                   <div className="col-auto">
                     <h5 className="text-muted">Operator</h5>
-                    <select
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        this.changeOption('where_operation', e.target.value);
-                      }}
-                      placeholder="Select a value"
+                    <SelectSearch
+                      options={[
+                        { value: '==', name: '==' },
+                        { value: '<', name: '<' },
+                        { value: '>', name: '>'},
+                        { value: '<=', name: '<=' },
+                        { value: '>=', name: '>=' },
+                        { value: 'array-contains', name: 'array-contains' },
+                        { value: 'in', name: 'in'},
+                        { value: 'array-contains-any', name: 'array-contains-any'},
+                      ]}
                       value={this.state.options.where_operation}
-                      className="form-select form-select-md"
-                    >
-                      <option value="==">==</option>
-                      <option value="<">{'<'}</option>
-                      <option value="<">{'>'}</option>
-                      <option value="<=">{'<='}</option>
-                      <option value=">=">{'>='}</option>
-                      <option value="array-contains">{'array-contains'}</option>
-                      <option value="in">{'in'}</option>
-                      <option value="array-contains-any">{'array-contains-any'}</option>
-                    </select>
+                      search={true}
+                      onChange={(value) => {
+                        this.changeOption('where_operation', value);
+                      }}
+                      filterOptions={fuzzySearch}
+                      placeholder="Select.."
+                    />
                   </div>
                   <div className="col">
                     <h5 className="text-muted">Value</h5>
