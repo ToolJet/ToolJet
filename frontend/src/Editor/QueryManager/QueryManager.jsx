@@ -339,13 +339,13 @@ class QueryManager extends React.Component {
                     <div className="mb-3 mt-2">
                       <Transformation changeOption={this.optionchanged} options={this.state.options} currentState={currentState}/>
                     </div>
-                    <div className="row header border-top" ref={this.previewPanelRef}>
+                    <div className="row preview-header border-top" ref={this.previewPanelRef}>
                       <div className="py-2">
                         Preview
                       </div>
                     </div>
                     <div className="mb-3 mt-2">
-                      {previewLoading && <div class="spinner-border text-azure" role="status"></div>}
+                      {previewLoading &&  <center><div class="spinner-border text-azure mt-5" role="status"></div></center>}
                       {previewLoading === false && 
                         <div>
                           <ReactJson

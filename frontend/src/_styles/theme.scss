@@ -346,6 +346,11 @@ body {
           background: white;
           width: 54%;
         }
+
+        .preview-header {
+          border: solid rgba(0, 0, 0, 0.125);
+          border-width: 0px 0px 1px 0px;
+        }
       }
 
       .data-pane {
