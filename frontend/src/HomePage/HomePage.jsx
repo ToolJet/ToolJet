@@ -133,7 +133,7 @@ class HomePage extends React.Component {
                           <h2 className="page-title">{currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}</h2>
                         </div>
                       <div className="col-auto ms-auto d-print-none">
-                        <button className={`btn btn-primary ${ creatingApp ? 'btn-loading' : ''}`} onClick={this.createApp}>+ App</button>
+                        <button className={`btn btn-primary ${ creatingApp ? 'btn-loading' : ''}`} onClick={this.createApp}>Create new application</button>
                       </div>
                     </div>
 
