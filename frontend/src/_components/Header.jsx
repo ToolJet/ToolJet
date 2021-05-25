@@ -27,19 +27,27 @@ export const Header = function Header({
           <img src="/assets/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
         </Link>
       </h1>
-      <ul className="navbar-nav">
-        <li className="nav-item">
-          <Link to={'/'} className={`nav-link ${pahtName === '/' ? 'active' : ''}`}>
+
+      <ul class="navbar-nav">
+        <li className={`nav-item mx-3 ${pahtName === '/' ? 'active' : ''}`}>
+          <Link to={'/'} className="nav-link">
+            <span className="nav-link-icon d-md-none d-lg-inline-block">
+              <img src="https://www.svgrepo.com/show/309806/office-apps.svg" width="15" height="15" /> 
+            </span>
             <span className="nav-link-title">
-              <img src="https://www.svgrepo.com/show/309806/office-apps.svg" className="mx-2" width="12" height="12" /> Apps
+              Apps
             </span>
           </Link>
         </li>
-        <li className="nav-item">
-          <Link to={'/users'} className={`nav-link ${pahtName === '/users' ? 'active' : ''}`}>
+
+        <li className={`nav-item ${pahtName === '/users' ? 'active' : ''}`}>
+          <Link to={'/users'} className="nav-link">
+            <span className="nav-link-icon d-md-none d-lg-inline-block">
+              <img src="https://www.svgrepo.com/show/154834/users.svg" width="15" height="15" /> 
+            </span>
             <span className="nav-link-title">
-              <img src="https://www.svgrepo.com/show/154834/users.svg" className="mx-2" width="12" height="12" />Users
-              </span>
+              Users
+            </span>
           </Link>
         </li>
       </ul>
@@ -52,7 +60,10 @@ export const Header = function Header({
             aria-label="Open user menu"
           >
             <div className="d-none d-xl-block ps-2">
-              <div>{authenticationService.currentUserValue.first_name}</div>
+              <span class="avatar">
+                {authenticationService.currentUserValue.first_name[0]}
+                {authenticationService.currentUserValue.last_name[0]}
+              </span>
             </div>
           </a>
           <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">

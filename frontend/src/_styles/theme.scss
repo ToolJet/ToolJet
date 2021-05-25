@@ -1410,7 +1410,7 @@ body {
 
 .home-page, .org-users-page {
   .navbar .navbar-nav .active>.nav-link, .navbar .navbar-nav .nav-link.active, .navbar .navbar-nav .nav-link.show, .navbar .navbar-nav .show>.nav-link {
-    color: #2c6ba2;
+    color: rgba(35, 46, 60, 0.7);
   }
 
   .nav-item { 
@@ -1512,4 +1512,8 @@ body {
 
 input:focus-visible {
   outline: none;
+}
+
+.navbar-expand-md.navbar-light .nav-item.active:after {
+  border: 1px solid #3c92dc;
 }
