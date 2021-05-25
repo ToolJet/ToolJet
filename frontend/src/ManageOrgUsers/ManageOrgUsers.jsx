@@ -101,7 +101,7 @@ class ManageOrgUsers extends React.Component {
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   <div className="btn btn-primary" onClick={() => this.setState({ showNewUserForm: true })}>
-                    Add User
+                    Invite new user
                   </div>
                 </div>
               </div>
@@ -196,11 +196,6 @@ class ManageOrgUsers extends React.Component {
 
             {!showNewUserForm && (
               <div className="container-xl">
-                {isLoading ? (
-                  <div style={{ width: '100%' }} className="p-5">
-                    <Skeleton count={5} />
-                  </div>
-                ) : (
                   <div className="card">
                     <div className="card-table table-responsive table-bordered">
                       <table className="table table-vcenter" disabled={true}>
@@ -215,49 +210,78 @@ class ManageOrgUsers extends React.Component {
                             <th className="w-1"></th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {users.map((user) => (
-                            <tr key={user.id}>
-                              <td>{user.name}</td>
-                              <td className="text-muted">
-                                <a href="#" className="text-reset">
-                                  {user.email}
-                                </a>
-                              </td>
-                              <td className="text-muted" style={{ width: '280px' }}>
-                                <center className="mx-5">
-                                  <SelectSearch
-                                    options={['Admin', 'Developer', 'Viewer'].map((role) => {
-                                      return { name: role, value: role.toLowerCase() };
-                                    })}
-                                    value={user.role}
-                                    search={false}
-                                    disabled={idChangingRole === user.id}
-                                    onChange={(value) => {
-                                      this.changeNewUserRole(user.id, value);
-                                    }}
-                                    filterOptions={fuzzySearch}
-                                    placeholder="Select.."
-                                  />
-                                  {idChangingRole === user.id && <small>Updating role...</small>}
-                                </center>
-                              </td>
-                              <td className="text-muted">
-                                <span
-                                  className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
-                                ></span>
-                                <small>{user.status}</small>
-                              </td>
-                              <td>
-                                <a href="#">Remove</a>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
+                        {isLoading ? (
+                          <tbody className="w-100" style={{minHeight: '300px'}}>
+                            {Array.from(Array(4)).map(() => (
+                                <tr>
+                                  <td className="col-2 p-3">
+                                    <div className="row">
+                                      <div class="skeleton-image col-auto" style={{width: '25px', height: '25px'}}></div>
+                                      <div className="skeleton-line w-10 col mx-3"></div>
+                                    </div>
+                                  </td>
+                                  <td className="col-4 p-3">
+                                    <div className="skeleton-line w-10"></div> 
+                                  </td>
+                                  <td className="col-2 p-3">
+                                    <div className="skeleton-line"></div>
+                                  </td>
+                                  <td className="text-muted col-auto col-1 pt-3">
+                                    <div className="skeleton-line"></div>
+                                  </td>
+                                  <td className="text-muted col-auto col-1 pt-3">
+                                    <div className="skeleton-line"></div>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        ) : (
+                          <tbody>
+                            {users.map((user) => (
+                              <tr key={user.id}>
+                                <td>
+                                  <span className="avatar bg-azure-lt avatar-sm">{user.first_name[0]}{user.last_name[0]}</span>
+                                  <span className="mx-3" style={{display: 'inline-flex', marginBottom: '7px'}}>{user.name}</span>
+                                </td>
+                                <td className="text-muted">
+                                  <a href="#" className="text-reset">
+                                    {user.email}
+                                  </a>
+                                </td>
+                                <td className="text-muted" style={{ width: '280px' }}>
+                                  <center className="mx-5">
+                                    <SelectSearch
+                                      options={['Admin', 'Developer', 'Viewer'].map((role) => {
+                                        return { name: role, value: role.toLowerCase() };
+                                      })}
+                                      value={user.role}
+                                      search={false}
+                                      disabled={idChangingRole === user.id}
+                                      onChange={(value) => {
+                                        this.changeNewUserRole(user.id, value);
+                                      }}
+                                      filterOptions={fuzzySearch}
+                                      placeholder="Select.."
+                                    />
+                                    {idChangingRole === user.id && <small>Updating role...</small>}
+                                  </center>
+                                </td>
+                                <td className="text-muted">
+                                  <span
+                                    className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
+                                  ></span>
+                                  <small>{user.status}</small>
+                                </td>
+                                <td>
+                                  <a href="#">Remove</a>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        )}
                       </table>
                     </div>
                   </div>
-                )}
               </div>
             )}
           </div>

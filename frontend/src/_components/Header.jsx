@@ -60,7 +60,7 @@ export const Header = function Header({
             aria-label="Open user menu"
           >
             <div className="d-none d-xl-block ps-2">
-              <span class="avatar">
+              <span class="avatar bg-azure-lt">
                 {authenticationService.currentUserValue.first_name[0]}
                 {authenticationService.currentUserValue.last_name[0]}
               </span>
