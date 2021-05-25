@@ -55,7 +55,7 @@ We use the git-flow branching model. The base branch is develop. If you are look
 
 ## Contributing
 Read our contributing guide (CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to ToolJet. <br>
-[Contributing Guide](https://docs.tooljet.io/contributing-guide/setup/docker)
+[Contributing Guide](https://docs.tooljet.io/docs/contributing-guide/setup/docker)
 
 ## Licence
 ToolJet is Apache-2.0 licensed.
