@@ -1,22 +1,8 @@
-FROM ruby:2.7.2-alpine
+FROM ruby:2.7.3-buster
 
-# RUN apt update && apt install -y \
-#   build-essential \
-#   postgresql
-
-RUN apk update \
-  && apk add \
-    openssl \
-    tar \
-    build-base \
-    tzdata \
-    postgresql-dev \
-    postgresql-client \
-    mysql\
-    mysql-client \
-    mysql-dev  \
-  && mkdir -p /var/app \
-  && gem install bundler
+RUN apt update && apt install -y \
+  build-essential  \
+  postgresql
 
 RUN mkdir -p /app
 WORKDIR /app
