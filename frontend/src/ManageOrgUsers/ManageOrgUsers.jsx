@@ -240,7 +240,7 @@ class ManageOrgUsers extends React.Component {
                             {users.map((user) => (
                               <tr key={user.id}>
                                 <td>
-                                  <span className="avatar bg-azure-lt avatar-sm">{user.first_name[0]}{user.last_name[0]}</span>
+                                  <span className="avatar bg-azure-lt avatar-sm">{user.first_name ? user.first_name[0]: ''}{user.last_name ? user.last_name[0] : ''}</span>
                                   <span className="mx-3" style={{display: 'inline-flex', marginBottom: '7px'}}>{user.name}</span>
                                 </td>
                                 <td className="text-muted">
