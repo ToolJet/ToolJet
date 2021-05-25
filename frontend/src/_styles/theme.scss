@@ -711,6 +711,10 @@ body {
 
 .jet-data-table {
 
+  thead { 
+    z-index: 2;
+  }
+
   .markdown>table>:not(caption)>*>*, .table>:not(caption)>*>* {
     padding-bottom: 0.1rem;
   }
