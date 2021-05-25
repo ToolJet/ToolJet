@@ -38,10 +38,17 @@ export const Folders = function Folders({
 
   return (<div className="w-100 mt-4 px-3 card">
     {isLoading && (
-      <div className="p-5">
-        <center>
-          <div className="spinner-border text-azure" role="status"></div>
-        </center>
+      <div className="px-1 py-2" style={{minHeight: '200px'}}>
+        {[1,2,3,4, 5].map(element => {
+          return (<div className="row">
+            <div class="col p-1">
+              <div class="skeleton-line w-100"></div>
+            </div>
+            <div class="col-2 pt-1">
+              <div class="skeleton-line w-100"></div>
+            </div>
+          </div>)
+        })}
       </div>
     )}
 
