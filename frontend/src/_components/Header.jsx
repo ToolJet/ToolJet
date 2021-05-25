@@ -17,6 +17,8 @@ export const Header = function Header({
     history.push('/login');
   }
 
+  const { first_name, last_name } = authenticationService.currentUserValue;
+
   return <header className="navbar navbar-expand-md navbar-light d-print-none">
     <div className="container-xl">
       <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
@@ -61,8 +63,8 @@ export const Header = function Header({
           >
             <div className="d-none d-xl-block ps-2">
               <span class="avatar bg-azure-lt">
-                {authenticationService.currentUserValue.first_name[0]}
-                {authenticationService.currentUserValue.last_name[0]}
+                {first_name ? first_name[0] : ''}
+                {last_name ? last_name[0] : ''}
               </span>
             </div>
           </a>
