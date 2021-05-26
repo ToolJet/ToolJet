@@ -169,17 +169,15 @@ class Table extends React.Component {
             </div>
           )}
 
-          {column.columnType === 'string' || column.columnType === 'text' && (
-            <label className="form-check form-switch my-2">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-                checked={column.isEditable}
-              />
-              <span className="form-check-label">make editable</span>
-            </label>
-          )}
+          <label className="form-check form-switch my-2">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
+              checked={column.isEditable}
+            />
+            <span className="form-check-label">make editable</span>
+          </label>
 
           <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
             Remove
