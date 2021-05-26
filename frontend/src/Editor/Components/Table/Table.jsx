@@ -526,6 +526,11 @@ export function Table({
               </tr>
             ))}
           </thead>
+
+          {!loadingState && page.length === 0 && 
+            <center className="w-100"><div className="py-5"> no data </div></center>
+          }
+
           {!loadingState && (
             <tbody {...getTableBodyProps()}>
               {console.log('page', page)}
