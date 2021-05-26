@@ -5,6 +5,7 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
 import { Resizable } from 're-resizable';
 import { ConfigHandle } from './ConfigHandle';
+import { Rnd } from "react-rnd";
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -32,8 +33,8 @@ function getStyles(left, top, isDragging, component) {
   const transform = `translate3d(${left}px, ${top}px, 0)`;
   return {
     position: 'absolute',
-    transform,
-    WebkitTransform: transform,
+    // transform,
+    // WebkitTransform: transform,
     zIndex: ['DropDown', 'Datepicker', 'DaterangePicker'].includes(component.component) ? 2 : 1,
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
@@ -117,16 +118,19 @@ export const DraggableBox = function DraggableBox({
       {inCanvas ? (
         <div style={getStyles(left, top, isDragging, component)} className="draggable-box">
           
-          <Resizable
+          <Rnd
             style={{ ...style }}
+            size={{ width: width + 6,  height: height + 6 }}
+            position={{ x: left, y: top }}
             defaultSize={{}}
             className="resizer"
             onResize={() => setResizing(true)}
-            handleClasses={resizerClasses}
-            handleStyles={resizerStyles}
-            onResizeStop={(e, direction, ref, d) => {
+            resizeHandleClasses={resizerClasses}
+            resizeHandleStyles={resizerStyles}
+            disableDragging={true}
+            onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
-              onResizeStop(id, width, height, e, direction, ref, d);
+              onResizeStop(id, e, direction, ref, d, position);
             }}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
@@ -156,7 +160,7 @@ export const DraggableBox = function DraggableBox({
                 containerProps={containerProps}
               />
             </div>
-          </Resizable>
+          </Rnd>
         </div>
       ) : (
         <div ref={drag} role="DraggableBox">
