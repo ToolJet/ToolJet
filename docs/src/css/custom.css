@@ -154,3 +154,7 @@ body {
 strong { 
   color: #3c92dc;
 }
+
+.alert a {
+  color: inherit;
+}
