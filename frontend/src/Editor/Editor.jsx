@@ -777,9 +777,9 @@ class Editor extends React.Component {
                       dataQueries={dataQueries}
                       componentChanged={this.componentChanged}
                       removeComponent={this.removeComponent}
-                      selectedComponent={selectedComponent}
+                      selectedComponentId={selectedComponent.id}
                       currentState={currentState}
-                      components={appDefinition.components}
+                      allComponents={appDefinition.components}
                       key={selectedComponent.id}
                     ></Inspector>
                   ) : (

@@ -54,13 +54,13 @@ class Table extends React.Component {
   }
 
   onActionButtonPropertyChanged = (index, property, value) => {
-    const actions = this.state.component.component.definition.properties.actions;
+    const actions = this.props.component.component.definition.properties.actions;
     actions.value[index][property] = value;
     this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
   };
 
   actionButtonEventUpdated = (event, value, extraData) => {
-    const actions = this.state.component.component.definition.properties.actions;
+    const actions = this.props.component.component.definition.properties.actions;
     const index = extraData.index;
 
     let newValues = actions.value;
@@ -72,7 +72,7 @@ class Table extends React.Component {
   };
 
   actionButtonEventOptionUpdated = (event, option, value, extraData) => {
-    const actions = this.state.component.component.definition.properties.actions;
+    const actions = this.props.component.component.definition.properties.actions;
     const index = extraData.index;
 
     let newValues = actions.value;
@@ -251,7 +251,7 @@ class Table extends React.Component {
   }
 
   onSortEnd = (oldIndex, newIndex) => {
-    const columns = this.state.component.component.definition.properties.columns;
+    const columns = this.props.component.component.definition.properties.columns;
     const newColumns = arrayMove(columns.value, oldIndex, newIndex);
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
@@ -273,31 +273,31 @@ class Table extends React.Component {
   }
 
   addNewColumn = () => {
-    const columns = this.state.component.component.definition.properties.columns;
+    const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
     newValue.push({ name: this.generateNewColumnName(columns.value) });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
   };
 
   addNewAction = () => {
-    const actions = this.state.component.component.definition.properties.actions;
+    const actions = this.props.component.component.definition.properties.actions;
     const newValue = actions ? actions.value : [];
     newValue.push({ name: computeActionName(actions), buttonText: 'Button' });
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
   removeAction = (index) => {
-    const newValue = this.state.component.component.definition.properties.actions.value;
+    const newValue = this.props.component.component.definition.properties.actions.value;
     newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
   onColumnItemChange = (index, item, value) => {
-    const columns = this.state.component.component.definition.properties.columns;
+    const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
 
     if (item === 'name') {
-      const columnSizes = this.state.component.component.definition.properties.columnSizes;
+      const columnSizes = this.props.component.component.definition.properties.columnSizes;
 
       if (columnSizes) {
         const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
@@ -316,7 +316,7 @@ class Table extends React.Component {
   };
 
   removeColumn = (index) => {
-    const columns = this.state.component.component.definition.properties.columns;
+    const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
     newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
@@ -332,13 +332,13 @@ class Table extends React.Component {
       eventOptionUpdated,
       components,
       currentState
-    } = this.state;
+    } = this.props;
 
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
 
     return (
-      <div className="properties-container p-2">
+      <div className="properties-container p-2" key={this.props.component.id}>
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', currentState, components)}
 
         <div className="field mb-2 mt-3">
