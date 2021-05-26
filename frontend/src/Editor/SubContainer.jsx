@@ -164,14 +164,24 @@ export const SubContainer = ({
     [moveBox]
   );
 
-  function onResizeStop(id, width, height, e, direction, ref, d) {
+  function onResizeStop(id, e, direction, ref, d, position) {
     const deltaWidth = d.width;
     const deltaHeight = d.height;
+
+    let { x, y } = position;
+
+    let  { left, top, width, height } = boxes[id];
+    
+    top = y;
+    left = x;
+
+    width = width + deltaWidth;
+    height = height + deltaHeight
 
     setBoxes(
       update(boxes, {
         [id]: {
-          $merge: { width: deltaWidth + width, height: deltaHeight + height }
+          $merge: { width, height, top, left }
         }
       })
     );

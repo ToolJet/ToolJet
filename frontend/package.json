@@ -38,6 +38,7 @@
     "react-loading-skeleton": "^2.2.0",
     "react-plotly.js": "^2.5.1",
     "react-resizable": "^1.11.1",
+    "react-rnd": "^10.3.0",
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.4.3",
     "react-select-search": "^3.0.5",

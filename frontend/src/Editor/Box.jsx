@@ -85,7 +85,7 @@ export const Box = function Box({
           containerProps={containerProps}
         ></ComponentToRender>
       ) : (
-        <div className="row p-1 m-1" style={{ cursor: 'move' }}>
+        <div className="row p-1 m-1">
           <div className="col-auto component-image-holder p-3">
             <div
               style={{
