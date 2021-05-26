@@ -56,7 +56,7 @@ export const Box = function Box({
   const backgroundColor = yellow ? 'yellow' : '';
 
   let styles = {
-    cursor: mode === 'edit' ? 'move' : ''
+    
   };
 
   if (inCanvas) {
