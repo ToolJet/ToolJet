@@ -1536,3 +1536,9 @@ input:focus-visible {
   position: fixed;
   bottom: 0;
 }
+
+.components-container {
+  .draggable-box { 
+    cursor: move;
+  }
+}
