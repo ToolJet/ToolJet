@@ -169,6 +169,13 @@ export const Inspector = ({
           {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components))}
         </div>
       }
+      <div className="widget-documentation-link p-2">
+        <a href={`https://docs.tooljet.io/docs/widgets/${componentMeta.name.toLowerCase()}`} target="_blank">
+          <small>
+            {componentMeta.name} documentation
+          </small>
+        </a>
+      </div>
     </div>
   );
 };
