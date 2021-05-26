@@ -10,20 +10,29 @@ import { toast } from 'react-toastify';
 import { validateQueryName } from '@/_helpers/utils';
 
 export const Inspector = ({
-  selectedComponent,
+  selectedComponentId,
   componentDefinitionChanged,
   dataQueries,
   removeComponent,
-  components,
+  allComponents,
   componentChanged,
   currentState
 }) => {
+  
+  const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component }
   const [component, setComponent] = useState(selectedComponent);
+
+  const [components, setComponents] = useState(allComponents);
+  
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
   useEffect(() => {
     setComponent(selectedComponent);
-  }, [selectedComponent]);
+  }, [selectedComponent.component.definition]);
+
+  useEffect(() => {
+    setComponents(allComponents);
+  }, [allComponents]);
 
   function handleComponentNameChange(newName) {
     if (validateQueryName(newName)) {
