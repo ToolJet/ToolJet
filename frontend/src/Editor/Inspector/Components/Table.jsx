@@ -355,14 +355,14 @@ class Table extends React.Component {
           <div>
             <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
               {columns.value.map((item, index) => (
-                <div className="card p-2 bg-light" key={index}>
+                <div className="card p-2 bg-light column-sort-row" key={index}>
                   <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.columnPopover(item, index)}>
                     <div className="row bg-light" role="button">
                       <div className="col-auto">
                         <SortableItem key={item.name}>
                           <img
                             style={{ cursor: 'move' }}
-                            src="https://www.svgrepo.com/show/20663/menu.svg"
+                            src="/assets/images/icons/editor/rearrange.svg"
                             width="10"
                             height="10"
                           />
@@ -372,9 +372,7 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <div className="btn btn-sm text-danger" onClick={() => this.removeColumn(index)}>
-                          x
-                        </div>
+                        <span class="badge bg-red-lt" onClick={() => this.removeColumn(index)}>x</span>
                       </div>
                     </div>
                   </OverlayTrigger>
@@ -396,6 +394,9 @@ class Table extends React.Component {
               </div>
             </div>
             <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
+            {actions.value.length === 0 && 
+              <center><small>This table doesn't have any action buttons</small></center>
+            }
           </div>
           <hr></hr>
 
