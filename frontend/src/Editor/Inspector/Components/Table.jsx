@@ -223,7 +223,7 @@ class Table extends React.Component {
             eventMeta={{ displayName: 'On click' }}
             definition={action.onClick}
             eventUpdated={this.actionButtonEventUpdated}
-            dataQueries={this.state.dataQueries}
+            dataQueries={this.props.dataQueries}
             eventOptionUpdated={this.actionButtonEventOptionUpdated}
             currentState={this.state.currentState}
             extraData={{ actionButton: action, index: index }} // This data is returned in the callbacks
