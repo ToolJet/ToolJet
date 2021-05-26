@@ -242,9 +242,7 @@ export const Container = ({
       {appLoading && (
         <div className="mx-auto mt-5 w-50 p-5">
           <center>
-            <div className="progress progress-sm w-50">
-              <div className="progress-bar progress-bar-indeterminate"></div>
-            </div>
+            <div class="spinner-border text-azure" role="status"></div>
           </center>
         </div>
       )}
