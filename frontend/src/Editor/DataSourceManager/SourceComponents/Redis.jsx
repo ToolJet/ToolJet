@@ -36,7 +36,7 @@ export const Redis = ({ optionchanged, options }) => {
         <div className="col-md-5">
           <label className="form-label">Password</label>
           <input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => optionchanged('password', e.target.value)}
             value={options.password.value}

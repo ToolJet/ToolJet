@@ -48,12 +48,12 @@ export const Mysql = ({
           <label className="form-label">
             Password
             <small className="text-green mx-2">
-              <img className="mx-2" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
-              Encrypted
+              <img className="mx-2 encrypted-icon encrypted-icon" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
+              <span className="pt-2">Encrypted</span> 
             </small>
           </label>
           <input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => optionchanged('password', e.target.value)}
             value={options.password.value}

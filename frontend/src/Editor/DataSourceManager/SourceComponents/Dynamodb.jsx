@@ -28,7 +28,7 @@ export const Dynamodb = ({ optionchanged, options }) => {
             Access key
           </label>
           <input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => {
               optionchanged('access_key', e.target.value);
@@ -40,7 +40,7 @@ export const Dynamodb = ({ optionchanged, options }) => {
           <label className="form-label">
             Secret key
             <small className="text-green mx-2">
-              <img className="mx-2" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
+              <img className="mx-2 encrypted-icon" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
               Encrypted
             </small>
           </label>
