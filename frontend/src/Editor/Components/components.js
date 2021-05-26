@@ -129,7 +129,8 @@ export const componentTypes = [
       showGridLines: { type: 'toggle', displayName: 'Show grid lines'},
       type: { type: 'select', displayName: 'Chart type', options: [
         { name: 'Line', value: 'line' },
-        { name: 'Bar', value: 'bar' }
+        { name: 'Bar', value: 'bar' },
+        { name: 'Pie', value: 'pie' }
       ] },
     },
     events: {},

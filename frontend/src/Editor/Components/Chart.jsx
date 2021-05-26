@@ -68,12 +68,22 @@ export const Chart = function Chart({
 
     if(!Array.isArray(rawData)) { rawData = []; }
 
-    const newData = [{
-      type: chartType || 'line',
-      x: rawData.map((item) => item["x"]),
-      y: rawData.map((item) => item["y"]),
-      marker: { color: markerColor }
-    }];
+    let newData = [];
+
+    if(chartType === 'pie') {
+      newData = [{
+        type: chartType,
+        values: rawData.map((item) => item["value"]),
+        labels: rawData.map((item) => item["label"]),
+      }];
+    } else { 
+      newData = [{
+        type: chartType || 'line',
+        x: rawData.map((item) => item["x"]),
+        y: rawData.map((item) => item["y"]),
+        marker: { color: markerColor }
+      }];
+    }
 
     setChartData(newData);
     
