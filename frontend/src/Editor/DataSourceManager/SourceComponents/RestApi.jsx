@@ -186,7 +186,7 @@ export const Restapi = ({
             <label className="form-label text-muted mt-3">
               Client Secret
               <small className="text-green mx-2">
-                <img className="mx-2" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
+                <img className="mx-2 encrypted-icon" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
                 Encrypted
               </small>
             </label>

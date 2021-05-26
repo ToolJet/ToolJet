@@ -11,12 +11,12 @@ export const Stripe = ({
           <label className="form-label">
             API key
             <small className="text-green mx-2">
-              <img className="mx-2" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
+              <img className="mx-2 encrypted-icon" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
               Encrypted
             </small>
           </label>
           <input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => optionchanged('api_key', e.target.value)}
             value={options.api_key.value}

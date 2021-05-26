@@ -25,7 +25,7 @@ export const Mongodb = ({ optionchanged, options }) => {
           <label className="form-label">
             Connection string
             <small className="text-green mx-2">
-              <img className="mx-2" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
+              <img className="mx-2 encrypted-icon" src="https://www.svgrepo.com/show/12694/padlock.svg" width="12" height="12" />
               Encrypted
             </small>
           </label>
@@ -82,7 +82,7 @@ export const Mongodb = ({ optionchanged, options }) => {
             <div className="col-md-4">
               <label className="form-label">Password</label>
               <input
-                type="text"
+                type="password"
                 className="form-control"
                 onChange={(e) => optionchanged('password', e.target.value)}
                 value={options.password.value}
