@@ -401,14 +401,14 @@ class Table extends React.Component {
 
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
 
-          <hr></hr>
+          <div class="hr-text">Events</div>
 
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked, currentState, components)}
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged, currentState, components)}
 
           {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
 
-          <hr></hr>
+          <div class="hr-text">Style</div>
         </div>
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'visible', 'properties', currentState)}
