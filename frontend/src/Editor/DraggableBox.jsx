@@ -163,7 +163,7 @@ export const DraggableBox = function DraggableBox({
           </Rnd>
         </div>
       ) : (
-        <div ref={drag} role="DraggableBox">
+        <div ref={drag} role="DraggableBox" className="draggable-box">
           <Box
             component={component}
             id={id}
