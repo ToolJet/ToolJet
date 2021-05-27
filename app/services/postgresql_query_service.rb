@@ -39,7 +39,7 @@ class PostgresqlQueryService
       result = connection.exec(query_text)
 
     rescue StandardError => e
-      reset_connection(data_source) if connection.finished?
+      reset_connection(data_source) if connection&.finished?
 
       puts e
       error = { message: e.message } 
