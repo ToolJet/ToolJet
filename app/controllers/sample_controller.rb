@@ -2,7 +2,7 @@ class SampleController < ApplicationController
 
     APP_MAPPING = {
         'github-contributors': '47283446-3c9b-4fbb-b2f3-75540664df8c',
-        'customer-dashboard': 'd0565c26-3169-4ca2-a4a8-af5f622139d6'
+        'customer-dashboard': 'd041993a-4737-4a47-930c-9513eac99645'
     }
 
     def deploy
