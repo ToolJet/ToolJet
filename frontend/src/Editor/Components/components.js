@@ -7,7 +7,6 @@ export const componentTypes = [
     properties: {
       title: { type: 'string', displayName: 'Title' },
       data: { type: 'code', displayName: 'Table data' },
-      visible: { type: 'string', displayName: 'Show when' },
       loadingState: { type: 'code', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
       serverSidePagination: { type: 'toggle', displayName: 'Server Side Pagination'},
@@ -81,7 +80,6 @@ export const componentTypes = [
     },
     properties: {
       text: { type: 'code', displayName: 'Button Text' },
-      visible: { type: 'string', displayName: 'Show when', tip: 'Widget will be hidden if the value of this field is false.' },
       loadingState: { type: 'code', displayName: 'Loading State'}
     },
     events: {
@@ -384,7 +382,6 @@ export const componentTypes = [
     component: 'Text',
     properties: {
       text: { type: 'code', displayName: 'Text' },
-      visible: { type: 'string', displayName: 'Show when' },
       loadingState: { type: 'code', displayName: 'Show loading state' }
     },
     defaultSize: {
@@ -424,7 +421,6 @@ export const componentTypes = [
     component: 'Image',
     properties: {
       source: { type: 'code', displayName: 'URL' },
-      visible: { type: 'string', displayName: 'Show when' }
     },
     events: {
         onClick: { displayName: 'On click'},
@@ -457,7 +453,6 @@ export const componentTypes = [
     },
     component: 'Container',
     properties: {
-      visible: { type: 'string', displayName: 'Show when' }
     },
     events: {},
     styles: {
