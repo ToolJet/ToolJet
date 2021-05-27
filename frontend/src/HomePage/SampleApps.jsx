@@ -17,7 +17,8 @@ const SAMPLE_APPS = [
     widgets: ['Table', 'Chart'],
     sources: ['PostgreSQL'],
     id: 'customer-dashboard'
-  }
+  },
+  
 ]
 
 export const SampleApps = function SampleApps({
@@ -40,11 +41,9 @@ export const SampleApps = function SampleApps({
   }
 
   return <div className="col-md-12">
-    <center><h2 className="mb-4">Explore sample applications</h2></center>
+    <h2 className="mb-4">ToolJet app library</h2>
     <div className="row">
 
-      <div className="col-md-3">
-      </div>
 
       {SAMPLE_APPS.map((app) => { 
         return (
