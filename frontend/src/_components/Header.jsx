@@ -42,8 +42,19 @@ export const Header = function Header({
           </Link>
         </li>
 
+        <li className={`nav-item ${pahtName === '/library' ? 'active' : ''}`}>
+          <Link to={'/library'} className="nav-link mx-2">
+            <span className="nav-link-icon d-md-none d-lg-inline-block">
+              <img src="https://www.svgrepo.com/show/39547/gallery.svg" width="15" height="15" /> 
+            </span>
+            <span className="nav-link-title">
+              Library
+            </span>
+          </Link>
+        </li>
+
         <li className={`nav-item ${pahtName === '/users' ? 'active' : ''}`}>
-          <Link to={'/users'} className="nav-link">
+          <Link to={'/users'} className="nav-link mx-2">
             <span className="nav-link-icon d-md-none d-lg-inline-block">
               <img src="https://www.svgrepo.com/show/154834/users.svg" width="15" height="15" /> 
             </span>

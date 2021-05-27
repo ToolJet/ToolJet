@@ -3,7 +3,7 @@ import { Router, Route } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService } from '@/_services';
 import { PrivateRoute } from '@/_components';
-import { HomePage } from '@/HomePage';
+import { HomePage, Library } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
 import { InvitationPage } from '@/InvitationPage';
@@ -49,6 +49,7 @@ class App extends React.Component {
           <PrivateRoute exact path="/applications/:id" component={Viewer} />
           <PrivateRoute exact path="/oauth2/authorize" component={Authorize} />
           <PrivateRoute exact path="/users" component={ManageOrgUsers} />
+          <PrivateRoute exact path="/library" component={Library} />
         </div>
       </Router>
     );
