@@ -17,13 +17,7 @@ class SampleController < ApplicationController
 
         new_app.save
 
-        version = AppVersion.create(
-            app: new_app,
-            definition: app.current_version.definition,
-            name: 'v0'
-        )
-
-        new_app.update(current_version: version)
+        new_definition = app.current_version.definition.to_json
 
 
         AppUser.create(app: new_app, user: @current_user, role: 'admin')
@@ -44,14 +38,25 @@ class SampleController < ApplicationController
         end
 
         DataQuery.where(app: app).each do |query|
-            DataQuery.create(
+            new_query = DataQuery.create(
                 app_id: new_app.id, 
                 name: query.name, 
                 options: query.options, 
                 kind: query.kind,
                 data_source_id: source_mapping[query.data_source_id]
             )
+
+            new_definition.gsub!(query.id, new_query.id)
+
         end
+
+        version = AppVersion.create(
+            app: new_app,
+            definition: JSON.parse(new_definition),
+            name: 'v0'
+        )
+
+        new_app.update(current_version: version)
 
         render json: new_app
 
