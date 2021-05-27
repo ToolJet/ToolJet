@@ -170,7 +170,7 @@ export const Inspector = ({
       }
         
       {!['Table', 'Chart'].includes(componentMeta.component)   && 
-        <div className="properties-container p-2">
+        <div className="properties-container p-2 mb-5 pb-3">
           {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components))}
           <div class="hr-text">Style</div>
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}

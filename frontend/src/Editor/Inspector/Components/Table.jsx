@@ -338,7 +338,7 @@ class Table extends React.Component {
     const actions = component.component.definition.properties.actions || { value: [] };
 
     return (
-      <div className="properties-container p-2" key={this.props.component.id}>
+      <div className="properties-container p-2 mb-5 pb-3" key={this.props.component.id}>
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', currentState, components)}
 
         <div className="field mb-2 mt-3">
