@@ -412,7 +412,6 @@ class Table extends React.Component {
           <div class="hr-text">Style</div>
         </div>
 
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'visible', 'properties', currentState)}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
       </div>
