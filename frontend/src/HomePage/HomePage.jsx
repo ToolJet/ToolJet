@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Pagination, Header } from '@/_components';
 import { Folders } from './Folders';
 import { AppMenu } from './AppMenu';
+import { SampleApps } from './SampleApps';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -103,6 +104,7 @@ class HomePage extends React.Component {
                     </a>
                   </div>
                 </div>
+                <SampleApps/>
               </div>
             </div>
           </div>

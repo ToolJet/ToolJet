@@ -5,8 +5,7 @@ default: &default
 
 development:
   <<: *default
-  database: tooljet_development
-  username: postgres
+  database: stackegg_development
   password: <%= ENV.fetch("DB_PASSWORD", '') %>
   host: <%= ENV.fetch("DB_HOST", 'localhost') %>
 
@@ -20,4 +19,3 @@ production:
   database: <%= ENV['PG_DB'] %>
   username: <%= ENV['PG_USER'] %>
   password: <%= ENV['PG_PASS'] %>
-  

@@ -1,5 +1,5 @@
-# frontend/*
+frontend/*
 docs/*
 tmp/*
-# node_modules/*
+node_modules/*
 /.env

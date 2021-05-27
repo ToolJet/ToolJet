@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: tooljet-server-deployment
 spec:
-  replicas: 1
+  replicas: 4
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -19,16 +19,16 @@ spec:
     spec:
       containers:
         - name: server-container
-          image: tooljet/tooljet-server-ce:latest
+          image: tooljet/saas:latest
           imagePullPolicy: Always
           command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
           resources:
             limits:
-              memory: "1024Mi"
-              cpu: "1000m"
+              memory: "3000Mi"
+              cpu: "500m"
             requests:
-              memory: "1024Mi"
-              cpu: "1000m"
+              memory: "3000Mi"
+              cpu: "500m"
           ports:
             - containerPort: 3000
           readinessProbe:
@@ -74,4 +74,4 @@ spec:
                   key: encryption_salt                     
 
       imagePullSecrets:
-        - name: registry-secret
+        - name: docker-secret
