@@ -49,11 +49,11 @@ export const SampleApps = function SampleApps({
         return (
           <div className="col-md-3">
             <div class="card">
-              <div class="empty px-3">
+              <div class="empty px-3 py-3">
                 {/* <div class="empty-img">
                 </div> */}
-                <p class="empty-title">{app.name}</p>
-                <p class="subtitle text-muted">
+                <h3>{app.name}</h3>
+                <p class="text-muted">
                   {app.description}
                 </p>
                 <div className="flex">
