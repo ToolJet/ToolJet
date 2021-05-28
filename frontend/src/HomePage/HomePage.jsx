@@ -5,6 +5,8 @@ import { Pagination, Header } from '@/_components';
 import { Folders } from './Folders';
 import { AppMenu } from './AppMenu';
 import { BlankPage } from './BlankPage';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { renderTooltip } from '@/_helpers/appUtils';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -81,6 +83,7 @@ class HomePage extends React.Component {
     } = this.state;
     return (
       <div className="wrapper home-page">
+
         <Header
 
         />
@@ -156,17 +159,28 @@ class HomePage extends React.Component {
                               </td>
                               <td class="text-muted col-auto pt-4">
                                 <Link
+                                  to={`/apps/${app.id}`}
+                                >
+                                  <OverlayTrigger
+                                    placement="top"
+                                    overlay={(props) => renderTooltip({props, text: 'Open in app builder'})}
+                                  >
+                                    <span class="badge bg-green-lt">
+                                    Edit
+                                    </span>
+                                  </OverlayTrigger>
+                                </Link>
+                                <Link
                                   to={`/applications/${app.id}`}
                                   target="_blank"
                                 >
-                                  <span class="badge bg-blue-lt mx-2">launch</span>
-                                </Link>
-                            
-                                <Link
-                                  to={`/apps/${app.id}`}
-                                >
-                                  <span class="badge bg-green-lt">Edit</span>
+                                  <OverlayTrigger
+                                    placement="top"
+                                    overlay={(props) => renderTooltip({props, text: 'Open in app viewer'})}
+                                  >
+                                    <span class="badge bg-blue-lt mx-2">launch</span>
 
+                                  </OverlayTrigger>
                                 </Link>
 
                                 <AppMenu 
