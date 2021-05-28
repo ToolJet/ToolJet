@@ -1,8 +1,10 @@
+import React from 'react';
 import { toast } from 'react-toastify';
 import { getDynamicVariables, resolveReferences } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
+import Tooltip from 'react-bootstrap/Tooltip';
 
 function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -340,3 +342,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
     });
   });
 }
+
+export function renderTooltip({props, text}) {
+  return <Tooltip id="button-tooltip" {...props}>
+    {text}
+  </Tooltip>
+};
