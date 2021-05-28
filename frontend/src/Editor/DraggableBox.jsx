@@ -70,6 +70,7 @@ export const DraggableBox = function DraggableBox({
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
+  const [mouseOver, setMouseOver] = useState(false);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -116,16 +117,21 @@ export const DraggableBox = function DraggableBox({
   return (
     <div>
       {inCanvas ? (
-        <div style={getStyles(left, top, isDragging, component)} className="draggable-box">
+        <div 
+          style={getStyles(left, top, isDragging, component)} 
+          className="draggable-box"
+          onMouseOver={() => setMouseOver(true)}
+          onMouseLeave={() => setMouseOver(false)}
+        >
           
           <Rnd
             style={{ ...style }}
             size={{ width: width + 6,  height: height + 6 }}
             position={{ x: left, y: top }}
             defaultSize={{}}
-            className="resizer"
+            className={`resizer ${mouseOver ? 'resizer-active' : ''}`}
             onResize={() => setResizing(true)}
-            resizeHandleClasses={resizerClasses}
+            resizeHandleClasses={mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
             disableDragging={true}
             onResizeStop={(e, direction, ref, d, position) => {
@@ -134,7 +140,7 @@ export const DraggableBox = function DraggableBox({
             }}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-            {mode === 'edit' && 
+            {mode === 'edit' && mouseOver && 
             <ConfigHandle 
               id={id} 
               removeComponent={removeComponent}
