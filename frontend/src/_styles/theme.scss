@@ -266,18 +266,7 @@ body {
           border: solid 1px transparent;
         }
 
-        .resizer:hover {
-          border: solid 1px rgb(70, 165, 253);
-
-          .top-right,
-          .top-left,
-          .bottom-right,
-          .bottom-left {
-            background: white;
-            border-radius: 10px;
-            border: solid 1px rgb(70, 165, 253);
-          }
-        }
+        
       }
     }
 
@@ -1378,7 +1367,6 @@ body {
     top: -20px;
     position: fixed;
 
-    display: none;
     .badge {
       font-size: 9px;
     }
@@ -1396,9 +1384,22 @@ body {
 }
 
 
-.draggable-box:hover {
+// .draggable-box:hover {
   .config-handle {
     display: block;
+  }
+// }
+
+.resizer-active {
+  border: solid 1px rgb(70, 165, 253)!important;
+
+  .top-right,
+  .top-left,
+  .bottom-right,
+  .bottom-left {
+    background: white;
+    border-radius: 10px;
+    border: solid 1px rgb(70, 165, 253);
   }
 }
 
