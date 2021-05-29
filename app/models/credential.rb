@@ -1,5 +1,3 @@
 class Credential < ApplicationRecord
-  include Encryptable
-
-  attr_encrypted :value
+  encrypts :value
 end

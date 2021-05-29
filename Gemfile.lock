@@ -1238,6 +1238,7 @@ GEM
     listen (3.5.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
+    lockbox (0.6.4)
     lograge (0.11.2)
       actionpack (>= 4)
       activesupport (>= 4)
@@ -1375,6 +1376,7 @@ DEPENDENCIES
   jwt
   kaminari
   listen (~> 3.3)
+  lockbox
   lograge
   mongo (~> 2)
   mysql2
