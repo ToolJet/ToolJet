@@ -67,16 +67,17 @@ spec:
                 secretKeyRef:
                   name: server
                   key: secret_key_base
+            - name: LOCKBOX_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: lockbox_key                  
             - name: ENCRYPTION_SERVICE_SALT
               valueFrom:
                 secretKeyRef:
                   name: server
                   key: encryption_salt
-            - name: LOCKBOX_MASTER_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: server
-                  key: lockbox_key                        
+            
 
       imagePullSecrets:
         - name: docker-secret

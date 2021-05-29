@@ -1,1 +1,1 @@
-Lockbox.master_key = ENV.fetch('LOCKBOX_MASTER_KEY')
+Lockbox.master_key = ENV.fetch('LOCKBOX_MASTER_KEY').sub('\n', '')

@@ -1,7 +1,4 @@
 class Credential < ApplicationRecord
-  encrypts :value, migrating: true
+  encrypts :value
 
-  include Encryptable
-
-  attr_encrypted :value
 end
