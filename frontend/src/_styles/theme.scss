@@ -9,6 +9,19 @@ body {
     max-width: 100%;
   }
 
+  .resizer-active {
+    border: solid 1px rgb(70, 165, 253)!important;
+  
+    .top-right,
+    .top-left,
+    .bottom-right,
+    .bottom-left {
+      background: white;
+      border-radius: 10px;
+      border: solid 1px rgb(70, 165, 253);
+    }
+  }
+
   .query-manager {
     .btn {
       height: 31px;
@@ -1389,19 +1402,6 @@ body {
     display: block;
   }
 // }
-
-.resizer-active {
-  border: solid 1px rgb(70, 165, 253)!important;
-
-  .top-right,
-  .top-left,
-  .bottom-right,
-  .bottom-left {
-    background: white;
-    border-radius: 10px;
-    border: solid 1px rgb(70, 165, 253);
-  }
-}
 
 .apps-table { 
   .app-title {
