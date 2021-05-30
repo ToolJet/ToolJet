@@ -30,6 +30,7 @@ export const defaultOptions = {
   },
   
   elasticsearch: {
+    scheme: { value: 'https' },
     host: { value: 'localhost' },
     port: { value: 9200 },
     username: { value: '' },

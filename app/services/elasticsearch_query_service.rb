@@ -13,10 +13,23 @@ class ElasticsearchQueryService
   end
 
   def self.connection options
+
+    scheme = options.dig('scheme', 'value')
+    host = options.dig('host', 'value')
+    port = options.dig('port', 'value')
+    username = options.dig('username', 'value')
+    password = options.dig('password', 'value')
+
+    unless username.blank? || password.blank?
+      url = "#{scheme}://#{username}:#{password}@#{host}:#{port}"
+    else
+      url = "#{scheme}://#{host}:#{port}"
+    end
+    
     client = Elasticsearch::Client.new(
-        url: "#{options.dig('host', 'value')}:#{options.dig('port', 'value')}",
+        url: url,
         retry_on_failure: 5,
-        request_timeout: 30,
+        request_timeout: 15,
         adapter: :typhoeus
     )
     
@@ -71,10 +84,23 @@ class ElasticsearchQueryService
 
   private 
     def create_connection
+
+      scheme = source_options['scheme']
+      host = source_options['host']
+      port = source_options['port']
+      username = source_options['username']
+      password = source_options['password']
+
+      unless username.blank? || password.blank?
+        url = "#{scheme}://#{username}:#{password}@#{host}:#{port}"
+      else
+        url = "#{scheme}://#{host}:#{port}"
+      end
+
       connection = Elasticsearch::Client.new(
-        url: "#{source_options['host']}:#{source_options['port']}",
+        url: url,
         retry_on_failure: 5,
-        request_timeout: 30,
+        request_timeout: 15,
         adapter: :typhoeus
       )
 
