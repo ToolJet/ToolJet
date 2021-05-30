@@ -31,7 +31,7 @@ export const TestConnection = ({ kind, options }) => {
         setConnectionStatus('success');
         toast.success('Datasource Connection Tested, Successfully!', { hideProgressBar: true, position: 'top-center' });
       },
-      (error) => {
+      ({error}) => {
         setTestingStatus(false);
         setConnectionStatus('failed');
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
