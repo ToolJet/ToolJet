@@ -226,7 +226,7 @@ function getQueryVariables(options, state) {
 }
 
 export function previewQuery(_ref, query) {
-  const options = getQueryVariables(query.options, _ref.state.currentState);
+  const options = getQueryVariables(query.options, _ref.props.currentState);
 
   _ref.setState({ previewLoading: true });
 
