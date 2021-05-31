@@ -1547,3 +1547,9 @@ input:focus-visible {
 .column-sort-row { 
   border-radius: 0;
 }
+
+.jet-button {
+  &.btn-primary:hover {
+    background: var(--tblr-btn-color-darker) !important;
+  }
+}

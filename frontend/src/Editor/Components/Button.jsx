@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
+var tinycolor = require("tinycolor2");
 
 export const Button = function Button({
   id, width, height, component, onComponentClick, currentState
@@ -24,12 +25,13 @@ export const Button = function Button({
     backgroundColor,
     color,
     width,
-    height
+    height,
+    '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString() 
   };
 
   return (
     <button
-      className={`btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
+      className={`jet-button btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
       style={computedStyles}
       onClick={() => onComponentClick(id, component)}
     >
