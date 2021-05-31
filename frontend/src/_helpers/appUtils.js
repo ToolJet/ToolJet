@@ -232,7 +232,14 @@ export function previewQuery(_ref, query) {
 
   return new Promise(function (resolve, reject) {
     dataqueryService.preview(query, options).then(data => {
-      _ref.setState({ previewLoading: false, queryPreviewData: data });
+      
+      let finalData = data.data;
+
+      if (query.options.enableTransformation) {
+        finalData = runTransformation(_ref, finalData, query.options.transformation);
+      }
+
+      _ref.setState({ previewLoading: false, queryPreviewData: finalData });
       resolve();
     }).catch(({ error, data } ) => {
       _ref.setState({ previewLoading: false, queryPreviewData: data });
