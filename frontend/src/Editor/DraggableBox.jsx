@@ -134,6 +134,7 @@ export const DraggableBox = function DraggableBox({
             resizeHandleClasses={mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
             disableDragging={true}
+            enableResizing={mode === 'edit'}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
               onResizeStop(id, e, direction, ref, d, position);
