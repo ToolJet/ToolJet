@@ -288,7 +288,7 @@ class Editor extends React.Component {
         }}
       >
         <td>
-          <img src={sourceMeta.icon} width="20" height="20" /> {dataSource.name}
+          <img src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`} width="20" height="20" /> {dataSource.name}
         </td>
       </tr>
     );
@@ -314,7 +314,7 @@ class Editor extends React.Component {
         role="button"
       >
         <div className="col">
-          <img src={sourceMeta.icon} width="20" height="20" />
+          <img src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`} width="20" height="20" />
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto">
@@ -465,7 +465,7 @@ class Editor extends React.Component {
                         role="button"
                     >
                         <img
-                            src="https://www.svgrepo.com/show/126011/zoom-out.svg"
+                            src="/assets/images/icons/zoom-out.svg"
                             width="12"
                             height="12"
                         />
@@ -480,7 +480,7 @@ class Editor extends React.Component {
                         role="button"
                     >
                         <img
-                        src="https://www.svgrepo.com/show/45597/zoom-in.svg"
+                        src="/assets/images/icons/zoom-in.svg"
                         width="12"
                         height="12"
                         />
@@ -670,7 +670,7 @@ class Editor extends React.Component {
                         </div>
                         <div className="col-auto px-3">
                           {/* {<button className="btn btn-sm btn-light mx-2">
-                                                        <img className="p-1" src="https://www.svgrepo.com/show/13682/search.svg" width="17" height="17"/>
+                                                        <img className="p-1" src="/search.svg" width="17" height="17"/>
                                                     </button>} */}
 
                           <span
@@ -747,7 +747,7 @@ class Editor extends React.Component {
                         data-bs-toggle="tab"
                       >
                         <img
-                          src="https://www.svgrepo.com/show/308964/search-look-inspect-magnifying-glass.svg"
+                          src="/assets/images/icons/lens/svg"
                           width="16"
                           height="16"
                           className="d-md-none d-lg-block"
@@ -761,7 +761,7 @@ class Editor extends React.Component {
                         className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}
                         data-bs-toggle="tab"
                       >
-                        <img src="https://www.svgrepo.com/show/274200/insert.svg" width="16" height="16" className="d-md-none d-lg-block"/>
+                        <img src="/assets/images/icons/lens/insert.svg" width="16" height="16" className="d-md-none d-lg-block"/>
                         &nbsp; Insert
                       </a>
                     </li>

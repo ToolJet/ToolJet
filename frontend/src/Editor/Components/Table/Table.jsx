@@ -602,7 +602,7 @@ export function Table({
 
           <div className="col-auto">
             <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
-              <img src="https://www.svgrepo.com/show/264090/filter.svg" width="13" height="13" />
+              <img src="/assets/images/icons/filter.svg" width="13" height="13" />
               {filters.length > 0 && 
                 <a class="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
               }
@@ -612,7 +612,7 @@ export function Table({
               className="btn btn-light btn-sm p-1"
               onClick={() => exportData('csv', true)}
             >
-              <img src="https://www.svgrepo.com/show/27716/download.svg" width="13" height="13" />
+              <img src="/assets/images/icons/download.svg" width="13" height="13" />
             </span>
           </div>
         </div>

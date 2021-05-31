@@ -250,7 +250,7 @@ class QueryManager extends React.Component {
                   autoFocus={false}
                 />
                 <span className="input-icon-addon">
-                  <img src="https://www.svgrepo.com/show/149235/edit.svg" width="12" height="12" />
+                  <img src="/assets/images/icons/edit.svg" width="12" height="12" />
                 </span>
               </div>
             </div>
@@ -292,7 +292,7 @@ class QueryManager extends React.Component {
                 onClick={this.props.toggleQueryPaneHeight}
                 data-tip="Maximize query editor"
               >
-                <img src="https://www.svgrepo.com/show/310311/arrow-maximize.svg" width="12" height="12" />
+                <img src="/assets/images/icons/maximize.svg" width="12" height="12" />
               </span>
             ) : (
               <span
@@ -300,7 +300,7 @@ class QueryManager extends React.Component {
                 onClick={this.props.toggleQueryPaneHeight}
                 data-tip="Minimize query editor"
               >
-                <img src="https://www.svgrepo.com/show/310476/arrow-minimize.svg" width="12" height="12" />
+                <img src="/assets/images/icons/minimize.svg" width="12" height="12" />
               </span>
             )}
           </div>
