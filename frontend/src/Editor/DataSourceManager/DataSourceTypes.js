@@ -2,7 +2,6 @@ export const dataBaseSources = [
   {
     name: 'PostgreSQL',
     kind: 'postgresql',
-    icon: 'https://www.svgrepo.com/show/303301/postgresql-logo.svg',
     options: {
       host: { type: 'string' },
       port: { type: 'string' },
@@ -19,7 +18,6 @@ export const dataBaseSources = [
   {
     name: 'MySQL',
     kind: 'mysql',
-    icon: 'https://www.svgrepo.com/show/303251/mysql-logo.svg',
     exposedVariables: {
       isLoading: {},
       data: {},
@@ -36,7 +34,6 @@ export const dataBaseSources = [
   {
     name: 'MongoDB',
     kind: 'mongodb',
-    icon: 'https://cdn.worldvectorlogo.com/logos/mongodb-icon-1.svg',
     exposedVariables: {
       isLoading: {},
       data: {},
@@ -54,7 +51,6 @@ export const dataBaseSources = [
   {
     name: 'Firestore',
     kind: 'firestore',
-    icon: 'https://static.invertase.io/assets/firebase/cloud-firestore.svg',
     exposedVariables: {
       isLoading: {},
       data: [],
@@ -67,7 +63,6 @@ export const dataBaseSources = [
   {
     name: 'DynamoDB',
     kind: 'dynamodb',
-    icon: 'https://pics.freeicons.io/uploads/icons/png/9820297401540553608-512.png',
     exposedVariables: {
       isLoading: {},
       data: {},
@@ -82,7 +77,6 @@ export const dataBaseSources = [
   {
     name: 'Elasticsearch',
     kind: 'elasticsearch',
-    icon: 'https://cdn.worldvectorlogo.com/logos/elastic-elasticsearch.svg',
     exposedVariables: {
       isLoading: {},
       data: {},
@@ -98,7 +92,6 @@ export const dataBaseSources = [
   {
     name: 'Redis',
     kind: 'redis',
-    icon: 'https://www.svgrepo.com/show/303460/redis-logo.svg',
     exposedVariables: {
       isLoading: {},
       data: {},
@@ -117,7 +110,6 @@ export const apiSources = [
   {
     name: 'Rest API',
     kind: 'restapi',
-    icon: 'https://www.svgrepo.com/show/120283/api.svg',
     options: {
       url: { type: 'string' },
       auth_type: { type: 'string' },
@@ -143,7 +135,6 @@ export const apiSources = [
   {
     name: 'Stripe',
     kind: 'stripe',
-    icon: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg',
     exposedVariables: {
       isLoading: {},
       data: {},
@@ -157,7 +148,6 @@ export const apiSources = [
   {
     name: 'Google Sheets',
     kind: 'googlesheets',
-    icon: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg',
     exposedVariables: {
       isLoading: {},
       data: {},
@@ -171,7 +161,6 @@ export const apiSources = [
   {
     name: 'Slack',
     kind: 'slack',
-    icon: 'https://www.svgrepo.com/show/303320/slack-new-logo-logo.svg',
     exposedVariables: {
       isLoading: {},
       data: {},

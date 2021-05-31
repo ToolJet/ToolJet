@@ -83,7 +83,7 @@ export const AppMenu = function AppMenu({
     }
   >
     <span className="badge bg-blue-lt mx-2" role="button">
-      <img src="https://www.svgrepo.com/show/12267/menu.svg" width="12" height="12" />
+      <img src="/assets/images/icons/app-menu.svg" width="12" height="12" />
     </span>
   </OverlayTrigger>
 }

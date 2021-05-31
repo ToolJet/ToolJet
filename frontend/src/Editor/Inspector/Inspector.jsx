@@ -108,7 +108,7 @@ export const Inspector = ({
                     value={component.component.name}
                 />
                 <span className="input-icon-addon">
-                    <img src="https://www.svgrepo.com/show/149235/edit.svg" width="12" height="12" />
+                    <img src="/assets/images/icons/edit-source.svg" width="12" height="12" />
                 </span>
             </div>
         </div>
@@ -134,7 +134,7 @@ export const Inspector = ({
             <img
                 role="button"
                 className="component-action-button"
-                src="https://www.svgrepo.com/show/46582/menu.svg"
+                src="/assets/images/icons/menu.svg"
                 width="15"
                 height="15"
             />

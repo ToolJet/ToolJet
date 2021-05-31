@@ -69,7 +69,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: '/assets/images/icons/button.svg',
     name: 'Button',
     displayName: 'Button',
     description: 'Trigger actions: queries, alerts etc',
@@ -110,7 +109,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/36266/chart.svg',
     name: 'Chart',
     displayName: 'Chart',
     description: 'Display charts',
@@ -160,7 +158,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://cdn.iconscout.com/icon/free/png-256/modal-10-444862.png',
     name: 'Modal',
     displayName: 'Modal',
     description: 'Modal triggered by events',
@@ -198,7 +195,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/38828/text.svg',
     name: 'TextInput',
     displayName: 'Text Input',
     description: 'Text field for forms',
@@ -230,7 +226,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/14690/calendar.svg',
     name: 'Datepicker',
     displayName: 'Date Picker',
     description: 'Select a date and time',
@@ -266,7 +261,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/309414/checkbox-checked.svg',
     name: 'Checkbox',
     displayName: 'Checkbox',
     description: 'A single checkbox',
@@ -308,7 +302,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/317958/editor-left.svg',
     name: 'Textarea',
     displayName: 'Textarea',
     description: 'Text area form field',
@@ -342,7 +335,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/14690/calendar.svg',
     name: 'DateRangePicker',
     displayName: 'Date Range Picker',
     description: 'Select a date range',
@@ -375,7 +367,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/219344/text.svg',
     name: 'Text',
     displayName: 'Text',
     description: 'Display markdown or HTML',
@@ -410,7 +401,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/35088/image.svg',
     name: 'Image',
     displayName: 'Image',
     description: 'Display an Image',
@@ -443,7 +433,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/14343/table.svg',
     name: 'Container',
     displayName: 'Container',
     description: 'Wrapper for multiple components',
@@ -470,7 +459,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/46775/drop-down-list.svg',
     name: 'Dropdown',
     displayName: 'Dropdown Selector',
     description: 'Select one value from options',
@@ -511,7 +499,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/16187/multiple-shots.svg',
     name: 'Multiselect',
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
@@ -552,7 +539,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/5908/text-document.svg',
     name: 'RichTextEditor',
     displayName: 'Rich Text Editor',
     description: 'Rich text editor',
@@ -584,7 +570,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/135620/map.svg',
     name: 'Map',
     displayName: 'Map',
     description: 'Display Google Maps',

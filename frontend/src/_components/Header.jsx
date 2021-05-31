@@ -34,7 +34,7 @@ export const Header = function Header({
         <li className={`nav-item mx-3 ${pahtName === '/' ? 'active' : ''}`}>
           <Link to={'/'} className="nav-link">
             <span className="nav-link-icon d-md-none d-lg-inline-block">
-              <img src="https://www.svgrepo.com/show/309806/office-apps.svg" width="15" height="15" /> 
+              <img src="/assets/images/icons/apps.svg" width="15" height="15" /> 
             </span>
             <span className="nav-link-title">
               Apps
@@ -45,7 +45,7 @@ export const Header = function Header({
         <li className={`nav-item ${pahtName === '/users' ? 'active' : ''}`}>
           <Link to={'/users'} className="nav-link">
             <span className="nav-link-icon d-md-none d-lg-inline-block">
-              <img src="https://www.svgrepo.com/show/154834/users.svg" width="15" height="15" /> 
+              <img src="/assets/images/icons/users.svg" width="15" height="15" /> 
             </span>
             <span className="nav-link-title">
               Users
