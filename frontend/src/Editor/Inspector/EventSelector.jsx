@@ -94,7 +94,7 @@ export const EventSelector = ({
                 <div className="p-1">
                   <label className="form-label mt-1">Message</label>
                   <input
-                    onChange={(e) => eventOptionUpdated(param, 'message', e.target.value, extraData)}
+                    onBlur={(e) => eventOptionUpdated(param, 'message', e.target.value, extraData)}
                     value={message}
                     type="text"
                     className="form-control form-control-sm"
