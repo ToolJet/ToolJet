@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 class VersionsController < ApplicationController
   def create
     @app = App.find params[:app_id]
-    name = params[:version]['versionName']
+    name = params[:version]["versionName"]
     AppVersion.create(app: @app, name: name)
   end
 
   def index
-    @versions = AppVersion.where(app_id: params['app_id']).order('created_at desc')
+    @versions = AppVersion.where(app_id: params["app_id"]).order("created_at desc")
   end
 
   def update
