@@ -9,9 +9,9 @@ export const componentTypes = [
       data: { type: 'code', displayName: 'Table data' },
       loadingState: { type: 'code', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
-      serverSidePagination: { type: 'toggle', displayName: 'Server Side Pagination'},
-      actionButtonBackgroundColor: { type: 'color', displayName: 'Background Color'},
-      actionButtonTextColor: { type: 'color', displayName: 'Text Color'}
+      serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination'},
+      actionButtonBackgroundColor: { type: 'color', displayName: 'Background color'},
+      actionButtonTextColor: { type: 'color', displayName: 'Text color'}
     },
     defaultSize: {
       width: 810,
@@ -20,7 +20,7 @@ export const componentTypes = [
     events: {
       onRowClicked: { displayName: 'On row clicked'},
       onBulkUpdate: { displayName: 'Bulk update query'},
-      onPageChanged: { displayName: 'On page changed query'}
+      onPageChanged: { displayName: 'On page changed'}
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' }
