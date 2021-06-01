@@ -38,6 +38,9 @@ export function Table({
   const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
   const serverSidePagination = serverSidePaginationProperty ? serverSidePaginationProperty.value : false;
 
+  const serverSideSearchProperty = component.definition.properties.serverSideSearch;
+  const serverSideSearch = serverSideSearchProperty ? serverSideSearchProperty.value : false;
+
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
@@ -453,19 +456,29 @@ export function Table({
       setGlobalFilter(filterValue || undefined);
     }, 200);
 
+    const handleSearchTextChange = (text) => {
+
+      setValue(text);
+      onChange(text);
+
+      onComponentOptionChanged(component, 'searchText', text).then(() => {
+        if(serverSideSearch === true ) {
+          onEvent('onSearch', { component, data: {} });
+        }
+      });
+    }
+
     return (
       <div className="ms-2 d-inline-block">
         Search:{' '}
         <input
           defaultValue={value || ''}
           onBlur={(e) => {
-            setValue(e.target.value);
-            onChange(e.target.value);
+            handleSearchTextChange(e.target.value)
           }}
           onKeyDown={(e) => {
             if(e.key === 'Enter') {
-              setValue(e.target.value);
-              onChange(e.target.value);
+              handleSearchTextChange(e.target.value)
             }
           }
 

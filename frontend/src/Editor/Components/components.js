@@ -10,6 +10,7 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
       serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination'},
+      serverSideSearch: { type: 'toggle', displayName: 'Server-side search'},
       actionButtonBackgroundColor: { type: 'color', displayName: 'Background color'},
       actionButtonTextColor: { type: 'color', displayName: 'Text color'}
     },
@@ -20,7 +21,8 @@ export const componentTypes = [
     events: {
       onRowClicked: { displayName: 'On row clicked'},
       onBulkUpdate: { displayName: 'Bulk update query'},
-      onPageChanged: { displayName: 'On page changed'}
+      onPageChanged: { displayName: 'On page changed'},
+      onSearch: { displayName: 'On search'}
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' }
@@ -29,7 +31,8 @@ export const componentTypes = [
       selectedRow: {},
       changeSet: {},
       dataUpdates: [],
-      pageIndex: 0
+      pageIndex: 0,
+      searchText: ''
     },
     definition: {
       properties: {
@@ -61,7 +64,12 @@ export const componentTypes = [
             options: {
   
             }
+        },
+        onSearch: {
+          options: {
+
           }
+        }
       },
       styles: {
         textColor: { value: '' }

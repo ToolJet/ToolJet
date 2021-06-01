@@ -174,9 +174,9 @@ export function onEvent(_ref, eventName, options) {
     }
   }
 
-  if (eventName === 'onPageChanged') {
+  if (['onPageChanged', 'onSearch'].includes(eventName)) {
     const { component } = options;
-    const event = component.definition.events.onPageChanged;
+    const event = component.definition.events[eventName];
 
     if (event.actionId) {
       executeAction(_self, event);
