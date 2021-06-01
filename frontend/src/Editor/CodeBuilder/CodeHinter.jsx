@@ -41,6 +41,10 @@ export function CodeHinter({
         value={initialValue}
         realState={realState}
         scrollbarStyle={null}
+        onBlur={(editor) => { 
+          const value = editor.getValue();
+          onChange(value);
+        }}
         onChange={(editor) => handleChange(editor, onChange, suggestions)}
         onBeforeChange={(editor, change) => onBeforeChange(editor, change)}
         options={options}
