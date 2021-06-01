@@ -134,7 +134,7 @@ export const Inspector = ({
             <img
                 role="button"
                 className="component-action-button"
-                src="/assets/images/icons/menu.svg"
+                src="/assets/images/icons/app-menu.svg"
                 width="15"
                 height="15"
             />
