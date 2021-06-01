@@ -747,7 +747,7 @@ class Editor extends React.Component {
                         data-bs-toggle="tab"
                       >
                         <img
-                          src="/assets/images/icons/lens/svg"
+                          src="/assets/images/icons/lens.svg"
                           width="16"
                           height="16"
                           className="d-md-none d-lg-block"
@@ -761,7 +761,7 @@ class Editor extends React.Component {
                         className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}
                         data-bs-toggle="tab"
                       >
-                        <img src="/assets/images/icons/lens/insert.svg" width="16" height="16" className="d-md-none d-lg-block"/>
+                        <img src="/assets/images/icons/insert.svg" width="16" height="16" className="d-md-none d-lg-block"/>
                         &nbsp; Insert
                       </a>
                     </li>
