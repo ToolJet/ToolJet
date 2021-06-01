@@ -1,16 +1,18 @@
+# frozen_string_literal: true
+
 class OrganizationUser < ApplicationRecord
   belongs_to :organization
   belongs_to :user
 
   def admin?
-    role == 'admin'
+    role == "admin"
   end
 
   def developer?
-    role == 'developer'
+    role == "developer"
   end
 
   def viewer?
-    role == 'viewer'
+    role == "viewer"
   end
 end
