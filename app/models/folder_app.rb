@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class FolderApp < ApplicationRecord
   belongs_to :folder
   belongs_to :app
-  validates_uniqueness_of :app_id, scope: [:folder_id]
+  validates :app_id, uniqueness: { scope: [:folder_id] }
 end
