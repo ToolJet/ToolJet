@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DataQueriesController < ApplicationController
   skip_before_action :authenticate_request, only: [:run]
 
@@ -15,11 +17,10 @@ class DataQueriesController < ApplicationController
     )
 
     if @data_query.errors.present?
-      render json: { message: 'Query could not be created' }, status: 500
+      render json: { message: "Query could not be created" }, status: :internal_server_error
     else
-      render json: { message: 'success' }
+      render json: { message: "success" }
     end
-
   end
 
   def update
@@ -27,9 +28,9 @@ class DataQueriesController < ApplicationController
     @data_query.update(options: params[:options], name: params[:name])
 
     if @data_query.errors.present?
-      render json: { message: 'Query could not be updated' }, status: 500
-    else 
-      render json: { message: 'success' }
+      render json: { message: "Query could not be updated" }, status: :internal_server_error
+    else
+      render json: { message: "success" }
     end
   end
 
