@@ -457,11 +457,19 @@ export function Table({
       <div className="ms-2 d-inline-block">
         Search:{' '}
         <input
-          value={value || ''}
-          onChange={(e) => {
+          defaultValue={value || ''}
+          onBlur={(e) => {
             setValue(e.target.value);
             onChange(e.target.value);
           }}
+          onKeyDown={(e) => {
+            if(e.key === 'Enter') {
+              setValue(e.target.value);
+              onChange(e.target.value);
+            }
+          }
+
+          }
           placeholder={`${count} records`}
           style={{
             border: '0'
