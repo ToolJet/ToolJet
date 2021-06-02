@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: tooljet-server-deployment
 spec:
-  replicas: 1
+  replicas: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -24,11 +24,11 @@ spec:
           command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
           resources:
             limits:
-              memory: "1024Mi"
-              cpu: "1000m"
+              memory: "3000Mi"
+              cpu: "500m"
             requests:
-              memory: "1024Mi"
-              cpu: "1000m"
+              memory: "3000Mi"
+              cpu: "500m"
           ports:
             - containerPort: 3000
           readinessProbe:
@@ -62,16 +62,16 @@ spec:
                 secretKeyRef:
                   name: server
                   key: db
+            - name: LOCKBOX_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: lockbox_key      
             - name: SECRET_KEY_BASE
               valueFrom:
                 secretKeyRef:
                   name: server
                   key: secret_key_base
-            - name: ENCRYPTION_SERVICE_SALT
-              valueFrom:
-                secretKeyRef:
-                  name: server
-                  key: encryption_salt                     
 
-      imagePullSecrets:
+                  imagePullSecrets:
         - name: registry-secret

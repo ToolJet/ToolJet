@@ -75,9 +75,6 @@ export function canShowHint(editor) {
 
 export function handleChange(editor, onChange, suggestions) {
 
-  const value = editor.getValue();
-  onChange(value);
-
   let state = editor.state.matchHighlighter;
   editor.addOverlay(state.overlay = makeOverlay(state.options.style));
 

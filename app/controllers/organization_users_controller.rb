@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class OrganizationUsersController < ApplicationController
   def create
     authorize OrganizationUser

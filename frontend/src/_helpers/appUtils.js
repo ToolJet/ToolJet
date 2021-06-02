@@ -1,8 +1,10 @@
+import React from 'react';
 import { toast } from 'react-toastify';
 import { getDynamicVariables, resolveReferences } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
+import Tooltip from 'react-bootstrap/Tooltip';
 
 function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -172,9 +174,9 @@ export function onEvent(_ref, eventName, options) {
     }
   }
 
-  if (eventName === 'onPageChanged') {
+  if (['onPageChanged', 'onSearch'].includes(eventName)) {
     const { component } = options;
-    const event = component.definition.events.onPageChanged;
+    const event = component.definition.events[eventName];
 
     if (event.actionId) {
       executeAction(_self, event);
@@ -224,13 +226,20 @@ function getQueryVariables(options, state) {
 }
 
 export function previewQuery(_ref, query) {
-  const options = getQueryVariables(query.options, _ref.state.currentState);
+  const options = getQueryVariables(query.options, _ref.props.currentState);
 
   _ref.setState({ previewLoading: true });
 
   return new Promise(function (resolve, reject) {
     dataqueryService.preview(query, options).then(data => {
-      _ref.setState({ previewLoading: false, queryPreviewData: data });
+      
+      let finalData = data.data;
+
+      if (query.options.enableTransformation) {
+        finalData = runTransformation(_ref, finalData, query.options.transformation);
+      }
+
+      _ref.setState({ previewLoading: false, queryPreviewData: finalData });
       resolve();
     }).catch(({ error, data } ) => {
       _ref.setState({ previewLoading: false, queryPreviewData: data });
@@ -340,3 +349,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
     });
   });
 }
+
+export function renderTooltip({props, text}) {
+  return <Tooltip id="button-tooltip" {...props}>
+    {text}
+  </Tooltip>
+};

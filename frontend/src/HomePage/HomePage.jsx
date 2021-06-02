@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom';
 import { Pagination, Header } from '@/_components';
 import { Folders } from './Folders';
 import { AppMenu } from './AppMenu';
+import { BlankPage } from './BlankPage';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { renderTooltip } from '@/_helpers/appUtils';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -80,32 +83,14 @@ class HomePage extends React.Component {
     } = this.state;
     return (
       <div className="wrapper home-page">
+
         <Header
 
         />
         {!isLoading && meta.total_count === 0 && 
-          <div class="page-wrapper">
-            <div class="container-xl">
-            </div>
-            <div class="page-body">
-              <div class="container-xl d-flex flex-column justify-content-center">
-                <div class="empty">
-                  <div class="empty-img"><img src="/assets/images/blank.svg" height="128"  alt=""/>
-                  </div>
-                  <p class="empty-title">You haven't created any apps yet.</p>
-                  <div class="empty-action">
-                    <a onClick={this.createApp} class="btn btn-primary text-light">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                      Create your first app
-                    </a>
-                    <a href="https://docs.tooljet.io" target="_blank" class="btn btn-primary text-light mx-2">
-                      Read documentation
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <BlankPage 
+            createApp={this.createApp}
+          />
         }
 
         {(isLoading || meta.total_count > 0) && 
@@ -174,17 +159,28 @@ class HomePage extends React.Component {
                               </td>
                               <td class="text-muted col-auto pt-4">
                                 <Link
+                                  to={`/apps/${app.id}`}
+                                >
+                                  <OverlayTrigger
+                                    placement="top"
+                                    overlay={(props) => renderTooltip({props, text: 'Open in app builder'})}
+                                  >
+                                    <span class="badge bg-green-lt">
+                                    Edit
+                                    </span>
+                                  </OverlayTrigger>
+                                </Link>
+                                <Link
                                   to={`/applications/${app.id}`}
                                   target="_blank"
                                 >
-                                  <span class="badge bg-blue-lt mx-2">launch</span>
-                                </Link>
-                            
-                                <Link
-                                  to={`/apps/${app.id}`}
-                                >
-                                  <span class="badge bg-green-lt">Edit</span>
+                                  <OverlayTrigger
+                                    placement="top"
+                                    overlay={(props) => renderTooltip({props, text: 'Open in app viewer'})}
+                                  >
+                                    <span class="badge bg-blue-lt mx-2">launch</span>
 
+                                  </OverlayTrigger>
                                 </Link>
 
                                 <AppMenu 

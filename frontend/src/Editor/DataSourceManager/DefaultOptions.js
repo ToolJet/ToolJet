@@ -30,12 +30,16 @@ export const defaultOptions = {
   },
   
   elasticsearch: {
+    scheme: { value: 'https' },
     host: { value: 'localhost' },
     port: { value: 9200 },
     username: { value: '' },
     password: { value: '' }
   },
   stripe: {
+    api_key: { value: '' }
+  },
+  airtable: {
     api_key: { value: '' }
   },
   firestore: {

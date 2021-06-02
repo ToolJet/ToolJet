@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AppUsersController < ApplicationController
   def create
     org_user_id = params[:org_user_id]
@@ -18,7 +20,7 @@ class AppUsersController < ApplicationController
     if app_user.save
       render json: { success: true }
     else
-      render json: { message: 'Could not create user' }, status: 500
+      render json: { message: "Could not create user" }, status: :internal_server_error
     end
   end
 end

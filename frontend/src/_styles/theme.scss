@@ -9,6 +9,19 @@ body {
     max-width: 100%;
   }
 
+  .resizer-active {
+    border: solid 1px rgb(70, 165, 253)!important;
+  
+    .top-right,
+    .top-left,
+    .bottom-right,
+    .bottom-left {
+      background: white;
+      border-radius: 10px;
+      border: solid 1px rgb(70, 165, 253);
+    }
+  }
+
   .query-manager {
     .btn {
       height: 31px;
@@ -266,18 +279,7 @@ body {
           border: solid 1px transparent;
         }
 
-        .resizer:hover {
-          border: solid 1px rgb(70, 165, 253);
-
-          .top-right,
-          .top-left,
-          .bottom-right,
-          .bottom-left {
-            background: white;
-            border-radius: 10px;
-            border: solid 1px rgb(70, 165, 253);
-          }
-        }
+        
       }
     }
 
@@ -676,7 +678,6 @@ body {
 .select-search:not(.select-search--multiple) .select-search__select {
   position: absolute;
   z-index: 2;
-  top: 44px;
   right: 0;
   left: 0;
   border-radius: 3px;
@@ -1250,6 +1251,7 @@ body {
   .CodeMirror-scroll { 
     position: absolute;
     top: 0;
+    width: 100%;
   }
 }
 
@@ -1378,7 +1380,6 @@ body {
     top: -20px;
     position: fixed;
 
-    display: none;
     .badge {
       font-size: 9px;
     }
@@ -1396,11 +1397,11 @@ body {
 }
 
 
-.draggable-box:hover {
+// .draggable-box:hover {
   .config-handle {
     display: block;
   }
-}
+// }
 
 .apps-table { 
   .app-title {
@@ -1530,4 +1531,25 @@ input:focus-visible {
 
 .encrypted-icon { 
   margin-bottom: 0.25rem;
+}
+
+.widget-documentation-link { 
+  position: fixed;
+  bottom: 0;
+}
+
+.components-container {
+  .draggable-box { 
+    cursor: move;
+  }
+}
+
+.column-sort-row { 
+  border-radius: 0;
+}
+
+.jet-button {
+  &.btn-primary:hover {
+    background: var(--tblr-btn-color-darker) !important;
+  }
 }

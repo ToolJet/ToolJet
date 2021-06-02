@@ -38,6 +38,9 @@ export function Table({
   const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
   const serverSidePagination = serverSidePaginationProperty ? serverSidePaginationProperty.value : false;
 
+  const serverSideSearchProperty = component.definition.properties.serverSideSearch;
+  const serverSideSearch = serverSideSearchProperty ? serverSideSearchProperty.value : false;
+
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
@@ -275,8 +278,8 @@ export function Table({
               onBlur={(e) => {
                 handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
               }}
+              value={cellValue}
             >
-              {cellValue}
           </textarea>;
         } if (columnType === 'dropdown') {
           return (
@@ -453,15 +456,33 @@ export function Table({
       setGlobalFilter(filterValue || undefined);
     }, 200);
 
+    const handleSearchTextChange = (text) => {
+
+      setValue(text);
+      onChange(text);
+
+      onComponentOptionChanged(component, 'searchText', text).then(() => {
+        if(serverSideSearch === true ) {
+          onEvent('onSearch', { component, data: {} });
+        }
+      });
+    }
+
     return (
       <div className="ms-2 d-inline-block">
         Search:{' '}
         <input
-          value={value || ''}
-          onChange={(e) => {
-            setValue(e.target.value);
-            onChange(e.target.value);
+          defaultValue={value || ''}
+          onBlur={(e) => {
+            handleSearchTextChange(e.target.value)
           }}
+          onKeyDown={(e) => {
+            if(e.key === 'Enter') {
+              handleSearchTextChange(e.target.value)
+            }
+          }
+
+          }
           placeholder={`${count} records`}
           style={{
             border: '0'
@@ -474,7 +495,7 @@ export function Table({
   return (
     <div
       className="card"
-      style={{ width: `${width}px`, height: `${height + 3}px` }}
+      style={{ width: `${width}px`, height: `${height}px` }}
       onClick={() => onComponentClick(id, component)}
     >
       <div className="card-body border-bottom py-3 jet-data-table-header">
@@ -526,6 +547,11 @@ export function Table({
               </tr>
             ))}
           </thead>
+
+          {!loadingState && page.length === 0 && 
+            <center className="w-100"><div className="py-5"> no data </div></center>
+          }
+
           {!loadingState && (
             <tbody {...getTableBodyProps()}>
               {console.log('page', page)}
@@ -597,7 +623,7 @@ export function Table({
 
           <div className="col-auto">
             <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
-              <img src="https://www.svgrepo.com/show/264090/filter.svg" width="13" height="13" />
+              <img src="/assets/images/icons/filter.svg" width="13" height="13" />
               {filters.length > 0 && 
                 <a class="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
               }
@@ -607,7 +633,7 @@ export function Table({
               className="btn btn-light btn-sm p-1"
               onClick={() => exportData('csv', true)}
             >
-              <img src="https://www.svgrepo.com/show/27716/download.svg" width="13" height="13" />
+              <img src="/assets/images/icons/download.svg" width="13" height="13" />
             </span>
           </div>
         </div>

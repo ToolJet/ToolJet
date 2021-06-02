@@ -54,13 +54,13 @@ class Table extends React.Component {
   }
 
   onActionButtonPropertyChanged = (index, property, value) => {
-    const actions = this.state.component.component.definition.properties.actions;
+    const actions = this.props.component.component.definition.properties.actions;
     actions.value[index][property] = value;
     this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
   };
 
   actionButtonEventUpdated = (event, value, extraData) => {
-    const actions = this.state.component.component.definition.properties.actions;
+    const actions = this.props.component.component.definition.properties.actions;
     const index = extraData.index;
 
     let newValues = actions.value;
@@ -72,7 +72,7 @@ class Table extends React.Component {
   };
 
   actionButtonEventOptionUpdated = (event, option, value, extraData) => {
-    const actions = this.state.component.component.definition.properties.actions;
+    const actions = this.props.component.component.definition.properties.actions;
     const index = extraData.index;
 
     let newValues = actions.value;
@@ -169,17 +169,15 @@ class Table extends React.Component {
             </div>
           )}
 
-          {column.columnType === 'string' || column.columnType === 'text' && (
-            <label className="form-check form-switch my-2">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-                checked={column.isEditable}
-              />
-              <span className="form-check-label">make editable</span>
-            </label>
-          )}
+          <label className="form-check form-switch my-2">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
+              checked={column.isEditable}
+            />
+            <span className="form-check-label">make editable</span>
+          </label>
 
           <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
             Remove
@@ -225,7 +223,7 @@ class Table extends React.Component {
             eventMeta={{ displayName: 'On click' }}
             definition={action.onClick}
             eventUpdated={this.actionButtonEventUpdated}
-            dataQueries={this.state.dataQueries}
+            dataQueries={this.props.dataQueries}
             eventOptionUpdated={this.actionButtonEventOptionUpdated}
             currentState={this.state.currentState}
             extraData={{ actionButton: action, index: index }} // This data is returned in the callbacks
@@ -253,7 +251,7 @@ class Table extends React.Component {
   }
 
   onSortEnd = (oldIndex, newIndex) => {
-    const columns = this.state.component.component.definition.properties.columns;
+    const columns = this.props.component.component.definition.properties.columns;
     const newColumns = arrayMove(columns.value, oldIndex, newIndex);
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
@@ -275,31 +273,31 @@ class Table extends React.Component {
   }
 
   addNewColumn = () => {
-    const columns = this.state.component.component.definition.properties.columns;
+    const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
     newValue.push({ name: this.generateNewColumnName(columns.value) });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
   };
 
   addNewAction = () => {
-    const actions = this.state.component.component.definition.properties.actions;
+    const actions = this.props.component.component.definition.properties.actions;
     const newValue = actions ? actions.value : [];
     newValue.push({ name: computeActionName(actions), buttonText: 'Button' });
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
   removeAction = (index) => {
-    const newValue = this.state.component.component.definition.properties.actions.value;
+    const newValue = this.props.component.component.definition.properties.actions.value;
     newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
   onColumnItemChange = (index, item, value) => {
-    const columns = this.state.component.component.definition.properties.columns;
+    const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
 
     if (item === 'name') {
-      const columnSizes = this.state.component.component.definition.properties.columnSizes;
+      const columnSizes = this.props.component.component.definition.properties.columnSizes;
 
       if (columnSizes) {
         const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
@@ -318,7 +316,7 @@ class Table extends React.Component {
   };
 
   removeColumn = (index) => {
-    const columns = this.state.component.component.definition.properties.columns;
+    const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
     newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
@@ -334,13 +332,13 @@ class Table extends React.Component {
       eventOptionUpdated,
       components,
       currentState
-    } = this.state;
+    } = this.props;
 
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
 
     return (
-      <div className="properties-container p-2">
+      <div className="properties-container p-2 mb-5 pb-3" key={this.props.component.id}>
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', currentState, components)}
 
         <div className="field mb-2 mt-3">
@@ -357,14 +355,14 @@ class Table extends React.Component {
           <div>
             <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
               {columns.value.map((item, index) => (
-                <div className="card p-2 bg-light" key={index}>
+                <div className="card p-2 bg-light column-sort-row" key={index}>
                   <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.columnPopover(item, index)}>
                     <div className="row bg-light" role="button">
                       <div className="col-auto">
                         <SortableItem key={item.name}>
                           <img
                             style={{ cursor: 'move' }}
-                            src="https://www.svgrepo.com/show/20663/menu.svg"
+                            src="/assets/images/icons/editor/rearrange.svg"
                             width="10"
                             height="10"
                           />
@@ -374,9 +372,7 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <div className="btn btn-sm text-danger" onClick={() => this.removeColumn(index)}>
-                          x
-                        </div>
+                        <span class="badge bg-red-lt" onClick={() => this.removeColumn(index)}>x</span>
                       </div>
                     </div>
                   </OverlayTrigger>
@@ -398,22 +394,26 @@ class Table extends React.Component {
               </div>
             </div>
             <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
+            {actions.value.length === 0 && 
+              <center><small>This table doesn't have any action buttons</small></center>
+            }
           </div>
           <hr></hr>
 
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
+          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
 
-          <hr></hr>
+          <div class="hr-text">Events</div>
 
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked, currentState, components)}
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged, currentState, components)}
+          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onSearch', componentMeta.events.onSearch, currentState, components)}
 
           {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
 
-          <hr></hr>
+          <div class="hr-text">Style</div>
         </div>
 
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'visible', 'properties', currentState)}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
       </div>
