@@ -10,20 +10,29 @@ import { toast } from 'react-toastify';
 import { validateQueryName } from '@/_helpers/utils';
 
 export const Inspector = ({
-  selectedComponent,
+  selectedComponentId,
   componentDefinitionChanged,
   dataQueries,
   removeComponent,
-  components,
+  allComponents,
   componentChanged,
   currentState
 }) => {
+  
+  const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component }
   const [component, setComponent] = useState(selectedComponent);
+
+  const [components, setComponents] = useState(allComponents);
+  
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
   useEffect(() => {
     setComponent(selectedComponent);
-  }, [selectedComponent]);
+  }, [selectedComponent.component.definition]);
+
+  useEffect(() => {
+    setComponents(allComponents);
+  }, [allComponents]);
 
   function handleComponentNameChange(newName) {
     if (validateQueryName(newName)) {
@@ -99,7 +108,7 @@ export const Inspector = ({
                     value={component.component.name}
                 />
                 <span className="input-icon-addon">
-                    <img src="https://www.svgrepo.com/show/149235/edit.svg" width="12" height="12" />
+                    <img src="/assets/images/icons/edit-source.svg" width="12" height="12" />
                 </span>
             </div>
         </div>
@@ -125,7 +134,7 @@ export const Inspector = ({
             <img
                 role="button"
                 className="component-action-button"
-                src="https://www.svgrepo.com/show/46582/menu.svg"
+                src="/assets/images/icons/app-menu.svg"
                 width="15"
                 height="15"
             />
@@ -161,7 +170,7 @@ export const Inspector = ({
       }
         
       {!['Table', 'Chart'].includes(componentMeta.component)   && 
-        <div className="properties-container p-2">
+        <div className="properties-container p-2 mb-5 pb-3">
           {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components))}
           <div class="hr-text">Style</div>
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
@@ -169,6 +178,13 @@ export const Inspector = ({
           {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components))}
         </div>
       }
+      <div className="widget-documentation-link p-2">
+        <a href={`https://docs.tooljet.io/docs/widgets/${componentMeta.name.toLowerCase()}`} target="_blank">
+          <small>
+            {componentMeta.name} documentation
+          </small>
+        </a>
+      </div>
     </div>
   );
 };

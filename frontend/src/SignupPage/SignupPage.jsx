@@ -43,7 +43,7 @@ class SignupPage extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href=".">
-              <img src="/images/logo-text.svg" height="30" alt="" />
+              <img src="/assets/images/logo-text.svg" height="30" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">

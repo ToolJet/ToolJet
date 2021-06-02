@@ -5,8 +5,7 @@ sidebar_position: 5
 # Adding a widget
 
 To add a widget, navigate to the `insert` tab of right sidebar. It will display the list of built-in widgets that can be added to the app. Use the search functionality to quickly find the widget that you want. 
-
-<img src="/img/tutorial/adding-widget/widgets.gif" alt="ToolJet - widgets list" height="420"/>
+<img class="screenshot-full" src="/img/tutorial/adding-widget/widgets.gif" alt="ToolJet - widgets list" height="420"/>
 
 ## Drag and drop a widget
 Let's add a `table` widget to the app to show the customer data from the query that we created in the previous steps.
@@ -33,3 +32,7 @@ Since we have already run the query in previous step, the data will be immedietl
 <img class="screenshot-full" src="/img/tutorial/adding-widget/table-data.gif" alt="ToolJet - Table with data" height="420"/>
 
 So far in this tutorial, we have connected to a PostgreSQL database and displayed the data on a table.
+
+:::tip
+Read the widget reference of table [here](/docs/widgets/table) for more customizations such as server-side pagination, actions, editing data.
+:::

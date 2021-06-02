@@ -9,6 +9,7 @@ import { Elasticsearch } from './Elasticsearch';
 import { Slack } from './Slack';
 import { Mongodb } from './Mongodb';
 import { Dynamodb } from './Dynamodb';
+import { Airtable } from './Airtable';
 
 export const allSources = {
   Restapi,
@@ -21,5 +22,6 @@ export const allSources = {
   Elasticsearch,
   Slack,
   Mongodb,
-  Dynamodb
+  Dynamodb,
+  Airtable
 };

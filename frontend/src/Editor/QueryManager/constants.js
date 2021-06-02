@@ -29,5 +29,8 @@ export const defaultOptions = {
   },
   dynamodb: {
     
+  },
+  airtable: {
+    
   }
 };

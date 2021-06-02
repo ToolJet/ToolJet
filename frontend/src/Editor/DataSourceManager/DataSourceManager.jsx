@@ -148,7 +148,7 @@ class DataSourceManager extends React.Component {
               {selectedDataSource && (
                 <div className="row">
                   <img
-                    src={dataSourceMeta.icon}
+                    src={`/assets/images/icons/editor/datasources/${dataSourceMeta.name.toLowerCase()}.svg`}
                     style={{ objectFit: 'contain' }}
                     height="25"
                     width="25"
@@ -164,7 +164,7 @@ class DataSourceManager extends React.Component {
                       autoFocus
                     />
                     <span className="input-icon-addon">
-                      <img src="https://www.svgrepo.com/show/149235/edit.svg" width="12" height="12" />
+                      <img src="/assets/images/icons/edit-source.svg" width="12" height="12" />
                     </span>
                   </div>
                 </div>
@@ -190,7 +190,8 @@ class DataSourceManager extends React.Component {
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
-                            <img src={dataSource.icon} width="50" height="50" alt="" />
+                            <img src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`} width="50" height="50" alt="" />
+                            
                             <br></br>
                             <br></br>
                             {dataSource.name}
@@ -207,7 +208,8 @@ class DataSourceManager extends React.Component {
                       <div className="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
-                            <img src={dataSource.icon} width="50" height="50" alt="" />
+                            <img src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`} width="50" height="50" alt="" />
+                            
                             <br></br>
                             <br></br>
                             {dataSource.name}
@@ -242,23 +244,24 @@ class DataSourceManager extends React.Component {
                     })
                     }
                   >
-                    <img src="https://www.svgrepo.com/show/135545/copy.svg" className="mx-1" width="14" height="14" role="button"/>
+                    <img src="/assets/images/icons/copy.svg" className="mx-1" width="14" height="14" role="button"/>
                   </CopyToClipboard>
                 </div>
               </div>
               </div>
               <div className="col">
                 <small>
-                  <a href={`https://docs.tooljet.io/data-sources/${selectedDataSource.kind}`}>Read documentation</a>
+                  <a href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}>Read documentation</a>
                 </small>
               </div>
               <div className="col-auto">
                 <TestConnection kind={selectedDataSource.kind} options={options} />
               </div>
               <div className="col-auto">
-                <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
-                  {isSaving ? 'Saving...' : 'Save'}
+                <Button className={`m-2 ${isSaving ? 'btn-loading' : ''}`} disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                  {'Save'}
                 </Button>
+
               </div>
             </Modal.Footer>
           )}

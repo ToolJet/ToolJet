@@ -147,14 +147,24 @@ export const Container = ({
     [moveBox]
   );
 
-  function onResizeStop(id, width, height, e, direction, ref, d) {
+  function onResizeStop(id, e, direction, ref, d, position) {
     const deltaWidth = d.width;
     const deltaHeight = d.height;
+
+    let { x, y } = position;
+
+    let  { left, top, width, height } = boxes[id];
+    
+    top = y;
+    left = x;
+
+    width = width + deltaWidth;
+    height = height + deltaHeight
 
     setBoxes(
       update(boxes, {
         [id]: {
-          $merge: { width: deltaWidth + width, height: deltaHeight + height }
+          $merge: { width, height, top, left }
         }
       })
     );
@@ -232,9 +242,7 @@ export const Container = ({
       {appLoading && (
         <div className="mx-auto mt-5 w-50 p-5">
           <center>
-            <div className="progress progress-sm w-50">
-              <div className="progress-bar progress-bar-indeterminate"></div>
-            </div>
+            <div class="spinner-border text-azure" role="status"></div>
           </center>
         </div>
       )}

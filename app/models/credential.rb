@@ -1,5 +1,5 @@
-class Credential < ApplicationRecord
-  include Encryptable
+# frozen_string_literal: true
 
-  attr_encrypted :value
+class Credential < ApplicationRecord
+  encrypts :value
 end

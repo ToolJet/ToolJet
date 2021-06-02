@@ -48,6 +48,23 @@ export const EventSelector = ({
     return modalOptions;
   }
 
+  function eventChanged(param, value, extraData) { 
+    if(value === 'none') { 
+      eventUpdated(param, null, null);
+    } else { 
+      eventUpdated(param, value, extraData) 
+    }
+  }
+
+  let actionOptions = ActionTypes.map((action) => {
+    return { name: action.name, value: action.id };
+  });
+
+  actionOptions.unshift({
+    name: 'None',
+    value: 'none'
+  });
+
   return (
     <div className="field mb-3 mt-1 px-2">
       <label className="form-label" role="button" onClick={() => setOpen(!open)}>
@@ -63,12 +80,10 @@ export const EventSelector = ({
       <Collapse in={open}>
         <div id="collapse">
           <SelectSearch
-            options={ActionTypes.map((action) => {
-              return { name: action.name, value: action.id };
-            })}
+            options={actionOptions}
             value={definition.actionId}
             search={false}
-            onChange={(value) => eventUpdated(param, value, extraData)}
+            onChange={(value) => eventChanged(param, value, extraData)}
             filterOptions={fuzzySearch}
             placeholder="Select.."
           />
@@ -79,7 +94,7 @@ export const EventSelector = ({
                 <div className="p-1">
                   <label className="form-label mt-1">Message</label>
                   <input
-                    onChange={(e) => eventOptionUpdated(param, 'message', e.target.value, extraData)}
+                    onBlur={(e) => eventOptionUpdated(param, 'message', e.target.value, extraData)}
                     value={message}
                     type="text"
                     className="form-control form-control-sm"

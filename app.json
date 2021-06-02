@@ -18,8 +18,8 @@
         "description": "Public URL of ToolJet installtion.",
         "value": "https://app.tooljet.io"
       },
-      "ENCRYPTION_SERVICE_SALT": {
-        "description": "Salt for encrypting datasource credentials.",
+      "LOCKBOX_MASTER_KEY": {
+        "description": "Key for encrypting datasource credentials.",
         "value": ""
       },
       "SECRET_KEY_BASE": {

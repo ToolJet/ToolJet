@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AppsController < ApplicationController
   skip_before_action :authenticate_request, only: [:show]
 
@@ -13,44 +15,44 @@ class AppsController < ApplicationController
       @scope = @folder.apps
     end
 
-    @apps = @scope.order('created_at desc')
+    @apps = @scope.order("created_at desc")
     .page(params[:page])
     .per(10)
     .includes(:user)
 
-    @meta = { 
+    @meta = {
       total_pages: @apps.total_pages,
       folder_count: @scope.count,
       total_count: App.where(organization: @current_user.organization).count,
-      current_page: @apps.current_page   
-    }               
+      current_page: @apps.current_page
+    }
   end
 
   def create
     authorize App
     @app = App.create({
-                        name: 'Untitled app',
+                        name: "Untitled app",
                         organization: @current_user.organization,
-                        current_version: AppVersion.new(name: 'v0'),
+                        current_version: AppVersion.new(name: "v0"),
                         user: @current_user
                       })
-    AppUser.create(app: @app, user: @current_user, role: 'admin')                      
+    AppUser.create(app: @app, user: @current_user, role: "admin")
   end
 
   def show
-      @app = App.find params[:id]
+    @app = App.find params[:id]
 
-      # Logic to bypass auth for public apps
-      unless @app.is_public
-          authenticate_request
-          authorize @app
-      end
+    # Logic to bypass auth for public apps
+    unless @app.is_public
+      authenticate_request
+      authorize @app
+    end
   end
 
   def update
     @app = App.find params[:id]
     authorize @app
-    @app.update(params['app'].permit('name', 'current_version_id', 'is_public'))
+    @app.update(params["app"].permit("name", "current_version_id", "is_public"))
   end
 
   def users

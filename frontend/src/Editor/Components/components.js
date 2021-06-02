@@ -7,12 +7,12 @@ export const componentTypes = [
     properties: {
       title: { type: 'string', displayName: 'Title' },
       data: { type: 'code', displayName: 'Table data' },
-      visible: { type: 'string', displayName: 'Show when' },
       loadingState: { type: 'code', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
-      serverSidePagination: { type: 'toggle', displayName: 'Server Side Pagination'},
-      actionButtonBackgroundColor: { type: 'color', displayName: 'Background Color'},
-      actionButtonTextColor: { type: 'color', displayName: 'Text Color'}
+      serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination'},
+      serverSideSearch: { type: 'toggle', displayName: 'Server-side search'},
+      actionButtonBackgroundColor: { type: 'color', displayName: 'Background color'},
+      actionButtonTextColor: { type: 'color', displayName: 'Text color'}
     },
     defaultSize: {
       width: 810,
@@ -21,7 +21,8 @@ export const componentTypes = [
     events: {
       onRowClicked: { displayName: 'On row clicked'},
       onBulkUpdate: { displayName: 'Bulk update query'},
-      onPageChanged: { displayName: 'On page changed query'}
+      onPageChanged: { displayName: 'On page changed'},
+      onSearch: { displayName: 'On search'}
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' }
@@ -30,7 +31,8 @@ export const componentTypes = [
       selectedRow: {},
       changeSet: {},
       dataUpdates: [],
-      pageIndex: 0
+      pageIndex: 0,
+      searchText: ''
     },
     definition: {
       properties: {
@@ -62,7 +64,12 @@ export const componentTypes = [
             options: {
   
             }
+        },
+        onSearch: {
+          options: {
+
           }
+        }
       },
       styles: {
         textColor: { value: '' }
@@ -70,7 +77,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: '/assets/images/icons/button.svg',
     name: 'Button',
     displayName: 'Button',
     description: 'Trigger actions: queries, alerts etc',
@@ -81,7 +87,6 @@ export const componentTypes = [
     },
     properties: {
       text: { type: 'code', displayName: 'Button Text' },
-      visible: { type: 'string', displayName: 'Show when', tip: 'Widget will be hidden if the value of this field is false.' },
       loadingState: { type: 'code', displayName: 'Loading State'}
     },
     events: {
@@ -112,7 +117,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/36266/chart.svg',
     name: 'Chart',
     displayName: 'Chart',
     description: 'Display charts',
@@ -129,7 +133,8 @@ export const componentTypes = [
       showGridLines: { type: 'toggle', displayName: 'Show grid lines'},
       type: { type: 'select', displayName: 'Chart type', options: [
         { name: 'Line', value: 'line' },
-        { name: 'Bar', value: 'bar' }
+        { name: 'Bar', value: 'bar' },
+        { name: 'Pie', value: 'pie' }
       ] },
     },
     events: {},
@@ -161,7 +166,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://cdn.iconscout.com/icon/free/png-256/modal-10-444862.png',
     name: 'Modal',
     displayName: 'Modal',
     description: 'Modal triggered by events',
@@ -199,7 +203,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/38828/text.svg',
     name: 'TextInput',
     displayName: 'Text Input',
     description: 'Text field for forms',
@@ -231,7 +234,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/14690/calendar.svg',
     name: 'Datepicker',
     displayName: 'Date Picker',
     description: 'Select a date and time',
@@ -267,7 +269,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/309414/checkbox-checked.svg',
     name: 'Checkbox',
     displayName: 'Checkbox',
     description: 'A single checkbox',
@@ -309,7 +310,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/317958/editor-left.svg',
     name: 'Textarea',
     displayName: 'Textarea',
     description: 'Text area form field',
@@ -343,7 +343,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/14690/calendar.svg',
     name: 'DateRangePicker',
     displayName: 'Date Range Picker',
     description: 'Select a date range',
@@ -376,14 +375,12 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/219344/text.svg',
     name: 'Text',
     displayName: 'Text',
     description: 'Display markdown or HTML',
     component: 'Text',
     properties: {
       text: { type: 'code', displayName: 'Text' },
-      visible: { type: 'string', displayName: 'Show when' },
       loadingState: { type: 'code', displayName: 'Show loading state' }
     },
     defaultSize: {
@@ -412,7 +409,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/35088/image.svg',
     name: 'Image',
     displayName: 'Image',
     description: 'Display an Image',
@@ -423,7 +419,6 @@ export const componentTypes = [
     component: 'Image',
     properties: {
       source: { type: 'code', displayName: 'URL' },
-      visible: { type: 'string', displayName: 'Show when' }
     },
     events: {
         onClick: { displayName: 'On click'},
@@ -446,7 +441,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/14343/table.svg',
     name: 'Container',
     displayName: 'Container',
     description: 'Wrapper for multiple components',
@@ -456,7 +450,6 @@ export const componentTypes = [
     },
     component: 'Container',
     properties: {
-      visible: { type: 'string', displayName: 'Show when' }
     },
     events: {},
     styles: {
@@ -474,7 +467,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/46775/drop-down-list.svg',
     name: 'Dropdown',
     displayName: 'Dropdown Selector',
     description: 'Select one value from options',
@@ -515,7 +507,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/16187/multiple-shots.svg',
     name: 'Multiselect',
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
@@ -556,7 +547,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/5908/text-document.svg',
     name: 'RichTextEditor',
     displayName: 'Rich Text Editor',
     description: 'Rich text editor',
@@ -588,7 +578,6 @@ export const componentTypes = [
     }
   },
   {
-    icon: 'https://www.svgrepo.com/show/135620/map.svg',
     name: 'Map',
     displayName: 'Map',
     description: 'Display Google Maps',
