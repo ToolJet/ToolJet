@@ -146,6 +146,19 @@ export const apiSources = [
     customTesting: true
   },
   {
+    name: 'Airtable',
+    kind: 'airtable',
+    exposedVariables: {
+      isLoading: {},
+      data: {},
+      rawData: {}
+    },
+    options: {
+      api_key: { type: 'string', encrypted: true }
+    },
+    customTesting: true
+  },
+  {
     name: 'Google Sheets',
     kind: 'googlesheets',
     exposedVariables: {

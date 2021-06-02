@@ -9,6 +9,7 @@ import { Googlesheets } from './Googlesheets';
 import { Slack } from './Slack';
 import { Mongodb } from './Mongodb';
 import { Dynamodb } from './Dynamodb';
+import { Airtable } from './Airtable';
 
 export const SourceComponents = {
     Elasticsearch,
@@ -21,5 +22,6 @@ export const SourceComponents = {
     Googlesheets,
     Slack,
     Mongodb,
-    Dynamodb
+    Dynamodb,
+    Airtable
 };
