@@ -251,7 +251,7 @@ class DataSourceManager extends React.Component {
               </div>
               <div className="col">
                 <small>
-                  <a href={`https://docs.tooljet.io/data-sources/${selectedDataSource.kind}`}>Read documentation</a>
+                  <a href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}>Read documentation</a>
                 </small>
               </div>
               <div className="col-auto">
