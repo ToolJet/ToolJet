@@ -258,9 +258,10 @@ class DataSourceManager extends React.Component {
                 <TestConnection kind={selectedDataSource.kind} options={options} />
               </div>
               <div className="col-auto">
-                <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
-                  {isSaving ? 'Saving...' : 'Save'}
+                <Button className={`m-2 ${isSaving ? 'btn-loading' : ''}`} disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                  {'Save'}
                 </Button>
+
               </div>
             </Modal.Footer>
           )}
