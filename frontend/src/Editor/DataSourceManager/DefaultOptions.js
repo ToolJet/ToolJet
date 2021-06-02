@@ -39,6 +39,9 @@ export const defaultOptions = {
   stripe: {
     api_key: { value: '' }
   },
+  airtable: {
+    api_key: { value: '' }
+  },
   firestore: {
     gcp_key: { value: '' }
   },
