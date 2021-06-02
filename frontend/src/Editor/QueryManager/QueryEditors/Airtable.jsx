@@ -77,6 +77,7 @@ class Airtable extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.base_id}
+                    className="codehinter-query-editor-input"
                     onChange={(value) => this.changeOption('base_id', value)}
                   />
                 </div>
@@ -85,6 +86,7 @@ class Airtable extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.table_name}
+                    className="codehinter-query-editor-input"
                     onChange={(value) => this.changeOption('table_name', value)}
                   />
                 </div>
@@ -93,6 +95,7 @@ class Airtable extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.page_size}
+                    className="codehinter-query-editor-input"
                     onChange={(value) => this.changeOption('page_size', value)}
                   />
                 </div>
@@ -101,6 +104,7 @@ class Airtable extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.offset}
+                    className="codehinter-query-editor-input"
                     onChange={(value) => this.changeOption('offset', value)}
                   />
                 </div>
@@ -114,6 +118,7 @@ class Airtable extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.base_id}
+                    className="codehinter-query-editor-input"
                     onChange={(value) => this.changeOption('base_id', value)}
                   />
                 </div>
@@ -122,6 +127,7 @@ class Airtable extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.table_name}
+                    className="codehinter-query-editor-input"
                     onChange={(value) => this.changeOption('table_name', value)}
                   />
                 </div>
@@ -130,6 +136,7 @@ class Airtable extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.record_id}
+                    className="codehinter-query-editor-input"
                     onChange={(value) => this.changeOption('record_id', value)}
                   />
                 </div>
