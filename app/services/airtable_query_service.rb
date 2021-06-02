@@ -15,12 +15,25 @@ class AirtableQueryService
     error = false
 
     if operation === 'list_records'
+      
       base_id = options['base_id']
       table_name = options['table_name']
       page_size = options['page_size']
       offset = options['offset']
 
       result = list_records(api_key, base_id, table_name, page_size, offset)
+
+      data = result
+      error = result.code != 200
+    end
+
+    if operation === 'retrieve_record'
+      
+      base_id = options['base_id']
+      table_name = options['table_name']
+      record_id = options['record_id']
+
+      result = retrieve_record(api_key, base_id, table_name, record_id)
 
       data = result
       error = result.code != 200
@@ -38,6 +51,15 @@ class AirtableQueryService
     def list_records(api_key, base_id, table_name, page_size, offset)
 
       result = HTTParty.get(URI.encode("https://api.airtable.com/v0/#{base_id}/#{table_name}"),
+        headers: { 'Content-Type':
+        'application/json', "Authorization": "Bearer #{api_key}" })
+
+      result
+    end
+
+    def retrieve_record(api_key, base_id, table_name, record_id)
+
+      result = HTTParty.get(URI.encode("https://api.airtable.com/v0/#{base_id}/#{table_name}/#{record_id}"),
         headers: { 'Content-Type':
         'application/json', "Authorization": "Bearer #{api_key}" })
 
