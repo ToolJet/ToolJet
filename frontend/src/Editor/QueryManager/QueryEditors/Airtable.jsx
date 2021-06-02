@@ -58,6 +58,7 @@ class Airtable extends React.Component {
               <SelectSearch
                 options={[
                   { value: 'list_records', name: 'List records' },
+                  { value: 'retrieve_record', name: 'Retrieve record' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -101,6 +102,35 @@ class Airtable extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.offset}
                     onChange={(value) => this.changeOption('offset', value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {(['retrieve_record'].includes(this.state.options.operation)) && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Base ID</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.base_id}
+                    onChange={(value) => this.changeOption('base_id', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Table name</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.table_name}
+                    onChange={(value) => this.changeOption('table_name', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Record ID</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.record_id}
+                    onChange={(value) => this.changeOption('record_id', value)}
                   />
                 </div>
               </div>
