@@ -25,7 +25,7 @@ class AuthenticationController < ApplicationController
       org = Organization.create(name: "new org")
       user = User.create(email: email, password: password, organization: org, invitation_token: SecureRandom.uuid)
 
-      org_user = OrganizationUser.create(user: user, organization: org, role: "admin")
+      org_user = OrganizationUser.create(user_id: user.id, organization_id: org.id, role: "admin")
 
       # UserMailer.with(user: user, sender: @current_user).new_signup_email.deliver if org_user.save
     end
