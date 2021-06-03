@@ -250,7 +250,8 @@ class Editor extends React.Component {
           ...this.state.appDefinition.components,
           [newDefinition.id]: {
             ...this.state.appDefinition.components[newDefinition.id],
-            component: newDefinition.component
+            component: newDefinition.component,
+            layouts: newDefinition.layouts
           }
         }
       }
