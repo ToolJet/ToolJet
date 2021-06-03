@@ -68,7 +68,8 @@ export const DraggableBox = function DraggableBox({
   configHandleClicked,
   removeComponent,
   currentLayout,
-  layouts
+  layouts,
+  scaleValue
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -131,34 +132,6 @@ export const DraggableBox = function DraggableBox({
     setCurrentLayoutOptions(layoutData);
   }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top]);
 
-  // const [currentLayoutOptions, setCurrentLayoutOptions] = useState(layoutData);
-
-  // if(inCanvas && Object.keys(currentLayoutOptions).length === 0 ) {
-  //   setCurrentLayoutOptions({
-  //     top: 100,
-  //     left: 0,
-  //     width: 445, 
-  //     height: 500
-  //   })
-  // }
-
-  // useEffect(() => {
-  //   if(inCanvas) { 
-
-  //     if(Object.keys(layoutData).length === 0 ) {
-  //       setCurrentLayoutOptions({
-  //         top: 100,
-  //         left: 0,
-  //         width: 445,
-  //         height: 500
-  //       })
-  //     } else { 
-  //       setCurrentLayoutOptions(layoutData);
-  //     }
-
-  //   }
-  // }, [layoutData]);
-
   return (
     <div>
       {inCanvas ? (
@@ -171,7 +144,7 @@ export const DraggableBox = function DraggableBox({
           
           <Rnd
             style={{ ...style }}
-            size={{ width: currentLayoutOptions.width + 6,  height: currentLayoutOptions.height + 6}}
+            size={{ width: currentLayoutOptions.width * scaleValue  + 6,  height: currentLayoutOptions.height + 6}}
             position={{ x: currentLayoutOptions ? currentLayoutOptions.left : 0, y: currentLayoutOptions ? currentLayoutOptions.top : 0 }}
             defaultSize={{}}
             className={`resizer ${mouseOver ? 'resizer-active' : ''}`}
@@ -198,7 +171,7 @@ export const DraggableBox = function DraggableBox({
               <Box
                 component={component}
                 id={id}
-                width={currentLayoutOptions.width}
+                width={currentLayoutOptions.width * scaleValue}
                 height={currentLayoutOptions.height}
                 mode={mode}
                 changeCanDrag={changeCanDrag}

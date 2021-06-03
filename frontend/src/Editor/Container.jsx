@@ -7,11 +7,7 @@ import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
 
-const styles = {
-  width: 1292,
-  height: 2400,
-  position: 'absolute'
-};
+
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16));
@@ -31,8 +27,17 @@ export const Container = ({
   configHandleClicked,
   zoomLevel,
   currentLayout,
-  removeComponent
+  removeComponent,
+  deviceWindowWidth,
+  scaleValue
 }) => {
+
+  const styles = {
+    width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
+    height: 2400,
+    position: 'absolute'
+  };
+
   const components = appDefinition.components || [];
 
   const [boxes, setBoxes] = useState(components);
@@ -270,6 +275,7 @@ export const Container = ({
             configHandleClicked={configHandleClicked}
             removeComponent={removeComponent}
             currentLayout={currentLayout}
+            scaleValue={scaleValue}
             containerProps={{
               mode,
               snapToGrid,
@@ -284,7 +290,8 @@ export const Container = ({
               zoomLevel,
               configHandleClicked,
               removeComponent,
-              currentLayout
+              currentLayout,
+              scaleValue
             }}
           />
         }
