@@ -93,6 +93,10 @@ export const componentTypes = [
       width: 120,
       height: 30
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       text: { type: 'code', displayName: 'Button Text' },
       loadingState: { type: 'code', displayName: 'Loading State'}
@@ -106,6 +110,10 @@ export const componentTypes = [
     },
     exposedVariables: {},
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         text: { value: `Button` },
         visible: { value: true },
@@ -133,6 +141,10 @@ export const componentTypes = [
       width: 600,
       height: 400
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       title: { type: 'string', displayName: 'Title' },
       data: { type: 'json', displayName: 'Data' },
@@ -153,6 +165,10 @@ export const componentTypes = [
       show: null
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
@@ -182,6 +198,10 @@ export const componentTypes = [
       width: 600,
       height: 400
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       title: { type: 'string', displayName: 'Title' },
       size: { type: 'select', displayName: 'Modal size', options: [
@@ -198,6 +218,10 @@ export const componentTypes = [
       show: null
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
@@ -219,6 +243,10 @@ export const componentTypes = [
       width: 200,
       height: 30
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' }
     },
@@ -230,6 +258,10 @@ export const componentTypes = [
       value: {}
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         placeholder: { value: 'Placeholder text' }
       },
@@ -250,6 +282,10 @@ export const componentTypes = [
       width: 150,
       height: 30
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       format: { type: 'code', displayName: 'Format' },
       enableTime: { type: 'code', displayName: 'Enable time selection?' },
@@ -263,6 +299,10 @@ export const componentTypes = [
       value: {}
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
@@ -285,6 +325,10 @@ export const componentTypes = [
       width: 100,
       height: 60
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       label: { type: 'code', displayName: 'Label' }
     },
@@ -297,6 +341,10 @@ export const componentTypes = [
     },
     exposedVariables: {},
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         label: { value: 'Checkbox label' }
       },
@@ -326,6 +374,10 @@ export const componentTypes = [
       width: 250,
       height: 100
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       value: { type: 'code', displayName: 'Default value' },
       placeholder: { type: 'code', displayName: 'Placeholder' }
@@ -338,6 +390,10 @@ export const componentTypes = [
       value: {}
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         value: { value: '' },
         placeholder: { value: 'Placeholder text' }
@@ -359,6 +415,10 @@ export const componentTypes = [
       width: 300,
       height: 32
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       format: { type: 'code', displayName: 'Format' }
     },
@@ -371,6 +431,10 @@ export const componentTypes = [
       startDate: {}
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         format: { value: 'DD/MM/YYYY' }
       },
@@ -387,6 +451,10 @@ export const componentTypes = [
     displayName: 'Text',
     description: 'Display markdown or HTML',
     component: 'Text',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       text: { type: 'code', displayName: 'Text' },
       loadingState: { type: 'code', displayName: 'Show loading state' }
@@ -403,6 +471,10 @@ export const componentTypes = [
     },
     exposedVariables: {},
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         text: { value: 'Text goes here !' },
         visible: { value: true },
@@ -425,6 +497,10 @@ export const componentTypes = [
       height: 200
     },
     component: 'Image',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       source: { type: 'code', displayName: 'URL' },
     },
@@ -436,6 +512,10 @@ export const componentTypes = [
     },
     exposedVariables: {},
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
         visible: { value: true }
@@ -457,6 +537,10 @@ export const componentTypes = [
       height: 200
     },
     component: 'Container',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
     },
     events: {},
@@ -465,6 +549,10 @@ export const componentTypes = [
     },
     exposedVariables: {},
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         visible: { value: true }
       },
@@ -483,6 +571,10 @@ export const componentTypes = [
       height: 30
     },
     component: 'DropDown',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       label: { type: 'code', displayName: 'Label' },
       value: { type: 'code', displayName: 'Default value' },
@@ -499,6 +591,10 @@ export const componentTypes = [
       value: {}
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         label: { value: 'Select' },
         value: { value: '' },
@@ -523,6 +619,10 @@ export const componentTypes = [
       height: 60
     },
     component: 'Multiselect',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
         label: { type: 'code', displayName: 'Label' },
         value: { type: 'code', displayName: 'Default value' },
@@ -539,6 +639,10 @@ export const componentTypes = [
       values: {}
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         label: { value: 'Select' },
         values: { value: '[]' },
@@ -563,6 +667,10 @@ export const componentTypes = [
       width: 600,
       height: 210
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' }
     },
@@ -574,6 +682,10 @@ export const componentTypes = [
         value: {}
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         placeholder: { value: 'Placeholder text' }
       },
@@ -593,6 +705,10 @@ export const componentTypes = [
     defaultSize: {
       width: 400,
       height: 400
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
     },
     properties: {
       initialLocation: { type: 'code', displayName: 'Initial location', tip: 'This location will be the initial center of the map', options: { 
@@ -620,6 +736,10 @@ export const componentTypes = [
         center: {}
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         initialLocation: { value: `{
   "lat": 40.7128,
