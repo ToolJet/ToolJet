@@ -74,6 +74,8 @@ export function onBeforeChange(editor, change, ignoreBraces = false) {
 }
 
 export function canShowHint(editor, ignoreBraces = false) {
+  
+  if(!editor.hasFocus()) return false;
 
   const cursor = editor.getCursor();
   const line = cursor.line;
