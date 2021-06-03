@@ -2,6 +2,7 @@ import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { changeOption } from './utils';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -17,13 +18,6 @@ class Restapi extends React.Component {
       options: this.props.options
     });
   }
-
-  changeOption = (option, value) => {
-    const { options } = this.state;
-    const newOptions = { ...options, [option]: value };
-    this.setState({ options: newOptions });
-    this.props.optionsChanged(newOptions);
-  };
 
   addNewKeyValuePair = (option) => {
     const { options } = this.state;
@@ -73,7 +67,7 @@ class Restapi extends React.Component {
                   search={false}
                   closeOnSelect={true}
                   onChange={(value) => {
-                    this.changeOption('method', value);
+                    changeOption(this, 'method', value);
                   }}
                   filterOptions={fuzzySearch}
                   placeholder="Method"
@@ -85,7 +79,7 @@ class Restapi extends React.Component {
                   currentState={this.props.currentState}
                   initialValue={options.url}
                   className="codehinter-query-editor-input"
-                  onChange={(value) => { this.changeOption('url', value); }}
+                  onChange={(value) => { changeOption(this, 'url', value); }}
                 />
               </div>
             </div>

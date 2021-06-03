@@ -2,6 +2,7 @@ import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { changeOption } from './utils';
 
 class Slack extends React.Component {
   constructor(props) {
@@ -17,20 +18,6 @@ class Slack extends React.Component {
       options: this.props.options
     });
   }
-
-  changeOption = (option, value) => {
-    this.setState(
-      {
-        options: {
-          ...this.state.options,
-          [option]: value
-        }
-      },
-      () => {
-        this.props.optionsChanged(this.state.options);
-      }
-    );
-  };
 
   changeJsonOption(option, value) {
     this.setState(
@@ -92,7 +79,7 @@ class Slack extends React.Component {
                       <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={this.state.options.channel}
-                        onChange={(value) => this.changeOption('channel', value)}
+                        onChange={(value) => changeOption(this, 'channel', value)}
                       />
                   </div>
                 </div>
@@ -102,7 +89,7 @@ class Slack extends React.Component {
                       <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={options.message}
-                        onChange={(value) => this.changeOption('message', value)}
+                        onChange={(value) => changeOption(this, 'message', value)}
                       />
                   </div>
                 </div>
@@ -111,7 +98,7 @@ class Slack extends React.Component {
                     <input
                       className="form-check-input"
                       type="checkbox"
-                      onClick={() => this.changeOption('sendAsUser', !options.sendAsUser)}
+                      onClick={() => changeOption(this, 'sendAsUser', !options.sendAsUser)}
                       checked={options.sendAsUser}
                     />
                     <span className="form-check-label">Send as user</span>

@@ -61,7 +61,7 @@ class ManageAppUsers extends React.Component {
         toast.success('Added user successfully', { hideProgressBar: true, position: 'top-center' });
         this.fetchAppUsers();
       })
-      .catch((error) => {
+      .catch(( { error }) => {
         this.setState({ addingUser: false });
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });

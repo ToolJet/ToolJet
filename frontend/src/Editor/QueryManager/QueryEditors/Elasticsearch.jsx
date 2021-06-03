@@ -3,6 +3,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { changeOption } from './utils';
 
 class Elasticsearch extends React.Component {
   constructor(props) {
@@ -17,20 +18,6 @@ class Elasticsearch extends React.Component {
     this.setState({
       options: this.props.options
     });
-  }
-
-  changeOption = (option, value) => {
-    this.setState(
-      {
-        options: {
-          ...this.state.options,
-          [option]: value
-        }
-      },
-      () => {
-        this.props.optionsChanged(this.state.options);
-      }
-    );
   }
 
   changeOperation = (operation) => {
@@ -80,7 +67,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.index}
-                    onChange={(value) => this.changeOption('index', value)}
+                    onChange={(value) => changeOption(this, 'index', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -88,7 +75,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.id}
-                    onChange={(value) => this.changeOption('id', value)}
+                    onChange={(value) => changeOption(this, 'id', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -101,7 +88,7 @@ class Elasticsearch extends React.Component {
                     theme="duotone-light"
                     lineNumbers={true}
                     className="query-hinter"
-                    onChange={(value) => this.changeOption('body', value)}
+                    onChange={(value) => changeOption(this, 'body', value)}
                   />
                 </div>
               </div>
@@ -114,7 +101,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.index}
-                    onChange={(value) => this.changeOption('index', value)}
+                    onChange={(value) => changeOption(this, 'index', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -122,7 +109,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.id}
-                    onChange={(value) => this.changeOption('id', value)}
+                    onChange={(value) => changeOption(this, 'id', value)}
                   />
                 </div>
               </div>
@@ -135,7 +122,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.index}
-                    onChange={(value) => this.changeOption('index', value)}
+                    onChange={(value) => changeOption(this, 'index', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -148,7 +135,7 @@ class Elasticsearch extends React.Component {
                     theme="duotone-light"
                     lineNumbers={true}
                     className="query-hinter"
-                    onChange={(value) => this.changeOption('body', value)}
+                    onChange={(value) => changeOption(this, 'body', value)}
                   />
                 </div>
               </div>
@@ -160,7 +147,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.index}
-                    onChange={(value) => this.changeOption('index', value)}
+                    onChange={(value) => changeOption(this, 'index', value)}
                   />
 
                 </div>
@@ -174,7 +161,7 @@ class Elasticsearch extends React.Component {
                     theme="duotone-light"
                     lineNumbers={true}
                     className="query-hinter"
-                    onChange={(value) => this.changeOption('query', value)}
+                    onChange={(value) => changeOption(this, 'query', value)}
                   />
                 </div>
               </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { changeOption } from './utils';
 
 class Firestore extends React.Component {
   constructor(props) {
@@ -16,20 +17,6 @@ class Firestore extends React.Component {
     this.setState({
       options: this.props.options
     });
-  }
-
-  changeOption = (option, value) => {
-    this.setState(
-      {
-        options: {
-          ...this.state.options,
-          [option]: value
-        }
-      },
-      () => {
-        this.props.optionsChanged(this.state.options);
-      }
-    );
   }
 
   changeJsonOption(option, value) {
@@ -95,7 +82,7 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.path}
-                    onChange={(value) => this.changeOption('path', value)}
+                    onChange={(value) => changeOption(this, 'path', value)}
                   />
                 </div>
               </div>
@@ -108,7 +95,7 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.path}
-                    onChange={(value) => this.changeOption('path', value)}
+                    onChange={(value) => changeOption(this, 'path', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -119,7 +106,7 @@ class Firestore extends React.Component {
                     theme="duotone-light"
                     lineNumbers={true}
                     className="query-hinter"
-                    onChange={(value) => this.changeOption('body', value)}
+                    onChange={(value) => changeOption(this, 'body', value)}
                   />
                 </div>
               </div>
@@ -131,7 +118,7 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.collection}
-                    onChange={(value) => this.changeOption('collection', value)}
+                    onChange={(value) => changeOption(this, 'collection', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -139,7 +126,7 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.document_id_key}
-                    onChange={(value) => this.changeOption('document_id_key', value)}
+                    onChange={(value) => changeOption(this, 'document_id_key', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -148,7 +135,7 @@ class Firestore extends React.Component {
                     height="100px"
                     fontSize="2"
                     value={this.state.options.records}
-                    onChange={(instance) => this.changeOption('records', instance.getValue())}
+                    onChange={(instance) => changeOption(this, 'records', instance.getValue())}
                     placeholder="{ }"
                     options={{
                       theme: 'duotone-light',
@@ -168,7 +155,7 @@ class Firestore extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.path}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('path', value)}
+                    onChange={(value) => changeOption(this, 'path', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -177,7 +164,7 @@ class Firestore extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.order}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('order', value)}
+                    onChange={(value) => changeOption(this, 'order', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -186,7 +173,7 @@ class Firestore extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.limit}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('limit', value)}
+                    onChange={(value) => changeOption(this, 'limit', value)}
                   />
                 </div>
                 <div className="row">
@@ -197,7 +184,7 @@ class Firestore extends React.Component {
                       currentState={this.props.currentState}
                       className="codehinter-query-editor-input"
                       initialValue={this.state.options.where_field}
-                      onChange={(value) => this.changeOption('where_field', value)}
+                      onChange={(value) => changeOption(this, 'where_field', value)}
                     />
                   </div>
                   <div className="col-auto">
@@ -216,7 +203,7 @@ class Firestore extends React.Component {
                       value={this.state.options.where_operation}
                       search={true}
                       onChange={(value) => {
-                        this.changeOption('where_operation', value);
+                        changeOption(this, 'where_operation', value);
                       }}
                       filterOptions={fuzzySearch}
                       placeholder="Select.."
@@ -228,7 +215,7 @@ class Firestore extends React.Component {
                       currentState={this.props.currentState}
                       className="codehinter-query-editor-input"
                       initialValue={this.state.options.where_value}
-                      onChange={(value) => this.changeOption('where_value', value)}
+                      onChange={(value) => changeOption(this, 'where_value', value)}
                     />
                   </div>
                 </div>

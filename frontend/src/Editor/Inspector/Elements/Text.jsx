@@ -13,10 +13,15 @@ export const Text = ({
       <ToolTip label={displayName} meta={paramMeta}/>
       <input
         type="text"
-        onChange={(e) => onChange(param, 'value', e.target.value, paramType)}
+        onBlur={(e) => onChange(param, 'value', e.target.value, paramType)}
+        onKeyDown={(e) => {
+          if(e.key === 'Enter') {
+            onChange(param, 'value', e.target.value, paramType)
+          }
+        }}
         className="form-control text-field"
         name=""
-        value={value}
+        defaultValue={value}
       />
     </div>
   );
