@@ -98,7 +98,7 @@ class HomePage extends React.Component {
         <div className="page-body homepage-body">
           <div className="container-xl">
             <div className="row">              
-              <div className="col-3">
+              <div className="col-12 col-lg-3 mb-5">
                 <br />
                 <Folders
                   foldersLoading={this.state.foldersLoading}
@@ -160,6 +160,7 @@ class HomePage extends React.Component {
                               <td class="text-muted col-auto pt-4">
                                 <Link
                                   to={`/apps/${app.id}`}
+                                  className="d-none d-lg-inline"
                                 >
                                   <OverlayTrigger
                                     placement="top"
