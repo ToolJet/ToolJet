@@ -79,13 +79,13 @@ export const DraggableBox = function DraggableBox({
     () => ({
       type: ItemTypes.BOX,
       item: {
-        id, title, component, zoomLevel, parent, layouts
+        id, title, component, zoomLevel, parent, layouts, currentLayout
       },
       collect: (monitor) => ({
         isDragging: monitor.isDragging()
       })
     }),
-    [id, title, component, index, zoomLevel, parent, layouts]
+    [id, title, component, index, zoomLevel, parent, layouts, currentLayout]
   );
 
   useEffect(() => {
