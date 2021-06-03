@@ -93,7 +93,7 @@ export const Container = ({
         }
 
         let layouts = item['layouts'];
-        const currentLayoutOptions = layouts ? layouts[currentLayout] : {};
+        const currentLayoutOptions = layouts ? layouts[item.currentLayout] : {};
 
         let componentData = {};
         let componentMeta = {};
@@ -129,8 +129,8 @@ export const Container = ({
               ...boxes[id],
               layouts: { 
                 ...boxes[id]['layouts'],
-                [currentLayout]: {
-                  ...boxes[id]['layouts'][currentLayout],
+                [item.currentLayout]: {
+                  ...boxes[id]['layouts'][item.currentLayout],
                   top: top,
                   left: left,
                 } 
@@ -165,7 +165,7 @@ export const Container = ({
             [id]: {
               component: componentData,
               layouts: {
-                [currentLayout]: { 
+                [item.currentLayout]: { 
                   top: top,
                   left: left,
                   width: componentMeta.defaultSize.width,
@@ -291,7 +291,7 @@ export const Container = ({
               configHandleClicked,
               removeComponent,
               currentLayout,
-              scaleValue
+            scaleValue
             }}
           />
         }
