@@ -58,6 +58,9 @@ return data.filter(row => row.amount > 1000);`;
         </div>
 
       )}
+      <div className="alert alert-success" role="alert">
+      All the app variables are accessible from transformers and support JS libraries such as Lodash & Moment. <a href="https://docs.tooljet.io/docs/tutorial/transformations">Read documentation</a>.
+      </div>
     </div>
   );
 };
