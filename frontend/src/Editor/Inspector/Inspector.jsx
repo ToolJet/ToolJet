@@ -19,7 +19,7 @@ export const Inspector = ({
   currentState
 }) => {
   
-  const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component }
+  const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component, layouts: allComponents[selectedComponentId].layouts}
   const [component, setComponent] = useState(selectedComponent);
 
   const [components, setComponents] = useState(allComponents);
@@ -66,6 +66,32 @@ export const Inspector = ({
 
     setComponent(newComponent);
     componentDefinitionChanged(newComponent);
+  }
+
+  function layoutPropertyChanged(param, attr, value, paramType) { 
+    paramUpdated(param, attr, value, paramType);
+
+    // User wants to show the widget on mobile devices
+    if(param.name === 'showOnMobile' && value === true) { 
+      let newComponent = {
+        ...component
+      };
+
+      const { width, height } = newComponent.layouts['desktop'];
+
+      newComponent['layouts'] = {
+        ...newComponent.layouts,
+        mobile: { 
+          top: 100, 
+          left: 0, 
+          width: Math.min(width, 445), 
+          height: height
+        }
+      }
+
+      setComponent(newComponent);
+      componentDefinitionChanged(newComponent);
+    }
   }
 
   function eventUpdated(event, actionId) {
@@ -170,14 +196,25 @@ export const Inspector = ({
       }
         
       {!['Table', 'Chart'].includes(componentMeta.component)   && 
-        <div className="properties-container p-2 mb-5 pb-3">
+        <div className="properties-container p-2">
           {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components))}
           <div class="hr-text">Style</div>
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <div class="hr-text">Events</div>
           {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components))}
+          
+          
+
         </div>
       }
+
+      {/* Show on desktop & show on mobile params */}
+      <div class="hr-text">Layout</div>
+      <div className="properties-container p-2 pb-3 mb-5">
+        {renderElement(component, componentMeta, layoutPropertyChanged, dataQueries, 'showOnDesktop', 'others', currentState, components)}
+        {renderElement(component, componentMeta, layoutPropertyChanged, dataQueries, 'showOnMobile', 'others', currentState, components)}
+      </div>
+
       <div className="widget-documentation-link p-2">
         <a href={`https://docs.tooljet.io/docs/widgets/${componentMeta.name.toLowerCase()}`} target="_blank">
           <small>

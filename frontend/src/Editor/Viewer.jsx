@@ -39,7 +39,17 @@ class Viewer extends React.Component {
   componentDidMount() {
     const id = this.props.match.params.id;
 
-    this.setState({isLoading: true});
+    const deviceWindowWidth = window.screen.width;
+    const isMobileDevice = deviceWindowWidth < 600;
+
+    let scaleValue = isMobileDevice ? deviceWindowWidth / 450 : 1;
+
+    this.setState({
+      isLoading: true,
+      deviceWindowWidth,
+      scaleValue,
+      currentLayout: isMobileDevice ? 'mobile' : 'desktop'
+    });
 
     appService.getApp(id).then((data) => this.setState(
       {
@@ -83,7 +93,15 @@ class Viewer extends React.Component {
   }
 
   render() {
-    const { appDefinition, showQueryConfirmation, currentState, isLoading } = this.state;
+    const { 
+      appDefinition, 
+      showQueryConfirmation, 
+      currentState, 
+      isLoading,
+      currentLayout,
+      deviceWindowWidth,
+      scaleValue
+    } = this.state;
 
     console.log('currentState', currentState);
 
@@ -116,7 +134,7 @@ class Viewer extends React.Component {
           <div className="sub-section">
             <div className="main">
               <div className="canvas-container align-items-center">
-                <div className="canvas-area">
+                <div className="canvas-area" style={{width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px`}}>
                 <Container
                     appDefinition={appDefinition}
                     appDefinitionChanged={() => false} // function not relevant in viewer
@@ -124,6 +142,9 @@ class Viewer extends React.Component {
                     appLoading={isLoading}
                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
                     mode="view"
+                    scaleValue={scaleValue}
+                    deviceWindowWidth={deviceWindowWidth}
+                    currentLayout={currentLayout}
                     currentState={this.state.currentState}
                     onComponentClick={(id, component) => onComponentClick(this, id, component)}
                     onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
