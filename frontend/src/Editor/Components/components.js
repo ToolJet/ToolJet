@@ -14,6 +14,10 @@ export const componentTypes = [
       actionButtonBackgroundColor: { type: 'color', displayName: 'Background color'},
       actionButtonTextColor: { type: 'color', displayName: 'Text color'}
     },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
     defaultSize: {
       width: 810,
       height: 300
@@ -35,6 +39,10 @@ export const componentTypes = [
       searchText: ''
     },
     definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
       properties: {
         title: { value: 'Table' },
         visible: { value: true },

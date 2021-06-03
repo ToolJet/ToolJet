@@ -218,7 +218,6 @@ export const Container = ({
       }
     };
 
-
     setBoxes(newBoxes);
   }
 
@@ -248,7 +247,11 @@ export const Container = ({
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
       {Object.keys(boxes).map((key) => {
-        if(!boxes[key].parent) {
+
+        const box = boxes[key];
+        const canShowInCurrentLayout = box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+
+        if(!box.parent && canShowInCurrentLayout) {
           return <DraggableBox
             onComponentClick={onComponentClick}
             onEvent={onEvent}
