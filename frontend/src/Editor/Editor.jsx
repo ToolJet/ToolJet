@@ -61,6 +61,8 @@ class Editor extends React.Component {
       showLeftSidebar: true,
       zoomLevel: 1.0,
       currentLayout: 'desktop',
+      scaleValue: 1,
+      deviceWindowWidth: 450,
       appDefinition: {
         components: null
       },
@@ -396,6 +398,8 @@ class Editor extends React.Component {
       isLoading,
       zoomLevel,
       currentLayout,
+      deviceWindowWidth,
+      scaleValue
     } = this.state;
 
     const appLink = `/applications/${appId}`;
@@ -661,6 +665,8 @@ class Editor extends React.Component {
                     mode={'edit'}
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
+                    deviceWindowWidth={deviceWindowWidth}
+                    scaleValue={scaleValue}
                     appLoading={isLoading}
                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
                     onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
