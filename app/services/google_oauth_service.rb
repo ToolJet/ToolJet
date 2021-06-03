@@ -1,13 +1,13 @@
 class GoogleOauthService
   def self.generate_base_auth_url
-    client_id = ENV.fetch('GOOGLE_CLIENT_ID')
+    client_id = ENV.fetch('GOOGLE_CLIENT_ID', '')
     "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=#{client_id}&redirect_uri=#{ENV.fetch('TOOLJET_HOST')}/oauth2/authorize"
   end
 
   def self.fetch_access_token(code)
     access_token_url = 'https://oauth2.googleapis.com/token'
-    client_id = ENV.fetch('GOOGLE_CLIENT_ID')
-    client_secret = ENV.fetch('GOOGLE_CLIENT_SECRET')
+    client_id = ENV.fetch('GOOGLE_CLIENT_ID', '')
+    client_secret = ENV.fetch('GOOGLE_CLIENT_SECRET', '')
     grant_type = 'authorization_code'
 
     custom_params = [
