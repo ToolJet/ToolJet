@@ -1,0 +1,21 @@
+---
+sidebar_position: 8
+---
+
+# Mobile layout
+
+Mobile layout is activated when the width of window is less than 600px. 
+
+:::tip
+Widgets can be shown desktop, mobile or both.
+:::
+
+## Adding existing widget to mobile layout 
+Click on the widget to open inspector. Scroll down to the `layout` section and enable mobile layout. The width of the widget will be adjusted to fit the mobile layout. 
+
+## Adding a new widget to mobile layout
+Switch the layout to mobile by clicking the button on the top navigation bar. Drag and drop a widget to the canvas. This widget will not be shown on desktop layout unless enabled the option manually.
+
+:::tip
+Width of the widgets will be automatically adjusted to fit the screen while viewing the application in app viewer.
+:::
