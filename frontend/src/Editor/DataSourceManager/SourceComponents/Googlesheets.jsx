@@ -12,7 +12,7 @@ export const Googlesheets = ({
     const provider = 'google';
     setAuthStatus('waiting_for_url');
 
-    const scope = options.access_type === 'read'
+    const scope = options.access_type.value === 'read'
       ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
       : 'https://www.googleapis.com/auth/spreadsheets';
 
