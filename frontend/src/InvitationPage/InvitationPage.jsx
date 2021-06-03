@@ -33,7 +33,7 @@ class InvitationPage extends React.Component {
         toast.success('Password has been set successfully.', { hideProgressBar: true, position: 'top-center' });
         this.props.history.push('/login');
       })
-      .catch((error) => {
+      .catch(( { error }) => {
         this.setState({ isLoading: false });
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });
