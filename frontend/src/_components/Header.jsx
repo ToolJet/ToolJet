@@ -22,7 +22,7 @@ export const Header = function Header({
   return <header className="navbar navbar-expand-md navbar-light d-print-none">
     <div className="container-xl">
       <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-        <span className="navbar-toggler-icon"></span>
+        {/* <span className="navbar-toggler-icon"></span> */}
       </button>
       <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
         <Link to={'/'}>
