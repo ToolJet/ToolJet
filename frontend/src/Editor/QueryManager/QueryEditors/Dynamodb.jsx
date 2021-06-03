@@ -2,6 +2,7 @@ import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { changeOption } from './utils';
 
 class Dynamodb extends React.Component {
   constructor(props) {
@@ -17,20 +18,6 @@ class Dynamodb extends React.Component {
       options: this.props.options
     });
   }
-
-  changeOption = (option, value) => {
-    this.setState(
-      {
-        options: {
-          ...this.state.options,
-          [option]: value
-        }
-      },
-      () => {
-        this.props.optionsChanged(this.state.options);
-      }
-    );
-  };
 
   changeOperation = (operation) => {
     this.setState(
@@ -84,7 +71,7 @@ class Dynamodb extends React.Component {
                     mode="javascript"
                     lineNumbers={true}
                     className="query-hinter"
-                    onChange={(value) => this.changeOption('query_condition', value)}
+                    onChange={(value) => changeOption(this, 'query_condition', value)}
                   />
                 </div>
               </div>
@@ -101,7 +88,7 @@ class Dynamodb extends React.Component {
                     mode="javascript"
                     lineNumbers={true}
                     className="query-hinter"
-                    onChange={(value) => this.changeOption('scan_condition', value)}
+                    onChange={(value) => changeOption(this, 'scan_condition', value)}
                   />
                 </div>
               </div>
@@ -115,7 +102,7 @@ class Dynamodb extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.table}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('table', value)}
+                    onChange={(value) => changeOption(this, 'table', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -127,7 +114,7 @@ class Dynamodb extends React.Component {
                     mode="javascript"
                     lineNumbers={true}
                     className="query-hinter"
-                    onChange={(value) => this.changeOption('key', value)}
+                    onChange={(value) => changeOption(this, 'key', value)}
                   />
                 </div>
               </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { changeOption } from './utils';
 
 class Airtable extends React.Component {
   constructor(props) {
@@ -17,20 +18,6 @@ class Airtable extends React.Component {
       options: this.props.options
     });
   }
-
-  changeOption = (option, value) => {
-    this.setState(
-      {
-        options: {
-          ...this.state.options,
-          [option]: value
-        }
-      },
-      () => {
-        this.props.optionsChanged(this.state.options);
-      }
-    );
-  };
 
   changeOperation = (operation) => {
     this.setState(
@@ -78,7 +65,7 @@ class Airtable extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.base_id}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('base_id', value)}
+                    onChange={(value) => changeOption(this, 'base_id', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -87,7 +74,7 @@ class Airtable extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.table_name}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('table_name', value)}
+                    onChange={(value) => changeOption(this, 'table_name', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -96,7 +83,7 @@ class Airtable extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.page_size}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('page_size', value)}
+                    onChange={(value) => changeOption(this, 'page_size', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -105,7 +92,7 @@ class Airtable extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.offset}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('offset', value)}
+                    onChange={(value) => changeOption(this, 'offset', value)}
                   />
                 </div>
               </div>
@@ -119,7 +106,7 @@ class Airtable extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.base_id}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('base_id', value)}
+                    onChange={(value) => changeOption(this, 'base_id', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -128,7 +115,7 @@ class Airtable extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.table_name}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('table_name', value)}
+                    onChange={(value) => changeOption(this, 'table_name', value)}
                   />
                 </div>
                 <div className="mb-3 mt-2">
@@ -137,7 +124,7 @@ class Airtable extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.record_id}
                     className="codehinter-query-editor-input"
-                    onChange={(value) => this.changeOption('record_id', value)}
+                    onChange={(value) => changeOption(this, 'record_id', value)}
                   />
                 </div>
               </div>

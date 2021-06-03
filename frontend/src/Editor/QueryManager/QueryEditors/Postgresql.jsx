@@ -3,6 +3,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { changeOption } from './utils';
 
 class Postgresql extends React.Component {
   constructor(props) {
@@ -18,13 +19,6 @@ class Postgresql extends React.Component {
       options: this.props.options
     });
   }
-
-  changeOption = (option, value) => {
-    const { options } = this.state;
-    const newOptions = { ...options, [option]: value };
-    this.setState({ options: newOptions });
-    this.props.optionsChanged(newOptions);
-  };
 
   render() {
     const { options } = this.state;
@@ -42,7 +36,7 @@ class Postgresql extends React.Component {
                 value={options.mode}
                 search={true}
                 onChange={(value) => {
-                  this.changeOption('mode', value);
+                  changeOption(this, 'mode', value);
                 }}
                 filterOptions={fuzzySearch}
                 placeholder="Select.."
@@ -58,7 +52,7 @@ class Postgresql extends React.Component {
                   theme="duotone-light"
                   lineNumbers={true}
                   className="query-hinter"
-                  onChange={(value) => this.changeOption('query', value)}
+                  onChange={(value) => changeOption(this, 'query', value)}
                 />
               </div>
             )}
@@ -70,7 +64,7 @@ class Postgresql extends React.Component {
                     <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={this.state.options.table}
-                        onChange={(value) => this.changeOption('table', value)}
+                        onChange={(value) => changeOption(this, 'table', value)}
                       />
                   </div>
                   <div className="col">
@@ -80,7 +74,7 @@ class Postgresql extends React.Component {
                       value={options.operation}
                       search={true}
                       onChange={(value) => {
-                        this.changeOption('operation', value);
+                        changeOption(this, 'operation', value);
                       }}
                       filterOptions={fuzzySearch}
                       placeholder="Select.."
@@ -95,7 +89,7 @@ class Postgresql extends React.Component {
                       <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={options.primary_key_column}
-                        onChange={(value) => this.changeOption('primary_key_column', value)}
+                        onChange={(value) => changeOption(this, 'primary_key_column', value)}
                       />
                     </div>
                     <div className="mb-3 mt-2">
@@ -104,7 +98,7 @@ class Postgresql extends React.Component {
                         height="auto"
                         fontSize="2"
                         value={options.records}
-                        onChange={(instance) => this.changeOption('records', instance.getValue())}
+                        onChange={(instance) => changeOption(this, 'records', instance.getValue())}
                         placeholder="{{ [ ] }}"
                         options={{
                           theme: 'duotone-light',
