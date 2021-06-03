@@ -2,6 +2,7 @@ import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { changeOption } from './utils';
 
 class Googlesheets extends React.Component {
   constructor(props) {
@@ -17,20 +18,6 @@ class Googlesheets extends React.Component {
       options: this.props.options
     });
   }
-
-  changeOption = (option, value) => {
-    this.setState(
-      {
-        options: {
-          ...this.state.options,
-          [option]: value
-        }
-      },
-      () => {
-        this.props.optionsChanged(this.state.options);
-      }
-    );
-  };
 
   changeJsonOption(option, value) {
     this.setState(
@@ -61,7 +48,7 @@ class Googlesheets extends React.Component {
   };
 
   render() {
-    const { options } = this.state;
+    const { options } = this.props;
 
     return (
       <div>
@@ -93,7 +80,7 @@ class Googlesheets extends React.Component {
                       type="text"
                       value={this.state.options.spreadsheet_id}
                       onChange={(e) => {
-                        this.changeOption('spreadsheet_id', e.target.value);
+                        changeOption(this, 'spreadsheet_id', e.target.value);
                       }}
                       className="form-control"
                     />
@@ -104,7 +91,7 @@ class Googlesheets extends React.Component {
                       type="text"
                       value={this.state.options.sheet}
                       onChange={(e) => {
-                        this.changeOption('sheet', e.target.value);
+                        changeOption(this, 'sheet', e.target.value);
                       }}
                       className="form-control"
                     />
@@ -125,7 +112,7 @@ class Googlesheets extends React.Component {
                   theme="duotone-light"
                   lineNumbers={true}
                   className="query-hinter"
-                  onChange={(value) => this.changeOption('rows', value)}
+                  onChange={(value) => changeOption(this, 'rows', value)}
             />
           </div>
       )}
@@ -137,7 +124,7 @@ class Googlesheets extends React.Component {
               type="text"
               value={this.state.options.spreadsheet_id}
               onChange={(e) => {
-                this.changeOption('spreadsheet_id', e.target.value);
+                changeOption(this, 'spreadsheet_id', e.target.value);
               }}
               className="form-control"
             />

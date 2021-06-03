@@ -6,6 +6,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
+import { CodeHinter } from '../CodeBuilder/CodeHinter';
 
 export const Transformation = ({ changeOption, options, currentState }) => {
   const defaultValue = options.transformation
@@ -13,11 +14,11 @@ export const Transformation = ({ changeOption, options, currentState }) => {
 // return value will be set as data and the original data will be available as rawData
 return data.filter(row => row.amount > 1000);`;
 
-  // const [value, setValue] = useState(defaultValue);
+  const [value, setValue] = useState(defaultValue);
 
-  // useEffect(() => {
-  //   setValue(defaultValue);
-  // }, [defaultValue]);
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
 
   function codeChanged(value) {
     changeOption('transformation', value);
@@ -43,24 +44,23 @@ return data.filter(row => row.amount > 1000);`;
       )}
       <br></br>
       {options.enableTransformation && (
-        <div>
-          <CodeMirror
-            height="220px"
-            fontSize="1"
-            onChange={(editor) => handleChange(editor, codeChanged, suggestions)}
-            onBeforeChange={(editor, change) => onBeforeChange(editor, change)}
-            value={defaultValue}
-            options={{
-              theme: 'base16-light',
-              mode: 'javascript',
-              lineWrapping: true,
-              scrollbarStyle: null,
-              highlightSelectionMatches: true,
-            }}
+        <div style={{height: '240px'}}>
+          <CodeHinter
+              currentState={currentState}
+              initialValue={value}
+              mode="javascript"
+              theme="base16-light"
+              lineNumbers={true}
+              className="query-hinter"
+              ignoreBraces={true}
+              onChange={(value) => changeOption('transformation', value)}
           />
         </div>
 
       )}
+      <div className="alert alert-success" role="alert">
+      All the app variables are accessible from transformers and support JS libraries such as Lodash & Moment. <a href="https://docs.tooljet.io/docs/tutorial/transformations">Read documentation</a>.
+      </div>
     </div>
   );
 };

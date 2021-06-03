@@ -2,6 +2,7 @@ import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { changeOption } from './utils';
 
 class Mysql extends React.Component {
   constructor(props) {
@@ -15,13 +16,6 @@ class Mysql extends React.Component {
       options: this.props.options
     });
   }
-
-  changeOption = (option, value) => {
-    const { options } = this.state;
-    const newOptions = { ...options, [option]: value };
-    this.setState({ options: newOptions });
-    this.props.optionsChanged(newOptions);
-  };
 
   render() {
     const { options } = this.state;
@@ -37,7 +31,7 @@ class Mysql extends React.Component {
               theme="duotone-light"
               lineNumbers={true}
               className="query-hinter"
-              onChange={(value) => this.changeOption('query', value)}
+              onChange={(value) => changeOption(this, 'query', value)}
             />
           </div>
         )}
