@@ -38,8 +38,10 @@ return data.filter(row => row.amount > 1000);`;
         <span className="form-check-label">Transformations</span>
       </label>
       {!options.enableTransformation && (
-        <div className="alert alert-info" role="alert">
-          Transformations can be used to transform the results of queries.
+        <div>
+          <div className="alert alert-success" role="alert">
+           Transformations can be used to transform the results of queries. All the app variables are accessible from transformers and support JS libraries such as Lodash & Moment. <a href="https://docs.tooljet.io/docs/tutorial/transformations">Read documentation</a>.
+          </div>
         </div>
       )}
       <br></br>
@@ -58,9 +60,6 @@ return data.filter(row => row.amount > 1000);`;
         </div>
 
       )}
-      <div className="alert alert-success" role="alert">
-      All the app variables are accessible from transformers and support JS libraries such as Lodash & Moment. <a href="https://docs.tooljet.io/docs/tutorial/transformations">Read documentation</a>.
-      </div>
     </div>
   );
 };
