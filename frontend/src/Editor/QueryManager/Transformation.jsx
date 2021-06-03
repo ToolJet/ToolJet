@@ -52,6 +52,7 @@ return data.filter(row => row.amount > 1000);`;
               theme="base16-light"
               lineNumbers={true}
               className="query-hinter"
+              ignoreBraces={true}
               onChange={(value) => changeOption('transformation', value)}
           />
         </div>
