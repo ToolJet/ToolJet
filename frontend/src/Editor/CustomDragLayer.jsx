@@ -13,7 +13,7 @@ const layerStyles = {
   height: '100%'
 };
 
-function getItemStyles(delta, item, initialOffset, currentOffset) {
+function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout) {
   if (!initialOffset || !currentOffset) {
     return {
       display: 'none'
@@ -29,8 +29,10 @@ function getItemStyles(delta, item, initialOffset, currentOffset) {
   const realCanvasDelta = realCanvasBoundingRect.x - canvasContainerBoundingRect.x;
 
   if (id) { // Dragging within the canvas
-    x = Math.round(item.left + delta.x);
-    y = Math.round(item.top + delta.y);
+
+    x = Math.round(item.layouts[currentLayout].left + delta.x);
+    y = Math.round(item.layouts[currentLayout].top + delta.y);
+    
   } else { // New component being dragged  from components sidebar
     const offsetFromTopOfWindow = realCanvasBoundingRect.top;
     const offsetFromLeftOfWindow = realCanvasBoundingRect.left;
@@ -50,7 +52,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset) {
     WebkitTransform: transform
   };
 }
-export const CustomDragLayer = () => {
+export const CustomDragLayer = ({ currentLayout }) => {
   const {
     itemType, isDragging, item, initialOffset, currentOffset, delta
   } = useDragLayer((monitor) => ({
@@ -64,7 +66,7 @@ export const CustomDragLayer = () => {
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} />;
+        return <BoxDragPreview item={item} currentLayout={currentLayout}/>;
       default:
         return null;
     }
@@ -76,7 +78,7 @@ export const CustomDragLayer = () => {
 
   return (
     <div style={layerStyles}>
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset)}>
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)}>
         {renderItem()}
       </div>
     </div>

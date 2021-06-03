@@ -30,6 +30,7 @@ export const Container = ({
   appLoading,
   configHandleClicked,
   zoomLevel,
+  currentLayout,
   removeComponent
 }) => {
   const components = appDefinition.components || [];
@@ -43,11 +44,11 @@ export const Container = ({
   }, [components]);
 
   const moveBox = useCallback(
-    (id, left, top) => {
+    (id, layouts) => {
       setBoxes(
         update(boxes, {
           [id]: {
-            $merge: { left, top }
+            $merge: { layouts }
           }
         })
       );
@@ -86,6 +87,9 @@ export const Container = ({
           return;
         }
 
+        let layouts = item['layouts'];
+        const currentLayoutOptions = layouts ? layouts[currentLayout] : {};
+
         let componentData = {};
         let componentMeta = {};
         let id = item.id;
@@ -107,8 +111,30 @@ export const Container = ({
           }
 
           componentData = item.component;
-          left = Math.round(item.left + deltaX);
-          top = Math.round(item.top + deltaY);
+          left = Math.round(currentLayoutOptions.left + deltaX);
+          top = Math.round(currentLayoutOptions.top + deltaY);
+
+          if (snapToGrid) {
+            [left, top] = doSnapToGrid(left, top);
+          }
+
+          let newBoxes = { 
+            ...boxes,
+            [id]: {
+              ...boxes[id],
+              layouts: { 
+                ...boxes[id]['layouts'],
+                [currentLayout]: {
+                  ...boxes[id]['layouts'][currentLayout],
+                  top: top,
+                  left: left,
+                } 
+              }
+            }
+          };
+
+          setBoxes(newBoxes);
+
         } else {
           //  This is a new component
           componentMeta = componentTypes.find((component) => component.component === item.component.component);
@@ -124,22 +150,32 @@ export const Container = ({
           top = Math.round(currentOffset.y + (currentOffset.y * (1 - zoomLevel)) - offsetFromTopOfWindow);
 
           id = uuidv4();
-        }
 
-        if (snapToGrid) {
-          [left, top] = doSnapToGrid(left, top);
-        }
-
-        setBoxes({
-          ...boxes,
-          [id]: {
-            top: top,
-            left: left,
-            width: item.width > 0 ? item.width : componentMeta.defaultSize.width,
-            height: item.height > 0 ? item.height : componentMeta.defaultSize.height,
-            component: componentData
+          if (snapToGrid) {
+            [left, top] = doSnapToGrid(left, top);
           }
-        });
+  
+          setBoxes({
+            ...boxes,
+            [id]: {
+              component: componentData,
+              layouts: {
+                [currentLayout]: { 
+                  top: top,
+                  left: left,
+                  width: componentMeta.defaultSize.width,
+                  height: componentMeta.defaultSize.height,
+                },
+                mobile: {
+                  top: 100,
+                  left: 0,
+                  width: 445,
+                  height: 500
+                }
+              }
+            }
+          });
+        }
 
         return undefined;
       }
@@ -153,18 +189,29 @@ export const Container = ({
 
     let { x, y } = position;
 
-    let  { left, top, width, height } = boxes[id];
+    const defaultData = {
+      top: 100,
+      left: 0,
+      width: 445,
+      height: 500
+    };
+
+    let  { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
     
     top = y;
     left = x;
 
     width = width + deltaWidth;
-    height = height + deltaHeight
+    height = height + deltaHeight;
 
     setBoxes(
       update(boxes, {
         [id]: {
-          $merge: { width, height, top, left }
+          $merge: { 
+            layouts: { 
+              [currentLayout]: { width, height, top, left }
+            } 
+          }
         }
       })
     );
@@ -214,6 +261,7 @@ export const Container = ({
             zoomLevel={zoomLevel}
             configHandleClicked={configHandleClicked}
             removeComponent={removeComponent}
+            currentLayout={currentLayout}
             containerProps={{
               mode,
               snapToGrid,
@@ -227,7 +275,8 @@ export const Container = ({
               appLoading,
               zoomLevel,
               configHandleClicked,
-              removeComponent
+              removeComponent,
+              currentLayout
             }}
           />
         }
