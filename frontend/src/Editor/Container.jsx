@@ -204,17 +204,22 @@ export const Container = ({
     width = width + deltaWidth;
     height = height + deltaHeight;
 
-    setBoxes(
-      update(boxes, {
-        [id]: {
-          $merge: { 
-            layouts: { 
-              [currentLayout]: { width, height, top, left }
-            } 
-          }
+    let newBoxes = { 
+      ...boxes,
+      [id]: {
+        ...boxes[id],
+        layouts: { 
+          ...boxes[id]['layouts'],
+          [currentLayout]: {
+            ...boxes[id]['layouts'][currentLayout],
+            width, height, top, left
+          } 
         }
-      })
-    );
+      }
+    };
+
+
+    setBoxes(newBoxes);
   }
 
   function paramUpdated(id, param, value) {
