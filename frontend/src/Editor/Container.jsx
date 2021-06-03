@@ -7,11 +7,7 @@ import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
 
-const styles = {
-  width: 1292,
-  height: 2400,
-  position: 'absolute'
-};
+
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16));
@@ -30,8 +26,18 @@ export const Container = ({
   appLoading,
   configHandleClicked,
   zoomLevel,
-  removeComponent
+  currentLayout,
+  removeComponent,
+  deviceWindowWidth,
+  scaleValue
 }) => {
+
+  const styles = {
+    width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
+    height: 2400,
+    position: 'absolute'
+  };
+
   const components = appDefinition.components || [];
 
   const [boxes, setBoxes] = useState(components);
@@ -43,11 +49,11 @@ export const Container = ({
   }, [components]);
 
   const moveBox = useCallback(
-    (id, left, top) => {
+    (id, layouts) => {
       setBoxes(
         update(boxes, {
           [id]: {
-            $merge: { left, top }
+            $merge: { layouts }
           }
         })
       );
@@ -86,6 +92,9 @@ export const Container = ({
           return;
         }
 
+        let layouts = item['layouts'];
+        const currentLayoutOptions = layouts ? layouts[item.currentLayout] : {};
+
         let componentData = {};
         let componentMeta = {};
         let id = item.id;
@@ -107,8 +116,30 @@ export const Container = ({
           }
 
           componentData = item.component;
-          left = Math.round(item.left + deltaX);
-          top = Math.round(item.top + deltaY);
+          left = Math.round(currentLayoutOptions.left + deltaX);
+          top = Math.round(currentLayoutOptions.top + deltaY);
+
+          if (snapToGrid) {
+            [left, top] = doSnapToGrid(left, top);
+          }
+
+          let newBoxes = { 
+            ...boxes,
+            [id]: {
+              ...boxes[id],
+              layouts: { 
+                ...boxes[id]['layouts'],
+                [item.currentLayout]: {
+                  ...boxes[id]['layouts'][item.currentLayout],
+                  top: top,
+                  left: left,
+                } 
+              }
+            }
+          };
+
+          setBoxes(newBoxes);
+
         } else {
           //  This is a new component
           componentMeta = componentTypes.find((component) => component.component === item.component.component);
@@ -124,22 +155,31 @@ export const Container = ({
           top = Math.round(currentOffset.y + (currentOffset.y * (1 - zoomLevel)) - offsetFromTopOfWindow);
 
           id = uuidv4();
-        }
 
-        if (snapToGrid) {
-          [left, top] = doSnapToGrid(left, top);
-        }
-
-        setBoxes({
-          ...boxes,
-          [id]: {
-            top: top,
-            left: left,
-            width: item.width > 0 ? item.width : componentMeta.defaultSize.width,
-            height: item.height > 0 ? item.height : componentMeta.defaultSize.height,
-            component: componentData
+          if (snapToGrid) {
+            [left, top] = doSnapToGrid(left, top);
           }
-        });
+
+          if(item.currentLayout === 'mobile') { 
+            componentData.definition.others.showOnDesktop.value = false;
+            componentData.definition.others.showOnMobile.value = true;
+          }
+  
+          setBoxes({
+            ...boxes,
+            [id]: {
+              component: componentData,
+              layouts: {
+                [item.currentLayout]: { 
+                  top: top,
+                  left: left,
+                  width: componentMeta.defaultSize.width,
+                  height: componentMeta.defaultSize.height,
+                }
+              }
+            }
+          });
+        }
 
         return undefined;
       }
@@ -153,21 +193,36 @@ export const Container = ({
 
     let { x, y } = position;
 
-    let  { left, top, width, height } = boxes[id];
+    const defaultData = {
+      top: 100,
+      left: 0,
+      width: 445,
+      height: 500
+    };
+
+    let  { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
     
     top = y;
     left = x;
 
     width = width + deltaWidth;
-    height = height + deltaHeight
+    height = height + deltaHeight;
 
-    setBoxes(
-      update(boxes, {
-        [id]: {
-          $merge: { width, height, top, left }
+    let newBoxes = { 
+      ...boxes,
+      [id]: {
+        ...boxes[id],
+        layouts: { 
+          ...boxes[id]['layouts'],
+          [currentLayout]: {
+            ...boxes[id]['layouts'][currentLayout],
+            width, height, top, left
+          } 
         }
-      })
-    );
+      }
+    };
+
+    setBoxes(newBoxes);
   }
 
   function paramUpdated(id, param, value) {
@@ -196,7 +251,11 @@ export const Container = ({
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
       {Object.keys(boxes).map((key) => {
-        if(!boxes[key].parent) {
+
+        const box = boxes[key];
+        const canShowInCurrentLayout = box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+
+        if(!box.parent && canShowInCurrentLayout) {
           return <DraggableBox
             onComponentClick={onComponentClick}
             onEvent={onEvent}
@@ -214,6 +273,8 @@ export const Container = ({
             zoomLevel={zoomLevel}
             configHandleClicked={configHandleClicked}
             removeComponent={removeComponent}
+            currentLayout={currentLayout}
+            scaleValue={scaleValue}
             containerProps={{
               mode,
               snapToGrid,
@@ -227,7 +288,9 @@ export const Container = ({
               appLoading,
               zoomLevel,
               configHandleClicked,
-              removeComponent
+              removeComponent,
+              currentLayout,
+            scaleValue
             }}
           />
         }

@@ -5,7 +5,8 @@ import { result } from 'lodash';
 
 export const WidgetManager = function WidgetManager({
     componentTypes,
-    zoomLevel
+    zoomLevel,
+    currentLayout
 }) {
 
     const [filteredComponents, setFilteredComponents] = useState(componentTypes);
@@ -21,7 +22,7 @@ export const WidgetManager = function WidgetManager({
     }
 
     function renderComponentCard(component, index) {
-        return <DraggableBox key={index} index={index} component={component} zoomLevel={zoomLevel}/>;
+        return <DraggableBox key={index} index={index} component={component} zoomLevel={zoomLevel} currentLayout={currentLayout} />;
     };
 
     return <div className="components-container m-2">
