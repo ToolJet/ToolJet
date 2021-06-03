@@ -54,7 +54,7 @@ class ManageOrgUsers extends React.Component {
         toast.success('User role has been updated', { hideProgressBar: true, position: 'top-center' });
         this.setState({ idChangingRole: null });
       })
-      .catch((error) => {
+      .catch(( { error } ) => {
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
         this.setState({ idChangingRole: null });
       });

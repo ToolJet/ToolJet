@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import { datasourceService } from '@/_services';
+import { toast } from 'react-toastify';
 
 export const Googlesheets = ({
   optionchanged, createDataSource, options, isSaving, selectedDataSource
@@ -11,7 +12,7 @@ export const Googlesheets = ({
     const provider = 'google';
     setAuthStatus('waiting_for_url');
 
-    const scope = options.access_type === 'read'
+    const scope = options.access_type.value === 'read'
       ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
       : 'https://www.googleapis.com/auth/spreadsheets';
 
@@ -23,7 +24,10 @@ export const Googlesheets = ({
       });
       setAuthStatus('waiting_for_token');
       window.open(authUrl);
-    });
+    }).catch(({ error }) => {
+      toast.error(error, { hideProgressBar: true, position: 'top-center' });
+      setAuthStatus(null);
+    });;
   }
 
   function saveDataSource() {
