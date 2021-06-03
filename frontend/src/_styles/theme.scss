@@ -270,7 +270,6 @@ body {
       }
 
       .canvas-area {
-        width: 1292px;
         min-height: 2400px;
         background: #edeff5;
         margin: 0px auto;
@@ -424,6 +423,7 @@ body {
       height: 100%;
       width: 100%;
       position: fixed;
+      left: 0;
       overflow-y: auto;
       overflow-x: auto;
       -webkit-box-pack: center;
