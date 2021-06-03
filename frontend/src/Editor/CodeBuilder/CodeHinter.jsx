@@ -12,7 +12,7 @@ import 'codemirror/theme/duotone-light.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 
 export function CodeHinter({
-  initialValue, onChange, currentState, mode, theme, lineNumbers, className, placeholder
+  initialValue, onChange, currentState, mode, theme, lineNumbers, className, placeholder, ignoreBraces
 }) {
   const options = {
     lineNumbers: lineNumbers,
@@ -45,8 +45,8 @@ export function CodeHinter({
           const value = editor.getValue();
           onChange(value);
         }}
-        onChange={(editor) => handleChange(editor, onChange, suggestions)}
-        onBeforeChange={(editor, change) => onBeforeChange(editor, change)}
+        onChange={(editor) => handleChange(editor, onChange, suggestions, ignoreBraces)}
+        onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
         options={options}
       />
     </div>
