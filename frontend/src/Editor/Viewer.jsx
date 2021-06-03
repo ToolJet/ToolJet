@@ -39,9 +39,19 @@ class Viewer extends React.Component {
   componentDidMount() {
     const id = this.props.match.params.id;
 
+    const deviceWindowWidth = window.screen.width;
+    const isMobileDevice = deviceWindowWidth < 600;
+
+    let scaleValue = null;
+    if(isMobileDevice) { 
+      scaleValue = deviceWindowWidth / 450;
+    }
+
     this.setState({
       isLoading: true,
-      currentLayout: 'mobile'
+      deviceWindowWidth,
+      scaleValue,
+      currentLayout: isMobileDevice ? 'mobile' : 'desktop'
     });
 
     appService.getApp(id).then((data) => this.setState(
