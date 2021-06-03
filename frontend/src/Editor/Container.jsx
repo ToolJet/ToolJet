@@ -159,6 +159,11 @@ export const Container = ({
           if (snapToGrid) {
             [left, top] = doSnapToGrid(left, top);
           }
+
+          if(item.currentLayout === 'mobile') { 
+            componentData.definition.others.showOnDesktop.value = false;
+            componentData.definition.others.showOnMobile.value = true;
+          }
   
           setBoxes({
             ...boxes,
@@ -170,12 +175,6 @@ export const Container = ({
                   left: left,
                   width: componentMeta.defaultSize.width,
                   height: componentMeta.defaultSize.height,
-                },
-                mobile: {
-                  top: 100,
-                  left: 0,
-                  width: 445,
-                  height: 500
                 }
               }
             }

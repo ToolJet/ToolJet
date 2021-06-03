@@ -827,6 +827,7 @@ class Editor extends React.Component {
                 <WidgetManager
                   componentTypes={componentTypes}
                   zoomLevel={zoomLevel}
+                  currentLayout={currentLayout}
                 ></WidgetManager>
               )}
             </div>
