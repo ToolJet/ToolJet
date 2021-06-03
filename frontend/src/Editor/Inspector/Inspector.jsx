@@ -76,9 +76,17 @@ export const Inspector = ({
       let newComponent = {
         ...component
       };
+
+      const { width, height } = newComponent.layouts['desktop'];
+
       newComponent['layouts'] = {
         ...newComponent.layouts,
-        mobile: { top: 100, left: 0, width: 445, height: 500 }
+        mobile: { 
+          top: 100, 
+          left: 0, 
+          width: Math.min(width, 445), 
+          height: height
+        }
       }
 
       setComponent(newComponent);
