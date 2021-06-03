@@ -3,6 +3,7 @@ import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { placeholders } from './placeholders';
+import { changeOption } from './utils';
 
 class Mongodb extends React.Component {
   constructor(props) {
@@ -18,20 +19,6 @@ class Mongodb extends React.Component {
       options: this.props.options
     });
   }
-
-  changeOption = (option, value) => {
-    this.setState(
-      {
-        options: {
-          ...this.state.options,
-          [option]: value
-        }
-      },
-      () => {
-        this.props.optionsChanged(this.state.options);
-      }
-    );
-  };
 
   changeJsonOption(option, value) {
     this.setState(
@@ -93,7 +80,7 @@ class Mongodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.collection}
-                    onChange={(value) => this.changeOption('collection', value)}
+                    onChange={(value) => changeOption(this, 'collection', value)}
                   />
                 </div>
 
@@ -107,7 +94,7 @@ class Mongodb extends React.Component {
                     lineNumbers={true}
                     placeholder={placeholders['mongodb']['insert_one']}
                     className="query-hinter"
-                    onChange={(value) => this.changeOption('document', value)}
+                    onChange={(value) => changeOption(this, 'document', value)}
                   />
                 </div>
               </div>
@@ -120,7 +107,7 @@ class Mongodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.collection}
-                    onChange={(value) => this.changeOption('collection', value)}
+                    onChange={(value) => changeOption(this, 'collection', value)}
                   />
                 </div>
 
@@ -134,7 +121,7 @@ class Mongodb extends React.Component {
                     lineNumbers={true}
                     className="query-hinter"
                     placeholder={placeholders['mongodb']['insert_many']}
-                    onChange={(value) => this.changeOption('documents', value)}
+                    onChange={(value) => changeOption(this, 'documents', value)}
                   />
                 </div>
               </div>

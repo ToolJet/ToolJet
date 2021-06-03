@@ -1,6 +1,7 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
+import { changeOption } from './utils';
 
 class Redis extends React.Component {
   constructor(props) {
@@ -17,13 +18,6 @@ class Redis extends React.Component {
     });
   }
 
-  changeOption = (option, value) => {
-    const { options } = this.state;
-    const newOptions = { ...options, [option]: value };
-    this.setState({ options: newOptions });
-    this.props.optionsChanged(newOptions);
-  };
-
   render() {
     const { options } = this.state;
 
@@ -36,7 +30,7 @@ class Redis extends React.Component {
                 height="auto"
                 fontSize="2"
                 value={options.query}
-                onChange={(instance) => this.changeOption('query', instance.getValue())}
+                onChange={(instance) => changeOption(this, 'query', instance.getValue())}
                 placeholder="PING"
                 options={{
                   theme: 'duotone-light',
