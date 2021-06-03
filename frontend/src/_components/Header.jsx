@@ -26,11 +26,11 @@ export const Header = function Header({
       </button>
       <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
         <Link to={'/'}>
-          <img src="/assets/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
+          <img src="/assets/images/logo-text.svg" width="110" height="32" className="navbar-brand-image" />
         </Link>
       </h1>
 
-      <ul class="navbar-nav">
+      <ul class="navbar-nav d-none d-lg-flex">
         <li className={`nav-item mx-3 ${pahtName === '/' ? 'active' : ''}`}>
           <Link to={'/'} className="nav-link">
             <span className="nav-link-icon d-md-none d-lg-inline-block">
