@@ -23,12 +23,15 @@ export function generateHints(word, suggestions) {
   return fuse.search(word).map((result) => result.item);
 }
 
-export function computeCurrentWord(editor, _cursorPosition) {
+export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false) {
   const cursor = editor.getCursor();
   const line = cursor.line;
   const value = editor.getLine(line);
   const sliced = value.slice(0, _cursorPosition);
-  const split = sliced.split('{{');
+
+  const splitter = ignoreBraces ? ' ' : '{{';
+
+  const split = sliced.split(splitter);
   const lastWord = split[split.length - 1];
   return lastWord;
 }
@@ -50,36 +53,47 @@ export function makeOverlay(style) {
   }
 }
 
-export function onBeforeChange(editor, change) {
-  const cursor = editor.getCursor();
-  const line = cursor.line;
-  const ch = cursor.ch;
-  const value = editor.getLine(line);
-  const isLastCharacterBrace = value.slice(ch - 1, value.length) === '{';
+export function onBeforeChange(editor, change, ignoreBraces = false) {
 
-  if (isLastCharacterBrace && change.origin === '+input' && change.text[0] === '{') {
-    change.text[0] = '{}}'
-    // editor.setCursor({ line: 0, ch: ch })
+  if(!ignoreBraces) { 
+
+    const cursor = editor.getCursor();
+    const line = cursor.line;
+    const ch = cursor.ch;
+    const value = editor.getLine(line);
+    const isLastCharacterBrace = value.slice(ch - 1, value.length) === '{';
+
+    if (isLastCharacterBrace && change.origin === '+input' && change.text[0] === '{') {
+      change.text[0] = '{}}'
+      // editor.setCursor({ line: 0, ch: ch })
+    }
+
   }
 
   return change;
 }
 
-export function canShowHint(editor) {
+export function canShowHint(editor, ignoreBraces = false) {
+  
+  if(!editor.hasFocus()) return false;
+
   const cursor = editor.getCursor();
   const line = cursor.line;
   const ch = cursor.ch;
-  const value = editor.getLine(line)
+  const value = editor.getLine(line);
+
+  if(ignoreBraces && value.length > 0) return true;
+
   return value.slice(ch, ch + 2) === '}}';
 }
 
-export function handleChange(editor, onChange, suggestions) {
+export function handleChange(editor, onChange, suggestions, ignoreBraces = false) {
 
   let state = editor.state.matchHighlighter;
   editor.addOverlay(state.overlay = makeOverlay(state.options.style));
 
   const cursor = editor.getCursor();
-  const currentWord = computeCurrentWord(editor, cursor.ch);
+  const currentWord = computeCurrentWord(editor, cursor.ch, ignoreBraces);
   const hints = generateHints(currentWord, suggestions);
 
   const options = {
@@ -92,7 +106,7 @@ export function handleChange(editor, onChange, suggestions) {
       }
     }
   };
-  if (canShowHint(editor)) {
+  if (canShowHint(editor, ignoreBraces)) {
     editor.showHint(options);
   }
 };
