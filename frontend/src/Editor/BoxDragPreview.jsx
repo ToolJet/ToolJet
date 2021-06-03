@@ -1,6 +1,6 @@
 import React, { useEffect, useState, memo } from 'react';
 
-export const BoxDragPreview = memo(function BoxDragPreview({ item }) {
+export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout }) {
   const [tickTock, setTickTock] = useState(false);
 
   useEffect(
@@ -11,7 +11,8 @@ export const BoxDragPreview = memo(function BoxDragPreview({ item }) {
     [tickTock]
   );
 
-  let { width, height } = item;
+  const layouts  = item.layouts;
+  let { width, height } = layouts ? item.layouts[currentLayout] : {};
 
   if (item.id === undefined) {
     width = item.component.defaultSize.width;
