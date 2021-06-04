@@ -502,7 +502,7 @@ class Editor extends React.Component {
                       onClick={() => this.setState({ currentLayout: 'desktop' })}
                       disabled={currentLayout === 'desktop'}
                     >
-                      <img src="https://www.svgrepo.com/show/108320/desktop.svg" width="12" height="12" />
+                      <img src="/assets/images/icons/editor/desktop.svg" width="12" height="12" />
                     </button>
                     <button 
                       type="button" 
@@ -510,7 +510,7 @@ class Editor extends React.Component {
                       onClick={() => this.setState({ currentLayout: 'mobile' })}
                       disabled={currentLayout === 'mobile'}
                     >
-                      <img src="https://www.svgrepo.com/show/80383/touch-screen-mobile-device.svg" width="12" height="12" />
+                      <img src="/assets/images/icons/editor/mobile.svg" width="12" height="12" />
                     </button>
                   </div>
 
