@@ -73,6 +73,7 @@ export const Inspector = ({
 
     // User wants to show the widget on mobile devices
     if(param.name === 'showOnMobile' && value === true) { 
+      
       let newComponent = {
         ...component
       };
@@ -90,7 +91,34 @@ export const Inspector = ({
       }
 
       setComponent(newComponent);
-      componentDefinitionChanged(newComponent);
+      componentDefinitionChanged(newComponent).then(() => {
+        
+        //  Child componets should also have a mobile layout
+        const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+
+        childComponents.forEach((componentId) => {
+          let newChild = {
+            id: componentId,
+            ...allComponents[componentId]
+          };
+
+          const { width, height } = newChild.layouts['desktop'];
+
+          newChild['layouts'] = {
+            ...newChild.layouts,
+            mobile: { 
+              top: 100, 
+              left: 0, 
+              width: Math.min(width, 445), 
+              height: height
+            }
+          }
+
+          componentDefinitionChanged(newChild);
+
+        });
+      });
+
     }
   }
 

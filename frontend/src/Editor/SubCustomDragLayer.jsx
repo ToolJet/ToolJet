@@ -12,7 +12,7 @@ const layerStyles = {
   height: '100%'
 };
 
-function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent) {
+function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent, currentLayout) {
   if (!initialOffset || !currentOffset || !parentRef.current) {
     return {
       display: 'none'
@@ -32,8 +32,8 @@ function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, par
   const realCanvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
   if (id) { // Dragging within the canvas
-    x = Math.round(item.left + delta.x);
-    y = Math.round(item.top + delta.y);
+    x = Math.round(item.layouts[currentLayout].left + delta.x);
+    y = Math.round(item.layouts[currentLayout].top + delta.y);
   } else { // New component being dragged  from components sidebar
     const offsetFromTopOfWindow = realCanvasBoundingRect.top;
     const offsetFromLeftOfWindow = realCanvasBoundingRect.left;
@@ -51,7 +51,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, par
     WebkitTransform: transform
   };
 }
-export const SubCustomDragLayer = ({parentRef, parent}) => {
+export const SubCustomDragLayer = ({parentRef, parent, currentLayout}) => {
   const {
     itemType, isDragging, item, initialOffset, currentOffset, delta
   } = useDragLayer((monitor) => ({
@@ -65,7 +65,7 @@ export const SubCustomDragLayer = ({parentRef, parent}) => {
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} />;
+        return <BoxDragPreview item={item} currentLayout={currentLayout} />;
       default:
         return null;
     }
@@ -76,7 +76,7 @@ export const SubCustomDragLayer = ({parentRef, parent}) => {
 
   return (
     <div style={layerStyles} className="sub-custom-drag-layer">
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent)}>
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent, currentLayout)}>
         {renderItem()}
       </div>
     </div>
