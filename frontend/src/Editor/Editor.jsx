@@ -24,7 +24,7 @@ import {
   onQueryConfirm,
   onQueryCancel,
   runQuery,
-  previewQuery
+  setStateAsync
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -245,7 +245,8 @@ class Editor extends React.Component {
   };
 
   componentDefinitionChanged = (newDefinition) => {
-    this.setState({
+    let _self = this;
+    return setStateAsync(_self, {
       appDefinition: {
         ...this.state.appDefinition,
         components: {
