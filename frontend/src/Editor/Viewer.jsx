@@ -39,7 +39,7 @@ class Viewer extends React.Component {
   componentDidMount() {
     const id = this.props.match.params.id;
 
-    const deviceWindowWidth = window.screen.width;
+    const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
 
     let scaleValue = isMobileDevice ? deviceWindowWidth / 450 : 1;

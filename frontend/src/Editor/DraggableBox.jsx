@@ -69,7 +69,8 @@ export const DraggableBox = function DraggableBox({
   removeComponent,
   currentLayout,
   layouts,
-  scaleValue
+  scaleValue,
+  deviceWindowWidth
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -132,6 +133,22 @@ export const DraggableBox = function DraggableBox({
     setCurrentLayoutOptions(layoutData);
   }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top]);
 
+  function scaleWidth(width, scaleValue) { 
+    let newWidth = width * scaleValue + 6;
+
+    if(currentLayout === 'desktop') return newWidth;
+
+    const diff =  currentLayoutOptions.left + newWidth - deviceWindowWidth;
+
+    if(diff > 0 ) { 
+      currentLayoutOptions.left = currentLayoutOptions.left - diff;
+      return width;
+    }
+
+    return newWidth;
+
+  }
+
   return (
     <div>
       {inCanvas ? (
@@ -144,7 +161,7 @@ export const DraggableBox = function DraggableBox({
           
           <Rnd
             style={{ ...style }}
-            size={{ width: currentLayoutOptions.width * scaleValue  + 6,  height: currentLayoutOptions.height + 6}}
+            size={{ width: scaleWidth(currentLayoutOptions.width, scaleValue),  height: currentLayoutOptions.height + 6}}
             position={{ x: currentLayoutOptions ? currentLayoutOptions.left : 0, y: currentLayoutOptions ? currentLayoutOptions.top : 0 }}
             defaultSize={{}}
             className={`resizer ${mouseOver ? 'resizer-active' : ''}`}
