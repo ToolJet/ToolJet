@@ -666,6 +666,7 @@ class Editor extends React.Component {
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
                     deviceWindowWidth={deviceWindowWidth}
+                    selectedComponent={selectedComponent || {}}
                     scaleValue={scaleValue}
                     appLoading={isLoading}
                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
