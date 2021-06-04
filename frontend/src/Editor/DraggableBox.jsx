@@ -131,7 +131,7 @@ export const DraggableBox = function DraggableBox({
   useEffect(() => {
     console.log(layoutData)
     setCurrentLayoutOptions(layoutData);
-  }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top]);
+  }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top, currentLayout]);
 
   function scaleWidth(width, scaleValue) { 
     let newWidth = width * scaleValue + 6;
@@ -141,7 +141,11 @@ export const DraggableBox = function DraggableBox({
     const diff =  currentLayoutOptions.left + newWidth - deviceWindowWidth;
 
     if(diff > 0 ) { 
-      currentLayoutOptions.left = currentLayoutOptions.left - diff;
+      setCurrentLayoutOptions({
+        ...currentLayoutOptions,
+        left: currentLayoutOptions.left - diff
+      });
+      
       return width;
     }
 
@@ -188,7 +192,7 @@ export const DraggableBox = function DraggableBox({
               <Box
                 component={component}
                 id={id}
-                width={currentLayoutOptions.width * scaleValue}
+                width={scaleWidth(currentLayoutOptions.width, scaleValue)}
                 height={currentLayoutOptions.height}
                 mode={mode}
                 changeCanDrag={changeCanDrag}
