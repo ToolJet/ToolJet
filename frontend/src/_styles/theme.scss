@@ -1559,3 +1559,15 @@ input:focus-visible {
     background: var(--tblr-btn-color-darker) !important;
   }
 }
+
+.editor-sidebar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+  -ms-overflow-style: none;
+}
+
+.editor-sidebar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
