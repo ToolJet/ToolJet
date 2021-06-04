@@ -261,7 +261,7 @@ class QueryManager extends React.Component {
                 onClick={() => { 
                   const query = { data_source_id: selectedDataSource.id, options: options, kind: selectedDataSource.kind };
                   previewQuery(this, query).then(() => {
-                    toast.info(`Query (${query.name}) completed.`, {
+                    toast.info(`Query completed.`, {
                       hideProgressBar: true,
                       position: 'bottom-center'
                     });
