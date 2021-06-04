@@ -79,6 +79,7 @@ class Slack extends React.Component {
                       <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={this.state.options.channel}
+                        className="codehinter-query-editor-input"
                         onChange={(value) => changeOption(this, 'channel', value)}
                       />
                   </div>
@@ -89,11 +90,12 @@ class Slack extends React.Component {
                       <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={options.message}
+                        className="codehinter-query-editor-input"
                         onChange={(value) => changeOption(this, 'message', value)}
                       />
                   </div>
                 </div>
-                <div className="mb-3 mt-2 mx-1 row">
+                {/* <div className="mb-3 mt-2 mx-1 row">
                   <label className="form-check form-switch my-2">
                     <input
                       className="form-check-input"
@@ -103,7 +105,7 @@ class Slack extends React.Component {
                     />
                     <span className="form-check-label">Send as user</span>
                   </label>
-                </div>
+                </div> */}
               </div>
             }
           </div>
