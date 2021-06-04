@@ -70,7 +70,8 @@ export const DraggableBox = function DraggableBox({
   currentLayout,
   layouts,
   scaleValue,
-  deviceWindowWidth
+  deviceWindowWidth,
+  isSelectedComponent
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -168,7 +169,7 @@ export const DraggableBox = function DraggableBox({
             size={{ width: scaleWidth(currentLayoutOptions.width, scaleValue) + 6,  height: currentLayoutOptions.height + 6}}
             position={{ x: currentLayoutOptions ? currentLayoutOptions.left : 0, y: currentLayoutOptions ? currentLayoutOptions.top : 0 }}
             defaultSize={{}}
-            className={`resizer ${mouseOver ? 'resizer-active' : ''}`}
+            className={`resizer ${isSelectedComponent && !mouseOver ? 'resizer-selected' : ''} ${mouseOver ? 'resizer-active' : ''} `}
             onResize={() => setResizing(true)}
             resizeHandleClasses={mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}

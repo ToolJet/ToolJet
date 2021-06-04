@@ -22,6 +22,12 @@ body {
     }
   }
 
+  .resizer-selected { 
+    outline-width: thin;
+    outline-style: solid;
+    outline-color: #ffda7e;
+  }
+
   .query-manager {
     .btn {
       height: 31px;
