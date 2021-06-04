@@ -58,4 +58,4 @@ Read our contributing guide (CONTRIBUTING.md) to learn about our development pro
 [Contributing Guide](https://docs.tooljet.io/docs/contributing-guide/setup/docker)
 
 ## Licence
-ToolJet is Apache-2.0 licensed.
+ToolJet © 2021, ToolJet Inc - Released under the GNU General Public License v3.0.
