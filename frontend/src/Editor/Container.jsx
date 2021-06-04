@@ -275,6 +275,7 @@ export const Container = ({
             removeComponent={removeComponent}
             currentLayout={currentLayout}
             scaleValue={scaleValue}
+            deviceWindowWidth={deviceWindowWidth}
             containerProps={{
               mode,
               snapToGrid,
@@ -290,7 +291,8 @@ export const Container = ({
               configHandleClicked,
               removeComponent,
               currentLayout,
-            scaleValue
+              scaleValue,
+              deviceWindowWidth
             }}
           />
         }
