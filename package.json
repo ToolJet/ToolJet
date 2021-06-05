@@ -25,7 +25,6 @@
     },
     "scripts": {
         "build": "npm --cwd frontend install && npm --cwd frontend build",
-        "deploy": "cp -a frontend/build/. public/",
-        "heroku-postbuild": "npm build && npm deploy"
+        "deploy": "cp -a frontend/build/. public/"
     }
 }
