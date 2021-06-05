@@ -24,7 +24,7 @@
         "eslint": "^7.25.0"
     },
     "scripts": {
-        "build": "cd frontend && npm install && NODE_ENV=production npm run build",
+        "build": "cd frontend && npm install && NODE_ENV=production npm run build && cp -a build/. ../public/",
         "deploy": "cp -a frontend/build/. public/"
     }
 }
