@@ -43,5 +43,6 @@ Rails.application.routes.draw do
   post 'signup', to: 'authentication#signup'
   post '/sample', to: 'sample#deploy'
 
-  get '/', to: 'probe#health_check'
+  get '/health', to: 'probe#health_check'
+
 end

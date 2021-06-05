@@ -34,7 +34,7 @@ spec:
           readinessProbe:
             httpGet:
               port: 3000
-              path: /
+              path: /health
             successThreshold: 1
             initialDelaySeconds: 10
             periodSeconds: 5
@@ -76,7 +76,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: encryption_salt
+                  key: secret_key_base
+            - name: TOOLJET_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: tj_host      
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: smtp
+                  key: username
             - name: SMTP_ADDRESS
               valueFrom:
                 secretKeyRef:
@@ -91,17 +101,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: smtp
-                  key: password
-            - name: TOOLJET_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: server
-                  key: tj_host      
-            - name: SMTP_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: smtp
-                  key: username
+                  key: password      
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
