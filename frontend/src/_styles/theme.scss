@@ -1353,6 +1353,10 @@ body {
   border-radius: 4px;
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
   height: 30px;
+
+  .CodeMirror {
+    font-family: 'Roboto', sans-serif;
+  }
  }
 
  .codehinter-query-editor-input {
