@@ -19,9 +19,9 @@
         "eslint": "^7.25.0"
     },
     "scripts": {
-        "build": "cd frontend npm install && NODE_ENV=production npm run build",
+        "build": "npm --prefix frontend install && NODE_ENV=production npm --prefix frontend run build",
         "deploy": "cp -a frontend/build/. public/",
         "heroku-postbuild": "npm run build && npm run deploy",
-        "heroku-prebuild": "cd frontend && npm install "
+        "heroku-prebuild": "npm --prefix frontend install "
     }
 }
