@@ -24,7 +24,8 @@
         "eslint": "^7.25.0"
     },
     "scripts": {
-        "build": "cd frontend && npm build",
-        "deploy": "cp -a frontend/build/. public/"
+        "build": "npm --cwd frontend install && npm --cwd frontend build",
+        "deploy": "cp -a frontend/build/. public/",
+        "heroku-postbuild": "npm build && npm deploy"
     }
 }
