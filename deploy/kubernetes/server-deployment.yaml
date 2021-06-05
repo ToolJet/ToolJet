@@ -24,7 +24,7 @@ spec:
           command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
           resources:
             limits:
-              memory: "3001Mi"
+              memory: "3002Mi"
               cpu: "500m"
             requests:
               memory: "3000Mi"
@@ -77,7 +77,51 @@ spec:
                 secretKeyRef:
                   name: server
                   key: encryption_salt
-            
+            - name: SMTP_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: smtp
+                  key: address   
+            - name: SMTP_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: smtp
+                  key: domain    
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smtp
+                  key: password
+            - name: TOOLJET_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: tj_host      
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: smtp
+                  key: username
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sources
+                  key: google_client_id
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sources
+                  key: google_client_secret
+            - name: SLACK_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sources
+                  key: slack_client_id
+            - name: SLACK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sources
+                  key: slack_client_secret                        
 
       imagePullSecrets:
         - name: docker-secret
