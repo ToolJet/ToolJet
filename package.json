@@ -4,7 +4,6 @@
             "eslint --fix"
         ]
     },
-    
     "devDependencies": {
         "eslint": "^7.25.0",
         "eslint-config-airbnb": "^18.2.1",
@@ -18,7 +17,9 @@
         "eslint-plugin-react-hooks": "^4.2.0",
         "prettier": "2.2.1",
         "husky": "^6.0.0",
-        "lint-staged": "^10.5.4"
+        "lint-staged": "^10.5.4",
+        "webpack": "^4.29.6",
+        "webpack-cli": "^3.3.0"
     },
     "dependencies": {
         "eslint": "^7.25.0"
@@ -26,6 +27,7 @@
     "scripts": {
         "build": "cd frontend npm install && NODE_ENV=production npm run build",
         "deploy": "cp -a frontend/build/. public/",
-        "heroku-postbuild": "npm run build && npm run deploy"
+        "heroku-postbuild": "npm run build && npm run deploy",
+        "heroku-prebuild": "npm install --dev && cd frontend ** npm install --dev"
     }
 }
