@@ -18,6 +18,10 @@
         "description": "Public URL of ToolJet installtion.",
         "value": "https://app.tooljet.io"
       },
+      "TOOLJET_SERVER_URL": {
+        "description": "URL of ToolJet server installtion. (This is same as the TOOLJET_HOST for Heroku deployments)",
+        "value": "https://app.tooljet.io"
+      },
       "LOCKBOX_MASTER_KEY": {
         "description": "Key for encrypting datasource credentials.",
         "value": ""
