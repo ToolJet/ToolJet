@@ -34,7 +34,7 @@ spec:
           readinessProbe:
             httpGet:
               port: 3000
-              path: /
+              path: /health
             successThreshold: 1
             initialDelaySeconds: 10
             periodSeconds: 5
@@ -72,6 +72,11 @@ spec:
                 secretKeyRef:
                   name: server
                   key: secret_key_base
+            - name: TOOLJET_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: host      
 
                   imagePullSecrets:
         - name: registry-secret
