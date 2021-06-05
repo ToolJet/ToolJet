@@ -42,5 +42,7 @@ Rails.application.routes.draw do
   post 'authenticate', to: 'authentication#authenticate'
   post 'signup', to: 'authentication#signup'
 
-  get '/', to: 'probe#health_check'
+  # get '/', to: 'probe#health_check'
+  # get '/', to: 'home#index'
+
 end
