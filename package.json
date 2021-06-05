@@ -25,6 +25,7 @@
     },
     "scripts": {
         "build": "cd frontend && NODE_ENV=production npm build",
-        "deploy": "cp -a frontend/build/. public/"
+        "deploy": "cp -a frontend/build/. public/",
+        "heroku-postbuild": "npm build && npm deploy"
     }
 }
