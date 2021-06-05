@@ -1571,3 +1571,13 @@ input:focus-visible {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
+.sketch-picker { 
+  position: absolute;
+}
+
+
+.color-picker-input {
+  border: solid 1px rgb(223, 223, 223);
+  cursor: pointer;
+}
