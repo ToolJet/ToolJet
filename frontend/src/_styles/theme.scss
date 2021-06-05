@@ -164,7 +164,7 @@ body {
 
         .component-action-button {
           right: 10px;
-          position: fixed;
+          position: absolute;
         }
       }
 
@@ -1353,6 +1353,10 @@ body {
   border-radius: 4px;
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
   height: 30px;
+
+  .CodeMirror {
+    font-family: 'Roboto', sans-serif;
+  }
  }
 
  .codehinter-query-editor-input {
@@ -1570,4 +1574,14 @@ input:focus-visible {
 .editor-sidebar {
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.sketch-picker { 
+  position: absolute;
+}
+
+
+.color-picker-input {
+  border: solid 1px rgb(223, 223, 223);
+  cursor: pointer;
 }

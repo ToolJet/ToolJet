@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
-import Plot from 'react-plotly.js';
+
+// Use plotly basic bundle
+import Plotly from 'plotly.js-basic-dist-min';
+import createPlotlyComponent from 'react-plotly.js/factory';
+const Plot = createPlotlyComponent(Plotly)
+
 import Skeleton from 'react-loading-skeleton';
 
 export const Chart = function Chart({
@@ -15,7 +20,7 @@ export const Chart = function Chart({
     const loadingStateProperty = component.definition.properties.loadingState;
     if (loadingStateProperty && currentState) {
       const newState = resolveReferences(loadingStateProperty.value, currentState, false);
-      setLoadingState(newState);
+    setLoadingState(newState);
     }
   }, [currentState]);
 

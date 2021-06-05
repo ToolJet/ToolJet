@@ -10,9 +10,10 @@ export const Checkbox = function Checkbox({
   onComponentOptionChanged,
   onEvent
 }) {
-  console.log('currentState', currentState);
 
   const label = component.definition.properties.label.value;
+  const textColorProperty = component.definition.styles.textColor;
+  const textColor = textColorProperty ? textColorProperty.value : '#000';
 
   function toggleValue(e) {
     const checked = e.target.checked;
@@ -34,7 +35,7 @@ export const Checkbox = function Checkbox({
             toggleValue(e);
           }}
         />
-        <span className="form-check-label">{label}</span>
+        <span className="form-check-label" style={{color: textColor}}>{label}</span>
       </label>
     </div>
   );
