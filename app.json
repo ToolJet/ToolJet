@@ -3,7 +3,7 @@
     "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
     "website": "https://tooljet.io/",
     "repository": "https://github.com/tooljet/tooljet",
-    "logo": "https://app.tooljet.io/images/logo.svg",
+    "logo": "https://app.tooljet.io/assets/images/logo.svg",
     "success_url": "/",
     "env": {
       "RAILS_ENV": {
@@ -36,6 +36,9 @@
     "image": "heroku/ruby",
     "addons": ["heroku-postgresql"],
     "buildpacks": [
+      {
+        "url": "heroku/nodejs"
+      },
       {
         "url": "heroku/ruby"
       }
