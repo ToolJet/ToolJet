@@ -22,6 +22,12 @@ body {
     }
   }
 
+  .resizer-selected { 
+    outline-width: thin;
+    outline-style: solid;
+    outline-color: #ffda7e;
+  }
+
   .query-manager {
     .btn {
       height: 31px;
@@ -270,7 +276,6 @@ body {
       }
 
       .canvas-area {
-        width: 1292px;
         min-height: 2400px;
         background: #edeff5;
         margin: 0px auto;
@@ -424,6 +429,7 @@ body {
       height: 100%;
       width: 100%;
       position: fixed;
+      left: 0;
       overflow-y: auto;
       overflow-x: auto;
       -webkit-box-pack: center;
@@ -1332,7 +1338,7 @@ body {
 
  .codehinter-default-input {
   font-family: 'Roboto', sans-serif;
-  padding: 0.0475rem .75rem;
+  padding: 0.0475rem 0rem;
   display: block;
   width: 100%;
   font-size: .875rem;
@@ -1552,4 +1558,16 @@ input:focus-visible {
   &.btn-primary:hover {
     background: var(--tblr-btn-color-darker) !important;
   }
+}
+
+.editor-sidebar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+  -ms-overflow-style: none;
+}
+
+.editor-sidebar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }

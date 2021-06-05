@@ -24,7 +24,7 @@ import {
   onQueryConfirm,
   onQueryCancel,
   runQuery,
-  previewQuery
+  setStateAsync
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -60,6 +60,9 @@ class Editor extends React.Component {
       showQueryEditor: true,
       showLeftSidebar: true,
       zoomLevel: 1.0,
+      currentLayout: 'desktop',
+      scaleValue: 1,
+      deviceWindowWidth: 450,
       appDefinition: {
         components: null
       },
@@ -242,14 +245,16 @@ class Editor extends React.Component {
   };
 
   componentDefinitionChanged = (newDefinition) => {
-    this.setState({
+    let _self = this;
+    return setStateAsync(_self, {
       appDefinition: {
         ...this.state.appDefinition,
         components: {
           ...this.state.appDefinition.components,
           [newDefinition.id]: {
             ...this.state.appDefinition.components[newDefinition.id],
-            component: newDefinition.component
+            component: newDefinition.component,
+            layouts: newDefinition.layouts
           }
         }
       }
@@ -393,8 +398,9 @@ class Editor extends React.Component {
       currentState,
       isLoading,
       zoomLevel,
-      previewLoading,
-      queryPreviewData
+      currentLayout,
+      deviceWindowWidth,
+      scaleValue
     } = this.state;
 
     const appLink = `/applications/${appId}`;
@@ -488,6 +494,27 @@ class Editor extends React.Component {
                         height="12"
                         />
                   </button>
+                </div>
+                <div className="layout-buttons">
+                  <div class="btn-group" role="group" aria-label="Basic example">
+                    <button 
+                      type="button" 
+                      class="btn btn-light"
+                      onClick={() => this.setState({ currentLayout: 'desktop' })}
+                      disabled={currentLayout === 'desktop'}
+                    >
+                      <img src="/assets/images/icons/editor/desktop.svg" width="12" height="12" />
+                    </button>
+                    <button 
+                      type="button" 
+                      class="btn btn-light"
+                      onClick={() => this.setState({ currentLayout: 'mobile' })}
+                      disabled={currentLayout === 'mobile'}
+                    >
+                      <img src="/assets/images/icons/editor/mobile.svg" width="12" height="12" />
+                    </button>
+                  </div>
+
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
                   <div className="nav-item dropdown d-none d-md-flex me-3">
@@ -631,13 +658,17 @@ class Editor extends React.Component {
             </Resizable>
             <div className="main">
               <div className="canvas-container align-items-center" style={{ transform: `scale(${zoomLevel})` }}>
-                <div className="canvas-area">
+                <div className="canvas-area" style={{width: currentLayout === 'desktop' ? '1292px' : '450px'}}>
                   <Container
                     appDefinition={appDefinition}
                     appDefinitionChanged={this.appDefinitionChanged}
                     snapToGrid={true}
                     mode={'edit'}
                     zoomLevel={zoomLevel}
+                    currentLayout={currentLayout}
+                    deviceWindowWidth={deviceWindowWidth}
+                    selectedComponent={selectedComponent || {}}
+                    scaleValue={scaleValue}
                     appLoading={isLoading}
                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
                     onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
@@ -653,7 +684,10 @@ class Editor extends React.Component {
                       onComponentClick(this, id, component);
                     }}
                   />
-                  <CustomDragLayer snapToGrid={true} />
+                  <CustomDragLayer 
+                    snapToGrid={true} 
+                    currentLayout={currentLayout}
+                  />
                 </div>
               </div>
               <div
@@ -795,6 +829,7 @@ class Editor extends React.Component {
                 <WidgetManager
                   componentTypes={componentTypes}
                   zoomLevel={zoomLevel}
+                  currentLayout={currentLayout}
                 ></WidgetManager>
               )}
             </div>
