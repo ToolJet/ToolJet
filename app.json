@@ -20,7 +20,7 @@
       },
       "TOOLJET_SERVER_URL": {
         "description": "URL of ToolJet server installtion. (This is same as the TOOLJET_HOST for Heroku deployments)",
-        "value": "https://<app-name-in0first-step>.herokuapp.com"
+        "value": "https://<app-name-in-first-step>.herokuapp.com"
       },
       "LOCKBOX_MASTER_KEY": {
         "description": "Key for encrypting datasource credentials.",
