@@ -24,7 +24,7 @@
         "eslint": "^7.25.0"
     },
     "scripts": {
-        "build": "cd frontend && NODE_ENV=production npm build",
+        "build": "cd frontend && npm install && NODE_ENV=production webpack",
         "deploy": "cp -a frontend/build/. public/",
         "heroku-postbuild": "npm run build && npm run deploy"
     }
