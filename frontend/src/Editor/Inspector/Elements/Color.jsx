@@ -33,14 +33,13 @@ export const Color = ({
         </div>
       )}
 
-      <input
-        onFocus={() => setShowPicker(true)}
-        type="text"
-        onChange={(e) => onChange(param, 'value', e.target.value, paramType)}
-        className="form-control text-field"
-        name=""
-        value={definition.value}
-      />
+      <div className="row mx-1 color-picker-input" onClick={() => setShowPicker(true)}>
+        <div className="col-auto" style={{width: '40px', height: '30px'}}  style={{backgroundColor: definition.value}}>
+        </div>
+        <div className="col">
+          {definition.value}
+        </div>
+      </div>
     </div>
   );
 };
