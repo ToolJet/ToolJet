@@ -1,18 +1,16 @@
 <p align="center">
   <img src="https://app.tooljet.io/assets/images/logo-text.svg" width="300" />
   <br/>
-  Built and deploy internal tools.
+  Build and deploy internal tools.
 </p>
 
 
 ToolJet is an **open-source no-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources such as databases ( like PostgreSQL, MongoDB, Elasticsearch, etc ), API endpoints ( ToolJet supports importing OpenAPI spec & OAuth2 authorization) and external services ( like Stripe, Slack, Google Sheets, Airtable ) and use our pre-built UI widgets to build internal tools.
-
 <p align="center">
   <kbd>
     <img src="https://user-images.githubusercontent.com/7828962/120830570-4211a000-c57c-11eb-97f5-a650b177a082.png" />
   </kbd>
 </p>
-
 
 ## Features
 
@@ -34,11 +32,12 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 ## Quickstart 
 The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.io) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host TooJet, please proceed to [deployment documentation](https://docs.tooljet.io/docs/setup/architecture).
 
+You can deploy ToolJet on Heroku for free using the one-click-deployment button below.
 <p align="center">
-Deploy ToolJet server to Heroku and client to Netilify.  <br>
 <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" /></a>
-  <a href="https://app.netlify.com/start/deploy?repository=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.netlify.com/img/deploy/button.svg" /></a>
 </P>
+
+
 
 ## Examples 
 
@@ -53,7 +52,7 @@ The documentation is available at https://docs.tooljet.io
 [Widget Reference](https://docs.tooljet.io)
 
 ## Branching model
-We use the git-flow branching model. The base branch is develop. If you are looking for a stable version, please use the master or tags labelled as v1.x.x.
+We use the git-flow branching model. The base branch is develop. If you are looking for a stable version, please use the main branch or tags labelled as v1.x.x.
 
 ## Contributing
 Read our contributing guide (CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to ToolJet. <br>
