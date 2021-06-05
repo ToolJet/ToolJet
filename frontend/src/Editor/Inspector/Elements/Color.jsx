@@ -19,7 +19,7 @@ export const Color = ({
   const displayName = paramMeta.displayName || param.name;
 
   return (
-    <div className="field mb-2">
+    <div className="field mb-3">
       <ToolTip label={displayName} meta={paramMeta}/>
 
       {showPicker && (

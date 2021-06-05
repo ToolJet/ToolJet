@@ -322,8 +322,8 @@ export const componentTypes = [
     description: 'A single checkbox',
     component: 'Checkbox',
     defaultSize: {
-      width: 100,
-      height: 60
+      width: 200,
+      height: 25
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
@@ -337,7 +337,7 @@ export const componentTypes = [
         onUnCheck: { displayName: 'On uncheck'},
     },
     styles: {
-
+      textColor: { type: 'color', displayName: 'Text Color' }
     },
     exposedVariables: {},
     definition: {
@@ -361,7 +361,7 @@ export const componentTypes = [
         }
       },
       styles: {
-
+        textColor: { value: '#000' }
       }
     }
   },
