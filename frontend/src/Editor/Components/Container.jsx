@@ -30,6 +30,7 @@ export const Container = function Container({
             <SubCustomDragLayer 
               parent={id}
               parentRef={parentRef}
+              currentLayout={containerProps.currentLayout}
             />
     </div>
   );

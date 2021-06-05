@@ -31,7 +31,11 @@ export const SubContainer = ({
   zoomLevel,
   parent,
   parentRef,
-  configHandleClicked
+  configHandleClicked,
+  deviceWindowWidth,
+  scaleValue,
+  selectedComponent,
+  currentLayout
 }) => {
   zoomLevel = zoomLevel || 1;
 
@@ -117,14 +121,40 @@ export const SubContainer = ({
         let left = 0;
         let top = 0;
 
+        let layouts = item['layouts'];
+        const currentLayoutOptions = layouts ? layouts[item.currentLayout] : {};
+
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
         // Component already exists and this is just a reposition event
         if (id) {
           const delta = monitor.getDifferenceFromInitialOffset();
           componentData = item.component;
-          left = Math.round(item.left + delta.x);
-          top = Math.round(item.top + delta.y);
+          left = Math.round(currentLayoutOptions.left + delta.x);
+          top = Math.round(currentLayoutOptions.top + delta.y);
+
+          if (snapToGrid) {
+            [left, top] = doSnapToGrid(left, top);
+          }
+
+          let newBoxes = { 
+            ...boxes,
+            [id]: {
+              ...boxes[id],
+              parent: parent,
+              layouts: { 
+                ...boxes[id]['layouts'],
+                [item.currentLayout]: {
+                  ...boxes[id]['layouts'][item.currentLayout],
+                  top: top,
+                  left: left,
+                } 
+              }
+            }
+          };
+
+          setBoxes(newBoxes);
+
         } else {
           //  This is a new component
           componentMeta = componentTypes.find((component) => component.component === item.component.component);
@@ -146,15 +176,24 @@ export const SubContainer = ({
           [left, top] = doSnapToGrid(left, top);
         }
 
+        if(item.currentLayout === 'mobile') { 
+          componentData.definition.others.showOnDesktop.value = false;
+          componentData.definition.others.showOnMobile.value = true;
+        }
+
         setBoxes({
           ...boxes,
           [id]: {
-            top: top,
-            left: left,
-            width: item.width > 0 ? item.width : componentMeta.defaultSize.width,
-            height: item.height > 0 ? item.height : componentMeta.defaultSize.height,
             component: componentData,
-            parent: parent
+            parent: parent,
+            layouts: {
+              [item.currentLayout]: { 
+                top: top,
+                left: left,
+                width: componentMeta.defaultSize.width,
+                height: componentMeta.defaultSize.height,
+              }
+            }
           }
         });
 
@@ -170,7 +209,14 @@ export const SubContainer = ({
 
     let { x, y } = position;
 
-    let  { left, top, width, height } = boxes[id];
+    const defaultData = {
+      top: 100,
+      left: 0,
+      width: 445,
+      height: 500
+    };
+
+    let  { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
     
     top = y;
     left = x;
@@ -178,13 +224,21 @@ export const SubContainer = ({
     width = width + deltaWidth;
     height = height + deltaHeight
 
-    setBoxes(
-      update(boxes, {
-        [id]: {
-          $merge: { width, height, top, left }
+    let newBoxes = { 
+      ...boxes,
+      [id]: {
+        ...boxes[id],
+        layouts: { 
+          ...boxes[id]['layouts'],
+          [currentLayout]: {
+            ...boxes[id]['layouts'][currentLayout],
+            width, height, top, left
+          } 
         }
-      })
-    );
+      }
+    };
+
+    setBoxes(newBoxes);
   }
 
   function paramUpdated(id, param, value) {
@@ -229,6 +283,10 @@ export const SubContainer = ({
           inCanvas={true}
           zoomLevel={zoomLevel}
           configHandleClicked={configHandleClicked}
+          currentLayout={currentLayout}
+          scaleValue={scaleValue}
+          deviceWindowWidth={deviceWindowWidth}
+          isSelectedComponent={selectedComponent? selectedComponent.id === key : false}
         />
       ))}
 

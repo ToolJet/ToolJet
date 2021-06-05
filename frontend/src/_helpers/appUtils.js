@@ -6,7 +6,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 
-function setStateAsync(_ref, state) {
+export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
     _ref.setState(state, resolve);
   });
