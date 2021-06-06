@@ -13,6 +13,7 @@ import '@/_styles/theme.scss';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 
 class App extends React.Component {
   constructor(props) {
@@ -20,7 +21,8 @@ class App extends React.Component {
 
     this.state = {
       currentUser: null,
-      fetchedMetadata: false
+      fetchedMetadata: false,
+      onboarded: true
     };
   }
 
@@ -36,11 +38,11 @@ class App extends React.Component {
   }
 
   render() {
-    const { currentUser, fetchedMetadata, updateAvailable } = this.state;
+    const { currentUser, fetchedMetadata, updateAvailable, onboarded } = this.state;
 
     if(currentUser && fetchedMetadata === false) {
       tooljetService.fetchMetaData().then((data) => { 
-        this.setState({ fetchedMetadata: true });
+        this.setState({ fetchedMetadata: true, onboarded: data.onboarded });
 
         if(data.installed_version < data.latest_version && data.version_ignored === false) { 
           this.setState({ updateAvailable: true });
@@ -59,6 +61,10 @@ class App extends React.Component {
               <a onClick={() => { tooljetService.skipVersion(); this.setState({ updateAvailable: false }); }} class="btn">Skip this version</a>
             </div>
           </div>}
+
+          {!onboarded && 
+            <OnboardingModal />
+          }
 
           <ToastContainer />
 
