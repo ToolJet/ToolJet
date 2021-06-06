@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
+import { history } from '@/_helpers';
 
 export const Header = function Header({
 

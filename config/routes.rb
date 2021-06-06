@@ -43,6 +43,14 @@ Rails.application.routes.draw do
   post 'signup', to: 'authentication#signup'
   post '/sample', to: 'sample#deploy'
 
+  resources :metadata, only: [:index] do 
+    collection do
+      post '/skip_version', to: 'metadata#skip_version'
+      post '/skip_onboarding', to: 'metadata#skip_onboarding'
+      post '/finish_installation', to: 'metadata#finish_installation'
+    end
+  end
+
   get '/health', to: 'probe#health_check'
 
 end
