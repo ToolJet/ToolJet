@@ -1,7 +1,7 @@
 import React from 'react';
 import { Router, Route } from 'react-router-dom';
 import { history } from '@/_helpers';
-import { authenticationService } from '@/_services';
+import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
@@ -19,12 +19,15 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      currentUser: null
+      currentUser: null,
+      fetchedMetadata: false
     };
   }
 
   componentDidMount() {
-    authenticationService.currentUser.subscribe((x) => this.setState({ currentUser: x }));
+    authenticationService.currentUser.subscribe((x) => { 
+      this.setState({ currentUser: x });
+    });
   }
 
   logout = () => {
@@ -33,11 +36,29 @@ class App extends React.Component {
   }
 
   render() {
-    const { currentUser } = this.state;
+    const { currentUser, fetchedMetadata, updateAvailable } = this.state;
+
+    if(currentUser && fetchedMetadata === false) {
+      tooljetService.fetchMetaData().then((data) => { 
+        this.setState({ fetchedMetadata: true });
+
+        if(data.installed_version < data.latest_version && data.version_ignored === false) { 
+          this.setState({ updateAvailable: true });
+        }
+      })
+    }
+
     return (
       <Router history={history}>
         <div>
-          {currentUser && <div></div>}
+          {updateAvailable && <div class="alert alert-info alert-dismissible" role="alert">
+            <h3 class="mb-1">Update available</h3>
+            <p>A new version of ToolJet has been released.</p>
+            <div class="btn-list">
+              <a href="https://docs.tooljet.io/docs/setup/updating" target="_blank" class="btn btn-info">Read release notes & update</a>
+              <a onClick={() => { tooljetService.skipVersion(); this.setState({ updateAvailable: false }); }} class="btn">Skip this version</a>
+            </div>
+          </div>}
 
           <ToastContainer />
 
