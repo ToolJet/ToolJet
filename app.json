@@ -5,6 +5,9 @@
   "repository": "https://github.com/tooljet/tooljet",
   "logo": "https://app.tooljet.io/assets/images/logo.svg",
   "success_url": "/",
+  "script":{
+    "postdeploy": "bundle exec rails db:seed"
+  },
   "env": {
     "RAILS_ENV": {
       "description": "Environment for rails middleware.",
@@ -50,8 +53,7 @@
   "environments": {
     "test": {
       "scripts": {
-        "test": "bundle exec rake test",
-        "postdeploy": "bundle exec rails db:seed"
+        "test": "bundle exec rake test"
       }
     }
   }
