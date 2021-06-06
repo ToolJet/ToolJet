@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://app.tooljet.io/assets/images/logo-text.svg" width="300" />
+  <img src="https://user-images.githubusercontent.com/7828962/120930301-4ec3fe80-c70a-11eb-91b7-4bdbc31fd928.png" width="300" />
   <br/>
   Build and deploy internal tools.
 </p>
