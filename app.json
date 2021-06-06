@@ -5,7 +5,7 @@
   "repository": "https://github.com/tooljet/tooljet",
   "logo": "https://app.tooljet.io/assets/images/logo.svg",
   "success_url": "/",
-  "script":{
+  "scripts":{
     "postdeploy": "bundle exec rails db:seed"
   },
   "env": {
