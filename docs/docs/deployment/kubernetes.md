@@ -12,7 +12,7 @@ Follow the steps below to deploy ToolJet server on a Kubernetes cluster.
 
 1. Setup a PostgreSQL database.
 
-2. Create a Kubernetes secret with name `server`. For the minimal setup, ToolJet requires pg_host, pg_db, pg_user, pg_password, secret_key_base & encryption_salt keys in the secret.
+2. Create a Kubernetes secret with name `server`. For the minimal setup, ToolJet requires pg_host, pg_db, pg_user, pg_password, secret_key_base & lockbox_key keys in the secret. ( Read [environment variables reference](docs/deployment/env-vars)  )
 
 3. Create a Kubernetes deployment
 
