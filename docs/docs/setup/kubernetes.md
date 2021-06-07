@@ -42,3 +42,7 @@ Use this command to forward the port 3000 of server on the pod to the port 3000 
 Examples:    
 Application load balancing on Amazon EKS: https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html   
 GKE Ingress for HTTP(S) Load Balancing: https://cloud.google.com/kubernetes-engine/docs/concepts/ingress
+
+:::tip
+Once the server is deployed, you can deploy ToolJet client on the provider of your choice. Please read the client deployment documentation [here](/docs/setup/client).
+:::
