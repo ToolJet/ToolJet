@@ -4,7 +4,6 @@
   Build and deploy internal tools.
 </p>
 
-
 ToolJet is an **open-source no-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources such as databases ( like PostgreSQL, MongoDB, Elasticsearch, etc ), API endpoints ( ToolJet supports importing OpenAPI spec & OAuth2 authorization) and external services ( like Stripe, Slack, Google Sheets, Airtable ) and use our pre-built UI widgets to build internal tools.
 
 [![GitHub issues](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
@@ -17,6 +16,9 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
     <img src="https://user-images.githubusercontent.com/7828962/120830570-4211a000-c57c-11eb-97f5-a650b177a082.png" />
   </kbd>
 </p>
+
+<a href="https://www.producthunt.com/posts/tooljet?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-tooljet" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=298959&theme=dark" alt="ToolJet - Open-source alternative for Retool | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
 
 ## Features
 
