@@ -20,6 +20,8 @@ We've tagged some issues to make it easy to get started :)
 [Good first issues](https://github.com/ToolJet/ToolJet/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 Looking for ReactJS issues? Check out our [Frontend issues](https://github.com/ToolJet/ToolJet/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)
 
+Add a comment on the issue and wait for the issue to be assigned before you start working on it. This helps to avoid multiple people working on similar issues.
+
 ## We Use [Github Flow](https://guides.github.com/introduction/flow/index.html), So All Code Changes Happen Through Pull Requests
 Pull requests are the best way to propose changes to the codebase (we use [Git-Flow](https://nvie.com/posts/a-successful-git-branching-model/)). We actively welcome your pull requests:
 
