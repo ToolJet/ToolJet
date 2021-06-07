@@ -38,7 +38,7 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 <hr>
 
 ## Quickstart 
-The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.io) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host TooJet, please proceed to [deployment documentation](https://docs.tooljet.io/docs/setup/architecture).
+The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.io) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host TooJet, please proceed to [deployment documentation](https://docs.tooljet.io/docs/deployment/architecture).
 
 You can deploy ToolJet on Heroku for free using the one-click-deployment button below.
 <p align="center">
@@ -64,7 +64,7 @@ We use the git-flow branching model. The base branch is develop. If you are look
 
 ## Contributing
 Read our contributing guide (CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to ToolJet. <br>
-[Contributing Guide](https://docs.tooljet.io/docs/contributing-guide/setup/docker)
+[Contributing Guide](https://docs.tooljet.io/docs/contributing-guide/deployment/docker)
 
 ## Licence
 ToolJet © 2021, ToolJet Inc - Released under the GNU General Public License v3.0.
