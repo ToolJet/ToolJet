@@ -2,7 +2,7 @@
 sidebar_position: 6
 ---
 
-# Deploying ToolJet Client
+# Deploying ToolJet client
 
 ToolJet client is a standalone application and can be deployed on static website hostign services such as Netlify, Firebase, S3/Cloudfront, etc. 
 
