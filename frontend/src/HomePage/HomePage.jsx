@@ -87,17 +87,17 @@ class HomePage extends React.Component {
         <Header
 
         />
-        {!isLoading && meta.total_count === 0 && 
-          <BlankPage 
+        {!isLoading && meta.total_count === 0 &&
+          <BlankPage
             createApp={this.createApp}
           />
         }
 
-        {(isLoading || meta.total_count > 0) && 
+        {(isLoading || meta.total_count > 0) &&
 
         <div className="page-body homepage-body">
           <div className="container-xl">
-            <div className="row">              
+            <div className="row">
               <div className="col-12 col-lg-3 mb-5">
                 <br />
                 <Folders
@@ -111,7 +111,7 @@ class HomePage extends React.Component {
               </div>
 
               <div className="col-md-9">
-                
+
                     <div className="w-100 mb-5">
                       <div className="row align-items-center">
                         <div className="col">
@@ -144,7 +144,7 @@ class HomePage extends React.Component {
                                     </td>
                                  </tr>
                                ))}
-                              
+
                             </>
                           )}
 
@@ -184,8 +184,8 @@ class HomePage extends React.Component {
                                   </OverlayTrigger>
                                 </Link>
 
-                                <AppMenu 
-                                  app={app} 
+                                <AppMenu
+                                  app={app}
                                   folders={this.state.folders}
                                   foldersChanged={this.foldersChanged}
                                 />
@@ -194,6 +194,13 @@ class HomePage extends React.Component {
                             }
                             </>)
                           }
+                          {currentFolder.count == 0  && (
+                            <div className = "">
+                              <img className = "mx-auto d-block" src ="assets/images/icons/empty-folder-svgrepo-com.svg" height="120px"/>
+                              <h3 className= "text-center">This folder is empty</h3>
+                              </div>
+
+                          )}
                         </tbody>
                       </table>
                     </div>
