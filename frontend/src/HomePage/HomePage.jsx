@@ -122,7 +122,7 @@ class HomePage extends React.Component {
                       </div>
                     </div>
 
-                    <div class="table-responsive bg-white w-100 apps-table mt-3" style={{minHeight: '600px'}}>
+                    <div className={currentFolder.count == 0 ? 'table-responsive bg-white w-100 apps-table mt-3 d-flex align-items-center' : 'table-responsive bg-white w-100 apps-table mt-3'} style={{minHeight: '600px'}}>
                       <table
                         class="table table-vcenter">
                         <tbody>
@@ -195,11 +195,10 @@ class HomePage extends React.Component {
                             </>)
                           }
                           {currentFolder.count == 0  && (
-                            <div className = "">
+                            <div>
                               <img className = "mx-auto d-block" src ="assets/images/icons/empty-folder-svgrepo-com.svg" height="120px"/>
                               <h3 className= "text-center">This folder is empty</h3>
                               </div>
-
                           )}
                         </tbody>
                       </table>
