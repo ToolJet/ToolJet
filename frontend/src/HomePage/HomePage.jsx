@@ -199,7 +199,6 @@ class HomePage extends React.Component {
                               <img className = "mx-auto d-block" src ="assets/images/icons/empty-folder-svgrepo-com.svg" height="120px"/>
                               <h3 className= "text-center">This folder is empty</h3>
                               </div>
-
                           )}
                         </tbody>
                       </table>
