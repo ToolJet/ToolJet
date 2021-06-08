@@ -197,7 +197,7 @@ class HomePage extends React.Component {
                           {currentFolder.count == 0  && (
                             <div>
                               <img className = "mx-auto d-block" src ="assets/images/icons/empty-folder-svgrepo-com.svg" height="120px"/>
-                              <h3 className= "text-center">This folder is empty</h3>
+                              <span className= "d-block text-center">This folder is empty</span>
                               </div>
                           )}
                         </tbody>
