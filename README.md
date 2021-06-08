@@ -4,13 +4,21 @@
   Build and deploy internal tools.
 </p>
 
-
 ToolJet is an **open-source no-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources such as databases ( like PostgreSQL, MongoDB, Elasticsearch, etc ), API endpoints ( ToolJet supports importing OpenAPI spec & OAuth2 authorization) and external services ( like Stripe, Slack, Google Sheets, Airtable ) and use our pre-built UI widgets to build internal tools.
+
+[![GitHub issues](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
+[![GitHub stars](https://img.shields.io/github/stars/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
+[![GitHub license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
+
+
 <p align="center">
   <kbd>
     <img src="https://user-images.githubusercontent.com/7828962/120830570-4211a000-c57c-11eb-97f5-a650b177a082.png" />
   </kbd>
 </p>
+
+<a href="https://www.producthunt.com/posts/tooljet?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-tooljet" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=298959&theme=dark" alt="ToolJet - Open-source alternative for Retool | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
 
 ## Features
 
@@ -30,7 +38,7 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 <hr>
 
 ## Quickstart 
-The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.io) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host TooJet, please proceed to [deployment documentation](https://docs.tooljet.io/docs/setup/architecture).
+The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.io) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, please proceed to [deployment documentation](https://docs.tooljet.io/docs/deployment/architecture).
 
 You can deploy ToolJet on Heroku for free using the one-click-deployment button below.
 <p align="center">

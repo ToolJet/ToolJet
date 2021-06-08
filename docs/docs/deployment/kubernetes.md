@@ -12,7 +12,7 @@ Follow the steps below to deploy ToolJet server on a Kubernetes cluster.
 
 1. Setup a PostgreSQL database.
 
-2. Create a Kubernetes secret with name `server`. For the minimal setup, ToolJet requires pg_host, pg_db, pg_user, pg_password, secret_key_base & encryption_salt keys in the secret.
+2. Create a Kubernetes secret with name `server`. For the minimal setup, ToolJet requires pg_host, pg_db, pg_user, pg_password, secret_key_base & lockbox_key keys in the secret. ( Read [environment variables reference](/docs/deployment/env-vars)  )
 
 3. Create a Kubernetes deployment
 
@@ -42,3 +42,7 @@ Use this command to forward the port 3000 of server on the pod to the port 3000 
 Examples:    
 Application load balancing on Amazon EKS: https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html   
 GKE Ingress for HTTP(S) Load Balancing: https://cloud.google.com/kubernetes-engine/docs/concepts/ingress
+
+:::tip
+Once the server is deployed, you can deploy ToolJet client on the provider of your choice. Please read the client deployment documentation [here](/docs/setup/client).
+:::
