@@ -79,6 +79,7 @@ export function onQueryCancel(_ref) {
 async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!', { hideProgressBar: true, autoClose: 3000 });
   } catch (err) {
     console.log('Failed to copy!', err);
   }
@@ -125,7 +126,6 @@ function executeAction(_ref, event) {
       const textFieldName = _ref.state.appDefinition.components[textFieldId].component.name;
       const textFieldValue = _ref.state.currentState.components[textFieldName].value;
       copyToClipboard(textFieldValue);
-      toast.success('Copied to clipboard!', { hideProgressBar: true, autoClose: 3000 });
     }
   }
 }
