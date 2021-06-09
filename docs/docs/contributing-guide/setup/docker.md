@@ -39,7 +39,7 @@ $ docker-compose build
 
 4. ToolJet server is built using Ruby on Rails. You have to reset the database if building for the first time.
 ```bash
-$ docker-compose run rails db:reset
+$ docker-compose run server rails db:reset
 ```
 
 5. Run ToolJet
@@ -52,7 +52,7 @@ $ docker-compose up
     1.  Open rails console using: 
 
     ```bash 
-    $ docker-compose run rails console
+    $ docker-compose run server rails console
     ```
 
     2.  Create a new organization 
@@ -80,12 +80,12 @@ $ docker-compose down
 To run all the tests 
 
 ```bash 
-$ docker-compose run rails test 
+$ docker-compose run server rails test 
 ```
 
 To run a specific test 
 ```bash 
-$ docker-compose run rails test <path-to-file>:<line:number>
+$ docker-compose run server rails test <path-to-file>:<line:number>
 ```
 
 ## Troubleshooting
