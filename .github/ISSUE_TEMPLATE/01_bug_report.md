@@ -42,5 +42,3 @@ labels: 'bug, needs triage'
 
 
 ### If the bug is confirmed, would you be willing to submit a PR?
-
-Yes / No _(Help can be provided if you need assistance submitting a PR)_
