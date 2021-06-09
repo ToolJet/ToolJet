@@ -53,7 +53,6 @@ class QueryManager extends React.Component {
           });
         } else {
           this.setState({
-            options: {},
             selectedQuery: null
           });
         }

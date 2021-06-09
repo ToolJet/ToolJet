@@ -14,7 +14,7 @@ ToolJet has just 3 fundamental principles to build apps:
 
 - **Connect to data sources:** Connect to your existing data sources such as PostgreSQL, MySQL, Firestore, Stripe, Google Sheets and more.
 - **Build queries:** ToolJet comes with query builders for all supported data sources. You can also use JS code to transform the query results.
-- **Customise widgets:** Widgets are the UI components that can be edited using ToolJet's visual app builder. Widgets has events such as onClick, onRowSelected etc.
+- **Customise widgets:** Widgets are the UI components that can be edited using ToolJet's visual app builder. Widgets have events such as onClick, onRowSelected etc.
 
 ToolJet binds together the data sources, queries and widgets to convert business logic into apps. 
 
