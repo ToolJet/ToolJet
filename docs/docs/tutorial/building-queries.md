@@ -38,4 +38,4 @@ Enable this option to show a prompt to confirm the action before a query is run.
 <img src="/img/tutorial/building-queries/confirm.png" alt="ToolJet - Redis connection" height="120"/>
 
 #### Show notification on success
-Enable this option to show a custom message on query completion. Durationof the notification can also be set.
+Enable this option to show a custom message on query completion. Duration of the notification can also be set.
