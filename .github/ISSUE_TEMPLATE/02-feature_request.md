@@ -28,5 +28,3 @@ labels: 'feature request, needs triage'
 (Write your answer here.)
 
 ### If the feature is approved, would you be willing to submit a PR?
-
-Yes / No _(Help can be provided if you need assistance submitting a PR)
