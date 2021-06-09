@@ -48,6 +48,23 @@ export const EventSelector = ({
     return modalOptions;
   }
 
+  function getTextInputOptions() {
+    let textInputOptions = [];
+    Object.keys(components || {}).forEach((key) => {
+      if (
+      components[key].component.component === 'TextInput' || 
+      components[key].component.component === 'TextArea'
+      ) {
+        textInputOptions.push({
+          name: components[key].component.name,
+          value: key
+        })
+      }
+    })
+    
+    return textInputOptions;
+  }
+
   function eventChanged(param, value, extraData) { 
     if(value === 'none') { 
       eventUpdated(param, null, null);
@@ -123,6 +140,22 @@ export const EventSelector = ({
                     search={true}
                     onChange={(value) => {
                       eventOptionUpdated(param, 'modal', value, extraData);
+                    }}
+                    filterOptions={fuzzySearch}
+                    placeholder="Select.."
+                  />
+                </div>
+              )}
+
+              {definition.actionId === 'copy-to-clipboard' && (
+                <div className="p-1">
+                  <label className="form-label mt-1">Text input</label>
+                  <SelectSearch
+                    options={getTextInputOptions()}
+                    value={definition.options.model}
+                    search={true}
+                    onChange={(value) => {
+                      eventOptionUpdated(param, 'textFieldId', value, extraData);
                     }}
                     filterOptions={fuzzySearch}
                     placeholder="Select.."
