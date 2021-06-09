@@ -13,7 +13,7 @@ Click on the share button on top right corner of the app builder to add new app 
 If you want the application to be publicly accessed without authentications, make the application public using the same prompt. 
 
 :::tip
-Unauhenticated users will not have edit access to the public apps.
+Unauthenticated users will not have edit access to the public apps.
 :::
 
 <img class="screenshot-full" src="/img/tutorial/sharing/public.gif" alt="ToolJet - Query result transformations" height="420"/>
