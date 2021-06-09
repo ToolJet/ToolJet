@@ -26,6 +26,7 @@ Rails.application.routes.draw do
   end
 
   resources :organization_users, only: [:create] do
+    post '/archive', to: 'organization_users#archive'
     post '/change_role', to: 'organization_users#change_role'
   end
 

@@ -35,4 +35,10 @@ class OrganizationUsersController < ApplicationController
     authorize org_user
     org_user.update(role: params[:role])
   end
+
+  def archive
+    org_user = OrganizationUser.find params[:organization_user_id]
+    authorize org_user
+    org_user.update(status: 'archived')
+  end
 end
