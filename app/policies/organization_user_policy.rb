@@ -13,4 +13,8 @@ class OrganizationUserPolicy < ApplicationPolicy
   def change_role?
     (user.organization_id === organization_user.organization_id) && user.org_admin?
   end
+
+  def archive?
+    change_role?
+  end
 end
