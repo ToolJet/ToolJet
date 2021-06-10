@@ -18,6 +18,7 @@ class ManageOrgUsers extends React.Component {
       creatingUser: false,
       newUser: {},
       idChangingRole: null,
+      archivingUser: null,
     };
   }
 
@@ -62,6 +63,22 @@ class ManageOrgUsers extends React.Component {
       });
   };
 
+  archiveOrgUser = (id) => {
+    this.setState({ archivingUser: id });
+
+    organizationUserService
+      .archive(id)
+      .then(() => {
+        toast.success('User has been removed', { hideProgressBar: true, position: 'top-center' });
+        this.setState({ archivingUser: null });
+        this.fetchUsers();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        this.setState({ archivingUser: null });
+      });
+  };
+
   createUser = () => {
     this.setState({
       creatingUser: true,
@@ -82,7 +99,7 @@ class ManageOrgUsers extends React.Component {
   };
 
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole, archivingUser } = this.state;
 
     return (
       <div className="wrapper org-users-page">
@@ -275,7 +292,16 @@ class ManageOrgUsers extends React.Component {
                                 <small>{user.status}</small>
                               </td>
                               <td>
-                                <a href="#">Remove</a>
+                                {archivingUser === null && (
+                                  <a
+                                    onClick={() => {
+                                      this.archiveOrgUser(user.id);
+                                    }}
+                                  >
+                                    Remove
+                                  </a>
+                                )}
+                                {archivingUser === user.id && <small>Removing user...</small>}
                               </td>
                             </tr>
                           ))}
