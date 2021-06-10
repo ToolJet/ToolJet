@@ -150,15 +150,9 @@ export const EventSelector = ({
               {definition.actionId === 'copy-to-clipboard' && (
                 <div className="p-1">
                   <label className="form-label mt-1">Text input</label>
-                  <SelectSearch
-                    options={getTextInputOptions()}
-                    value={definition.options.model}
-                    search={true}
-                    onChange={(value) => {
-                      eventOptionUpdated(param, 'textFieldId', value, extraData);
-                    }}
-                    filterOptions={fuzzySearch}
-                    placeholder="Select.."
+                  <CodeHinter
+                    currentState={currentState}
+                    onChange={(value) => eventOptionUpdated(param, 'contentToCopy', value, extraData)}
                   />
                 </div>
               )}

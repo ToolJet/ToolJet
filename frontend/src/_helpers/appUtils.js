@@ -122,10 +122,8 @@ function executeAction(_ref, event) {
     }
 
     if (event.actionId === 'copy-to-clipboard') {
-      const textFieldId = event.options.textFieldId;
-      const textFieldName = _ref.state.appDefinition.components[textFieldId].component.name;
-      const textFieldValue = _ref.state.currentState.components[textFieldName].value;
-      copyToClipboard(textFieldValue);
+      const contentToCopy = resolveReferences(event.options.contentToCopy, _ref.state.currentState);
+      copyToClipboard(contentToCopy);
     }
   }
 }
