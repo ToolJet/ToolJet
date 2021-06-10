@@ -85,21 +85,22 @@ export const Box = function Box({
           containerProps={containerProps}
         ></ComponentToRender>
       ) : (
-        <div className="row p-1 m-1">
-          <div className="col-auto component-image-holder p-3">
-            <div
-              style={{
-                width: '20px',
-                height: '20px',
-                backgroundSize: 'contain',
-                backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
-                backgroundRepeat: 'no-repeat'
-              }}
-            ></div>
-          </div>
-          <div className="col">
+        <div className="p-1 m-1">
+          <div className="component-image-holder p-3">
+            <center>
+                <div
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    backgroundSize: 'contain',
+                    backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                    backgroundRepeat: 'no-repeat'
+                  }}
+                >
+                </div>
+            </center>
             <span className="component-title">{component.displayName}</span>
-            <small className="component-description">{component.description}</small>
+
           </div>
         </div>
       )}

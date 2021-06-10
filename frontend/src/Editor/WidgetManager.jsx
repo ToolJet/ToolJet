@@ -34,7 +34,7 @@ export const WidgetManager = function WidgetManager({
         onChange={(e) => filterComponents(e.target.value)}
       />
     </div>
-    <div className="col-sm-12 col-lg-12">
+    <div className="col-sm-12 col-lg-12 row">
       {filteredComponents.map((component, i) => renderComponentCard(component, i))}
     </div>
   </div>
