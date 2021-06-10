@@ -20,6 +20,8 @@ class OrganizationUsersControllerTest < ActionDispatch::IntegrationTest
                                                      role: 'admin')
   end
 
+  # POST /create tests
+
   test 'org admins can create org users' do
     assert_difference 'OrganizationUser.count', 1 do
       post '/organization_users', params: org_user_params, as: :json, headers: auth_header(@admin)
@@ -35,6 +37,8 @@ class OrganizationUsersControllerTest < ActionDispatch::IntegrationTest
       post '/organization_users', params: org_user_params, as: :json, headers: auth_header(@viewer)
     end
   end
+
+  # POST /change_role tests
 
   test 'org admins can change role of org users' do
     assert_equal 'developer', @org_user_developer.role
@@ -64,6 +68,35 @@ class OrganizationUsersControllerTest < ActionDispatch::IntegrationTest
                                                                        headers: auth_header(@admin)
     assert_response 403
     assert_equal 'admin', @org_another_org_admin.reload.role
+  end
+
+  ## POST /archive tests
+
+  test 'org admins can archive org users' do
+    assert_equal 'invited', @org_user_developer.status
+    post organization_user_archive_url(@org_user_developer.id), as: :json, headers: auth_header(@admin)
+
+    assert_response 204
+    assert_equal 'archived', @org_user_developer.reload.status
+  end
+
+  test 'cannot archive user if not org admin' do
+    assert_equal 'invited', @org_user_developer.status
+    post organization_user_archive_url(@org_user_developer.id), as: :json, headers: auth_header(@viewer)
+    assert_response 403
+    assert_equal 'invited', @org_user_developer.reload.status
+
+    assert_equal 'invited', @org_user_viewer.status
+    post organization_user_archive_url(@org_user_viewer.id), as: :json, headers: auth_header(@developer)
+    assert_response 403
+    assert_equal 'invited', @org_user_viewer.reload.status
+  end
+
+  test 'cannot archive user of another org' do
+    assert_equal 'invited', @org_another_org_admin.status
+    post organization_user_change_role_url(@org_another_org_admin.id), as: :json, headers: auth_header(@admin)
+    assert_response 403
+    assert_equal 'invited', @org_another_org_admin.reload.status
   end
 
   private
