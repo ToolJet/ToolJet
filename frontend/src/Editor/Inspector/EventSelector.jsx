@@ -48,23 +48,6 @@ export const EventSelector = ({
     return modalOptions;
   }
 
-  function getTextInputOptions() {
-    let textInputOptions = [];
-    Object.keys(components || {}).forEach((key) => {
-      if (
-      components[key].component.component === 'TextInput' || 
-      components[key].component.component === 'TextArea'
-      ) {
-        textInputOptions.push({
-          name: components[key].component.name,
-          value: key
-        })
-      }
-    })
-    
-    return textInputOptions;
-  }
-
   function eventChanged(param, value, extraData) { 
     if(value === 'none') { 
       eventUpdated(param, null, null);
