@@ -69,7 +69,7 @@ class ManageOrgUsers extends React.Component {
     organizationUserService
       .archive(id)
       .then(() => {
-        toast.success('User has been removed', { hideProgressBar: true, position: 'top-center' });
+        toast.success('The user has been archived', { hideProgressBar: true, position: 'top-center' });
         this.setState({ archivingUser: null });
         this.fetchUsers();
       })
@@ -298,10 +298,10 @@ class ManageOrgUsers extends React.Component {
                                       this.archiveOrgUser(user.id);
                                     }}
                                   >
-                                    Remove
+                                    Archive
                                   </a>
                                 )}
-                                {archivingUser === user.id && <small>Removing user...</small>}
+                                {archivingUser === user.id && <small>Archiving user...</small>}
                               </td>
                             </tr>
                           ))}
