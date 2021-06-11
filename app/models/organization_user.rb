@@ -4,7 +4,7 @@ class OrganizationUser < ApplicationRecord
   belongs_to :organization
   belongs_to :user
 
-  enum status: { invited: "invited", archived: "archived" }
+  enum status: { active: "active", archived: "archived", invited: "invited" }
 
   def admin?
     role == "admin"
