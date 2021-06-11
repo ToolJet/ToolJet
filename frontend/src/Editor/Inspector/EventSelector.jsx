@@ -132,7 +132,7 @@ export const EventSelector = ({
 
               {definition.actionId === 'copy-to-clipboard' && (
                 <div className="p-1">
-                  <label className="form-label mt-1">Text input</label>
+                  <label className="form-label mt-1">Text</label>
                   <CodeHinter
                     currentState={currentState}
                     onChange={(value) => eventOptionUpdated(param, 'contentToCopy', value, extraData)}
