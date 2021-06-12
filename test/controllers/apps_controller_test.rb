@@ -9,14 +9,14 @@ class AppsControllerTest < ActionDispatch::IntegrationTest
                                organization: @org })
     @viewer = User.create({ first_name: 'Viewer', email: 'viewer@example.com', password: 'password',
                             organization: @org })
-    OrganizationUser.create(organization: @org, user: @admin, role: 'admin')
-    OrganizationUser.create(organization: @org, user: @developer, role: 'developer')
-    OrganizationUser.create(organization: @org, user: @viewer, role: 'viewer')
+    OrganizationUser.create(organization: @org, user: @admin, role: 'admin', status: 'active')
+    OrganizationUser.create(organization: @org, user: @developer, role: 'developer', status: 'active')
+    OrganizationUser.create(organization: @org, user: @viewer, role: 'viewer', status: 'active')
 
     @another_org = Organization.create({ name: 'Another ToolJet Test' })
     @another_org_admin = User.create({ first_name: 'Admin', email: 'admin@domain.com', password: 'password',
                                        organization: @another_org })
-    OrganizationUser.create(organization: @another_org, user: @another_org_admin, role: 'admin')
+    OrganizationUser.create(organization: @another_org, user: @another_org_admin, role: 'admin', status: 'active')
   end
 
   test 'admins can create apps' do
