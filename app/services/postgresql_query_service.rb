@@ -86,6 +86,8 @@ class PostgresqlQueryService
       host: source_options['host'],
       port: source_options['port']
     )
+
+    connection.type_map_for_results = PG::BasicTypeMapForResults.new connection
     
     cache_connection(data_source, connection)
 

@@ -789,7 +789,7 @@ class Editor extends React.Component {
                           height="16"
                           className="d-md-none d-lg-block"
                         />
-                        &nbsp; Inspect
+                        &nbsp; Properties
                       </a>
                     </li>
                     <li className="nav-item col-md-6">
@@ -799,7 +799,7 @@ class Editor extends React.Component {
                         data-bs-toggle="tab"
                       >
                         <img src="/assets/images/icons/insert.svg" width="16" height="16" className="d-md-none d-lg-block"/>
-                        &nbsp; Insert
+                        &nbsp; Widgets
                       </a>
                     </li>
                   </ul>

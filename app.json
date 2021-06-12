@@ -36,8 +36,7 @@
   },
   "formation": {
     "web": {
-      "quantity": 1,
-      "size": "FREE"
+      "quantity": 1
     }
   },
   "image": "heroku/ruby",
