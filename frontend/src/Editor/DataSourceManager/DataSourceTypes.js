@@ -133,6 +133,22 @@ export const apiSources = [
     customTesting: true
   },
   {
+    name: 'GraphQL',
+    kind: 'graphql',
+    options: {
+      url: { type: 'string' },
+      headers: { type: 'array' },
+      url_params: { type: 'array' },
+      body: { type: 'array' },
+    },
+    exposedVariables: {
+      isLoading: {},
+      data: {},
+      rawData: {}
+    },
+    customTesting: true
+  },
+  {
     name: 'Stripe',
     kind: 'stripe',
     exposedVariables: {
