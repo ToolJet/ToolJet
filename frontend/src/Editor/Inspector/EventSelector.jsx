@@ -130,6 +130,16 @@ export const EventSelector = ({
                 </div>
               )}
 
+              {definition.actionId === 'copy-to-clipboard' && (
+                <div className="p-1">
+                  <label className="form-label mt-1">Text</label>
+                  <CodeHinter
+                    currentState={currentState}
+                    onChange={(value) => eventOptionUpdated(param, 'contentToCopy', value, extraData)}
+                  />
+                </div>
+              )}
+
               {definition.actionId === 'run-query' && (
                 <div className="p-3">
                   <label className="form-label mt-1">Query</label>

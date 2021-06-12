@@ -8,6 +8,7 @@ class AuthenticationController < ApplicationController
 
     if command.success?
       user = User.find_by email: params[:email]
+
       render json: { auth_token: command.result, first_name: user.first_name, last_name: user.last_name,
                      email: user.email }
     else
