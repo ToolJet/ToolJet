@@ -155,7 +155,7 @@ export const DraggableBox = function DraggableBox({
   }
 
   return (
-    <div>
+    <div className={inCanvas ? '' : 'col-md-6 text-center align-items-center'}>
       {inCanvas ? (
         <div 
           style={getStyles(left, top, isDragging, component)} 

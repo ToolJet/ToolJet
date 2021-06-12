@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class OrganizationUsersController < ApplicationController
+  before_action :authorize_org_user, except: :create
+  attr_reader :org_user
+
   def create
     authorize OrganizationUser
 
@@ -31,8 +34,17 @@ class OrganizationUsersController < ApplicationController
   end
 
   def change_role
-    org_user = OrganizationUser.find params[:organization_user_id]
-    authorize org_user
     org_user.update(role: params[:role])
   end
+
+  def archive
+    org_user.update(status: "archived")
+  end
+
+  private
+
+    def authorize_org_user
+      @org_user = OrganizationUser.find params[:organization_user_id]
+      authorize org_user
+    end
 end
