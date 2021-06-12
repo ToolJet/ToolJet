@@ -10,9 +10,9 @@ class AppUsersControllerTest < ActionDispatch::IntegrationTest
     @org_viewer = User.create({ first_name: 'Viewer', email: 'viewer@example.com', password: 'password',
                                 organization: @org })
 
-    @org_user_admin = OrganizationUser.create(organization: @org, user: @org_admin, role: 'admin')
+    @org_user_admin = OrganizationUser.create(organization: @org, user: @org_admin, role: 'admin', status: 'active')
     @org_user_developer = OrganizationUser.create(organization: @org, user: @org_developer, role: 'developer')
-    @org_user_viewer = OrganizationUser.create(organization: @org, user: @org_viewer, role: 'viewer')
+    @org_user_viewer = OrganizationUser.create(organization: @org, user: @org_viewer, role: 'viewer', status: 'active')
 
     @another_org = Organization.create({ name: 'Another ToolJet Test' })
     @another_org_admin = User.create({ first_name: 'Admin', email: 'admin@domain.com', password: 'password',
