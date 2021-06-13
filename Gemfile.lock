@@ -1211,6 +1211,10 @@ GEM
       multi_json (~> 1.11)
       os (>= 0.9, < 2.0)
       signet (~> 0.14)
+    graphql (1.12.12)
+    graphql-client (0.16.0)
+      activesupport (>= 3.0)
+      graphql (~> 1.8)
     grpc (1.37.0)
       google-protobuf (~> 3.15)
       googleapis-common-protos-types (~> 1.0)
@@ -1375,6 +1379,7 @@ DEPENDENCIES
   dotenv-rails
   elasticsearch
   google-cloud-firestore
+  graphql-client
   httparty
   jbuilder (~> 2.7)
   jwt
