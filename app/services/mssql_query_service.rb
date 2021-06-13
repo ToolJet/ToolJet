@@ -9,39 +9,45 @@ class MssqlQueryService
     @source_options = source_options
     @current_user = current_user
   end
-  
-  def self.connection options
-    connection = Mysql2::Client.new(
-        database: options.dig('database', 'value'),
-        user: options.dig('username', 'value'),
-        password: options.dig('password', 'value'),
-        host: options.dig('host', 'value'),
-        port: options.dig('port', 'value'),
+
+  def self.connection(options)
+    TinyTds::Client.new(
+      database: options.dig("database", "value"),
+      username: options.dig("username", "value"),
+      password: options.dig("password", "value"),
+      host: options.dig("host", "value"),
+      port: options.dig("port", "value")
     )
   end
 
   def process
-
     connection = get_cached_connection(data_source)
     connection = create_connection unless connection
+    query_text = options["query"]
+    results = connection.execute(query_text)
 
-    query_text = options['query']
+    { status: "success", data: results.to_a }
+  rescue StandardError => e
+    if connection&.active?
+      connection&.close
+      reset_connection(data_source)
+    end
 
-    results = connection.query(query_text)
-
-    { status: 'success', data: results.to_a }
+    error = { message: e.message }
   end
 
   private
-    def create_connection
-      connection = TinyTds::Client.new(username: 'yourusername@yourserver',
-        password: 'yourpassword',
-        host: 'yourserver.database.windows.net',
-        port: 1433,
-        database: 'AdventureWorks'
-      )
 
-      cache_connection(data_source, connection)
-      connection
-    end
+  def create_connection
+    connection =  TinyTds::Client.new(
+      database: source_options["database"],
+      username: source_options["username"],
+      password: source_options["password"],
+      host: source_options["host"],
+      port: source_options["port"]
+    )
+
+    cache_connection(data_source, connection)
+    connection
+  end
 end
