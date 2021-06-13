@@ -50,7 +50,7 @@ class QueryService
 
           if variables.size > 0
             variables.each do |variable|
-              object = object.gsub("{{#{variable[0]}}}", options["{{#{variable[0]}}}"])
+              object = object.gsub("{{#{variable[0]}}}", options["{{#{variable[0]}}}"].to_s)
             end
           else 
             object = object
