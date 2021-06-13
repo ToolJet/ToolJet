@@ -33,7 +33,7 @@ class MssqlQueryService
       reset_connection(data_source)
     end
 
-    error = { message: e.message }
+    error = { message: e.message, code: 400 }
   end
 
   private
