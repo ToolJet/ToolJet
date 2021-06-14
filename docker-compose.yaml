@@ -4,7 +4,7 @@ services:
   base: &base
     build:
       context: .
-      dockerfile: ./docker/server.Dockerfile
+      dockerfile: ./docker/server.Dockerfile.dev
       args:
         RAILS_ENV: 'development'
     tty: true
@@ -32,7 +32,7 @@ services:
     <<: *base
     build:
       context: .
-      dockerfile: ./docker/server.Dockerfile
+      dockerfile: ./docker/server.Dockerfile.dev
     image: tooljet-server:development
     volumes:
       - ./:/app:delegated
