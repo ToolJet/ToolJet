@@ -2,7 +2,8 @@ FROM ruby:2.7.3-buster
 
 RUN apt update && apt install -y \
   build-essential  \
-  postgresql
+  postgresql \
+  freetds-dev
 
 RUN mkdir -p /app
 WORKDIR /app
