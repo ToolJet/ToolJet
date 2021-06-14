@@ -29,6 +29,16 @@ class App extends React.Component {
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => { 
       this.setState({ currentUser: x });
+      window.addEventListener('chatwoot:ready', function () {
+        try {
+          window.$chatwoot.setUser(x.email, {
+            email: x.email,
+            name: `${x.first_name} ${x.last_name}`,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      });
     });
   }
 
