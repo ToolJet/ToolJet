@@ -11,6 +11,7 @@ import { Mongodb } from './Mongodb';
 import { Dynamodb } from './Dynamodb';
 import { Airtable } from './Airtable';
 import { Graphql } from './Graphql';
+import { Mssql } from './Mssql';
 
 export const allSources = {
   Restapi,
@@ -25,5 +26,6 @@ export const allSources = {
   Mongodb,
   Dynamodb,
   Airtable,
-  Graphql
+  Graphql,
+  Mssql
 };

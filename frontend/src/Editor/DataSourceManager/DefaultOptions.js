@@ -13,6 +13,13 @@ export const defaultOptions = {
     username: { value: '' },
     password: { value: '' }
   },
+  mssql: {
+    host: { value: 'localhost' },
+    port: { value: 3306 },
+    database: { value: '' },
+    username: { value: '' },
+    password: { value: '' }
+  },
   redis: {
     host: { value: 'localhost' },
     port: { value: 6379 },

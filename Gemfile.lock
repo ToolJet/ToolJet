@@ -1358,6 +1358,7 @@ GEM
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
     thor (1.1.0)
+    tiny_tds (2.1.5)
     typhoeus (1.4.0)
       ethon (>= 0.9.0)
     tzinfo (2.0.4)
@@ -1399,6 +1400,7 @@ DEPENDENCIES
   rubocop-rails
   simple_command
   spring
+  tiny_tds
   typhoeus
   tzinfo-data
 

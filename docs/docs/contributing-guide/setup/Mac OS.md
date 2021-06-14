@@ -27,6 +27,10 @@ Follow these steps to setup and run ToolJet on Mac OS. Open terminal and run the
     $ rvm install ruby-2.7.3
     $ rvm use 2.7.3
     ```
+    ### Install [Bundler](https://bundler.io/)
+    ```bash
+    gem install bundler:2.1.4
+    ```
 
     ### Install Node.js
     ```bash

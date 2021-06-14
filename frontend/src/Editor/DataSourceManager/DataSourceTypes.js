@@ -32,6 +32,22 @@ export const dataBaseSources = [
     }
   },
   {
+    name: 'SQL Server',
+    kind: 'mssql',
+    exposedVariables: {
+      isLoading: {},
+      data: {},
+      rawData: {}
+    },
+    options: {
+      host: { type: 'string' },
+      port: { type: 'string' },
+      database: { type: 'string' },
+      username: { type: 'string' },
+      password: { type: 'string', encrypted: true }
+    }
+  },
+  {
     name: 'MongoDB',
     kind: 'mongodb',
     exposedVariables: {

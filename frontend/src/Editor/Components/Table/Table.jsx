@@ -278,7 +278,7 @@ export function Table({
               onBlur={(e) => {
                 handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
               }}
-              value={cellValue}
+              defaultValue={cellValue}
             >
           </textarea>;
         } if (columnType === 'dropdown') {
