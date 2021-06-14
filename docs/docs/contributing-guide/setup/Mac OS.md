@@ -22,7 +22,7 @@ Follow these steps to setup and run ToolJet on Mac OS. Open terminal and run the
     $ curl -L https://get.rvm.io | bash -s stable
     ```
 
-    ### Install Ruby using RVM 
+    ### Install Ruby using RVM
     ```bash
     $ rvm install ruby-2.7.3
     $ rvm use 2.7.3
@@ -46,41 +46,52 @@ Follow these steps to setup and run ToolJet on Mac OS. Open terminal and run the
     ### Install MySQL ( optional )
     Skip this step if you do not want to connect to  MySQL datasources.
     ```bash
-    $ brew install mysql 
+    $ brew install mysql
     ```
 
 2. ## Setup environment variables
     Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given here: env variable reference
     ```bash
     $ cp .env.example .env
-    ```   
+    ```
 
-3. ## Install Ruby on Rails dependencies
+3. ## Populate the keys in the env file.
+   Run `openssl rand -hex 64` to create secure secrets and use them as the values for `LOCKBOX_MASTER_KEY` and `SECRET_KEY_BASE`.
+
+   Example:
+   ```bash
+   $ cat .env
+   TOOLJET_HOST=http://localhost:8082
+   LOCKBOX_MASTER_KEY=c92bcc7f112ffbdd131d1fb6c5005e372b8802f85f6c4586e5a88f57a541382841c8c99e5701b84862e448dd5db846f705321a41bd48a0fed1b58b9596a3877f
+   SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
+   ```
+
+4. ## Install Ruby on Rails dependencies
     ```bash
     $ bundle
     ```
 
-4. ## install React dependencies 
-    ```bash 
+5. ## install React dependencies
+    ```bash
     $ npm install
     ```
 
-5. ## Setup Rails server  
-    ```bash 
+6. ## Setup Rails server
+    ```bash
     $ bundle exec rake db:create
     $ bundle exec rake db:reset
     $ bundle exec rails server
     ```
 
-6. ## Create login credentials 
+7. ## Create login credentials
 
-    1.  Open rails console using: 
+    1.  Open rails console using:
 
-    ```bash 
+    ```bash
     $ bundle exec rails console
     ```
 
-    2.  Create a new organization 
+    2.  Create a new organization
     ```ruby
     Organization.create(name: 'Dev')
     ```
@@ -92,12 +103,12 @@ Follow these steps to setup and run ToolJet on Mac OS. Open terminal and run the
 
     4. Add user to the organization as admin
     ```ruby
-    OrganizationUser.create(user: User.first, organization: Organization.first, role: 'admin')
+    OrganizationUser.create(user: User.first, organization: Organization.first, role: 'admin', status: 'active')
     ```
 
-7. ## Running the React frontend ( Client )
-    ```bash 
+8. ## Running the React frontend ( Client )
+    ```bash
     $ cd ./frontend && npm start
     ```
 
-The client will start running on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082 )
+The client will start running on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
