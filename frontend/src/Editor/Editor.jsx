@@ -35,6 +35,10 @@ class Editor extends React.Component {
   constructor(props) {
     super(props);
 
+    window.chatwootSettings = {
+      hideMessageBubble: true,
+    }
+
     const appId = this.props.match.params.id;
 
     const currentUser = authenticationService.currentUserValue;
@@ -516,6 +520,20 @@ class Editor extends React.Component {
                   </div>
 
                 </div>
+
+                <div className="nav-item dropdown d-none d-md-flex me-3">
+                    <button 
+                        type="button" 
+                        class="btn btn-sm"
+                        onClick={() => {
+                          window.$chatwoot.toggle();
+                        }}
+                        disabled={currentLayout === 'mobile'}
+                      >
+                       <img src="/assets/images/icons/editor/chat.svg" width="12" height="12" className="mx-2" /> chat with us
+                      </button>
+                </div>
+
                 <div className="navbar-nav flex-row order-md-last">
                   <div className="nav-item dropdown d-none d-md-flex me-3">
                     {app
