@@ -88,7 +88,8 @@ async function copyToClipboard(text) {
 function executeAction(_ref, event) {
   if (event) {
     if (event.actionId === 'show-alert') {
-      toast(event.options.message, { hideProgressBar: true });
+      const message = resolveReferences(event.options.message, _ref.state.currentState);
+      toast(message, { hideProgressBar: true });
     }
 
     if (event.actionId === 'open-webpage') {
