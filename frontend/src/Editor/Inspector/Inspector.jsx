@@ -7,7 +7,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import ReactTooltip from 'react-tooltip';
 import { toast } from 'react-toastify';
-import { validateQueryName } from '@/_helpers/utils';
+import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
 
 export const Inspector = ({
   selectedComponentId,
@@ -244,7 +244,7 @@ export const Inspector = ({
       </div>
 
       <div className="widget-documentation-link p-2">
-        <a href={`https://docs.tooljet.io/docs/widgets/${componentMeta.name.toLowerCase()}`} target="_blank">
+        <a href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`} target="_blank">
           <small>
             {componentMeta.name} documentation
           </small>

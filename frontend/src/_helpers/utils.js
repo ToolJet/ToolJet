@@ -129,3 +129,6 @@ export function validateQueryName(name){
     const nameRegex = new RegExp('^[A-Za-z0-9_-]*$');
     return nameRegex.test(name);
 };
+
+
+export const convertToKebabCase = string => string.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\s+/g, '-').toLowerCase()

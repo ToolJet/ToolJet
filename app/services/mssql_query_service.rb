@@ -12,21 +12,24 @@ class MssqlQueryService
 
   def self.connection(options)
     TinyTds::Client.new(
-      database: options.dig("database", "value"),
-      username: options.dig("username", "value"),
-      password: options.dig("password", "value"),
-      host: options.dig("host", "value"),
-      port: options.dig("port", "value")
+      database: options.dig('database', 'value'),
+      username: options.dig('username', 'value'),
+      password: options.dig('password', 'value'),
+      host: options.dig('host', 'value'),
+      port: options.dig('port', 'value'),
+      azure: ActiveModel::Type::Boolean.new.cast(
+        options.dig('azure', 'value')
+      ) || false
     )
   end
 
   def process
     connection = get_cached_connection(data_source)
-    connection = create_connection unless connection
-    query_text = options["query"]
+    connection ||= create_connection
+    query_text = options['query']
     results = connection.execute(query_text)
 
-    { status: "success", data: results.to_a }
+    { status: 'success', data: results.to_a }
   rescue StandardError => e
     if connection&.active?
       connection&.close
@@ -39,12 +42,15 @@ class MssqlQueryService
   private
 
   def create_connection
-    connection =  TinyTds::Client.new(
-      database: source_options["database"],
-      username: source_options["username"],
-      password: source_options["password"],
-      host: source_options["host"],
-      port: source_options["port"]
+    connection = TinyTds::Client.new(
+      database: source_options['database'],
+      username: source_options['username'],
+      password: source_options['password'],
+      host: source_options['host'],
+      port: source_options['port'],
+      azure: ActiveModel::Type::Boolean.new.cast(
+        source_options['azure']
+      ) || false
     )
 
     cache_connection(data_source, connection)
