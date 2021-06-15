@@ -39,6 +39,7 @@ gem "mongo", "~> 2"
 gem 'aws-sdk', '~> 3'
 gem 'kaminari'
 gem 'lockbox'
+gem 'tiny_tds'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
