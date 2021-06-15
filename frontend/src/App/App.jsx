@@ -40,6 +40,10 @@ class App extends React.Component {
         }
       });
     });
+
+    window.chatwootSettings = {
+      hideMessageBubble: true,
+    }
   }
 
   logout = () => {
