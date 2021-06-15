@@ -207,8 +207,7 @@ class Editor extends React.Component {
 
   switchSidebarTab = (tabIndex) => {
     this.setState({
-      currentSidebarTab: tabIndex,
-      selectedComponent: null
+      currentSidebarTab: tabIndex
     });
   };
 
@@ -231,6 +230,16 @@ class Editor extends React.Component {
     this.computeComponentState(newDefinition.components);
   };
 
+  handleInspectorView = (component) => {
+    if (this.state.selectedComponent.hasOwnProperty('component')) {
+      const { id: selectedComponentId } = this.state.selectedComponent;
+      if (selectedComponentId === component.id) {
+        this.setState({selectedComponent: null})
+        this.switchSidebarTab(2);
+      }
+    }
+  }
+
   removeComponent = (component) => {
     let newDefinition = this.state.appDefinition;
 
@@ -242,7 +251,7 @@ class Editor extends React.Component {
 
     delete newDefinition.components[component.id];
     this.appDefinitionChanged(newDefinition);
-    this.switchSidebarTab(2);
+    this.handleInspectorView(component);
   };
 
   componentDefinitionChanged = (newDefinition) => {
