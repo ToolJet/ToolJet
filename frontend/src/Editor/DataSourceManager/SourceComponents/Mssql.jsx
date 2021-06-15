@@ -60,15 +60,15 @@ export const Mssql = ({
           />
         </div>
       </div>
-      <div className="row">
+      <div className="row mt-3">
         <div className="col-md-3">
           <div className="field mb-3">
-            <label className="form-check form-switch my-2">
+            <label className="form-check  my-2">
               <input
                 className="form-check-input"
                 type="checkbox"
                 defaultChecked={false}
-                onClick={(e) => optionchanged('azure', e.target.value)}
+                onClick={(e) => { optionchanged('azure', e.target.checked) } }
               />
               Azure
             </label>
