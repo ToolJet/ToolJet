@@ -93,13 +93,11 @@ export const EventSelector = ({
               {definition.actionId === 'show-alert' && (
                 <div className="p-1">
                   <label className="form-label mt-1">Message</label>
-                  <input
-                    onBlur={(e) => eventOptionUpdated(param, 'message', e.target.value, extraData)}
-                    value={message}
-                    type="text"
-                    className="form-control form-control-sm"
-                    placeholder="Text goes here"
+                  <CodeHinter
+                    currentState={currentState}
+                    onChange={(value) => eventOptionUpdated(param, 'message', value, extraData)}
                   />
+                  
                 </div>
               )}
 

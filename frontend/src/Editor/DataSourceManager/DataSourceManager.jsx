@@ -148,7 +148,7 @@ class DataSourceManager extends React.Component {
               {selectedDataSource && (
                 <div className="row">
                   <img
-                    src={`/assets/images/icons/editor/datasources/${dataSourceMeta.name.toLowerCase()}.svg`}
+                    src={`/assets/images/icons/editor/datasources/${dataSourceMeta.kind.toLowerCase()}.svg`}
                     style={{ objectFit: 'contain' }}
                     height="25"
                     width="25"
@@ -260,7 +260,7 @@ class DataSourceManager extends React.Component {
               <div className="col-auto">
                 <Button className={`m-2 ${isSaving ? 'btn-loading' : ''}`} disabled={isSaving} variant="primary" onClick={this.createDataSource}>
                   {'Save'}
-                </Button>
+              </Button>
 
               </div>
             </Modal.Footer>
