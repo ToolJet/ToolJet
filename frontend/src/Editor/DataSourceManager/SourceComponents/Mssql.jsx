@@ -68,7 +68,7 @@ export const Mssql = ({
                 className="form-check-input"
                 type="checkbox"
                 defaultChecked={false}
-                onClick={(e) => optionchanged('Azure', e.target.value)}
+                onClick={(e) => optionchanged('azure', e.target.value)}
               />
               Azure
             </label>
