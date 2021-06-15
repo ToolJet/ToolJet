@@ -785,7 +785,7 @@ class Editor extends React.Component {
                           height="16"
                           className="d-md-none d-lg-block"
                         />
-                        &nbsp; Inspect
+                        &nbsp; Properties
                       </a>
                     </li>
                     <li className="nav-item col-md-6">
@@ -794,13 +794,8 @@ class Editor extends React.Component {
                         className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}
                         data-bs-toggle="tab"
                       >
-                        <img
-                          src="/assets/images/icons/insert.svg"
-                          width="16"
-                          height="16"
-                          className="d-md-none d-lg-block"
-                        />
-                        &nbsp; Insert
+                        <img src="/assets/images/icons/insert.svg" width="16" height="16" className="d-md-none d-lg-block"/>
+                        &nbsp; Widgets
                       </a>
                     </li>
                   </ul>

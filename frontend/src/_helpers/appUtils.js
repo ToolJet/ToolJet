@@ -76,10 +76,20 @@ export function onQueryCancel(_ref) {
   });
 }
 
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!', { hideProgressBar: true, autoClose: 3000 });
+  } catch (err) {
+    console.log('Failed to copy!', err);
+  }
+};
+
 function executeAction(_ref, event) {
   if (event) {
     if (event.actionId === 'show-alert') {
-      toast(event.options.message, { hideProgressBar: true });
+      const message = resolveReferences(event.options.message, _ref.state.currentState);
+      toast(message, { hideProgressBar: true });
     }
 
     if (event.actionId === 'open-webpage') {
@@ -110,6 +120,11 @@ function executeAction(_ref, event) {
       }
 
       _ref.setState(newState)
+    }
+
+    if (event.actionId === 'copy-to-clipboard') {
+      const contentToCopy = resolveReferences(event.options.contentToCopy, _ref.state.currentState);
+      copyToClipboard(contentToCopy);
     }
   }
 }

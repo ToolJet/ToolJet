@@ -26,5 +26,12 @@ export const ActionTypes = [
     options: [
       { name: 'modal', type: 'text', default: '' }
     ]
+  },
+  {
+    name: 'Copy to clipboard',
+    id: 'copy-to-clipboard',
+    options: [
+      { name: 'copy-to-clipboard', type: 'text', default: '' }
+    ]
   }
 ];

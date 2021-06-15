@@ -16,7 +16,9 @@ class AuthenticateUser
 
   def user
     user = User.find_by_email(email)
-    return user if user && user.authenticate(password)
+    org_user = OrganizationUser.where(user: user, organization: user.organization)&.first
+
+    return user if user && user.authenticate(password) && org_user.active?
 
     errors.add :user_authentication, 'invalid credentials'
     nil
