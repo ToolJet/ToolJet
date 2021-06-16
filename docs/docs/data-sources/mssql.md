@@ -16,7 +16,7 @@ To add new MS SQL Server / Azure SQL database, click on the '+' button on data s
 ToolJet requires the following to connect to your PostgreSQL database.
 
 - **Host**
-- **Port** - defaults to 1433
+- **Port**
 - **Username**
 - **Password**
 - **Azure** - Select this option if you are using Azure SQL databases.
