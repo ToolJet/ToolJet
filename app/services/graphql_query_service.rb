@@ -1,6 +1,4 @@
 class GraphqlQueryService
-  require "graphql/client"
-  require "graphql/client/http"
 
   attr_accessor :data_query, :options, :source_options, :current_user, :data_source
 
@@ -21,21 +19,14 @@ class GraphqlQueryService
     url_params = options['url_params']
     query = options['query']
 
-    http = GraphQL::Client::HTTP.new(url) do
-      def headers(context)
-        # Optionally set any HTTP headers
-        { "User-Agent": "My Client" }
-      end
-    end)
 
-    schema = GraphQL::Client.load_schema(http)
-
-    client = GraphQL::Client.new(schema: schema, execute: http)
-
-    byebug
+    client = Graphlient::Client.new(url)
 
     result = client.query(query)
-
-    { code: response.code, data: JSON.parse(response.body) }
+    if result.errors.present?
+      { code: 422, data: result.errors }
+    else
+      { code: 200, data: result.original_hash }
+    end
   end
 end
