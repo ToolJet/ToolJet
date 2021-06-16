@@ -7,6 +7,7 @@ import { AppMenu } from './AppMenu';
 import { BlankPage } from './BlankPage';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { renderTooltip } from '@/_helpers/appUtils';
+import { waitAtLeast } from '../_helpers/appUtils';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -37,11 +38,13 @@ class HomePage extends React.Component {
       isLoading: true
     })
 
-    appService.getAll(page, folder).then((data) => this.setState({
-      apps: data.apps,
-      meta: data.meta,
-      isLoading: false
-    }));
+    const promise = appService.getAll(page, folder)
+    waitAtLeast(400, promise)
+      .then(data => this.setState({
+        apps: data.apps,
+        meta: data.meta,
+        isLoading: false
+      }));
   }
 
   fetchFolders = () => {
