@@ -11,4 +11,9 @@ class UserMailer < ApplicationMailer
     @url = "#{ENV.fetch('TOOLJET_HOST')}/invitations/#{@user.invitation_token}?signup=true"
     mail(to: @user.email, subject: 'ToolJet Invitation')
   end
+
+  def password_reset(user)
+    @user = user
+    mail to: user.email, subject: "Password reset"
+  end
 end
