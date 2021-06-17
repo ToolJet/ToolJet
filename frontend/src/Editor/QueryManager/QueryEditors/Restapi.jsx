@@ -7,15 +7,14 @@ import { changeOption } from './utils';
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = {
-      options: this.props.options
+      options: this.props.options,
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 
@@ -24,7 +23,7 @@ class Restapi extends React.Component {
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
 
     this.setState({
-      options: newOptions
+      options: newOptions,
     });
     this.props.optionsChanged(newOptions);
   };
@@ -48,20 +47,20 @@ class Restapi extends React.Component {
 
   render() {
     const { options } = this.state;
-
+    const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
     return (
       <div>
         <div className="mb-3 mt-2">
           <div className="mb-3">
             <div className="row g-2">
-              <div className="col-auto" style={{ width: '120px' }} >
+              <div className="col-auto" style={{ width: '120px' }}>
                 <SelectSearch
                   options={[
                     { name: 'GET', value: 'get' },
                     { name: 'POST', value: 'post' },
                     { name: 'PUT', value: 'put' },
                     { name: 'PATCH', value: 'patch' },
-                    { name: 'DELETE', value: 'delete' }
+                    { name: 'DELETE', value: 'delete' },
                   ]}
                   value={options.method}
                   search={false}
@@ -74,18 +73,41 @@ class Restapi extends React.Component {
                 />
               </div>
 
-              <div className="col">
+              <div className="col" style={{ display: 'flex' }}>
+                {dataSourceURL && (
+                  <span
+                    htmlFor=""
+                    style={{
+                      padding: '7px',
+                      border: '1px solid rgb(217 220 222)',
+                      background: 'rgb(246 247 251)',
+                      color: '#9ca1a6',
+                      marginRight: '-3px',
+                      borderTopLeftRadius: '3px',
+                      borderBottomLeftRadius: '3px',
+                      zIndex: 1,
+                    }}
+                  >
+                    {dataSourceURL}
+                  </span>
+                )}
                 <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={options.url}
                   className="codehinter-query-editor-input"
-                  onChange={(value) => { changeOption(this, 'url', value); }}
+                  onChange={(value) => {
+                    changeOption(this, 'url', value);
+                  }}
                 />
               </div>
             </div>
           </div>
 
-          {[{name: 'URL parameters', value: 'url_params'},{name: 'Headers', value: 'headers'},{name: 'Body', value: 'body'}].map((option) => (
+          {[
+            { name: 'URL parameters', value: 'url_params' },
+            { name: 'Headers', value: 'headers' },
+            { name: 'Body', value: 'body' },
+          ].map((option) => (
             <div className="mb-3" key={option}>
               <div className="row g-2">
                 <div className="col-md-2">
@@ -117,7 +139,10 @@ class Restapi extends React.Component {
                       </span>
                     </div>
                   ))}
-                  <button className="btn btn-sm btn-outline-azure" onClick={() => this.addNewKeyValuePair(option.value)}>
+                  <button
+                    className="btn btn-sm btn-outline-azure"
+                    onClick={() => this.addNewKeyValuePair(option.value)}
+                  >
                     +
                   </button>
                 </div>
