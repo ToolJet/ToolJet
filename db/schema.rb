@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_09_020556) do
+ActiveRecord::Schema.define(version: 2021_06_17_031153) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -163,7 +163,7 @@ ActiveRecord::Schema.define(version: 2021_06_09_020556) do
     t.text "image"
     t.string "invitation_token"
     t.string "forgot_password_token"
-    t.datetime "forgot_password_sent_at"
+    t.datetime "forgot_password_token_sent_at"
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 

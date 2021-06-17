@@ -5,9 +5,9 @@ class ForgotPasswordController < ApplicationController
     user = User.find_by(email: params[:_json])
     if user.present?
       user.send_password_reset
-      render json: {message: 'We have sent you a password reset email'}, status: :ok
+      render json: {message: "We've sent the confirmation code to your email address"}, status: :ok
     else
-      render json: {error: 'Email address not found. Please check the email'}, status: :not_found
+      render json: {error: 'Email address is not associated with a ToolJet cloud account.'}, status: :not_found
     end
   end
 

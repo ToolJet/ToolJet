@@ -36,13 +36,13 @@ class User < ApplicationRecord
 
   def send_password_reset
     self.forgot_password_token = generate_base64_token
-    self.forgot_password_sent_at = Time.zone.now
+    self.forgot_password_token_sent_at = Time.zone.now
     save!
     UserMailer.password_reset(self).deliver_now
   end
 
   def forgot_password_token_valid?
-    (self.forgot_password_sent_at + 1.hour) > Time.zone.now
+    (self.forgot_password_token_sent_at + 1.hour) > Time.zone.now
   end
 
   def reset_password(password)
