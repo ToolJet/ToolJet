@@ -343,6 +343,12 @@ body {
         --tblr-gutter-x: 0rem;
       }
 
+      .query-definition-pane-wrapper {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: 100%;
+      }
+
       .query-definition-pane {
         .header {
           border: solid rgba(0, 0, 0, 0.125);
@@ -360,15 +366,13 @@ body {
       }
 
       .data-pane {
-        min-height: 350px;
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 1px 0px 0px;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: 100%;
 
         .queries-container {
-
-          position: fixed;
-          width: 18.2%;
-
           .queries-header {
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 0px 0px 1px 0px;
@@ -376,7 +380,7 @@ body {
           }
 
           .query-list { 
-            overflow-y: scroll;
+            // padding-top: 40px;
           }
 
           .query-list::-webkit-scrollbar {
