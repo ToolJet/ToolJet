@@ -69,7 +69,9 @@ class LoginPage extends React.Component {
                 <label className="form-label">
                   Password
                   <span className="form-label-description">
-                    <a tabIndex="-1" href="/forgot-password">Forgot password</a>
+                    <Link to={'/forgot-password'} tabIndex="-1">
+                    Forgot password
+                    </Link>
                   </span>
                 </label>
                 <div className="input-group input-group-flat">
