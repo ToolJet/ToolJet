@@ -14,6 +14,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
+import posthog from 'posthog-js';
 
 class App extends React.Component {
   constructor(props) {
@@ -39,6 +40,9 @@ class App extends React.Component {
           console.error(error);
         }
       });
+
+      posthog.init('1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw', { api_host: 'https://app.posthog.com' });
+      posthog.capture('my event', { property: 'value' });
     });
 
     window.chatwootSettings = {
