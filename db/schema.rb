@@ -10,14 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_06_031036) do
+ActiveRecord::Schema.define(version: 2021_06_17_031153) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
   enable_extension "uuid-ossp"
 
-  create_table "app_users", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "app_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.uuid "user_id", null: false
     t.string "role"
@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["user_id"], name: "index_app_users_on_user_id"
   end
 
-  create_table "app_versions", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "app_versions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.string "name"
     t.json "definition"
@@ -36,7 +36,7 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["app_id"], name: "index_app_versions_on_app_id"
   end
 
-  create_table "apps", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -50,14 +50,14 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["user_id"], name: "index_apps_on_user_id"
   end
 
-  create_table "credentials", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "credentials", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.text "encrypted_value"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.text "value_ciphertext"
   end
 
-  create_table "data_queries", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "data_queries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.string "name"
     t.json "options"
@@ -69,7 +69,7 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["data_source_id"], name: "index_data_queries_on_data_source_id"
   end
 
-  create_table "data_source_user_oauth2s", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "data_source_user_oauth2s", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id", null: false
     t.uuid "data_source_id", null: false
     t.text "encrypted_options"
@@ -80,7 +80,7 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["user_id"], name: "index_data_source_user_oauth2s_on_user_id"
   end
 
-  create_table "data_sources", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "data_sources", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.string "name"
     t.json "options"
@@ -90,7 +90,7 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["app_id"], name: "index_data_sources_on_app_id"
   end
 
-  create_table "endpoints", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "endpoints", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "identifier"
     t.string "path"
     t.string "method"
@@ -103,7 +103,7 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["integration_id"], name: "index_endpoints_on_integration_id"
   end
 
-  create_table "folder_apps", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "folder_apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "folder_id", null: false
     t.uuid "app_id", null: false
     t.datetime "created_at", precision: 6, null: false
@@ -112,7 +112,7 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["folder_id"], name: "index_folder_apps_on_folder_id"
   end
 
-  create_table "folders", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "folders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.uuid "organization_id", null: false
     t.datetime "created_at", precision: 6, null: false
@@ -120,7 +120,7 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["organization_id"], name: "index_folders_on_organization_id"
   end
 
-  create_table "integrations", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "identifier"
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
@@ -133,7 +133,7 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  create_table "organization_users", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "organization_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "organization_id", null: false
     t.uuid "user_id", null: false
     t.string "role"
@@ -144,14 +144,14 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.index ["user_id"], name: "index_organization_users_on_user_id"
   end
 
-  create_table "organizations", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.string "domain"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  create_table "users", id: :uuid, default: -> { "public.gen_random_uuid()" }, force: :cascade do |t|
+  create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
     t.string "email"
@@ -162,6 +162,8 @@ ActiveRecord::Schema.define(version: 2021_06_06_031036) do
     t.uuid "organization_id"
     t.text "image"
     t.string "invitation_token"
+    t.string "forgot_password_token"
+    t.datetime "forgot_password_token_sent_at"
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
