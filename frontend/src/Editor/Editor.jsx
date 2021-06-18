@@ -28,6 +28,7 @@ import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
 import { Resizable } from 're-resizable';
 import { WidgetManager } from './WidgetManager';
+import Fuse from 'fuse.js';
 
 class Editor extends React.Component {
   constructor(props) {
@@ -72,6 +73,7 @@ class Editor extends React.Component {
           urlparams: {},
         },
       },
+      dataQueriesDefaultText: 'You haven\'t created queries yet.'
     };
   }
 
@@ -399,6 +401,19 @@ class Editor extends React.Component {
     this.setState({ selectedComponent: { id, component } });
   };
 
+  filterQueries = (value) => {
+    if(value) {
+      const fuse = new Fuse(this.state.dataQueries, { keys: ['name'] });
+      const results = fuse.search(value);
+      this.setState({
+        dataQueries: results.map((result) => result.item),
+        dataQueriesDefaultText: results.length || 'No Queries found.'
+      })
+    } else {
+      this.fetchDataQueries();
+    }
+  }
+
   render() {
     const {
       currentSidebarTab,
@@ -423,6 +438,7 @@ class Editor extends React.Component {
       currentLayout,
       deviceWindowWidth,
       scaleValue,
+      dataQueriesDefaultText
     } = this.state;
 
     const appLink = `/applications/${appId}`;
@@ -727,6 +743,19 @@ class Editor extends React.Component {
                         </div>
                       </div>
 
+                      <div className="row mt-2 pt-1 px-2">
+                        <div className="col-12">
+                          <div className="queries-search">
+                            <input
+                              type="text"
+                              className="form-control mb-2"
+                              placeholder="Search…"
+                              onChange={(e) => this.filterQueries(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
                       {loadingDataQueries ? (
                         <div className="p-5">
                           <center>
@@ -739,7 +768,7 @@ class Editor extends React.Component {
                           {dataQueries.length === 0 && (
                             <div className="mt-5">
                               <center>
-                                <span className="text-muted">You haven&apos;t created queries yet.</span> <br />
+                                <span className="text-muted">{dataQueriesDefaultText}</span> <br />
                                 <button
                                   className="btn btn-sm btn-outline-azure mt-3"
                                   onClick={() =>
