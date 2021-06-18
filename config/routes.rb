@@ -44,7 +44,7 @@ Rails.application.routes.draw do
   post 'signup', to: 'authentication#signup'
   post '/sample', to: 'sample#deploy'
 
-  resources :metadata, only: [:index] do 
+  resources :metadata, only: [:index] do
     collection do
       post '/skip_version', to: 'metadata#skip_version'
       post '/skip_onboarding', to: 'metadata#skip_onboarding'
@@ -53,5 +53,7 @@ Rails.application.routes.draw do
   end
 
   get '/health', to: 'probe#health_check'
+  post 'password/forgot', to: 'forgot_password#forgot'
+  post 'password/reset', to: 'forgot_password#reset'
 
 end
