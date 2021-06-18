@@ -347,6 +347,17 @@ body {
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+
+        &::-webkit-scrollbar { /* WebKit */
+          width: 0;
+          height: 0;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: transparent;
+        }
       }
 
       .query-definition-pane {
@@ -371,6 +382,17 @@ body {
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+
+        &::-webkit-scrollbar { /* WebKit */
+          width: 0;
+          height: 0;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: transparent;
+        }
 
         .queries-container {
           .queries-header {
