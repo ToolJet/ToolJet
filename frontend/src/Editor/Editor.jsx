@@ -755,7 +755,7 @@ class Editor extends React.Component {
                       )}
                     </div>
                   </div>
-                  <div className="col-md-9">
+                  <div className="col-md-9 query-definition-pane-wrapper">
                     {!loadingDataSources && (
                       <div className="query-definition-pane">
                         <div>
