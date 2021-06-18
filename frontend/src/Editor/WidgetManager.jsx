@@ -38,7 +38,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
           onChange={(e) => filterComponents(e.target.value)}
         />
       </div>
-      <div className="col-sm-12 col-lg-12 row">
+      <div className="widgets-list col-sm-12 col-lg-12 row">
         {filteredComponents.map((component, i) => renderComponentCard(component, i))}
       </div>
     </div>
