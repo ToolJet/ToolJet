@@ -73,7 +73,8 @@ class Editor extends React.Component {
           urlparams: {},
         },
       },
-      dataQueriesDefaultText: 'You haven\'t created queries yet.'
+      dataQueriesDefaultText: 'You haven\'t created queries yet.',
+      showQuerySearchField: false
     };
   }
 
@@ -414,6 +415,10 @@ class Editor extends React.Component {
     }
   }
 
+  toggleQuerySearch = () => {
+    this.setState( { showQuerySearchField: !this.state.showQuerySearchField });
+  }
+
   render() {
     const {
       currentSidebarTab,
@@ -438,7 +443,8 @@ class Editor extends React.Component {
       currentLayout,
       deviceWindowWidth,
       scaleValue,
-      dataQueriesDefaultText
+      dataQueriesDefaultText,
+      showQuerySearchField
     } = this.state;
 
     const appLink = `/applications/${appId}`;
@@ -729,9 +735,9 @@ class Editor extends React.Component {
                           <h5 className="py-1 px-3 text-muted">QUERIES</h5>
                         </div>
                         <div className="col-auto px-3">
-                          {/* {<button className="btn btn-sm btn-light mx-2">
-                                                        <img className="p-1" src="/search.svg" width="17" height="17"/>
-                                                    </button>} */}
+                          <button className="btn btn-sm btn-light mx-2" onClick={this.toggleQuerySearch}>
+                            <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17"/>
+                          </button>
 
                           <span
                             data-tip="Add new query"
@@ -743,18 +749,21 @@ class Editor extends React.Component {
                         </div>
                       </div>
 
-                      <div className="row mt-2 pt-1 px-2">
-                        <div className="col-12">
-                          <div className="queries-search">
-                            <input
-                              type="text"
-                              className="form-control mb-2"
-                              placeholder="Search…"
-                              onChange={(e) => this.filterQueries(e.target.value)}
-                            />
+                      {showQuerySearchField && 
+                        <div className="row mt-2 pt-1 px-2">
+                          <div className="col-12">
+                            <div className="queries-search">
+                              <input
+                                type="text"
+                                className="form-control mb-2"
+                                placeholder="Search…"
+                                autoFocus
+                                onChange={(e) => this.filterQueries(e.target.value)}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      }
 
                       {loadingDataQueries ? (
                         <div className="p-5">
