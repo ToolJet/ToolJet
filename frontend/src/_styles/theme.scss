@@ -1611,3 +1611,7 @@ input:focus-visible {
   border: solid 1px rgb(223, 223, 223);
   cursor: pointer;
 }
+
+.widgets-list { 
+  --tblr-gutter-x: 0px!important;
+}
