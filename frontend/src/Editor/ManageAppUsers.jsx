@@ -14,7 +14,7 @@ class ManageAppUsers extends React.Component {
 
     this.state = {
       showModal: false,
-      app: props.app,
+      app: { ...props.app, updateErrors: null },
       isLoading: true,
       addingUser: false,
       organizationUsers: [],
@@ -102,11 +102,9 @@ class ManageAppUsers extends React.Component {
 
       appService
         .setSlug(this.state.app.id, newSlug)
-        .then(() => { this.setState({ app: { ...this.state.app, slug: newSlug, slugTaken: false } }); })
+        .then(() => { this.setState({ app: { ...this.state.app, slug: newSlug, updateErrors: null } }); })
         .catch(({ error }) => {
-          this.setState({ app: { ...this.state.app, slug: newSlug, slugTaken: true } });
-          // TODO make error indication on the text input field
-          toast.error(error, { hideProgressBar: true, position: 'top-center' });
+          this.setState({ app: { ...this.state.app, slug: newSlug, updateErrors: error } });
         });
     }
 
@@ -114,7 +112,11 @@ class ManageAppUsers extends React.Component {
       const {
         addingUser, isLoading, users, organizationUsers, newUser
       } = this.state;
-      const shareableLink = `${window.location.origin}/applications/${this.state.app.id}`;
+      const appId = this.props.app.id;
+      const slug = this.state.app.slug;
+      const errors = this.state.app.updateErrors;
+      const appLink = `${window.location.origin}/applications/`;
+      const shareableLink = appLink + (slug || appId);
 
       return (
       <div>
@@ -157,7 +159,12 @@ class ManageAppUsers extends React.Component {
                     <small>Get shareable link for this application</small>
                   </label>
                   <div className="input-group">
-                    <input type="text" className="form-control form-control-sm" value={shareableLink} />
+                    <span className="input-group-text">{appLink}</span>
+                    <input type="text"
+                           className={`form-control form-control-sm ${ errors ? 'is-invalid' : 'is-valid'}`}
+                           placeholder={appId}
+                           onChange={(event) => this.handleSetSlug(event)}
+                           value={slug} />
                     <span className="input-group-text">
                       <CopyToClipboard
                         text={shareableLink}
@@ -171,16 +178,6 @@ class ManageAppUsers extends React.Component {
                       </CopyToClipboard>
                     </span>
                   </div>
-                    <div className="mb-3">
-                      <label className="form-label">
-                        Friendly url
-                      </label>
-                      <input type="text"
-                             className="form-control form-control-sm"
-                             placeholder={this.props.app.id}
-                             onChange={(event) => this.handleSetSlug(event)}
-                      />
-                    </div>
                 </div>
                 <hr />
                 <div className="add-user mb-3">
