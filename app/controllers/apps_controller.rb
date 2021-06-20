@@ -30,7 +30,7 @@ class AppsController < ApplicationController
 
   def create
     authorize App
-    @app = App.create({
+    @app = App.create!({
                         name: "Untitled app",
                         organization: @current_user.organization,
                         current_version: AppVersion.new(name: "v0"),
@@ -40,7 +40,7 @@ class AppsController < ApplicationController
   end
 
   def show
-    @app = App.find params[:id]
+    @app = App.find_by(slug: params[:slug])
 
     # Logic to bypass auth for public apps
     unless @app.is_public
@@ -52,7 +52,8 @@ class AppsController < ApplicationController
   def update
     @app = App.find params[:id]
     authorize @app
-    @app.update(params["app"].permit("name", "current_version_id", "is_public"))
+
+    @app.update(params[:app].permit(:name, :current_version_id, :is_public, :slug))
   end
 
   def users
