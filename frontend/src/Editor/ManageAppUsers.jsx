@@ -61,20 +61,20 @@ class ManageAppUsers extends React.Component {
         toast.success('Added user successfully', { hideProgressBar: true, position: 'top-center' });
         this.fetchAppUsers();
       })
-      .catch(( { error }) => {
+      .catch(({ error }) => {
         this.setState({ addingUser: false });
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });
   };
 
   toggleAppVisibility = () => {
-    const newState =  !this.state.app.is_public;
+    const newState = !this.state.app.is_public;
     this.setState({
-        ischangingVisibility: true
+      ischangingVisibility: true
     });
 
-    appService.setVisibility(this.state.app.id, newState).then(data =>  { 
-      this.setState({ 
+    appService.setVisibility(this.state.app.id, newState).then(data => {
+      this.setState({
         ischangingVisibility: false,
         app: {
           ...this.state.app,
@@ -82,7 +82,7 @@ class ManageAppUsers extends React.Component {
         }
       });
 
-      if(newState) {
+      if (newState) {
         toast.success('Application is now public.', {
           hideProgressBar: true,
           position: 'top-center'
@@ -93,17 +93,30 @@ class ManageAppUsers extends React.Component {
           position: 'top-center'
         });
       }
-      
     });
   }
 
-  render() {
-    const {
-      addingUser, isLoading, users, organizationUsers, newUser
-    } = this.state;
-    const shareableLink = `${window.location.origin}/applications/${this.state.app.id}`;
+    handleSetSlug = (event) => {
+      // TODO add delay before making api calls
+      const newSlug = event.target.value || null;
 
-    return (
+      appService
+        .setSlug(this.state.app.id, newSlug)
+        .then(() => { this.setState({ app: { ...this.state.app, slug: newSlug, slugTaken: false } }); })
+        .catch(({ error }) => {
+          this.setState({ app: { ...this.state.app, slug: newSlug, slugTaken: true } });
+          // TODO make error indication on the text input field
+          toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        });
+    }
+
+    render() {
+      const {
+        addingUser, isLoading, users, organizationUsers, newUser
+      } = this.state;
+      const shareableLink = `${window.location.origin}/applications/${this.state.app.id}`;
+
+      return (
       <div>
         <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}>
           {' '}
@@ -158,6 +171,16 @@ class ManageAppUsers extends React.Component {
                       </CopyToClipboard>
                     </span>
                   </div>
+                    <div className="mb-3">
+                      <label className="form-label">
+                        Friendly url
+                      </label>
+                      <input type="text"
+                             className="form-control form-control-sm"
+                             placeholder={this.props.app.id}
+                             onChange={(event) => this.handleSetSlug(event)}
+                      />
+                    </div>
                 </div>
                 <hr />
                 <div className="add-user mb-3">
@@ -243,8 +266,8 @@ class ManageAppUsers extends React.Component {
           </Modal.Footer>
         </Modal>
       </div>
-    );
-  }
+      );
+    }
 }
 
 export { ManageAppUsers };

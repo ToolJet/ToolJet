@@ -27,7 +27,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    authenticationService.currentUser.subscribe((x) => { 
+    authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x });
     });
   }
@@ -41,10 +41,10 @@ class App extends React.Component {
     const { currentUser, fetchedMetadata, updateAvailable, onboarded } = this.state;
 
     if(currentUser && fetchedMetadata === false) {
-      tooljetService.fetchMetaData().then((data) => { 
+      tooljetService.fetchMetaData().then((data) => {
         this.setState({ fetchedMetadata: true, onboarded: data.onboarded });
 
-        if(data.installed_version < data.latest_version && data.version_ignored === false) { 
+        if(data.installed_version < data.latest_version && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
       })
@@ -62,7 +62,7 @@ class App extends React.Component {
             </div>
           </div>}
 
-          {!onboarded && 
+          {!onboarded &&
             <OnboardingModal />
           }
 
@@ -72,8 +72,8 @@ class App extends React.Component {
           <Route path="/login" component={LoginPage} />
           <Route path="/signup" component={SignupPage} />
           <Route path="/invitations/:token" component={InvitationPage} />
-          <PrivateRoute exact path="/apps/:id" component={Editor} />
-          <PrivateRoute exact path="/applications/:id" component={Viewer} />
+          <PrivateRoute exact path="/apps/:slug" component={Editor} />
+          <PrivateRoute exact path="/applications/:slug" component={Viewer} />
           <PrivateRoute exact path="/oauth2/authorize" component={Authorize} />
           <PrivateRoute exact path="/users" component={ManageOrgUsers} />
         </div>
