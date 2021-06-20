@@ -161,7 +161,7 @@ class ManageAppUsers extends React.Component {
                   <div className="input-group">
                     <span className="input-group-text">{appLink}</span>
                     <input type="text"
-                           className={`form-control form-control-sm ${ errors ? 'is-invalid' : 'is-valid'}`}
+                           className={`form-control form-control-sm ${ errors !== null ? 'is-invalid' : 'is-valid'}`}
                            placeholder={appId}
                            onChange={(event) => this.handleSetSlug(event)}
                            value={slug} />
@@ -177,6 +177,7 @@ class ManageAppUsers extends React.Component {
                         <button className="btn btn-light btn-sm">Copy</button>
                       </CopyToClipboard>
                     </span>
+                    <div className="invalid-feedback">{errors}</div>
                   </div>
                 </div>
                 <hr />
