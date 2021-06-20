@@ -53,7 +53,13 @@ class AppsController < ApplicationController
     @app = App.find params[:id]
     authorize @app
 
-    @app.update(params[:app].permit(:name, :current_version_id, :is_public, :slug))
+    @app.assign_attributes(params[:app].permit(:name, :current_version_id, :is_public, :slug))
+
+    if @app.valid?
+      @app.save # renders default status 204
+    else
+      render json: { message: "Validation failed", errors: @app.errors.full_messages }, status: :bad_request
+    end
   end
 
   def users
