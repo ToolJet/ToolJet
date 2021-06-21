@@ -53,7 +53,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
    `TOOLJET_HOST=https://tooljet.yourdomain.com`
 
    :::info
-   We use a lets encrypt plugin on top of nginx to create TLS certificates on the fly.
+   We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
    :::
 
    :::info
