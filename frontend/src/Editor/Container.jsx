@@ -39,7 +39,7 @@ export const Container = ({
     position: 'absolute'
   };
 
-  const components = appDefinition.components || [];
+  const components = appDefinition?.components || [];
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -252,59 +252,69 @@ export const Container = ({
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
       {Object.keys(boxes).map((key) => {
-
         const box = boxes[key];
-        const canShowInCurrentLayout = box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+        const canShowInCurrentLayout =
+          box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
 
-        if(!box.parent && canShowInCurrentLayout) {
-          return <DraggableBox
-            onComponentClick={onComponentClick}
-            onEvent={onEvent}
-            onComponentOptionChanged={onComponentOptionChanged}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            key={key}
-            currentState={currentState}
-            onResizeStop={onResizeStop}
-            paramUpdated={paramUpdated}
-            id={key}
-            {...boxes[key]}
-            mode={mode}
-            resizingStatusChanged={(status) => setIsResizing(status)}
-            inCanvas={true}
-            zoomLevel={zoomLevel}
-            configHandleClicked={configHandleClicked}
-            removeComponent={removeComponent}
-            currentLayout={currentLayout}
-            scaleValue={scaleValue}
-            deviceWindowWidth={deviceWindowWidth}
-            isSelectedComponent={selectedComponent? selectedComponent.id === key : false}
-            containerProps={{
-              mode,
-              snapToGrid,
-              onComponentClick,
-              onEvent,
-              appDefinition,
-              appDefinitionChanged,
-              currentState,
-              onComponentOptionChanged,
-              onComponentOptionsChanged,
-              appLoading,
-              zoomLevel,
-              configHandleClicked,
-              removeComponent,
-              currentLayout,
-              scaleValue,
-              deviceWindowWidth,
-              selectedComponent
-            }}
-          />
+        if (!box.parent && canShowInCurrentLayout) {
+          return (
+            <DraggableBox
+              onComponentClick={onComponentClick}
+              onEvent={onEvent}
+              onComponentOptionChanged={onComponentOptionChanged}
+              onComponentOptionsChanged={onComponentOptionsChanged}
+              key={key}
+              currentState={currentState}
+              onResizeStop={onResizeStop}
+              paramUpdated={paramUpdated}
+              id={key}
+              {...boxes[key]}
+              mode={mode}
+              resizingStatusChanged={(status) => setIsResizing(status)}
+              inCanvas={true}
+              zoomLevel={zoomLevel}
+              configHandleClicked={configHandleClicked}
+              removeComponent={removeComponent}
+              currentLayout={currentLayout}
+              scaleValue={scaleValue}
+              deviceWindowWidth={deviceWindowWidth}
+              isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
+              containerProps={{
+                mode,
+                snapToGrid,
+                onComponentClick,
+                onEvent,
+                appDefinition,
+                appDefinitionChanged,
+                currentState,
+                onComponentOptionChanged,
+                onComponentOptionsChanged,
+                appLoading,
+                zoomLevel,
+                configHandleClicked,
+                removeComponent,
+                currentLayout,
+                scaleValue,
+                deviceWindowWidth,
+                selectedComponent
+              }}
+            />
+          );
         }
-        }
-      )}
+      })}
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '15%' }}>
-          <center className="text-muted">You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.</center>
+          {mode === 'edit' && (
+            <center className="text-muted">
+              You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.
+            </center>
+          )}
+          {mode === 'view' && (
+            <center className="text-muted">
+              You haven&apos;t added any components yet. Add components from ToolJet Dashboard.
+            </center>
+          )}
         </div>
       )}
       {appLoading && (

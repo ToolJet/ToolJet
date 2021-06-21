@@ -45,17 +45,21 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
 }
 
 export function runTransformation(_ref, rawData, transformation) {
-  const data = rawData;
-  const evalFunction = Function(['data', 'moment', '_', 'currentState'], transformation);
-  let result = [];
+  return new Promise(async (resolve, reject) => {
+    const data = rawData;
+    const evalFunction = Function(['data', 'moment', '_', 'currentState'], transformation);
+    let result = [];
 
-  try {
-    result = evalFunction(data, moment, _, _ref.state.currentState);
-  } catch (err) {
-    toast.error(err.message, { hideProgressBar: true });
-  }
+    try {
+      if (evalFunction instanceof Promise) result = await evalFunction(data, moment, _, _ref.state.currentState);
+      else result = evalFunction(data, moment, _, _ref.state.currentState);
+    } catch (err) {
+      toast.error(err.message, { hideProgressBar: true });
+      reject(err.message);
+    }
 
-  return result;
+    return resolve(result);
+  });
 }
 
 export function onComponentClick(_ref, id, component) {
@@ -306,7 +310,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
   return new Promise(function (resolve, reject) {
     _self.setState({ currentState: newState }, () => {
-      dataqueryService.run(queryId, options).then(data => {
+      dataqueryService.run(queryId, options).then(async data => {
         resolve();
 
         if (data.error) {
@@ -325,7 +329,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         let finalData = data.data;
 
         if (dataQuery.options.enableTransformation) {
-          finalData = runTransformation(_self, rawData, dataQuery.options.transformation);
+          finalData = await runTransformation(_self, rawData, dataQuery.options.transformation);
         }
 
         if (dataQuery.options.showSuccessNotification) {
