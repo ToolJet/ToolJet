@@ -16,7 +16,7 @@ class ManageAppUsers extends React.Component {
     this.state = {
       showModal: false,
       app: { ...props.app },
-      slugError: null, 
+      slugError: null,
       isLoading: true,
       addingUser: false,
       organizationUsers: [],
@@ -99,12 +99,10 @@ class ManageAppUsers extends React.Component {
   }
 
     handleSetSlug = (event) => {
-      // TODO add delay before making api calls
       const newSlug = event.target.value || null;
-
       appService
         .setSlug(this.state.app.id, newSlug)
-        .then(() => { this.setState({ app: { ...this.state.app, slug: newSlug }, slugError: null  }); })
+        .then(() => { this.setState({ app: { ...this.state.app, slug: newSlug }, slugError: null }); })
         .catch(({ error }) => {
           this.setState({ app: { ...this.state.app, slug: newSlug }, slugError: error });
         });
@@ -113,14 +111,14 @@ class ManageAppUsers extends React.Component {
     delayedSlugChange = debounce(e => {
       this.handleSetSlug(e);
     }, 500);
-    
+
     render() {
       const {
-        addingUser, isLoading, users, organizationUsers, newUser, slug, slugError
+        addingUser, isLoading, users, organizationUsers, newUser, app, slugError
       } = this.state;
-      const appId = this.props.app.id;
+      const appId = app.id;
       const appLink = `${window.location.origin}/applications/`;
-      const shareableLink = appLink + (slug || appId);
+      const shareableLink = appLink + (app.slug || appId);
 
       return (
       <div>
@@ -167,8 +165,8 @@ class ManageAppUsers extends React.Component {
                     <input type="text"
                            className={`form-control form-control-sm ${ slugError !== null ? 'is-invalid' : 'is-valid'}`}
                            placeholder={appId}
-                           onChange={(e) => { e.persist(); this.delayedSlugChange(e) }}
-                           value={slug} />
+                           onChange={(e) => { e.persist(); this.delayedSlugChange(e); }}
+                           defaultValue={app.slug} />
                     <span className="input-group-text">
                       <CopyToClipboard
                         text={shareableLink}

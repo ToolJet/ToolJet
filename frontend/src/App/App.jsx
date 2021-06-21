@@ -72,7 +72,7 @@ class App extends React.Component {
           <Route path="/login" component={LoginPage} />
           <Route path="/signup" component={SignupPage} />
           <Route path="/invitations/:token" component={InvitationPage} />
-          <PrivateRoute exact path="/apps/:slug" component={Editor} />
+          <PrivateRoute exact path="/apps/:id" component={Editor} />
           <PrivateRoute exact path="/applications/:slug" component={Viewer} />
           <PrivateRoute exact path="/oauth2/authorize" component={Authorize} />
           <PrivateRoute exact path="/users" component={ManageOrgUsers} />

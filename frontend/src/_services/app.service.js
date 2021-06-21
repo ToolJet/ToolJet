@@ -5,6 +5,7 @@ export const appService = {
   getAll,
   createApp,
   getApp,
+  getAppBySlug,
   saveApp,
   getAppUsers,
   createAppUser,
@@ -25,9 +26,14 @@ function createApp() {
   return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
 }
 
-function getApp(slug) {
+function getApp(id) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/apps/${slug}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+}
+
+function getAppBySlug(slug) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then(handleResponse);
 }
 
 function saveApp(id, attributes) {

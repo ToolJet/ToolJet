@@ -35,7 +35,7 @@ class Editor extends React.Component {
   constructor(props) {
     super(props);
 
-    const appSlug = this.props.match.params.slug;
+    const appId = this.props.match.params.id;
 
     const currentUser = authenticationService.currentUserValue;
     let userVars = { };
@@ -54,7 +54,7 @@ class Editor extends React.Component {
       queryPaneHeight: '30%',
       isLoading: true,
       users: null,
-      appSlug,
+      appId,
       loadingDataSources: true,
       loadingDataQueries: true,
       showQueryEditor: true,
@@ -78,9 +78,9 @@ class Editor extends React.Component {
   }
 
   componentDidMount() {
-    const appSlug = this.props.match.params.slug;
+    const appId = this.props.match.params.id;
 
-    appService.getApp(appSlug).then((data) => this.setState(
+    appService.getApp(appId).then((data) => this.setState(
       {
         app: data,
         isLoading: false,
@@ -92,25 +92,25 @@ class Editor extends React.Component {
             runQuery(this, query.id, query.name);
           }
         });
-        this.fetchDataSources(data.id);
-        this.fetchDataQueries(data.id);
       }
     ));
 
+    this.fetchDataSources();
+    this.fetchDataQueries();
+
     this.setState({
-      appSlug,
       currentSidebarTab: 2,
       selectedComponent: null
     });
   }
 
-  fetchDataSources = (appId) => {
+  fetchDataSources = () => {
     this.setState(
       {
         loadingDataSources: true
       },
       () => {
-        datasourceService.getAll(appId).then((data) => this.setState({
+        datasourceService.getAll(this.state.appId).then((data) => this.setState({
           dataSources: data.data_sources,
           loadingDataSources: false
         }));
@@ -118,13 +118,13 @@ class Editor extends React.Component {
     );
   };
 
-  fetchDataQueries = (appId) => {
+  fetchDataQueries = () => {
     this.setState(
       {
         loadingDataQueries: true
       },
       () => {
-        dataqueryService.getAll(appId).then((data) => {
+        dataqueryService.getAll(this.state.appId).then((data) => {
           this.setState(
             {
               dataQueries: data.data_queries,
@@ -391,7 +391,7 @@ class Editor extends React.Component {
       currentSidebarTab,
       selectedComponent,
       appDefinition,
-      appSlug,
+      appId,
       dataSources,
       loadingDataQueries,
       dataQueries,
@@ -411,8 +411,7 @@ class Editor extends React.Component {
       deviceWindowWidth,
       scaleValue
     } = this.state;
-
-    const appLink = `/applications/${appSlug}`;
+    const appLink = app ? `/applications/${app.slug}` : '';
 
     return (
       <div className="editor wrapper">
@@ -626,7 +625,7 @@ class Editor extends React.Component {
                       </span>
                       {this.state.showDataSourceManagerModal && (
                         <DataSourceManager
-                          appSlug={appSlug}
+                          appId={appId}
                           hideModal={() => this.setState({ showDataSourceManagerModal: false })}
                           dataSourcesChanged={this.dataSourcesChanged}
                           showDataSourceManagerModal={this.state.showDataSourceManagerModal}
@@ -769,7 +768,7 @@ class Editor extends React.Component {
                             mode={editingQuery ? 'edit' : 'create'}
                             selectedQuery={selectedQuery}
                             dataQueriesChanged={this.dataQueriesChanged}
-                            appSlug={appSlug}
+                            appId={appId}
                             addingQuery={addingQuery}
                             editingQuery={editingQuery}
                             queryPaneHeight={queryPaneHeight}

@@ -159,7 +159,7 @@ class HomePage extends React.Component {
                               </td>
                               <td class="text-muted col-auto pt-4">
                                 <Link
-                                  to={`/apps/${app.slug}`}
+                                  to={`/apps/${app.id}`}
                                   className="d-none d-lg-inline"
                                 >
                                   <OverlayTrigger

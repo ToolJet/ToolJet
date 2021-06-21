@@ -51,7 +51,7 @@ class Viewer extends React.Component {
       currentLayout: isMobileDevice ? 'mobile' : 'desktop'
     });
 
-    appService.getApp(slug).then((data) => this.setState(
+    appService.getAppBySlug(slug).then((data) => this.setState(
       {
         app: data,
         isLoading: false,
