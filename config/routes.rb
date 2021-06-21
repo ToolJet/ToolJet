@@ -1,10 +1,10 @@
 Rails.application.routes.draw do
-  resources :apps, only: %i[index create update] do
+  resources :apps, only: %i[index create show update] do
     resources :versions, only: %i[index create update]
 
     get '/users', to: 'apps#users'
+    get '/slugs/:slug', to: 'apps#slugs', on: :collection
   end
-  resources :apps, only: :show, param: :slug
 
   resources :data_sources, only: %i[create index update] do
     post '/authorize_oauth2', to: 'data_sources#authorize_oauth2'
