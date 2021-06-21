@@ -12,7 +12,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 machines
 
 1. Setup a PostgreSQL database.(Please make sure that the EC2 machine which runs the ToolJet application is able to connect to the database.)
 
-2. Login to your aws management console and go to the EC2 management page.
+2. Login to your AWS management console and go to the EC2 management page.
 
 3. Under the Images section, click on the `AMIs` button.
 
@@ -20,20 +20,20 @@ Follow the steps below to deploy ToolJet on AWS EC2 machines
 
 5. Select the ToolJet app's AMI and bootup an EC2 machine.
 
-  Create or use security groups which at the very least, allow the following inbound rules:
+  Creating a new security group is recommended. For example, if the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
    protocol| port     | allowed_cidr|
    ----| -----------  | ----------- |
-   tcp | 22           | yourIP/32  |
-   tcp | 80           | 0.0.0.0/0   |
+   tcp | 22           | your IP |
+   tcp | 80           | 0.0.0.0/0 |
    tcp | 443          | 0.0.0.0/0   |
 
 
-6. Once the machine boots up, ssh into the machine by running `ssh -i <path_to_pem_file> ubuntu@<public_ip_of_the_machine>`
+6. Once the machine boots up, SSH into the machine by running `ssh -i <path_to_pem_file> ubuntu@<public_ip_of_the_machine>`
 
-7. cd into the `app` directory by running `cd ~/app`. Now, modify the `.env` file in the directory by running `vim .env`.
+7. Switch to the app directory by running `cd ~/app`. Modify the contents of the `.env` file. ( Eg: `vim .env` )
 
-   The provided `.env` file looks like this:
+   The default `.env` file looks like this:
    ```
    TOOLJET_HOST=http://<example>
    LOCKBOX_MASTER_KEY=<example>
@@ -43,22 +43,25 @@ Follow the steps below to deploy ToolJet on AWS EC2 machines
    PG_HOST=<pg host>
    PG_PASS=<pg user password>
    ```
-   ( Read [environment variables reference](/docs/deployment/env-vars)  )
+   Read [environment variables reference](/docs/deployment/env-vars)
 
-8. The value in `TOOLJET_HOST` determines where you can access the ToolJet client. It can either be the public ipv4 address of your machine or a custom domain that you want to use.
+8. `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your machine or a custom domain that you want to use.
 
-   Example:
+   Examples:   
+   `TOOLJET_HOST=http://12.34.56.78` or   
+   `TOOLJET_HOST=https://yourdomain.com` or   
+   `TOOLJET_HOST=https://tooljet.yourdomain.com`
 
-   `TOOLJET_HOST=http://12.34.56.78` or
-   `TOOLJET_HOST=https://yourdomain.com`
-
+   :::info
    We use a lets encrypt plugin on top of nginx to create TLS certificates on the fly.
+   :::
+
    :::info
    Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
    :::
 
-9. Once you've configured all the variables in `.env`, run `./setup_app.rb` to setup the app and start all the required services.
+9. Once you've configured the `.env` file, run `./setup_app.rb`. This script will install all the dependencies of ToolJet and then will start the required services.
 
-10. If you've set a custom domain for `TOOLJET_HOST`, please make a new A record entry in your dns settings to point to the public ip address of the ec2 machine.
+10. If you've set a custom domain for `TOOLJET_HOST`, please make a new A record entry in your dns settings to point to the IP address of the ec2 machine.
 
 12. You're all done, ToolJet client would now be served at the value you've set in `TOOLJET_HOST`.
