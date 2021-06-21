@@ -1585,3 +1585,9 @@ input:focus-visible {
   border: solid 1px rgb(223, 223, 223);
   cursor: pointer;
 }
+
+.app-sharing-modal {
+  .form-control.is-invalid, .was-validated .form-control:invalid {
+    border-color: #ffb0b0;
+  }
+}

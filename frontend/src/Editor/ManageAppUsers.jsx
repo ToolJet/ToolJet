@@ -7,6 +7,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { debounce } from 'lodash';
 
 class ManageAppUsers extends React.Component {
   constructor(props) {
@@ -14,7 +15,8 @@ class ManageAppUsers extends React.Component {
 
     this.state = {
       showModal: false,
-      app: { ...props.app, updateErrors: null },
+      app: { ...props.app },
+      slugError: null, 
       isLoading: true,
       addingUser: false,
       organizationUsers: [],
@@ -102,19 +104,21 @@ class ManageAppUsers extends React.Component {
 
       appService
         .setSlug(this.state.app.id, newSlug)
-        .then(() => { this.setState({ app: { ...this.state.app, slug: newSlug, updateErrors: null } }); })
+        .then(() => { this.setState({ app: { ...this.state.app, slug: newSlug }, slugError: null  }); })
         .catch(({ error }) => {
-          this.setState({ app: { ...this.state.app, slug: newSlug, updateErrors: error } });
+          this.setState({ app: { ...this.state.app, slug: newSlug }, slugError: error });
         });
     }
 
+    delayedSlugChange = debounce(e => {
+      this.handleSetSlug(e);
+    }, 500);
+    
     render() {
       const {
-        addingUser, isLoading, users, organizationUsers, newUser
+        addingUser, isLoading, users, organizationUsers, newUser, slug, slugError
       } = this.state;
       const appId = this.props.app.id;
-      const slug = this.state.app.slug;
-      const errors = this.state.app.updateErrors;
       const appLink = `${window.location.origin}/applications/`;
       const shareableLink = appLink + (slug || appId);
 
@@ -125,7 +129,7 @@ class ManageAppUsers extends React.Component {
           Share
         </button>
 
-        <Modal show={this.state.showModal} size="lg" backdrop="static" centered={true} keyboard={true} onEscapeKeyDown={this.hideModal}>
+        <Modal show={this.state.showModal} size="lg" backdrop="static" centered={true} keyboard={true} onEscapeKeyDown={this.hideModal} className="app-sharing-modal">
           <Modal.Header>
             <Modal.Title>Users and permissions</Modal.Title>
             <div>
@@ -161,9 +165,9 @@ class ManageAppUsers extends React.Component {
                   <div className="input-group">
                     <span className="input-group-text">{appLink}</span>
                     <input type="text"
-                           className={`form-control form-control-sm ${ errors !== null ? 'is-invalid' : 'is-valid'}`}
+                           className={`form-control form-control-sm ${ slugError !== null ? 'is-invalid' : 'is-valid'}`}
                            placeholder={appId}
-                           onChange={(event) => this.handleSetSlug(event)}
+                           onChange={(e) => { e.persist(); this.delayedSlugChange(e) }}
                            value={slug} />
                     <span className="input-group-text">
                       <CopyToClipboard
@@ -177,7 +181,7 @@ class ManageAppUsers extends React.Component {
                         <button className="btn btn-light btn-sm">Copy</button>
                       </CopyToClipboard>
                     </span>
-                    <div className="invalid-feedback">{errors}</div>
+                    <div className="invalid-feedback">{slugError}</div>
                   </div>
                 </div>
                 <hr />
