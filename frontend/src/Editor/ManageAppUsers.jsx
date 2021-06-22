@@ -102,9 +102,12 @@ class ManageAppUsers extends React.Component {
       const newSlug = event.target.value || null;
       appService
         .setSlug(this.state.app.id, newSlug)
-        .then(() => { this.setState({ app: { ...this.state.app, slug: newSlug }, slugError: null }); })
+        .then(() => {
+          this.setState({ slugError: null });
+          this.props.handleSlugChange(newSlug);
+        })
         .catch(({ error }) => {
-          this.setState({ app: { ...this.state.app, slug: newSlug }, slugError: error });
+          this.setState({ slugError: error });
         });
     }
 
@@ -118,7 +121,7 @@ class ManageAppUsers extends React.Component {
       } = this.state;
       const appId = app.id;
       const appLink = `${window.location.origin}/applications/`;
-      const shareableLink = appLink + (app.slug || appId);
+      const shareableLink = appLink + (this.props.slug || appId);
 
       return (
       <div>
@@ -166,7 +169,7 @@ class ManageAppUsers extends React.Component {
                            className={`form-control form-control-sm ${ slugError !== null ? 'is-invalid' : 'is-valid'}`}
                            placeholder={appId}
                            onChange={(e) => { e.persist(); this.delayedSlugChange(e); }}
-                           defaultValue={app.slug} />
+                           defaultValue={this.props.slug} />
                     <span className="input-group-text">
                       <CopyToClipboard
                         text={shareableLink}
