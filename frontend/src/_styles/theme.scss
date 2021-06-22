@@ -343,6 +343,23 @@ body {
         --tblr-gutter-x: 0rem;
       }
 
+      .query-definition-pane-wrapper {
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: 100%;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+
+        &::-webkit-scrollbar { /* WebKit */
+          width: 0;
+          height: 0;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: transparent;
+        }
+      }
+
       .query-definition-pane {
         .header {
           border: solid rgba(0, 0, 0, 0.125);
@@ -360,15 +377,24 @@ body {
       }
 
       .data-pane {
-        min-height: 350px;
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 1px 0px 0px;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: 100%;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+
+        &::-webkit-scrollbar { /* WebKit */
+          width: 0;
+          height: 0;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: transparent;
+        }
 
         .queries-container {
-
-          position: fixed;
-          width: 18.2%;
-
           .queries-header {
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 0px 0px 1px 0px;
@@ -376,7 +402,7 @@ body {
           }
 
           .query-list { 
-            overflow-y: scroll;
+            // padding-top: 40px;
           }
 
           .query-list::-webkit-scrollbar {
@@ -1584,4 +1610,8 @@ input:focus-visible {
 .color-picker-input {
   border: solid 1px rgb(223, 223, 223);
   cursor: pointer;
+}
+
+.widgets-list { 
+  --tblr-gutter-x: 0px!important;
 }

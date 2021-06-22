@@ -14,6 +14,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
+import {ForgotPassword} from '@/ForgotPassword'
+import { ResetPassword } from '@/ResetPassword';
 
 class App extends React.Component {
   constructor(props) {
@@ -27,7 +29,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    authenticationService.currentUser.subscribe((x) => { 
+    authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x });
     });
   }
@@ -41,10 +43,10 @@ class App extends React.Component {
     const { currentUser, fetchedMetadata, updateAvailable, onboarded } = this.state;
 
     if(currentUser && fetchedMetadata === false) {
-      tooljetService.fetchMetaData().then((data) => { 
+      tooljetService.fetchMetaData().then((data) => {
         this.setState({ fetchedMetadata: true, onboarded: data.onboarded });
 
-        if(data.installed_version < data.latest_version && data.version_ignored === false) { 
+        if(data.installed_version < data.latest_version && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
       })
@@ -62,7 +64,7 @@ class App extends React.Component {
             </div>
           </div>}
 
-          {!onboarded && 
+          {!onboarded &&
             <OnboardingModal />
           }
 
@@ -71,6 +73,8 @@ class App extends React.Component {
           <PrivateRoute exact path="/" component={HomePage} />
           <Route path="/login" component={LoginPage} />
           <Route path="/signup" component={SignupPage} />
+          <Route path = "/forgot-password" component ={ForgotPassword} />
+          <Route path = "/reset-password" component ={ResetPassword} />
           <Route path="/invitations/:token" component={InvitationPage} />
           <PrivateRoute exact path="/apps/:id" component={Editor} />
           <PrivateRoute exact path="/applications/:id" component={Viewer} />

@@ -15,7 +15,7 @@ export const defaultOptions = {
   },
   mssql: {
     host: { value: 'localhost' },
-    port: { value: 3306 },
+    port: { value: 1433 },
     database: { value: '' },
     username: { value: '' },
     password: { value: '' }
@@ -35,7 +35,7 @@ export const defaultOptions = {
     connection_type: { value: 'manual' },
     connection_string: { value: ''}
   },
-  
+
   elasticsearch: {
     scheme: { value: 'https' },
     host: { value: 'localhost' },

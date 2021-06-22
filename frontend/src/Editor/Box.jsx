@@ -32,7 +32,7 @@ const AllComponents = {
   Multiselect,
   Modal,
   Chart,
-  Map
+  Map,
 };
 
 export const Box = function Box({
@@ -51,17 +51,17 @@ export const Box = function Box({
   onComponentOptionsChanged,
   paramUpdated,
   changeCanDrag,
-  containerProps
+  containerProps,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
   let styles = {
-    
+    height: '100%',
   };
 
   if (inCanvas) {
     styles = {
-      ...styles
+      ...styles,
     };
   }
 
@@ -85,22 +85,23 @@ export const Box = function Box({
           containerProps={containerProps}
         ></ComponentToRender>
       ) : (
-        <div className="p-1 m-1">
-          <div className="component-image-holder p-3">
+        <div className="m-1" style={{ height: '100%' }}>
+          <div
+            className="component-image-holder p-3 d-flex flex-column justify-content-center"
+            style={{ height: '100%' }}
+          >
             <center>
-                <div
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    backgroundSize: 'contain',
-                    backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
-                    backgroundRepeat: 'no-repeat'
-                  }}
-                >
-                </div>
+              <div
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  backgroundSize: 'contain',
+                  backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                  backgroundRepeat: 'no-repeat',
+                }}
+              ></div>
             </center>
             <span className="component-title">{component.displayName}</span>
-
           </div>
         </div>
       )}
