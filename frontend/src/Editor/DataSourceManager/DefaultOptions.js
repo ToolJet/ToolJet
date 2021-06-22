@@ -70,8 +70,7 @@ export const defaultOptions = {
   graphql: {
     url: { value: '' },
     headers: { value: [['', '']] },
-    url_params: { value: [['', '']] },
-    body: { value: [['', '']] },
+    url_params: { value: [['', '']] }
   },
   googlesheets: {
     access_type: { value: 'read' }

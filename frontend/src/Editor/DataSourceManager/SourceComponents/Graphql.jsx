@@ -35,7 +35,7 @@ export const Graphql = ({
           />
         </div>
 
-        {[{name: 'URL parameters', value: 'url_params'},{name: 'Headers', value: 'headers'},{name: 'Body', value: 'body'}].map((option) => (
+        {[{name: 'URL parameters', value: 'url_params'},{name: 'Headers', value: 'headers'}].map((option) => (
         <div className="mb-3" key={option}>
           <div className="row g-2">
             <div className="col-md-2">
@@ -77,7 +77,7 @@ export const Graphql = ({
         </div>
       ))}
       </div>
-      
+
 
       <div className="row mt-3">
         <div className="col"></div>
