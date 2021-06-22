@@ -39,6 +39,7 @@ gem "mongo", "~> 2"
 gem 'aws-sdk', '~> 3'
 gem 'kaminari'
 gem 'lockbox'
+gem 'graphlient'
 gem 'tiny_tds'
 
 group :development, :test do
