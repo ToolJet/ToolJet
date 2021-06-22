@@ -29,8 +29,12 @@ end
 
 
 def url_encoded_with_params(original_url, url_params)
-  uri = URI.parse(original_url)
-  params = URI.decode_www_form(uri.query || '') + url_params
-  uri.query = URI.encode_www_form(params)
-  uri.to_s
+  if url_params.empty?
+    original_url
+  else
+    uri = URI.parse(original_url)
+    params = URI.decode_www_form(uri.query || '') + url_params
+    uri.query = URI.encode_www_form(params)
+    uri.to_s
+  end
 end
