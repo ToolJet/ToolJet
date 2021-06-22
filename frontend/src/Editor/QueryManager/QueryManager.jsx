@@ -8,9 +8,7 @@ import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { defaultOptions } from './constants';
 import ReactJson from 'react-json-view';
-import {
-  previewQuery
-} from '@/_helpers/appUtils';
+import { previewQuery } from '@/_helpers/appUtils';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -27,6 +25,8 @@ class QueryManager extends React.Component {
 
   setStateFromProps = (props) => {
     const selectedQuery = props.selectedQuery;
+    const dataSourceId = selectedQuery?.data_source_id;
+    const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
 
     this.setState(
       {
@@ -39,21 +39,23 @@ class QueryManager extends React.Component {
         editingQuery: props.editingQuery,
         queryPaneHeight: props.queryPaneHeight,
         currentState: props.currentState,
+        selectedSource: source,
       },
       () => {
         if (this.props.mode === 'edit') {
           let source = props.dataSources.find((datasource) => datasource.id === selectedQuery.data_source_id);
-          if(selectedQuery.kind === 'restapi') source = { kind: 'restapi' };
-
+          if (selectedQuery.kind === 'restapi') source = { kind: 'restapi' };
+          //
           this.setState({
             options: selectedQuery.options,
             selectedDataSource: source,
             selectedQuery,
-            queryName: selectedQuery.name
+            queryName: selectedQuery.name,
           });
         } else {
           this.setState({
-            selectedQuery: null
+            options: {},
+            selectedQuery: null,
           });
         }
       }
@@ -70,23 +72,23 @@ class QueryManager extends React.Component {
 
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
+
     this.setState({
       selectedDataSource: source,
+      selectedSource: source,
       options: defaultOptions[source.kind],
-      queryName: this.computeQueryName(source.kind)
+      queryName: this.computeQueryName(source.kind),
     });
   };
 
   switchCurrentTab = (tab) => {
     this.setState({
-      currentTab: tab
+      currentTab: tab,
     });
   };
 
   validateQueryName = () => {
-    const {
-      queryName, dataQueries, mode, selectedQuery
-    } = this.state;
+    const { queryName, dataQueries, mode, selectedQuery } = this.state;
 
     if (mode === 'create') {
       return dataQueries.find((query) => query.name === queryName) === undefined && queryNameRegex.test(queryName);
@@ -117,9 +119,7 @@ class QueryManager extends React.Component {
   };
 
   createOrUpdateDataQuery = () => {
-    const {
-      appId, options, selectedDataSource, mode, queryName
-    } = this.state;
+    const { appId, options, selectedDataSource, mode, queryName } = this.state;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id;
 
@@ -127,31 +127,37 @@ class QueryManager extends React.Component {
     if (!isQueryNameValid) {
       toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.', {
         hideProgressBar: true,
-        position: 'bottom-center'
+        position: 'bottom-center',
       });
       return;
     }
 
     if (mode === 'edit') {
       this.setState({ isUpdating: true });
-      dataqueryService.update(this.state.selectedQuery.id, queryName, options).then(() => {
-        toast.success('Query Updated', { hideProgressBar: true, position: 'bottom-center' });
-        this.setState({ isUpdating: false });
-        this.props.dataQueriesChanged();
-      }).catch(( { error }) => {
-        this.setState({ isUpdating: false });
-        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
-      });
+      dataqueryService
+        .update(this.state.selectedQuery.id, queryName, options)
+        .then(() => {
+          toast.success('Query Updated', { hideProgressBar: true, position: 'bottom-center' });
+          this.setState({ isUpdating: false });
+          this.props.dataQueriesChanged();
+        })
+        .catch(({ error }) => {
+          this.setState({ isUpdating: false });
+          toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+        });
     } else {
       this.setState({ isCreating: true });
-      dataqueryService.create(appId, queryName, kind, options, dataSourceId).then(() => {
-        toast.success('Query Added', { hideProgressBar: true, position: 'bottom-center' });
-        this.setState({ isCreating: false });
-        this.props.dataQueriesChanged();
-      }).catch(({ error }) => {
-        this.setState({ isCreating: false });
-        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
-      });
+      dataqueryService
+        .create(appId, queryName, kind, options, dataSourceId)
+        .then(() => {
+          toast.success('Query Added', { hideProgressBar: true, position: 'bottom-center' });
+          this.setState({ isCreating: false });
+          this.props.dataQueriesChanged();
+        })
+        .catch(({ error }) => {
+          this.setState({ isCreating: false });
+          toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+        });
     }
   };
 
@@ -196,7 +202,7 @@ class QueryManager extends React.Component {
       currentState,
       queryName,
       previewLoading,
-      queryPreviewData
+      queryPreviewData,
     } = this.state;
 
     let ElementToRender = '';
@@ -237,7 +243,7 @@ class QueryManager extends React.Component {
               </div>
             )}
           </div>
-          {((addingQuery || editingQuery) && selectedDataSource) && (
+          {(addingQuery || editingQuery) && selectedDataSource && (
             <div className="col query-name-field">
               <div className="input-icon" style={{ width: '160px' }}>
                 <input
@@ -257,21 +263,25 @@ class QueryManager extends React.Component {
           <div className="col-auto">
             {(addingQuery || editingQuery) && (
               <span
-                onClick={() => { 
-                  const query = { data_source_id: selectedDataSource.id, options: options, kind: selectedDataSource.kind };
-                  previewQuery(this, query).then(() => {
-                    toast.info(`Query completed.`, {
-                      hideProgressBar: true,
-                      position: 'bottom-center'
+                onClick={() => {
+                  const query = {
+                    data_source_id: selectedDataSource.id,
+                    options: options,
+                    kind: selectedDataSource.kind,
+                  };
+                  previewQuery(this, query)
+                    .then(() => {
+                      toast.info(`Query completed.`, {
+                        hideProgressBar: true,
+                        position: 'bottom-center',
+                      });
+                      this.previewPanelRef.current.scrollIntoView();
+                    })
+                    .catch(({ error, data }) => {
+                      debugger;
                     });
-                    this.previewPanelRef.current.scrollIntoView();
-                  }).catch(( { error, data } ) => { 
-                    debugger
-                  });
                 }}
-                className={`btn btn-secondary m-1 float-right1 ${
-                  previewLoading ? ' btn-loading' : ''
-                }`}
+                className={`btn btn-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''}`}
               >
                 Preview
               </span>
@@ -319,7 +329,7 @@ class QueryManager extends React.Component {
                         }),
                         ...staticDataSources.map((source) => {
                           return { name: source.name, value: source.id };
-                        })
+                        }),
                       ]}
                       value={selectedDataSource ? selectedDataSource.id : ''}
                       search={true}
@@ -333,19 +343,30 @@ class QueryManager extends React.Component {
 
                 {selectedDataSource && (
                   <div>
-                    <ElementToRender options={this.state.options} optionsChanged={this.optionsChanged} currentState={currentState}/>
+                    <ElementToRender
+                      selectedDataSource={this.state.selectedSource}
+                      options={this.state.options}
+                      optionsChanged={this.optionsChanged}
+                      currentState={currentState}
+                    />
                     <hr></hr>
                     <div className="mb-3 mt-2">
-                      <Transformation changeOption={this.optionchanged} options={this.state.options} currentState={currentState}/>
+                      <Transformation
+                        changeOption={this.optionchanged}
+                        options={this.state.options}
+                        currentState={currentState}
+                      />
                     </div>
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>
-                      <div className="py-2">
-                        Preview
-                      </div>
+                      <div className="py-2">Preview</div>
                     </div>
                     <div className="mb-3 mt-2">
-                      {previewLoading &&  <center><div class="spinner-border text-azure mt-5" role="status"></div></center>}
-                      {previewLoading === false && 
+                      {previewLoading && (
+                        <center>
+                          <div class="spinner-border text-azure mt-5" role="status"></div>
+                        </center>
+                      )}
+                      {previewLoading === false && (
                         <div>
                           <ReactJson
                             name={false}
@@ -360,7 +381,7 @@ class QueryManager extends React.Component {
                             indentWidth={1}
                           />
                         </div>
-                      }
+                      )}
                     </div>
                   </div>
                 )}

@@ -53,4 +53,6 @@ Rails.application.routes.draw do
   end
 
   get '/health', to: 'probe#health_check'
+  post 'password/forgot', to: 'forgot_password#forgot'
+  post 'password/reset', to: 'forgot_password#reset'
 end

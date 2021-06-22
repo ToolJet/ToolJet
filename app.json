@@ -46,6 +46,9 @@
       "url": "heroku/nodejs"
     },
     {
+      "url": "https://github.com/rails-sqlserver/heroku-buildpack-freetds#v1.1.2"
+    },
+    {
       "url": "heroku/ruby"
     }
   ],

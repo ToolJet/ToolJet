@@ -14,6 +14,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
+import {ForgotPassword} from '@/ForgotPassword'
+import { ResetPassword } from '@/ResetPassword';
 
 class App extends React.Component {
   constructor(props) {
@@ -71,6 +73,8 @@ class App extends React.Component {
           <PrivateRoute exact path="/" component={HomePage} />
           <Route path="/login" component={LoginPage} />
           <Route path="/signup" component={SignupPage} />
+          <Route path = "/forgot-password" component ={ForgotPassword} />
+          <Route path = "/reset-password" component ={ResetPassword} />
           <Route path="/invitations/:token" component={InvitationPage} />
           <PrivateRoute exact path="/apps/:id" component={Editor} />
           <PrivateRoute exact path="/applications/:slug" component={Viewer} />

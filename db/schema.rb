@@ -92,6 +92,19 @@ ActiveRecord::Schema.define(version: 2021_06_19_124759) do
     t.index ["app_id"], name: "index_data_sources_on_app_id"
   end
 
+  create_table "endpoints", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "identifier"
+    t.string "path"
+    t.string "method"
+    t.text "description"
+    t.json "request_schema"
+    t.json "response_schema"
+    t.uuid "integration_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["integration_id"], name: "index_endpoints_on_integration_id"
+  end
+
   create_table "folder_apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "folder_id", null: false
     t.uuid "app_id", null: false
@@ -107,6 +120,13 @@ ActiveRecord::Schema.define(version: 2021_06_19_124759) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["organization_id"], name: "index_folders_on_organization_id"
+  end
+
+  create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "identifier"
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -143,6 +163,8 @@ ActiveRecord::Schema.define(version: 2021_06_19_124759) do
     t.string "role"
     t.uuid "organization_id"
     t.string "invitation_token"
+    t.string "forgot_password_token"
+    t.datetime "forgot_password_token_sent_at"
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
