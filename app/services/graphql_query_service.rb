@@ -13,15 +13,11 @@ class GraphqlQueryService
   def process
     url = source_options['url']
     method = options['method'] || 'GET'
-    headers = (options['headers'] || []).reject { |header| header[0].empty? }
-    headers = headers.to_h
-    body = options['body']
-    url_params = options['url_params']
+    source_headers = (source_options['headers'] || []).reject { |header| header[0].empty? }.to_h
+    url_params = source_options['url_params']
+    encoded_url = url_encoded_with_params(url, url_params)
     query = options['query']
-
-
-    client = Graphlient::Client.new(url)
-
+    client = Graphlient::Client.new(encoded_url, headers: source_headers)
     result = client.query(query)
     if result.errors.present?
       { code: 422, data: result.errors }
@@ -29,4 +25,12 @@ class GraphqlQueryService
       { code: 200, data: result.original_hash }
     end
   end
+end
+
+
+def url_encoded_with_params(original_url, url_params)
+  uri = URI.parse(original_url)
+  params = URI.decode_www_form(uri.query || '') + url_params
+  uri.query = URI.encode_www_form(params)
+  uri.to_s
 end
