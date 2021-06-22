@@ -35,7 +35,9 @@ export const Text = function Text({
   const computedStyles = {
     color,
     width,
-    height
+    height,
+    display: 'flex',
+    alignItems: 'center'
   };
 
   return (
