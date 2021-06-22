@@ -172,7 +172,7 @@ class HomePage extends React.Component {
                                   </OverlayTrigger>
                                 </Link>
                                 <Link
-                                  to={`/applications/${app.id}`}
+                                  to={`/applications/${app.slug}`}
                                   target="_blank"
                                 >
                                   <OverlayTrigger

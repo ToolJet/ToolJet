@@ -37,7 +37,7 @@ class Viewer extends React.Component {
   }
 
   componentDidMount() {
-    const id = this.props.match.params.id;
+    const slug = this.props.match.params.slug;
 
     const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
@@ -51,7 +51,7 @@ class Viewer extends React.Component {
       currentLayout: isMobileDevice ? 'mobile' : 'desktop'
     });
 
-    appService.getApp(id).then((data) => this.setState(
+    appService.getAppBySlug(slug).then((data) => this.setState(
       {
         app: data,
         isLoading: false,
@@ -69,14 +69,13 @@ class Viewer extends React.Component {
     const currentUser = authenticationService.currentUserValue;
     let userVars = { };
 
-    if(currentUser) {
+    if (currentUser) {
       userVars = {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name
       };
     }
-
 
     this.setState({
       currentSidebarTab: 2,
@@ -93,10 +92,10 @@ class Viewer extends React.Component {
   }
 
   render() {
-    const { 
-      appDefinition, 
-      showQueryConfirmation, 
-      currentState, 
+    const {
+      appDefinition,
+      showQueryConfirmation,
+      currentState,
       isLoading,
       currentLayout,
       deviceWindowWidth,
@@ -131,7 +130,7 @@ class Viewer extends React.Component {
           <div className="sub-section">
             <div className="main">
               <div className="canvas-container align-items-center">
-                <div className="canvas-area" style={{width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px`}}>
+                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px` }}>
                 <Container
                     appDefinition={appDefinition}
                     appDefinitionChanged={() => false} // function not relevant in viewer
