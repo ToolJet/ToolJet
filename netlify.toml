@@ -4,3 +4,10 @@
 
 [template.environment]
   NODE_ENV = "production"  
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+  query = {path = ":path"}
