@@ -46,7 +46,7 @@ describe('User login', () => {
     cy.intercept('POST', '/password/forgot').as('forgotPasswordConfirmationCode');
 
     cy.visit('/forgot-password');
-    cy.get('[data-testid="emailField"]').type('prasad@tooljet.io');
+    cy.get('[data-testid="emailField"]').type('dev@tooljet.io');
     cy.get('[data-testid="submitButton"').click();
 
     cy.wait('@forgotPasswordConfirmationCode').its('response.statusCode').should('eq', 200);
