@@ -32,7 +32,7 @@ Follow these steps to setup and run ToolJet on Mac OS. Open terminal and run the
     gem install bundler:2.1.4
     ```
 
-    ### Install Node.js with 14.9.0 version, you can use nvm(Node Version Manager)
+    ### Install Node.js ( version: v14.9.0 )
     ```bash
     $ brew install nvm
     $ export NVM_DIR=~/.nvm
