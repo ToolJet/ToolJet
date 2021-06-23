@@ -5,10 +5,12 @@ export const appService = {
   getAll,
   createApp,
   getApp,
+  getAppBySlug,
   saveApp,
   getAppUsers,
   createAppUser,
-  setVisibility
+  setVisibility,
+  setSlug
 };
 
 function getAll(page, folder) {
@@ -27,6 +29,11 @@ function createApp() {
 function getApp(id) {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+}
+
+function getAppBySlug(slug) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then(handleResponse);
 }
 
 function saveApp(id, attributes) {
@@ -52,5 +59,10 @@ function createAppUser(app_id, org_user_id, role) {
 
 function setVisibility(appId, visibility) {
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify({ app: { is_public: visibility } }) };
+  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
+}
+
+function setSlug(appId, slug) {
+  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify({ app: { slug: slug } }) };
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }

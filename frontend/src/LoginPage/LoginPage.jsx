@@ -35,7 +35,7 @@ class LoginPage extends React.Component {
         this.setState({ isLoading: false });
       },
       () => {
-        toast.error('Invalid username or password', { hideProgressBar: true, position: 'top-center' });
+        toast.error('Invalid email or password', { toastId: 'toast-login-auth-error', hideProgressBar: true, position: 'top-center' });
         this.setState({ isLoading: false });
       }
     );
@@ -63,6 +63,7 @@ class LoginPage extends React.Component {
                   type="email"
                   className="form-control"
                   placeholder="Enter email"
+                  data-testid="emailField"
                 />
               </div>
               <div className="mb-2">
@@ -82,12 +83,13 @@ class LoginPage extends React.Component {
                     className="form-control"
                     placeholder="Password"
                     autoComplete="off"
+                    data-testid="passwordField"
                   />
                   <span className="input-group-text"></span>
                 </div>
               </div>
               <div className="form-footer">
-                <button className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`} onClick={this.authUser}>
+                <button data-testid="loginButton" className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`} onClick={this.authUser}>
                   Sign in
                 </button>
               </div>
