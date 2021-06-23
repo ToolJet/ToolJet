@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: tooljet-server-deployment
 spec:
-  replicas: 3
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -24,10 +24,10 @@ spec:
           command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
           resources:
             limits:
-              memory: "3000Mi"
+              memory: "2000Mi"
               cpu: "500m"
             requests:
-              memory: "3000Mi"
+              memory: "1000Mi"
               cpu: "500m"
           ports:
             - containerPort: 3000
@@ -46,22 +46,22 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: host  
+                  key: pg_host  
             - name: PG_USER
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: user
+                  key: pg_user
             - name: PG_PASS
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: password
+                  key: pg_password
             - name: PG_DB
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: db
+                  key: pg_db
             - name: LOCKBOX_MASTER_KEY
               valueFrom:
                 secretKeyRef:
@@ -76,7 +76,4 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: host      
-
-                  imagePullSecrets:
-        - name: registry-secret
+                  key: tj_host
