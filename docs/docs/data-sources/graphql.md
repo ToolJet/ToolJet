@@ -5,17 +5,17 @@ sidebar_position: 3
 # GraphQL
 
 
-ToolJet can connect to GraphQL endpoints. We currently support queries and mutations.
+ToolJet can connect to GraphQL endpoints to execute queries and mutations.
 
 ## Connection
 
-To add a new GraphQL datasource, click on the '+' button on data sources panel at the left-bottom corner of the app editor. Select GraphQL from the modal that pops up.
+To add a new GraphQL datasource, click the `+` button on  data sources panel at the bottom-left corner of the app builder and then select GraphQL from the modal that pops up.
 
 ToolJet requires the following to connect to a GraphQL datasource.
 
-- **URL**
+- URL of the GraphQL endpoint
 
-Following optional parameters are also supported:
+The following optional parameters are also supported:
 
    | Type         | Description |
    | -----------  | ----------- |
@@ -24,14 +24,14 @@ Following optional parameters are also supported:
 
 
 
-<img src="/img/datasource-reference/graphql-connect.png" alt="ToolJet - GraphQL connection" height="250"/>
+<img class="screenshot-full" src="/img/datasource-reference/graphql/add-source.gif" alt="ToolJet - GraphQL connection" height="420"/>
 
 Click on the 'Save' button to save the datasource.
 
 ## Querying GraphQL
-Click on '+' button of the query manager at the bottom panel of the editor and select the GraphQL endpoint added in the previous step as the datasource. 
+Click on `+` button of the query manager at the bottom panel of the editor and select the GraphQL endpoint added in the previous step as the datasource. 
 
-<img src="/img/datasource-reference/graphql-query.png" alt="ToolJet - GraphQL connection" height="250"/>
+<img class="screenshot-full" src="/img/datasource-reference/graphql-query.png" alt="ToolJet - GraphQL connection" height="420"/>
 
 Click on the 'run' button to run the query. NOTE: Query should be saved before running.
 
