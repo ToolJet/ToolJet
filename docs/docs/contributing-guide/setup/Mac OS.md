@@ -32,9 +32,13 @@ Follow these steps to setup and run ToolJet on Mac OS. Open terminal and run the
     gem install bundler:2.1.4
     ```
 
-    ### Install Node.js
+    ### Install Node.js ( version: v14.9.0 )
     ```bash
-    $ brew install node
+    $ brew install nvm
+    $ export NVM_DIR=~/.nvm
+    $ source $(brew --prefix nvm)/nvm.sh
+    $ nvm install 14.9.0
+    $ nvm use 14.9.0
 
     ```
 
@@ -104,6 +108,11 @@ Follow these steps to setup and run ToolJet on Mac OS. Open terminal and run the
     4. Add user to the organization as admin
     ```ruby
     OrganizationUser.create(user: User.first, organization: Organization.first, role: 'admin', status: 'active')
+    ```
+8. ## Install webpack
+    ```bash
+    $ npm install --save-dev webpack
+    $ npm install --save-dev webpack-cli
     ```
 
 8. ## Running the React frontend ( Client )
