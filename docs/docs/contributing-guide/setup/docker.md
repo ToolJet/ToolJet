@@ -13,59 +13,66 @@ Make sure you have the latest version of `docker` and `docker-compose` installed
 [Official docker-compose installation guide](https://docs.docker.com/compose/install/)
 
 We recommend:
-```bash
-$ docker --version
-Docker version 19.03.12, build 48a66213fe
-$ docker-compose --version
-docker-compose version 1.26.2, build eefe0d31
-```
+  ```bash
+  $ docker --version
+  Docker version 19.03.12, build 48a66213fe
+  $ docker-compose --version
+  docker-compose version 1.26.2, build eefe0d31
+  ```
 
 ## Setting up
 
 1. Close the repository
-```bash
-$ git clone https://github.com/tooljet/tooljet.git
-```
+   ```bash
+   $ git clone https://github.com/tooljet/tooljet.git
+   ```
 
 2. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given here: env variable reference
-```bash
-$ cp .env.example .env
-```
+   ```bash
+   $ cp .env.example .env
+   ```
 
-3. Populate the keys in the `.env` file. Run `openssl rand -hex 64` to create secure secrets and use them as the values for `LOCKBOX_MASTER_KEY` and `SECRET_KEY_BASE`.
+3. Populate the keys in the `.env` file.
+   :::info
+   `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure   random key)
 
-Example:
-```bash
-$ cat .env
-TOOLJET_HOST=http://localhost:8082
-LOCKBOX_MASTER_KEY=c92bcc7f112ffbdd131d1fb6c5005e372b8802f85f6c4586e5a88f57a541382841c8c99e5701b84862e448dd5db846f705321a41bd48a0fed1b58b9596a3877f
-SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
-```
+   `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key) 
+   :::
+
+   Example:   
+   ```bash
+   $ cat .env
+   TOOLJET_HOST=http://localhost:8082
+   LOCKBOX_MASTER_KEY=1d291a926ddfd221205a23adb4cc1db66cb9fcaf28d97c8c1950e3538e3b9281
+   SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
+   ```
 
 4. Build docker images
-```bash
-$ docker-compose build
-```
+   ```bash
+   $ docker-compose build
+   ```
 
-4. ToolJet server is built using Ruby on Rails. You have to reset the database if building for the first time.
-```bash
-$ docker-compose run server rails db:reset
-```
+5. ToolJet server is built using Ruby on Rails. You have to reset the database if building for the first time.
+   ```bash
+   $ docker-compose run server rails db:reset
+   ```
 
-5. Run ToolJet
-```bash
-$ docker-compose up
-```
+6. Run ToolJet
+   ```bash
+   $ docker-compose up
+   ```
 
-6. The app should now be served locally at http://localhost:8082/. You can login using the default user created.
-  [ email: dev@tooljet.io
-    password: password
-  ]
+7. ToolJet should now be served locally at `http://localhost:8082`. You can login using the default user created.   
+  ```
+  email: dev@tooljet.io   
+  password: password
+  ```
 
-7.  To shut down the containers,
-```bash
-$ docker-compose stop
-```
+
+8.  To shut down the containers,
+    ```bash
+    $ docker-compose stop
+    ```
 
 ## Running Rails tests
 
