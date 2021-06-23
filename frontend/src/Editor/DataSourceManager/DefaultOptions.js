@@ -67,6 +67,11 @@ export const defaultOptions = {
     headers: { value: [['', '']] },
     custom_auth_params: { value: [['', '']] }
   },
+  graphql: {
+    url: { value: '' },
+    headers: { value: [['', '']] },
+    url_params: { value: [['', '']] }
+  },
   googlesheets: {
     access_type: { value: 'read' }
   },

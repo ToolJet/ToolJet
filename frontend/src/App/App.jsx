@@ -98,7 +98,7 @@ class App extends React.Component {
           <Route path = "/reset-password" component ={ResetPassword} />
           <Route path="/invitations/:token" component={InvitationPage} />
           <PrivateRoute exact path="/apps/:id" component={Editor} />
-          <PrivateRoute exact path="/applications/:id" component={Viewer} />
+          <PrivateRoute exact path="/applications/:slug" component={Viewer} />
           <PrivateRoute exact path="/oauth2/authorize" component={Authorize} />
           <PrivateRoute exact path="/users" component={ManageOrgUsers} />
           <PrivateRoute exact path="/library" component={Library} />

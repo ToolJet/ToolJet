@@ -3,6 +3,7 @@ Rails.application.routes.draw do
     resources :versions, only: %i[index create update]
 
     get '/users', to: 'apps#users'
+    get '/slugs/:slug', to: 'apps#slugs', on: :collection
   end
 
   resources :data_sources, only: %i[create index update] do
@@ -55,5 +56,4 @@ Rails.application.routes.draw do
   get '/health', to: 'probe#health_check'
   post 'password/forgot', to: 'forgot_password#forgot'
   post 'password/reset', to: 'forgot_password#reset'
-
 end

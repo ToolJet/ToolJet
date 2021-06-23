@@ -33,9 +33,9 @@ class QueryService
     service.process
   end
 
-  private 
+  private
     def get_query_options(object)
-      
+
       if object.is_a?(Hash)
 
         object.keys.each do |key|
@@ -52,7 +52,7 @@ class QueryService
             variables.each do |variable|
               object = object.gsub("{{#{variable[0]}}}", options["{{#{variable[0]}}}"].to_s)
             end
-          else 
+          else
             object = object
           end
         end

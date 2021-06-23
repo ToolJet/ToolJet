@@ -14,5 +14,5 @@ RUN gem install bundler && RAILS_ENV=production bundle install --jobs 20 --retry
 ENV RAILS_ENV=production
 
 COPY . ./
-
 RUN ["chmod", "755", "docker/entrypoints/server.sh"]
+ENTRYPOINT ["docker/entrypoints/server.sh"]

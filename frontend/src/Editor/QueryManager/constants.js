@@ -4,6 +4,7 @@ export const defaultOptions = {
     query: 'PING'
   },
   mysql: {},
+  graphql: {},
   firestore: {
     path: ''
   },

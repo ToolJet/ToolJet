@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_17_031153) do
+ActiveRecord::Schema.define(version: 2021_06_19_124759) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -45,7 +45,9 @@ ActiveRecord::Schema.define(version: 2021_06_17_031153) do
     t.uuid "current_version_id"
     t.boolean "is_public", default: false
     t.uuid "user_id"
+    t.string "slug"
     t.index ["current_version_id"], name: "index_apps_on_current_version_id"
+    t.index ["organization_id", "slug"], name: "index_apps_on_organization_id_and_slug"
     t.index ["organization_id"], name: "index_apps_on_organization_id"
     t.index ["user_id"], name: "index_apps_on_user_id"
   end
@@ -160,7 +162,6 @@ ActiveRecord::Schema.define(version: 2021_06_17_031153) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "role"
     t.uuid "organization_id"
-    t.text "image"
     t.string "invitation_token"
     t.string "forgot_password_token"
     t.datetime "forgot_password_token_sent_at"
@@ -178,7 +179,6 @@ ActiveRecord::Schema.define(version: 2021_06_17_031153) do
   add_foreign_key "data_source_user_oauth2s", "data_sources"
   add_foreign_key "data_source_user_oauth2s", "users"
   add_foreign_key "data_sources", "apps"
-  add_foreign_key "endpoints", "integrations"
   add_foreign_key "folder_apps", "apps"
   add_foreign_key "folder_apps", "folders"
   add_foreign_key "folders", "organizations"
