@@ -16,7 +16,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
 
 3. Under the `Images` section, click on the `AMIs` button.
 
-4. Now, from the AMI search page, select the search type as "Public Images" and input `AMI Name : tooljet_latest_ubuntu_bionic` in the    search bar.
+4. Now, from the AMI search page, select the search type as "Public Images" and input `AMI Name : tooljet_v0.5.11.ubuntu_bionic` in the   search bar.
 
 5. Select ToolJet's AMI and bootup an EC2 instance.
 
@@ -60,7 +60,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
    Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
    :::
 
-9. Once you've configured the `.env` file, run `./setup_app.rb`. This script will install all the dependencies of ToolJet and then will start the required services.
+9. Once you've configured the `.env` file, run `./setup_app`. This script will install all the dependencies of ToolJet and then will start the required services.
 
 10. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the EC2 instance.
 
