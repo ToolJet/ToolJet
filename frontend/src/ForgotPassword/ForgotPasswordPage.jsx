@@ -29,9 +29,9 @@ class ForgotPassword extends React.Component {
       .then((res) => res.json())
       .then((res) => {
         if (res.error) {
-          toast.error(res.error);
+          toast.error(res.error, { toastId: 'toast-forgot-password-email-error' });
         } else {
-          toast.success(res.message);
+          toast.success(res.message, { toastId: 'toast-forgot-password-confirmation-code' });
           this.props.history.push('/reset-password');
         }
       })
@@ -59,10 +59,12 @@ class ForgotPassword extends React.Component {
                   type="email"
                   className="form-control"
                   placeholder="Enter email"
+                  data-testid="emailField"
                 />
               </div>
               <div className="form-footer">
                 <button
+                  data-testid="submitButton"
                   className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
                   onClick={this.handleClick}
                 >
