@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 bundle check || bundle install
 rake db:create
