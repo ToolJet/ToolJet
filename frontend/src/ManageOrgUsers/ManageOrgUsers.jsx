@@ -212,7 +212,7 @@ class ManageOrgUsers extends React.Component {
               <div className="container-xl">
                 <div className="card">
                   <div className="card-table table-responsive table-bordered">
-                    <table className="table table-vcenter" disabled={true}>
+                    <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
                           <th>Name</th>
