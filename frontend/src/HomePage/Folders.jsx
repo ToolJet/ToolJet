@@ -53,7 +53,7 @@ export const Folders = function Folders({
     )}
 
     {!isLoading && (
-      <div className="list-group list-group-transparent mb-3">
+      <div data-testid="applicationFoldersList" className="list-group list-group-transparent mb-3">
 
         <a 
           class={`list-group-item list-group-item-action d-flex align-items-center ${!activeFolder.id ? 'active' : ''}`}
@@ -62,7 +62,7 @@ export const Folders = function Folders({
         >
           All applications
             <small className="text-muted ms-auto">
-            <span class="badge bg-azure-lt">{totalCount}</span>
+            <span class="badge bg-azure-lt" data-testId="allApplicationsCount">{totalCount}</span>
           </small>
         </a>
         {folders.map((folder) => 

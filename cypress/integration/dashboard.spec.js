@@ -38,4 +38,20 @@ describe('Dashboard', () => {
     // TODO - Add functionality to detect when user hovers over the avatar,
     // Issues with hover functionality and hide/show of dom elements
   })
+  
+  it('Application folders list is visible', () => {
+    cy.get('[data-testid="applicationFoldersList"]')
+      .should('be.visible');
+  });
+
+  it('Count bubble for "All applications should equal number of rows in table', () => {
+    cy.get('[data-testid="allApplicationsCount"]').then(($countBubble) => {
+      cy.get('[data-testid="appsTable"]')
+        .wait(500)
+        .find("tr")
+        .then((row) => {
+          expect(Number($countBubble.text())).to.equal(row.length)
+        });
+    });
+  });
 })
