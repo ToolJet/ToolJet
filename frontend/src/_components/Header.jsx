@@ -61,6 +61,7 @@ export const Header = function Header({
             className="nav-link d-flex lh-1 text-reset p-0"
             data-bs-toggle="dropdown"
             aria-label="Open user menu"
+            data-testId="userAvatarHeader"
           >
             <div className="d-none d-xl-block ps-2">
               <span class="avatar bg-azure-lt">
@@ -70,7 +71,7 @@ export const Header = function Header({
             </div>
           </a>
           <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-            <a onClick={logout} className="dropdown-item">
+            <a data-testId="logoutBtn" onClick={logout} className="dropdown-item">
               Logout
             </a>
           </div>
