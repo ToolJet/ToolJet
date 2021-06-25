@@ -8,7 +8,7 @@ packer {
 }
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "tooljet_latest_ubuntu_bionic"
+  ami_name      = "tooljet_v0.5.11.ubuntu_bionic"
   instance_type = "t2.medium"
   region        = "us-west-2"
   source_ami_filter {
