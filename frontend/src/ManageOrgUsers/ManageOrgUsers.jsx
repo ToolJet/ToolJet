@@ -86,11 +86,17 @@ class ManageOrgUsers extends React.Component {
 
     const { firstName, lastName, email, role } = this.state.newUser;
 
-    organizationUserService.create(firstName, lastName, email, role).then(() => {
-      this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
-      toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
-      this.fetchUsers();
-    });
+    organizationUserService
+      .create(firstName, lastName, email, role)
+      .then(() => {
+        this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
+        toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
+        this.fetchUsers();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        this.setState({ creatingUser: false, showNewUserForm: true, newUser: {} });
+      });
   };
 
   logout = () => {
