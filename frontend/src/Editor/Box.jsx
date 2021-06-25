@@ -15,6 +15,8 @@ import { Multiselect } from './Components/Multiselect';
 import { Modal } from './Components/Modal';
 import { Chart } from './Components/Chart';
 import { Map } from './Components/Map';
+import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
+import { renderTooltip } from '../_helpers/appUtils';
 
 const AllComponents = {
   Button,
@@ -68,6 +70,10 @@ export const Box = function Box({
   const ComponentToRender = AllComponents[component.component];
 
   return (
+    <OverlayTrigger
+      placement="top"
+      overlay={(props) => renderTooltip({props, text: `${component.description}`})}
+    >
     <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
       {inCanvas ? (
         <ComponentToRender
@@ -106,5 +112,6 @@ export const Box = function Box({
         </div>
       )}
     </div>
+    </OverlayTrigger>
   );
 };
