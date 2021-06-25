@@ -8,9 +8,9 @@ packer {
 }
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "tooljet_latest_ubuntu_bionic"
-  instance_type = "t2.medium"
-  region        = "us-west-2"
+  ami_name      = "${var.ami_name}"
+  instance_type = "${var.instance_type}"
+  region        = "${var.ami_region}"
   source_ami_filter {
     filters = {
       name                = "ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"
