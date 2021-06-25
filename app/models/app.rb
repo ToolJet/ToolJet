@@ -3,8 +3,10 @@
 class App < ApplicationRecord
   belongs_to :organization
   has_many :data_queries, dependent: :destroy
+  has_many :data_sources, dependent: :destroy
   has_many :app_users, dependent: :destroy
   has_many :app_versions, dependent: :destroy
+  has_many :folder_apps, dependent: :destroy
   belongs_to :current_version, class_name: "AppVersion", optional: true
   belongs_to :user, optional: true
 
