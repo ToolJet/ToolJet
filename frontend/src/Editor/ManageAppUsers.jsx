@@ -18,7 +18,7 @@ class ManageAppUsers extends React.Component {
       app: { ...props.app },
       slugError: null,
       isLoading: true,
-      isRequestInProgress: false,
+      isSlugVerificationInProgress: false,
       addingUser: false,
       organizationUsers: [],
       newUser: {}
@@ -101,21 +101,21 @@ class ManageAppUsers extends React.Component {
 
     handleSetSlug = (event) => {
       const newSlug = event.target.value || null;
-      this.setState({ isRequestInProgress: true });
+      this.setState({ isSlugVerificationInProgress: true });
 
       appService
         .setSlug(this.state.app.id, newSlug)
         .then(() => {
           this.setState({ 
             slugError: null, 
-            isRequestInProgress: false 
+            isSlugVerificationInProgress: false 
           });
           this.props.handleSlugChange(newSlug);
         })
         .catch(({ error }) => {
           this.setState({ 
             slugError: error, 
-            isRequestInProgress: false 
+            isSlugVerificationInProgress: false 
           });
         });
     }
@@ -126,7 +126,14 @@ class ManageAppUsers extends React.Component {
 
     render() {
       const {
-        addingUser, isLoading, users, organizationUsers, newUser, app, slugError, isRequestInProgress
+        addingUser, 
+        isLoading, 
+        users, 
+        organizationUsers, 
+        newUser, 
+        app, 
+        slugError, 
+        isSlugVerificationInProgress
       } = this.state;
       const appId = app.id;
       const appLink = `${window.location.origin}/applications/`;
@@ -176,11 +183,11 @@ class ManageAppUsers extends React.Component {
                     <span className="input-group-text">{appLink}</span>
                     <div className="input-with-icon">
                       <input type="text"
-                            className={`form-control form-control-sm ${ slugError !== null && !isRequestInProgress ? 'is-invalid' : 'is-valid'}`}
+                            className={`form-control form-control-sm ${ slugError !== null && !isSlugVerificationInProgress ? 'is-invalid' : 'is-valid'}`}
                             placeholder={appId}
                             onChange={(e) => { e.persist(); this.delayedSlugChange(e); }}
                             defaultValue={this.props.slug} />
-                      { isRequestInProgress && (
+                      { isSlugVerificationInProgress && (
                         <div className="icon-container">
                           <i className="custom-spinner"></i>
                         </div>
