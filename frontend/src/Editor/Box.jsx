@@ -15,8 +15,8 @@ import { Multiselect } from './Components/Multiselect';
 import { Modal } from './Components/Modal';
 import { Chart } from './Components/Chart';
 import { Map } from './Components/Map';
-import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import { renderTooltip } from '../_helpers/appUtils';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 const AllComponents = {
   Button,
