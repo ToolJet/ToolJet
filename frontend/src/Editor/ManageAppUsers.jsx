@@ -138,6 +138,7 @@ class ManageAppUsers extends React.Component {
       const appId = app.id;
       const appLink = `${window.location.origin}/applications/`;
       const shareableLink = appLink + (this.props.slug || appId);
+      const slugButtonClass = isSlugVerificationInProgress? '' : slugError !== null ? 'is-invalid' : 'is-valid';
 
       return (
       <div>
@@ -183,13 +184,13 @@ class ManageAppUsers extends React.Component {
                     <span className="input-group-text">{appLink}</span>
                     <div className="input-with-icon">
                       <input type="text"
-                            className={`form-control form-control-sm ${ slugError !== null && !isSlugVerificationInProgress ? 'is-invalid' : 'is-valid'}`}
+                            className={`form-control form-control-sm ${slugButtonClass}`}
                             placeholder={appId}
                             onChange={(e) => { e.persist(); this.delayedSlugChange(e); }}
                             defaultValue={this.props.slug} />
                       { isSlugVerificationInProgress && (
                         <div className="icon-container">
-                          <i className="custom-spinner"></i>
+                          <div class="spinner-border text-azure spinner-border-sm" role="status"></div>
                         </div>
                       )}                            
                     </div>
