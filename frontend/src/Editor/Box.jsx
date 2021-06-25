@@ -72,6 +72,8 @@ export const Box = function Box({
   return (
     <OverlayTrigger
       placement="top"
+      delay={{ show: 500, hide: 0 }}
+      trigger={!inCanvas? 'hover': null}
       overlay={(props) => renderTooltip({props, text: `${component.description}`})}
     >
     <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
