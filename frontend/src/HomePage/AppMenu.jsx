@@ -48,12 +48,15 @@ export const AppMenu = function AppMenu({
         {/* <Popover.Title as="h3">brrr</Popover.Title> */}
         <Popover.Content>
           {!addToFolder && 
-            <div className="field mb-2">
-              <span role="button" onClick={() => setAddToFolder(true)}>Add to folder </span>
-              <br></br>
-              <br></br>
-              <span class="my-3 text-danger" role="button" onClick={() => deleteApp()}>Delete app </span>
+            <div>
+              <div className="field mb-2">
+                <span role="button" onClick={() => setAddToFolder(true)}>Add to folder </span>
+              </div>
+              <div className="field mb-2">
+                <span class="my-3 text-danger" role="button" onClick={() => deleteApp()}>Delete app </span>
+              </div>
             </div>
+            
           }
 
           {addToFolder &&
