@@ -35,7 +35,7 @@ def build_fe
   backend_url = "#{ENV.fetch("TOOLJET_HOST")}/_backend_"
   front_end_working_dir = "/home/ubuntu/app/frontend"
   Dir.chdir front_end_working_dir
-  system("npm install")
+  system("npm install --only=production")
   system("NODE_ENV=production TOOLJET_SERVER_URL=#{backend_url} npm run-script build")
 end
 
