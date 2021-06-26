@@ -32,11 +32,11 @@ export function CodeHinter({
   }, [currentState.components]);
 
   let suggestions = useMemo(() => {
-    return getSuggestionKeys(currentState);
-  }, [currentState.components, currentState.queries]);
+    return getSuggestionKeys(realState);
+  }, [realState.components, realState.queries]);
 
   return (
-    <div className={`code-hinter ${className || 'codehinter-default-input'}`}>
+    <div className={`code-hinter ${className || 'codehinter-default-input'}`} key={suggestions.length}>
       <CodeMirror
         value={initialValue}
         realState={realState}
