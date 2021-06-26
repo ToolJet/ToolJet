@@ -86,11 +86,17 @@ class ManageOrgUsers extends React.Component {
 
     const { firstName, lastName, email, role } = this.state.newUser;
 
-    organizationUserService.create(firstName, lastName, email, role).then(() => {
-      this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
-      toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
-      this.fetchUsers();
-    });
+    organizationUserService
+      .create(firstName, lastName, email, role)
+      .then(() => {
+        this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
+        toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
+        this.fetchUsers();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        this.setState({ creatingUser: false, showNewUserForm: true, newUser: {} });
+      });
   };
 
   logout = () => {
@@ -212,7 +218,7 @@ class ManageOrgUsers extends React.Component {
               <div className="container-xl">
                 <div className="card">
                   <div className="card-table table-responsive table-bordered">
-                    <table className="table table-vcenter" disabled={true}>
+                    <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
                           <th>Name</th>

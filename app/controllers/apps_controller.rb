@@ -49,6 +49,12 @@ class AppsController < ApplicationController
     end
   end
 
+  def destroy
+    app = App.find params[:id]
+    app.update(current_version: nil)
+    app.destroy
+  end
+
   def slugs
     @app = App.find_by(slug: params[:slug])
 

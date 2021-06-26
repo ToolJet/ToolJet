@@ -7,6 +7,8 @@ import { AppMenu } from './AppMenu';
 import { BlankPage } from './BlankPage';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { renderTooltip } from '@/_helpers/appUtils';
+import { ConfirmDialog } from '@/_components';
+import { toast } from 'react-toastify';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -18,6 +20,7 @@ class HomePage extends React.Component {
       isLoading: true,
       creatingApp: false,
       currentFolder: {},
+      showAppDeletionConfirmation: false, 
       apps: [],
       folders: [],
       meta: {
@@ -56,6 +59,7 @@ class HomePage extends React.Component {
   }
 
   pageChanged = (page) => {
+    this.setState({ currentPage: page });
     this.fetchApps(page, this.state.currentFolder.id);
   }
 
@@ -77,12 +81,48 @@ class HomePage extends React.Component {
     });
   };
 
+  deleteApp = (app) => {
+    this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app })
+  }
+
+  executeAppDeletion = () => {
+    this.setState({ isDeletingApp: true });
+    appService.deleteApp(this.state.appToBeDeleted.id).then((data) => {
+      toast.info('App deleted successfully.', {
+        hideProgressBar: true,
+        position: 'top-center'
+      });
+      this.setState({ 
+        isDeletingApp: false, 
+        appToBeDeleted: null,
+        showAppDeletionConfirmation: false
+      });
+      this.fetchApps(this.state.currentPage || 0, this.state.currentFolder.id)
+    }).catch(({ error }) => {
+      toast.error('Could not delete the app.', { hideProgressBar: true, position: 'top-center' });
+      this.setState({ 
+        isDeletingApp: false, 
+        appToBeDeleted: null,
+        showAppDeletionConfirmation: false
+      });
+    });
+    ;
+  }
+
   render() {
     const {
-      apps, isLoading, creatingApp, meta, currentFolder
+      apps, isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp
     } = this.state;
     return (
       <div className="wrapper home-page">
+
+        <ConfirmDialog
+          show={showAppDeletionConfirmation}
+          message={'The app and the associated data will be permanently deleted, do you want to continue?'}
+          confirmButtonLoading={isDeletingApp}
+          onConfirm={() => this.executeAppDeletion()}
+          onCancel={() => {}}
+        />
 
         <Header
 
@@ -124,6 +164,7 @@ class HomePage extends React.Component {
 
                     <div className={currentFolder.count == 0 ? 'table-responsive bg-white w-100 apps-table mt-3 d-flex align-items-center' : 'table-responsive bg-white w-100 apps-table mt-3'} style={{minHeight: '600px'}}>
                       <table
+                        data-testId="appsTable"
                         class="table table-vcenter">
                         <tbody>
                           {isLoading && (
@@ -188,6 +229,7 @@ class HomePage extends React.Component {
                                   app={app}
                                   folders={this.state.folders}
                                   foldersChanged={this.foldersChanged}
+                                  deleteApp={() => this.deleteApp(app)}
                                 />
                               </td>
                             </tr>))

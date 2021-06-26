@@ -1621,3 +1621,23 @@ input:focus-visible {
 .widgets-list {
   --tblr-gutter-x: 0px!important;
 }
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  flex: 1;
+
+  .icon-container {
+    position: absolute;
+    right: 10px;
+    top: calc(50% - 10px);
+    z-index: 3;
+  }
+}
+
+.dynamic-variable-preview { 
+  height: 30px;
+  margin-top: -2px;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}

@@ -18,6 +18,7 @@ class ManageAppUsers extends React.Component {
       app: { ...props.app },
       slugError: null,
       isLoading: true,
+      isSlugVerificationInProgress: false,
       addingUser: false,
       organizationUsers: [],
       newUser: {}
@@ -100,14 +101,22 @@ class ManageAppUsers extends React.Component {
 
     handleSetSlug = (event) => {
       const newSlug = event.target.value || null;
+      this.setState({ isSlugVerificationInProgress: true });
+
       appService
         .setSlug(this.state.app.id, newSlug)
         .then(() => {
-          this.setState({ slugError: null });
+          this.setState({ 
+            slugError: null, 
+            isSlugVerificationInProgress: false 
+          });
           this.props.handleSlugChange(newSlug);
         })
         .catch(({ error }) => {
-          this.setState({ slugError: error });
+          this.setState({ 
+            slugError: error, 
+            isSlugVerificationInProgress: false 
+          });
         });
     }
 
@@ -117,11 +126,19 @@ class ManageAppUsers extends React.Component {
 
     render() {
       const {
-        addingUser, isLoading, users, organizationUsers, newUser, app, slugError
+        addingUser, 
+        isLoading, 
+        users, 
+        organizationUsers, 
+        newUser, 
+        app, 
+        slugError, 
+        isSlugVerificationInProgress
       } = this.state;
       const appId = app.id;
       const appLink = `${window.location.origin}/applications/`;
       const shareableLink = appLink + (this.props.slug || appId);
+      const slugButtonClass = isSlugVerificationInProgress? '' : slugError !== null ? 'is-invalid' : 'is-valid';
 
       return (
       <div>
@@ -165,11 +182,18 @@ class ManageAppUsers extends React.Component {
                   </label>
                   <div className="input-group">
                     <span className="input-group-text">{appLink}</span>
-                    <input type="text"
-                           className={`form-control form-control-sm ${ slugError !== null ? 'is-invalid' : 'is-valid'}`}
-                           placeholder={appId}
-                           onChange={(e) => { e.persist(); this.delayedSlugChange(e); }}
-                           defaultValue={this.props.slug} />
+                    <div className="input-with-icon">
+                      <input type="text"
+                            className={`form-control form-control-sm ${slugButtonClass}`}
+                            placeholder={appId}
+                            onChange={(e) => { e.persist(); this.delayedSlugChange(e); }}
+                            defaultValue={this.props.slug} />
+                      { isSlugVerificationInProgress && (
+                        <div className="icon-container">
+                          <div class="spinner-border text-azure spinner-border-sm" role="status"></div>
+                        </div>
+                      )}                            
+                    </div>
                     <span className="input-group-text">
                       <CopyToClipboard
                         text={shareableLink}
