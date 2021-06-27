@@ -31,6 +31,7 @@ import ReactTooltip from 'react-tooltip';
 import { Resizable } from 're-resizable';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
+import queryString from 'query-string';
 
 class Editor extends React.Component {
   constructor(props) {
@@ -72,7 +73,7 @@ class Editor extends React.Component {
         components: {},
         globals: {
           currentUser: userVars,
-          urlparams: {}
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search)))
         }
       },
       dataQueriesDefaultText: 'You haven\'t created queries yet.',

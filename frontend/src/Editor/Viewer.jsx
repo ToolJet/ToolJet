@@ -14,6 +14,7 @@ import {
   onEvent,
   runQuery
 } from '@/_helpers/appUtils';
+import queryString from 'query-string';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -85,7 +86,7 @@ class Viewer extends React.Component {
         components: {},
         globals: {
           current_user: userVars,
-          urlparams: {}
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search)))
         }
       }
     });
