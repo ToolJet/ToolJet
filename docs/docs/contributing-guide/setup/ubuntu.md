@@ -42,13 +42,17 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
 
 3. ## Populate the keys in the env file.
-   Run `openssl rand -hex 64` to create secure secrets and use them as the values for `LOCKBOX_MASTER_KEY` and `SECRET_KEY_BASE`.
+   :::info
+   `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure   random key)
+
+   `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key) 
+   :::
 
    Example:
    ```bash
    $ cat .env
    TOOLJET_HOST=http://localhost:8082
-   LOCKBOX_MASTER_KEY=c92bcc7f112ffbdd131d1fb6c5005e372b8802f85f6c4586e5a88f57a541382841c8c99e5701b84862e448dd5db846f705321a41bd48a0fed1b58b9596a3877f
+   LOCKBOX_MASTER_KEY=1d291a926ddfd221205a23adb4cc1db66cb9fcaf28d97c8c1950e3538e3b9281
    SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
    ```
 
