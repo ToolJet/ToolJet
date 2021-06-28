@@ -1269,6 +1269,9 @@ GEM
     nokogiri (1.11.5)
       mini_portile2 (~> 2.5.0)
       racc (~> 1.4)
+    octokit (4.21.0)
+      faraday (>= 0.9)
+      sawyer (~> 0.8.0, >= 0.5.3)
     os (1.1.1)
     parallel (1.20.1)
     parser (3.0.1.1)
@@ -1339,6 +1342,9 @@ GEM
       rubocop (>= 1.7.0, < 2.0)
     ruby-progressbar (1.11.0)
     ruby2_keywords (0.0.4)
+    sawyer (0.8.2)
+      addressable (>= 2.3.5)
+      faraday (> 0.8, < 2.0)
     signet (0.15.0)
       addressable (~> 2.3)
       faraday (>= 0.17.3, < 2.0)
@@ -1384,6 +1390,7 @@ DEPENDENCIES
   lograge
   mongo (~> 2)
   mysql2
+  octokit (~> 4.0)
   pg (~> 1.1)
   puma (~> 5.3)
   pundit
