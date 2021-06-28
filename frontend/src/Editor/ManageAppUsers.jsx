@@ -190,7 +190,7 @@ class ManageAppUsers extends React.Component {
                             defaultValue={this.props.slug} />
                       { isSlugVerificationInProgress && (
                         <div className="icon-container">
-                          <div class="spinner-border text-azure spinner-border-sm" role="status"></div>
+                          <div className="spinner-border text-azure spinner-border-sm" role="status"></div>
                         </div>
                       )}                            
                     </div>

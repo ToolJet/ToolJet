@@ -55,12 +55,12 @@ class App extends React.Component {
     return (
       <Router history={history}>
         <div>
-          {updateAvailable && <div class="alert alert-info alert-dismissible" role="alert">
-            <h3 class="mb-1">Update available</h3>
+          {updateAvailable && <div className="alert alert-info alert-dismissible" role="alert">
+            <h3 className="mb-1">Update available</h3>
             <p>A new version of ToolJet has been released.</p>
-            <div class="btn-list">
-              <a href="https://docs.tooljet.io/docs/setup/updating" target="_blank" class="btn btn-info">Read release notes & update</a>
-              <a onClick={() => { tooljetService.skipVersion(); this.setState({ updateAvailable: false }); }} class="btn">Skip this version</a>
+            <div className="btn-list">
+              <a href="https://docs.tooljet.io/docs/setup/updating" target="_blank" className="btn btn-info">Read release notes & update</a>
+              <a onClick={() => { tooljetService.skipVersion(); this.setState({ updateAvailable: false }); }} className="btn">Skip this version</a>
             </div>
           </div>}
 
