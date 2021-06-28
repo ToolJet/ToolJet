@@ -48,7 +48,7 @@ class ElasticsearchQueryService
 
       if operation == 'search'
         index = options['index']
-        query = JSON.parse(options[:query])
+        query = JSON.parse(options['query'])
         data = connection.search(index: index, body: query)
       end
 
