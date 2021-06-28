@@ -112,6 +112,17 @@ export const EventSelector = ({
                 </div>
               )}
 
+              {definition.actionId === 'go-to-app' && (
+                <div className="p-1">
+                  <label className="form-label mt-1">App</label>
+                  <CodeHinter
+                    currentState={currentState}
+                    initialValue={definition.options.appId}
+                    onChange={(value) => eventOptionUpdated(param, 'appId', value, extraData)}
+                  />
+                </div>
+              )}
+
               {definition.actionId === 'show-modal' && (
                 <div className="p-1">
                   <label className="form-label mt-1">Modal</label>
