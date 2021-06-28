@@ -560,8 +560,8 @@ class Editor extends React.Component {
                        slug={slug}
                        handleSlugChange={this.handleSlugChange} />}
                   </div>
-                  <div className="nav-item dropdown d-none d-md-flex me-3">
-                    <a href={appLink} target="_blank" className="btn btn-sm" rel="noreferrer">
+                  <div className="nav-item dropdown d-none d-md-flex me-3" data-tip={!app?.current_version_id ? "Please deploy the app first" : ""}>
+                    <a href={appLink} target="_blank" className={`btn btn-sm ${!app?.current_version_id ? "disabled" : ""}`} rel="noreferrer">
                       Launch
                     </a>
                   </div>
