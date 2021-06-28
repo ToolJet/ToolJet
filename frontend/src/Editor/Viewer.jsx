@@ -37,8 +37,16 @@ class Viewer extends React.Component {
     };
   }
 
-  componentDidMount() {
-    const slug = this.props.match.params.slug;
+  componentWillReceiveProps(nextProps) {
+    let slug = nextProps.match.params.slug;
+    if(this.state.app?.slug != slug) {
+      this.setState({app: {}, appDefinition: {}}, () => {
+        this.loadApplication(slug);
+      });
+    }
+  }
+
+  loadApplication = (slug) => {
 
     const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
@@ -92,6 +100,11 @@ class Viewer extends React.Component {
     });
   }
 
+  componentDidMount() {
+    const slug = this.props.match.params.slug;
+    this.loadApplication(slug);
+  }
+
   render() {
     const {
       appDefinition,
@@ -137,13 +150,13 @@ class Viewer extends React.Component {
                     appDefinitionChanged={() => false} // function not relevant in viewer
                     snapToGrid={true}
                     appLoading={isLoading}
-                    onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                    onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
                     mode="view"
                     scaleValue={scaleValue}
                     deviceWindowWidth={deviceWindowWidth}
                     currentLayout={currentLayout}
                     currentState={this.state.currentState}
-                    onComponentClick={(id, component) => onComponentClick(this, id, component)}
+                    onComponentClick={(id, component) => onComponentClick(this, id, component, 'view')}
                     onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
                     }
                     onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
