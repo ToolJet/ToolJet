@@ -78,13 +78,20 @@ class SaveAndPreview extends React.Component {
 
     return (
       <div>
-        {!showModal && (
-          <button className="btn btn-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
-            Deploy
-          </button>
-        )}
+        <button className="btn btn-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
+          Deploy
+        </button>
 
-        <Modal show={this.state.showModal} size="md" backdrop="static" centered={true} keyboard={true}>
+        <Modal 
+          show={this.state.showModal} 
+          size="md" 
+          backdrop="static" 
+          centered={true} 
+          keyboard={true}
+          enforceFocus={false}
+          animation={false}
+          onEscapeKeyDown={() => this.hideModal()}
+        >
           <Modal.Header>
             <Modal.Title>Versions and deployments</Modal.Title>
             <div>
