@@ -236,7 +236,7 @@ class ManageOrgUsers extends React.Component {
                             <tr>
                               <td className="col-2 p-3">
                                 <div className="row">
-                                  <div class="skeleton-image col-auto" style={{ width: '25px', height: '25px' }}></div>
+                                  <div className="skeleton-image col-auto" style={{ width: '25px', height: '25px' }}></div>
                                   <div className="skeleton-line w-10 col mx-3"></div>
                                 </div>
                               </td>

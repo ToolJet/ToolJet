@@ -41,11 +41,11 @@ export const Folders = function Folders({
       <div className="px-1 py-2" style={{minHeight: '200px'}}>
         {[1,2,3,4, 5].map(element => {
           return (<div className="row">
-            <div class="col p-1">
-              <div class="skeleton-line w-100"></div>
+            <div className="col p-1">
+              <div className="skeleton-line w-100"></div>
             </div>
-            <div class="col-2 pt-1">
-              <div class="skeleton-line w-100"></div>
+            <div className="col-2 pt-1">
+              <div className="skeleton-line w-100"></div>
             </div>
           </div>)
         })}
@@ -56,23 +56,23 @@ export const Folders = function Folders({
       <div data-testid="applicationFoldersList" className="list-group list-group-transparent mb-3">
 
         <a 
-          class={`list-group-item list-group-item-action d-flex align-items-center ${!activeFolder.id ? 'active' : ''}`}
+          className={`list-group-item list-group-item-action d-flex align-items-center ${!activeFolder.id ? 'active' : ''}`}
           
           onClick={() => handleFolderChange({})}
         >
           All applications
             <small className="text-muted ms-auto">
-            <span class="badge bg-azure-lt" data-testid="allApplicationsCount">{totalCount}</span>
+            <span className="badge bg-azure-lt" data-testid="allApplicationsCount">{totalCount}</span>
           </small>
         </a>
         {folders.map((folder) => 
           <a 
-            class={`list-group-item list-group-item-action d-flex align-items-center ${activeFolder.id === folder.id ? 'active' : ''}`} 
+            className={`list-group-item list-group-item-action d-flex align-items-center ${activeFolder.id === folder.id ? 'active' : ''}`} 
             onClick={() => handleFolderChange(folder)}
           >
             {folder.name}
             <small className="text-muted ms-auto">
-              <span class="badge bg-azure-lt">{folder.count}</span>
+              <span className="badge bg-azure-lt">{folder.count}</span>
           </small>
         </a>
         )}

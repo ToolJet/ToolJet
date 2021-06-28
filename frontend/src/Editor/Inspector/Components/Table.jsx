@@ -372,7 +372,7 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <span class="badge bg-red-lt" onClick={() => this.removeColumn(index)}>x</span>
+                        <span className="badge bg-red-lt" onClick={() => this.removeColumn(index)}>x</span>
                       </div>
                     </div>
                   </OverlayTrigger>
@@ -403,7 +403,7 @@ class Table extends React.Component {
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
 
-          <div class="hr-text">Events</div>
+          <div className="hr-text">Events</div>
 
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked, currentState, components)}
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged, currentState, components)}
@@ -411,7 +411,7 @@ class Table extends React.Component {
 
           {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
 
-          <div class="hr-text">Style</div>
+          <div className="hr-text">Style</div>
         </div>
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}

@@ -363,7 +363,7 @@ class QueryManager extends React.Component {
                     <div className="mb-3 mt-2">
                       {previewLoading && (
                         <center>
-                          <div class="spinner-border text-azure mt-5" role="status"></div>
+                          <div className="spinner-border text-azure mt-5" role="status"></div>
                         </center>
                       )}
                       {previewLoading === false && (
