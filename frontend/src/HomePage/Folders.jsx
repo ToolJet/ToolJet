@@ -62,7 +62,7 @@ export const Folders = function Folders({
         >
           All applications
             <small className="text-muted ms-auto">
-            <span class="badge bg-azure-lt" data-testId="allApplicationsCount">{totalCount}</span>
+            <span class="badge bg-azure-lt" data-testid="allApplicationsCount">{totalCount}</span>
           </small>
         </a>
         {folders.map((folder) => 
