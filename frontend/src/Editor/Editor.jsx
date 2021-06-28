@@ -422,6 +422,13 @@ class Editor extends React.Component {
     this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
   }
 
+  onVersionDeploy = (versionId) => { 
+    this.setState({ app: { 
+      ...this.state.app,
+      current_version_id: versionId
+    }})
+  }
+
   render() {
     const {
       currentSidebarTab,
@@ -561,13 +568,19 @@ class Editor extends React.Component {
                        handleSlugChange={this.handleSlugChange} />}
                   </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
-                    <a href={appLink} target="_blank" className="btn btn-sm" rel="noreferrer">
+                    <a href={appLink} target="_blank" className={`btn btn-sm ${app?.current_version_id ? '': 'disabled'}`} rel="noreferrer">
                       Launch
                     </a>
                   </div>
                   <div className="nav-item dropdown me-2">
                     {this.state.app && (
-                        <SaveAndPreview appId={app.id} appName={app.name} appDefinition={appDefinition} app={app} />
+                        <SaveAndPreview 
+                          appId={app.id} 
+                          appName={app.name} 
+                          appDefinition={appDefinition} 
+                          app={app} 
+                          onVersionDeploy={this.onVersionDeploy}
+                        />
                     )}
                   </div>
                 </div>
