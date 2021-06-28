@@ -48,6 +48,17 @@ export const EventSelector = ({
     return modalOptions;
   }
 
+  function getAllApps() {
+    let apps = [];
+    currentState.apps.map((item) => {
+      apps.push({
+        name: item.name,
+        value: item.id
+      })
+    })
+    return apps;
+  }
+
   function eventChanged(param, value, extraData) { 
     if(value === 'none') { 
       eventUpdated(param, null, null);
@@ -115,10 +126,15 @@ export const EventSelector = ({
               {definition.actionId === 'go-to-app' && (
                 <div className="p-1">
                   <label className="form-label mt-1">App</label>
-                  <CodeHinter
-                    currentState={currentState}
-                    initialValue={definition.options.appId}
-                    onChange={(value) => eventOptionUpdated(param, 'appId', value, extraData)}
+                  <SelectSearch
+                    options={getAllApps()}
+                    search={true}
+                    value={definition.options.appId}
+                    onChange={(value) => {
+                      eventOptionUpdated(param, 'appId', value, extraData);
+                    }}
+                    filterOptions={fuzzySearch}
+                    placeholder="Select.."
                   />
                 </div>
               )}

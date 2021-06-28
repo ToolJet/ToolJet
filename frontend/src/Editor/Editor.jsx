@@ -74,7 +74,8 @@ class Editor extends React.Component {
         globals: {
           currentUser: userVars,
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search)))
-        }
+        },
+        apps: [],
       },
       dataQueriesDefaultText: 'You haven\'t created queries yet.',
       showQuerySearchField: false
@@ -83,6 +84,7 @@ class Editor extends React.Component {
 
   componentDidMount() {
     const appId = this.props.match.params.id;
+    this.fetchApps(0);
 
     appService.getApp(appId).then((data) => this.setState(
       {
@@ -176,6 +178,16 @@ class Editor extends React.Component {
       }
     );
   };
+
+  fetchApps = (page) => {
+    appService.getAll(page).then((data) => this.setState({
+      currentState: {
+        ...this.state.currentState,
+        apps: data.apps,
+      },
+      isLoading: false
+    }));
+  }
 
   computeComponentState = (components) => {
     let componentState = {};
