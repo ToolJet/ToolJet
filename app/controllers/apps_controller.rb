@@ -36,7 +36,7 @@ class AppsController < ApplicationController
                          current_version: AppVersion.new(name: 'v0'),
                          user: @current_user
                        })
-    AppUser.create(app: @app, user: @current_user, role: 'admin')
+    AppUser.create(app: @app, user: @current_user, role: "admin")
   end
 
   def show
