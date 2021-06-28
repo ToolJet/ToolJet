@@ -14,7 +14,7 @@ class SaveAndPreview extends React.Component {
       showModal: false,
       appId: props.appId,
       isLoading: true,
-      showVersionForm: false
+      showVersionForm: false,
     };
   }
 
@@ -65,7 +65,10 @@ class SaveAndPreview extends React.Component {
     appService.saveApp(this.props.appId, { name: this.props.appName, current_version_id: versionId }).then(() => {
       this.setState({ isDeploying: false });
       toast.success('Version Deployed', { hideProgressBar: true, position: 'top-center' });
+
+      this.props.onVersionDeploy(versionId);
     });
+
   };
 
   render() {
