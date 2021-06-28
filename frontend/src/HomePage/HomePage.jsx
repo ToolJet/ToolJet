@@ -164,7 +164,7 @@ class HomePage extends React.Component {
 
                     <div className={currentFolder.count == 0 ? 'table-responsive bg-white w-100 apps-table mt-3 d-flex align-items-center' : 'table-responsive bg-white w-100 apps-table mt-3'} style={{minHeight: '600px'}}>
                       <table
-                        data-testId="appsTable"
+                        data-testid="appsTable"
                         class="table table-vcenter">
                         <tbody>
                           {isLoading && (
