@@ -31,7 +31,7 @@ export const Header = function Header({
         </Link>
       </h1>
 
-      <ul class="navbar-nav d-none d-lg-flex">
+      <ul className="navbar-nav d-none d-lg-flex">
         <li className={`nav-item mx-3 ${pahtName === '/' ? 'active' : ''}`}>
           <Link to={'/'} className="nav-link">
             <span className="nav-link-icon d-md-none d-lg-inline-block">
@@ -64,7 +64,7 @@ export const Header = function Header({
             data-testid="userAvatarHeader"
           >
             <div className="d-none d-xl-block ps-2">
-              <span class="avatar bg-azure-lt">
+              <span className="avatar bg-azure-lt">
                 {first_name ? first_name[0] : ''}
                 {last_name ? last_name[0] : ''}
               </span>

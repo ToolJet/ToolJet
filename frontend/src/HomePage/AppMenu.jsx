@@ -53,7 +53,7 @@ export const AppMenu = function AppMenu({
                 <span role="button" onClick={() => setAddToFolder(true)}>Add to folder </span>
               </div>
               <div className="field mb-2">
-                <span class="my-3 text-danger" role="button" onClick={() => deleteApp()}>Delete app </span>
+                <span className="my-3 text-danger" role="button" onClick={() => deleteApp()}>Delete app </span>
               </div>
             </div>
             
