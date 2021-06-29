@@ -52,6 +52,7 @@ class Editor extends React.Component {
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
+      app: {},
       allComponentTypes: componentTypes,
       queryPaneHeight: '30%',
       isLoading: true,
@@ -571,7 +572,7 @@ class Editor extends React.Component {
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
                   <div className="nav-item dropdown d-none d-md-flex me-3">
-                    {app
+                    {app.id
                      && <ManageAppUsers
                        app={app}
                        slug={slug}
@@ -583,12 +584,12 @@ class Editor extends React.Component {
                     </a>
                   </div>
                   <div className="nav-item dropdown me-2">
-                    {this.state.app && (
-                        <SaveAndPreview 
-                          appId={app.id} 
-                          appName={app.name} 
-                          appDefinition={appDefinition} 
-                          app={app} 
+                    {app.id && (
+                        <SaveAndPreview
+                          appId={app.id}
+                          appName={app.name}
+                          appDefinition={appDefinition}
+                          app={app}
                           onVersionDeploy={this.onVersionDeploy}
                         />
                     )}
