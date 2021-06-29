@@ -44,7 +44,7 @@ class GooglesheetsQueryService
       data = result
     end
 
-    if operation === 'delete'
+    if operation === 'delete_row'
       spreadsheet_id = options['spreadsheet_id']
       sheet = options['sheet']
       row_index = options['row_index'].to_i

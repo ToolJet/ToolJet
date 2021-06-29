@@ -61,7 +61,7 @@ class Googlesheets extends React.Component {
                   { value: 'read', name: 'Read data from a spreadsheet' },
                   { value: 'append', name: 'Append data to a spreadsheet' },
                   { value: 'info', name: 'Get spreadsheet info' },
-                  { value: 'delete', name: 'Delete row from a spreadsheet' },
+                  { value: 'delete_row', name: 'Delete row from a spreadsheet' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -72,7 +72,7 @@ class Googlesheets extends React.Component {
                 placeholder="Select.."
               />
             </div>
-            {['read', 'append', 'delete'].includes(this.state.options.operation) && (
+            {['read', 'append', 'delete_row'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2 row">
                   <div className="col">
@@ -118,7 +118,7 @@ class Googlesheets extends React.Component {
           </div>
       )}
 
-      {this.state.options.operation === 'delete' && (
+      {this.state.options.operation === 'delete_row' && (
         <div>
           <div className="mb-3 mt-2 row">
             <div className="col">
