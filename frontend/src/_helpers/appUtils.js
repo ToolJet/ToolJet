@@ -99,9 +99,9 @@ function executeAction(_ref, event, mode) {
     }
 
     if (event.actionId === 'go-to-app') {
-      const appId = resolveReferences(event.options.appId, _ref.state.currentState);
+      const slug = resolveReferences(event.options.slug, _ref.state.currentState);
 
-      const url = `/applications/${appId}`;
+      const url = `/applications/${slug}`;
 
       if(mode === 'view') {
         _ref.props.history.push(url);

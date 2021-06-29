@@ -129,9 +129,9 @@ export const EventSelector = ({
                   <SelectSearch
                     options={getAllApps()}
                     search={true}
-                    value={definition.options.appId}
+                    value={definition.options.slug}
                     onChange={(value) => {
-                      eventOptionUpdated(param, 'appId', value, extraData);
+                      eventOptionUpdated(param, 'slug', value, extraData);
                     }}
                     filterOptions={fuzzySearch}
                     placeholder="Select.."
