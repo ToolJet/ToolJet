@@ -74,9 +74,9 @@ class Editor extends React.Component {
         globals: {
           currentUser: userVars,
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search)))
-        },
-        apps: [],
+        }
       },
+      apps: [],
       dataQueriesDefaultText: 'You haven\'t created queries yet.',
       showQuerySearchField: false
     };
@@ -181,10 +181,7 @@ class Editor extends React.Component {
 
   fetchApps = (page) => {
     appService.getAll(page).then((data) => this.setState({
-      currentState: {
-        ...this.state.currentState,
-        apps: data.apps,
-      },
+      apps: data.apps,
       isLoading: false
     }));
   }
@@ -460,7 +457,8 @@ class Editor extends React.Component {
       deviceWindowWidth,
       scaleValue,
       dataQueriesDefaultText,
-      showQuerySearchField
+      showQuerySearchField,
+      apps
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
 
@@ -879,6 +877,7 @@ class Editor extends React.Component {
                       currentState={currentState}
                       allComponents={appDefinition.components}
                       key={selectedComponent.id}
+                      apps={apps}
                     ></Inspector>
                   ) : (
                     <div className="mt-5 p-2">Please select a component to inspect</div>

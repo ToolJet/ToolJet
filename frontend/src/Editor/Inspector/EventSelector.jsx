@@ -13,7 +13,8 @@ export const EventSelector = ({
   extraData,
   eventMeta,
   currentState,
-  components
+  components,
+  apps
 }) => {
 
   const [open, setOpen] = useState(false);
@@ -49,14 +50,14 @@ export const EventSelector = ({
   }
 
   function getAllApps() {
-    let apps = [];
-    currentState.apps.map((item) => {
-      apps.push({
+    let appsOptionsList = [];
+    apps.map((item) => {
+      appsOptionsList.push({
         name: item.name,
         value: item.id
       })
     })
-    return apps;
+    return appsOptionsList;
   }
 
   function eventChanged(param, value, extraData) { 
