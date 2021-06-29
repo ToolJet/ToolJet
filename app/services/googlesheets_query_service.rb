@@ -41,6 +41,7 @@ class GooglesheetsQueryService
       end
 
       error = result.code != 200
+      data = result
     end
 
     if operation === 'read'
