@@ -44,6 +44,22 @@ class GooglesheetsQueryService
       data = result
     end
 
+    if operation === 'delete'
+      spreadsheet_id = options['spreadsheet_id']
+      sheet = options['sheet']
+      row_index = options['row_index'].to_i
+
+      result = delete_row_from_sheet(spreadsheet_id, sheet, row_index, access_token)
+
+      if result.code === 401
+        access_token = refresh_access_token
+        result = delete_row_from_sheet(spreadsheet_id, sheet, row_index, access_token)
+      end
+
+      data = result
+      error = result.code != 200
+    end
+
     if operation === 'read'
       result = read_data(access_token)
 
@@ -122,6 +138,30 @@ class GooglesheetsQueryService
 
       result = HTTParty.post("https://sheets.googleapis.com/v4/spreadsheets/#{spreadsheet_id}/values/#{sheet}!A:V:append?valueInputOption=USER_ENTERED", body: data, headers: { 'Content-Type':
         'application/json', "Authorization": "Bearer #{access_token}" })
+    end
+
+    def delete_row_from_sheet(spreadsheet_id, sheet, row_index, access_token)
+      data = {
+        "requests": [
+          {
+            "deleteDimension": {
+              "range": {
+                "sheetId": sheet,
+                "dimension": "ROWS",
+                "startIndex": row_index - 1,
+                "endIndex": row_index
+              }
+            }
+          }
+        ]
+      }.to_json
+
+      result = HTTParty.post(
+        "https://sheets.googleapis.com/v4/spreadsheets/#{spreadsheet_id}:batchUpdate",
+        body: data,
+        headers: { "Content-Type": 'application/json',
+                   "Authorization": "Bearer #{access_token}" }
+      )
     end
 
     def get_spreadsheet_info(spreadsheet_id, access_token)
