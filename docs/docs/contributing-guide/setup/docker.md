@@ -74,6 +74,45 @@ We recommend:
     $ docker-compose stop
     ```
 
+## Making changes to the codebase
+
+If you make any changes to the codebase/pull the latest changes from upstream, the tooljet server container would hot reload the application without you doing anything.
+
+Caveat:
+
+1. If the changes include database migrations or new gem additions in the Gemfile, you would need to restart the ToolJet server container by running `docker-compose restart server`.
+
+2. If you need to add a new binary or system libary to the container itself, you would need to add those dependencies in `docker/server.Dockerfile.dev` and then rebuild the ToolJet server image. You can do that by running `docker-compose build server`. Once that completes you can start everything normally with `docker-compose up`.   
+
+Example:   
+Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:   
+```
+FROM ruby:2.7.3-buster
+
+#Notice the newly added imagemagick package
+RUN apt update && apt install -y \
+  build-essential  \
+  postgresql \
+  freetds-dev \
+  imagemagick
+
+
+RUN mkdir -p /app
+WORKDIR /app
+
+COPY Gemfile Gemfile.lock ./
+RUN gem install bundler && bundle install --jobs 20 --retry 5
+
+ENV RAILS_ENV=development
+
+COPY . ./
+
+RUN ["chmod", "755", "docker/entrypoints/server.sh"]
+
+```
+Once you've updated the Dockerfile, rebuild the image by running `docker-compose build server`. After building the new image, start the services by running `docker-compose up`.
+
+
 ## Running Rails tests
 
 To run all the tests
