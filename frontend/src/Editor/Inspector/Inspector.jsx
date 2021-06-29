@@ -16,7 +16,8 @@ export const Inspector = ({
   removeComponent,
   allComponents,
   componentChanged,
-  currentState
+  currentState,
+  apps
 }) => {
   
   const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component, layouts: allComponents[selectedComponentId].layouts}
@@ -229,7 +230,7 @@ export const Inspector = ({
           <div className="hr-text">Style</div>
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <div className="hr-text">Events</div>
-          {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components))}
+          {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components, apps))}
           
           
 
