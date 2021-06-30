@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class ApplicationControllerTest < ActionDispatch::IntegrationTest
@@ -23,5 +25,4 @@ class ApplicationControllerTest < ActionDispatch::IntegrationTest
     get apps_url, headers: { "Content-Type": "application/json" }.merge(auth_header(@org_admin)), xhr: true
     assert_response 401
   end
-
 end

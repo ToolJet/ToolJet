@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 
 class AuthenticationControllerTest < ActionDispatch::IntegrationTest
@@ -29,5 +31,4 @@ class AuthenticationControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal "401", response.code
   end
-
 end
