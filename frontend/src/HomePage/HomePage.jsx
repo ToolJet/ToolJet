@@ -164,24 +164,24 @@ class HomePage extends React.Component {
 
                     <div className={currentFolder.count == 0 ? 'table-responsive bg-white w-100 apps-table mt-3 d-flex align-items-center' : 'table-responsive bg-white w-100 apps-table mt-3'} style={{minHeight: '600px'}}>
                       <table
-                        data-testId="appsTable"
-                        class="table table-vcenter">
+                        data-testid="appsTable"
+                        className="table table-vcenter">
                         <tbody>
                           {isLoading && (
                             <>
                               {Array.from(Array(10)).map(() => (
-                                 <tr class="row">
-                                   <td class="col-3 p-3">
-                                      <div class="skeleton-line w-10"></div>
-                                      <div class="skeleton-line w-10"></div>
+                                 <tr className="row">
+                                   <td className="col-3 p-3">
+                                      <div className="skeleton-line w-10"></div>
+                                      <div className="skeleton-line w-10"></div>
                                     </td>
-                                    <td class="col p-3">
+                                    <td className="col p-3">
                                     </td>
-                                    <td class="text-muted col-auto col-1 pt-4">
-                                      <div class="skeleton-line"></div>
+                                    <td className="text-muted col-auto col-1 pt-4">
+                                      <div className="skeleton-line"></div>
                                     </td>
-                                    <td class="text-muted col-auto col-1 pt-4">
-                                      <div class="skeleton-line"></div>
+                                    <td className="text-muted col-auto col-1 pt-4">
+                                      <div className="skeleton-line"></div>
                                     </td>
                                  </tr>
                                ))}
@@ -193,12 +193,12 @@ class HomePage extends React.Component {
                             <>
 
                             {apps.map((app) => (
-                            <tr class="row">
-                              <td class="col p-3">
+                            <tr className="row">
+                              <td className="col p-3">
                                 <span className="app-title mb-3">{app.name}</span> <br />
                                 <small className="pt-2">created {app.created_at} ago by {app.user.first_name} {app.user.last_name} </small>
                               </td>
-                              <td class="text-muted col-auto pt-4">
+                              <td className="text-muted col-auto pt-4">
                                 <Link
                                   to={`/apps/${app.id}`}
                                   className="d-none d-lg-inline"
@@ -207,7 +207,7 @@ class HomePage extends React.Component {
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: 'Open in app builder'})}
                                   >
-                                    <span class="badge bg-green-lt">
+                                    <span className="badge bg-green-lt">
                                     Edit
                                     </span>
                                   </OverlayTrigger>
@@ -220,7 +220,7 @@ class HomePage extends React.Component {
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: 'Open in app viewer'})}
                                   >
-                                    <span class="badge bg-blue-lt mx-2">launch</span>
+                                    <span className="badge bg-blue-lt mx-2">launch</span>
 
                                   </OverlayTrigger>
                                 </Link>

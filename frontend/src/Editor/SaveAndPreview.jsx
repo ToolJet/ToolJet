@@ -14,7 +14,7 @@ class SaveAndPreview extends React.Component {
       showModal: false,
       appId: props.appId,
       isLoading: true,
-      showVersionForm: false
+      showVersionForm: false,
     };
   }
 
@@ -65,7 +65,10 @@ class SaveAndPreview extends React.Component {
     appService.saveApp(this.props.appId, { name: this.props.appName, current_version_id: versionId }).then(() => {
       this.setState({ isDeploying: false });
       toast.success('Version Deployed', { hideProgressBar: true, position: 'top-center' });
+
+      this.props.onVersionDeploy(versionId);
     });
+
   };
 
   render() {
@@ -75,13 +78,20 @@ class SaveAndPreview extends React.Component {
 
     return (
       <div>
-        {!showModal && (
-          <button className="btn btn-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
-            Deploy
-          </button>
-        )}
+        <button className="btn btn-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
+          Deploy
+        </button>
 
-        <Modal show={this.state.showModal} size="md" backdrop="static" centered={true} keyboard={true}>
+        <Modal 
+          show={this.state.showModal} 
+          size="md" 
+          backdrop="static" 
+          centered={true} 
+          keyboard={true}
+          enforceFocus={false}
+          animation={false}
+          onEscapeKeyDown={() => this.hideModal()}
+        >
           <Modal.Header>
             <Modal.Title>Versions and deployments</Modal.Title>
             <div>

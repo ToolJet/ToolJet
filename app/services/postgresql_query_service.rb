@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class PostgresqlQueryService
   include DatasourceUtils
   attr_accessor :data_query, :data_source, :options, :source_options, :current_user
@@ -10,18 +12,17 @@ class PostgresqlQueryService
     @current_user = current_user
   end
 
-  def self.connection options
+  def self.connection(options)
     PG.connect( 
-        dbname: options.dig('database', 'value'),
-        user: options.dig('username', 'value'),
-        password: options.dig('password', 'value'),
-        host: options.dig('host', 'value'),
-        port: options.dig('port', 'value'),
+        dbname: options.dig("database", "value"),
+        user: options.dig("username", "value"),
+        password: options.dig("password", "value"),
+        host: options.dig("host", "value"),
+        port: options.dig("port", "value"),
     )
   end
 
   def process
-
     error = false
 
     begin
@@ -29,11 +30,11 @@ class PostgresqlQueryService
       connection = create_connection unless connection
 
 
-      query_text = ''
-      query_text = if options['mode'] === 'gui'
+      query_text = ""
+      query_text = if options["mode"] === "gui"
                     send("generate_#{options['operation']}_query", options)
                   else
-                    options['query']
+                    options["query"]
                   end
 
       result = connection.exec(query_text)
@@ -45,24 +46,24 @@ class PostgresqlQueryService
       end
 
       puts e
-      error = { message: e.message } 
+      error = { message: e.message }
     end
 
     if error
-      { status: 'error', code: 500, message: error[:message] }
+      { status: "error", code: 500, message: error[:message] }
     else
-      { status: 'success', data: result.to_a }
+      { status: "success", data: result.to_a }
     end
   end
 
   private
 
   def generate_bulk_update_pkey_query(options)
-    query_text = ''
+    query_text = ""
 
-    table_name = options['table']
-    primary_key = options['primary_key_column']
-    records = options['records']
+    table_name = options["table"]
+    primary_key = options["primary_key_column"]
+    records = options["records"]
 
     records.each do |record|
       query_text = "#{query_text} UPDATE #{table_name} SET"
@@ -78,17 +79,17 @@ class PostgresqlQueryService
     query_text
   end
 
-  def create_connection 
+  def create_connection
     connection = PG.connect(
-      dbname: source_options['database'],
-      user: source_options['username'],
-      password: source_options['password'],
-      host: source_options['host'],
-      port: source_options['port']
+      dbname: source_options["database"],
+      user: source_options["username"],
+      password: source_options["password"],
+      host: source_options["host"],
+      port: source_options["port"]
     )
 
     connection.type_map_for_results = PG::BasicTypeMapForResults.new connection
-    
+
     cache_connection(data_source, connection)
 
     connection

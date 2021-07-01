@@ -38,7 +38,7 @@ export const QuerySelector = ({
             {eventMeta.displayName}
           </div>
           <div className={`col-auto events-toggle ${open ? 'events-toggle-active' : ''}`}>
-            <span class="toggle-icon"></span>
+            <span className="toggle-icon"></span>
           </div>
         </div>
       </label>

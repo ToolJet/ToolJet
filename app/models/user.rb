@@ -53,7 +53,7 @@ class User < ApplicationRecord
 
   private
 
-  def generate_base64_token
-    SecureRandom.urlsafe_base64
-  end
+    def generate_base64_token
+      SecureRandom.urlsafe_base64
+    end
 end

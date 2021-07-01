@@ -31,6 +31,7 @@ import ReactTooltip from 'react-tooltip';
 import { Resizable } from 're-resizable';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
+import queryString from 'query-string';
 
 class Editor extends React.Component {
   constructor(props) {
@@ -55,6 +56,7 @@ class Editor extends React.Component {
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
+      app: {},
       allComponentTypes: componentTypes,
       queryPaneHeight: '30%',
       isLoading: true,
@@ -76,9 +78,10 @@ class Editor extends React.Component {
         components: {},
         globals: {
           currentUser: userVars,
-          urlparams: {}
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search)))
         }
       },
+      apps: [],
       dataQueriesDefaultText: 'You haven\'t created queries yet.',
       showQuerySearchField: false
     };
@@ -86,6 +89,7 @@ class Editor extends React.Component {
 
   componentDidMount() {
     const appId = this.props.match.params.id;
+    this.fetchApps(0);
 
     appService.getApp(appId).then((data) => this.setState(
       {
@@ -179,6 +183,13 @@ class Editor extends React.Component {
       }
     );
   };
+
+  fetchApps = (page) => {
+    appService.getAll(page).then((data) => this.setState({
+      apps: data.apps,
+      isLoading: false
+    }));
+  }
 
   computeComponentState = (components) => {
     let componentState = {};
@@ -425,6 +436,13 @@ class Editor extends React.Component {
     this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
   }
 
+  onVersionDeploy = (versionId) => { 
+    this.setState({ app: { 
+      ...this.state.app,
+      current_version_id: versionId
+    }})
+  }
+
   render() {
     const {
       currentSidebarTab,
@@ -451,7 +469,8 @@ class Editor extends React.Component {
       deviceWindowWidth,
       scaleValue,
       dataQueriesDefaultText,
-      showQuerySearchField
+      showQuerySearchField,
+      apps
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
 
@@ -571,20 +590,26 @@ class Editor extends React.Component {
 
                 <div className="navbar-nav flex-row order-md-last">
                   <div className="nav-item dropdown d-none d-md-flex me-3">
-                    {app
+                    {app.id
                      && <ManageAppUsers
                        app={app}
                        slug={slug}
                        handleSlugChange={this.handleSlugChange} />}
                   </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
-                    <a href={appLink} target="_blank" className="btn btn-sm" rel="noreferrer">
+                    <a href={appLink} target="_blank" className={`btn btn-sm ${app?.current_version_id ? '': 'disabled'}`} rel="noreferrer">
                       Launch
                     </a>
                   </div>
                   <div className="nav-item dropdown me-2">
-                    {this.state.app && (
-                        <SaveAndPreview appId={app.id} appName={app.name} appDefinition={appDefinition} app={app} />
+                    {app.id && (
+                        <SaveAndPreview
+                          appId={app.id}
+                          appName={app.name}
+                          appDefinition={appDefinition}
+                          app={app}
+                          onVersionDeploy={this.onVersionDeploy}
+                        />
                     )}
                   </div>
                 </div>
@@ -884,6 +909,7 @@ class Editor extends React.Component {
                       currentState={currentState}
                       allComponents={appDefinition.components}
                       key={selectedComponent.id}
+                      apps={apps}
                     ></Inspector>
                   ) : (
                     <div className="mt-5 p-2">Please select a component to inspect</div>

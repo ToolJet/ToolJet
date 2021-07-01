@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DynamodbQueryService
   attr_accessor :data_query, :data_source, :options, :source_options, :current_user
 
@@ -9,16 +11,15 @@ class DynamodbQueryService
     @current_user = current_user
   end
 
-  def self.connection options
-    
-    region = options.dig('region', 'value')
-    access_key = options.dig('access_key', 'value')
-    secret_key = options.dig('secret_key', 'value')
+  def self.connection(options)
+    region = options.dig("region", "value")
+    access_key = options.dig("access_key", "value")
+    secret_key = options.dig("secret_key", "value")
 
     credentials = Aws::Credentials.new(access_key, secret_key)
     dynamodb = Aws::DynamoDB::Client.new(region: region, credentials: credentials)
-    
-    dynamodb.list_tables 
+
+    dynamodb.list_tables
   end
 
   def process
@@ -36,17 +37,17 @@ class DynamodbQueryService
       error = e.message
     end
 
-    { status: error ? 'failed' : 'success', data: data, error: { message: error } }
+    { status: error ? "failed" : "success", data: data, error: { message: error } }
   end
 
-  private 
+  private
     def get_connection
       if $connections.include? data_source.id
         connection = $connections[data_source.id][:connection]
       else
-        region = source_options['region']
-        access_key = source_options['access_key']
-        secret_key = source_options['secret_key']
+        region = source_options["region"]
+        access_key = source_options["access_key"]
+        secret_key = source_options["secret_key"]
 
         credentials = Aws::Credentials.new(access_key, secret_key)
         connection = Aws::DynamoDB::Client.new(region: region, credentials: credentials)
@@ -58,7 +59,7 @@ class DynamodbQueryService
     end
 
     def exec_list_tables(connection, options)
-      tables = connection.list_tables 
+      tables = connection.list_tables
       tables.to_h
     end
 
@@ -70,7 +71,7 @@ class DynamodbQueryService
         table_name: table,
         key: key
       }
-      
+
       connection.get_item(item).to_h
     end
 
