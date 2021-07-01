@@ -10,7 +10,7 @@ class DsConnectionPoolTest < ActiveSupport::TestCase
     reset_connection_pool!()
     ENV["CONNECTION_POOL_SIZE"] = "1"
 
-    # Please note, increasing these values will make the test suite running longer as it internally uses `sleep(n)`
+    # Please note, increasing these values will make the test suite run longer as it internally uses `sleep(n)`
     # to simulate the processing time.
     # Num of concurrent request hitting the connection pool (Integers only)
     num_requests = 2
@@ -37,7 +37,7 @@ class DsConnectionPoolTest < ActiveSupport::TestCase
 
   test "parallel query execution with connection pool of size greater than one" do
     reset_connection_pool!()
-    # Please note, increasing these values will make the test suite running longer as it internally uses `sleep(n)`
+    # Please note, increasing these values will make the test suite run longer as it internally uses `sleep(n)`
     # to simulate the processing time.
     # Num of concurrent request hitting the connection pool (Integers only)
     num_requests = 3
