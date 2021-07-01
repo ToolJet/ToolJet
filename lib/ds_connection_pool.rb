@@ -4,8 +4,8 @@ module DsConnectionPool
   include ::AvailableDataSource
 
   def get_connection_pool(ds_type, connection_closure)
-    connection_pool_size = ENV.fetch("CONNECTION_POOL_SIZE", 5)
-    connection_timeout = ENV.fetch("CONNECTION_TIMEOUT", 5)
+    connection_pool_size = ENV.fetch("CONNECTION_POOL_SIZE", 5).to_i
+    connection_timeout = ENV.fetch("CONNECTION_TIMEOUT", 5).to_i
     if source_type_supported?(ds_type)
       $connection_pools.fetch_or_store(
         ds_type,
