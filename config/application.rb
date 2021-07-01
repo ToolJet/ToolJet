@@ -19,7 +19,7 @@ require 'rails/test_unit/railtie'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-TOOLJET_VERSION = '0.5.11'
+TOOLJET_VERSION = '0.5.12'
 
 module ToolJet
   class Application < Rails::Application
