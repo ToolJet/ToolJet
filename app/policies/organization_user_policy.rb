@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class OrganizationUserPolicy < ApplicationPolicy
   attr_reader :user, :organization_user
 

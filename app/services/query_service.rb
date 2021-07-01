@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class QueryService
   attr_accessor :data_query, :options, :current_user
 
@@ -14,15 +16,15 @@ class QueryService
     data_source_options.keys.each do |key|
       option = data_source_options[key]
 
-      parsed_options[key] = if option['encrypted']
-                              Credential.find(option['credential_id']).value
+      parsed_options[key] = if option["encrypted"]
+                              Credential.find(option["credential_id"]).value
                             else
-                              option['value']
+                              option["value"]
                             end
     end if  data_source
 
     query_options = data_query[:options]
-    if query_options.class.name === 'Hash'
+    if query_options.class.name === "Hash"
       parsed_query_options = get_query_options(query_options)
     else
       parsed_query_options = get_query_options(query_options.permit!.to_h)
@@ -35,7 +37,6 @@ class QueryService
 
   private
     def get_query_options(object)
-
       if object.is_a?(Hash)
 
         object.keys.each do |key|
@@ -43,7 +44,7 @@ class QueryService
         end
 
       elsif object.class.name === "String"
-        if object.start_with?('{{') && object.end_with?('}}')
+        if object.start_with?("{{") && object.end_with?("}}")
           object = options[object]
         else
           variables = object.scan(/\{\{(.*?)\}\}/).to_a
