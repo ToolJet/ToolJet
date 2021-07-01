@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #!/usr/bin/env ruby
 
 def ensure_db_connectivity(user = ENV.fetch("PG_USER"), pass = ENV.fetch("PG_PASS"), host = ENV.fetch("PG_HOST"))
@@ -17,7 +19,7 @@ def install_script_deps
 end
 
 def load_env
-  require 'dotenv'
+  require "dotenv"
   Dir.chdir "/home/ubuntu/app"
   Dotenv.load!
   Dotenv.require_keys("TOOLJET_HOST", "LOCKBOX_MASTER_KEY", "SECRET_KEY_BASE", "PG_DB", "PG_USER", "PG_HOST", "PG_PASS")

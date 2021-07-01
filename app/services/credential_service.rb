@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CredentialService
   def initialize; end
 
@@ -6,10 +8,10 @@ class CredentialService
     options.keys.each do |key|
       option = options[key]
 
-      parsed_options[key] = if option['encrypted']
-                              Credential.find(option['credential_id']).value
+      parsed_options[key] = if option["encrypted"]
+                              Credential.find(option["credential_id"]).value
                             else
-                              option['value']
+                              option["value"]
                             end
     end
 

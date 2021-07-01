@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AuthenticateUser
   prepend SimpleCommand
 
@@ -20,7 +22,7 @@ class AuthenticateUser
 
     return user if user && user.authenticate(password) && org_user.active?
 
-    errors.add :user_authentication, 'invalid credentials'
+    errors.add :user_authentication, "invalid credentials"
     nil
   end
 end
