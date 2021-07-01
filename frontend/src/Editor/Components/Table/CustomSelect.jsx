@@ -5,12 +5,12 @@ export const CustomSelect = ({ options, value, multiple, disabled, onChange }) =
  
     function renderValue(valueProps) {
         if(valueProps) {
-            return valueProps.value.split(', ').map((value) => <span {...valueProps} class="badge bg-blue-lt p-2 mx-1">{value}</span>);
+            return valueProps.value.split(', ').map((value) => <span {...valueProps} className="badge bg-blue-lt p-2 mx-1">{value}</span>);
         }
     }
 
     return (
-        <div class="custom-select">
+        <div className="custom-select">
             <SelectSearch
                 options={options}
                 printOptions="on-focus"

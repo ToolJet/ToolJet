@@ -147,7 +147,7 @@ class Stripe extends React.Component {
       <div>
         {loadingSpec &&
           <div className="p-3">
-            <div class="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
+            <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
             Please wait whle we load the OpenAPI specification for Stripe.
           </div>
         }
