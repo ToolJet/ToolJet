@@ -41,7 +41,7 @@ export const DropDown = function DropDown({
 
   const currentValueProperty = component.definition.properties.value;
   const value = currentValueProperty ? currentValueProperty.value : '';
-  const [currentValue, setCurrentValue] = useState(value);
+  const [currentValue, setCurrentValue] = useState('');
 
   let newValue = value;
   if (currentValueProperty && currentState) {
@@ -51,6 +51,10 @@ export const DropDown = function DropDown({
   useEffect(() => {
     setCurrentValue(newValue);
   }, [newValue]);
+
+  useEffect(() => {
+    onComponentOptionChanged(component, 'value', currentValue);
+  }, [currentValue]);
 
   return (
     <div className="row" style={{ width, height }} onClick={() => onComponentClick(id, component)}>
@@ -63,7 +67,7 @@ export const DropDown = function DropDown({
           value={currentValue}
           search={true}
           onChange={(newVal) => {
-            onComponentOptionChanged(component, 'value', newVal);
+            setCurrentValue(newVal);
           }}
           filterOptions={fuzzySearch}
           placeholder="Select.."
