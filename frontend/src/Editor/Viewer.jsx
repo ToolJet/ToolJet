@@ -14,6 +14,7 @@ import {
   onEvent,
   runQuery
 } from '@/_helpers/appUtils';
+import queryString from 'query-string';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -36,8 +37,16 @@ class Viewer extends React.Component {
     };
   }
 
-  componentDidMount() {
-    const slug = this.props.match.params.slug;
+  componentWillReceiveProps(nextProps) {
+    let slug = nextProps.match.params.slug;
+    if(this.state.app?.slug != slug) {
+      this.setState({app: {}, appDefinition: {}}, () => {
+        this.loadApplication(slug);
+      });
+    }
+  }
+
+  loadApplication = (slug) => {
 
     const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
@@ -85,10 +94,15 @@ class Viewer extends React.Component {
         components: {},
         globals: {
           current_user: userVars,
-          urlparams: {}
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search)))
         }
       }
     });
+  }
+
+  componentDidMount() {
+    const slug = this.props.match.params.slug;
+    this.loadApplication(slug);
   }
 
   render() {
@@ -136,13 +150,13 @@ class Viewer extends React.Component {
                     appDefinitionChanged={() => false} // function not relevant in viewer
                     snapToGrid={true}
                     appLoading={isLoading}
-                    onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                    onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
                     mode="view"
                     scaleValue={scaleValue}
                     deviceWindowWidth={deviceWindowWidth}
                     currentLayout={currentLayout}
                     currentState={this.state.currentState}
-                    onComponentClick={(id, component) => onComponentClick(this, id, component)}
+                    onComponentClick={(id, component) => onComponentClick(this, id, component, 'view')}
                     onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
                     }
                     onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)

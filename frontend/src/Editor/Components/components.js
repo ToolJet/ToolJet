@@ -568,7 +568,7 @@ export const componentTypes = [
     description: 'Select one value from options',
     defaultSize: {
       width: 200,
-      height: 30
+      height: 37
     },
     component: 'DropDown',
     others: {
@@ -588,7 +588,7 @@ export const componentTypes = [
 
     },
     exposedVariables: {
-      value: {}
+      value: null
     },
     definition: {
       others: {

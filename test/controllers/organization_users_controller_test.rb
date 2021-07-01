@@ -28,6 +28,21 @@ class OrganizationUsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'org admins cannot create org users if email already exists' do
+    post '/organization_users', params: org_user_params, as: :json, headers: auth_header(@admin)
+    post '/organization_users', params: org_user_params, as: :json, headers: auth_header(@admin)
+
+    assert_response 422
+    assert_equal "Email address is already taken", JSON.parse(response.body)['message']
+  end
+
+  test 'OrganizationUser should be unique per organization and user' do
+    assert_raises(ActiveRecord::RecordNotUnique) do
+      org_user = OrganizationUser.new(organization: @org, user: @admin, role: 'admin', status: 'active')
+      org_user.save
+    end
+  end
+
   test 'cannot create org users if not admin' do
     assert_no_difference 'OrganizationUser.count' do
       post '/organization_users', params: org_user_params, as: :json, headers: auth_header(@developer)

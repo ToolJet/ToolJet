@@ -28,7 +28,7 @@ export const Tags = ({ value, onChange }) => {
     }
  
     function renderTag(text) {
-        return <span class="col-auto badge bg-blue-lt p-2 mx-1 tag mb-2">
+        return <span className="col-auto badge bg-blue-lt p-2 mx-1 tag mb-2">
             {text} 
             <span className="badge badge-pill bg-red-lt remove-tag-button" onClick={() => removeTag(text)}>
                 x
@@ -37,17 +37,17 @@ export const Tags = ({ value, onChange }) => {
     }
 
     return (
-        <div class="tags row">
+        <div className="tags row">
             {value.map((item) => {
                 return renderTag(item)
             })}
 
             {!showForm &&
-                <span class="col-auto badge bg-green-lt mx-1 add-tag-button" onClick={() => setShowForm(true)}>{'+'}</span>
+                <span className="col-auto badge bg-green-lt mx-1 add-tag-button" onClick={() => setShowForm(true)}>{'+'}</span>
             }
 
             {showForm &&
-                <span class="col-auto badge bg-green-lt mx-1">
+                <span className="col-auto badge bg-green-lt mx-1">
                     <input 
                         type="text"
                         autoFocus

@@ -16,7 +16,8 @@ export const Inspector = ({
   removeComponent,
   allComponents,
   componentChanged,
-  currentState
+  currentState,
+  apps
 }) => {
   
   const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component, layouts: allComponents[selectedComponentId].layouts}
@@ -226,10 +227,10 @@ export const Inspector = ({
       {!['Table', 'Chart'].includes(componentMeta.component)   && 
         <div className="properties-container p-2">
           {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components))}
-          <div class="hr-text">Style</div>
+          <div className="hr-text">Style</div>
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
-          <div class="hr-text">Events</div>
-          {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components))}
+          <div className="hr-text">Events</div>
+          {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components, apps))}
           
           
 
@@ -237,7 +238,7 @@ export const Inspector = ({
       }
 
       {/* Show on desktop & show on mobile params */}
-      <div class="hr-text">Layout</div>
+      <div className="hr-text">Layout</div>
       <div className="properties-container p-2 pb-3 mb-5">
         {renderElement(component, componentMeta, layoutPropertyChanged, dataQueries, 'showOnDesktop', 'others', currentState, components)}
         {renderElement(component, componentMeta, layoutPropertyChanged, dataQueries, 'showOnMobile', 'others', currentState, components)}

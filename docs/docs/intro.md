@@ -24,7 +24,7 @@ Here is a video explaining how to build a Redis GUI using ToolJet in 3 minutes:
 
 These resources will help you to quickly build and deploy apps using ToolJet:
 
-- **[Setup](/docs/setup/architecture)** - Learn how to setup ToolJet locally using docker.
+- **[Setup](/docs/deployment/architecture)** - Learn how to setup ToolJet locally using docker.
 - **[Basic Tutorial](/docs/tutorial/creating-app)** - Learn how to build simple UI and connect to data sources.
 - **[Deploy](/docs/contributing-guide/setup/docker)** - Learn how to deploy ToolJet on Heroku, Kubernetes, etc 
 

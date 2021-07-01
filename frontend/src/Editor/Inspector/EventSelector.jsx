@@ -13,7 +13,8 @@ export const EventSelector = ({
   extraData,
   eventMeta,
   currentState,
-  components
+  components,
+  apps
 }) => {
 
   const [open, setOpen] = useState(false);
@@ -48,6 +49,17 @@ export const EventSelector = ({
     return modalOptions;
   }
 
+  function getAllApps() {
+    let appsOptionsList = [];
+    apps.map((item) => {
+      appsOptionsList.push({
+        name: item.name,
+        value: item.id
+      })
+    })
+    return appsOptionsList;
+  }
+
   function eventChanged(param, value, extraData) { 
     if(value === 'none') { 
       eventUpdated(param, null, null);
@@ -73,7 +85,7 @@ export const EventSelector = ({
             {eventMeta.displayName}
           </div>
           <div className={`col-auto events-toggle ${open ? 'events-toggle-active' : ''}`}>
-            <span class="toggle-icon"></span>
+            <span className="toggle-icon"></span>
           </div>
         </div>
       </label>
@@ -108,6 +120,22 @@ export const EventSelector = ({
                     currentState={currentState}
                     initialValue={definition.options.url}
                     onChange={(value) => eventOptionUpdated(param, 'url', value, extraData)}
+                  />
+                </div>
+              )}
+
+              {definition.actionId === 'go-to-app' && (
+                <div className="p-1">
+                  <label className="form-label mt-1">App</label>
+                  <SelectSearch
+                    options={getAllApps()}
+                    search={true}
+                    value={definition.options.slug}
+                    onChange={(value) => {
+                      eventOptionUpdated(param, 'slug', value, extraData);
+                    }}
+                    filterOptions={fuzzySearch}
+                    placeholder="Select.."
                   />
                 </div>
               )}

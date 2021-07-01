@@ -5,6 +5,7 @@ import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
+import { history } from '@/_helpers';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -58,9 +59,9 @@ export function runTransformation(_ref, rawData, transformation) {
   return result;
 }
 
-export function onComponentClick(_ref, id, component) {
+export function onComponentClick(_ref, id, component, mode = 'edit') {
   const onClickEvent = component.definition.events.onClick;
-  executeAction(_ref, onClickEvent);
+  executeAction(_ref, onClickEvent, mode);
 }
 
 export function onQueryConfirm(_ref, queryConfirmationData) {
@@ -85,7 +86,7 @@ async function copyToClipboard(text) {
   }
 };
 
-function executeAction(_ref, event) {
+function executeAction(_ref, event, mode) {
   if (event) {
     if (event.actionId === 'show-alert') {
       const message = resolveReferences(event.options.message, _ref.state.currentState);
@@ -95,6 +96,20 @@ function executeAction(_ref, event) {
     if (event.actionId === 'open-webpage') {
       const url = resolveReferences(event.options.url, _ref.state.currentState);
       window.open(url, '_blank');
+    }
+
+    if (event.actionId === 'go-to-app') {
+      const slug = resolveReferences(event.options.slug, _ref.state.currentState);
+
+      const url = `/applications/${slug}`;
+
+      if(mode === 'view') {
+        _ref.props.history.push(url);
+      } else {
+        if(confirm("The app will be opened in a new tab as the action is triggered from the editor.")) {
+          window.open(url, '_blank');
+        }
+      }
     }
 
     if (event.actionId === 'run-query') {
@@ -129,7 +144,7 @@ function executeAction(_ref, event) {
   }
 }
 
-export function onEvent(_ref, eventName, options) {
+export function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
   console.log('Event: ', eventName);
 
@@ -149,7 +164,7 @@ export function onEvent(_ref, eventName, options) {
       }
     }, () => {
       if (event.actionId) {
-        executeAction(_self, event);
+        executeAction(_self, event, mode);
       }
     });
   }
@@ -172,7 +187,7 @@ export function onEvent(_ref, eventName, options) {
     }, () => {
       if(event) {
         if (event.actionId) {
-          executeAction(_self, event);
+          executeAction(_self, event, mode);
         }
       } else { 
         console.log('No action is associated with this event');
@@ -185,7 +200,7 @@ export function onEvent(_ref, eventName, options) {
     const event = (eventName === 'onCheck') ? component.definition.events.onCheck : component.definition.events.onUnCheck;
 
     if (event.actionId) {
-      executeAction(_self, event);
+      executeAction(_self, event, mode);
     }
   }
 
@@ -194,7 +209,7 @@ export function onEvent(_ref, eventName, options) {
     const event = component.definition.events[eventName];
 
     if (event.actionId) {
-      executeAction(_self, event);
+      executeAction(_self, event, mode);
     }
   }
 
@@ -203,14 +218,14 @@ export function onEvent(_ref, eventName, options) {
     const event = component.definition.events[eventName];
 
     if (event.actionId) {
-      executeAction(_self, event);
+      executeAction(_self, event, mode);
     }
   }
 
   if (eventName === 'onBulkUpdate') {
     return new Promise(function (resolve, reject) {
       onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
-      executeAction(_self, { actionId: 'run-query', ...options.component.definition.events.onBulkUpdate }).then(() => {
+      executeAction(_self, { actionId: 'run-query', ...options.component.definition.events.onBulkUpdate }, mode).then(() => {
         onComponentOptionChanged(_self, options.component, 'isSavingChanges', false);
         resolve();
       });
