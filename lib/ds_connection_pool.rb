@@ -25,6 +25,20 @@ module DsConnectionPool
     end
   end
 
+  # Resets the connection pool of a particular source for the current process.
+  # If no ds_type is passed, resets the global variable to a new concurrent_map
+  def reset_connection_pool!(ds_type = nil)
+    if ds_type
+      if source_type_supported?(ds_type)
+        $connection_pools.delete(ds_type)
+      else
+        raise AvailableDataSource::UnSupportedSource.new
+      end
+    else
+      $connection_pools = Concurrent::Map.new
+    end
+  end
+
   private
 
   def make_connection_pool(connection_pool_size, connection_timeout, connection_closure)
