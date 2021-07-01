@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const appService = {
   getAll,
   createApp,
+  deleteApp,
   getApp,
   getAppBySlug,
   saveApp,
@@ -28,6 +29,11 @@ function createApp() {
 
 function getApp(id) {
   const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+}
+
+function deleteApp(id) {
+  const requestOptions = { method: 'DELETE', headers: authHeader() };
   return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
 }
 

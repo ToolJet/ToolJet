@@ -310,7 +310,7 @@ export const Container = ({
       {appLoading && (
         <div className="mx-auto mt-5 w-50 p-5">
           <center>
-            <div class="spinner-border text-azure" role="status"></div>
+            <div className="spinner-border text-azure" role="status"></div>
           </center>
         </div>
       )}

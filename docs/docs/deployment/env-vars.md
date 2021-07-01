@@ -28,7 +28,20 @@ ToolJet server uses PostgreSQL as the database.
 | PG_PASS      | password       |
 
 #### Lockbox configuration ( required )
-ToolJet server uses lockbox to encrypt datasource credentials. You should set the environment variable `LOCKBOX_MASTER_KEY`.
+ToolJet server uses lockbox to encrypt datasource credentials. You should set the environment variable `LOCKBOX_MASTER_KEY` with a 32 byte hexadecimal string.
+
+
+#### Application Secret ( required )
+ToolJet server uses a secure 64 byte hexadecimal string to encrypt session cookies. You should set the environment variable `SECRET_KEY_BASE`.
+
+
+:::tip
+If you have `openssl` installed, you can run the following commands to generate the the value for `LOCKBOX_MASTER_KEY` and `SECRET_KEY_BASE`.     
+
+For `LOCKBOX_MASTER_KEY` use `openssl rand -hex 32`   
+For `SECRET_KEY_BASE` use `openssl rand -hex 64`
+:::
+
 
 #### Disabling signups ( optional )
 

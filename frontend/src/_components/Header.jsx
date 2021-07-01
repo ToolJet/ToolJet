@@ -31,7 +31,7 @@ export const Header = function Header({
         </Link>
       </h1>
 
-      <ul class="navbar-nav d-none d-lg-flex">
+      <ul className="navbar-nav d-none d-lg-flex">
         <li className={`nav-item mx-3 ${pahtName === '/' ? 'active' : ''}`}>
           <Link to={'/'} className="nav-link">
             <span className="nav-link-icon d-md-none d-lg-inline-block">
@@ -61,16 +61,17 @@ export const Header = function Header({
             className="nav-link d-flex lh-1 text-reset p-0"
             data-bs-toggle="dropdown"
             aria-label="Open user menu"
+            data-testid="userAvatarHeader"
           >
             <div className="d-none d-xl-block ps-2">
-              <span class="avatar bg-azure-lt">
+              <span className="avatar bg-azure-lt">
                 {first_name ? first_name[0] : ''}
                 {last_name ? last_name[0] : ''}
               </span>
             </div>
           </a>
           <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-            <a onClick={logout} className="dropdown-item">
+            <a data-testId="logoutBtn" onClick={logout} className="dropdown-item">
               Logout
             </a>
           </div>

@@ -14,23 +14,27 @@ class OrganizationUsersController < ApplicationController
     password = SecureRandom.uuid
     org = @current_user.organization
 
-    user = User.create(
-      first_name: first_name,
-      last_name: last_name,
-      email: email,
-      password: password,
-      password_confirmation: password,
-      organization: org,
-      invitation_token: SecureRandom.uuid
-    )
+    if User.find_by(email: email).present?
+      render json: { message: "Email address is already taken" }, status: :unprocessable_entity
+    else
+      user = User.create(
+        first_name: first_name,
+        last_name: last_name,
+        email: email,
+        password: password,
+        password_confirmation: password,
+        organization: org,
+        invitation_token: SecureRandom.uuid
+      )
 
-    org_user = OrganizationUser.new(
-      role: role,
-      user: user,
-      organization: org
-    )
+      org_user = OrganizationUser.new(
+        role: role,
+        user: user,
+        organization: org
+      )
 
-    UserMailer.with(user: user, sender: @current_user).invitation_email.deliver if org_user.save
+      UserMailer.with(user: user, sender: @current_user).invitation_email.deliver if org_user.save
+    end
   end
 
   def change_role
