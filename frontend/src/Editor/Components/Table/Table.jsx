@@ -61,6 +61,9 @@ export function Table({
   const [isFiltersVisible, setFiltersVisibility] = useState(false);
   const [filters, setFilters] = useState([]);
 
+  const [showField, setShowField] = useState(false);
+  const [addRow, setAddRows] = useState([]);
+  
   function showFilters() {
     setFiltersVisibility(true);
   }
@@ -355,11 +358,32 @@ export function Table({
     };
   });
 
+  const addNewRow = (number) => {
+   let  data = []
+   let obj = {}
+    component.definition.properties.columns.value.map((value, index) => {
+      obj = {
+        [value.name]: ''
+      }
+      data.push(obj)
+    })
+
+   let objs =  data.reduce(function(result, current) {
+      return Object.assign(result, current);
+    }, {})
+
+    let rows = []
+    for (let index = 1; index <= number; index++) {
+      rows.push(objs);
+    }
+    setAddRows(rows);
+  }
+
   let tableData = [];
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
     if (!Array.isArray(tableData)) tableData = [];
-    console.log('resolved param', tableData);
+    tableData.push(...addRow)
   }
 
   tableData = tableData || [];
@@ -493,6 +517,7 @@ export function Table({
       </div>
     );
   }
+  
 
   return (
     <div
@@ -597,7 +622,7 @@ export function Table({
       </div>
       <div className="card-footer d-flex align-items-center jet-table-footer">
         <div className="table-footer row">
-          <div className="col">
+          <div className="col d-flex">
             <Pagination
                 serverSide={serverSidePagination}
                 autoGotoPage={gotoPage}
@@ -606,6 +631,13 @@ export function Table({
                 autoPageOptions={pageOptions}
                 onPageIndexChanged={onPageIndexChanged}
             />
+           
+            <div className="col-auto d-flex">
+              <button onClick={() => setShowField(!showField)} className="btn btn-sm btn-light mx-2">
+                Add row 
+              </button>
+              {showField && <input className="form-control form-control-sm" type="number" style={{width: '50px'}}  onChange={(e) => addNewRow(e.target.value)}/>}
+            </div>
           </div>
 
           {Object.keys(componentState.changeSet || {}).length > 0 && (
