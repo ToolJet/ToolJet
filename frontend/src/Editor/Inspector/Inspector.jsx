@@ -17,7 +17,8 @@ export const Inspector = ({
   allComponents,
   componentChanged,
   currentState,
-  apps
+  apps,
+  darkMode
 }) => {
   
   const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component, layouts: allComponents[selectedComponentId].layouts}
@@ -208,6 +209,7 @@ export const Inspector = ({
           eventOptionUpdated={eventOptionUpdated}
           components={components}
           currentState={currentState}
+          darkMode={darkMode}
         />
       }
 
@@ -221,12 +223,13 @@ export const Inspector = ({
           eventOptionUpdated={eventOptionUpdated}
           components={components}
           currentState={currentState}
+          darkMode={darkMode}
         />
       }
         
       {!['Table', 'Chart'].includes(componentMeta.component)   && 
         <div className="properties-container p-2">
-          {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components))}
+          {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components, darkMode))}
           <div className="hr-text">Style</div>
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <div className="hr-text">Events</div>

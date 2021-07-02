@@ -8,7 +8,7 @@ import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 
-export const Transformation = ({ changeOption, options, currentState }) => {
+export const Transformation = ({ changeOption, options, currentState, darkMode }) => {
   const defaultValue = options.transformation
     || `// write your code here
 // return value will be set as data and the original data will be available as rawData
@@ -51,7 +51,7 @@ return data.filter(row => row.amount > 1000);`;
               currentState={currentState}
               initialValue={value}
               mode="javascript"
-              theme="base16-light"
+              theme={darkMode? 'monokai' : 'base16-light'}
               lineNumbers={true}
               className="query-hinter"
               ignoreBraces={true}

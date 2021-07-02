@@ -689,6 +689,7 @@ class Editor extends React.Component {
                       {this.state.showDataSourceManagerModal && (
                         <DataSourceManager
                           appId={appId}
+                          darkMode={this.props.darkMode}
                           hideModal={() => this.setState({ showDataSourceManagerModal: false })}
                           dataSourcesChanged={this.dataSourcesChanged}
                           showDataSourceManagerModal={this.state.showDataSourceManagerModal}
@@ -848,6 +849,7 @@ class Editor extends React.Component {
                             editingQuery={editingQuery}
                             queryPaneHeight={queryPaneHeight}
                             currentState={currentState}
+                            darkMode={this.props.darkMode}
                           />
                         </div>
                       </div>
@@ -902,6 +904,7 @@ class Editor extends React.Component {
                       allComponents={appDefinition.components}
                       key={selectedComponent.id}
                       apps={apps}
+                      darkMode={this.props.darkMode}
                     ></Inspector>
                   ) : (
                     <div className="mt-5 p-2">Please select a component to inspect</div>

@@ -3,7 +3,7 @@ import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { ToolTip } from './Components/ToolTip';
 
 export const Code = ({
-  param, definition, onChange, paramType, dataQueries, components, componentMeta, currentState
+  param, definition, onChange, paramType, dataQueries, components, componentMeta, currentState, darkMode
 }) => {
   const initialValue = definition ? definition.value : '';
   const paramMeta = componentMeta[paramType][param.name];
@@ -22,7 +22,7 @@ export const Code = ({
           currentState={currentState}
           initialValue={initialValue}
           mode={options.mode}
-          theme={options.theme}
+          theme={darkMode? 'monokai' : options.theme}
           className={options.className}
           onChange={(value) => handleCodeChanged(value)}
       />
