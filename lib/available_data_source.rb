@@ -11,7 +11,7 @@ module AvailableDataSource
   MYSQL = "MYSQL".freeze
   REDIS = "REDIS".freeze
 
-  def source_type_supported?(ds_type)
+  def source_type_supported?(datasource_type)
     [
       POSTGRES,
       AIRTABLE,
@@ -22,6 +22,6 @@ module AvailableDataSource
       MSSQL,
       MYSQL,
       REDIS,
-    ].include?(ds_type)
+    ].include?(datasource_type)
   end
 end
