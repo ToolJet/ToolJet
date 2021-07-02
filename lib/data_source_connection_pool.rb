@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # API's to run queries with connection from the respective connection pool.
 
 module DataSourceConnectionPool
