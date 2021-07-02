@@ -125,7 +125,8 @@ class HomePage extends React.Component {
         />
 
         <Header
-
+           switchDarkMode={this.props.switchDarkMode}
+           darkMode={this.props.darkMode}
         />
         {!isLoading && meta.total_count === 0 &&
           <BlankPage
@@ -162,10 +163,10 @@ class HomePage extends React.Component {
                       </div>
                     </div>
 
-                    <div className={currentFolder.count == 0 ? 'table-responsive bg-white w-100 apps-table mt-3 d-flex align-items-center' : 'table-responsive bg-white w-100 apps-table mt-3'} style={{minHeight: '600px'}}>
+                    <div className={currentFolder.count == 0 ? 'table-responsive w-100 apps-table mt-3 d-flex align-items-center' : 'table-responsive w-100 apps-table mt-3'} style={{minHeight: '600px'}}>
                       <table
                         data-testid="appsTable"
-                        className="table table-vcenter">
+                        className={`table table-vcenter ${this.props.darkMode ? 'bg-dark' : 'bg-white' }`}>
                         <tbody>
                           {isLoading && (
                             <>
