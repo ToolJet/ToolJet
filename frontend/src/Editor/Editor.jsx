@@ -606,7 +606,6 @@ class Editor extends React.Component {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: '#f0f0f0',
                 zIndex: '200'
               }}
               maxWidth={showLeftSidebar ? '30%' : '0%'}
@@ -621,6 +620,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         style={{ fontSize: '0.7rem' }}
+                        theme={'shapeshifter'}
                         enableClipboard={false}
                         src={currentState.globals}
                         name={'globals'}
@@ -636,6 +636,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.components}
+                        theme={'shapeshifter'}
                         name={'components'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
@@ -651,6 +652,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.queries}
+                        theme={'shapeshifter'}
                         name={'queries'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
