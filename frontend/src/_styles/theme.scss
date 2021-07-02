@@ -1659,7 +1659,7 @@ input:focus-visible {
     background-color: #2f3c4c!important;
   }
 
-  .editor .main .canvas-container .canvas-area {
+  .main .canvas-container .canvas-area {
     background: #2f3c4c;
   }
 
@@ -1789,12 +1789,22 @@ input:focus-visible {
     }
   }
 
+  .input-group-text {
+    border: solid 1px rgba(255, 255, 255, 0.09)!important;
+  }
+
+  .app-users-list { 
+    .text-muted {
+      color: #c3c3c3!important;
+    }
+  }
+
   .data-pane { 
     border: solid rgba(255, 255, 255, 0.09)!important;
     border-width: 0px 1px 0px 0px!important;
   }
 
-  .editor .main .query-pane .data-pane .queries-container .queries-header {
+  .main .query-pane .data-pane .queries-container .queries-header {
     border: solid rgba(255, 255, 255, 0.09)!important;
     border-width: 0px 0px 1px 0px!important;
 

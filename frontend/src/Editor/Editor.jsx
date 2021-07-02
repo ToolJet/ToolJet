@@ -583,6 +583,7 @@ class Editor extends React.Component {
                      && <ManageAppUsers
                        app={app}
                        slug={slug}
+                       darkMode={this.props.darkMode}
                        handleSlugChange={this.handleSlugChange} />}
                   </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
@@ -597,6 +598,7 @@ class Editor extends React.Component {
                           appName={app.name}
                           appDefinition={appDefinition}
                           app={app}
+                          darkMode={this.props.darkMode}
                           onVersionDeploy={this.onVersionDeploy}
                         />
                     )}

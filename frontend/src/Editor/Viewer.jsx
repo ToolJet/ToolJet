@@ -150,6 +150,7 @@ class Viewer extends React.Component {
                     appDefinitionChanged={() => false} // function not relevant in viewer
                     snapToGrid={true}
                     appLoading={isLoading}
+                    darkMode={this.props.darkMode}
                     onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
                     mode="view"
                     scaleValue={scaleValue}
