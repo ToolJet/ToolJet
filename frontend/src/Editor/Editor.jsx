@@ -734,6 +734,7 @@ class Editor extends React.Component {
                     appDefinition={appDefinition}
                     appDefinitionChanged={this.appDefinitionChanged}
                     snapToGrid={true}
+                    darkMode={this.props.darkMode}
                     mode={'edit'}
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
