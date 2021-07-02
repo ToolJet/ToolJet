@@ -1,5 +1,34 @@
 require "test_helper"
-include DsConnectionPool
+include DataSourceConnectionPool
+
+
+class MockQueryService
+  attr_accessor :query_thunk, :data_source
+
+  def initialize(data_source = AvailableDataSource::POSTGRES, query_thunk)
+    @query_thunk = query_thunk
+    @data_source = data_source
+  end
+
+  def process
+    connection_closure = lambda do
+      create_connection
+    end
+
+    with_connection(data_source, connection_closure) do |conn|
+      conn.call(query_thunk)
+    end
+  end
+
+  private
+
+  def create_connection
+    connection = lambda do |query|
+      query.call
+    end
+    connection
+  end
+end
 
 class DsConnectionPoolTest < ActiveSupport::TestCase
   def create_thread_pool(pool_size)
@@ -12,54 +41,70 @@ class DsConnectionPoolTest < ActiveSupport::TestCase
 
     # Please note, increasing these values will make the test suite run longer as it internally uses `sleep(n)`
     # to simulate the processing time.
+
     # Num of concurrent request hitting the connection pool (Integers only)
-    num_requests = 2
+    num_concurrent_requests = 2
+
     # Per query processing time in seconds (Integers only)
     processing_time_per_query = 1
 
-    request_thread_pool = create_thread_pool(num_requests)
 
-    job = query_runner_thunk(create_ds_connection_closure, sleep_thunk(processing_time_per_query))
+    # A thread pool to simulate concurrent query executions as part of concurrent requests
+    request_thread_pool = create_thread_pool(num_concurrent_requests)
+
+    job = lambda do
+      MockQueryService.new(sleep_query(processing_time_per_query)).process
+    end
 
     t1 = Time.now
 
-    num_requests.times do
-      post_job(request_thread_pool, job)
+    # Simulate concurrent query executions using a threadpool
+    num_concurrent_requests.times do
+      submit_job_to_thread_pool(request_thread_pool, job)
     end
 
     request_thread_pool.shutdown
     request_thread_pool.wait_for_termination
+
     t2 = Time.now
 
     elapsed_time = t2 - t1
-    assert elapsed_time > (num_requests * processing_time_per_query)
+    assert elapsed_time > (num_concurrent_requests * processing_time_per_query)
   end
 
-  test "parallel query execution with connection pool of size greater than one" do
+  test "concurrent query execution with connection pool of size greater than one" do
     reset_connection_pool!()
     # Please note, increasing these values will make the test suite run longer as it internally uses `sleep(n)`
     # to simulate the processing time.
+
     # Num of concurrent request hitting the connection pool (Integers only)
-    num_requests = 3
+    num_concurrent_requests = 10
+
     # Per query processing time in seconds (Integers only)
     processing_time_per_query = 1
-    request_thread_pool = create_thread_pool(num_requests)
+
+    # A thread pool to simulate concurrent query executions as part of concurrent requests
+    request_thread_pool = create_thread_pool(num_concurrent_requests)
 
     # Set the connection pool size to the number of concurrent requests.
-    ENV["CONNECTION_POOL_SIZE"] = num_requests.to_s
+    ENV["CONNECTION_POOL_SIZE"] = num_concurrent_requests.to_s
 
-    job = query_runner_thunk(create_ds_connection_closure, sleep_thunk(processing_time_per_query))
+
+    job = lambda do
+      MockQueryService.new(sleep_query(processing_time_per_query)).process
+    end
 
     t1 = Time.now
 
-    num_requests.times do
-      post_job(request_thread_pool, job)
+    # Simulate concurrent query executions using a threadpool
+    num_concurrent_requests.times do
+      submit_job_to_thread_pool(request_thread_pool, job)
     end
 
     request_thread_pool.shutdown
     request_thread_pool.wait_for_termination
-    t2 = Time.now
 
+    t2 = Time.now
     elapsed_time = t2 - t1
     delta = 1 # in secs
     assert elapsed_time < (1 * processing_time_per_query + delta)
@@ -70,34 +115,17 @@ class DsConnectionPoolTest < ActiveSupport::TestCase
     query_thunk = lambda { true }
     unsupported_ds = "PortalGun"
     assert_raises(AvailableDataSource::UnSupportedSource) do
-      query_runner_thunk(unsupported_ds, create_ds_connection_closure, query_thunk).call
+      MockQueryService.new(unsupported_ds, query_thunk).process
     end
   end
 
-  def post_job(thread_pool, thunk)
+  def submit_job_to_thread_pool(thread_pool, thunk)
     thread_pool.post do
       thunk.call
     end
   end
 
-  def sleep_thunk(processing_time_per_query)
+  def sleep_query(processing_time_per_query)
     lambda { sleep(processing_time_per_query) }
-  end
-
-  def create_ds_connection_closure
-    lambda do
-      executer = lambda do |query|
-        query.call()
-      end
-      executer
-    end
-  end
-
-  def query_runner_thunk(ds_type = AvailableDataSource::POSTGRES, connection_closure, query_thunk)
-    lambda do
-      with_connection(ds_type, connection_closure) do |conn|
-        conn.call(query_thunk)
-      end
-    end
   end
 end
