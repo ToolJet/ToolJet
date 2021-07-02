@@ -2,6 +2,7 @@ import React from 'react';
 import {
   datasourceService, dataqueryService, appService, authenticationService
 } from '@/_services';
+import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -571,6 +572,12 @@ class Editor extends React.Component {
                   </div>
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
+                  <div className="my-2 mx-3">
+                    <DarkModeToggle
+                      switchDarkMode={this.props.switchDarkMode}
+                      darkMode={this.props.darkMode}
+                    />
+                  </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
                     {app.id
                      && <ManageAppUsers
@@ -620,7 +627,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         style={{ fontSize: '0.7rem' }}
-                        theme={'shapeshifter'}
+                        theme={this.props.darkMode ? 'shapeshifter' : ''}
                         enableClipboard={false}
                         src={currentState.globals}
                         name={'globals'}
@@ -636,7 +643,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.components}
-                        theme={'shapeshifter'}
+                        theme={this.props.darkMode ? 'shapeshifter' : ''}
                         name={'components'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
@@ -652,7 +659,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.queries}
-                        theme={'shapeshifter'}
+                        theme={this.props.darkMode ? 'shapeshifter' : ''}
                         name={'queries'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
