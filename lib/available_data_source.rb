@@ -4,7 +4,6 @@ module AvailableDataSource
   class UnSupportedSource < StandardError; end
 
   POSTGRES = "POSTGRES".freeze
-  AIRTABLE = "AIRTABLE".freeze
   DYNAMODB = "DYNAMODB".freeze
   ELASTICSEARCH = "ELASTICSEARCH".freeze
   FIRESTORE = "FIRESTORE".freeze
@@ -16,7 +15,6 @@ module AvailableDataSource
   def source_type_supported?(datasource_type)
     [
       POSTGRES,
-      AIRTABLE,
       DYNAMODB,
       ELASTICSEARCH,
       FIRESTORE,
