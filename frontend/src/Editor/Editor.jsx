@@ -572,7 +572,7 @@ class Editor extends React.Component {
                   </div>
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
-                  <div className="my-2 mx-3">
+                  <div className="mx-3" style={{ marginTop: '7px'}}>
                     <DarkModeToggle
                       switchDarkMode={this.props.switchDarkMode}
                       darkMode={this.props.darkMode}

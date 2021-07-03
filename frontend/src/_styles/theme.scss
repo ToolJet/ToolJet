@@ -1672,6 +1672,10 @@ input:focus-visible {
     }
   }
 
+  .nav-tabs .nav-link:focus, .nav-tabs .nav-link:hover {
+    border-color: transparent!important;
+}
+
   .modal-content, .modal-header {
     background-color: #1f2936!important;
     .text-muted {
