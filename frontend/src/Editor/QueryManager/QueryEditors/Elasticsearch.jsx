@@ -67,6 +67,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.index}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'index', value)}
                   />
                 </div>
@@ -75,6 +76,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.id}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'id', value)}
                   />
                 </div>
@@ -85,7 +87,7 @@ class Elasticsearch extends React.Component {
                     initialValue={options.body}
                     mode="javascript"
                     placeholder={'{ doc: { page_count: 225 } }'}
-                    theme="duotone-light"
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                     lineNumbers={true}
                     className="query-hinter"
                     onChange={(value) => changeOption(this, 'body', value)}
@@ -101,6 +103,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.index}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'index', value)}
                   />
                 </div>
@@ -109,6 +112,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.id}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'id', value)}
                   />
                 </div>
@@ -122,6 +126,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.index}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'index', value)}
                   />
                 </div>
@@ -132,7 +137,7 @@ class Elasticsearch extends React.Component {
                     initialValue={options.body}
                     mode="javascript"
                     placeholder={'{ "name": "The Hitchhikers Guide to the Galaxy" }'}
-                    theme="duotone-light"
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                     lineNumbers={true}
                     className="query-hinter"
                     onChange={(value) => changeOption(this, 'body', value)}
@@ -147,6 +152,7 @@ class Elasticsearch extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.index}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'index', value)}
                   />
 
@@ -158,7 +164,7 @@ class Elasticsearch extends React.Component {
                     initialValue={options.query}
                     mode="sql"
                     placeholder={'{ "name": "" }'}
-                    theme="duotone-light"
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                     lineNumbers={true}
                     className="query-hinter"
                     onChange={(value) => changeOption(this, 'query', value)}

@@ -80,6 +80,7 @@ class Slack extends React.Component {
                         currentState={this.props.currentState}
                         initialValue={this.state.options.channel}
                         className="codehinter-query-editor-input"
+                        theme={this.props.darkMode ? 'monokai' : 'default'}
                         onChange={(value) => changeOption(this, 'channel', value)}
                       />
                   </div>
@@ -91,6 +92,7 @@ class Slack extends React.Component {
                         currentState={this.props.currentState}
                         initialValue={options.message}
                         className="codehinter-query-editor-input"
+                        theme={this.props.darkMode ? 'monokai' : 'default'}
                         onChange={(value) => changeOption(this, 'message', value)}
                       />
                   </div>

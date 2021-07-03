@@ -1927,6 +1927,15 @@ input:focus-visible {
   .color-picker-input {
     border: solid 1px #333c48;
   }
+
+  .codehinter-query-editor-input {
+    background-color: #272822;
+    border: 1px solid #2c3a4c;
+  }
+
+  .codehinter-query-editor-input .CodeMirror {
+    height: 31px !important;
+  }
 }
 
 .main-wrapper {
