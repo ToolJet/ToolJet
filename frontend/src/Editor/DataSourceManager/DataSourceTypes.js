@@ -59,7 +59,7 @@ export const dataBaseSources = [
       host: { type: 'string' },
       port: { type: 'string' },
       username: { type: 'string' },
-      password: { type: 'string' },
+      password: { type: 'string', encrypted: true },
       connection_type: { type: 'options'},
       connection_string: { type: 'string', encrypted: true }
     }
