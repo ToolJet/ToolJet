@@ -75,7 +75,7 @@ class Firestore extends React.Component {
                 placeholder="Select.."
               />
             </div>
-            {this.state.options.operation === 'get_document' || this.state.options.operation === 'delete_document'  && (
+            {(this.state.options.operation === 'get_document' || this.state.options.operation === 'delete_document')  && (
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Path</label>
