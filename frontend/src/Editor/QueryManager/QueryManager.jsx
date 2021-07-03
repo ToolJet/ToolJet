@@ -278,7 +278,7 @@ class QueryManager extends React.Component {
                       this.previewPanelRef.current.scrollIntoView();
                     })
                     .catch(({ error, data }) => {
-                      debugger;
+                      
                     });
                 }}
                 className={`btn btn-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''}`}
@@ -348,6 +348,7 @@ class QueryManager extends React.Component {
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}
                       currentState={currentState}
+                      darkMode={this.props.darkMode}
                     />
                     <hr></hr>
                     <div className="mb-3 mt-2">
@@ -355,6 +356,7 @@ class QueryManager extends React.Component {
                         changeOption={this.optionchanged}
                         options={this.state.options}
                         currentState={currentState}
+                        darkMode={this.props.darkMode}
                       />
                     </div>
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>

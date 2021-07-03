@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
+import { DarkModeToggle } from './DarkModeToggle';
 
 export const Header = function Header({
-
+  switchDarkMode, darkMode
 }) {
 
   const [pahtName, setPathName] = useState(document.location.pathname);
@@ -35,7 +36,7 @@ export const Header = function Header({
         <li className={`nav-item mx-3 ${pahtName === '/' ? 'active' : ''}`}>
           <Link to={'/'} className="nav-link">
             <span className="nav-link-icon d-md-none d-lg-inline-block">
-              <img src="/assets/images/icons/apps.svg" width="15" height="15" /> 
+              <img className="svg-icon" src="/assets/images/icons/apps.svg" width="15" height="15" /> 
             </span>
             <span className="nav-link-title">
               Apps
@@ -57,7 +58,7 @@ export const Header = function Header({
         <li className={`nav-item ${pahtName === '/users' ? 'active' : ''}`}>
           <Link to={'/users'} className="nav-link mx-2">
             <span className="nav-link-icon d-md-none d-lg-inline-block">
-              <img src="/assets/images/icons/users.svg" width="15" height="15" /> 
+              <img className="svg-icon" src="/assets/images/icons/users.svg" width="15" height="15" /> 
             </span>
             <span className="nav-link-title">
               Users
@@ -66,6 +67,12 @@ export const Header = function Header({
         </li>
       </ul>
       <div className="navbar-nav flex-row order-md-last">
+        <div className="p-1">
+          <DarkModeToggle
+            switchDarkMode={switchDarkMode}
+            darkMode={darkMode}
+          />
+        </div>
         <div className="nav-item dropdown">
           <a
             href="#"

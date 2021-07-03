@@ -9,7 +9,7 @@ const Plot = createPlotlyComponent(Plotly)
 import Skeleton from 'react-loading-skeleton';
 
 export const Chart = function Chart({
-  id, width, height, component, onComponentClick, currentState
+  id, width, height, component, onComponentClick, currentState, darkMode
 }) {
   console.log('currentState', currentState);
 
@@ -26,8 +26,7 @@ export const Chart = function Chart({
 
   const computedStyles = {
     width,
-    height,
-    backgroundColor: 'white'
+    height
   };
 
   const dataProperty = component.definition.properties.data;
@@ -48,14 +47,23 @@ export const Chart = function Chart({
   const layout = {
     width, 
     height, 
-    title,
+    plot_bgcolor: darkMode ? '#1f2936' : null,
+    paper_bgcolor: darkMode ? '#1f2936' : null,
+    title: {
+      text: title,
+      font: {
+        color: darkMode ? '#c3c3c3' : null
+      }
+    },
     xaxis: {
       showgrid: showGridLines,
-      showline: true
+      showline: true,
+      color: darkMode ? '#c3c3c3' : null
     },
     yaxis: {
         showgrid: showGridLines,
-        showline: true
+        showline: true,
+        color: darkMode ? '#c3c3c3' : null
     }
   }
 

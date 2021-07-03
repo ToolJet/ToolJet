@@ -95,6 +95,7 @@ class Restapi extends React.Component {
                   currentState={this.props.currentState}
                   initialValue={options.url}
                   className="codehinter-query-editor-input"
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
                   onChange={(value) => {
                     changeOption(this, 'url', value);
                   }}
@@ -119,6 +120,7 @@ class Restapi extends React.Component {
                       <CodeHinter
                         currentState={this.props.currentState}
                         initialValue={pair[0]}
+                        theme={this.props.darkMode ? 'monokai' : 'default'}
                         className="form-control codehinter-query-editor-input"
                         onChange={(value) => this.keyValuePairValueChanged(value, 0, option.value, index)}
                       />
@@ -126,6 +128,7 @@ class Restapi extends React.Component {
                         currentState={this.props.currentState}
                         className="form-control codehinter-query-editor-input"
                         initialValue={pair[1]}
+                        theme={this.props.darkMode ? 'monokai' : 'default'}
                         onChange={(value) => this.keyValuePairValueChanged(value, 1, option.value, index)}
                       />
                       <span

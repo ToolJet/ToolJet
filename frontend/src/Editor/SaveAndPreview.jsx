@@ -91,6 +91,7 @@ class SaveAndPreview extends React.Component {
           enforceFocus={false}
           animation={false}
           onEscapeKeyDown={() => this.hideModal()}
+          contentClassName={this.props.darkMode ? 'theme-dark' : ''}
         >
           <Modal.Header>
             <Modal.Title>Versions and deployments</Modal.Title>
@@ -101,7 +102,7 @@ class SaveAndPreview extends React.Component {
                 </button>
               )}
 
-              <Button variant="light" size="sm" onClick={() => this.hideModal()}>
+              <Button variant={this.props.darkMode ? 'secondary' : 'light'}size="sm" onClick={() => this.hideModal()}>
                 x
               </Button>
             </div>
