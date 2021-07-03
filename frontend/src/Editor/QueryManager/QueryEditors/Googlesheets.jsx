@@ -110,7 +110,7 @@ class Googlesheets extends React.Component {
             <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={options.rows}
-                  theme="duotone-light"
+                  theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                   lineNumbers={true}
                   className="query-hinter"
                   onChange={(value) => changeOption(this, 'rows', value)}

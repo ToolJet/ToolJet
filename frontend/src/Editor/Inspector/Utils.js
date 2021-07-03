@@ -31,7 +31,7 @@ export function renderQuerySelector(component, dataQueries, eventOptionUpdated, 
   />)
 }
 
-export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState, components = {}) {
+export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState, components = {}, darkMode = false) {
   const definition = component.component.definition[paramType][param];
   const meta = componentMeta[paramType][param];
   console.log('definition', definition);
@@ -47,6 +47,7 @@ export function renderElement(component, componentMeta, paramUpdated, dataQuerie
             components={components}
             componentMeta={componentMeta}
             currentState={currentState}
+            darkMode={darkMode}
         />
   );
 }

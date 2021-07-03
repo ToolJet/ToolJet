@@ -2,6 +2,7 @@ import React from 'react';
 import {
   datasourceService, dataqueryService, appService, authenticationService
 } from '@/_services';
+import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -571,11 +572,18 @@ class Editor extends React.Component {
                   </div>
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
+                  <div className="mx-3" style={{ marginTop: '7px'}}>
+                    <DarkModeToggle
+                      switchDarkMode={this.props.switchDarkMode}
+                      darkMode={this.props.darkMode}
+                    />
+                  </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
                     {app.id
                      && <ManageAppUsers
                        app={app}
                        slug={slug}
+                       darkMode={this.props.darkMode}
                        handleSlugChange={this.handleSlugChange} />}
                   </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
@@ -590,6 +598,7 @@ class Editor extends React.Component {
                           appName={app.name}
                           appDefinition={appDefinition}
                           app={app}
+                          darkMode={this.props.darkMode}
                           onVersionDeploy={this.onVersionDeploy}
                         />
                     )}
@@ -606,7 +615,6 @@ class Editor extends React.Component {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: '#f0f0f0',
                 zIndex: '200'
               }}
               maxWidth={showLeftSidebar ? '30%' : '0%'}
@@ -621,6 +629,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         style={{ fontSize: '0.7rem' }}
+                        theme={this.props.darkMode ? 'shapeshifter' : ''}
                         enableClipboard={false}
                         src={currentState.globals}
                         name={'globals'}
@@ -636,6 +645,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.components}
+                        theme={this.props.darkMode ? 'shapeshifter' : ''}
                         name={'components'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
@@ -651,6 +661,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.queries}
+                        theme={this.props.darkMode ? 'shapeshifter' : ''}
                         name={'queries'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
@@ -680,6 +691,7 @@ class Editor extends React.Component {
                       {this.state.showDataSourceManagerModal && (
                         <DataSourceManager
                           appId={appId}
+                          darkMode={this.props.darkMode}
                           hideModal={() => this.setState({ showDataSourceManagerModal: false })}
                           dataSourcesChanged={this.dataSourcesChanged}
                           showDataSourceManagerModal={this.state.showDataSourceManagerModal}
@@ -725,6 +737,7 @@ class Editor extends React.Component {
                     appDefinition={appDefinition}
                     appDefinitionChanged={this.appDefinitionChanged}
                     snapToGrid={true}
+                    darkMode={this.props.darkMode}
                     mode={'edit'}
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
@@ -838,6 +851,7 @@ class Editor extends React.Component {
                             editingQuery={editingQuery}
                             queryPaneHeight={queryPaneHeight}
                             currentState={currentState}
+                            darkMode={this.props.darkMode}
                           />
                         </div>
                       </div>
@@ -867,6 +881,7 @@ class Editor extends React.Component {
                       key={selectedComponent.id}
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
+                      darkMode={this.props.darkMode}
                     ></Inspector>
                   ) : (
                     <div className="mt-5 p-2">Please select a component to inspect</div>
