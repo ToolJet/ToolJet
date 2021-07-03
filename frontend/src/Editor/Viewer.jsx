@@ -15,6 +15,7 @@ import {
   runQuery
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
+import { DarkModeToggle } from '@/_components/DarkModeToggle';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -137,7 +138,12 @@ class Viewer extends React.Component {
                   </a>
                 </h1>
                 {this.state.app && <span>{this.state.app.name}</span>}
-                <div className="navbar-nav flex-row order-md-last"></div>
+                <div className="navbar-nav flex-row order-md-last">
+                  <DarkModeToggle
+                    switchDarkMode={this.props.switchDarkMode}
+                    darkMode={this.props.darkMode}
+                  />
+                </div>
               </div>
             </header>
           </div>
