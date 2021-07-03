@@ -255,7 +255,7 @@ class QueryManager extends React.Component {
                   autoFocus={false}
                 />
                 <span className="input-icon-addon">
-                  <img src="/assets/images/icons/edit.svg" width="12" height="12" />
+                  <img className="svg-icon" src="/assets/images/icons/edit.svg" width="12" height="12" />
                 </span>
               </div>
             </div>
