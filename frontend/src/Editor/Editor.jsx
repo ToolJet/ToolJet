@@ -629,7 +629,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         style={{ fontSize: '0.7rem' }}
-                        theme={this.props.darkMode ? 'shapeshifter' : ''}
+                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
                         enableClipboard={false}
                         src={currentState.globals}
                         name={'globals'}
@@ -645,7 +645,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.components}
-                        theme={this.props.darkMode ? 'shapeshifter' : ''}
+                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
                         name={'components'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
@@ -661,7 +661,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.queries}
-                        theme={this.props.darkMode ? 'shapeshifter' : ''}
+                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
                         name={'queries'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
