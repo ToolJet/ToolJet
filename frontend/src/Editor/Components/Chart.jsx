@@ -26,7 +26,8 @@ export const Chart = function Chart({
 
   const computedStyles = {
     width,
-    height
+    height,
+    background: darkMode ? '#1f2936' : 'white'
   };
 
   const dataProperty = component.definition.properties.data;
@@ -109,7 +110,9 @@ export const Chart = function Chart({
     >
       {loadingState === true ? 
         <div style={{ width: '100%' }} className="p-2">
-          <Skeleton count={5} />
+          <center>
+            <div className="spinner-border mt-5" role="status"></div>
+          </center>
         </div>
       :
         <Plot

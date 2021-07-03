@@ -589,7 +589,9 @@ export function Table({
         </table>
         {loadingState === true && (
           <div style={{ width: '100%' }} className="p-2">
-            <Skeleton count={5} />
+            <center>
+              <div className="spinner-border mt-5" role="status"></div>
+            </center>
           </div>
         )}
       </div>
