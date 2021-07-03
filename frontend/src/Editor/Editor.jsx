@@ -849,33 +849,7 @@ class Editor extends React.Component {
             <div className="editor-sidebar">
               <div className="col-md-12">
                 <div>
-                  <ul className="nav nav-tabs" data-bs-toggle="tabs">
-                    <li className="nav-item col-md-6">
-                      <a
-                        onClick={() => this.switchSidebarTab(1)}
-                        className={currentSidebarTab === 1 ? 'nav-link active' : 'nav-link'}
-                        data-bs-toggle="tab"
-                      >
-                        <img
-                          src="/assets/images/icons/lens.svg"
-                          width="16"
-                          height="16"
-                          className="d-md-none d-lg-block"
-                        />
-                        &nbsp; Properties
-                      </a>
-                    </li>
-                    <li className="nav-item col-md-6">
-                      <a
-                        onClick={() => this.switchSidebarTab(2)}
-                        className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}
-                        data-bs-toggle="tab"
-                      >
-                        <img src="/assets/images/icons/insert.svg" width="16" height="16" className="d-md-none d-lg-block"/>
-                        &nbsp; Widgets
-                      </a>
-                    </li>
-                  </ul>
+                  
                 </div>
               </div>
 
@@ -891,6 +865,7 @@ class Editor extends React.Component {
                       currentState={currentState}
                       allComponents={appDefinition.components}
                       key={selectedComponent.id}
+                      switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
                     ></Inspector>
                   ) : (
