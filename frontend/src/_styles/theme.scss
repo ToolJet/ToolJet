@@ -364,10 +364,11 @@ body {
         .header {
           border: solid rgba(0, 0, 0, 0.125);
           border-width: 0px 0px 1px 0px;
+          background: white;
           position: fixed;
           z-index: 2;
           width: 54%;
-          margin-top: 1px;
+          margin-top: 0px;
         }
 
         .preview-header {
@@ -1770,6 +1771,7 @@ input:focus-visible {
   .editor .main .query-pane .query-definition-pane .header {
     border: solid rgba(255, 255, 255, 0.09);
     border-width: 0px 0px 1px 0px!important;
+    background: #1f2936;
   }
 
   .left-sidebar {
@@ -1939,6 +1941,10 @@ input:focus-visible {
 
   .codehinter-query-editor-input .CodeMirror {
     height: 31px !important;
+  }
+
+  .codehinter-query-editor-input .CodeMirror {
+    color: #c3c3c3!important; 
   }
 }
 

@@ -13,7 +13,7 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/120830570-4211a000-c57c-11eb-97f5-a650b177a082.png" />
+    <img src="https://user-images.githubusercontent.com/7828962/124362436-6aabb900-dc52-11eb-8459-2525adfd1b3d.gif" />
   </kbd>
 </p>
 
@@ -21,7 +21,8 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 ## Features
 
 - Visual app builder with widgets such as tables, charts, modals, buttons, dropdowns and more
-- Mobile & desktop layouts
+- Mobile 📱 & desktop layouts 🖥
+- Dark mode 🌛
 - Connect to databases, APIs and external services
 - Deploy on-premise ( supports docker, kubernetes, heroku and more )
 - Granular access control on organization level and app level
