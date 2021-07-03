@@ -1659,8 +1659,32 @@ input:focus-visible {
     background-color: #2f3c4c!important;
   }
 
+  .DateInput {
+    background: #1f2936
+  }
+
+  .DateInput_input {
+    background-color: #1f2936;
+  }
+
+  .DateRangePickerInput {
+    background-color: #1f2936
+  }
+
+  .DateInput_input__focused {
+    background: #1f2936;
+  }
+
+  .DateRangePickerInput__withBorder {
+    border: 1px solid #1f2936;
+  }
+
   .main .canvas-container .canvas-area {
     background: #2f3c4c;
+  }
+
+  .rdtOpen .rdtPicker {
+    color: black;
   }
 
   .editor .editor-sidebar .components-container .component-image-holder { 
