@@ -30,7 +30,8 @@ export const Container = ({
   removeComponent,
   deviceWindowWidth,
   scaleValue,
-  selectedComponent
+  selectedComponent,
+  darkMode
 }) => {
 
   const styles = {
@@ -278,6 +279,7 @@ export const Container = ({
             scaleValue={scaleValue}
             deviceWindowWidth={deviceWindowWidth}
             isSelectedComponent={selectedComponent? selectedComponent.id === key : false}
+            darkMode={darkMode}
             containerProps={{
               mode,
               snapToGrid,
@@ -295,7 +297,8 @@ export const Container = ({
               currentLayout,
               scaleValue,
               deviceWindowWidth,
-              selectedComponent
+              selectedComponent,
+              darkMode
             }}
           />
         }

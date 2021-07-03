@@ -28,7 +28,7 @@ class Mysql extends React.Component {
               currentState={this.props.currentState}
               initialValue={options.query}
               mode="sql"
-              theme="duotone-light"
+              theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
               lineNumbers={true}
               className="query-hinter"
               onChange={(value) => changeOption(this, 'query', value)}

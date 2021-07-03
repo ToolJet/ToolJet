@@ -8,7 +8,8 @@ import 'codemirror/addon/display/placeholder';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
-import 'codemirror/theme/duotone-light.css';
+import 'codemirror/theme/duotone-light.css'
+import 'codemirror/theme/monokai.css';;
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 

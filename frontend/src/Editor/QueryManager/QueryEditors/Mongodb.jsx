@@ -80,6 +80,7 @@ class Mongodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.collection}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'collection', value)}
                   />
                 </div>
@@ -89,7 +90,7 @@ class Mongodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.document}
-                    theme="duotone-light"
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                     mode="javascript"
                     lineNumbers={true}
                     placeholder={placeholders['mongodb']['insert_one']}
@@ -107,6 +108,7 @@ class Mongodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.collection}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'collection', value)}
                   />
                 </div>
@@ -116,7 +118,7 @@ class Mongodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.documents}
-                    theme="duotone-light"
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                     mode="javascript"
                     lineNumbers={true}
                     className="query-hinter"

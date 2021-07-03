@@ -109,7 +109,10 @@ class ManageOrgUsers extends React.Component {
 
     return (
       <div className="wrapper org-users-page">
-        <Header />
+        <Header 
+          switchDarkMode={this.props.switchDarkMode}
+          darkMode={this.props.darkMode}
+        />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -269,7 +272,7 @@ class ManageOrgUsers extends React.Component {
                                 </span>
                               </td>
                               <td className="text-muted">
-                                <a href="#" className="text-reset">
+                                <a href="#" className="text-reset user-email">
                                   {user.email}
                                 </a>
                               </td>
@@ -295,7 +298,7 @@ class ManageOrgUsers extends React.Component {
                                 <span
                                   className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
                                 ></span>
-                                <small>{user.status}</small>
+                                <small className="user-status">{user.status}</small>
                               </td>
                               <td>
                                 {archivingUser === null && (

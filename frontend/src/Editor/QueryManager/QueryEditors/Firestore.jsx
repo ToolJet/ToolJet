@@ -82,6 +82,7 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.path}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'path', value)}
                   />
                 </div>
@@ -95,6 +96,7 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.path}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'path', value)}
                   />
                 </div>
@@ -106,6 +108,7 @@ class Firestore extends React.Component {
                     theme="duotone-light"
                     lineNumbers={true}
                     className="query-hinter"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'body', value)}
                   />
                 </div>
@@ -118,6 +121,7 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.collection}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'collection', value)}
                   />
                 </div>
@@ -126,6 +130,7 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.document_id_key}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'document_id_key', value)}
                   />
                 </div>
@@ -138,7 +143,7 @@ class Firestore extends React.Component {
                     onChange={(instance) => changeOption(this, 'records', instance.getValue())}
                     placeholder="{ }"
                     options={{
-                      theme: 'duotone-light',
+                      theme: this.props.darkMode ? 'monokai' : 'default',
                       mode: 'javascript',
                       lineWrapping: true,
                       scrollbarStyle: null
@@ -154,6 +159,7 @@ class Firestore extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.path}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     className="codehinter-query-editor-input"
                     onChange={(value) => changeOption(this, 'path', value)}
                   />
@@ -164,6 +170,7 @@ class Firestore extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.order}
                     className="codehinter-query-editor-input"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'order', value)}
                   />
                 </div>
@@ -173,6 +180,7 @@ class Firestore extends React.Component {
                     currentState={this.props.currentState}
                     initialValue={this.state.options.limit}
                     className="codehinter-query-editor-input"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'limit', value)}
                   />
                 </div>
@@ -183,6 +191,7 @@ class Firestore extends React.Component {
                     <CodeHinter
                       currentState={this.props.currentState}
                       className="codehinter-query-editor-input"
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
                       initialValue={this.state.options.where_field}
                       onChange={(value) => changeOption(this, 'where_field', value)}
                     />
@@ -214,6 +223,7 @@ class Firestore extends React.Component {
                     <CodeHinter
                       currentState={this.props.currentState}
                       className="codehinter-query-editor-input"
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
                       initialValue={this.state.options.where_value}
                       onChange={(value) => changeOption(this, 'where_value', value)}
                     />

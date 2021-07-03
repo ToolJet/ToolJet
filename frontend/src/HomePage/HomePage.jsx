@@ -125,7 +125,8 @@ class HomePage extends React.Component {
         />
 
         <Header
-
+           switchDarkMode={this.props.switchDarkMode}
+           darkMode={this.props.darkMode}
         />
         {!isLoading && meta.total_count === 0 &&
           <BlankPage
@@ -162,10 +163,10 @@ class HomePage extends React.Component {
                       </div>
                     </div>
 
-                    <div className={currentFolder.count == 0 ? 'table-responsive bg-white w-100 apps-table mt-3 d-flex align-items-center' : 'table-responsive bg-white w-100 apps-table mt-3'} style={{minHeight: '600px'}}>
+                    <div className={currentFolder.count == 0 ? 'table-responsive w-100 apps-table mt-3 d-flex align-items-center' : 'table-responsive w-100 apps-table mt-3'} style={{minHeight: '600px'}}>
                       <table
                         data-testid="appsTable"
-                        className="table table-vcenter">
+                        className={`table table-vcenter ${this.props.darkMode ? 'bg-dark' : 'bg-white' }`}>
                         <tbody>
                           {isLoading && (
                             <>
@@ -196,7 +197,7 @@ class HomePage extends React.Component {
                             <tr className="row">
                               <td className="col p-3">
                                 <span className="app-title mb-3">{app.name}</span> <br />
-                                <small className="pt-2">created {app.created_at} ago by {app.user.first_name} {app.user.last_name} </small>
+                                <small className="pt-2 app-description">created {app.created_at} ago by {app.user.first_name} {app.user.last_name} </small>
                               </td>
                               <td className="text-muted col-auto pt-4">
                                 <Link
