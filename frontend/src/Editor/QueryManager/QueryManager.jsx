@@ -375,6 +375,7 @@ class QueryManager extends React.Component {
                             style={{ fontSize: '0.7rem' }}
                             enableClipboard={false}
                             src={queryPreviewData}
+                            theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
                             displayDataTypes={true}
                             collapsed={false}
                             displayObjectSize={true}
