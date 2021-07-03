@@ -25,7 +25,7 @@ class App extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       onboarded: true,
-      darkMode: false
+      darkMode: localStorage.getItem('darkMode') === 'true'
     };
   }
 
@@ -42,6 +42,7 @@ class App extends React.Component {
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
+    localStorage.setItem('darkMode', newMode);
   }
 
   render() {
