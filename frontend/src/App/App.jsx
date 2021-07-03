@@ -25,7 +25,7 @@ class App extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       onboarded: true,
-      darkMode: true
+      darkMode: false
     };
   }
 
