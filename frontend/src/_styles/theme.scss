@@ -1840,6 +1840,11 @@ input:focus-visible {
     }
   }
 
+  .editor .editor-sidebar .inspector .header {
+    border: solid rgba(255, 255, 255, 0.09)!important;
+    border-width: 0px 0px 1px 0px!important;
+  }
+
   .skeleton-line::after {
     // background-image: linear-gradient(to right, #232e3c 0, #4c5b79 40%, #4c5b79 80%);
     background-image: linear-gradient(to right, #566177 0, #5a6170 40%, #4c5b79 80%);
