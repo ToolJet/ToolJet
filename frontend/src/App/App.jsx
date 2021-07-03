@@ -107,7 +107,7 @@ class App extends React.Component {
           <PrivateRoute exact path="/applications/:slug" component={Viewer} switchDarkMode={this.switchDarkMode} darkMode={darkMode}/>
           <PrivateRoute exact path="/oauth2/authorize" component={Authorize} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
           <PrivateRoute exact path="/users" component={ManageOrgUsers} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-          <PrivateRoute exact path="/library" component={Library} />
+          <PrivateRoute exact path="/library" component={Library} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
         </div>
       </Router>
     );

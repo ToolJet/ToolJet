@@ -47,7 +47,7 @@ export const Header = function Header({
         <li className={`nav-item ${pahtName === '/library' ? 'active' : ''}`}>
           <Link to={'/library'} className="nav-link mx-2">
             <span className="nav-link-icon d-md-none d-lg-inline-block">
-              <img src="https://www.svgrepo.com/show/39547/gallery.svg" width="15" height="15" /> 
+              <img className="svg-icon" src="https://www.svgrepo.com/show/39547/gallery.svg" width="15" height="15" /> 
             </span>
             <span className="nav-link-title">
               Library

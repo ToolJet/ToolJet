@@ -16,7 +16,10 @@ class Library extends React.Component {
     return (
       <div className="wrapper org-users-page">
 
-        <Header/>   
+        <Header
+          switchDarkMode={this.props.switchDarkMode}
+          darkMode={this.props.darkMode}
+        />   
 
         <div className="page-wrapper">
 
