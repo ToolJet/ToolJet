@@ -31,7 +31,8 @@ export function Table({
   paramUpdated,
   changeCanDrag,
   onComponentOptionChanged,
-  onComponentOptionsChanged
+  onComponentOptionsChanged,
+  darkMode
 }) {
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
@@ -472,6 +473,7 @@ export function Table({
       <div className="ms-2 d-inline-block">
         Search:{' '}
         <input
+          className="global-search-field"
           defaultValue={value || ''}
           onBlur={(e) => {
             handleSearchTextChange(e.target.value)
@@ -494,7 +496,7 @@ export function Table({
 
   return (
     <div
-      className="card"
+      className="card jet-table"
       style={{ width: `${width}px`, height: `${height}px` }}
       onClick={() => onComponentClick(id, component)}
     >
@@ -587,7 +589,9 @@ export function Table({
         </table>
         {loadingState === true && (
           <div style={{ width: '100%' }} className="p-2">
-            <Skeleton count={5} />
+            <center>
+              <div className="spinner-border mt-5" role="status"></div>
+            </center>
           </div>
         )}
       </div>

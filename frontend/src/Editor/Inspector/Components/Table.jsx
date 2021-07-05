@@ -25,7 +25,7 @@ class Table extends React.Component {
       eventUpdated,
       eventOptionUpdated,
       components,
-      currentState
+      currentState,
     };
   }
 
@@ -239,8 +239,8 @@ class Table extends React.Component {
   actionButton(action, index) {
     return (
       <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.actionPopOver(action, index)}>
-        <div className="card p-2 bg-light" role="button">
-          <div className="row bg-light">
+        <div className={`card p-2 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
+          <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`}>
             <div className="col-auto">
               <div className="text">{action.buttonText}</div>
             </div>
@@ -355,13 +355,14 @@ class Table extends React.Component {
           <div>
             <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
               {columns.value.map((item, index) => (
-                <div className="card p-2 bg-light column-sort-row" key={index}>
+                <div className={`card p-2 column-sort-row ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
                   <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.columnPopover(item, index)}>
-                    <div className="row bg-light" role="button">
+                    <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
                       <div className="col-auto">
                         <SortableItem key={item.name}>
                           <img
                             style={{ cursor: 'move' }}
+                            className="svg-icon"
                             src="/assets/images/icons/editor/rearrange.svg"
                             width="10"
                             height="10"

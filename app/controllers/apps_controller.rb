@@ -15,7 +15,7 @@ class AppsController < ApplicationController
       @scope = @folder.apps
     end
 
-    @apps = @scope.order('created_at desc')
+    @apps = @scope.order("created_at desc")
                   .page(params[:page])
                   .per(10)
                   .includes(:user)
@@ -31,12 +31,12 @@ class AppsController < ApplicationController
   def create
     authorize App
     @app = App.create!({
-                         name: 'Untitled app',
+                         name: "Untitled app",
                          organization: @current_user.organization,
-                         current_version: AppVersion.new(name: 'v0'),
+                         current_version: AppVersion.new(name: "v0"),
                          user: @current_user
                        })
-    AppUser.create(app: @app, user: @current_user, role: 'admin')
+    AppUser.create(app: @app, user: @current_user, role: "admin")
   end
 
   def show

@@ -72,7 +72,7 @@ class Chart extends React.Component {
           <CodeHinter
               currentState={this.props.currentState}
               initialValue={data.value}
-              theme="duotone-light"
+              theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
               mode= "javascript"
               lineNumbers={false}
               className="chart-input pr-2"

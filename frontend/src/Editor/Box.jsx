@@ -54,6 +54,7 @@ export const Box = function Box({
   paramUpdated,
   changeCanDrag,
   containerProps,
+  darkMode
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -91,6 +92,7 @@ export const Box = function Box({
           height={height}
           component={component}
           containerProps={containerProps}
+          darkMode={darkMode}
         ></ComponentToRender>
       ) : (
         <div className="m-1" style={{ height: '100%' }}>

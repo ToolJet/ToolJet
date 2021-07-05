@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MongodbQueryService
   attr_accessor :data_query, :data_source, :options, :source_options, :current_user
 
@@ -9,17 +11,16 @@ class MongodbQueryService
     @current_user = current_user
   end
 
-  def self.connection options
-
-    connection_type = options.dig('connection_type', 'value')
+  def self.connection(options)
+    connection_type = options.dig("connection_type", "value")
 
     if connection_type === "manual"
 
-      host = options.dig('host', 'value')
-      port = options.dig('port', 'value')
-      user = options.dig('username', 'value')
-      password = options.dig('password', 'value')
-      database = options.dig('database', 'value')
+      host = options.dig("host", "value")
+      port = options.dig("port", "value")
+      user = options.dig("username", "value")
+      password = options.dig("password", "value")
+      database = options.dig("database", "value")
 
       user = nil if user.blank?
       password = nil if password.blank?
@@ -32,9 +33,9 @@ class MongodbQueryService
         password: password
       )
     else
-      connection_string = options.dig('connection_string', 'value')
+      connection_string = options.dig("connection_string", "value")
       connection = Mongo::Client.new(connection_string, server_selection_timeout: 5)
-    end  
+    end
 
     connection.collections
   end
@@ -42,22 +43,22 @@ class MongodbQueryService
   def process
     error = nil
     data = []
-    operation = options['operation']
+    operation = options["operation"]
 
     begin
       if $connections.include? data_source.id
         connection = $connections[data_source.id][:connection]
       else
-        
-        if source_options['connection_type'] === 'manual'
-          password = source_options['password']
+
+        if source_options["connection_type"] === "manual"
+          password = source_options["password"]
           password = nil if password.blank?
-          user = source_options['username']
+          user = source_options["username"]
           user = nil if user.blank?
 
-          host = source_options['host']
-          port = source_options['port']
-          database = source_options['database']
+          host = source_options["host"]
+          port = source_options["port"]
+          database = source_options["database"]
 
           connection = Mongo::Client.new(
             [ "#{host}:#{port}" ],
@@ -67,24 +68,24 @@ class MongodbQueryService
             password: password
           )
         else
-          connection_string = source_options['connection_string']
+          connection_string = source_options["connection_string"]
           connection = Mongo::Client.new(connection_string, server_selection_timeout: 5)
         end
 
         $connections[data_source.id] = { connection: connection }
       end
 
-      if operation === 'list_collections'
+      if operation === "list_collections"
         connection.collections.each { |coll| data << { name: coll.name }  }
       end
 
-      if operation === 'insert_one'
+      if operation === "insert_one"
         collection = connection[options["collection"]]
         doc = JSON.parse(options["document"])
         result = collection.insert_one(doc)
       end
 
-      if operation === 'insert_many'
+      if operation === "insert_many"
         collection = connection[options["collection"]]
         docs = JSON.parse(options["documents"])
         result = collection.insert_many(docs)
@@ -95,6 +96,6 @@ class MongodbQueryService
       error = e.message
     end
 
-    { status: error ? 'failed' : 'success', data: data, error: { message: error } }
+    { status: error ? "failed" : "success", data: data, error: { message: error } }
   end
 end

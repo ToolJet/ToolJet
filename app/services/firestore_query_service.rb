@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class FirestoreQueryService
-  require 'google/cloud/firestore'
+  require "google/cloud/firestore"
   include DatasourceUtils
 
   attr_accessor :data_query, :options, :source_options, :current_user, :data_source
@@ -12,8 +14,8 @@ class FirestoreQueryService
     @current_user = current_user
   end
 
-  def self.connection options
-    gcp_key = JSON.parse(options.dig('gcp_key', 'value'))
+  def self.connection(options)
+    gcp_key = JSON.parse(options.dig("gcp_key", "value"))
 
     Google::Cloud::Firestore.configure do |config|
         config.credentials = gcp_key
@@ -33,14 +35,14 @@ class FirestoreQueryService
       firestore = get_cached_connection(data_source)
       firestore = create_connection unless firestore
 
-      operation = options['operation']
+      operation = options["operation"]
 
-      update_document(options['path'], options['body'].as_json, firestore) if operation == 'update_document'
+      update_document(options["path"], options["body"].as_json, firestore) if operation == "update_document"
 
-      if operation == 'bulk_update'
-        records = options['records']
-        collection = options['collection']
-        doc_key_id = options['document_id_key']
+      if operation == "bulk_update"
+        records = options["records"]
+        collection = options["collection"]
+        doc_key_id = options["document_id_key"]
 
         records.each do |record|
           path = "#{collection}/#{record[doc_key_id]}"
@@ -49,50 +51,50 @@ class FirestoreQueryService
         end
       end
 
-      if operation == 'get_document'
-        path = options['path']
+      if operation == "get_document"
+        path = options["path"]
         doc_ref  = firestore.doc path
         snapshot = doc_ref.get
         data = snapshot.data
       end
 
-      if operation == 'set_document'
-        path = options['path']
-        body = JSON.parse(options['body'])
+      if operation == "set_document"
+        path = options["path"]
+        body = JSON.parse(options["body"])
         doc_ref = firestore.doc path
         doc_ref.set body
       end
 
-      if operation == 'add_document'
-        path = options['path']
-        body = JSON.parse(options['body'])
+      if operation == "add_document"
+        path = options["path"]
+        body = JSON.parse(options["body"])
         col_ref = firestore.col path
         col_ref.add body
       end
 
-      if operation == 'delete_document'
-        path = options['path']
-        body = JSON.parse(options['body'])
+      if operation == "delete_document"
+        path = options["path"]
+        body = JSON.parse(options["body"])
         doc_ref = firestore.doc path
         doc_ref.delete
       end
 
-      if operation == 'query_collection'
-        path = options['path']
+      if operation == "query_collection"
+        path = options["path"]
         doc_ref = firestore.col path
 
         # execute where condition
 
-        if options['where_field']
-          doc_ref = doc_ref.where options['where_field'], options['where_operation'], options['where_value']
+        if options["where_field"]
+          doc_ref = doc_ref.where options["where_field"], options["where_operation"], options["where_value"]
         end
 
-        if options['order']
-          doc_ref = doc_ref.order(options['order'], 'desc')
+        if options["order"]
+          doc_ref = doc_ref.order(options["order"], "desc")
         end
 
-        if options['limit']
-          doc_ref = doc_ref.limit(options['limit'].to_i)
+        if options["limit"]
+          doc_ref = doc_ref.limit(options["limit"].to_i)
         end
 
         data = []
@@ -116,7 +118,7 @@ class FirestoreQueryService
   end
 
   def create_connection
-    credential_json = JSON.parse(source_options['gcp_key'])
+    credential_json = JSON.parse(source_options["gcp_key"])
     Google::Cloud::Firestore.configure do |config|
       config.credentials = credential_json
     end

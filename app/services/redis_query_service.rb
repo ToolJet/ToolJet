@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class RedisQueryService
-  require 'redis'
+  require "redis"
 
   attr_accessor :data_query, :data_source, :options, :source_options, :current_user
 
@@ -11,15 +13,14 @@ class RedisQueryService
     @current_user = current_user
   end
 
-  def self.connection options
-
-    password = options.dig('password', 'value')
+  def self.connection(options)
+    password = options.dig("password", "value")
     password = nil if password.blank?
 
     connection = Redis.new(
-      host: options.dig('host', 'value'),
-      port: options.dig('port', 'value'),
-      user: options.dig('username', 'value'),
+      host: options.dig("host", "value"),
+      port: options.dig("port", "value"),
+      user: options.dig("username", "value"),
       password: password
     )
 
@@ -28,7 +29,7 @@ class RedisQueryService
 
   def process
     error = nil
-    password = source_options['password']
+    password = source_options["password"]
     password = nil if password.blank?
 
     begin
@@ -36,23 +37,23 @@ class RedisQueryService
         connection = $connections[data_source.id][:connection]
       else
         connection = Redis.new(
-          host: source_options['host'],
-          port: source_options['port'],
-          user: source_options['username'],
+          host: source_options["host"],
+          port: source_options["port"],
+          user: source_options["username"],
           password: password
         )
 
         $connections[data_source.id] = { connection: connection }
       end
 
-      query_text = options['query']
+      query_text = options["query"]
 
-      result = connection.call(query_text.split(' '))
+      result = connection.call(query_text.split(" "))
     rescue StandardError => e
       puts e
       error = e.message
     end
 
-    { status: error ? 'failed' : 'success', data: result, error: { message: error } }
+    { status: error ? "failed" : "success", data: result, error: { message: error } }
   end
 end

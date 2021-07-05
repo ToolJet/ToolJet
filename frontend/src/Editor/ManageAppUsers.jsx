@@ -147,11 +147,21 @@ class ManageAppUsers extends React.Component {
           Share
         </button>
 
-        <Modal show={this.state.showModal} size="lg" backdrop="static" centered={true} keyboard={true} onEscapeKeyDown={this.hideModal} className="app-sharing-modal">
+        <Modal 
+          show={this.state.showModal} 
+          size="lg" 
+          backdrop="static" 
+          centered={true} 
+          keyboard={true} 
+          animation={false}
+          onEscapeKeyDown={this.hideModal} 
+          className="app-sharing-modal"
+          contentClassName={this.props.darkMode ? 'theme-dark' : ''}
+        >
           <Modal.Header>
             <Modal.Title>Users and permissions</Modal.Title>
             <div>
-              <Button variant="light" size="sm" onClick={() => this.hideModal()}>
+              <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
                 x
               </Button>
             </div>
@@ -203,7 +213,7 @@ class ManageAppUsers extends React.Component {
                         })
                         }
                       >
-                        <button className="btn btn-light btn-sm">Copy</button>
+                        <button className="btn btn-secondary btn-sm">Copy</button>
                       </CopyToClipboard>
                     </span>
                     <div className="invalid-feedback">{slugError}</div>
@@ -257,7 +267,7 @@ class ManageAppUsers extends React.Component {
                   </div>
                 </div>
                 <div className="table-responsive">
-                  <table className="table table-vcenter">
+                  <table className="table table-vcenter app-users-list">
                     <thead>
                       <tr>
                         <th>Name</th>

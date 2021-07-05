@@ -255,7 +255,7 @@ class QueryManager extends React.Component {
                   autoFocus={false}
                 />
                 <span className="input-icon-addon">
-                  <img src="/assets/images/icons/edit.svg" width="12" height="12" />
+                  <img className="svg-icon" src="/assets/images/icons/edit.svg" width="12" height="12" />
                 </span>
               </div>
             </div>
@@ -278,7 +278,7 @@ class QueryManager extends React.Component {
                       this.previewPanelRef.current.scrollIntoView();
                     })
                     .catch(({ error, data }) => {
-                      debugger;
+                      
                     });
                 }}
                 className={`btn btn-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''}`}
@@ -348,6 +348,7 @@ class QueryManager extends React.Component {
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}
                       currentState={currentState}
+                      darkMode={this.props.darkMode}
                     />
                     <hr></hr>
                     <div className="mb-3 mt-2">
@@ -355,6 +356,7 @@ class QueryManager extends React.Component {
                         changeOption={this.optionchanged}
                         options={this.state.options}
                         currentState={currentState}
+                        darkMode={this.props.darkMode}
                       />
                     </div>
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>
@@ -373,6 +375,7 @@ class QueryManager extends React.Component {
                             style={{ fontSize: '0.7rem' }}
                             enableClipboard={false}
                             src={queryPreviewData}
+                            theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
                             displayDataTypes={true}
                             collapsed={false}
                             displayObjectSize={true}
