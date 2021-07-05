@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 module DatasourceUtils
   extend ActiveSupport::Concern
 
   def get_cached_connection(data_source)
-
     connection = nil
     if $connections.include? data_source.id
       data = $connections[data_source.id]
@@ -10,8 +11,7 @@ module DatasourceUtils
         connection = $connections[data_source.id][:connection]
       end
     end
-
-    connection            
+    connection
   end
 
   def cache_connection(data_source, connection)
@@ -21,6 +21,4 @@ module DatasourceUtils
   def reset_connection(data_source)
     $connections.delete @data_source.id
   end
-
 end
-  

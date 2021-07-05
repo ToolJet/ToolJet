@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DataSourceConnectionService
   attr_accessor :data_source_kind, :options
 

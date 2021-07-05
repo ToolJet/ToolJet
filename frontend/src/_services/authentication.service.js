@@ -16,7 +16,7 @@ export const authenticationService = {
 function login(email, password) {
   const requestOptions = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password })
   };
 
@@ -34,7 +34,7 @@ function login(email, password) {
 function signup(email) {
   const requestOptions = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email })
   };
 

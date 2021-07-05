@@ -33,7 +33,7 @@ class Redis extends React.Component {
                 onChange={(instance) => changeOption(this, 'query', instance.getValue())}
                 placeholder="PING"
                 options={{
-                  theme: 'duotone-light',
+                  theme: this.props.darkMode ? 'monokai' : 'duotone-light',
                   mode: 'sql',
                   lineWrapping: true,
                   scrollbarStyle: null

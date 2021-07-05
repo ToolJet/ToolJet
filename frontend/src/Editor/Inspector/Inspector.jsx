@@ -17,7 +17,9 @@ export const Inspector = ({
   allComponents,
   componentChanged,
   currentState,
-  apps
+  apps,
+  darkMode,
+  switchSidebarTab
 }) => {
   
   const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component, layouts: allComponents[selectedComponentId].layouts}
@@ -153,7 +155,7 @@ export const Inspector = ({
 
   return (
     <div className="inspector">
-      <div className="header p-2 row">
+      <div className="header px-2 py-1 row">
         <div className="col-auto">
             <div className="input-icon">
                 <input
@@ -167,33 +169,13 @@ export const Inspector = ({
                 </span>
             </div>
         </div>
-        <div className="col pt-2">
-            <OverlayTrigger
-            trigger="click"
-            placement="left"
-            overlay={
-                <Popover id="popover-basic">
-                {/* <Popover.Title as="h3">brrr</Popover.Title> */}
-                <Popover.Content>
-                    <div className="field mb-2">
-                    <button className="btn btn-light btn-sm mb-2">Duplicate</button>
-                    <br></br>
-                    <button className="btn btn-danger btn-sm" onClick={() => removeComponent(component)}>
-                        Remove
-                    </button>
-                    </div>
-                </Popover.Content>
-                </Popover>
-            }
-            >
-            <img
-                role="button"
-                className="component-action-button"
-                src="/assets/images/icons/app-menu.svg"
-                width="15"
-                height="15"
-            />
-            </OverlayTrigger>
+        <div className="col py-1">
+          <button 
+            className="btn btn-sm component-action-button btn-light"
+            onClick={() => switchSidebarTab(2)}
+          >
+            x
+          </button>
         </div>
 
       </div>
@@ -208,6 +190,7 @@ export const Inspector = ({
           eventOptionUpdated={eventOptionUpdated}
           components={components}
           currentState={currentState}
+          darkMode={darkMode}
         />
       }
 
@@ -221,19 +204,19 @@ export const Inspector = ({
           eventOptionUpdated={eventOptionUpdated}
           components={components}
           currentState={currentState}
+          darkMode={darkMode}
         />
       }
         
       {!['Table', 'Chart'].includes(componentMeta.component)   && 
         <div className="properties-container p-2">
-          {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components))}
-          <div className="hr-text">Style</div>
+          {Object.keys(componentMeta.properties).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'properties', currentState, components, darkMode))}
+          
+          {Object.keys(componentMeta.styles).length > 0 && <div className="hr-text">Style</div>}
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
-          <div className="hr-text">Events</div>
-          {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components, apps))}
-          
-          
 
+          {Object.keys(componentMeta.events).length > 0 && <div className="hr-text">Events</div>}
+          {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components, apps))}
         </div>
       }
 

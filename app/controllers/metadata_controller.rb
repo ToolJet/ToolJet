@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 class MetadataController < ApplicationController
   def index
-
-    unless ENV.fetch('CHECK_FOR_UPDATES', true)
+    unless ENV.fetch("CHECK_FOR_UPDATES", true)
       return
     end
 
@@ -20,7 +21,7 @@ class MetadataController < ApplicationController
       data = metadata.data
     end
 
-    render json: { 
+    render json: {
       latest_version: data["latest_version"],
       installed_version: installed_version,
       version_ignored: data["version_ignored"],
@@ -42,11 +43,10 @@ class MetadataController < ApplicationController
   end
 
   def finish_installation
-
     name = params[:name]
     email = params[:email]
 
-    response = HTTParty.post('https://hub.tooljet.io/subscribe',
+    response = HTTParty.post("https://hub.tooljet.io/subscribe",
       verify: false,
       body: { name: name, email: email, installed_version: TOOLJET_VERSION }.to_json,
       headers: { "Content-Type" => "application/json" })
@@ -56,23 +56,22 @@ class MetadataController < ApplicationController
     Metadatum.first.update(data: data)
   end
 
-  private 
-      def check_for_updates(current_data, installed_version)
+  private
+    def check_for_updates(current_data, installed_version)
+      response = HTTParty.post("https://hub.tooljet.io/updates",
+        verify: false,
+        body: { installed_version: installed_version }.to_json,
+        headers: { "Content-Type" => "application/json" })
 
-        response = HTTParty.post('https://hub.tooljet.io/updates',
-          verify: false,
-          body: { installed_version: installed_version }.to_json,
-          headers: { "Content-Type" => "application/json" })
+      data = JSON.parse(response.body)
+      latest_version = data["latest_version"]
 
-        data = JSON.parse(response.body)
-        latest_version = data["latest_version"]
-
-        if latest_version > '0.5.3' && latest_version != current_data["ignored_version"]
-          current_data["latest_version"] = latest_version
-          current_data["version_ignored"] = false
-        end
-
-        current_data["last_checked"] = Time.now
-        Metadatum.first.update(data: current_data)
+      if latest_version > "0.5.3" && latest_version != current_data["ignored_version"]
+        current_data["latest_version"] = latest_version
+        current_data["version_ignored"] = false
       end
+
+      current_data["last_checked"] = Time.now
+      Metadatum.first.update(data: current_data)
+    end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MssqlQueryService
   include DatasourceUtils
   attr_accessor :data_query, :data_source, :options, :source_options, :current_user
@@ -12,13 +14,13 @@ class MssqlQueryService
 
   def self.connection(options)
     TinyTds::Client.new(
-      database: options.dig('database', 'value'),
-      username: options.dig('username', 'value'),
-      password: options.dig('password', 'value'),
-      host: options.dig('host', 'value'),
-      port: options.dig('port', 'value'),
+      database: options.dig("database", "value"),
+      username: options.dig("username", "value"),
+      password: options.dig("password", "value"),
+      host: options.dig("host", "value"),
+      port: options.dig("port", "value"),
       azure: ActiveModel::Type::Boolean.new.cast(
-        options.dig('azure', 'value')
+        options.dig("azure", "value")
       ) || false
     )
   end
@@ -26,10 +28,10 @@ class MssqlQueryService
   def process
     connection = get_cached_connection(data_source)
     connection ||= create_connection
-    query_text = options['query']
+    query_text = options["query"]
     results = connection.execute(query_text)
 
-    { status: 'success', data: results.to_a }
+    { status: "success", data: results.to_a }
   rescue StandardError => e
     if connection&.active?
       connection&.close
@@ -43,13 +45,13 @@ class MssqlQueryService
 
   def create_connection
     connection = TinyTds::Client.new(
-      database: source_options['database'],
-      username: source_options['username'],
-      password: source_options['password'],
-      host: source_options['host'],
-      port: source_options['port'],
+      database: source_options["database"],
+      username: source_options["username"],
+      password: source_options["password"],
+      host: source_options["host"],
+      port: source_options["port"],
       azure: ActiveModel::Type::Boolean.new.cast(
-        source_options['azure']
+        source_options["azure"]
       ) || false
     )
 

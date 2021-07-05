@@ -84,6 +84,7 @@ export const DraggableBox = function DraggableBox({
   scaleValue,
   deviceWindowWidth,
   isSelectedComponent,
+  darkMode
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -230,6 +231,7 @@ export const DraggableBox = function DraggableBox({
                 onComponentClick={onComponentClick}
                 currentState={currentState}
                 containerProps={containerProps}
+                darkMode={darkMode}
               />
             </div>
           </Rnd>
@@ -247,6 +249,7 @@ export const DraggableBox = function DraggableBox({
             onComponentOptionsChanged={onComponentOptionsChanged}
             onComponentClick={onComponentClick}
             currentState={currentState}
+            darkMode={darkMode}
           />
         </div>
       )}
