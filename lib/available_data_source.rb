@@ -3,25 +3,21 @@
 module AvailableDataSource
   class UnSupportedSource < StandardError; end
 
-  POSTGRES = "POSTGRES".freeze
-  DYNAMODB = "DYNAMODB".freeze
-  ELASTICSEARCH = "ELASTICSEARCH".freeze
-  FIRESTORE = "FIRESTORE".freeze
-  MONGODB = "MONGODB".freeze
-  MSSQL = "MSSQL".freeze
-  MYSQL = "MYSQL".freeze
-  REDIS = "REDIS".freeze
+  module ConnectionPooled
+    POSTGRES = "POSTGRES"
+    DYNAMODB = "DYNAMODB"
+    ELASTICSEARCH = "ELASTICSEARCH"
+    FIRESTORE = "FIRESTORE"
+    MONGODB = "MONGODB"
+    MSSQL = "MSSQL"
+    MYSQL = "MYSQL"
+    REDIS = "REDIS"
 
-  def source_type_supported?(datasource_type)
-    [
-      POSTGRES,
-      DYNAMODB,
-      ELASTICSEARCH,
-      FIRESTORE,
-      MONGODB,
-      MSSQL,
-      MYSQL,
-      REDIS,
-    ].include?(datasource_type)
+    def source_type_supported?(datasource_type)
+      ConnectionPooled
+        .constants
+        .map { |constant| ConnectionPooled.const_get(constant) }
+        .include?(datasource_type)
+    end
   end
 end
