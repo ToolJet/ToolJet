@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 #!/usr/bin/env ruby
 
 def ensure_db_connectivity(user = ENV.fetch("PG_USER"), pass = ENV.fetch("PG_PASS"), host = ENV.fetch("PG_HOST"))
