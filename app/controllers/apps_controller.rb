@@ -42,11 +42,8 @@ class AppsController < ApplicationController
   def show
     @app = App.find(params[:id])
 
-    # Logic to bypass auth for public apps
-    unless @app.is_public
-      authenticate_request
-      authorize @app
-    end
+    authenticate_request
+    authorize @app
   end
 
   def destroy
