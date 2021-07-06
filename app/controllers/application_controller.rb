@@ -11,12 +11,15 @@ class ApplicationController < ActionController::API
     @current_user ||= AuthorizeApiRequest.call(request.headers).result
   end
 
-
-  def authenticate_request
-    render json: { error: 'Not Authorized' }, status: :unauthorized if current_user.blank?
+  def render_not_authenticated
+    render json: { error: 'Not Authorized' }, status: :unauthorized
   end
 
   private
+
+  def authenticate_request
+    render_not_authenticated if current_user.blank?
+  end
 
   def render_user_not_authorized
     render json: { error: 'Access denied' }, status: :forbidden

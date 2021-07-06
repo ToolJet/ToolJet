@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AppsController < ApplicationController
-  skip_before_action :authenticate_request, only: %i[show slug]
+  skip_before_action :authenticate_request, only: %i[slugs]
 
   def index
     authorize App
@@ -42,7 +42,6 @@ class AppsController < ApplicationController
   def show
     @app = App.find(params[:id])
 
-    authenticate_request
     authorize @app
   end
 
@@ -55,11 +54,9 @@ class AppsController < ApplicationController
   def slugs
     @app = App.find_by(slug: params[:slug])
 
-    unless @app.is_public
-      authenticate_request
-      authorize @app, :show_public?
-    end
+    return render_not_authenticated if !@app.is_public && current_user.blank?
 
+    authorize @app, :show_public?
     render :show
   end
 

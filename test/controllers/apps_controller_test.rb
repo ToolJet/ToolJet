@@ -94,10 +94,39 @@ class AppsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, JSON.parse(response.body)["apps"].size
   end
 
-  test "anyone can view public apps" do
+  test "org users can view apps" do
     app = App.create(name: "Test App", organization: @org, is_public: true)
-    get app_url(app.id), headers: { "Content-Type": "application/json" },
+    get apps_url(app.id), headers: { "Content-Type": "application/json" }.merge(auth_header(@admin)),
+        xhr: true
+    assert_response 200
+
+    get apps_url(app.id), headers: { "Content-Type": "application/json" }.merge(auth_header(@developer)),
+        xhr: true
+    assert_response 200
+
+    get apps_url(app.id), headers: { "Content-Type": "application/json" }.merge(auth_header(@viewer)),
+        xhr: true
+    assert_response 200
+  end
+
+  test "non org users cannot view apps" do
+    app = App.create(name: "Test App", organization: @org, is_public: true)
+    get apps_url(app.id), headers: { "Content-Type": "application/json" },
+        xhr: true
+    assert_response 401
+  end
+
+  test "anyone can view public apps with slugs" do
+    app = App.create(name: "Test App", organization: @org, is_public: true)
+    get "/apps/slugs/#{app.id}", headers: { "Content-Type": "application/json" },
                          xhr: true
     assert_response 200
+  end
+
+  test "non org users cannot view private apps with slugs" do
+    app = App.create(name: "Test App", organization: @org, is_public: false)
+    get "/apps/slugs/#{app.id}", headers: { "Content-Type": "application/json" },
+        xhr: true
+    assert_response 401
   end
 end
