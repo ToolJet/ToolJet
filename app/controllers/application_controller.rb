@@ -2,19 +2,23 @@
 
 class ApplicationController < ActionController::API
   include Pundit
-  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+  rescue_from Pundit::NotAuthorizedError, with: :render_user_not_authorized
 
   before_action :authenticate_request
-  attr_reader :current_user
+
+
+  def current_user
+    @current_user ||= AuthorizeApiRequest.call(request.headers).result
+  end
+
+
+  def authenticate_request
+    render json: { error: 'Not Authorized' }, status: :unauthorized if current_user.blank?
+  end
 
   private
 
-    def authenticate_request
-      @current_user = AuthorizeApiRequest.call(request.headers).result
-      render json: { error: "Not Authorized" }, status: :unauthorized unless @current_user
-    end
-
-    def user_not_authorized
-      render json: { error: "Access denied" }, status: :forbidden
-    end
+  def render_user_not_authorized
+    render json: { error: 'Access denied' }, status: :forbidden
+  end
 end
