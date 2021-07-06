@@ -23,4 +23,10 @@ class AppPolicy < ApplicationPolicy
   def show?
     (user.organization_id === app.organization_id) && (user.org_admin? || user.org_developer? || user.org_viewer?)
   end
+
+  def show_public?
+    return true if app.is_public?
+
+    show?
+  end
 end

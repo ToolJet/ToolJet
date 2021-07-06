@@ -57,7 +57,7 @@ class AppsController < ApplicationController
 
     unless @app.is_public
       authenticate_request
-      authorize @app, :show?
+      authorize @app, :show_public?
     end
 
     render :show

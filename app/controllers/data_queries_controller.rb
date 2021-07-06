@@ -4,7 +4,10 @@ class DataQueriesController < ApplicationController
   skip_before_action :authenticate_request, only: [:run]
 
   def index
-    @data_queries = DataQuery.where(app_id: params[:app_id])
+    app = App.find(params[:app_id])
+    authorize app, :show_public?
+
+    @data_queries = app.data_queries
   end
 
   def create
