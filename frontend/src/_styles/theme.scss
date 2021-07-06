@@ -1967,3 +1967,7 @@ input:focus-visible {
 .modal-backdrop.show {
   opacity: 0.74;
 }
+
+.table-responsive.userTable {
+  overflow-x: initial;
+}
