@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "test_helper"
 include DataSourceConnectionPool
 
@@ -21,13 +23,13 @@ class MockQueryService
 
   private
 
-  def create_connection
-    current_data_source = data_source.dup
-    connection = lambda do |query|
-      query.call(current_data_source)
+    def create_connection
+      current_data_source = data_source.dup
+      connection = lambda do |query|
+        query.call(current_data_source)
+      end
+      connection
     end
-    connection
-  end
 end
 
 class DsConnectionPoolTest < ActiveSupport::TestCase
@@ -133,7 +135,7 @@ class DsConnectionPoolTest < ActiveSupport::TestCase
       MockQueryService.new(pg_data_source, sleep_query(processing_time_per_query)).process
     end
 
-    t1 = Time.now
+    t1 = Time.zone.now
 
     # Simulate concurrent query executions using a threadpool
     num_concurrent_requests.times do
@@ -143,7 +145,7 @@ class DsConnectionPoolTest < ActiveSupport::TestCase
     request_thread_pool.shutdown
     request_thread_pool.wait_for_termination
 
-    t2 = Time.now
+    t2 = Time.zone.now
 
     elapsed_time = t2 - t1
     assert elapsed_time > (num_concurrent_requests * processing_time_per_query)
@@ -172,7 +174,7 @@ class DsConnectionPoolTest < ActiveSupport::TestCase
       MockQueryService.new(create_data_source, sleep_query(processing_time_per_query)).process
     end
 
-    t1 = Time.now
+    t1 = Time.zone.now
 
     # Simulate concurrent query executions using a threadpool
     num_concurrent_requests.times do
@@ -182,7 +184,7 @@ class DsConnectionPoolTest < ActiveSupport::TestCase
     request_thread_pool.shutdown
     request_thread_pool.wait_for_termination
 
-    t2 = Time.now
+    t2 = Time.zone.now
     elapsed_time = t2 - t1
     delta = 1 # in secs
     assert elapsed_time < (processing_time_per_query + delta)

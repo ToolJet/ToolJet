@@ -50,21 +50,21 @@ module DataSourceConnectionPool
 
   private
 
-  def make_connection_pool(connection_pool_size, connection_timeout, connection_closure)
-    ConnectionPool.new(size: connection_pool_size,
-                       timeout: connection_timeout) { connection_closure.call() }
-  end
-
-  def verify_and_return_connection_pool(cached_connections, connection_closure, data_source)
-    if connection_stale?(cached_connections, data_source)
-      reset_connection_pool!(data_source.id)
-      get_connection_pool(data_source, connection_closure)
-    else
-      cached_connections[:connection_pool]
+    def make_connection_pool(connection_pool_size, connection_timeout, connection_closure)
+      ConnectionPool.new(size: connection_pool_size,
+                         timeout: connection_timeout) { connection_closure.call() }
     end
-  end
 
-  def connection_stale?(cached_connections, data_source)
-    cached_connections[:updated_at] != data_source.reload.updated_at
-  end
+    def verify_and_return_connection_pool(cached_connections, connection_closure, data_source)
+      if connection_stale?(cached_connections, data_source)
+        reset_connection_pool!(data_source.id)
+        get_connection_pool(data_source, connection_closure)
+      else
+        cached_connections[:connection_pool]
+      end
+    end
+
+    def connection_stale?(cached_connections, data_source)
+      cached_connections[:updated_at] != data_source.reload.updated_at
+    end
 end
