@@ -19,8 +19,8 @@ class AuthorizeApiRequest
     @user ||= User.find(decoded_auth_token[:user_id]) if decoded_auth_token
     @user || errors.add(:token, "Invalid token") && nil
 
-    org_user = OrganizationUser.where(user: @user, organization: @user.organization)&.first
-    @user = nil unless org_user.active?
+    org_user = OrganizationUser.where(user: @user, organization: @user&.organization)&.first
+    @user = nil unless org_user&.active?
 
     @user || errors.add(:token, "Archived user") && nil
   end
