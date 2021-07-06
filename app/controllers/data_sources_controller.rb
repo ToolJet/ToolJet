@@ -24,13 +24,13 @@ class DataSourcesController < ApplicationController
         }
       end
     end
-
     @data_source = DataSource.create(
       name: params[:name],
       kind: params[:kind],
       options: options_to_save,
       app_id: params[:app_id]
     )
+
   end
 
   def update

@@ -22,7 +22,6 @@ def self.fetch_access_token(code)
   response = HTTParty.post(access_token_url, body: body)
 
   result = JSON.parse(response.body.to_json)
-  access_token = result['access_token']
 
 end
 

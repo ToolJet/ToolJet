@@ -28,7 +28,7 @@ export const defaultOptions = {
     connection_type: { value: 'manual' },
     connection_string: { value: ''}
   },
-  
+
   elasticsearch: {
     scheme: { value: 'https' },
     host: { value: 'localhost' },
@@ -70,5 +70,9 @@ export const defaultOptions = {
     region: { value: ''},
     access_key: { value: ''},
     secret_key: { value: ''}
+  },
+  github: {
+    client_id: {value: ''},
+    client_secret: {value: ''}
   }
 };

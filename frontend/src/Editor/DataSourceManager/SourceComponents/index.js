@@ -10,6 +10,7 @@ import { Slack } from './Slack';
 import { Mongodb } from './Mongodb';
 import { Dynamodb } from './Dynamodb';
 import { Airtable } from './Airtable';
+import {Github} from './Github';
 
 export const SourceComponents = {
     Elasticsearch,
@@ -23,5 +24,6 @@ export const SourceComponents = {
     Slack,
     Mongodb,
     Dynamodb,
-    Airtable
+    Airtable,
+    Github
 };

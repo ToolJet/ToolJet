@@ -183,6 +183,20 @@ export const apiSources = [
       api_key: { type: 'string', encrypted: true }
     },
     customTesting: true
+  },
+  {
+    name: 'Github',
+    kind: 'github',
+    exposedVariables: {
+      isLoading: {},
+      data: {},
+      rawData: {}
+    },
+    options: {
+      client_id: {type: 'string'},
+      client_secret: { type: 'string', encrypted: true }
+    },
+    customTesting: true
   }
 ];
 
