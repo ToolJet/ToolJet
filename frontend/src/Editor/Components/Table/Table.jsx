@@ -62,7 +62,8 @@ export function Table({
   const [filters, setFilters] = useState([]);
 
   const [showField, setShowField] = useState(false);
-  const [addRow, setAddRows] = useState([]);
+
+  const [addRows, setAddRows] = useState([]);
   
   function showFilters() {
     setFiltersVisibility(true);
@@ -378,16 +379,16 @@ export function Table({
     }
     setAddRows(rows);
   }
+  
 
   let tableData = [];
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
     if (!Array.isArray(tableData)) tableData = [];
-    tableData.push(...addRow)
   }
 
   tableData = tableData || [];
-
+  
   const actionsCellData = actions.value.length > 0
     ? [
       {
@@ -418,8 +419,8 @@ export function Table({
     () => [...columnData, ...actionsCellData],
     [JSON.stringify(columnData), actionsCellData.length, componentState.changeSet] // Hack: need to fix
   );
-
-  const data = useMemo(() => tableData, [tableData.length]);
+  
+  const data = useMemo(() => [...tableData, ...addRows], [tableData.length, addRows.length]);
 
   const computedStyles = {
     color,
