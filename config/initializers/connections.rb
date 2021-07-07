@@ -1,3 +1,4 @@
 # frozen_string_literal: true
 
-$connections = {}
+# A thread safe map data structure.
+$connection_pools = Concurrent::Map.new
