@@ -5,24 +5,30 @@ class AuthorizeApiRequest
 
   def initialize(headers = {})
     @headers = headers
+    @user = nil
   end
 
   def call
-    user
+    find_and_validate_user
+    return nil if errors.present?
+
+    @user
   end
 
   private
 
   attr_reader :headers
 
-  def user
-    @user ||= User.find(decoded_auth_token[:user_id]) if decoded_auth_token
-    @user || errors.add(:token, "Invalid token") && nil
+  def find_and_validate_user
+    if decoded_auth_token.present?
+      @user = User.find(decoded_auth_token[:user_id])
+      org_user = OrganizationUser.where(user: @user, organization: @user.organization).first
+      return if org_user&.active?
 
-    org_user = OrganizationUser.where(user: @user, organization: @user&.organization)&.first
-    @user = nil unless org_user&.active?
-
-    @user || errors.add(:token, "Archived user") && nil
+      errors.add(:token, "Archived user")
+    else
+      errors.add(:token, "Invalid token")
+    end
   end
 
   def decoded_auth_token
