@@ -101,6 +101,7 @@ class Table extends React.Component {
                 { name: 'Multiple badges', value: 'badges' },
                 { name: 'Tags', value: 'tags' },
                 { name: 'Dropdown', value: 'dropdown' },
+                { name: 'Radio button', value: 'radiobutton' },
                 { name: 'Multiselect', value: 'multiselect' }
               ]}
               value={column.columnType}
@@ -138,7 +139,7 @@ class Table extends React.Component {
             />
           </div>
 
-          {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges') && (
+          {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges' || column.columnType === 'radiobutton') && (
             <div>
               <div className="field mb-2">
                 <label className="form-label">Values</label>
@@ -168,6 +169,7 @@ class Table extends React.Component {
               </div>
             </div>
           )}
+          
 
           <label className="form-check form-switch my-2">
             <input

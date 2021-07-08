@@ -17,6 +17,8 @@ import Papa from 'papaparse';
 import { Pagination } from './Pagination';
 import { CustomSelect } from './CustomSelect';
 import { Tags } from './Tags';
+import { RadioButton } from './RadioButton';
+
 
 var _ = require('lodash');
 
@@ -226,7 +228,7 @@ export function Table({
     const columnType = column.columnType;
 
     const columnOptions = {};
-    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges') {
+    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges' || columnType === 'radiobutton') {
       const values = resolveReferences(column.values, currentState) || [];
       const labels = resolveReferences(column.labels, currentState, []) || [];
 
@@ -349,7 +351,20 @@ export function Table({
               />
             </div>
           );
-        }
+        } if (columnType === 'radiobutton') {
+          return (
+            <div>
+              <RadioButton
+                options={columnOptions.selectOptions}
+                value={cellValue}
+                cellIndex={cell.row.index}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+              />
+            </div>
+          );
+        } 
         return cellValue || '';
       }
     };
