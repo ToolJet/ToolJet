@@ -1,24 +1,41 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { Test } from '@nestjs/testing';
+import { AppModule } from '../src/app.module';
+import { AppService } from '../src/app.service';
+import { INestApplication } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { User } from 'src/users/user.entity';
 
-describe('AppController (e2e)', () => {
+describe('Authentication', () => {
   let app: INestApplication;
+  let userRepository: Repository<User>;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+    .compile();
 
-    app = moduleFixture.createNestApplication();
+    app = moduleRef.createNestApplication();
     await app.init();
+
+    userRepository = app.get('UserRepository');
+
+    // await userRepository.save([
+    //   { email: 'dev@tooljet.io', password: 'password', createdAt: Date(), updatedAt: Date() },
+    // ]);
+
   });
 
-  it('/ (GET)', () => {
+  it(`/POST login`, async () => {
+
     return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+      .post('/auth/login')
+      .send({ email: 'dev@tooljet.io', password: 'password' })
+      .expect(201)
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 });
