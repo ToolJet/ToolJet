@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  client:
+    tty: true
+    stdin_open: true
+    image: tooljet/tooljet-client-ce:latest
+    restart: always
+    depends_on:
+      - server
+    volumes:
+      - logs:/var/log/openresty/
+      - certs:/etc/resty-auto-ssl/
+    ports:
+      - 80:80
+      - 443:443
+    command: openresty -g "daemon off;"
+
+  server:
+    image: tooljet/tooljet-server-ce:latest
+    tty: true
+    stdin_open: true
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - 3000
+    env_file: .env
+    environment:
+      RAILS_LOG_TO_STDOUT: "true"
+    command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+
+  postgres:
+    image: postgres:12
+    restart: always
+    volumes:
+      - postgres:/data/postgres    
+    env_file: .env
+
+volumes:
+  postgres:
+  certs:
+  logs:
