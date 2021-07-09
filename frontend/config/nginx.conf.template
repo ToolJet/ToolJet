@@ -64,7 +64,7 @@ http
     location /_backend_
     {
       rewrite /_backend_/(.*) /$1 break;
-      proxy_pass http://server:3000;
+      proxy_pass http://${SERVER_HOST}:3000;
       proxy_redirect off;
       proxy_set_header Host $host;
     }
@@ -90,7 +90,7 @@ http
     location /_backend_
     {
       rewrite /_backend_/(.*) /$1 break;
-      proxy_pass http://server:3000;
+      proxy_pass http://${SERVER_HOST}:3000;
       proxy_redirect off;
       proxy_set_header Host $host;
     }

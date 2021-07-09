@@ -29,8 +29,6 @@ RUN mkdir /etc/resty-auto-ssl /var/log/openresty /var/www /etc/fallback-certs
 
 COPY --from=builder /app/build /var/www
 
-RUN openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
-   -subj '/CN=sni-support-required-for-valid-ssl' \
-   -keyout /etc/fallback-certs/resty-auto-ssl-fallback.key \
-   -out /etc/fallback-certs/resty-auto-ssl-fallback.crt
-COPY ./config/nginx.conf /etc/openresty/nginx.conf
+COPY ./config/nginx.conf.template /etc/openresty/nginx.conf.template
+
+ENTRYPOINT ["./config/entrypoint.sh"]
