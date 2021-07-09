@@ -2,8 +2,8 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: "users" })
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
   @Column( { name: 'first_name' } )
   firstName: string;
@@ -17,10 +17,10 @@ export class User {
   @Column({ name: 'password_digest' })
   passwordDigest: string
 
-  @Column("timestamp", { name: 'created_at' })
-  createdAt: Date;
-
-  @Column("timestamp", { name: 'updated_at' })
-  updatedAt: Date;
+  @Column({ type: 'timestamp', name: 'created_at', default: () => 'LOCALTIMESTAMP' })
+  createDate: string;
+  
+  @Column({ type: 'timestamp', name: 'updated_at', default: () => 'LOCALTIMESTAMP' })
+  updateDate: string;
 
 }

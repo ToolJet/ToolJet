@@ -21,9 +21,9 @@ describe('Authentication', () => {
 
     userRepository = app.get('UserRepository');
 
-    // await userRepository.save([
-    //   { email: 'dev@tooljet.io', password: 'password', createdAt: Date(), updatedAt: Date() },
-    // ]);
+    await userRepository.save([
+      { email: 'dev@tooljet.io', passwordDigest: '', createdAt: Date(), updatedAt: Date() },
+    ]);
 
   });
 
