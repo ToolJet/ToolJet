@@ -6,7 +6,7 @@ import { AuthService } from './auth/auth.service';
 export class AppController {
   constructor(private authService: AuthService) {}
 
-  @Post('auth/login')
+  @Post('authenticate')
   async login(@Request() req) {
     return this.authService.login(req.body);
   }

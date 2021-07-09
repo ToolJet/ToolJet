@@ -1,4 +1,3 @@
-import { User } from "./src/users/user.entity";
 
 module.exports = {
     type: 'postgres',
@@ -9,7 +8,6 @@ module.exports = {
     database: process.env.PG_DB,
     synchronize: false,
     logging: true,
-    entities: [User],
     migrations: ["migrations/*.ts"],
     cli: {
         migrationsDir: "migrations"

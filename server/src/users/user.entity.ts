@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity({ name: "users" })
 export class User {
@@ -17,10 +17,10 @@ export class User {
   @Column({ name: 'password_digest' })
   passwordDigest: string
 
-  @Column({ type: 'timestamp', name: 'created_at', default: () => 'LOCALTIMESTAMP' })
-  createDate: string;
+  @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
+  createAt: Date;
   
-  @Column({ type: 'timestamp', name: 'updated_at', default: () => 'LOCALTIMESTAMP' })
-  updateDate: string;
+  @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
+  updateAt: Date;
 
 }
