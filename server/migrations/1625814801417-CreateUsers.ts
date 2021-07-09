@@ -47,12 +47,14 @@ export class CreateUsers1625814801417 implements MigrationInterface {
         {
           name: "created_at",
           type: "timestamp",
-          isNullable: true
+          isNullable: true,
+          default: "now()"
         },
         {
           name: "updated_at",
           type: "timestamp",
-          isNullable: true
+          isNullable: true,
+          default: "now()"
         }
       ]
     }), true)
