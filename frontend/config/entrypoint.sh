@@ -1,17 +1,13 @@
 #!/usr/bin/env sh
 set -eu
+export SERVER_HOST="${SERVER_HOST:=server}"
 
-if test "$SERVER_HOST"; then
-    echo "using the given server host"
-else
-    echo "using the default server host"
-    SERVER_HOST="server"
+if [ ! -f /etc/fallback-certs/resty-auto-ssl-fallback.crt ]; then
+  openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
+    -subj '/CN=sni-support-required-for-valid-ssl' \
+    -keyout /etc/fallback-certs/resty-auto-ssl-fallback.key \
+    -out /etc/fallback-certs/resty-auto-ssl-fallback.crt
 fi
-
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
-  -subj '/CN=sni-support-required-for-valid-ssl' \
-  -keyout /etc/fallback-certs/resty-auto-ssl-fallback.key \
-  -out /etc/fallback-certs/resty-auto-ssl-fallback.crt
 envsubst '${SERVER_HOST}' < /etc/openresty/nginx.conf.template > /etc/openresty/nginx.conf
 
 exec "$@"

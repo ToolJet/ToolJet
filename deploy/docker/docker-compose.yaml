@@ -11,6 +11,7 @@ services:
     volumes:
       - logs:/var/log/openresty/
       - certs:/etc/resty-auto-ssl/
+      - fallbackcerts:/etc/fallback-certs
     ports:
       - 80:80
       - 443:443
@@ -31,3 +32,4 @@ services:
 volumes:
   certs:
   logs:
+  fallbackcerts:

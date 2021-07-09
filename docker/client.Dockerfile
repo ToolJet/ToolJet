@@ -30,5 +30,5 @@ RUN mkdir /etc/resty-auto-ssl /var/log/openresty /var/www /etc/fallback-certs
 COPY --from=builder /app/build /var/www
 
 COPY ./config/nginx.conf.template /etc/openresty/nginx.conf.template
-
-ENTRYPOINT ["./config/entrypoint.sh"]
+COPY ./config/entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
