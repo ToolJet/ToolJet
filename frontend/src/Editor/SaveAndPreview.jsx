@@ -149,15 +149,15 @@ class SaveAndPreview extends React.Component {
                               <button
                                 className="btn btn-sm"
                                 onClick={() => this.saveVersion(version.id)}
-                                disabled={isSaving == version.id}
+                                disabled={isSaving === version.id}
                               >
-                                {isSaving == version.id ? 'saving...' : 'save'}
+                                {isSaving === version.id ? 'saving...' : 'save'}
                               </button>
                               <button
                                 className="btn btn-primary btn-sm mx-2"
                                 onClick={() => this.deployVersion(version.id)}
                               >
-                                {isDeploying == version.id ? 'deploying...' : 'deploy'}
+                                {isDeploying === version.id ? 'deploying...' : 'deploy'}
                               </button>
                             </div>
                           </div>
