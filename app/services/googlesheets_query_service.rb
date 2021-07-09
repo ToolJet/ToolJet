@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class GooglesheetsQueryService
+  include GooglesheetUtils
   attr_accessor :query, :source, :options, :source_options, :current_user
 
   def initialize(data_query, data_source, options, source_options, current_user)
@@ -94,6 +95,12 @@ class GooglesheetsQueryService
       end
     end
 
+    if operation === "update_row"
+      result = update_spreadsheet_row(options, access_token)
+      data = result
+      error = result.code != 200
+    end
+
     if error
       { status: "error", code: 500, message: data["message"], data: data }
     else
@@ -175,5 +182,39 @@ class GooglesheetsQueryService
 
     def refresh_access_token
       GoogleOauthService.refresh_access_token(source_options["refresh_token"], @source)
+    end
+
+    def update_spreadsheet_row(options, access_token)
+      result = update_spreadsheet_row_data(options, access_token)
+
+      if result.code === 401
+        access_token = refresh_access_token
+        result = update_spreadsheet_row_data(options, access_token)
+      end
+
+      result
+    end
+
+    def update_spreadsheet_row_data(options, access_token)
+      spreadsheet_id = options["spreadsheet_id"]
+      sheet = options["sheet"]
+      row_index = options["row_index"].to_i
+      rows = JSON.parse(options["rows"])
+      range = "A#{row_index}:#{convert_number_to_column(rows.first.size)}#{row_index}"
+
+      data = {
+        "majorDimension": "ROWS",
+        "values": rows
+      }.to_json
+
+      url = "https://sheets.googleapis.com/v4/spreadsheets/#{spreadsheet_id}/values/#{sheet}!#{range}?valueInputOption=USER_ENTERED"
+      HTTParty.put(
+        url,
+        body: data,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer #{access_token}"
+        }
+      )
     end
 end
