@@ -4,7 +4,10 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Connection, getConnectionOptions } from 'typeorm';
+import { Connection } from 'typeorm';
+import { AppsController } from './apps/apps.controller';
+import { AppsModule } from './apps/apps.module';
+import { AppsService } from './apps/apps.service';
 
 @Module({
   imports: [
@@ -19,8 +22,9 @@ import { Connection, getConnectionOptions } from 'typeorm';
       synchronize: false,
       logging: true
     }),
-    AuthModule, 
-    UsersModule
+    AuthModule,
+    UsersModule,
+    AppsModule
   ],
   controllers: [AppController],
   providers: [AppService],
