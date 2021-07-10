@@ -32,8 +32,6 @@ export class AppsService {
 
   async all(user: User, page: number): Promise<App[]> {
 
-    console.log('page', page);
-
     return await this.appsRepository.find({
         relations: ['user'],
         where: {
