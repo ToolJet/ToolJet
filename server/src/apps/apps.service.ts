@@ -12,6 +12,16 @@ export class AppsService {
     private appsRepository: Repository<App>,
   ) { }
 
+  async create(user: User): Promise<App> {
+    return this.appsRepository.save(this.appsRepository.create({
+        name: 'Untitled app',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        organizationId: user.organizationId,
+        user: user
+    }));
+  }
+
   async count(user: User) {
     return await this.appsRepository.count({ 
         where: {
