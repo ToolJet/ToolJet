@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, OneToMany } from 'typeorm';
 const bcrypt = require('bcrypt');
 
 @Entity({ name: "users" })
@@ -27,10 +27,13 @@ export class User {
   @Column({ name: 'password_digest' })
   password: string
 
+  @Column({ name: 'organization_id' }) 
+  organizationId: string
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
-  createAt: Date;
+  createdAt: Date;
   
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
-  updateAt: Date;
+  updatedAt: Date;
 
 }
