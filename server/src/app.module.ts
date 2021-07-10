@@ -5,7 +5,6 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection, getConnectionOptions } from 'typeorm';
-import { User } from './users/user.entity';
 
 @Module({
   imports: [
@@ -16,7 +15,7 @@ import { User } from './users/user.entity';
       username: process.env.PG_USER,
       password: process.env.PG_PASS,
       database: process.env.PG_DB,
-      entities: ["dist/**/*.entity{ .ts,.js}"],
+      autoLoadEntities: true,
       synchronize: false,
       logging: true
     }),
