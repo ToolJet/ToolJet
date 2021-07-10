@@ -21,18 +21,24 @@ describe('Authentication', () => {
 
     userRepository = app.get('UserRepository');
 
-    await userRepository.save([
-      { email: 'dev@tooljet.io', passwordDigest: '', createdAt: Date(), updatedAt: Date() },
-    ]);
+    await userRepository.save(userRepository.create({ email: 'dev@tooljet.io', password: 'password' }));
 
   });
 
-  it(`/POST login`, async () => {
+  it(`authenticate if valid credentials`, async () => {
 
     return request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/authenticate')
       .send({ email: 'dev@tooljet.io', password: 'password' })
       .expect(201)
+  });
+
+  it(`throw 401 if invalid credentials`, async () => {
+
+    return request(app.getHttpServer())
+      .post('/authenticate')
+      .send({ email: 'dev@tooljet.io', password: 'pwd' })
+      .expect(401)
   });
 
   afterAll(async () => {
