@@ -8,6 +8,7 @@ import { Connection } from 'typeorm';
 import { AppsController } from './apps/apps.controller';
 import { AppsModule } from './apps/apps.module';
 import { AppsService } from './apps/apps.service';
+import { FoldersModule } from './folders/folders.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { AppsService } from './apps/apps.service';
     }),
     AuthModule,
     UsersModule,
-    AppsModule
+    AppsModule,
+    FoldersModule
   ],
   controllers: [AppController],
   providers: [AppService],
