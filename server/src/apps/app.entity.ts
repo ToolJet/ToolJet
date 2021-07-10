@@ -1,5 +1,5 @@
 import { User } from 'src/users/user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, } from 'typeorm';
 
 @Entity({ name: "apps" })
 export class App {
@@ -9,6 +9,9 @@ export class App {
 
   @Column( { name: 'name' } )
   name: string;
+
+  @Column( { name: 'slug', unique: true } )
+  slug: string;
 
   @Column({ name: 'organization_id' }) 
   organizationId: string
@@ -22,5 +25,11 @@ export class App {
   @ManyToOne(() => User, user => user.id)
   @JoinColumn({ name: "user_id" })
     user: User;  
+
+  @AfterInsert()
+  updateSlug() {
+    const userRepository = getRepository(App);
+    userRepository.update(this.id, { slug: this.id })
+  }
 
 }
