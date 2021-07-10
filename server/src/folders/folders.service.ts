@@ -12,6 +12,15 @@ export class FoldersService {
     private foldersRepository: Repository<Folder>,
   ) { }
 
+  async create(user: User, folderName): Promise<Folder> {
+    return this.foldersRepository.save(this.foldersRepository.create({
+        name: folderName,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        organizationId: user.organizationId,
+    }));
+  }
+
   async all(user: User): Promise<Folder[]> {
 
     return await this.foldersRepository.find({

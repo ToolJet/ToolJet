@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FoldersService } from './folders.service';
@@ -16,6 +16,15 @@ export class FoldersController {
     const folders = await this.foldersService.all(req.user);
 
     return decamelizeKeys({ folders });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  async create(@Request() req) {
+    const folderName = req.body.name;
+    
+    const folder = await this.foldersService.create(req.user, folderName);
+    return decamelizeKeys(folder);
   }
 
 }
