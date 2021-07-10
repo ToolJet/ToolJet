@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AppsService } from './apps.service';
 import { decamelizeKeys } from 'humps';
@@ -9,6 +9,15 @@ export class AppsController {
   constructor(
     private appsService: AppsService
   ) { }
+
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  async create(@Request() req) {
+    const params = req.body;
+    
+    const app = await this.appsService.create(req.user);
+    return decamelizeKeys(app);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get()
