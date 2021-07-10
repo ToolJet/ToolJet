@@ -1,7 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
+const bcrypt = require('bcrypt');
 
 @Entity({ name: "users" })
 export class User {
+
+  @BeforeUpdate()
+  @BeforeInsert()
+  hashPassword() {
+    if (this.password) {
+      this.password = bcrypt.hashSync(this.password, 10);
+    }
+  }
+
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
@@ -15,7 +25,7 @@ export class User {
   email: string;
 
   @Column({ name: 'password_digest' })
-  passwordDigest: string
+  password: string
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createAt: Date;
