@@ -31,7 +31,7 @@ export class AppsController {
     const meta = {
       total_pages: Math.round(totalCount/10),
       total_count: totalCount,
-      current_page: page || 0
+      current_page: parseInt(page || 0)
     }
 
     const response = {
