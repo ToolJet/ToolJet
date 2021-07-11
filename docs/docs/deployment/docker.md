@@ -2,11 +2,12 @@
 sidebar_position: 2
 sidebar_label: Docker
 ---
+
+# Deploying ToolJet using docker-compose
+
 :::info
 You should setup a PostgreSQL database manually to be used by the ToolJet server.
 :::
-
-# Deploying ToolJet using docker-compose
 
 Follow the steps below to deploy ToolJet ( both server & client ) on a server using docker-compose:
 
@@ -17,18 +18,18 @@ Follow the steps below to deploy ToolJet ( both server & client ) on a server us
 [Docker Compose Installation](https://docs.docker.com/compose/install/)   
 
 3. Download our production docker-compose file into the server by running:
-`curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/develop/deploy/docker/docker-compose.yaml`
+`curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose.yaml`
 
-4. Create an `.env` file in the current directory (where the docker-compose.yaml file is downloaded) and populate all the required
-   keys. (Read [environment variables reference](/docs/deployment/env-vars))
-
+4. Download the example `.env` file in the current directory (where the docker-compose.yaml file is downloaded) by running:
+  `curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/.env.example `   
+  Populate the keys in the `.env.example` file and run `mv .env.example .env ` to rename the file to `.env`.   
+  (Read [environment variables reference](/docs/deployment/env-vars))   
   `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your server or a custom domain that you want to use.
 
-   Examples:   
-   `TOOLJET_HOST=http://12.34.56.78` or   
-   `TOOLJET_HOST=https://yourdomain.com` or   
-   `TOOLJET_HOST=https://tooljet.yourdomain.com`
-
+  Examples:   
+  `TOOLJET_HOST=http://12.34.56.78` or   
+  `TOOLJET_HOST=https://yourdomain.com` or   
+  `TOOLJET_HOST=https://tooljet.yourdomain.com`   
    
   :::info
    We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
@@ -48,4 +49,9 @@ Follow the steps below to deploy ToolJet ( both server & client ) on a server us
 
 6.  If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the      server.
 
-7.  You're all done, ToolJet client would now be served at the value you've set in `TOOLJET_HOST`.
+7.  Seed the database by running `docker-compose run server rake db:seed`. This seeds the database with a default user with the following credentials:   
+    email : dev@tooljet.io   
+    password: password
+    
+
+8.  You're all done, ToolJet client would now be served at the URL you've set in `TOOLJET_HOST`.
