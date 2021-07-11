@@ -1,6 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,  ManyToOne, JoinColumn, ManyToMany, OneToMany, AfterLoad } from 'typeorm';
-import { isNumber } from 'util';
-import { FolderApp } from './folder_apps.entity';
+import { FolderApp } from './folder_app.entity';
 
 @Entity({ name: "folders" })
 export class Folder {

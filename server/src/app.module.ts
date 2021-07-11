@@ -5,10 +5,9 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
-import { AppsController } from './apps/apps.controller';
 import { AppsModule } from './apps/apps.module';
-import { AppsService } from './apps/apps.service';
 import { FoldersModule } from './folders/folders.module';
+import { FolderAppsModule } from './folder_apps/folder_apps.module';
 
 @Module({
   imports: [
@@ -26,7 +25,8 @@ import { FoldersModule } from './folders/folders.module';
     AuthModule,
     UsersModule,
     AppsModule,
-    FoldersModule
+    FoldersModule,
+    FolderAppsModule
   ],
   controllers: [AppController],
   providers: [AppService],
