@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { Folder } from '../entities/folder.entity';
-import { FoldersController } from './folders.controller';
-import { FoldersService } from './folders.service';
+import { Folder } from '../../entities/folder.entity';
+import { FoldersController } from '../../controllers/folders.controller';
+import { FoldersService } from '../../services/folders.service';
 
 @Module({
   controllers: [FoldersController],
