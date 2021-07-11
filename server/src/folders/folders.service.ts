@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/user.entity';
-import { Folder } from './folder.entity';
+import { Folder } from '../entities/folder.entity';
 
 @Injectable()
 export class FoldersService {
@@ -27,6 +27,7 @@ export class FoldersService {
         where: {
             organizationId: user.organizationId,
         },
+        relations: ['folderApps'],
         order: {
             name: 'ASC'
         }
