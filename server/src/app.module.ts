@@ -8,6 +8,8 @@ import { Connection } from 'typeorm';
 import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
 import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
+import { DataQuery } from './entities/data_query.entity';
+import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 
 @Module({
   imports: [
@@ -26,7 +28,8 @@ import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
     UsersModule,
     AppsModule,
     FoldersModule,
-    FolderAppsModule
+    FolderAppsModule,
+    DataQueriesModule
   ],
   controllers: [AppController],
   providers: [AppService],
