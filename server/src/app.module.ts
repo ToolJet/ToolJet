@@ -10,6 +10,7 @@ import { FoldersModule } from './modules/folders/folders.module';
 import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
 import { DataQuery } from './entities/data_query.entity';
 import { DataQueriesModule } from './modules/data_queries/data_queries.module';
+import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { DataQueriesModule } from './modules/data_queries/data_queries.module';
     AppsModule,
     FoldersModule,
     FolderAppsModule,
-    DataQueriesModule
+    DataQueriesModule,
+    DataSourcesModule
   ],
   controllers: [AppController],
   providers: [AppService],
