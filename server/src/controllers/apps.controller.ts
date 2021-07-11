@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { AppsService } from './apps.service';
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { AppsService } from '../apps/apps.service';
 import { decamelizeKeys } from 'humps';
 
 @Controller('apps')

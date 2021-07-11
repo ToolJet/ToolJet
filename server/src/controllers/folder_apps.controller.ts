@@ -1,7 +1,7 @@
 import { Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { FolderAppsService } from './folder_apps.service';
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { FolderAppsService } from '../services/folder_apps.service';
 
 @Controller('folder_apps')
 export class FolderAppsController {

@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
+import { AppController } from './controllers/app.controller';
+import { AppService } from './services/app.service';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import { AppsModule } from './apps/apps.module';
-import { FoldersModule } from './folders/folders.module';
-import { FolderAppsModule } from './folder_apps/folder_apps.module';
+import { FoldersModule } from './modules/folders/folders.module';
+import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
 
 @Module({
   imports: [
