@@ -5,7 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
-import { AppsModule } from './apps/apps.module';
+import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
 import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
 
