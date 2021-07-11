@@ -19,8 +19,8 @@ export class Folder {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => FolderApp, photo => photo.folder, { eager: true })
-    folderApps: FolderApp[];
+  @OneToMany(() => FolderApp, folderApp => folderApp.folder, { eager: true })
+  folderApps: FolderApp[];
 
   protected count;
 
