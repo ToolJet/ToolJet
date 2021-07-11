@@ -1,6 +1,7 @@
 import { User } from 'src/entities/user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, AfterLoad, } from 'typeorm';
 import { AppVersion } from './app_version.entity';
+import { DataQuery } from './data_query.entity';
 import { FolderApp } from './folder_app.entity';
 
 @Entity({ name: "apps" })
@@ -18,6 +19,9 @@ export class App {
   @Column({ name: 'organization_id' }) 
   organizationId: string
 
+  @Column({ name: 'current_version_id' }) 
+  currentVersionId: string
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
   
@@ -34,10 +38,20 @@ export class App {
   @OneToOne(() => AppVersion, appVersion => appVersion.app, { eager: true })
   currentVersion: AppVersion;
 
+  @OneToMany(() => DataQuery, dataQuery => dataQuery.app)
+  dataQueries: DataQuery[];
+
   @AfterInsert()
   updateSlug() {
     const userRepository = getRepository(App);
     userRepository.update(this.id, { slug: this.id })
+  }
+
+  protected definition;
+
+  @AfterLoad()
+  afterLoad(): void {
+    this.definition = this.currentVersion?.definition;
   }
 
 }

@@ -12,6 +12,12 @@ export class AppsService {
     private appsRepository: Repository<App>,
   ) { }
 
+  async find(id: string): Promise<App> {
+    return this.appsRepository.findOne(id, {
+      relations: ['dataQueries']
+    });
+  }
+
   async create(user: User): Promise<App> {
     return this.appsRepository.save(this.appsRepository.create({
         name: 'Untitled app',
