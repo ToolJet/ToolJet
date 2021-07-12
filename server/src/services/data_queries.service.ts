@@ -21,4 +21,29 @@ export class DataQueriesService {
         },
     });
   }
+
+  async create(user: User, name: string, kind: string, options: object, appId: string, dataSourceId: string): Promise<DataQuery> {
+    const newDataQuery = this.dataQueriesRepository.create({
+      name,
+      kind,
+      options,
+      appId,
+      dataSourceId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+
+    return this.dataQueriesRepository.save(newDataQuery);
+  }
+
+  async update(user: User,dataQueryId: string, name: string, options: object): Promise<DataQuery> {
+    const dataQuery = this.dataQueriesRepository.save({
+      id: dataQueryId,
+      name,
+      options,
+      updatedAt: new Date(),
+    })
+
+    return dataQuery;
+  }
 }
