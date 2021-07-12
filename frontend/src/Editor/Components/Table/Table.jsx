@@ -356,7 +356,7 @@ export function Table({
             <div>
               <RadioButton
                 options={columnOptions.selectOptions}
-                value={cellValue}
+                changeSet={componentState.changeSet}
                 cellIndex={cell.row.index}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);

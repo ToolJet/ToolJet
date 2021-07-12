@@ -1968,6 +1968,26 @@ input:focus-visible {
   opacity: 0.74;
 }
 
+
 .theme-dark .input-group-text, .theme-dark .markdown > table thead th, .theme-dark .table thead th {
   background: #1c252f;
+}
+.form-check.custom-radio {
+  position: relative;
+}
+
+.checked-circle {
+
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3ccircle r='3' fill='%23ffffff' cx='8' cy='8' /%3e%3c/svg%3e");
+  /* width: 30px; */
+  background-color: #3c92dc;
+  border-color: rgba(101, 109, 119, 0.24);
+  background-color: #206bc4;
+  border-color: rgba(101, 109, 119, 0.24);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  position: absolute;
+  left: 0px;
+  top: 2px;
 }
