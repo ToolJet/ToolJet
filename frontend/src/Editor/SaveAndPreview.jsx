@@ -52,18 +52,18 @@ class SaveAndPreview extends React.Component {
   };
 
   saveVersion = (versionId) => {
-    this.setState({ isSaving: true });
+    this.setState({ savingVersionId: versionId });
     appVersionService.save(this.props.appId, versionId, this.props.appDefinition).then(() => {
-      this.setState({ showVersionForm: false, isSaving: false });
+      this.setState({ showVersionForm: false, savingVersionId: null });
       toast.success('Version Saved', { hideProgressBar: true, position: 'top-center' });
       this.fetchVersions();
     });
   };
 
   deployVersion = (versionId) => {
-    this.setState({ isDeploying: true });
+    this.setState({ deployingVersionId: versionId });
     appService.saveApp(this.props.appId, { name: this.props.appName, current_version_id: versionId }).then(() => {
-      this.setState({ isDeploying: false });
+      this.setState({ deployingVersionId: null });
       toast.success('Version Deployed', { hideProgressBar: true, position: 'top-center' });
 
       this.props.onVersionDeploy(versionId);
@@ -73,7 +73,7 @@ class SaveAndPreview extends React.Component {
 
   render() {
     const {
-      showModal, isLoading, versions, showVersionForm, isSaving, isDeploying, creatingVersion
+      showModal, isLoading, versions, showVersionForm, savingVersionId, deployingVersionId, creatingVersion
     } = this.state;
 
     return (
@@ -149,15 +149,15 @@ class SaveAndPreview extends React.Component {
                               <button
                                 className="btn btn-sm"
                                 onClick={() => this.saveVersion(version.id)}
-                                disabled={isSaving}
+                                disabled={savingVersionId === version.id}
                               >
-                                {isSaving ? 'saving...' : 'save'}
+                                {savingVersionId === version.id ? 'saving...' : 'save'}
                               </button>
                               <button
                                 className="btn btn-primary btn-sm mx-2"
                                 onClick={() => this.deployVersion(version.id)}
                               >
-                                {isDeploying ? 'deploying...' : 'deploy'}
+                                {deployingVersionId === version.id ? 'deploying...' : 'deploy'}
                               </button>
                             </div>
                           </div>
