@@ -1,10 +1,10 @@
 import * as request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
-import { AppService } from '../src/app.service';
+import { AppService } from '../src/services/app.service';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/entities/user.entity';
 
 describe('Authentication', () => {
   let app: INestApplication;
