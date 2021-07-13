@@ -220,7 +220,7 @@ class ManageOrgUsers extends React.Component {
             {!showNewUserForm && (
               <div className="container-xl">
                 <div className="card">
-                  <div className="card-table table-responsive table-bordered userTable">
+                  <div className="card-table table-responsive table-bordered user-table">
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
