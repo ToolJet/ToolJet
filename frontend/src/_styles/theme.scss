@@ -568,7 +568,6 @@ body {
 .select-search__input {
   display: block;
   width: 100%;
-  height: 30px;
   padding: 0.4375rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 400;
@@ -1968,3 +1967,8 @@ input:focus-visible {
 .modal-backdrop.show {
   opacity: 0.74;
 }
+
+.gui-select-wrappper .select-search__input {
+  height: 30px;
+}
+
