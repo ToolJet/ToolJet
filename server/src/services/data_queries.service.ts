@@ -3,11 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataQuery } from '../../src/entities/data_query.entity';
-import FirestoreQueryService from '../../plugins/datasources/firestore';
 import { CredentialsService } from './credentials.service';
+import FirestoreQueryService from '../../plugins/datasources/firestore';
+import PostgresqlQueryService from '../../plugins/datasources/postgresql';
 
 @Injectable()
 export class DataQueriesService {
+
+  private plugins = {
+     postgresql: PostgresqlQueryService, 
+     firestore: FirestoreQueryService
+  };
 
   constructor(
     private credentialsService: CredentialsService,
@@ -55,9 +61,11 @@ export class DataQueriesService {
     const dataSource = dataQuery.dataSource;
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
+    const kind = dataSource.kind;
+    const pluginServiceClass = this.plugins[kind];
 
-    const service = new FirestoreQueryService();
-    const result = await service.run(sourceOptions, parsedQueryOptions);
+    const service = new pluginServiceClass();
+    const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id);
 
     return result;
   }
