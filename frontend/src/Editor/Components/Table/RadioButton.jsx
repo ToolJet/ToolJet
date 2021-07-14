@@ -1,12 +1,20 @@
 import React from 'react';
 
-export const RadioButton = ({options, onChange, cellIndex,  changeSet}) => {
+export const RadioButton = ({options, onChange, cellIndex,  columntypeValues, changeSet}) => {
   let checkboxValue = "";
 
   if(changeSet[cellIndex]) {
-    checkboxValue = changeSet[cellIndex][Object.keys(changeSet[cellIndex])][0];
-  }
-
+    columntypeValues.map(val => {
+      if(val.columnType == 'radiobutton') {
+        Object.keys(changeSet[cellIndex]).map(ele => {
+          if(val.key == ele) {
+            checkboxValue = changeSet[cellIndex][ele]
+          }
+        })
+      }
+    })
+  } 
+            
   function addValue(value) {
     setTimeout(() => {
         onChange(value);
@@ -17,7 +25,7 @@ export const RadioButton = ({options, onChange, cellIndex,  changeSet}) => {
     <div>
       {options.map((option, i) => 
         <div className="form-check form-check-inline custom-radio" key={option.value}>
-          { checkboxValue == option.value && <div class="checked-circle" ></div> }
+          {checkboxValue == option.value && <div class="checked-circle" ></div>}
           <input className="form-check-input" type="radio" name={`inlineRadioOptions${cellIndex}`}  
           value={option.value} 
           onChange={(e) => addValue(e.target.value)} />

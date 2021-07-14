@@ -356,6 +356,8 @@ export function Table({
             <div>
               <RadioButton
                 options={columnOptions.selectOptions}
+                columnOptions={columnOptions}
+                columntypeValues={component.definition.properties.columns.value}
                 changeSet={componentState.changeSet}
                 cellIndex={cell.row.index}
                 onChange={(value) => {
