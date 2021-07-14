@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from 'src/entities/user.entity';
-import { DataSource } from 'src/entities/data_source.entity';
+import { User } from '../../src/entities/user.entity';
+import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
 
 @Injectable()

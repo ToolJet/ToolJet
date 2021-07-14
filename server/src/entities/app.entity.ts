@@ -1,8 +1,7 @@
-import { User } from 'src/entities/user.entity';
+import { User } from '../../src/entities/user.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, AfterLoad, } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 import { DataQuery } from './data_query.entity';
-import { FolderApp } from './folder_app.entity';
 
 @Entity({ name: "apps" })
 export class App {

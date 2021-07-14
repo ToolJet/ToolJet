@@ -1,5 +1,5 @@
-import { App } from 'src/entities/app.entity';
-import { Folder } from 'src/entities/folder.entity';
+import { App } from '../../src/entities/app.entity';
+import { Folder } from '../../src/entities/folder.entity';
 import { Entity, PrimaryGeneratedColumn, JoinColumn, OneToOne, ManyToOne, Column, CreateDateColumn, UpdateDateColumn, } from 'typeorm';
 
 @Entity({ name: "folder_apps" })
