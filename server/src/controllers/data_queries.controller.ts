@@ -1,8 +1,7 @@
 import { Controller, Get, Param, Post, Patch, Query, Request, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
-import { AppsService } from '../services/apps.service';
+import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
-import { DataQueriesService } from 'src/services/data_queries.service';
+import { DataQueriesService } from '../../src/services/data_queries.service';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -40,6 +39,16 @@ export class DataQueriesController {
     
     const dataQuery = await this.dataQueriesService.update(req.user, dataQueryId, name, options);
     return decamelizeKeys(dataQuery);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/run') 
+  async runQuery(@Request() req, @Param() params) {
+    const dataQueryId = params.id;
+    const { options } = req.body;
+
+    const result = await this.dataQueriesService.runQuery(req.user, dataQueryId, options);
+    return decamelizeKeys(result);
   }
 
 }

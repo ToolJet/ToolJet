@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { App } from '../entities/app.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { DataQuery } from 'src/entities/data_query.entity';
+import { DataQuery } from '../../src/entities/data_query.entity';
+import FirestoreQueryService from '../../plugins/datasources/firestore';
+import { CredentialsService } from './credentials.service';
 
 @Injectable()
 export class DataQueriesService {
 
   constructor(
+    private credentialsService: CredentialsService,
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
   ) { }
@@ -45,5 +47,76 @@ export class DataQueriesService {
     })
 
     return dataQuery;
+  }
+
+  async runQuery(user: User, dataQueryId: string, queryOptions: object): Promise<object> {
+
+    const dataQuery = await this.dataQueriesRepository.findOne(dataQueryId, { relations: ['dataSource'] });
+    const dataSource = dataQuery.dataSource;
+    const sourceOptions = await this.parseSourceOptions(dataSource.options);
+    const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
+
+    const service = new FirestoreQueryService();
+    const result = await service.run(sourceOptions, parsedQueryOptions);
+
+    return result;
+  }
+
+  async parseSourceOptions(options: any): Promise<object> {
+
+    const parsedOptions = {};
+
+    for(const key of Object.keys(options)) {
+      const option = options[key];
+      const encrypted = option['encrypted'];
+      if(encrypted) {
+        const credentialId = option['credential_id'];
+        const value = await this.credentialsService.getValue(credentialId);
+        parsedOptions[key] = value;
+      } else {
+        parsedOptions[key] = option['value']
+      }
+    }
+
+    return parsedOptions;
+  }
+
+  async parseQueryOptions(object: any, options: object): Promise<object> {
+    if( typeof object === 'object' ) {
+      for( const key of Object.keys(object) ) { 
+        object[key] = await this.parseQueryOptions(object[key], options);
+      }
+      return object;
+
+    } else if(typeof object === 'string') {
+
+      if(object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
+        object = options[object];
+        return object;
+
+      } else {
+        const variables = object.match(/\{\{(.*?)\}\}/g);
+
+        if(variables?.length > 0) {
+          for(const variable of variables) {
+            object = object.replace(variable, options[variable]);
+          }
+        } else {
+          object = object;
+        }
+
+        return object;
+      }
+
+    } else if (Array.isArray(object)) {
+      object.forEach(element => { 
+      });
+
+      for(const [index, element] of object) {
+        object[index] = await this.parseQueryOptions(element, options);
+      }
+      return object;
+    }
+    return object;
   }
 }

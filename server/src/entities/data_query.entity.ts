@@ -2,6 +2,7 @@ import { User } from 'src/entities/user.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, AfterLoad, } from 'typeorm';
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
+import { DataSource } from './data_source.entity';
 
 @Entity({ name: "data_queries" })
 export class DataQuery {
@@ -33,5 +34,9 @@ export class DataQuery {
   @ManyToOne(() => App, app => app.id)
   @JoinColumn({ name: "app_id" })
   app: App;
+
+  @ManyToOne(() => DataSource, dataSource => dataSource.id)
+  @JoinColumn({ name: "data_source_id" })
+  dataSource: DataSource;
 
 }
