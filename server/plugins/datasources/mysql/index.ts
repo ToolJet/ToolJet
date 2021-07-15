@@ -36,27 +36,4 @@ export default class MysqlQueryService implements QueryService {
       data: result[0]
     }
   }
-
-  async buildBulkUpdateQuery(queryOptions: any): Promise<string> {
-    let queryText = '';
-
-    const tableName = queryOptions['table'];
-    const primaryKey = queryOptions['primary_key_column'];
-    const records = queryOptions['records'];
-
-    for (const record of records) {
-      queryText = `${queryText} UPDATE ${tableName} SET`;
-
-      for (const key of Object.keys(record)) {
-        if (key !== primaryKey) {
-          queryText = ` ${queryText} ${key} = '${record[key]}', `;
-        }
-      }
-
-      queryText = `${queryText} WHERE ${primaryKey} = ${record[primaryKey]};`;
-    }
-
-    return queryText.trim();
-
-  }
 }
