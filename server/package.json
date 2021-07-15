@@ -32,6 +32,8 @@
     "@types/humps": "^2.0.1",
     "bcrypt": "^5.0.1",
     "humps": "^2.0.1",
+    "knex": "^0.95.7",
+    "mysql": "^2.18.1",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "pg": "^8.6.0",
