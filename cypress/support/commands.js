@@ -5,6 +5,8 @@ Cypress.Commands.add('login', (email, password) => {
   cy.get('[data-testid="loginButton"').click();
 })
 
+
+
 Cypress.Commands.add('checkToastMessage', (toastId, message) => {
   cy.get(`[id=${toastId}]`).should('contain', message);
 });
