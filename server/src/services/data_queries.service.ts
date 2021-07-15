@@ -7,6 +7,7 @@ import { CredentialsService } from './credentials.service';
 import FirestoreQueryService from '../../plugins/datasources/firestore';
 import PostgresqlQueryService from '../../plugins/datasources/postgresql';
 import MysqlQueryService from '../../plugins/datasources/mysql';
+import ElasticsearchService from '../../plugins/datasources/elasticsearch';
 
 @Injectable()
 export class DataQueriesService {
@@ -14,7 +15,8 @@ export class DataQueriesService {
   private plugins = {
      postgresql: PostgresqlQueryService, 
      firestore: FirestoreQueryService,
-     mysql: MysqlQueryService
+     mysql: MysqlQueryService,
+     elasticsearch: ElasticsearchService
   };
 
   constructor(
