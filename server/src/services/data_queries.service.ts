@@ -6,13 +6,15 @@ import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
 import FirestoreQueryService from '../../plugins/datasources/firestore';
 import PostgresqlQueryService from '../../plugins/datasources/postgresql';
+import MysqlQueryService from '../../plugins/datasources/mysql';
 
 @Injectable()
 export class DataQueriesService {
 
   private plugins = {
      postgresql: PostgresqlQueryService, 
-     firestore: FirestoreQueryService
+     firestore: FirestoreQueryService,
+     mysql: MysqlQueryService
   };
 
   constructor(
