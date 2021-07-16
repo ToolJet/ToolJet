@@ -35,6 +35,20 @@ export class DataSourcesService {
     const dataSource = await this.dataSourcesRepository.save(newDataSource);
     return dataSource;
   }
+
+  async update(user: User, dataSourceId:string, name:string, options:Array<object>): Promise<DataSource> {
+
+    console.log('options', options)
+
+    const dataSource = this.dataSourcesRepository.save({
+      id: dataSourceId,
+      name,
+      options: await this.parseOptionsForSaving(options),
+      updatedAt: new Date(),
+    });
+
+    return dataSource;
+  }
   
   async parseOptionsForSaving(options:Array<object>) {
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
+import { Bind, Controller, Get, Param, Post, Put, Query, Req, Request, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { DataSourcesService } from '../../src/services/data_sources.service';
@@ -27,6 +27,16 @@ export class DataSourcesController {
     const appId = req.body.app_id;
     
     const dataSource = await this.dataSourcesService.create(req.user, name, kind, options, appId);
+    return decamelizeKeys(dataSource);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async update(@Request() req, @Param() params) {
+    const dataSourceId = params.id;
+    const { name, options } = req.body;
+    
+    const dataSource = await this.dataSourcesService.update(req.user, dataSourceId, name, options);
     return decamelizeKeys(dataSource);
   }
 
