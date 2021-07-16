@@ -48,7 +48,7 @@ export class DataQueriesController {
     const { options } = req.body;
 
     const result = await this.dataQueriesService.runQuery(req.user, dataQueryId, options);
-    return decamelizeKeys(result);
+    return result;
   }
 
 }
