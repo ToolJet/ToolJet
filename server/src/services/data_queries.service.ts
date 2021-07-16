@@ -29,6 +29,10 @@ export class DataQueriesService {
     private dataQueriesRepository: Repository<DataQuery>,
   ) { }
 
+  async findOne(dataQueryId: string): Promise<DataQuery> {
+    return await this.dataQueriesRepository.findOne(dataQueryId, { relations: ['dataSource'] });
+  }
+
   async all(user: User, appId: string): Promise<DataQuery[]> {
 
     return await this.dataQueriesRepository.find({
@@ -63,9 +67,8 @@ export class DataQueriesService {
     return dataQuery;
   }
 
-  async runQuery(user: User, dataQueryId: string, queryOptions: object): Promise<object> {
+  async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
 
-    const dataQuery = await this.dataQueriesRepository.findOne(dataQueryId, { relations: ['dataSource'] });
     const dataSource = dataQuery.dataSource;
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);

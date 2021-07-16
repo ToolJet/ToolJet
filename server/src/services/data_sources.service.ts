@@ -23,6 +23,11 @@ export class DataSourcesService {
     });
   }
 
+  async findOne(dataSourceId: string): Promise<DataSource> {
+    return await this.dataSourcesRepository.findOne(dataSourceId);
+  }
+ 
+
   async create(user: User, name:string, kind:string, options:Array<object>, appId:string): Promise<DataSource> {
     const newDataSource = this.dataSourcesRepository.create({ 
       name,

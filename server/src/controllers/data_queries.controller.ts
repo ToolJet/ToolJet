@@ -2,12 +2,14 @@ import { Controller, Get, Param, Post, Patch, Query, Request, UseGuards } from '
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { DataQueriesService } from '../../src/services/data_queries.service';
+import { DataSourcesService } from '../../src/services/data_sources.service';
 
 @Controller('data_queries')
 export class DataQueriesController {
 
   constructor(
-    private dataQueriesService: DataQueriesService
+    private dataQueriesService: DataQueriesService,
+    private dataSourcesService: DataSourcesService
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -47,7 +49,22 @@ export class DataQueriesController {
     const dataQueryId = params.id;
     const { options } = req.body;
 
-    const result = await this.dataQueriesService.runQuery(req.user, dataQueryId, options);
+    const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
+
+    const result = await this.dataQueriesService.runQuery(req.user, dataQuery, options);
+    return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/preview') 
+  async previewQuery(@Request() req, @Param() params) {
+    const { options, query } = req.body;
+    const dataQueryEntity = {
+      ...query,
+      dataSource: await this.dataSourcesService.findOne(query['data_source_id'])
+    }
+
+    const result = await this.dataQueriesService.runQuery(req.user, dataQueryEntity, options);
     return result;
   }
 
