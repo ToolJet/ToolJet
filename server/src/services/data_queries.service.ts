@@ -8,6 +8,7 @@ import FirestoreQueryService from '../../plugins/datasources/firestore';
 import PostgresqlQueryService from '../../plugins/datasources/postgresql';
 import MysqlQueryService from '../../plugins/datasources/mysql';
 import ElasticsearchService from '../../plugins/datasources/elasticsearch';
+import MongodbService from '../../plugins/datasources/mongodb';
 
 @Injectable()
 export class DataQueriesService {
@@ -16,7 +17,8 @@ export class DataQueriesService {
      postgresql: PostgresqlQueryService, 
      firestore: FirestoreQueryService,
      mysql: MysqlQueryService,
-     elasticsearch: ElasticsearchService
+     elasticsearch: ElasticsearchService,
+     mongodb: MongodbService
   };
 
   constructor(
