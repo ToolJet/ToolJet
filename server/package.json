@@ -30,6 +30,7 @@
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/typeorm": "^8.0.0",
     "@types/humps": "^2.0.1",
+    "aws-sdk": "^2.947.0",
     "bcrypt": "^5.0.1",
     "humps": "^2.0.1",
     "knex": "^0.95.7",

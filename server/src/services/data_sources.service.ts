@@ -38,8 +38,6 @@ export class DataSourcesService {
 
   async update(user: User, dataSourceId:string, name:string, options:Array<object>): Promise<DataSource> {
 
-    console.log('options', options)
-
     const dataSource = this.dataSourcesRepository.save({
       id: dataSourceId,
       name,
