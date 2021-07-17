@@ -12,7 +12,7 @@ import { previewQuery } from '@/_helpers/appUtils';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
-const staticDataSources = [{ kind: 'restapi', id: 'restapi', name: 'REST API' }];
+const staticDataSources = [{ kind: 'restapi', id: null, name: 'REST API' }];
 
 class QueryManager extends React.Component {
   constructor(props) {
