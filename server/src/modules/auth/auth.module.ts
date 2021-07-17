@@ -16,7 +16,7 @@ import { UsersModule } from '../users/users.module';
     TypeOrmModule.forFeature([User]),
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '6000s' },
+      signOptions: { expiresIn: '30d' },
     }),
   ],
   providers: [AuthService, JwtStrategy, UsersService],
