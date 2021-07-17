@@ -7,23 +7,10 @@ import { Knex, knex } from 'knex';
 export default class MysqlQueryService implements QueryService {
 
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
-
-    const config: Knex.Config = {
-      client: 'mysql',
-      connection: {
-        host : sourceOptions.host,
-        user : sourceOptions.username,
-        password : sourceOptions.password,
-        database : sourceOptions.database,
-        port: sourceOptions.port,
-      }
-    };
-
+    
     let result = { };
-
     let query = queryOptions.query;
-
-    const knexInstance = knex(config);
+    const knexInstance = await this.getConnection(sourceOptions);
 
     try {
       result = await knexInstance.raw(query);
@@ -35,5 +22,19 @@ export default class MysqlQueryService implements QueryService {
       status: 'ok',
       data: result[0]
     }
+  }
+
+  async getConnection(sourceOptions: any): Promise<any> { 
+    const config: Knex.Config = {
+      client: 'mysql',
+      connection: {
+        host : sourceOptions.host,
+        user : sourceOptions.username,
+        password : sourceOptions.password,
+        database : sourceOptions.database,
+        port: sourceOptions.port,
+      }
+    };
+    return knex(config);
   }
 }

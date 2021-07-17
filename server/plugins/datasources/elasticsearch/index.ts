@@ -10,27 +10,11 @@ export default class ElasticsearchService implements QueryService {
 
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
 
-    const scheme = sourceOptions.scheme;
-    const host = sourceOptions.host;
-    const port = sourceOptions.port;
-    const username = sourceOptions.username;
-    const password = sourceOptions.password;
-
-    let url = '';
-
-    if(username === '' || password === '') {
-      url = `${scheme}://${username}:${password}@${host}:${port}`;
-    } else {
-      url = `${scheme}://${host}:${port}`;
-    }
-
-    const client = new Client({ node: url });
-
+    const client = await this.getConnection(sourceOptions);
     let result = { };
     const operation = queryOptions.operation;
 
     try {
-      
       switch (operation) {
         case 'search':
           result = await search(client, queryOptions.index, queryOptions.query);
@@ -53,5 +37,23 @@ export default class ElasticsearchService implements QueryService {
       status: 'ok',
       data: result
     }
+  }
+
+  async getConnection(sourceOptions: any): Promise<any> {
+    const scheme = sourceOptions.scheme;
+    const host = sourceOptions.host;
+    const port = sourceOptions.port;
+    const username = sourceOptions.username;
+    const password = sourceOptions.password;
+
+    let url = '';
+
+    if(username === '' || password === '') {
+      url = `${scheme}://${username}:${password}@${host}:${port}`;
+    } else {
+      url = `${scheme}://${host}:${port}`;
+    }
+
+    return new Client({ node: url });
   }
 }

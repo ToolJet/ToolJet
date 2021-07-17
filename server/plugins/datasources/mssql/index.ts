@@ -9,6 +9,20 @@ export default class MssqlQueryService implements QueryService {
 
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
 
+    let result = { };
+    let query = queryOptions.query;
+    const knexInstance = await this.getConnection(sourceOptions);
+
+    try {
+      result = await knexInstance.raw(query);
+    } catch (err) {
+      throw new QueryError('Query could not be complated', err.message, {});
+    }
+
+    return { status: 'ok', data: result }
+  }
+
+  async getConnection(sourceOptions: any): Promise<any> { 
     const config: Knex.Config = {
       client: 'mssql',
       connection: {
@@ -22,22 +36,7 @@ export default class MssqlQueryService implements QueryService {
         }
       }
     };
-
-    let result = { };
-
-    let query = queryOptions.query;
-
-    const knexInstance = knex(config);
-
-    try {
-      result = await knexInstance.raw(query);
-    } catch (err) {
-      throw new QueryError('Query could not be complated', err.message, {});
-    }
-
-    return {
-      status: 'ok',
-      data: result
-    }
+    
+    return knex(config);
   }
 }

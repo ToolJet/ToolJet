@@ -8,18 +8,11 @@ export default class PostgresqlQueryService implements QueryService {
 
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
 
-    const pool = new Pool({
-      user: sourceOptions.username,
-      host: sourceOptions.host,
-      database: sourceOptions.database,
-      password: sourceOptions.password,
-      port: sourceOptions.port,
-    });
+    const pool = await this.getConnection(sourceOptions);
 
     let result = {
       rows: []
     };
-
     let query = '';
 
     if(queryOptions.mode === 'gui') {
@@ -32,12 +25,20 @@ export default class PostgresqlQueryService implements QueryService {
 
     result = await pool.query(queryOptions.query);
 
-    await pool.end();
-
     return {
       status: 'ok',
       data: result.rows
     }
+  }
+
+  async getConnection(sourceOptions: any): Promise<any> { 
+    return new Pool({
+      user: sourceOptions.username,
+      host: sourceOptions.host,
+      database: sourceOptions.database,
+      password: sourceOptions.password,
+      port: sourceOptions.port,
+    });
   }
 
   async buildBulkUpdateQuery(queryOptions: any): Promise<string> {

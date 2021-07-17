@@ -11,18 +11,8 @@ export default class FirestoreQueryService implements QueryService {
 
   async run(sourceOptions: any, queryOptions: any): Promise<QueryResult> {
 
-    const gcpKey = parseJson(sourceOptions['gcp_key'], 'GCP key could not be parsed as a valid JSON object');
-
-    const firestore = new Firestore({
-      projectId: gcpKey['project_id'],
-      credentials: {
-        "private_key": gcpKey['private_key'],
-        "client_email": gcpKey['client_email'],
-      }
-    });
-
+    const firestore = await this.getConnection(sourceOptions);
     const operation = queryOptions.operation; 
-
     let result = {};
 
     try {
@@ -57,5 +47,19 @@ export default class FirestoreQueryService implements QueryService {
       status: 'ok',
       data: result
     }
+  }
+
+  async getConnection(sourceOptions: any): Promise<any> { 
+    const gcpKey = parseJson(sourceOptions['gcp_key'], 'GCP key could not be parsed as a valid JSON object');
+
+    const firestore = new Firestore({
+      projectId: gcpKey['project_id'],
+      credentials: {
+        "private_key": gcpKey['private_key'],
+        "client_email": gcpKey['client_email'],
+      }
+    });
+
+    return firestore;
   }
 }
