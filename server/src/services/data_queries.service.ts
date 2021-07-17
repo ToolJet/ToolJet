@@ -10,6 +10,7 @@ import MysqlQueryService from '../../plugins/datasources/mysql';
 import ElasticsearchService from '../../plugins/datasources/elasticsearch';
 import MongodbService from '../../plugins/datasources/mongodb';
 import DynamodbQueryService from '../../plugins/datasources/dynamodb';
+import MssqlQueryService from '../../plugins/datasources/mssql';
 
 @Injectable()
 export class DataQueriesService {
@@ -20,7 +21,8 @@ export class DataQueriesService {
      mysql: MysqlQueryService,
      elasticsearch: ElasticsearchService,
      mongodb: MongodbService,
-     dynamodb: DynamodbQueryService
+     dynamodb: DynamodbQueryService,
+     mssql: MssqlQueryService
   };
 
   constructor(
