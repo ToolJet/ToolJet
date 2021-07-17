@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { DataQueriesService } from '../../src/services/data_queries.service';
 import { DataSourcesService } from '../../src/services/data_sources.service';
+import { QueryError } from 'src/modules/data_sources/query.error';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -64,7 +65,28 @@ export class DataQueriesController {
       dataSource: await this.dataSourcesService.findOne(query['data_source_id'])
     }
 
-    const result = await this.dataQueriesService.runQuery(req.user, dataQueryEntity, options);
+    let result = {};
+
+    try {
+      result = await this.dataQueriesService.runQuery(req.user, dataQueryEntity, options);
+    } catch (error) {
+      if (error instanceof QueryError) {
+        result = {
+          status: 'failed',
+          message: error.message,
+          description: error.description,
+          data: error.data
+        }
+      } else {
+        result = {
+          status: 'failed',
+          message: 'Internal server error',
+          description: error.message,
+          data: {}
+        }
+      }
+    }
+    
     return result;
   }
 
