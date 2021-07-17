@@ -271,10 +271,6 @@ class QueryManager extends React.Component {
                   };
                   previewQuery(this, query)
                     .then(() => {
-                      toast.info(`Query completed.`, {
-                        hideProgressBar: true,
-                        position: 'bottom-center',
-                      });
                       this.previewPanelRef.current.scrollIntoView();
                     })
                     .catch(({ error, data }) => {
