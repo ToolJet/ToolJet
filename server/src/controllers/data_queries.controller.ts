@@ -52,7 +52,28 @@ export class DataQueriesController {
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
-    const result = await this.dataQueriesService.runQuery(req.user, dataQuery, options);
+    let result = {};
+
+    try {
+      result = await this.dataQueriesService.runQuery(req.user, dataQuery, options);
+    } catch (error) {
+      if (error instanceof QueryError) {
+        result = {
+          status: 'failed',
+          message: error.message,
+          description: error.description,
+          data: error.data
+        }
+      } else {
+        result = {
+          status: 'failed',
+          message: 'Internal server error',
+          description: error.message,
+          data: {}
+        }
+      }
+    }
+
     return result;
   }
 
