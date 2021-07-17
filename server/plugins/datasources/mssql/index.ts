@@ -16,7 +16,7 @@ export default class MssqlQueryService implements QueryService {
     try {
       result = await knexInstance.raw(query);
     } catch (err) {
-      throw new QueryError('Query could not be complated', err.message, {});
+      throw new QueryError('Query could not be completed', err.message, {});
     }
 
     return { status: 'ok', data: result }
