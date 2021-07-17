@@ -11,6 +11,7 @@ import ElasticsearchService from '../../plugins/datasources/elasticsearch';
 import MongodbService from '../../plugins/datasources/mongodb';
 import DynamodbQueryService from '../../plugins/datasources/dynamodb';
 import MssqlQueryService from '../../plugins/datasources/mssql';
+import RestapiQueryService from '../../plugins/datasources/restapi';
 
 @Injectable()
 export class DataQueriesService {
@@ -22,7 +23,8 @@ export class DataQueriesService {
      elasticsearch: ElasticsearchService,
      mongodb: MongodbService,
      dynamodb: DynamodbQueryService,
-     mssql: MssqlQueryService
+     mssql: MssqlQueryService,
+     restapi: RestapiQueryService
   };
 
   constructor(
@@ -71,10 +73,10 @@ export class DataQueriesService {
 
   async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
 
-    const dataSource = dataQuery.dataSource;
+    const dataSource = dataQuery.dataSourceId ? dataQuery.dataSource : {};
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
-    const kind = dataSource.kind;
+    const kind = dataQuery.kind;
     const pluginServiceClass = this.plugins[kind];
 
     const service = new pluginServiceClass();
@@ -84,6 +86,9 @@ export class DataQueriesService {
   }
 
   async parseSourceOptions(options: any): Promise<object> {
+
+    // For adhoc queries such as REST API queries, source options will be null
+    if(!options) return;
 
     const parsedOptions = {};
 

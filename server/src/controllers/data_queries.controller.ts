@@ -65,6 +65,7 @@ export class DataQueriesController {
           data: error.data
         }
       } else {
+        console.log(error);
         result = {
           status: 'failed',
           message: 'Internal server error',
@@ -99,6 +100,7 @@ export class DataQueriesController {
           data: error.data
         }
       } else {
+        console.log(error);
         result = {
           status: 'failed',
           message: 'Internal server error',
