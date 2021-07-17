@@ -40,4 +40,12 @@ export class DataSourcesController {
     return decamelizeKeys(dataSource);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('fetch_oauth2_base_url')
+  async getAuthUrl(@Request() req) {
+    const { provider } = req.body;
+    return await this.dataSourcesService.getAuthUrl(provider);
+  }
+  
+
 }

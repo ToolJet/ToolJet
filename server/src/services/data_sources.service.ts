@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
+import { allPlugins } from 'src/modules/data_sources/plugins';
 
 @Injectable()
 export class DataSourcesService {
@@ -75,4 +76,10 @@ export class DataSourcesService {
 
     return parsedOptions;
   }
+
+  async getAuthUrl(provider): Promise<object> {
+    const service = new allPlugins[provider];
+    return { url: service.authUrl() }
+  }
+  
 }

@@ -4,28 +4,12 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
-import FirestoreQueryService from '../../plugins/datasources/firestore';
-import PostgresqlQueryService from '../../plugins/datasources/postgresql';
-import MysqlQueryService from '../../plugins/datasources/mysql';
-import ElasticsearchService from '../../plugins/datasources/elasticsearch';
-import MongodbService from '../../plugins/datasources/mongodb';
-import DynamodbQueryService from '../../plugins/datasources/dynamodb';
-import MssqlQueryService from '../../plugins/datasources/mssql';
-import RestapiQueryService from '../../plugins/datasources/restapi';
+import { allPlugins } from 'src/modules/data_sources/plugins';
 
 @Injectable()
 export class DataQueriesService {
 
-  private plugins = {
-     postgresql: PostgresqlQueryService, 
-     firestore: FirestoreQueryService,
-     mysql: MysqlQueryService,
-     elasticsearch: ElasticsearchService,
-     mongodb: MongodbService,
-     dynamodb: DynamodbQueryService,
-     mssql: MssqlQueryService,
-     restapi: RestapiQueryService
-  };
+  private plugins = allPlugins;
 
   constructor(
     private credentialsService: CredentialsService,
