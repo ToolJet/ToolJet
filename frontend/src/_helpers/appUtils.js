@@ -270,6 +270,16 @@ export function previewQuery(_ref, query) {
       }
 
       _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+
+      if(data.status === 'failed') {
+        toast.error(`${data.message}: ${data.description}`, { position: 'bottom-center', hideProgressBar: true, autoClose: 10000 });
+      } else { 
+        toast.info(`Query completed.`, {
+          hideProgressBar: true,
+          position: 'bottom-center',
+        });
+      }
+
       resolve();
     }).catch(({ error, data } ) => {
       _ref.setState({ previewLoading: false, queryPreviewData: data });
