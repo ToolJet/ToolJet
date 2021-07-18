@@ -259,7 +259,7 @@ class DataSourceManager extends React.Component {
                 <div className="row w-100">
                   <div className="alert alert-danger" role="alert">
                   <div className="text-muted">
-                    Login failed for user 'master'.
+                    {connectionTestError.message}
                   </div>
                 </div>
                 </div>
