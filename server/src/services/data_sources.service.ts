@@ -53,6 +53,30 @@ export class DataSourcesService {
 
     return dataSource;
   }
+
+  async testConnection(kind: string, options: object): Promise<object> {
+    let result = {};
+    try {
+
+      let sourceOptions = {};
+
+      for(const key of Object.keys(options)) {
+        sourceOptions[key] = options[key]['value'];
+      }
+
+      const serviceClass = allPlugins[kind];
+      const service = new serviceClass();
+      result = await service.testConnection(sourceOptions);
+   
+    } catch(error) {
+      result = {
+        status: 'failed',
+        message: error.message
+      }
+    }
+
+    return result;
+  }
   
   async parseOptionsForSaving(options:Array<object>) {
 
