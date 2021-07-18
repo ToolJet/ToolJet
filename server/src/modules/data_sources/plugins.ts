@@ -7,6 +7,7 @@ import DynamodbQueryService from 'plugins/datasources/dynamodb';
 import MssqlQueryService from 'plugins/datasources/mssql';
 import RestapiQueryService from 'plugins/datasources/restapi';
 import SlackQueryService from 'plugins/datasources/slack';
+import RedisQueryService from 'plugins/datasources/redis';
 
 export const allPlugins = {
   postgresql: PostgresqlQueryService,
@@ -17,5 +18,6 @@ export const allPlugins = {
   dynamodb: DynamodbQueryService,
   mssql: MssqlQueryService,
   restapi: RestapiQueryService,
-  slack: SlackQueryService
+  slack: SlackQueryService,
+  redis: RedisQueryService
 }
