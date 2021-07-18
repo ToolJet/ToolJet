@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
@@ -38,6 +39,15 @@ export default class DynamodbQueryService implements QueryService {
     return {
       status: 'ok',
       data: result
+    }
+  }
+
+  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+    const client = await this.getConnection(sourceOptions, { operation: 'list_tables' });
+    await listTables(client);
+
+    return {
+      status: 'ok'
     }
   }
 

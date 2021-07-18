@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
+import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 const { MongoClient } = require("mongodb");
 
 @Injectable()
@@ -31,6 +32,15 @@ export default class MongodbService implements QueryService {
     return {
       status: 'ok',
       data: result
+    }
+  }
+
+  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+    const db = await this.getConnection(sourceOptions);
+    await db.listCollections().toArray();
+
+    return {
+      status: 'ok'
     }
   }
 
