@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 const { Pool } = require('pg');
@@ -28,6 +29,15 @@ export default class PostgresqlQueryService implements QueryService {
     return {
       status: 'ok',
       data: result.rows
+    }
+  }
+
+  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+    const pool = await this.getConnection(sourceOptions);
+    const result = await pool.query('SELECT version();');
+
+    return {
+      status: 'ok'
     }
   }
 
