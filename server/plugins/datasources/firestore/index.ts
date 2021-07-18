@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { parseJson } from 'src/helpers/utils.helper';
+import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
@@ -46,6 +47,15 @@ export default class FirestoreQueryService implements QueryService {
     return {
       status: 'ok',
       data: result
+    }
+  }
+
+  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+    const client = await this.getConnection(sourceOptions);
+    await getDocument(client, 'test/test');
+
+    return {
+      status: 'ok'
     }
   }
 
