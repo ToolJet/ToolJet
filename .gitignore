@@ -33,3 +33,6 @@
 /docs/.firebaserc
 /node_modules
 /frontend/cypress/videos
+/server/.env
+/server/.env.*
+/server/ormconfig.json
