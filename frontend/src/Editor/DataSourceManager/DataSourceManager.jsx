@@ -67,6 +67,7 @@ class DataSourceManager extends React.Component {
 
   optionchanged = (option, value) => {
     return this.setStateAsync({
+      connectionTestError: null,
       options: {
         ...this.state.options,
         [option]: { value }
@@ -128,9 +129,13 @@ class DataSourceManager extends React.Component {
     />;
   }
 
+  onConnectionTestFailed = (data) => {
+    this.setState({ connectionTestError: data });
+  }
+
   render() {
     const {
-      dataSourceMeta, selectedDataSource, options, isSaving
+      dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError
     } = this.state;
 
     return (
@@ -249,13 +254,28 @@ class DataSourceManager extends React.Component {
                 </div>
               </div>
               </div>
+              
+              {connectionTestError &&
+                <div className="row w-100">
+                  <div className="alert alert-danger" role="alert">
+                  <div className="text-muted">
+                    Login failed for user 'master'.
+                  </div>
+                </div>
+                </div>
+              }
+              
               <div className="col">
                 <small>
                   <a href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}>Read documentation</a>
                 </small>
               </div>
               <div className="col-auto">
-                <TestConnection kind={selectedDataSource.kind} options={options} />
+                <TestConnection 
+                  kind={selectedDataSource.kind} 
+                  options={options} 
+                  onConnectionTestFailed={this.onConnectionTestFailed}
+                />
               </div>
               <div className="col-auto">
                 <Button className={`m-2 ${isSaving ? 'btn-loading' : ''}`} disabled={isSaving} variant="primary" onClick={this.createDataSource}>

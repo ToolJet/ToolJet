@@ -41,11 +41,17 @@ export class DataSourcesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('test_connection')
+  async testConnection(@Request() req) {
+    const { kind, options } = req.body;
+    return await this.dataSourcesService.testConnection(kind, options);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('fetch_oauth2_base_url')
   async getAuthUrl(@Request() req) {
     const { provider } = req.body;
     return await this.dataSourcesService.getAuthUrl(provider);
   }
-  
 
 }

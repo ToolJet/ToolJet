@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
+import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import { Knex, knex } from 'knex'
 import { QueryError } from 'src/modules/data_sources/query.error';
@@ -20,6 +21,15 @@ export default class MssqlQueryService implements QueryService {
     }
 
     return { status: 'ok', data: result }
+  }
+
+  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+    const knexInstance = await this.getConnection(sourceOptions);
+    const result = await knexInstance.raw('select @@version;');
+
+    return {
+      status: 'ok'
+    }
   }
 
   async getConnection(sourceOptions: any): Promise<any> { 
