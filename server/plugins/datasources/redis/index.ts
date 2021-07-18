@@ -39,13 +39,12 @@ export default class RedisQueryService implements QueryService {
 
   async getConnection(sourceOptions: any): Promise<any> { 
 
-    const user = sourceOptions.username;
+    const username = sourceOptions.username;
     const host = sourceOptions.host;
-    const database = sourceOptions.database;
     const password = sourceOptions.password;
     const port = sourceOptions.port;
 
-    const client = new Redis(port, host, { maxRetriesPerRequest: 1 });
+    const client = new Redis(port, host, { maxRetriesPerRequest: 1, username, password });
     return client;
   }
 }
