@@ -57,7 +57,7 @@ export class DataQueriesService {
 
   async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
 
-    const dataSource = dataQuery.dataSourceId ? dataQuery.dataSource : {};
+    const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
     const kind = dataQuery.kind;
