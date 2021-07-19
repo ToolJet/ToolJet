@@ -14,6 +14,12 @@ export class OrganizationUser {
   @Column()
   status: string;
 
+  @Column({ name: 'organization_id' }) 
+  organizationId: string
+
+  @Column({ name: 'user_id' }) 
+  userId: string
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
   
