@@ -24,4 +24,11 @@ export class OrganizationUsersController {
     return decamelizeKeys({ result });
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/change_role')
+  async changeRole(@Request() req, @Param() params) {
+    const result = await this.organizationUsersService.changeRole(req.user, params.id, req.body.role);
+    return decamelizeKeys({ result });
+  }
+
 }
