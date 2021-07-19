@@ -11,6 +11,9 @@ export class OrganizationUser {
   @Column()
   role: string;
 
+  @Column()
+  status: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
   
