@@ -9,11 +9,11 @@ export default class TypeOrmConfig {
   static getOrmConfig(configService: ConfigService): TypeOrmModuleOptions {
     return {
       type: 'postgres',
-      database: configService.get<string>('TYPEORM_DATABASE'),
-      port: +configService.get<number>('TYPEORM_PORT') || 5432,
-      username: configService.get<string>('TYPEORM_USERNAME'),
-      password: configService.get<string>('TYPEORM_PASSWORD'),
-      host: configService.get<string>('TYPEORM_HOST'),
+      database: configService.get<string>('PG_DB'),
+      port: +configService.get<number>('PG_PORT') || 5432,
+      username: configService.get<string>('PG_USER'),
+      password: configService.get<string>('PG_PASS'),
+      host: configService.get<string>('PG_HOST'),
       synchronize: false,
       migrationsRun: false,
       logging: configService.get<LoggerOptions>('TYPEORM_LOGGING') || 'all',
