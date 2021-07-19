@@ -24,16 +24,21 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<User> {
     return this.usersRepository.findOne({ 
-      where: { email }
+      where: { email },
+      relations: ['organization']
     });
   }
 
-  async create(email: string, organization): Promise<User> {
+  async create(userParams: any, organization): Promise<User> {
     const password = uuid.v4();
     const invitationToken = uuid.v4();
 
+    const { email, firstName, lastName }  = userParams;
+
     return this.usersRepository.save(this.usersRepository.create({
       email,
+      firstName,
+      lastName,
       password,
       invitationToken,
       organizationId: organization.id,

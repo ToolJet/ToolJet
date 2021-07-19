@@ -47,7 +47,7 @@ export class AuthService {
     
     const { email } = params;
     const organization = await this.organizationsService.create('Untitled organization');
-    const user = await this.usersService.create(email, organization);
+    const user = await this.usersService.create({ email }, organization);
     const organizationUser = await this.organizationUsersService.create(user, organization, 'admin');
 
     return user;

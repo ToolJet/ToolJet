@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
 
@@ -42,5 +43,9 @@ export class User {
 
   @OneToMany(() => OrganizationUser, organizationUser => organizationUser.user, { eager: true })
   organizationUsers: OrganizationUser[];
+
+  @ManyToOne(() => Organization, organization => organization.id)
+  @JoinColumn({ name: "organization_id" })
+  organization: Organization;
 
 }

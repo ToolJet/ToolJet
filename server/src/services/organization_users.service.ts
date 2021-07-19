@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import { Organization } from 'src/entities/organization.entity';
+import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 
@@ -12,10 +13,24 @@ export class OrganizationUsersService {
   constructor(
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
+    private usersService: UsersService,
   ) { }
 
+  async inviteNewUser(currentUser: User, params: any): Promise<OrganizationUser> {
+
+    const userParams = <User> { 
+      firstName: params['first_name'],
+      lastName: params['last_name'],
+      email: params['email']
+    }
+
+    const user = await this.usersService.create(userParams, currentUser.organization);
+    const organizationUser = await this.create(user, currentUser.organization, params.role);
+    return organizationUser;
+  }
+
   async create(user: User, organization: Organization, role: string): Promise<OrganizationUser> {
-    return this.organizationUsersRepository.save(this.organizationUsersRepository.create({
+    return await this.organizationUsersRepository.save(this.organizationUsersRepository.create({
       user,
       organization,
       role,
