@@ -10,6 +10,11 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true
+    "incremental": true,
+    "paths": {
+      "@services/*": ["src/services/*"],
+      "@plugins/*": ["plugins/*"],
+      "@controllers/*": ["src/controllers/*"],
+    }
   }
 }

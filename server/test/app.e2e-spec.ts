@@ -1,7 +1,6 @@
 import * as request from 'supertest';
 import { Test } from '@nestjs/testing';
-import { AppModule } from '../src/app.module';
-import { AppService } from '../src/services/app.service';
+import { AppModule } from 'src/app.module';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -21,7 +20,7 @@ describe('Authentication', () => {
 
     userRepository = app.get('UserRepository');
 
-    await userRepository.save(userRepository.create({ email: 'dev@tooljet.io', password: 'password' }));
+    await userRepository.save(userRepository.create({ email: 'dev@tooljet.io', password: 'password', createdAt: new Date(), updatedAt: new Date(), }));
 
   });
 
