@@ -17,11 +17,11 @@ const createDatabase = (envPath: string): void => {
     }
 
     const createdb =
-      `PGPASSWORD=${process.env.TYPEORM_PASSWORD} createdb ` +
-      `-h ${process.env.TYPEORM_HOST} ` +
-      `-p ${process.env.TYPEORM_PORT} ` +
-      `-U ${process.env.TYPEORM_USERNAME} ` +
-      process.env.TYPEORM_DATABASE;
+      `PGPASSWORD=${process.env.PG_PASS} createdb ` +
+      `-h ${process.env.PG_HOST} ` +
+      `-p ${process.env.PG_PORT} ` +
+      `-U ${process.env.PG_USER} ` +
+      process.env.PG_DB;
 
     exec(createdb, (err, stdout, stderr) => {
       if (err) {
@@ -29,13 +29,16 @@ const createDatabase = (envPath: string): void => {
         return;
       }
 
-      console.log(`Created database ${process.env.TYPEORM_DATABASE}`);
+      console.log(`Created database ${process.env.PG_DB}`);
     });
   });
 };
 
-const nodeEnvPath = path.resolve(process.cwd(), `.env.${process.env.NODE_ENV}`);
-const fallbackPath = path.resolve(process.cwd(), '.env');
+const nodeEnvPath = path.resolve(
+  process.cwd(),
+  `../.env.${process.env.NODE_ENV}`,
+);
+const fallbackPath = path.resolve(process.cwd(), '../.env');
 
 if (fs.existsSync(nodeEnvPath)) {
   createDatabase(nodeEnvPath);

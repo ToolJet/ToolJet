@@ -11,11 +11,11 @@ const generateConfig = (envPath: string): void => {
 
   const dbConfig = {
     type: 'postgres',
-    database: process.env.TYPEORM_DATABASE,
-    port: process.env.TYPEORM_PORT || 5432,
-    username: process.env.TYPEORM_USERNAME,
-    password: process.env.TYPEORM_PASSWORD,
-    host: process.env.TYPEORM_HOST,
+    database: process.env.PG_DB,
+    port: process.env.PG_PORT || 5432,
+    username: process.env.PG_USER,
+    password: process.env.PG_PASS,
+    host: process.env.PG_HOST,
     synchronize: false,
     migrationsRun: false,
     logging: process.env.TYPEORM_LOGGING || 'all',

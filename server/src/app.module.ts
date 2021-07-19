@@ -18,7 +18,7 @@ import { typeOrmConfigAsync } from './config/typeorm.config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
+      envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
     }),
     TypeOrmModule.forRootAsync(typeOrmConfigAsync),
     AuthModule,
