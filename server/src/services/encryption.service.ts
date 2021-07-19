@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-const crypto = require('crypto')
+const crypto = require('crypto');
+const hkdf = require('futoin-hkdf');
 
 @Injectable()
 export class EncryptionService {
@@ -48,7 +49,9 @@ export class EncryptionService {
     const salt = Buffer.alloc(32, '´', 'ascii');
     const info = Buffer.concat([salt, Buffer.from(`${column}_ciphertext`)]);
 
-    const derivedKey = crypto.hkdfSync('sha384', key, table, info, 32);
+    const derivedKey = hkdf(key, 32, {salt: table, info, hash: 'sha384'});
+
+    // const derivedKey = crypto.subtle.deriveKey('sha384', key, table, info, 32);
     const finalDerivedKey = Buffer.from(derivedKey).toString('hex');
 
     return finalDerivedKey;
