@@ -5,15 +5,27 @@ describe('Dashboard', () => {
 
   beforeEach(() => {
     cy.login(email, password);
+    cy.wait(1000)
+    cy.get('body').then(($title=>
+        {
+          //check you are not running tests on empty dashboard state
+          if($title.text().includes('You haven\'t created any apps yet.'))
+          {
+            cy.get('a.btn').eq(0).should('have.text','Create your first app')
+            .click()
+            cy.go('back')
+          }
+        }))
+    
   })
 
-  it('site header is visible with nav items', () => {
+  it('should show site header with nav items', () => {
     cy.get('.navbar')
       .find('.navbar-nav')
       .should('be.visible');
   });
 
-  it('Users tab should navigate to Users page', () => {
+  it('should navigate to users page using users tab', () => {
     cy.get('.navbar')
       .find('.navbar-nav')
       .find('li').not('.active')
@@ -23,7 +35,7 @@ describe('Dashboard', () => {
     cy.get('[data-testid="usersTable"]').should('be.visible');
   })
 
-  it('Apps tab should navigate to Apps page', () => {
+  it('should navigate to apps page using apps tab', () => {
     cy.get('.navbar')
       .find('.navbar-nav')
       .find('li.active')
@@ -33,18 +45,18 @@ describe('Dashboard', () => {
     cy.get('[data-testid="appsTable"]').should('be.visible');
   })
 
-  it('should show User avatar and logout the user when user clicks logout', () => {
+  it('should show user avatar and logout the user when user clicks logout', () => {
     cy.get('[data-testid="userAvatarHeader"]').should('be.visible');
     // TODO - Add functionality to detect when user hovers over the avatar,
     // Issues with hover functionality and hide/show of dom elements
   })
   
-  it('Application folders list is visible', () => {
+  it('should show list of application folders', () => {
     cy.get('[data-testid="applicationFoldersList"]')
       .should('be.visible');
   });
 
-  it('Count bubble for "All applications should equal number of rows in table', () => {
+  it('should show correct number of applications in the count bubble of "All Applications" list', () => {
     cy.get('[data-testid="allApplicationsCount"]').then(($countBubble) => {
       cy.get('[data-testid="appsTable"]')
         .wait(500)
