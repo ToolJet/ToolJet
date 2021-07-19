@@ -39,6 +39,11 @@ export class OrganizationUsersService {
   }));
   }
 
+  async changeRole(user: User, id: string, role: string) {
+    const organizationUser = await this.organizationUsersRepository.findOne(id);
+    return await this.organizationUsersRepository.update(id, { role });
+  }
+
   async archive(id: string) { 
 
     const organizationUser = await this.organizationUsersRepository.findOne(id);
