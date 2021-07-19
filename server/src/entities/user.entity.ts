@@ -1,11 +1,12 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, OneToMany } from 'typeorm';
 const bcrypt = require('bcrypt');
+import { OrganizationUser } from './organization_user.entity';
 
 @Entity({ name: "users" })
 export class User {
 
-  @BeforeUpdate()
   @BeforeInsert()
+  @BeforeUpdate()
   hashPassword() {
     if (this.password) {
       this.password = bcrypt.hashSync(this.password, 10);
@@ -38,5 +39,8 @@ export class User {
   
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
+
+  @OneToMany(() => OrganizationUser, organizationUser => organizationUser.user, { eager: true })
+  organizationUsers: OrganizationUser[];
 
 }

@@ -8,9 +8,9 @@ import { Connection } from 'typeorm';
 import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
 import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
-import { DataQuery } from './entities/data_query.entity';
 import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 import { DataSourcesModule } from './modules/data_sources/data_sources.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
 
 @Module({
   imports: [
@@ -31,7 +31,8 @@ import { DataSourcesModule } from './modules/data_sources/data_sources.module';
     FoldersModule,
     FolderAppsModule,
     DataQueriesModule,
-    DataSourcesModule
+    DataSourcesModule,
+    OrganizationsModule
   ],
   controllers: [AppController],
   providers: [AppService],
