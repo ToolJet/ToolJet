@@ -19,6 +19,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "db:create": "ts-node ./scripts/create-database.ts",
+    "db:drop": "ts-node ./scripts/drop-database.ts",
+    "db:migrate": "npm run typeorm migrations:run",
+    "db:reset": "npm run db:drop && npm run db:create && npm run db:migrate",
     "pretypeorm": "ts-node ./scripts/generate-ormconfig.ts",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
   },

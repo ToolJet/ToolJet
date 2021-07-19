@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import fs = require('fs');
+import * as fs from 'fs';
 
 const generateConfig = (envPath: string): void => {
   const result = dotenv.config({ path: envPath });
