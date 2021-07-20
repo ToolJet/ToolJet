@@ -11,7 +11,6 @@ import Skeleton from 'react-loading-skeleton';
 export const Chart = function Chart({
   id, width, height, component, onComponentClick, currentState, darkMode
 }) {
-  console.log('currentState', currentState);
 
   const [loadingState, setLoadingState] = useState(false);
   const [chartData, setChartData] = useState([]);
@@ -30,6 +29,8 @@ export const Chart = function Chart({
     background: darkMode ? '#1f2936' : 'white'
   };
 
+
+  // darkMode ? '#1f2936' : 'white'
   const dataProperty = component.definition.properties.data;
   const dataString = dataProperty ? dataProperty.value : [];
 
@@ -44,27 +45,34 @@ export const Chart = function Chart({
 
   const gridLinesProperty = component.definition.properties.showGridLines;
   const showGridLines = gridLinesProperty ? gridLinesProperty.value : true;
+  const fontColor = darkMode ? '#c3c3c3' : null;
 
   const layout = {
-    width, 
-    height, 
+    width,
+    height,
     plot_bgcolor: darkMode ? '#1f2936' : null,
     paper_bgcolor: darkMode ? '#1f2936' : null,
     title: {
       text: title,
       font: {
-        color: darkMode ? '#c3c3c3' : null
+        color: fontColor
+      }
+    },
+    legend: {
+      text: title,
+      font: {
+        color: fontColor
       }
     },
     xaxis: {
       showgrid: showGridLines,
       showline: true,
-      color: darkMode ? '#c3c3c3' : null
+      color: fontColor
     },
     yaxis: {
         showgrid: showGridLines,
         showline: true,
-        color: darkMode ? '#c3c3c3' : null
+        color: fontColor
     }
   }
 
@@ -73,7 +81,6 @@ export const Chart = function Chart({
   useEffect(() => {
 
     let rawData = data || [];
-    
     if(typeof rawData === 'string') {
       try {
         rawData = JSON.parse(dataString);
@@ -90,7 +97,7 @@ export const Chart = function Chart({
         values: rawData.map((item) => item["value"]),
         labels: rawData.map((item) => item["label"]),
       }];
-    } else { 
+    } else {
       newData = [{
         type: chartType || 'line',
         x: rawData.map((item) => item["x"]),
@@ -100,7 +107,6 @@ export const Chart = function Chart({
     }
 
     setChartData(newData);
-    
   }, [data, chartType]);
 
   return (
@@ -108,7 +114,7 @@ export const Chart = function Chart({
       style={computedStyles}
       onClick={() => onComponentClick(id, component)}
     >
-      {loadingState === true ? 
+      {loadingState === true ?
         <div style={{ width: '100%' }} className="p-2">
           <center>
             <div className="spinner-border mt-5" role="status"></div>
@@ -123,7 +129,7 @@ export const Chart = function Chart({
             // staticPlot: true
           }}
         />
-      } 
+      }
     </div>
   );
 };
