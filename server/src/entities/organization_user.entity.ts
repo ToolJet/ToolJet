@@ -11,7 +11,7 @@ export class OrganizationUser {
   @Column()
   role: string;
 
-  @Column()
+  @Column({ default: 'invited' })
   status: string;
 
   @Column({ name: 'organization_id' }) 
