@@ -24,6 +24,21 @@ describe('Authentication', () => {
 
   });
 
+  it('should create new users', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/signup')
+      .send({ email: 'test@tooljet.io' })
+      
+    expect(response.statusCode).toBe(201);
+
+    const id = response.body['id'];
+    const user = await userRepository.findOne(id, { relations: ['organization']});
+
+    expect(user.organization.name).toBe('Untitled organization');
+    const orgUser = user.organizationUsers[0];
+    expect(orgUser.role).toBe('admin');
+  });
+
   it(`authenticate if valid credentials`, async () => {
 
     return request(app.getHttpServer())

@@ -16,9 +16,4 @@ export class AppController {
     return this.authService.signup(req.body);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req) {
-    return req.body;
-  }
 }
