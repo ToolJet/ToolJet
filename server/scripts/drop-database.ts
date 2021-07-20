@@ -17,10 +17,10 @@ const createDatabase = (envPath: string): void => {
     }
 
     const dropdb =
-      `PGPASSWORD=${process.env.PG_PASS} dropdb ` +
-      `-h ${process.env.PG_HOST} ` +
-      `-p ${process.env.PG_PORT} ` +
-      `-U ${process.env.PG_USER} ` +
+      `PGPASSWORD=${process.env.PG_PASS || ''} dropdb ` +
+      `-h ${process.env.PG_HOST || ''} ` +
+      `-p ${process.env.PG_PORT || 5432} ` +
+      `-U ${process.env.PG_USER || ''} ` +
       process.env.PG_DB;
 
     exec(dropdb, (err, stdout, stderr) => {
@@ -34,7 +34,10 @@ const createDatabase = (envPath: string): void => {
   });
 };
 
-const nodeEnvPath = path.resolve(process.cwd(), `../.env.${process.env.NODE_ENV}`);
+const nodeEnvPath = path.resolve(
+  process.cwd(),
+  `../.env.${process.env.NODE_ENV}`,
+);
 const fallbackPath = path.resolve(process.cwd(), '../.env');
 
 if (fs.existsSync(nodeEnvPath)) {

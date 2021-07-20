@@ -12,7 +12,7 @@ import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { ConfigModule } from '@nestjs/config';
-import { typeOrmConfigAsync } from './config/typeorm.config';
+import ormconfig from '../ormconfig';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { typeOrmConfigAsync } from './config/typeorm.config';
       isGlobal: true,
       envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
     }),
-    TypeOrmModule.forRootAsync(typeOrmConfigAsync),
+    TypeOrmModule.forRoot(ormconfig),
     AuthModule,
     UsersModule,
     AppsModule,
