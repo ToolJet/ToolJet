@@ -1,10 +1,11 @@
 describe('Empty state of dashboard', () => {
-
-    const email = 'dev@tooljet.io';
-    const password = 'password';
   
       beforeEach(() => {
-        cy.login(email, password);
+        //read data from fixtures
+        cy.fixture('login-data').then(function (testdata) 
+        {
+          cy.login(testdata.email,testdata.password) 
+        }) 
       })
       
   
