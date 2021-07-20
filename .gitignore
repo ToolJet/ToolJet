@@ -29,9 +29,8 @@
 /frontend/.firebaserc
 /frontend/.firebase
 /.env
-/.env.*
+/.env.test
 /docs/.firebase
 /docs/.firebaserc
 /node_modules
 /frontend/cypress/videos
-/server/ormconfig.json

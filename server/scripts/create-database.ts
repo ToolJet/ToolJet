@@ -17,10 +17,10 @@ const createDatabase = (envPath: string): void => {
     }
 
     const createdb =
-      `PGPASSWORD=${process.env.PG_PASS} createdb ` +
-      `-h ${process.env.PG_HOST} ` +
-      `-p ${process.env.PG_PORT} ` +
-      `-U ${process.env.PG_USER} ` +
+      `PGPASSWORD=${process.env.PG_PASS || ''} createdb ` +
+      `-h ${process.env.PG_HOST || ''} ` +
+      `-p ${process.env.PG_PORT || 5432} ` +
+      `-U ${process.env.PG_USER || ''} ` +
       process.env.PG_DB;
 
     exec(createdb, (err, stdout, stderr) => {
