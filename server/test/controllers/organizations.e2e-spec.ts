@@ -6,14 +6,13 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { JwtService } from '@nestjs/jwt';
+import { authHeaderForUser } from '../test.helper';
 
 describe('organizations controller', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
   let organizationUsersRepository: Repository<OrganizationUser>;
-  let jwtService: JwtService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -23,8 +22,6 @@ describe('organizations controller', () => {
 
     app = moduleRef.createNestApplication();
     await app.init();
-
-    jwtService = moduleRef.get(JwtService);
   });
 
   it('should allow only authenticated users to list org users', async () => {
@@ -41,12 +38,9 @@ describe('organizations controller', () => {
     const user = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'dev@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
     const orgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user, organization, role: 'admin', createdAt: new Date(), updatedAt: new Date()}));
 
-    const authPayload = { username: user.id, sub: user.email };
-    const authToken = jwtService.sign(authPayload);
-
     const response = await request(app.getHttpServer())
       .get('/organizations/users')
-      .set('Authorization', `Bearer ${authToken}`);
+      .set('Authorization', authHeaderForUser(user));
 
     expect(response.statusCode).toBe(200);
     expect(response.body.users.length).toBe(1);
