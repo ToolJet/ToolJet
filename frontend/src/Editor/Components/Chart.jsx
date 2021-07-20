@@ -7,12 +7,10 @@ import createPlotlyComponent from 'react-plotly.js/factory';
 const Plot = createPlotlyComponent(Plotly)
 
 import Skeleton from 'react-loading-skeleton';
-import './style.css';
 
 export const Chart = function Chart({
   id, width, height, component, onComponentClick, currentState, darkMode
 }) {
-  console.log('currentState', currentState);
 
   const [loadingState, setLoadingState] = useState(false);
   const [chartData, setChartData] = useState([]);
@@ -27,7 +25,8 @@ export const Chart = function Chart({
 
   const computedStyles = {
     width,
-    height
+    height,
+    background: darkMode ? '#1f2936' : 'white'
   };
 
 
@@ -46,27 +45,33 @@ export const Chart = function Chart({
 
   const gridLinesProperty = component.definition.properties.showGridLines;
   const showGridLines = gridLinesProperty ? gridLinesProperty.value : true;
-
+  const fontColor = darkMode ? '#c3c3c3' : null;
   const layout = {
     width,
     height,
-    plot_bgcolor: darkMode ? '#1f2936' : null,
-    paper_bgcolor: darkMode ? '#1f2936' : null,
+    plot_bgcolor: fontColor,
+    paper_bgcolor: fontColor,
     title: {
       text: title,
       font: {
-        color: darkMode ? '#c3c3c3' : null
+        color: fontColor
+      }
+    },
+    legend: {
+      text: title,
+      font: {
+        color: fontColor
       }
     },
     xaxis: {
       showgrid: showGridLines,
       showline: true,
-      color: darkMode ? '#c3c3c3' : null
+      color: fontColor
     },
     yaxis: {
         showgrid: showGridLines,
         showline: true,
-        color: darkMode ? '#c3c3c3' : null
+        color: fontColor
     }
   }
 
@@ -109,7 +114,6 @@ export const Chart = function Chart({
     <div
       style={computedStyles}
       onClick={() => onComponentClick(id, component)}
-      className={darkMode ? 'darkmode' : 'lightmode'}
     >
       {loadingState === true ?
         <div style={{ width: '100%' }} className="p-2">
