@@ -1,9 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { Organization } from './organization.entity';
 import { User } from './user.entity';
 
 @Entity({ name: "organization_users" })
-export class OrganizationUser {
+export class OrganizationUser extends BaseEntity {
 
   @PrimaryGeneratedColumn("uuid")
   id: string;
