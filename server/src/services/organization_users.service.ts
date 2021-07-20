@@ -63,7 +63,7 @@ export class OrganizationUsersService {
       }
     }
 
-    await this.organizationUsersRepository.update(id, { status: 'archive' });
+    await this.organizationUsersRepository.update(id, { status: 'archived' });
     return true;
   }
 }
