@@ -7,6 +7,7 @@ import createPlotlyComponent from 'react-plotly.js/factory';
 const Plot = createPlotlyComponent(Plotly)
 
 import Skeleton from 'react-loading-skeleton';
+import './style.css';
 
 export const Chart = function Chart({
   id, width, height, component, onComponentClick, currentState, darkMode
@@ -26,10 +27,11 @@ export const Chart = function Chart({
 
   const computedStyles = {
     width,
-    height,
-    background: darkMode ? '#1f2936' : 'white'
+    height
   };
 
+
+  // darkMode ? '#1f2936' : 'white'
   const dataProperty = component.definition.properties.data;
   const dataString = dataProperty ? dataProperty.value : [];
 
@@ -46,8 +48,8 @@ export const Chart = function Chart({
   const showGridLines = gridLinesProperty ? gridLinesProperty.value : true;
 
   const layout = {
-    width, 
-    height, 
+    width,
+    height,
     plot_bgcolor: darkMode ? '#1f2936' : null,
     paper_bgcolor: darkMode ? '#1f2936' : null,
     title: {
@@ -73,7 +75,7 @@ export const Chart = function Chart({
   useEffect(() => {
 
     let rawData = data || [];
-    
+
     if(typeof rawData === 'string') {
       try {
         rawData = JSON.parse(dataString);
@@ -90,7 +92,7 @@ export const Chart = function Chart({
         values: rawData.map((item) => item["value"]),
         labels: rawData.map((item) => item["label"]),
       }];
-    } else { 
+    } else {
       newData = [{
         type: chartType || 'line',
         x: rawData.map((item) => item["x"]),
@@ -100,15 +102,16 @@ export const Chart = function Chart({
     }
 
     setChartData(newData);
-    
+
   }, [data, chartType]);
 
   return (
     <div
       style={computedStyles}
       onClick={() => onComponentClick(id, component)}
+      className={darkMode ? 'darkmode' : 'lightmode'}
     >
-      {loadingState === true ? 
+      {loadingState === true ?
         <div style={{ width: '100%' }} className="p-2">
           <center>
             <div className="spinner-border mt-5" role="status"></div>
@@ -123,7 +126,7 @@ export const Chart = function Chart({
             // staticPlot: true
           }}
         />
-      } 
+      }
     </div>
   );
 };
