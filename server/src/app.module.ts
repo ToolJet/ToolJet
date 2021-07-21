@@ -11,20 +11,16 @@ import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
 import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { ConfigModule } from '@nestjs/config';
+import ormconfig from '../ormconfig';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.PG_HOST,
-      port: parseInt(process.env.PG_PORT) || 5432,
-      username: process.env.PG_USER,
-      password: process.env.PG_PASS,
-      database: process.env.PG_DB,
-      autoLoadEntities: true,
-      synchronize: false,
-      logging: true
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
     }),
+    TypeOrmModule.forRoot(ormconfig),
     AuthModule,
     UsersModule,
     AppsModule,
@@ -32,12 +28,11 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
     FolderAppsModule,
     DataQueriesModule,
     DataSourcesModule,
-    OrganizationsModule
+    OrganizationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-
 export class AppModule {
   constructor(private connection: Connection) {}
 }
