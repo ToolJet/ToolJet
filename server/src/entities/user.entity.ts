@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, OneToMany, ManyToOne, JoinColumn, AfterLoad } from 'typeorm';
 import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
@@ -47,5 +47,12 @@ export class User {
   @ManyToOne(() => Organization, organization => organization.id)
   @JoinColumn({ name: "organization_id" })
   organization: Organization;
+
+  public isAdmin;
+
+  @AfterLoad()
+  generateCount(): void {
+    this.isAdmin = this.organizationUsers[0].role === 'admin';
+  }
 
 }

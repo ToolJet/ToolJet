@@ -13,12 +13,13 @@ import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { ConfigModule } from '@nestjs/config';
 import ormconfig from '../ormconfig';
+import { CaslModule } from './modules/casl/casl.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
+      envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env']
     }),
     TypeOrmModule.forRoot(ormconfig),
     AuthModule,
@@ -29,6 +30,7 @@ import ormconfig from '../ormconfig';
     DataQueriesModule,
     DataSourcesModule,
     OrganizationsModule,
+    CaslModule
   ],
   controllers: [AppController],
   providers: [AppService],

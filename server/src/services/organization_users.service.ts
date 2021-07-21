@@ -16,6 +16,10 @@ export class OrganizationUsersService {
     private usersService: UsersService,
   ) { }
 
+  async findOne(id: string): Promise<OrganizationUser> {
+    return await this.organizationUsersRepository.findOne(id);
+  }
+
   async inviteNewUser(currentUser: User, params: any): Promise<OrganizationUser> {
 
     const userParams = <User> { 
