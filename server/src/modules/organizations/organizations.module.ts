@@ -8,9 +8,10 @@ import { OrganizationUsersService } from '@services/organization_users.service';
 import { OrganizationsController } from '@controllers/organizations.controller';
 import { OrganizationUsersController } from '@controllers/organization_users.controller';
 import { UsersService } from 'src/services/users.service';
+import { CaslModule } from '../casl/casl.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Organization, OrganizationUser, User])],
+  imports: [TypeOrmModule.forFeature([Organization, OrganizationUser, User]), CaslModule],
   providers: [OrganizationsService, OrganizationUsersService, UsersService],
   controllers: [OrganizationsController, OrganizationUsersController],
 })
