@@ -1,31 +1,16 @@
 import * as request from 'supertest';
-import { Test } from '@nestjs/testing';
-import { AppModule } from 'src/app.module';
 import { INestApplication } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { User } from 'src/entities/user.entity';
-import { Organization } from 'src/entities/organization.entity';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { authHeaderForUser, clearDB, createUser } from '../test.helper';
+import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
 
 describe('organizations controller', () => {
   let app: INestApplication;
-  let userRepository: Repository<User>;
-  let organizationRepository: Repository<Organization>;
-  let organizationUsersRepository: Repository<OrganizationUser>;
 
   beforeEach(async () => {
     await clearDB();
   });
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-    .compile();
-
-    app = moduleRef.createNestApplication();
-    await app.init();
+    app = await createNestAppInstance();
   });
 
   it('should allow only authenticated users to list org users', async () => {
