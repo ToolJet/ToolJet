@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from "typeorm";
 
-export class CreateUsers1625814801417 implements MigrationInterface {
+export class CreateDataQueries1625814801428 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(new Table({
-      name: "users",
+      name: "data_queries",
       columns: [
         {
           name: "id",
@@ -14,40 +14,29 @@ export class CreateUsers1625814801417 implements MigrationInterface {
           isPrimary: true
         },
         {
-          name: "first_name",
-          type: "varchar",
-          isNullable: true
-        },
-        {
-          name: "last_name",
-          type: "varchar",
-          isNullable: true
-        },
-        {
-          name: "email",
-          type: "varchar",
-          isUnique: true,
-          isNullable: true
-        },
-        {
-          name: "password_digest",
-          type: "varchar",
-          isNullable: true
-        },
-        {
-          name: "invitation_token",
-          type: "varchar",
-          isNullable: true
-        },
-        {
-          name: "forgot_password_token",
-          type: "varchar",
-          isNullable: true
-        },
-        {
-          name: "organization_id",
+          name: "app_id",
           type: "uuid",
+          isNullable: false
+        },
+        {
+          name: "data_source_id",
+          type: "uuid",
+          isNullable: false
+        },
+        {
+          name: "name",
+          type: "varchar",
+          isNullable: false
+        },
+        {
+          name: "options",
+          type: "json",
           isNullable: true
+        },
+        {
+          name: "kind",
+          type: "varchar",
+          isNullable: false
         },
         {
           name: "created_at",
@@ -64,12 +53,20 @@ export class CreateUsers1625814801417 implements MigrationInterface {
       ]
     }), true)
 
-    await queryRunner.createForeignKey("users", new TableForeignKey({
-      columnNames: ["organization_id"],
+    await queryRunner.createForeignKey("data_queries", new TableForeignKey({
+      columnNames: ["app_id"],
       referencedColumnNames: ["id"],
-      referencedTableName: "organizations",
+      referencedTableName: "apps",
       onDelete: "CASCADE"
     }));
+
+    await queryRunner.createForeignKey("data_queries", new TableForeignKey({
+      columnNames: ["data_source_id"],
+      referencedColumnNames: ["id"],
+      referencedTableName: "data_sources",
+      onDelete: "CASCADE"
+    }));
+    
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
