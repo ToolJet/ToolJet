@@ -1,10 +1,10 @@
 import { User } from '../../src/entities/user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, AfterLoad, } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, AfterLoad, BaseEntity, } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 import { DataQuery } from './data_query.entity';
 
 @Entity({ name: "apps" })
-export class App {
+export class App extends BaseEntity {
 
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -14,6 +14,9 @@ export class App {
 
   @Column( { name: 'slug', unique: true } )
   slug: string;
+
+  @Column( { name: 'is_public' } )
+  isPublic: string;
 
   @Column({ name: 'organization_id' }) 
   organizationId: string

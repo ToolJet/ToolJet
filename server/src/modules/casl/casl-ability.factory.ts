@@ -3,6 +3,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { OrganizationUsersService } from '@services/organization_users.service';
+import { App } from 'src/entities/app.entity';
 
 type Actions = 'changeRole' | 'archiveUser' | 'inviteUser';
 
@@ -28,9 +29,6 @@ export class CaslAbilityFactory {
     if(user.isAdmin && currentUserBelongsToSameOrg) {
       can('changeRole', User);
       can('archiveUser', User);
-    }
-
-    if(user.isAdmin) {
       can('inviteUser', User);
     }
 
