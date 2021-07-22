@@ -14,7 +14,8 @@ export class OrganizationUsersController {
   ) { }
 
   // Endpoint for inviting new organization users
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', User))
   @Post()
   async create(@Request() req, @Param() params) {
     const result = await this.organizationUsersService.inviteNewUser(req.user, req.body);
