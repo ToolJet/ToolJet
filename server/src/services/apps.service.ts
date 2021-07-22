@@ -50,4 +50,20 @@ export class AppsService {
         }
     });
   }
+
+  async update(user: User, appId: string, params: any) {
+
+    const currentVersionId = params['current_version_id'];
+    const isPublic = params['is_public'];
+    const { name, slug } = params;
+
+    const updateableParams = {
+      name,
+      slug,
+      isPublic,
+      currentVersionId
+    }
+
+    return await this.appsRepository.update(appId, updateableParams)
+  }
 }

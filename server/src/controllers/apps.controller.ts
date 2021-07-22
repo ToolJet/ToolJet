@@ -1,13 +1,15 @@
-import { Controller, Get, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, Param, Post, Put, Query, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
 import { decamelizeKeys } from 'humps';
+import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 
 @Controller('apps')
 export class AppsController {
 
   constructor(
-    private appsService: AppsService
+    private appsService: AppsService,
+    private appsAbilityFactory: AppsAbilityFactory
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -30,6 +32,24 @@ export class AppsController {
 
     return response;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async update(@Request() req, @Param() params) {
+
+    const app = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if(!ability.can('updateParams', app)) {
+      throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+    
+    const result = await this.appsService.update(req.user, params.id, req.body.app);
+    let response = decamelizeKeys(result);
+
+    return response;
+  }
+
 
   @UseGuards(JwtAuthGuard)
   @Get()
