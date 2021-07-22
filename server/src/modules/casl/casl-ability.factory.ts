@@ -17,7 +17,7 @@ export class CaslAbilityFactory {
     private organizationUsersService: OrganizationUsersService,
   ) { }
 
-  async archiveOrganizationUser(user: User, params: any) {
+  async organizationUserActions(user: User, params: any) {
     const { can, cannot, build } = new AbilityBuilder<  
       Ability<[Actions, Subjects]>
     >(Ability as AbilityClass<AppAbility>);

@@ -2,7 +2,7 @@ import { Controller, Get, Param, Post, Query, Request, UseGuards } from '@nestjs
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
-import { AppAbility, CaslAbilityFactory } from 'src/modules/casl/casl-ability.factory';
+import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { User } from 'src/entities/user.entity';
@@ -11,7 +11,6 @@ import { User } from 'src/entities/user.entity';
 export class OrganizationUsersController {
   constructor(
     private organizationUsersService: OrganizationUsersService,
-    private caslAbilityFactory: CaslAbilityFactory
   ) { }
 
   // Endpoint for inviting new organization users
@@ -22,7 +21,8 @@ export class OrganizationUsersController {
     return decamelizeKeys({ users: result });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('changeRole', User))
   @Post(':id/archive')
   async archive(@Request() req, @Param() params) {
     const result = await this.organizationUsersService.archive(params.id);

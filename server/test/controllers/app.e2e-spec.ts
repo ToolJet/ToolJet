@@ -4,10 +4,23 @@ import { AppModule } from 'src/app.module';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
+import { clearDB } from '../test.helper';
+import { Organization } from 'src/entities/organization.entity';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
 
 describe('Authentication', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
+  let organizationRepository: Repository<Organization>;
+  let organizationUsersRepository: Repository<OrganizationUser>;
+
+  beforeEach(async () => {
+    await clearDB();
+
+    const organization = await organizationRepository.save(organizationRepository.create({ name: 'test org', createdAt: new Date(), updatedAt: new Date() }));
+    const user = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'admin@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
+    const adminOrgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user: user, organization, role: 'admin', createdAt: new Date(), updatedAt: new Date()}));
+  });
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -19,12 +32,13 @@ describe('Authentication', () => {
     await app.init();
 
     userRepository = app.get('UserRepository');
-
-    await userRepository.save(userRepository.create({ email: 'dev@tooljet.io', password: 'password', createdAt: new Date(), updatedAt: new Date(), }));
+    organizationRepository = app.get('OrganizationRepository');
+    organizationUsersRepository = app.get('OrganizationUserRepository');
 
   });
 
   it('should create new users', async () => {
+
     const response = await request(app.getHttpServer())
       .post('/signup')
       .send({ email: 'test@tooljet.io' })
@@ -43,7 +57,7 @@ describe('Authentication', () => {
 
     return request(app.getHttpServer())
       .post('/authenticate')
-      .send({ email: 'dev@tooljet.io', password: 'password' })
+      .send({ email: 'admin@tooljet.io', password: 'password' })
       .expect(201)
   });
 
@@ -51,7 +65,7 @@ describe('Authentication', () => {
 
     return request(app.getHttpServer())
       .post('/authenticate')
-      .send({ email: 'dev@tooljet.io', password: 'pwd' })
+      .send({ email: 'adnin@tooljet.io', password: 'pwd' })
       .expect(401)
   });
 

@@ -51,7 +51,7 @@ export class User {
   public isAdmin;
 
   @AfterLoad()
-  generateCount(): void {
+  computeUserRole(): void {
     this.isAdmin = this.organizationUsers[0].role === 'admin';
   }
 
