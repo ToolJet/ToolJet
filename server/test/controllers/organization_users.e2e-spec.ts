@@ -87,6 +87,37 @@ describe('organization users controller', () => {
 
   });
 
+  it('should allow only admin users to change role of org users', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const developerUserData = await createUser(app, { email: 'developer@tooljet.io', role: 'developer' });
+
+    const response = await request(app.getHttpServer())
+      .post(`/organization_users/${developerUserData.orgUser.id}/change_role`)
+      .set('Authorization',authHeaderForUser(adminUserData.user))
+      .send({ role: 'viewer' })
+      .expect(403)
+    
+    await developerUserData.orgUser.reload();
+    expect(developerUserData.orgUser.role).toBe('developer');  
+
+  });
+
+  it('should allow only admin users to archive org users', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const developerUserData = await createUser(app, { email: 'developer@tooljet.io', role: 'developer' });
+
+    const response = await request(app.getHttpServer())
+      .post(`/organization_users/${developerUserData.orgUser.id}/archive`)
+      .set('Authorization',authHeaderForUser(adminUserData.user))
+      .expect(403)
+    
+    await developerUserData.orgUser.reload();
+    expect(developerUserData.orgUser.status).toBe('invited');  
+
+  });
+
   afterAll(async () => {
     await app.close();
   });
