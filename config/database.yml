@@ -3,20 +3,16 @@ default: &default
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
-
 development:
   <<: *default
-  database: tooljet_development
-  username: postgres
+  database: stackegg_development
+  username: navaneethpk
   password: <%= ENV.fetch("DB_PASSWORD", '') %>
   host: <%= ENV.fetch("DB_HOST", 'localhost') %>
 
 test:
   <<: *default
-  database: tooljet_test
-  username: postgres
-  password: <%= ENV.fetch("DB_PASSWORD", '') %>
-  host: <%= ENV.fetch("DB_HOST", 'localhost') %>
+  database: stackegg_test
 
 production:
   <<: *default
@@ -24,4 +20,4 @@ production:
   database: <%= ENV['PG_DB'] %>
   username: <%= ENV['PG_USER'] %>
   password: <%= ENV['PG_PASS'] %>
-
+  
