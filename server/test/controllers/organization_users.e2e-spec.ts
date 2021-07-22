@@ -7,7 +7,7 @@ import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { JwtService } from '@nestjs/jwt';
-import { authHeaderForUser, clearDB } from '../test.helper';
+import { authHeaderForUser, clearDB, createUser } from '../test.helper';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -38,87 +38,72 @@ describe('organization users controller', () => {
   });
 
   it('should allow only admin users to archive org users', async () => {
-    userRepository = app.get('UserRepository');
-    organizationRepository = app.get('OrganizationRepository');
-    organizationUsersRepository = app.get('OrganizationUserRepository');
 
-    const organization = await organizationRepository.save(organizationRepository.create({ name: 'test org', createdAt: new Date(), updatedAt: new Date() }));
-    const admin = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'admin@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
-    const adminOrgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user: admin, organization, role: 'admin', createdAt: new Date(), updatedAt: new Date()}));
-
-    const viewer = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'viewer@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
-    const viewerOrgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user: viewer, organization, role: 'viewer', createdAt: new Date(), updatedAt: new Date()}));
-
-    const developer = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'developer@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
-    const developerOrgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user: developer, organization, role: 'developer', createdAt: new Date(), updatedAt: new Date()}));
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const organization = adminUserData.organization;
+    const developerUserData = await createUser(app, { email: 'developer@tooljet.io', role: 'developer', organization });
+    const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', role: 'viewer', organization });
 
     let response = await request(app.getHttpServer())
-      .post(`/organization_users/${adminOrgUser.id}/archive`)
-      .set('Authorization',authHeaderForUser(viewer))
+      .post(`/organization_users/${adminUserData.orgUser.id}/archive`)
+      .set('Authorization',authHeaderForUser(viewerUserData.user))
       .expect(403)
 
-    await adminOrgUser.reload();
-    expect(adminOrgUser.status).toBe('invited');
+    await adminUserData.orgUser.reload();
+    expect(adminUserData.orgUser.status).toBe('invited');
 
     response = await request(app.getHttpServer())
-      .post(`/organization_users/${adminOrgUser.id}/archive`)
-      .set('Authorization',authHeaderForUser(developer))
+      .post(`/organization_users/${adminUserData.orgUser.id}/archive`)
+      .set('Authorization',authHeaderForUser(developerUserData.user))
       .expect(403) 
 
-    await adminOrgUser.reload();
-    expect(adminOrgUser.status).toBe('invited');  
+    await adminUserData.orgUser.reload();
+    expect(adminUserData.orgUser.status).toBe('invited');  
       
     response = await request(app.getHttpServer())
-      .post(`/organization_users/${developerOrgUser.id}/archive`)
-      .set('Authorization',authHeaderForUser(admin))
+      .post(`/organization_users/${developerUserData.orgUser.id}/archive`)
+      .set('Authorization',authHeaderForUser(adminUserData.user))
       .expect(201)   
 
-    await developerOrgUser.reload();
-    expect(developerOrgUser.status).toBe('archived');  
+    await developerUserData.orgUser.reload();
+    expect(developerUserData.orgUser.status).toBe('archived');  
 
   });
 
   it('should allow only admin users to change role of org users', async () => {
-    userRepository = app.get('UserRepository');
-    organizationRepository = app.get('OrganizationRepository');
-    organizationUsersRepository = app.get('OrganizationUserRepository');
 
-    const organization = await organizationRepository.save(organizationRepository.create({ name: 'test org', createdAt: new Date(), updatedAt: new Date() }));
-    const admin = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'admin@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
-    const adminOrgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user: admin, organization, role: 'admin', createdAt: new Date(), updatedAt: new Date()}));
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const organization = adminUserData.organization;
+    const developerUserData = await createUser(app, { email: 'developer@tooljet.io', role: 'developer', organization });
+    const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', role: 'viewer', organization });
 
-    const viewer = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'viewer@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
-    const viewerOrgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user: viewer, organization, role: 'viewer', createdAt: new Date(), updatedAt: new Date()}));
-
-    const developer = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'developer@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
-    const developerOrgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user: developer, organization, role: 'developer', createdAt: new Date(), updatedAt: new Date()}));
 
     let response = await request(app.getHttpServer())
-      .post(`/organization_users/${viewerOrgUser.id}/change_role`)
-      .set('Authorization',authHeaderForUser(developer))
+      .post(`/organization_users/${viewerUserData.orgUser.id}/change_role`)
+      .set('Authorization',authHeaderForUser(developerUserData.user))
       .send({ role: 'developer' })
       .expect(403)
 
-    await viewerOrgUser.reload();
-    expect(viewerOrgUser.role).toBe('viewer');
+    await viewerUserData.orgUser.reload();
+    expect(viewerUserData.orgUser.role).toBe('viewer');
 
     response = await request(app.getHttpServer())
-      .post(`/organization_users/${developerOrgUser.id}/change_role`)
-      .set('Authorization',authHeaderForUser(viewer))
+      .post(`/organization_users/${viewerUserData.orgUser.id}/change_role`)
+      .set('Authorization',authHeaderForUser(viewerUserData.user))
       .send({ role: 'viewer' })
       .expect(403)
 
-    await developerOrgUser.reload();
-    expect(developerOrgUser.role).toBe('developer');
+    await developerUserData.orgUser.reload();
+    expect(developerUserData.orgUser.role).toBe('developer');
 
     response = await request(app.getHttpServer())
-      .post(`/organization_users/${developerOrgUser.id}/change_role`)
-      .set('Authorization',authHeaderForUser(admin))
+      .post(`/organization_users/${developerUserData.orgUser.id}/change_role`)
+      .set('Authorization',authHeaderForUser(adminUserData.user))
       .send({ role: 'viewer' })
       .expect(201)
 
-    await developerOrgUser.reload();
-    expect(developerOrgUser.role).toBe('viewer');
+    await developerUserData.orgUser.reload();
+    expect(developerUserData.orgUser.role).toBe('viewer');
 
   });
 

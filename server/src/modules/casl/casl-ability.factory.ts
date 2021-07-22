@@ -4,7 +4,7 @@ import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectTyp
 import { Injectable } from '@nestjs/common';
 import { OrganizationUsersService } from '@services/organization_users.service';
 
-type Actions = 'changeRole' | 'archiveUser';
+type Actions = 'changeRole' | 'archiveUser' | 'inviteUser';
 
 type Subjects = InferSubjects<typeof OrganizationUser| typeof User> | 'all';
 
@@ -28,6 +28,10 @@ export class CaslAbilityFactory {
     if(user.isAdmin && currentUserBelongsToSameOrg) {
       can('changeRole', User);
       can('archiveUser', User);
+    }
+
+    if(user.isAdmin) {
+      can('inviteUser', User);
     }
 
     return build({

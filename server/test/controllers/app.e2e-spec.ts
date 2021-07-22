@@ -4,7 +4,7 @@ import { AppModule } from 'src/app.module';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { clearDB } from '../test.helper';
+import { clearDB, createUser } from '../test.helper';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 
@@ -16,10 +16,7 @@ describe('Authentication', () => {
 
   beforeEach(async () => {
     await clearDB();
-
-    const organization = await organizationRepository.save(organizationRepository.create({ name: 'test org', createdAt: new Date(), updatedAt: new Date() }));
-    const user = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'admin@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
-    const adminOrgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user: user, organization, role: 'admin', createdAt: new Date(), updatedAt: new Date()}));
+    await createUser(app, { email: 'admin@tooljet.io' });
   });
 
   beforeAll(async () => {

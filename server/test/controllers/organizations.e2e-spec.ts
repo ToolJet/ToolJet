@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { authHeaderForUser, clearDB } from '../test.helper';
+import { authHeaderForUser, clearDB, createUser } from '../test.helper';
 
 describe('organizations controller', () => {
   let app: INestApplication;
@@ -34,13 +34,8 @@ describe('organizations controller', () => {
 
   it('should list organization users', async () => {
 
-    userRepository = app.get('UserRepository');
-    organizationRepository = app.get('OrganizationRepository');
-    organizationUsersRepository = app.get('OrganizationUserRepository');
-
-    const organization = await organizationRepository.save(organizationRepository.create({ name: 'test org', createdAt: new Date(), updatedAt: new Date() }));
-    const user = await userRepository.save(userRepository.create({ firstName: 'test', lastName: 'test', email: 'dev@tooljet.io', password: 'password', organization, createdAt: new Date(), updatedAt: new Date(), }));
-    const orgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ user, organization, role: 'admin', createdAt: new Date(), updatedAt: new Date()}));
+    const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const { organization, user, orgUser } = userData;
 
     const response = await request(app.getHttpServer())
       .get('/organizations/users')
