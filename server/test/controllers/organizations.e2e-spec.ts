@@ -6,13 +6,17 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { authHeaderForUser } from '../test.helper';
+import { authHeaderForUser, clearDB } from '../test.helper';
 
 describe('organizations controller', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
   let organizationUsersRepository: Repository<OrganizationUser>;
+
+  beforeEach(async () => {
+    await clearDB();
+  });
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
