@@ -1,10 +1,8 @@
 import * as request from 'supertest';
-import { Test } from '@nestjs/testing';
-import { AppModule } from 'src/app.module';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { clearDB, createUser } from '../test.helper';
+import { clearDB, createUser, createNestAppInstance } from '../test.helper';
 import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 
@@ -20,13 +18,7 @@ describe('Authentication', () => {
   });
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-    .compile();
-
-    app = moduleRef.createNestApplication();
-    await app.init();
+    app = await createNestAppInstance();
 
     userRepository = app.get('UserRepository');
     organizationRepository = app.get('OrganizationRepository');

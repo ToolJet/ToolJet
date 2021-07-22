@@ -4,6 +4,24 @@ import { getConnection, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { User } from 'src/entities/user.entity';
+import { App } from 'src/entities/app.entity';
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { AppModule } from 'src/app.module';
+
+export async function createNestAppInstance() {
+  let app: INestApplication;
+
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+  })
+  .compile();
+
+  app = moduleRef.createNestApplication();
+  await app.init();
+
+  return app;
+}
 
 export function authHeaderForUser(user: any) {
   const configService = new ConfigService();
@@ -19,6 +37,21 @@ export async function clearDB() {
     const repository = await getConnection().getRepository(entity.name);
     await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
   }
+}
+
+export async function createApplication(app, { name, user }: any) {
+  let appRepository: Repository<App>;
+  appRepository = app.get('AppRepository');
+
+  user = user || await (await createUser(app, {})).user;
+
+  return await appRepository.save(appRepository.create({
+    name,
+    user,
+    organizationId: user.organization.id,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }))
 }
 
 export async function createUser(app, { firstName, lastName, email, role, organization }: any) {
