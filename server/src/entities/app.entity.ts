@@ -15,8 +15,8 @@ export class App extends BaseEntity {
   @Column( { name: 'slug', unique: true } )
   slug: string;
 
-  @Column( { name: 'is_public' } )
-  isPublic: string;
+  @Column( { name: 'is_public', default: true } )
+  isPublic: boolean;
 
   @Column({ name: 'organization_id' }) 
   organizationId: string
@@ -56,4 +56,11 @@ export class App extends BaseEntity {
     this.definition = this.currentVersion?.definition;
   }
 
+  @AfterInsert()
+  generateSlug() {
+    if (!this.slug) {
+      this.slug = this.id;
+      this.save();
+    }
+  }
 }

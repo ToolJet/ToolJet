@@ -29,6 +29,8 @@ describe('organizations controller', () => {
     expect(response.statusCode).toBe(200);
     expect(response.body.users.length).toBe(1);
 
+    await orgUser.reload();
+
     expect(response.body.users[0]).toStrictEqual({
       email: user.email, 
       first_name: user.firstName, 

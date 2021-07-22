@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from "typeorm";
 
-export class CreateUsers1625814801417 implements MigrationInterface {
+export class CreateAppVersions1625814801420 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(new Table({
-      name: "users",
+      name: "app_versions",
       columns: [
         {
           name: "id",
@@ -14,40 +14,19 @@ export class CreateUsers1625814801417 implements MigrationInterface {
           isPrimary: true
         },
         {
-          name: "first_name",
+          name: "name",
           type: "varchar",
           isNullable: true
         },
         {
-          name: "last_name",
-          type: "varchar",
-          isNullable: true
+          name: "definition",
+          type: "json",
+          isNullable: false
         },
         {
-          name: "email",
-          type: "varchar",
-          isUnique: true,
-          isNullable: true
-        },
-        {
-          name: "password_digest",
-          type: "varchar",
-          isNullable: true
-        },
-        {
-          name: "invitation_token",
-          type: "varchar",
-          isNullable: true
-        },
-        {
-          name: "forgot_password_token",
-          type: "varchar",
-          isNullable: true
-        },
-        {
-          name: "organization_id",
+          name: "app_id",
           type: "uuid",
-          isNullable: true
+          isNullable: false
         },
         {
           name: "created_at",
@@ -64,12 +43,13 @@ export class CreateUsers1625814801417 implements MigrationInterface {
       ]
     }), true)
 
-    await queryRunner.createForeignKey("users", new TableForeignKey({
-      columnNames: ["organization_id"],
+    await queryRunner.createForeignKey("app_versions", new TableForeignKey({
+      columnNames: ["app_id"],
       referencedColumnNames: ["id"],
-      referencedTableName: "organizations",
+      referencedTableName: "apps",
       onDelete: "CASCADE"
     }));
+
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from "typeorm";
 
-export class CreateUsers1625814801417 implements MigrationInterface {
+export class CreateApps1625814801419 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(new Table({
-      name: "users",
+      name: "apps",
       columns: [
         {
           name: "id",
@@ -14,40 +14,40 @@ export class CreateUsers1625814801417 implements MigrationInterface {
           isPrimary: true
         },
         {
-          name: "first_name",
+          name: "name",
           type: "varchar",
           isNullable: true
         },
         {
-          name: "last_name",
-          type: "varchar",
-          isNullable: true
-        },
-        {
-          name: "email",
+          name: "slug",
           type: "varchar",
           isUnique: true,
           isNullable: true
         },
         {
-          name: "password_digest",
-          type: "varchar",
+          name: "user_id",
+          type: "uuid",
+          isNullable: false
+        },
+        {
+          name: "current_version_id",
+          type: "uuid",
           isNullable: true
         },
         {
-          name: "invitation_token",
-          type: "varchar",
+          name: "is_public",
+          type: "boolean",
           isNullable: true
         },
         {
-          name: "forgot_password_token",
-          type: "varchar",
+          name: "definition",
+          type: "json",
           isNullable: true
         },
         {
           name: "organization_id",
           type: "uuid",
-          isNullable: true
+          isNullable: false
         },
         {
           name: "created_at",
@@ -64,12 +64,13 @@ export class CreateUsers1625814801417 implements MigrationInterface {
       ]
     }), true)
 
-    await queryRunner.createForeignKey("users", new TableForeignKey({
+    await queryRunner.createForeignKey("apps", new TableForeignKey({
       columnNames: ["organization_id"],
       referencedColumnNames: ["id"],
       referencedTableName: "organizations",
       onDelete: "CASCADE"
     }));
+
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
