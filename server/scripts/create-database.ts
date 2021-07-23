@@ -36,8 +36,9 @@ const createDatabase = (envPath: string): void => {
 
 const nodeEnvPath = path.resolve(
   process.cwd(),
-  `../.env.${process.env.NODE_ENV}`,
+  process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
 );
+
 const fallbackPath = path.resolve(process.cwd(), '../.env');
 
 if (fs.existsSync(nodeEnvPath)) {
@@ -46,6 +47,6 @@ if (fs.existsSync(nodeEnvPath)) {
   createDatabase(fallbackPath);
 } else {
   console.error(
-    `.env.${process.env.NODE_ENV} file not found to create database`,
+    `${nodeEnvPath} file not found to create database`,
   );
 }

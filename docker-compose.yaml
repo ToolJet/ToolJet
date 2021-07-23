@@ -1,19 +1,7 @@
 version: '3'
 
 services:
-  base: &base
-    build:
-      context: .
-      dockerfile: ./docker/server.Dockerfile.dev
-      args:
-        RAILS_ENV: 'development'
-    tty: true
-    stdin_open: true
-    image: tooljet:development
-    env_file: .env
-
   client:
-    <<: *base
     build:
       context: ./frontend
       dockerfile: ../docker/client.Dockerfile
@@ -29,29 +17,32 @@ services:
     command: npm start
 
   server:
-    <<: *base
+    # env_file: .env
     build:
       context: .
       dockerfile: ./docker/server.Dockerfile.dev
     image: tooljet-server:development
-    volumes:
-      - ./:/app:delegated
-      # - bundle:/usr/local/bundle
     depends_on:
       - postgres
+    volumes:
+      - ./server:/app:delegated
+      - /app/node_modules/
     ports:
       - 3000:3000
-    env_file: .env
     environment:
-      - RAILS_ENV=development
-      - DB_PASSWORD=postgres
-      - DB_HOST=postgres
-    entrypoint: ["bash", "/app/docker/entrypoints/server.sh"]
-    command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+      - NODE_ENV=development
+      - PG_DB=tooljet_development
+      - PG_USER=postgres
+      - PG_PASS=postgres
+      - PG_HOST=postgres
+    entrypoint: ./entrypoint.sh  
+    command: npm run start:dev
 
   postgres:
-    image: postgres:12
+    image: postgres:13
     restart: always
+    ports:
+      - 5432:5432
     volumes:
       - postgres:/data/postgres
     environment:
@@ -59,9 +50,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
-
 volumes:
   postgres:
   node_modules:
   cache:
-  bundle:
