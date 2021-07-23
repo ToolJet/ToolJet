@@ -49,7 +49,7 @@ describe('apps controller', () => {
     
   });
 
-  it('should now allow developers and viewers to change the name of apps', async () => {
+  it('should not allow developers and viewers to change the name of apps', async () => {
 
     const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
     const application = await createApplication(app, { name: 'name', user: adminUserData.user });

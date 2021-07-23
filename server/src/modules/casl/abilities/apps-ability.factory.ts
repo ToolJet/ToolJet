@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { App } from 'src/entities/app.entity';
 
-type Actions = 'updateParams' | 'fetchUsers';
+type Actions = 'updateParams' | 'fetchUsers' | 'createUsers';
 
 type Subjects = InferSubjects<typeof OrganizationUser| typeof User | typeof App> | 'all';
 
@@ -22,6 +22,7 @@ export class AppsAbilityFactory {
     // Only admins can update app params such as name, friendly url & visibility
     if(user.isAdmin) {
       can('updateParams', App, { organizationId: user.organizationId } );
+      can('createUsers', App, { organizationId: user.organizationId } );
     }
 
     // All organization users can view the app users
