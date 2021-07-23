@@ -104,4 +104,22 @@ export class AppsController {
     return decamelizeKeys({ versions: result });
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/versions')
+  async createVersion(@Request() req) {
+
+    const params = req.body;
+    const versionName = params['versionName'];
+
+    const app = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if(!ability.can('createVersions', app)) {
+      throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+
+    const appUser = await this.appsService.createVersion(req.user, app, versionName);
+    return decamelizeKeys(appUser);
+  }
+
 }

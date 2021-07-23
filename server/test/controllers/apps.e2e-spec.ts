@@ -147,6 +147,61 @@ describe('apps controller', () => {
     
   });
 
+  it('should be able to create a new app version if admin of same organization', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const developerUserData = await createUser(app, { email: 'dev@tooljet.io', role: 'developer', organization: adminUserData.organization });
+    const application = await createApplication(app, { user: adminUserData.user });
+
+    for( const userData of [adminUserData, developerUserData]) {
+      const response = await request(app.getHttpServer())
+        .post(`/apps/${application.id}/versions`)
+        .set('Authorization', authHeaderForUser(userData.user))
+        .send({ 
+          versionName: 'v0'
+        });
+
+      expect(response.statusCode).toBe(201);
+    }
+
+  });
+
+  it('should not be able to fetch app versions if user of another organization', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
+    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    await createApplicationVersion(app, application);
+
+    const response = await request(app.getHttpServer())
+      .post(`/apps/${application.id}/versions`)
+      .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+      .send({ 
+        versionName: 'v0'
+      });
+
+    expect(response.statusCode).toBe(403);
+    
+  });
+
+  it('should not be able to fetch app versions if user is a viewer', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', role: 'viewer', organization: adminUserData.organization });
+    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    await createApplicationVersion(app, application);
+
+    const response = await request(app.getHttpServer())
+      .post(`/apps/${application.id}/versions`)
+      .set('Authorization', authHeaderForUser(viewerUserData.user))
+      .send({ 
+        versionName: 'v0'
+      });
+
+    expect(response.statusCode).toBe(403);
+    
+  });
+
   afterAll(async () => {
     await app.close();
   });
