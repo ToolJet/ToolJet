@@ -8,6 +8,7 @@ import { App } from 'src/entities/app.entity';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
+import { AppUser } from 'src/entities/app_user.entity';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -42,16 +43,28 @@ export async function clearDB() {
 export async function createApplication(app, { name, user }: any) {
   let appRepository: Repository<App>;
   appRepository = app.get('AppRepository');
+  let appUsersRepository: Repository<AppUser>;
+  appUsersRepository = app.get('AppUserRepository');
 
   user = user || await (await createUser(app, {})).user;
 
-  return await appRepository.save(appRepository.create({
+  const newApp = await appRepository.save(appRepository.create({
     name,
     user,
     organizationId: user.organization.id,
     createdAt: new Date(),
     updatedAt: new Date()
-  }))
+  }));
+
+  await appUsersRepository.save(appUsersRepository.create({
+    app: newApp, 
+    user,
+    role: 'admin',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }));
+
+  return newApp;
 }
 
 export async function createUser(app, { firstName, lastName, email, role, organization }: any) {

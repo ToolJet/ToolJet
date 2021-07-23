@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { App } from 'src/entities/app.entity';
 
-type Actions = 'changeRole' | 'archiveUser' | 'inviteUser' | 'updateParams' | 'makePublic';
+type Actions = 'updateParams' | 'fetchUsers';
 
 type Subjects = InferSubjects<typeof OrganizationUser| typeof User | typeof App> | 'all';
 
@@ -19,9 +19,13 @@ export class AppsAbilityFactory {
       Ability<[Actions, Subjects]>
     >(Ability as AbilityClass<AppsAbility>);
 
+    // Only admins can update app params such as name, friendly url & visibility
     if(user.isAdmin) {
       can('updateParams', App, { organizationId: user.organizationId } );
     }
+
+    // All organization users can view the app users
+    can('fetchUsers', App, { organizationId: user.organizationId })
 
     return build({
       detectSubjectType: item => item.constructor as ExtractSubjectType<Subjects>
