@@ -118,4 +118,16 @@ export class AppsService {
     });
 
   }
+
+  async createVersion(user: User, app: App, versionName: string): Promise<AppVersion> {
+
+    return await this.appVersionsRepository.save(this.appVersionsRepository.create({
+      name: versionName,
+      app,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }));
+    
+  }
+
 }
