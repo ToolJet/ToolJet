@@ -9,6 +9,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { AppUser } from 'src/entities/app_user.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -65,6 +66,16 @@ export async function createApplication(app, { name, user }: any) {
   }));
 
   return newApp;
+}
+
+export async function createApplicationVersion(app, application) {
+  let appVersionsRepository: Repository<AppVersion>;
+  appVersionsRepository = app.get('AppVersionRepository');
+
+  return await appVersionsRepository.save(appVersionsRepository.create({
+    app: application,
+    name: 'v0'
+  }));
 }
 
 export async function createUser(app, { firstName, lastName, email, role, organization }: any) {

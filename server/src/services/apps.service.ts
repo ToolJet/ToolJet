@@ -4,6 +4,7 @@ import { App } from 'src/entities/app.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Injectable()
 export class AppsService {
@@ -11,6 +12,9 @@ export class AppsService {
   constructor(
     @InjectRepository(App)
     private appsRepository: Repository<App>,
+    
+    @InjectRepository(AppVersion)
+    private appVersionsRepository: Repository<AppVersion>,
 
     @InjectRepository(AppUser)
     private appUsersRepository: Repository<AppUser>,
@@ -105,5 +109,13 @@ export class AppsService {
     }
 
     return serializedUsers;
+  }
+
+  async fetchVersions(user: any, appId: string): Promise<AppVersion[]> {
+
+    return await this.appVersionsRepository.find({
+      where: { appId },
+    });
+
   }
 }

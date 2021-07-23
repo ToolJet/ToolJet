@@ -21,7 +21,7 @@ export class CreateAppVersions1625814801420 implements MigrationInterface {
         {
           name: "definition",
           type: "json",
-          isNullable: false
+          isNullable: true
         },
         {
           name: "app_id",

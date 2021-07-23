@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createApplication, createUser, createNestAppInstance } from '../test.helper';
+import { authHeaderForUser, clearDB, createApplication, createUser, createNestAppInstance, createApplicationVersion } from '../test.helper';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -88,6 +88,42 @@ describe('apps controller', () => {
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
 
     expect(response.statusCode).toBe(403);
+    
+  });
+
+  it('should not be able to fetch app versions if user of another organization', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
+    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    await createApplicationVersion(app, application);
+
+    const response = await request(app.getHttpServer())
+      .get(`/apps/${application.id}/versions`)
+      .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+
+    expect(response.statusCode).toBe(403);
+    
+  });
+
+  it('should be able to fetch app versions if admin/developer/viewer of same organization', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const organization = adminUserData.organization;
+    const developerUserData = await createUser(app, { email: 'developer@tooljet.io', role: 'developer', organization });
+    const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', role: 'viewer', organization });
+
+    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    await createApplicationVersion(app, application);
+
+    for( const userData of [adminUserData, developerUserData, viewerUserData]) {
+      const response = await request(app.getHttpServer())
+        .get(`/apps/${application.id}/versions`)
+        .set('Authorization', authHeaderForUser(userData.user))
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.versions.length).toBe(1);
+    }
     
   });
 
