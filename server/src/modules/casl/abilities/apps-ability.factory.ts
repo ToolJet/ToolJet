@@ -3,10 +3,11 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
-type Actions = 'updateParams' | 'fetchUsers' | 'createUsers' | 'fetchVersions' | 'createVersions';
+type Actions = 'updateParams' | 'fetchUsers' | 'createUsers' | 'fetchVersions' | 'createVersions' | 'updateVersions';
 
-type Subjects = InferSubjects<typeof OrganizationUser| typeof User | typeof App> | 'all';
+type Subjects = InferSubjects<typeof AppVersion| typeof User | typeof App> | 'all';
 
 export type AppsAbility = Ability<[Actions, Subjects]>;
 
@@ -27,6 +28,7 @@ export class AppsAbilityFactory {
     // Only developers and admins can create new versions
     if(user.isAdmin || user.isDeveloper) {
       can('createVersions', App, { organizationId: user.organizationId } );
+      can('updateVersions', App, { organizationId: user.organizationId } );
     }
 
     // All organization users can view the app users

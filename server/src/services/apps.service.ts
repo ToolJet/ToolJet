@@ -26,6 +26,12 @@ export class AppsService {
     });
   }
 
+  async findVersion(id: string): Promise<AppVersion> {
+    return this.appVersionsRepository.findOne(id, {
+      relations: ['app']
+    });
+  }
+
   async create(user: User): Promise<App> {
     const app = await this.appsRepository.save(this.appsRepository.create({
         name: 'Untitled app',
@@ -128,6 +134,10 @@ export class AppsService {
       updatedAt: new Date()
     }));
     
+  }
+
+  async updateVersion(user: User, version: AppVersion, definition: any) {
+    return await this.appVersionsRepository.update(version.id, { definition });
   }
 
 }
