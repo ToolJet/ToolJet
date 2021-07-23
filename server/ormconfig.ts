@@ -39,8 +39,7 @@ function determineFilePathForEnv(env: string | undefined): string {
 function throwErrorIfFileNotPresent(filePath: string, env: string): void {
   if (!fs.existsSync(filePath)) {
     throw (
-      `Unable to fetch TypeORM config from env file for environment: ${env}\n ` +
-      'Please add your test config .test.env file within the root folder'
+      `Unable to fetch database config from env file for environment: ${env}\n `
     );
   }
 }
