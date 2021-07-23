@@ -122,4 +122,22 @@ export class AppsController {
     return decamelizeKeys(appUser);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/versions/:versionId')
+  async updateVersion(@Request() req) {
+
+    const params = req.body;
+    const definition = params['definition'];
+
+    const version = await this.appsService.findVersion(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if(!ability.can('updateVersions', version.app)) {
+      throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+
+    const appUser = await this.appsService.updateVersion(req.user, version, definition);
+    return decamelizeKeys(appUser);
+  }
+
 }

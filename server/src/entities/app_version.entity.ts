@@ -1,8 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { App } from './app.entity';
 
 @Entity({ name: "app_versions" })
-export class AppVersion {
+export class AppVersion extends BaseEntity {
 
   @PrimaryGeneratedColumn("uuid")
   id: string;
