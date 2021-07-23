@@ -78,7 +78,10 @@ export class AppsService {
       currentVersionId
     }
 
-    return await this.appsRepository.update(appId, updateableParams)
+    // removing keys with undefined values
+    Object.keys(updateableParams).forEach(key => updateableParams[key] === undefined ? delete updateableParams[key] : {});
+
+    return await this.appsRepository.update(appId, updateableParams);
   }
 
   async fetchUsers(user: any, appId: string): Promise<AppUser[]> {
