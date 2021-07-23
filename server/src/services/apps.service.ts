@@ -23,7 +23,6 @@ export class AppsService {
   }
 
   async create(user: User): Promise<App> {
-    console.log(user)
     const app = await this.appsRepository.save(this.appsRepository.create({
         name: 'Untitled app',
         createdAt: new Date(),
