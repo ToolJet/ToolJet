@@ -74,4 +74,19 @@ export class AppsController {
     return decamelizeKeys(response);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/users')
+  async fetchUsers(@Request() req, @Param() params) {
+
+    const app = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if(!ability.can('fetchUsers', app)) {
+      throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+
+    const result = await this.appsService.fetchUsers(req.user, params.id);
+    return decamelizeKeys({ users: result });
+  }
+
 }

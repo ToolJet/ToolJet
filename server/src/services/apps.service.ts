@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { App } from '../entities/app.entity';
+import { App } from 'src/entities/app.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
+import { AppUser } from 'src/entities/app_user.entity';
 
 @Injectable()
 export class AppsService {
@@ -10,6 +11,9 @@ export class AppsService {
   constructor(
     @InjectRepository(App)
     private appsRepository: Repository<App>,
+
+    @InjectRepository(AppUser)
+    private appUsersRepository: Repository<AppUser>,
   ) { }
 
   async find(id: string): Promise<App> {
@@ -19,13 +23,24 @@ export class AppsService {
   }
 
   async create(user: User): Promise<App> {
-    return this.appsRepository.save(this.appsRepository.create({
+    console.log(user)
+    const app = await this.appsRepository.save(this.appsRepository.create({
         name: 'Untitled app',
         createdAt: new Date(),
         updatedAt: new Date(),
-        organizationId: user.organizationId,
+        organizationId: user.organization.id,
         user: user
     }));
+
+    await this.appUsersRepository.save(this.appUsersRepository.create({
+      userId: user.id, 
+      appId: app.id, 
+      role: 'admin',
+      createdAt: new Date(), 
+      updatedAt: new Date()
+    }));
+
+    return app;
   }
 
   async count(user: User) {
@@ -65,5 +80,28 @@ export class AppsService {
     }
 
     return await this.appsRepository.update(appId, updateableParams)
+  }
+
+  async fetchUsers(user: any, appId: string): Promise<AppUser[]> {
+
+    const appUsers = await this.appUsersRepository.find({
+      where: { appId },
+      relations: ['user']
+    });
+
+    // serialize 
+    const serializedUsers = []
+    for(const appUser of appUsers) {
+      serializedUsers.push({
+        email: appUser.user.email,
+        firstName: appUser.user.firstName,
+        lastName: appUser.user.lastName,
+        name: `${appUser.user.firstName} ${appUser.user.lastName}`,
+        id: appUser.id,
+        role: appUser.role,
+      });
+    }
+
+    return serializedUsers;
   }
 }

@@ -6,9 +6,10 @@ import { AppsService } from '../../services/apps.service';
 import { AppVersion } from '../../../src/entities/app_version.entity';
 import { DataQuery } from '../../../src/entities/data_query.entity';
 import { CaslModule } from '../casl/casl.module';
+import { AppUser } from 'src/entities/app_user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([App, AppVersion, DataQuery]), CaslModule],
+  imports: [TypeOrmModule.forFeature([App, AppVersion, AppUser, DataQuery]), CaslModule],
   providers: [AppsService],
   controllers: [AppsController],
 })
