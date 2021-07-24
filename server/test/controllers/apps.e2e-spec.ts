@@ -178,7 +178,7 @@ describe('apps controller', () => {
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
       .send({ 
         versionName: 'v0'
-      });
+    });
 
     expect(response.statusCode).toBe(403);
     
@@ -258,6 +258,55 @@ describe('apps controller', () => {
     expect(response.statusCode).toBe(403);
     
   });
+
+  /* 
+    Viewing app on app viewer 
+    All org users can launch an app 
+    Public apps can be launched by anyone ( even unauthenticated users )
+    By view app endpoint, we assume the apps/slugs/:id endpoint
+  */
+
+  it('should be able to fetch app using slug if member of an organization', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const developerUserData = await createUser(app, { email: 'developer@tooljet.io', role: 'developer', organization: adminUserData.organization });
+    const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', role: 'viewer', organization: adminUserData.organization });
+    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+
+    for(const userData of [adminUserData, developerUserData, viewerUserData]) {
+      const response = await request(app.getHttpServer())
+        .get(`/apps/slugs/${application.slug}`)
+        .set('Authorization', authHeaderForUser(userData.user))
+
+      expect(response.statusCode).toBe(200);
+    }
+  });
+  
+  it('should not be able to fetch ap using slug if member of another organization', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
+    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+
+    const response = await request(app.getHttpServer())
+      .get(`/apps/slugs/${application.slug}`)
+      .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+
+    expect(response.statusCode).toBe(403);
+  });
+
+  it('should be able to fetch app using slug if a public app ( even if unauthenticated )', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const application = await createApplication(app, { name: 'name', user: adminUserData.user, isPublic: true });
+
+    const response = await request(app.getHttpServer())
+      .get(`/apps/slugs/${application.slug}`)
+
+    expect(response.statusCode).toBe(200);
+
+  });
+
 
   afterAll(async () => {
     await app.close();

@@ -3,13 +3,16 @@ import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
 import { decamelizeKeys } from 'humps';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
+import { UsersService } from '@services/users.service';
+import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 
 @Controller('apps')
 export class AppsController {
 
   constructor(
     private appsService: AppsService,
-    private appsAbilityFactory: AppsAbilityFactory
+    private appsAbilityFactory: AppsAbilityFactory,
+    private usersService: UsersService
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -31,6 +34,32 @@ export class AppsController {
     response['definition'] = app['definition'];
 
     return response;
+  }
+
+  @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
+  @Get('slugs/:slug')
+  async appFromSlug(@Request() req, @Param() params) {
+
+    if(req.user) {
+      const app = await this.appsService.findBySlug(params.slug);
+      const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+      if(!ability.can('viewApp', app)) {
+        throw new ForbiddenException('you do not have permissions to perform this action');
+      }
+    }
+
+    const app = await this.appsService.findBySlug(params.slug);
+
+    // serialize
+    return {
+      current_version_id: app['current_version_id'],
+      data_queries: app.dataQueries,
+      definition: app.currentVersion?.definition || {},
+      is_public: app.isPublic,
+      name: app.name,
+      slug: app.slug
+    }
   }
 
   @UseGuards(JwtAuthGuard)

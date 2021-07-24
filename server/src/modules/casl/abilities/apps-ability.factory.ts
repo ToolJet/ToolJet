@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 
-type Actions = 'updateParams' | 'fetchUsers' | 'createUsers' | 'fetchVersions' | 'createVersions' | 'updateVersions';
+type Actions = 'updateParams' | 'fetchUsers' | 'createUsers' | 'fetchVersions' | 'createVersions' | 'updateVersions' | 'viewApp';
 
 type Subjects = InferSubjects<typeof AppVersion| typeof User | typeof App> | 'all';
 
@@ -34,6 +34,10 @@ export class AppsAbilityFactory {
     // All organization users can view the app users
     can('fetchUsers', App, { organizationId: user.organizationId });
     can('fetchVersions', App, { organizationId: user.organizationId });
+
+    // Can view public apps
+    can('viewApp', App, { isPublic: true });
+    can('viewApp', App, { organizationId: user.organizationId });
 
     return build({
       detectSubjectType: item => item.constructor as ExtractSubjectType<Subjects>
