@@ -9,10 +9,14 @@ import { Credential } from '../../../src/entities/credential.entity';
 import { DataSourcesService } from '../../../src/services/data_sources.service';
 import { DataSource } from '../../../src/entities/data_source.entity';
 import { CaslModule } from '../casl/casl.module';
+import { AppsService } from '@services/apps.service';
+import { App } from 'src/entities/app.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { AppUser } from 'src/entities/app_user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DataQuery, Credential, DataSource]), CaslModule],
-  providers: [DataQueriesService, CredentialsService, EncryptionService, DataSourcesService],
+  imports: [TypeOrmModule.forFeature([App, AppVersion, AppUser, DataQuery, Credential, DataSource]), CaslModule],
+  providers: [DataQueriesService, CredentialsService, EncryptionService, DataSourcesService, AppsService],
   controllers: [DataQueriesController],
 })
 export class DataQueriesModule {}

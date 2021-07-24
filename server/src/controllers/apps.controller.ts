@@ -3,7 +3,6 @@ import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
 import { decamelizeKeys } from 'humps';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
-import { UsersService } from '@services/users.service';
 import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 
 @Controller('apps')
@@ -11,8 +10,7 @@ export class AppsController {
 
   constructor(
     private appsService: AppsService,
-    private appsAbilityFactory: AppsAbilityFactory,
-    private usersService: UsersService
+    private appsAbilityFactory: AppsAbilityFactory
   ) { }
 
   @UseGuards(JwtAuthGuard)

@@ -1,11 +1,10 @@
 import { User } from 'src/entities/user.entity';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 
-type Actions = 'updateParams' | 'fetchUsers' | 'createUsers' | 'fetchVersions' | 'createVersions' | 'updateVersions' | 'viewApp' | 'runQuery';
+type Actions = 'updateParams' | 'fetchUsers' | 'createUsers' | 'fetchVersions' | 'createVersions' | 'updateVersions' | 'viewApp' | 'runQuery' | 'updateQuery' | 'getQueries'| 'previewQuery' | 'createQuery';
 
 type Subjects = InferSubjects<typeof AppVersion| typeof User | typeof App> | 'all';
 
@@ -29,6 +28,8 @@ export class AppsAbilityFactory {
     if(user.isAdmin || user.isDeveloper) {
       can('createVersions', App, { organizationId: user.organizationId } );
       can('updateVersions', App, { organizationId: user.organizationId } );
+      can('updateQuery', App, { organizationId: user.organizationId } );
+      can('createQuery', App, { organizationId: user.organizationId } );
     }
 
     // All organization users can view the app users
@@ -41,6 +42,8 @@ export class AppsAbilityFactory {
 
     // if app belongs to org, queries can be run
     can('runQuery', App, { organizationId: user.organizationId });
+    can('getQueries', App, { organizationId: user.organizationId });
+    can('previewQuery', App, { organizationId: user.organizationId });
 
     return build({
       detectSubjectType: item => item.constructor as ExtractSubjectType<Subjects>
