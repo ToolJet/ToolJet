@@ -4,7 +4,9 @@ import { Injectable } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 
-type Actions = 'updateParams' | 'fetchUsers' | 'createUsers' | 'fetchVersions' | 'createVersions' | 'updateVersions' | 'viewApp' | 'runQuery' | 'updateQuery' | 'getQueries'| 'previewQuery' | 'createQuery';
+type Actions = 'updateParams' | 'fetchUsers' | 'createUsers' | 'fetchVersions' | 'createVersions' 
+  | 'updateVersions' | 'viewApp' | 'runQuery' | 'updateQuery' | 'getQueries'| 'previewQuery' | 'createQuery'
+  | 'getDataSources' | 'updateDataSource' | 'createDataSource';
 
 type Subjects = InferSubjects<typeof AppVersion| typeof User | typeof App> | 'all';
 
@@ -28,8 +30,12 @@ export class AppsAbilityFactory {
     if(user.isAdmin || user.isDeveloper) {
       can('createVersions', App, { organizationId: user.organizationId } );
       can('updateVersions', App, { organizationId: user.organizationId } );
+      
       can('updateQuery', App, { organizationId: user.organizationId } );
       can('createQuery', App, { organizationId: user.organizationId } );
+
+      can('updateDataSource', App, { organizationId: user.organizationId } );
+      can('createDataSource', App, { organizationId: user.organizationId } );
     }
 
     // All organization users can view the app users
@@ -44,6 +50,9 @@ export class AppsAbilityFactory {
     can('runQuery', App, { organizationId: user.organizationId });
     can('getQueries', App, { organizationId: user.organizationId });
     can('previewQuery', App, { organizationId: user.organizationId });
+
+    // policies for datasources
+    can('getDataSources', App, { organizationId: user.organizationId });
 
     return build({
       detectSubjectType: item => item.constructor as ExtractSubjectType<Subjects>
