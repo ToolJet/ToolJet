@@ -21,12 +21,12 @@ export class CreateDataQueries1625814801428 implements MigrationInterface {
         {
           name: "data_source_id",
           type: "uuid",
-          isNullable: false
+          isNullable: true
         },
         {
           name: "name",
           type: "varchar",
-          isNullable: false
+          isNullable: true
         },
         {
           name: "options",

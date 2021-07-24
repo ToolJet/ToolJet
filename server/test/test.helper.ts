@@ -10,6 +10,7 @@ import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { DataQuery } from 'src/entities/data_query.entity';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -114,3 +115,18 @@ export async function createUser(app, { firstName, lastName, email, role, organi
 
   return { organization, user, orgUser }
 }
+
+export async function createDataQuery(nestInstance, { application, kind, dataSource, options }: any) {
+  let dataQueryRepository: Repository<DataQuery>;
+  dataQueryRepository = nestInstance.get('DataQueryRepository');
+
+  return await dataQueryRepository.save(dataQueryRepository.create({
+    options,
+    app: application,
+    kind,
+    dataSource,
+    createdAt: new Date(), 
+    updatedAt: new Date()
+  }));
+}
+

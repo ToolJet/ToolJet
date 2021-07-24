@@ -1,16 +1,19 @@
-import { Controller, Get, Param, Post, Patch, Query, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Patch, Query, Request, UseGuards, ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { DataQueriesService } from '../../src/services/data_queries.service';
 import { DataSourcesService } from '../../src/services/data_sources.service';
 import { QueryError } from 'src/modules/data_sources/query.error';
+import { QueryAuthGuard } from 'src/modules/auth/query-auth.guard';
+import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 
 @Controller('data_queries')
 export class DataQueriesController {
 
   constructor(
     private dataQueriesService: DataQueriesService,
-    private dataSourcesService: DataSourcesService
+    private dataSourcesService: DataSourcesService,
+    private appsAbilityFactory: AppsAbilityFactory,
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -44,13 +47,21 @@ export class DataQueriesController {
     return decamelizeKeys(dataQuery);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(QueryAuthGuard)
   @Post(':id/run') 
   async runQuery(@Request() req, @Param() params) {
     const dataQueryId = params.id;
     const { options } = req.body;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
+
+    if(req.user) {
+      const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+      if(!ability.can('runQuery', dataQuery.app)) {
+        throw new ForbiddenException('you do not have permissions to perform this action');
+      }
+    }
 
     let result = {};
 
