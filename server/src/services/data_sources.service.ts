@@ -82,6 +82,26 @@ export class DataSourcesService {
 
     let parsedOptions = {}
 
+    // Check if an Oauth2 datasource
+    if(options.find(option => option['key'] === 'oauth2')) {
+      const provider = options.find(option => option['key'] === 'provider')['value'];
+      const authCode = options.find(option => option['key'] === 'code')['value'];
+
+      const queryService = new allPlugins[provider];
+      const accessDetails = await queryService.accessDetailsFrom(authCode);
+
+      for(const row of accessDetails) {
+        const option = {};
+        option['key'] = row[0];
+        option['value'] = row[1]
+        option['encrypted'] = true;
+
+        options.push(option);
+      }
+
+      options = options.filter(option => !(['provider', 'code', 'oauth2'].includes(option['key'])) );
+    }
+
     for (const option of options) {
       if(option['encrypted']) {
         const credential = await this.credentialsService.create(option['value']);
