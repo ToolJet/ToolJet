@@ -11,6 +11,7 @@ import { AppModule } from 'src/app.module';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
+import { DataSource } from 'src/entities/data_source.entity';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -115,6 +116,21 @@ export async function createUser(app, { firstName, lastName, email, role, organi
 
   return { organization, user, orgUser }
 }
+
+export async function createDataSource(nestInstance, { name, application, kind, options }: any) {
+  let dataSourceRepository: Repository<DataSource>;
+  dataSourceRepository = nestInstance.get('DataSourceRepository');
+
+  return await dataSourceRepository.save(dataSourceRepository.create({
+    name,
+    options,
+    app: application,
+    kind,
+    createdAt: new Date(), 
+    updatedAt: new Date()
+  }));
+}
+
 
 export async function createDataQuery(nestInstance, { application, kind, dataSource, options }: any) {
   let dataQueryRepository: Repository<DataQuery>;

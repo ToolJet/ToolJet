@@ -25,7 +25,7 @@ export class DataSourcesService {
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
-    return await this.dataSourcesRepository.findOne(dataSourceId);
+    return await this.dataSourcesRepository.findOne(dataSourceId, { relations: ['app'] });
   }
  
 

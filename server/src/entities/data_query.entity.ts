@@ -1,11 +1,9 @@
-import { User } from 'src/entities/user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, AfterLoad, } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, AfterLoad, BaseEntity, } from 'typeorm';
 import { App } from './app.entity';
-import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
 
 @Entity({ name: "data_queries" })
-export class DataQuery {
+export class DataQuery extends BaseEntity {
 
   @PrimaryGeneratedColumn("uuid")
   id: string;
