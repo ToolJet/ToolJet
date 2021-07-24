@@ -12,7 +12,7 @@ import { previewQuery } from '@/_helpers/appUtils';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
-const staticDataSources = [{ kind: 'restapi', id: null, name: 'REST API' }];
+const staticDataSources = [{ kind: 'restapi', id: 'null', name: 'REST API' }];
 
 class QueryManager extends React.Component {
   constructor(props) {
@@ -121,7 +121,7 @@ class QueryManager extends React.Component {
   createOrUpdateDataQuery = () => {
     const { appId, options, selectedDataSource, mode, queryName } = this.state;
     const kind = selectedDataSource.kind;
-    const dataSourceId = selectedDataSource.id;
+    const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
 
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
@@ -265,7 +265,7 @@ class QueryManager extends React.Component {
               <span
                 onClick={() => {
                   const query = {
-                    data_source_id: selectedDataSource.id,
+                    data_source_id: selectedDataSource.id === "null" ? null : selectedDataSource.id,
                     options: options,
                     kind: selectedDataSource.kind,
                   };
