@@ -41,7 +41,7 @@ export async function clearDB() {
   }
 }
 
-export async function createApplication(app, { name, user }: any) {
+export async function createApplication(app, { name, user, isPublic }: any) {
   let appRepository: Repository<App>;
   appRepository = app.get('AppRepository');
   let appUsersRepository: Repository<AppUser>;
@@ -52,6 +52,7 @@ export async function createApplication(app, { name, user }: any) {
   const newApp = await appRepository.save(appRepository.create({
     name,
     user,
+    isPublic: isPublic || false,
     organizationId: user.organization.id,
     createdAt: new Date(),
     updatedAt: new Date()

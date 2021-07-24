@@ -26,6 +26,15 @@ export class AppsService {
     });
   }
 
+  async findBySlug(slug: string): Promise<App> {
+    return await this.appsRepository.findOne({
+      where: {
+        slug
+      },
+      relations: ['dataQueries']
+    });
+  }
+
   async findVersion(id: string): Promise<AppVersion> {
     return this.appVersionsRepository.findOne(id, {
       relations: ['app']

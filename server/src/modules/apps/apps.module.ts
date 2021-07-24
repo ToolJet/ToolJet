@@ -10,10 +10,13 @@ import { AppUser } from 'src/entities/app_user.entity';
 import { AppUsersService } from '@services/app_users.service';
 import { AppUsersController } from '@controllers/app_users.controller';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { UsersService } from '@services/users.service';
+import { User } from 'src/entities/user.entity';
+import { Organization } from 'src/entities/organization.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([App, AppVersion, AppUser, DataQuery, OrganizationUser]), CaslModule],
-  providers: [AppsService, AppUsersService],
+  imports: [TypeOrmModule.forFeature([App, AppVersion, AppUser, DataQuery, OrganizationUser, User, Organization]), CaslModule],
+  providers: [AppsService, AppUsersService, UsersService],
   controllers: [AppsController, AppUsersController],
 })
 export class AppsModule {}
