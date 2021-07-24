@@ -65,7 +65,6 @@ export default class GooglesheetsQueryService implements QueryService {
     return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   }
 
-
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
 
     let result = { };

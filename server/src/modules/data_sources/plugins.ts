@@ -9,6 +9,7 @@ import RestapiQueryService from '@plugins/datasources/restapi';
 import SlackQueryService from '@plugins/datasources/slack';
 import RedisQueryService from '@plugins/datasources/redis';
 import GooglesheetsQueryService from '@plugins/datasources/googlesheets';
+import AirtableQueryService from '@plugins/datasources/airtable';
 
 export const allPlugins = {
   postgresql: PostgresqlQueryService,
@@ -22,4 +23,5 @@ export const allPlugins = {
   slack: SlackQueryService,
   redis: RedisQueryService,
   googlesheets: GooglesheetsQueryService,
+  airtable: AirtableQueryService,
 }
