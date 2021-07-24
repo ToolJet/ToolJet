@@ -8,6 +8,7 @@ import MssqlQueryService from '@plugins/datasources/mssql';
 import RestapiQueryService from '@plugins/datasources/restapi';
 import SlackQueryService from '@plugins/datasources/slack';
 import RedisQueryService from '@plugins/datasources/redis';
+import GooglesheetsQueryService from '@plugins/datasources/googlesheets';
 
 export const allPlugins = {
   postgresql: PostgresqlQueryService,
@@ -19,5 +20,6 @@ export const allPlugins = {
   mssql: MssqlQueryService,
   restapi: RestapiQueryService,
   slack: SlackQueryService,
-  redis: RedisQueryService
+  redis: RedisQueryService,
+  googlesheets: GooglesheetsQueryService,
 }
