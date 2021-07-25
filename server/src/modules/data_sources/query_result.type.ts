@@ -1,5 +1,5 @@
 export type QueryResult = {
-    status: 'ok' | 'failed',
+    status: 'ok' | 'failed' | 'needs_oauth'
     errorMessage?: string,
     data: Array<object> | object
 }

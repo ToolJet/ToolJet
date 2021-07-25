@@ -334,12 +334,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
       dataqueryService.run(queryId, options).then(data => {
         resolve();
 
-        if (data.error) {
-          if (data.error.code === 'oauth2_needs_auth') {
-            const url = data.error.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, dataQuery.data_source_id);
-            return;
-          }
+        if (data.status === 'needs_oauth') {
+          console.log(data);
+          const url = data.data.auth_url; // Backend generates and return sthe auth url
+          fetchOAuthToken(url, dataQuery.data_source_id);
+          return;
         }
 
         if (data.status === 'failed') {
