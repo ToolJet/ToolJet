@@ -274,10 +274,16 @@ export function previewQuery(_ref, query) {
       if(data.status === 'failed') {
         toast.error(`${data.message}: ${data.description}`, { position: 'bottom-center', hideProgressBar: true, autoClose: 10000 });
       } else { 
-        toast.info(`Query completed.`, {
-          hideProgressBar: true,
-          position: 'bottom-center',
-        });
+        if (data.status === 'needs_oauth') {
+          const url = data.data.auth_url; // Backend generates and return sthe auth url
+          fetchOAuthToken(url, query.data_source_id);
+        }
+        if(data.status === 'ok') {
+          toast.info(`Query completed.`, {
+            hideProgressBar: true,
+            position: 'bottom-center',
+          });
+        }
       }
 
       resolve();
@@ -335,10 +341,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         resolve();
 
         if (data.status === 'needs_oauth') {
-          console.log(data);
           const url = data.data.auth_url; // Backend generates and return sthe auth url
           fetchOAuthToken(url, dataQuery.data_source_id);
-          return;
         }
 
         if (data.status === 'failed') {
