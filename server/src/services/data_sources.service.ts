@@ -27,7 +27,6 @@ export class DataSourcesService {
   async findOne(dataSourceId: string): Promise<DataSource> {
     return await this.dataSourcesRepository.findOne(dataSourceId, { relations: ['app'] });
   }
- 
 
   async create(user: User, name:string, kind:string, options:Array<object>, appId:string): Promise<DataSource> {
     const newDataSource = this.dataSourcesRepository.create({ 
@@ -44,12 +43,17 @@ export class DataSourcesService {
 
   async update(user: User, dataSourceId:string, name:string, options:Array<object>): Promise<DataSource> {
 
-    const dataSource = this.dataSourcesRepository.save({
+    const updateableParams = {
       id: dataSourceId,
       name,
       options: await this.parseOptionsForSaving(options),
-      updatedAt: new Date(),
-    });
+      updatedAt: new Date()
+    }
+
+    // Remove keys with undefined values
+    Object.keys(updateableParams).forEach(key => updateableParams[key] === undefined ? delete updateableParams[key] : {});
+
+    const dataSource = this.dataSourcesRepository.save(updateableParams);
 
     return dataSource;
   }
@@ -106,7 +110,7 @@ export class DataSourcesService {
 
     for (const option of options) {
       if(option['encrypted']) {
-        const credential = await this.credentialsService.create(option['value']);
+        const credential = await this.credentialsService.create(option['value'] || '');
 
         parsedOptions[option['key']] = {
           credential_id: credential.id,
