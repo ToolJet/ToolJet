@@ -84,7 +84,7 @@ export class DataQueriesService {
       encrypted: false
     }];
 
-    await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions);
+    return await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions);
   }
 
   async parseSourceOptions(options: any): Promise<object> {

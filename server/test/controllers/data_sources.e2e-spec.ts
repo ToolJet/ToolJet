@@ -110,4 +110,22 @@ describe('data sources controller', () => {
       expect(response.statusCode).toBe(403);
   });
 
+  it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
+
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
+    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const dataSource = await createDataSource(app, { name: 'name', options: [], kind: 'restapi', application: application, user: adminUserData.user });
+
+    // Should not update if user of another org
+    const response = await request(app.getHttpServer())
+      .post(`/data_sources/${dataSource.id}/authorize_oauth2`)
+      .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+      .send({
+        code: 'oauth-auth-code'
+      })
+
+    expect(response.statusCode).toBe(403);
+  });
+
 });
