@@ -121,7 +121,7 @@ export const Restapi = ({
             <label className="form-label text-muted">Grant Type</label>
             <SelectSearch
               options={[
-                { name: 'Client Credentials', value: 'client_credentials' },
+                // { name: 'Client Credentials', value: 'client_credentials' },
                 { name: 'Authorization Code', value: 'authorization_code' }
               ]}
               value={options.grant_type.value}
@@ -137,7 +137,7 @@ export const Restapi = ({
             <SelectSearch
               options={[
                 { name: 'Request Header', value: 'header' },
-                { name: 'Request URL', value: 'url' }
+                // { name: 'Request URL', value: 'url' }
               ]}
               value={options.add_token_to.value}
               search={false}
