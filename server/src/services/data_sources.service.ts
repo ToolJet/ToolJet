@@ -64,7 +64,8 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const serviceClass = allPlugins[kind];
+      const plugins = await allPlugins;
+      const serviceClass = plugins[kind];
       const service = new serviceClass();
       result = await service.testConnection(sourceOptions);
    
@@ -87,7 +88,8 @@ export class DataSourcesService {
       const provider = options.find(option => option['key'] === 'provider')['value'];
       const authCode = options.find(option => option['key'] === 'code')['value'];
 
-      const queryService = new allPlugins[provider];
+      const plugins = await allPlugins;
+      const queryService = new plugins[provider];
       const accessDetails = await queryService.accessDetailsFrom(authCode);
 
       for(const row of accessDetails) {
@@ -122,7 +124,8 @@ export class DataSourcesService {
   }
 
   async getAuthUrl(provider): Promise<object> {
-    const service = new allPlugins[provider];
+    const plugins = await allPlugins;
+    const service = new plugins[provider];
     return { url: service.authUrl() }
   }
   

@@ -9,8 +9,6 @@ import { allPlugins } from 'src/modules/data_sources/plugins';
 @Injectable()
 export class DataQueriesService {
 
-  private plugins = allPlugins;
-
   constructor(
     private credentialsService: CredentialsService,
     @InjectRepository(DataQuery)
@@ -61,7 +59,8 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
     const kind = dataQuery.kind;
-    const pluginServiceClass = this.plugins[kind];
+    const plugins = await allPlugins;
+    const pluginServiceClass = plugins[kind];
 
     const service = new pluginServiceClass();
     const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id);
