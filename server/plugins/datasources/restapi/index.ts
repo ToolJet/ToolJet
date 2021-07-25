@@ -3,7 +3,6 @@ import { HTTPError } from 'got';
 import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
-const { MongoClient } = require("mongodb");
 const got = require('got');
 
 @Injectable()
