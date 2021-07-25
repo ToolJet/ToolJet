@@ -6,7 +6,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 
 type Actions = 'updateParams' | 'fetchUsers' | 'createUsers' | 'fetchVersions' | 'createVersions' 
   | 'updateVersions' | 'viewApp' | 'runQuery' | 'updateQuery' | 'getQueries'| 'previewQuery' | 'createQuery'
-  | 'getDataSources' | 'updateDataSource' | 'createDataSource';
+  | 'getDataSources' | 'updateDataSource' | 'createDataSource' | 'authorizeOauthForSource';
 
 type Subjects = InferSubjects<typeof AppVersion| typeof User | typeof App> | 'all';
 
@@ -53,6 +53,7 @@ export class AppsAbilityFactory {
 
     // policies for datasources
     can('getDataSources', App, { organizationId: user.organizationId });
+    can('authorizeOauthForSource', App, { organizationId: user.organizationId });
 
     return build({
       detectSubjectType: item => item.constructor as ExtractSubjectType<Subjects>
