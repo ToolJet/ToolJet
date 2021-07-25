@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { BeforeApplicationShutdown, Module, OnApplicationBootstrap, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { AppController } from './controllers/app.controller';
 import { AppService } from './services/app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -35,6 +35,14 @@ import { CaslModule } from './modules/casl/casl.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
+export class AppModule implements OnModuleInit, OnApplicationBootstrap {
   constructor(private connection: Connection) {}
+
+  onModuleInit() {
+    console.log(`Initializing ToolJet server modules 📡 `);
+  }
+
+  onApplicationBootstrap() {
+    console.log(`Initialized ToolJet server, waiting for requests 🚀`);
+  }
 }
