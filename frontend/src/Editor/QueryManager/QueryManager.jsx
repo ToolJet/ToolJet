@@ -44,7 +44,11 @@ class QueryManager extends React.Component {
       () => {
         if (this.props.mode === 'edit') {
           let source = props.dataSources.find((datasource) => datasource.id === selectedQuery.data_source_id);
-          if (selectedQuery.kind === 'restapi') source = { kind: 'restapi' };
+          if (selectedQuery.kind === 'restapi') { 
+            if(!selectedQuery.data_source_id) {
+              source = { kind: 'restapi' };
+            }
+          }
           //
           this.setState({
             options: selectedQuery.options,

@@ -58,6 +58,16 @@ export class DataSourcesService {
     return dataSource;
   }
 
+  /* This function merges new options with the existing options */
+  async updateOptions(dataSourceId: string, optionsToMerge: any): Promise<DataSource> {
+    const parsedOptions = await this.parseOptionsForSaving(optionsToMerge);
+    const dataSource = await this.findOne(dataSourceId);
+
+    const updatedOptions = { ...dataSource.options, ...parsedOptions };
+
+    return await this.dataSourcesRepository.save({ id: dataSourceId, options: updatedOptions });
+  }
+
   async testConnection(kind: string, options: object): Promise<object> {
     let result = {};
     try {

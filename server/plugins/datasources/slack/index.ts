@@ -23,7 +23,7 @@ export default class SlackQueryService implements QueryService {
     const body = `code=${authCode}&client_id=${clientId}&client_secret=${clientSecret}&redirect_uri=${redirectUri}`;
 
     const response = await got(accessTokenUrl, { 
-      method: 'post', 
+      method: 'post',
       body,
       headers: {'Content-Type': 'application/x-www-form-urlencoded' }
     });

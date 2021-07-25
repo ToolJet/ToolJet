@@ -4,6 +4,7 @@ import { decamelizeKeys } from 'humps';
 import { DataSourcesService } from '../../src/services/data_sources.service';
 import { AppsService } from '@services/apps.service';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
+import { DataQueriesService } from '@services/data_queries.service';
 
 @Controller('data_sources')
 export class DataSourcesController {
@@ -11,7 +12,8 @@ export class DataSourcesController {
   constructor(
     private appsService: AppsService,
     private appsAbilityFactory: AppsAbilityFactory,
-    private dataSourcesService: DataSourcesService
+    private dataSourcesService: DataSourcesService,
+    private dataQueriesService: DataQueriesService
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -79,6 +81,17 @@ export class DataSourcesController {
   async getAuthUrl(@Request() req) {
     const { provider } = req.body;
     return await this.dataSourcesService.getAuthUrl(provider);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/authorize_oauth2')
+  async authorizeOauth2(@Request() req, @Param() params) {
+    const dataSourceId = params.id;
+    const { code } = req.body;
+
+    const dataSource = await this.dataSourcesService.findOne(dataSourceId);
+
+    return await this.dataQueriesService.authorizeOauth2(dataSource, code);
   }
 
 }

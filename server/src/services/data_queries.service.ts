@@ -5,12 +5,16 @@ import { User } from 'src/entities/user.entity';
 import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
 import { allPlugins } from 'src/modules/data_sources/plugins';
+import { DataSource } from 'src/entities/data_source.entity';
+import RestapiQueryService from '@plugins/datasources/restapi';
+import { DataSourcesService } from './data_sources.service';
 
 @Injectable()
 export class DataQueriesService {
 
   constructor(
     private credentialsService: CredentialsService,
+    private dataSourcesService: DataSourcesService,
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>,
   ) { }
@@ -66,6 +70,21 @@ export class DataQueriesService {
     const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id);
 
     return result;
+  }
+
+  /* This function fetches access token from authorization code */
+  async authorizeOauth2(dataSource: DataSource, code:string): Promise<any> {
+    const sourceOptions = await this.parseSourceOptions(dataSource.options);
+    const queryService = new RestapiQueryService();
+    const tokenData = await queryService.fetchOAuthToken(sourceOptions, code);
+
+    const tokenOptions = [{
+      key: 'tokenData',
+      value: tokenData,
+      encrypted: false
+    }];
+
+    await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions);
   }
 
   async parseSourceOptions(options: any): Promise<object> {
