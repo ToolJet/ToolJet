@@ -4,12 +4,14 @@ import { AppsService } from '../services/apps.service';
 import { decamelizeKeys } from 'humps';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
+import { FoldersService } from '@services/folders.service';
 
 @Controller('apps')
 export class AppsController {
 
   constructor(
     private appsService: AppsService,
+    private foldersService: FoldersService,
     private appsAbilityFactory: AppsAbilityFactory
   ) { }
 
@@ -83,8 +85,17 @@ export class AppsController {
   async index(@Request() req, @Query() query) {
 
     const page = req.query.page;
+    const folderId = req.query.folder;
 
-    const apps = await this.appsService.all(req.user, page);
+    let apps = [];
+
+    if(folderId) {
+      const folder = await this.foldersService.findOne(folderId);
+      apps = await this.foldersService.getAppsFor(req.user, folder, page);
+    } else {
+      apps = await this.appsService.all(req.user, page);
+    }
+
     const totalCount = await this.appsService.count(req.user);
 
     const meta = {
