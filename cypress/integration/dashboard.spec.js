@@ -18,7 +18,6 @@ describe('Dashboard', () => {
             cy.go('back')
           }
         }))
-    
   })
 
   it('should show site header with nav items', () => {

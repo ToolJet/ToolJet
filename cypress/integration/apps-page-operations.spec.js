@@ -3,7 +3,6 @@ describe('Dashboard operations on Apps', () => {
     const currentDate = new Date();
     const folderName= 'folder '+ currentDate.toJSON();
     
-    
     beforeEach(() => {
         //read data from fixtures
         cy.fixture('login-data').then(function (testdata) {
@@ -20,12 +19,9 @@ describe('Dashboard operations on Apps', () => {
                 .click()
                 cy.go('back')
             }
-               
         }))    
-
     })
 
-    
     it('should open app in app builder using Edit button', () => {
         
         cy.wait(2000)
@@ -55,14 +51,6 @@ describe('Dashboard operations on Apps', () => {
         
     });
 
-    it('should be able to remove app from a folder', () => {
-        // Note: functionality doesn't exist yet. 
-    });
-
-    it('should be able to delete folder', () => {
-        // Note: functionality doesn't exist yet. 
-    });
-
     it('should be able to delete app', () => {
         cy.get('td img.svg-icon').eq(0).click()
         cy.get('[role="button"]').contains('Delete app').click()
@@ -71,5 +59,4 @@ describe('Dashboard operations on Apps', () => {
 
     });
 
-  
 })

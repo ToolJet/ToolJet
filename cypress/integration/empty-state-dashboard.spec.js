@@ -8,7 +8,6 @@ describe('Empty state of dashboard', () => {
         }) 
       })
       
-  
       it('should show empty screen when there are no apps', () => {
   
           cy.wait(1000)
