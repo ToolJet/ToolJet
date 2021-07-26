@@ -61,7 +61,7 @@ export class AuthService {
   async forgotPassword(email: string) {
     const user = await this.usersService.findByEmail(email);
     const forgotPasswordToken = uuid.v4();
-    this.usersService.update(user, { forgotPasswordToken });
+    this.usersService.update(user.id, { forgotPasswordToken });
     this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
   }
 
@@ -70,7 +70,7 @@ export class AuthService {
     if(!user) {
       throw new NotFoundException('Invalid token')
     } else {
-      this.usersService.update(user, { password });
+      this.usersService.update(user.id, { password, forgotPasswordToken: null });
     }
   }
 }

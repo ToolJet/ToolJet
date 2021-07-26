@@ -1,4 +1,4 @@
-import { BeforeApplicationShutdown, Module, OnApplicationBootstrap, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import { AppController } from './controllers/app.controller';
 import { AppService } from './services/app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -15,6 +15,7 @@ import { ConfigModule } from '@nestjs/config';
 import ormconfig from '../ormconfig';
 import { CaslModule } from './modules/casl/casl.module';
 import { EmailService } from '@services/email.service';
+import { MetaModule } from './modules/meta/meta.module';
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import { EmailService } from '@services/email.service';
     DataQueriesModule,
     DataSourcesModule,
     OrganizationsModule,
-    CaslModule
+    CaslModule,
+    MetaModule
   ],
   controllers: [AppController],
   providers: [AppService, EmailService],
