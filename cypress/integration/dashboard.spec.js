@@ -1,10 +1,12 @@
 describe('Dashboard', () => {
-  // we can use these values to log in
-  const email = 'dev@tooljet.io';
-  const password = 'password';
 
   beforeEach(() => {
-    cy.login(email, password);
+
+    //read data from fixtures
+    cy.fixture('login-data').then(function (testdata) {
+      cy.login(testdata.email,testdata.password) 
+    }) 
+    
     cy.wait(1000)
     cy.get('body').then(($title=>
         {
@@ -16,7 +18,6 @@ describe('Dashboard', () => {
             cy.go('back')
           }
         }))
-    
   })
 
   it('should show site header with nav items', () => {
