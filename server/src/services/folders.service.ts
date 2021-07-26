@@ -59,7 +59,7 @@ export class FoldersService {
       take: 10,
       skip: 10 * ( page || 0 ),
       order: {
-          createdAt: 'DESC'
+        createdAt: 'DESC'
       }
     });
 
