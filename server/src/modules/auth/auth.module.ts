@@ -12,6 +12,7 @@ import { UsersModule } from '../users/users.module';
 import { OrganizationsService } from 'src/services/organizations.service';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { ConfigService } from '@nestjs/config';
+import { EmailService } from '@services/email.service';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ConfigService } from '@nestjs/config';
     UsersService,
     OrganizationsService,
     OrganizationUsersService,
+    EmailService
   ],
   exports: [AuthService],
 })

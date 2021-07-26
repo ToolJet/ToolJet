@@ -4,6 +4,7 @@ import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
 import { OrganizationUsersService } from './organization_users.service';
+import { EmailService } from './email.service';
 const bcrypt = require('bcrypt');
 
 @Injectable()
@@ -12,7 +13,8 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private organizationsService: OrganizationsService,
-    private organizationUsersService: OrganizationUsersService
+    private organizationUsersService: OrganizationUsersService,
+    private emailService: EmailService,
   ) { }
 
   async validateUser(email: string, password: string): Promise<User> {
@@ -49,6 +51,8 @@ export class AuthService {
     const organization = await this.organizationsService.create('Untitled organization');
     const user = await this.usersService.create({ email }, organization);
     const organizationUser = await this.organizationUsersService.create(user, organization, 'admin');
+
+    this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
     return user;
     
