@@ -45,7 +45,7 @@ export class EmailService {
         </head>
         <body>
           <p>Hi ${name || ''},</p>
-          <br><br>
+          <br>
           <p>
             Please use the link below to set up your account and get started.
           </p>
@@ -73,7 +73,7 @@ export class EmailService {
         </head>
         <body>
           <p>Hi ${name || ''},</p>
-          <br><br>
+          <br>
           <p>
           ${sender} has invited you to use ToolJet. Use the link below to set up your account and get started.
           </p>
