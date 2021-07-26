@@ -2,7 +2,6 @@ import React from 'react';
 
 export const RadioButton = ({options, onChange, cellIndex,  columntypeValues, componentState}) => {
   let checkboxValue = "";
-  console.log(componentState.changeSet)
   if(Object.keys(componentState.changeSet || {}).length > 0 ) {
     columntypeValues.map(val => {
       if(val.columnType == 'radiobutton') {
