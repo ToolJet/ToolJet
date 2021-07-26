@@ -47,6 +47,10 @@ class Googlesheets extends React.Component {
     );
   };
 
+  changeRowDetails = () => {
+
+  }
+
   render() {
     const { options } = this.props;
 
@@ -62,6 +66,7 @@ class Googlesheets extends React.Component {
                   { value: 'append', name: 'Append data to a spreadsheet' },
                   { value: 'info', name: 'Get spreadsheet info' },
                   { value: 'delete_row', name: 'Delete row from a spreadsheet' },
+                  { value: 'update_row', name: 'Update row of a spreadsheet' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -72,7 +77,7 @@ class Googlesheets extends React.Component {
                 placeholder="Select.."
               />
             </div>
-            {['read', 'append', 'delete_row'].includes(this.state.options.operation) && (
+            {['read', 'append', 'delete_row', 'update_row'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2 row">
                   <div className="col">
@@ -135,6 +140,35 @@ class Googlesheets extends React.Component {
           </div>
         </div>
       )}
+
+      {this.state.options.operation === 'update_row' && (
+        <React.Fragment>
+          <div className="mb-3 mt-2 row">
+            <div className="col">
+              <label className="form-label">Update row number</label>
+              <input
+                type="text"
+                value={this.state.options.row_index}
+                onChange={(e) => {
+                  changeOption(this, 'row_index', e.target.value);
+                }}
+                className="form-control"
+              />
+            </div>
+          </div>
+          <div className="mb-3 mt-2">
+            <label className="form-label">Rows</label>
+            <CodeHinter
+              currentState={this.props.currentState}
+              theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+              lineNumbers={true}
+              className="query-hinter"
+              onChange={(value) => changeOption(this, 'rows', value)}
+            />
+          </div>
+        </React.Fragment>
+        )
+      }
 
       {this.state.options.operation === 'info' && (
           <div className="mb-3 mt-2">
