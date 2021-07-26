@@ -59,7 +59,7 @@ export class EmailService {
       </html>
     `;
 
-    await this.sendEmail(to, subject, html)
+    await this.sendEmail(to, subject, html);
   }
 
   async sendOrganizationUserWelcomeEmail(to: string, name: string, sender: string, invitationtoken: string) {
@@ -87,6 +87,14 @@ export class EmailService {
       </html>
     `;
 
-    await this.sendEmail(to, subject, html)
+    await this.sendEmail(to, subject, html);
+  }
+
+  async sendPasswordResetEmail(to: string, token: string) {
+    const subject = 'password reset instructions';
+    const html = `
+      Please use this code to reset your password: ${token}
+    `;
+    await this.sendEmail(to, subject, html);
   }
 }

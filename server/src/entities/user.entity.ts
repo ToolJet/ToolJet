@@ -29,6 +29,9 @@ export class User {
   @Column({ name: 'invitation_token' })
   invitationToken: string;
 
+  @Column({ name: 'forgot_password_token' })
+  forgotPasswordToken: string;
+
   @Column({ name: 'password_digest' })
   password: string
 

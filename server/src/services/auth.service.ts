@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
@@ -6,6 +6,7 @@ import { User } from '../entities/user.entity';
 import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
 const bcrypt = require('bcrypt');
+var uuid = require('uuid');
 
 @Injectable()
 export class AuthService {
@@ -55,6 +56,21 @@ export class AuthService {
     this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
     return user;
-    
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    const forgotPasswordToken = uuid.v4();
+    this.usersService.update(user, { forgotPasswordToken });
+    this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
+  }
+
+  async resetPassword(token: string, password: string) {
+    const user = await this.usersService.findByPasswordResetToken(token);
+    if(!user) {
+      throw new NotFoundException('Invalid token')
+    } else {
+      this.usersService.update(user, { password });
+    }
   }
 }

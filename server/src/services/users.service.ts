@@ -5,6 +5,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 var uuid = require('uuid');
+const bcrypt = require('bcrypt');
 
 @Injectable()
 export class UsersService {
@@ -26,6 +27,12 @@ export class UsersService {
     return this.usersRepository.findOne({ 
       where: { email },
       relations: ['organization']
+    });
+  }
+
+  async findByPasswordResetToken(token: string): Promise<User> {
+    return this.usersRepository.findOne({ 
+      where: { forgotPasswordToken: token }
     });
   }
 
@@ -66,7 +73,23 @@ export class UsersService {
         this.organizationsRepository.update(user.organizationId, { name: organization });
       }
     }
+  }
 
+  async update(userId: string, params: any) {
+
+    const { forgotPasswordToken, password } = params;
+
+    const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
+
+    const updateableParams = {
+      forgotPasswordToken,
+      password: hashedPassword
+    }
+
+    // removing keys with undefined values
+    Object.keys(updateableParams).forEach(key => updateableParams[key] === undefined ? delete updateableParams[key] : {});
+
+    return await this.usersRepository.update(userId, updateableParams);
   }
 
 }

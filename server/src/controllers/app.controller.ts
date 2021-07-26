@@ -16,4 +16,17 @@ export class AppController {
     return this.authService.signup(req.body);
   }
 
+  @Post('/forgot_password')
+  async forgotPassword(@Request() req) {
+    await this.authService.forgotPassword(req.body.email);
+    return {}
+  }
+
+  @Post('/reset_password')
+  async resetPassword(@Request() req) {
+    const { token, password } = req.body;
+    await this.authService.resetPassword(token, password);
+    return {}
+  }
+
 }
