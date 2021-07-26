@@ -61,4 +61,32 @@ export class EmailService {
 
     await this.sendEmail(to, subject, html)
   }
+
+  async sendOrganizationUserWelcomeEmail(to: string, name: string, sender: string, invitationtoken: string) {
+
+    const subject = 'Welcome to ToolJet';
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+        </head>
+        <body>
+          <p>Hi ${name || ''},</p>
+          <br><br>
+          <p>
+          ${sender} has invited you to use ToolJet. Use the link below to set up your account and get started.
+          </p>
+          <a href="<%= @url %>">${`${this.TOOLJET_HOST}/invitations/${invitationtoken}`}</a>
+          <br><br>
+          <p>
+            Welcome aboard,<br>
+            ToolJet Team
+          </p>
+        </body>
+      </html>
+    `;
+
+    await this.sendEmail(to, subject, html)
+  }
 }

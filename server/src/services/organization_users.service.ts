@@ -6,6 +6,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class OrganizationUsersService {
@@ -14,6 +15,7 @@ export class OrganizationUsersService {
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
+    private emailService: EmailService,
   ) { }
 
   async findOne(id: string): Promise<OrganizationUser> {
@@ -30,6 +32,9 @@ export class OrganizationUsersService {
 
     const user = await this.usersService.create(userParams, currentUser.organization);
     const organizationUser = await this.create(user, currentUser.organization, params.role);
+
+    this.emailService.sendOrganizationUserWelcomeEmail(user.email, user.firstName, currentUser.firstName, user.invitationToken);
+
     return organizationUser;
   }
 

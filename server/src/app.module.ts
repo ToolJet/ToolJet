@@ -14,6 +14,7 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
 import { ConfigModule } from '@nestjs/config';
 import ormconfig from '../ormconfig';
 import { CaslModule } from './modules/casl/casl.module';
+import { EmailService } from '@services/email.service';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { CaslModule } from './modules/casl/casl.module';
     CaslModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, EmailService],
 })
 export class AppModule implements OnModuleInit, OnApplicationBootstrap {
   constructor(private connection: Connection) {}
