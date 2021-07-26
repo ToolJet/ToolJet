@@ -358,7 +358,7 @@ export function Table({
                 options={columnOptions.selectOptions}
                 columnOptions={columnOptions}
                 columntypeValues={component.definition.properties.columns.value}
-                changeSet={componentState.changeSet}
+                componentState={componentState}
                 cellIndex={cell.row.index}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
@@ -591,7 +591,6 @@ export function Table({
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
                           if (_.get(componentState.changeSet[cell.row.index], cell.column.id, undefined)) {
-                            console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
                           }
                         }
