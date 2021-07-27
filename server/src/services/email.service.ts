@@ -6,11 +6,13 @@ export class EmailService {
 
   private FROM_EMAIL;
   private TOOLJET_HOST;
+  private NODE_ENV;
 
   constructor(
   ) { 
-    this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io',
-    this.TOOLJET_HOST = process.env.TOOLJET_HOST
+    this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io';
+    this.TOOLJET_HOST = process.env.TOOLJET_HOST;
+    this.NODE_ENV = process.env.NODE_ENV || 'development';
   }
 
   async sendEmail(to: string, subject: string, html: string) {
@@ -24,14 +26,23 @@ export class EmailService {
       },
     });
 
-    let info = await transporter.sendMail({
-      from: `"ToolJet" <${this.FROM_EMAIL}>`,
-      to, 
-      subject,
-      html,
-    });
+    /* if development environment, log the content of email instead of sending actual emails */
+    if(this.NODE_ENV === 'development') {
+      console.log('Captured email');
+      console.log('to: ', to);
+      console.log('Subject: ', subject);
+      console.log('content: ', html);
+    } else {
 
-    console.log("Message sent: %s", info);
+      let info = await transporter.sendMail({
+        from: `"ToolJet" <${this.FROM_EMAIL}>`,
+        to, 
+        subject,
+        html,
+      });
+
+      console.log("Message sent: %s", info);
+    }
   }
 
   async sendWelcomeEmail(to: string, name: string, invitationtoken: string) {
