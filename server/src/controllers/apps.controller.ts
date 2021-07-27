@@ -144,10 +144,9 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/versions')
-  async createVersion(@Request() req) {
+  async createVersion(@Request() req, @Param() params) {
 
-    const params = req.body;
-    const versionName = params['versionName'];
+    const versionName = req.body['versionName'];
 
     const app = await this.appsService.find(params.id);
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
