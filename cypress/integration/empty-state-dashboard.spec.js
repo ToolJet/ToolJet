@@ -1,13 +1,13 @@
 describe('Empty state of dashboard', () => {
-
-    const email = 'dev@tooljet.io';
-    const password = 'password';
   
       beforeEach(() => {
-        cy.login(email, password);
+        //read data from fixtures
+        cy.fixture('login-data').then(function (testdata) 
+        {
+          cy.login(testdata.email,testdata.password) 
+        }) 
       })
       
-  
       it('should show empty screen when there are no apps', () => {
   
           cy.wait(1000)
