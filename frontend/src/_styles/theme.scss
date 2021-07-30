@@ -1968,6 +1968,13 @@ input:focus-visible {
   opacity: 0.74;
 }
 
+
+.gui-select-wrappper .select-search__input {
+  height: 30px;
+}
+
+
 .theme-dark .input-group-text, .theme-dark .markdown > table thead th, .theme-dark .table thead th {
   background: #1c252f;
 }
+
