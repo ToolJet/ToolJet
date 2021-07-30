@@ -1,2 +1,1 @@
-web: bundle exec rails s
-release: bin/rake db:migrate
+web: npm run start:prod --prefix server

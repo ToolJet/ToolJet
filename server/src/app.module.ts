@@ -16,9 +16,14 @@ import ormconfig from '../ormconfig';
 import { CaslModule } from './modules/casl/casl.module';
 import { EmailService } from '@services/email.service';
 import { MetaModule } from './modules/meta/meta.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '../../../', 'frontend/build'),
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env']

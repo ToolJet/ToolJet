@@ -16,13 +16,14 @@
         "webpack-cli": "^3.3.0"
     },
     "dependencies": {
-        "@elastic/elasticsearch": "^7.13.0",
-        "eslint": "^7.25.0"
+        "@nestjs/cli": "^8.1.0",
+        "eslint": "^7.25.0",
+        "ts-node": "^10.1.0"
     },
     "scripts": {
-        "build": "npm --prefix frontend install && NODE_ENV=production npm --prefix frontend run build",
+        "build": "npm --prefix frontend install && NODE_ENV=production npm --prefix frontend run build && npm --prefix server install && NODE_ENV=production npm --prefix server run build",
         "deploy": "cp -a frontend/build/. public/",
         "heroku-postbuild": "npm run build && npm run deploy",
-        "heroku-prebuild": "npm --prefix frontend install "
+        "heroku-prebuild": "npm --prefix frontend install && npm --prefix server install "
     }
 }
