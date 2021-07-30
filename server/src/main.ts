@@ -9,7 +9,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn'],
   });
-  app.enableCors();
-  await app.listen(3000);
+
+  await app.setGlobalPrefix('api');
+  await app.enableCors();
+  
+  const port = parseInt(process.env.PORT) || 3000;
+  
+  await app.listen(port, '0.0.0.0', function() {
+    console.log('Listening on port %d', port);
+  });
 }
+
 bootstrap();
