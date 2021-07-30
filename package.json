@@ -17,7 +17,8 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "^7.13.0",
-        "eslint": "^7.25.0"
+        "eslint": "^7.25.0",
+        "joi": "^17.4.1"
     },
     "scripts": {
         "build": "npm --prefix frontend install && NODE_ENV=production npm --prefix frontend run build",
