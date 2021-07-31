@@ -53,6 +53,7 @@ export class EmailService {
   async sendWelcomeEmail(to: string, name: string, invitationtoken: string) {
 
     const subject = 'Welcome to ToolJet';
+    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}?signup=true`;
     const html = `
       <!DOCTYPE html>
       <html>
@@ -65,7 +66,7 @@ export class EmailService {
           <p>
             Please use the link below to set up your account and get started.
           </p>
-          <a href="<%= @url %>">${`${this.TOOLJET_HOST}/invitations/${invitationtoken}?signup=true`}</a>
+          <a href="${inviteUrl}">${inviteUrl}</a>
           <br><br>
           <p>
             Welcome aboard,<br>
