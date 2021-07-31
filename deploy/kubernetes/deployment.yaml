@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tooljet-server-deployment
+  name: tooljet-deployment
 spec:
   replicas: 2
   strategy:
@@ -11,30 +11,32 @@ spec:
       maxSurge: 1
   selector:
     matchLabels:
-      component: tooljet-server
+      component: tooljet
   template:
     metadata:
       labels:
-        component: tooljet-server
+        component: tooljet
     spec:
+      imagePullSecrets:
+        - name: docker-secret
       containers:
-        - name: server-container
-          image: tooljet/tooljet-server-ce:latest
+        - name: container
+          image: tooljet/tooljet-te-ce:latest
           imagePullPolicy: Always
-          command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+          command: ["npm", "run", '--prefix', 'server', 'start:prod']
           resources:
             limits:
               memory: "2000Mi"
-              cpu: "500m"
+              cpu: "2000m"
             requests:
               memory: "1000Mi"
-              cpu: "500m"
+              cpu: "1000m"
           ports:
             - containerPort: 3000
           readinessProbe:
             httpGet:
               port: 3000
-              path: /health
+              path: /api/health
             successThreshold: 1
             initialDelaySeconds: 10
             periodSeconds: 5
