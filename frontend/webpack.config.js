@@ -4,7 +4,7 @@ const path = require('path');
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const API_URL = {
-  production: process.env.TOOLJET_SERVER_URL,
+  production: process.env.TOOLJET_SERVER_URL || '/_backend_',
   development: 'http://localhost:3000'
 };
 

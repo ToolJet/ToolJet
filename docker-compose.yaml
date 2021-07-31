@@ -4,7 +4,7 @@ services:
   client:
     build:
       context: ./frontend
-      dockerfile: ../docker/client.Dockerfile
+      dockerfile: ../docker/client.Dockerfile.dev
     image: tooljet-client:development
     volumes:
       - ./frontend:/app:delegated
