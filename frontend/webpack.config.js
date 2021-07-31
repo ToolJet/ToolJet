@@ -63,7 +63,7 @@ module.exports = {
   externals: {
     // global app config object
     config: JSON.stringify({
-      apiUrl: `${API_URL[environment]}/api`,
+      apiUrl: `${API_URL[environment] || ''}/api`,
       assetPath: ASSET_PATH[environment],
       GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
       SERVER_IP: process.env.SERVER_IP
