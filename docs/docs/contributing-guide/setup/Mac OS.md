@@ -3,56 +3,30 @@ sidebar_position: 1
 ---
 
 # Mac OS
-Follow these steps to setup and run ToolJet on Mac OS. Open terminal and run the commands below.
+Follow these steps to setup and run ToolJet on Mac OS for development purposes. Open terminal and run the commands below. We recommend reading our guide on [architecture](http://localhost:3001/docs/deployment/architecture) of ToolJet before proceeding.
 
 1. ## Setting up the environment
-    ### Install Xcode command line tools
-    ```bash
-    $ xcode-select --install
-    ```
-
     ### Install Homebrew
     ```bash
     $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     ```
-
-    ### Install RVM
-    RVM is used to manage Ruby versions on your local machine. Skip this step if you are using rbenv or any other tool to manage ruby versions.
-    ```bash
-    $ curl -L https://get.rvm.io | bash -s stable
-    ```
-
-    ### Install Ruby using RVM
-    ```bash
-    $ rvm install ruby-2.7.3
-    $ rvm use 2.7.3
-    ```
-    ### Install [Bundler](https://bundler.io/)
-    ```bash
-    gem install bundler:2.1.4
-    ```
-
-    ### Install Node.js ( version: v14.9.0 )
+    ### Install Node.js ( version: v14.17.3 )
     ```bash
     $ brew install nvm
     $ export NVM_DIR=~/.nvm
     $ source $(brew --prefix nvm)/nvm.sh
-    $ nvm install 14.9.0
-    $ nvm use 14.9.0
-
+    $ nvm install 14.17.3
+    $ nvm use 14.17.3
     ```
 
     ### Install Postgres
+    :::tip
+    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not plan to support other databases such as MySQL.
+    :::
+
     ```bash
     $ brew install postgresql
     ```
-
-    ### Install MySQL ( optional )
-    Skip this step if you do not want to connect to  MySQL datasources.
-    ```bash
-    $ brew install mysql
-    ```
-
 2. ## Setup environment variables
     Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given here: env variable reference
     ```bash
@@ -74,54 +48,35 @@ Follow these steps to setup and run ToolJet on Mac OS. Open terminal and run the
    SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
    ```
 
-4. ## Install Ruby on Rails dependencies
+4. ## Install dependencies
     ```bash
-    $ bundle
+    $ npm install --prefix server
+    $ npm install --prefix frontend
     ```
-
-5. ## install React dependencies
+5. ## Setup database
     ```bash
-    $ npm install
+    $ npm run --prefix server db:create
+    $ npm run --prefix server db:reset
+    $ npm run --prefix server start:dev
     ```
-
-6. ## Setup Rails server
+6. ## Install webpack & nest-cli
     ```bash
-    $ bundle exec rake db:create
-    $ bundle exec rake db:reset
-    $ bundle exec rails server
+    $ npm install -g webpack
+    $ npm install -g webpack-cli
+    $ npm install -g @nestjs/cli
     ```
 
-7. ## Create login credentials
-
-    1.  Open rails console using:
-
+7. ## Running the server 
     ```bash
-    $ bundle exec rails console
+    $ cd ./server && npm run start:dev
     ```
 
-    2.  Create a new organization
-    ```ruby
-    Organization.create(name: 'Dev')
-    ```
-
-    3.  Create a new user
-    ```ruby
-    User.create(first_name: 'dev', email: 'dev@tooljet.io', password: 'password', organization: Organization.first)
-    ```
-
-    4. Add user to the organization as admin
-    ```ruby
-    OrganizationUser.create(user: User.first, organization: Organization.first, role: 'admin', status: 'active')
-    ```
-8. ## Install webpack
-    ```bash
-    $ npm install --save-dev webpack
-    $ npm install --save-dev webpack-cli
-    ```
-
-9. ## Running the React frontend ( Client )
+8. ## Running the client
     ```bash
     $ cd ./frontend && npm start
     ```
 
-The client will start running on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
+    The client will start on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
+
+9. ## Creating login credentials
+    Visiting [https://localhost:8082](https://localhost:8082) should redirect you to the login page, click on the signup link and enter your email. The emails sent by the server in development environment are captured and are opened in your default browser. Click the invitation link in the email preview to setup the account.
