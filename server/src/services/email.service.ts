@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 const nodemailer = require("nodemailer");
+const previewEmail = require('preview-email');
 
 @Injectable()
 export class EmailService {
@@ -26,21 +27,25 @@ export class EmailService {
       },
     });
 
+    const message = {
+      from: `"ToolJet" <${this.FROM_EMAIL}>`,
+      to, 
+      subject,
+      html,
+    };
+
     /* if development environment, log the content of email instead of sending actual emails */
     if(this.NODE_ENV === 'development') {
+
       console.log('Captured email');
       console.log('to: ', to);
       console.log('Subject: ', subject);
       console.log('content: ', html);
+
+      previewEmail(message).then(console.log).catch(console.error);
+
     } else {
-
-      let info = await transporter.sendMail({
-        from: `"ToolJet" <${this.FROM_EMAIL}>`,
-        to, 
-        subject,
-        html,
-      });
-
+      let info = await transporter.sendMail(message);
       console.log("Message sent: %s", info);
     }
   }
