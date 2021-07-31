@@ -29,4 +29,9 @@ export class AppController {
     return {}
   }
 
+  @Get('/health')
+  async healthCheck(@Request() req) {
+    return { works: 'yeah' };
+  }
+
 }
