@@ -22,5 +22,4 @@ ToolJet have two main components: ToolJet Server and ToolJet Client.
 
 ## Requirements
 
-1.  Ruby version 2.7 or later
-2.  Node version 14.x or higher 
+1.  Node version 14.x
