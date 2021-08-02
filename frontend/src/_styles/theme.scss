@@ -1568,6 +1568,10 @@ input:focus-visible {
     position: absolute;
     margin-top: -1rem;
   }
+
+  .has-focus > .select-search__select > ul {
+    margin-bottom: 0;
+  }
 }
 
 .encrypted-icon {
