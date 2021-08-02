@@ -53,7 +53,8 @@ function determineFilePathForEnv(env: string | undefined): string {
 function throwErrorIfFileNotPresent(filePath: string, env: string): void {
   if (!fs.existsSync(filePath)) {
     console.log(
-      `Unable to fetch database config from env file for environment: ${env}\n `
+      `Unable to fetch database config from env file for environment: ${env}\n` +
+        'Picking up config from the environment',
     );
   }
 }

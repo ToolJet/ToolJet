@@ -2,21 +2,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import { exec } from 'child_process';
-import * as Joi from 'joi';
-
-function validateDatabaseConfig(): Joi.ValidationResult {
-  const envVarsSchema = Joi.object()
-    .keys({
-      PG_HOST: Joi.string().required(),
-      PG_PORT: Joi.number().positive().default(5432),
-      PG_PASS: Joi.string().default(''),
-      PG_USER: Joi.string().required(),
-      PG_DB: Joi.string().required(),
-    })
-    .unknown();
-
-  return envVarsSchema.validate(process.env);
-}
+import { buildAndValidateDatabaseConfig } from './database-config-utils';
 
 function createDatabaseFromFile(envPath: string): void {
   const result = dotenv.config({ path: envPath });
@@ -29,7 +15,7 @@ function createDatabaseFromFile(envPath: string): void {
 }
 
 function createDatabase(): void {
-  const { value: envVars, error } = validateDatabaseConfig();
+  const { value: envVars, error } = buildAndValidateDatabaseConfig();
 
   if (error) {
     throw new Error(`Config validation error: ${error.message}`);
@@ -54,7 +40,7 @@ function createDatabase(): void {
         return;
       }
 
-      console.log(`Created database ${process.env.PG_DB}`);
+      console.log(`Created database ${envVars.PG_DB}`);
     });
   });
 }
@@ -72,8 +58,8 @@ if (fs.existsSync(nodeEnvPath)) {
   createDatabaseFromFile(fallbackPath);
 } else {
   console.log(
-    `${nodeEnvPath} file not found to create database` +
-      'Inferring config from the environment',
+    `${nodeEnvPath} file not found to create database\n` +
+      'Picking up config from the environment',
   );
 
   createDatabase();
