@@ -109,10 +109,7 @@ class ManageOrgUsers extends React.Component {
 
     return (
       <div className="wrapper org-users-page">
-        <Header 
-          switchDarkMode={this.props.switchDarkMode}
-          darkMode={this.props.darkMode}
-        />
+        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -239,7 +236,10 @@ class ManageOrgUsers extends React.Component {
                             <tr>
                               <td className="col-2 p-3">
                                 <div className="row">
-                                  <div className="skeleton-image col-auto" style={{ width: '25px', height: '25px' }}></div>
+                                  <div
+                                    className="skeleton-image col-auto"
+                                    style={{ width: '25px', height: '25px' }}
+                                  ></div>
                                   <div className="skeleton-line w-10 col mx-3"></div>
                                 </div>
                               </td>
@@ -277,7 +277,7 @@ class ManageOrgUsers extends React.Component {
                                 </a>
                               </td>
                               <td className="text-muted" style={{ width: '280px' }}>
-                                <center className="mx-5">
+                                <center className="mx-5 select-search-role">
                                   <SelectSearch
                                     options={['Admin', 'Developer', 'Viewer'].map((role) => {
                                       return { name: role, value: role.toLowerCase() };
