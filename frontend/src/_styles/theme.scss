@@ -749,7 +749,7 @@ body {
   }
 
   .markdown>table>:not(caption)>*>*, .table>:not(caption)>*>* {
-    padding-bottom: 0.1rem;
+    //padding-bottom: 0.1rem;
   }
 
   .table-row:hover,
@@ -759,7 +759,7 @@ body {
 
   td {
     min-height: 35px;
-    overflow-x: scroll;
+    overflow-x: initial;
 
     .text-container {
       padding: 0px;
