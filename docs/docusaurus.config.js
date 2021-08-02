@@ -35,6 +35,16 @@ module.exports = {
           label: 'GitHub',
           position: 'right',
         },
+        {
+          href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+          label: 'Slack',
+          position: 'right',
+        },
+        {
+          href: 'https://twitter.com/ToolJet',
+          label: 'Twitter',
+          position: 'right',
+        },
       ],
     },
     footer: {
@@ -64,6 +74,14 @@ module.exports = {
             {
               label: 'GitHub',
               href: 'https://github.com/ToolJet/ToolJet',
+            },
+            {
+              label: 'Slack',
+              href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+            },
+            {
+              label: 'Twitter',
+              href: 'https://twitter.com/ToolJet',
             },
           ],
         },
