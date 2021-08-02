@@ -139,7 +139,10 @@ export function Table({
 
     obj = _.set(rowData, key, value);
 
-    let newDataUpdates = [...dataUpdates, { ...obj }];
+    let newDataUpdates = {
+      ...dataUpdates, 
+      [index]: { ...obj }
+    };
 
     onComponentOptionsChanged(component, [
       ['dataUpdates', newDataUpdates],
