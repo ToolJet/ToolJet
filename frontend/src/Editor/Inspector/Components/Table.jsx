@@ -101,6 +101,7 @@ class Table extends React.Component {
                 { name: 'Multiple badges', value: 'badges' },
                 { name: 'Tags', value: 'tags' },
                 { name: 'Dropdown', value: 'dropdown' },
+                { name: 'Radio', value: 'radio' },
                 { name: 'Multiselect', value: 'multiselect' }
               ]}
               value={column.columnType}
@@ -138,7 +139,7 @@ class Table extends React.Component {
             />
           </div>
 
-          {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges') && (
+          {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges' || column.columnType === 'radio') && (
             <div>
               <div className="field mb-2">
                 <label className="form-label">Values</label>
