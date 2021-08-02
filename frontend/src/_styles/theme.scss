@@ -1564,6 +1564,14 @@ input:focus-visible {
   .select-search__input{
     color: #617179;
   }
+  .select-search-role {
+    position: absolute;
+    margin-top: -1rem;
+  }
+
+  .has-focus > .select-search__select > ul {
+    margin-bottom: 0;
+  }
 }
 
 .encrypted-icon {
