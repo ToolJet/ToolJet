@@ -3,15 +3,16 @@ import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import { Knex, knex } from 'knex';
 import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
+import { cacheConnection, getCachedConnection } from 'src/helpers/utils.helper';
 
 @Injectable()
 export default class MysqlQueryService implements QueryService {
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: any, queryOptions: any, dataSourceId: string, dataSourceUpdatedAt: string): Promise<QueryResult> {
     
     let result = { };
     let query = queryOptions.query;
-    const knexInstance = await this.getConnection(sourceOptions);
+    const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
     try {
       result = await knexInstance.raw(query);
@@ -26,7 +27,7 @@ export default class MysqlQueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
-    const knexInstance = await this.getConnection(sourceOptions);
+    const knexInstance = await this.getConnection(sourceOptions, {}, false);
     const result = await knexInstance.raw('select @@version;');
 
     return {
@@ -34,7 +35,7 @@ export default class MysqlQueryService implements QueryService {
     }
   }
 
-  async getConnection(sourceOptions: any): Promise<any> { 
+  async buildConnection(sourceOptions: any) {
     const config: Knex.Config = {
       client: 'mysql',
       connection: {
@@ -45,6 +46,24 @@ export default class MysqlQueryService implements QueryService {
         port: sourceOptions.port,
       }
     };
+
     return knex(config);
+  }
+
+  async getConnection(sourceOptions: any, options:any, checkCache: boolean, dataSourceId?: string, dataSourceUpdatedAt?: string): Promise<any> { 
+    if(checkCache) {
+      let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
+
+      if(connection) {
+        return connection;
+      } else {
+        connection = await this.buildConnection(sourceOptions);
+        await cacheConnection(dataSourceId, connection);
+        return connection;
+      }
+    } else {
+      return await this.buildConnection(sourceOptions);
+    }
+   
   }
 }

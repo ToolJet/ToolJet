@@ -50,8 +50,6 @@ export class EncryptionService {
     const info = Buffer.concat([salt, Buffer.from(`${column}_ciphertext`)]);
 
     const derivedKey = hkdf(key, 32, {salt: table, info, hash: 'sha384'});
-
-    // const derivedKey = crypto.subtle.deriveKey('sha384', key, table, info, 32);
     const finalDerivedKey = Buffer.from(derivedKey).toString('hex');
 
     return finalDerivedKey;

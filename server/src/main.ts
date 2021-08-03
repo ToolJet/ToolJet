@@ -3,8 +3,8 @@ import { AppModule } from './app.module';
 import * as helmet from 'helmet';
 const fs = require('fs');
 
-declare var TOOLJET_VERSION;
-globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8')
+globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8');
+globalThis.CACHED_CONNECTIONS = {};
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
