@@ -9,6 +9,15 @@ export class SeedsService {
   constructor(private readonly entityManager: EntityManager) {}
 
   async perform(): Promise<void> {
+    const defaultUser = await this.entityManager.findOne(User, {
+      email: 'dev@tooljet.io',
+    });
+
+    if (defaultUser) {
+      console.log('Default user already present. Skipping seed.');
+      return;
+    }
+
     const organization = this.entityManager.create(Organization, {
       name: 'My organization',
     });
