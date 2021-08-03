@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
-import { readData } from './operations';
+import { readData, appendData } from './operations';
 const got = require('got');
 
 @Injectable()
@@ -34,8 +34,8 @@ export default class GooglesheetsQueryService implements QueryService {
     let authDetails = [];
 
     try {
-      const response = await got(accessTokenUrl, { 
-        method: 'post', 
+      const response = await got(accessTokenUrl, {
+        method: 'post',
         json: data,
         headers: {'Content-Type': 'application/json'}
       });
@@ -54,7 +54,7 @@ export default class GooglesheetsQueryService implements QueryService {
         authDetails.push(['refresh_token', result['refresh_token']]);
       }
 
-  } catch (error) { 
+  } catch (error) {
     console.log(error.response.body);
     throw Error('could not connect to Googlesheets');
   }
@@ -76,17 +76,26 @@ export default class GooglesheetsQueryService implements QueryService {
     try {
       switch (operation) {
         case 'info':
-          response = await got(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`, { 
-            method: 'get', 
+          response = await got(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`, {
+            method: 'get',
             headers: this.authHeader(accessToken)
           });
-          
+
           result = JSON.parse(response.body);
           break;
-        
+
         case 'read':
           result = await readData(spreadsheetId, queryOptions['sheet'], this.authHeader(accessToken));
-          break;  
+          break;
+
+        case 'append':
+          result = await appendData(
+            spreadsheetId,
+            queryOptions['sheet'],
+            queryOptions['rows'],
+            this.authHeader(accessToken),
+          );
+          break;
       }
     } catch (error) {
       console.log(error.response);
