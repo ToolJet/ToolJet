@@ -143,7 +143,6 @@ class ManageAppUsers extends React.Component {
       return (
       <div>
         <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}>
-          {' '}
           Share
         </button>
 
