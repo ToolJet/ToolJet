@@ -5,6 +5,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
+import { SeedsModule } from './modules/seeds/seeds.module';
+import { SeedsService } from '@services/seeds.service';
 import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
 import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
@@ -29,6 +31,7 @@ import { join } from 'path';
       envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env']
     }),
     TypeOrmModule.forRoot(ormconfig),
+    SeedsModule,
     AuthModule,
     UsersModule,
     AppsModule,
@@ -41,7 +44,7 @@ import { join } from 'path';
     MetaModule
   ],
   controllers: [AppController],
-  providers: [AppService, EmailService],
+  providers: [AppService, EmailService, SeedsService],
 })
 export class AppModule implements OnModuleInit, OnApplicationBootstrap {
   constructor(private connection: Connection) {}
