@@ -67,7 +67,7 @@ export class DataQueriesService {
     const pluginServiceClass = plugins[kind];
 
     const service = new pluginServiceClass();
-    const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id);
+    const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
 
     return result;
   }

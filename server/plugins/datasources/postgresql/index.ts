@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { cacheConnection, getCachedConnection } from 'src/helpers/utils.helper';
 import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
@@ -7,9 +8,9 @@ const { Pool } = require('pg');
 @Injectable()
 export default class PostgresqlQueryService implements QueryService {
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: any, queryOptions: any, dataSourceId: string, dataSourceUpdatedAt: string): Promise<QueryResult> {
 
-    const pool = await this.getConnection(sourceOptions);
+    const pool = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
     let result = {
       rows: []
@@ -33,7 +34,7 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
-    const pool = await this.getConnection(sourceOptions);
+    const pool = await this.getConnection(sourceOptions, {}, false);
     const result = await pool.query('SELECT version();');
 
     return {
@@ -41,7 +42,7 @@ export default class PostgresqlQueryService implements QueryService {
     }
   }
 
-  async getConnection(sourceOptions: any): Promise<any> { 
+  async buildConnection(sourceOptions: any) {
     return new Pool({
       user: sourceOptions.username,
       host: sourceOptions.host,
@@ -49,6 +50,24 @@ export default class PostgresqlQueryService implements QueryService {
       password: sourceOptions.password,
       port: sourceOptions.port,
     });
+  }
+
+  async getConnection(sourceOptions: any, options:any, checkCache: boolean, dataSourceId?: string, dataSourceUpdatedAt?: string): Promise<any> { 
+    if(checkCache) {
+      let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
+
+      if(connection) {
+        return connection;
+      } else {
+        connection = await this.buildConnection(sourceOptions);
+        
+        await cacheConnection(dataSourceId, connection);
+        return connection;
+      } 
+    } else {
+      return await this.buildConnection(sourceOptions);
+    }
+   
   }
 
   async buildBulkUpdateQuery(queryOptions: any): Promise<string> {
