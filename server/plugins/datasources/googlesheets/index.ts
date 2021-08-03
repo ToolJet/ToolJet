@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
-import { readData, appendData } from './operations';
+import { readData, appendData, deleteData } from './operations';
 const got = require('got');
 
 @Injectable()
@@ -93,6 +93,15 @@ export default class GooglesheetsQueryService implements QueryService {
             spreadsheetId,
             queryOptions['sheet'],
             queryOptions['rows'],
+            this.authHeader(accessToken),
+          );
+          break;
+
+        case 'delete_row':
+          result = await deleteData(
+            spreadsheetId,
+            queryOptions['sheet'],
+            queryOptions['row_index'],
             this.authHeader(accessToken),
           );
           break;

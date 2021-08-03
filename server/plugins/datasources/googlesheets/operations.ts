@@ -80,11 +80,42 @@ async function appendDataToSheet(
   return response;
 }
 
+async function deleteDataFromSheet(
+  spreadSheetId: string,
+  sheet: string,
+  rowIndex: any,
+  authHeader: any,
+) {
+  const requestBody = {
+    requests: [
+      {
+        deleteDimension: {
+          range: {
+            sheetId: sheet,
+            dimension: "ROWS",
+            startIndex: rowIndex - 1,
+            endIndex: rowIndex
+          }
+        }
+      }
+    ]
+  }
+
+  const response = await got
+    .post(
+      `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}:batchUpdate`,
+      { headers: authHeader, json: requestBody },
+    )
+    .json();
+
+  return response;
+}
+
 export async function readData(
   spreadSheetId: string,
   sheet: string,
   authHeader: any,
-) {
+): Promise<any[]> {
   return await readDataFromSheet(spreadSheetId, sheet, 'A1:V101', authHeader);
 }
 
@@ -93,12 +124,26 @@ export async function appendData(
   sheet: string,
   rows: any[],
   authHeader: any,
-) {
+): Promise<any> {
   return await appendDataToSheet(
     spreadSheetId,
     sheet,
     rows,
     'A1:V101',
+    authHeader,
+  );
+}
+
+export async function deleteData(
+  spreadSheetId: string,
+  sheet: string,
+  rowIndex: string,
+  authHeader: any,
+): Promise<any> {
+  return await deleteDataFromSheet(
+    spreadSheetId,
+    sheet,
+    rowIndex,
     authHeader,
   );
 }
