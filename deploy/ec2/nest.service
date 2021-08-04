@@ -1,5 +1,5 @@
 [Unit]
-Description=Puma HTTP Server
+Description=Nest Server
 After=network.target
 
 [Service]
@@ -7,11 +7,10 @@ Type=simple
 User=ubuntu
 
 WorkingDirectory=/home/ubuntu/app
-Environment="RAILS_ENV=production"
+Environment="NODE_ENV=production"
 EnvironmentFile=/home/ubuntu/app/.env
 RestartSec=1
-PIDFile=/home/ubuntu/app/tmp/pids/server.pid
-ExecStart=/home/ubuntu/.rbenv/shims/puma -b tcp://0.0.0.0:3000
+ExecStart=/usr/bin/npm --prefix /home/ubuntu/app run start:prod
 Restart=always
 
 [Install]
