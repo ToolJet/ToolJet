@@ -1,4 +1,4 @@
-[
+export const darkModeStyles = [
     {
       "featureType": "all",
       "elementType": "labels.text.fill",
@@ -134,4 +134,4 @@
         }
       ]
     }
-  ]
+  ];

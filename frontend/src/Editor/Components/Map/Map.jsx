@@ -4,6 +4,7 @@ import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { Marker } from '@react-google-maps/api';
 import { resolveReferences } from '@/_helpers/utils';
 import { Autocomplete } from '@react-google-maps/api';
+import { darkModeStyles } from './styles';
 
 
 export const Map = function Map({
@@ -11,6 +12,7 @@ export const Map = function Map({
   width,
   height,
   component,
+  darkMode,
   onComponentClick,
   currentState,
   onComponentOptionChanged,
@@ -44,8 +46,6 @@ export const Map = function Map({
     width,
     height
   };
-
-  const darkModeStyles = require("./darkModeStyles.json");
 
   function handleMapClick(e) {
     if(!canAddNewMarkers) { return }
@@ -113,7 +113,7 @@ export const Map = function Map({
           mapContainerStyle={containerStyle}
           zoom={12}
           options={{
-            styles: localStorage.getItem('darkMode') === 'true' ? darkModeStyles : '',
+            styles: darkMode === true ? darkModeStyles : '',
             streetViewControl: false,
             mapTypeControl: false,
             draggable: true
