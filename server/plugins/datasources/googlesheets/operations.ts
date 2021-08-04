@@ -1,22 +1,53 @@
 import got from 'got';
 
+async function makeRequestToReadValues(
+  spreadSheetId: string,
+  sheet: string,
+  range: string,
+  authHeader: any,
+) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${
+    sheet || ''
+  }!${range}`;
+
+  return await got.get(url, { headers: authHeader }).json();
+}
+
+async function makeRequestToAppendValues(
+  spreadSheetId: string,
+  sheet: string,
+  requestBody: any,
+  authHeader: any,
+) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${
+    sheet || ''
+  }!A:Z:append?valueInputOption=USER_ENTERED`;
+
+  return await got.post(url, { headers: authHeader, json: requestBody }).json();
+}
+
+async function makeRequestToBatchUpdate(
+  spreadSheetId: string,
+  requestBody: any,
+  authHeader: any,
+) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}:batchUpdate`;
+
+  return await got.post(url, { headers: authHeader, json: requestBody }).json();
+}
+
 export async function readDataFromSheet(
   spreadSheetId: string,
   sheet: string,
   range: string,
   authHeader: any,
 ) {
-  const response = await got.get(
-    `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${
-      sheet || ''
-    }!${range}`,
-    {
-      headers: authHeader,
-    },
+  const data = await makeRequestToReadValues(
+    spreadSheetId,
+    sheet,
+    range,
+    authHeader,
   );
-
-  const data = JSON.parse(response.body);
-
   let headers = [];
   let values = [];
   const result = [];
@@ -43,17 +74,16 @@ async function appendDataToSheet(
   spreadSheetId: string,
   sheet: string,
   rows: any,
-  range: string,
   authHeader: any,
 ) {
-  const sheetData = await readDataFromSheet(
+  const parsedRows = JSON.parse(rows);
+  const sheetData = await makeRequestToReadValues(
     spreadSheetId,
     sheet,
-    range,
+    'A1:Z1',
     authHeader,
   );
-  const fullSheetHeaders = Object.keys(sheetData[0]);
-  const parsedRows = JSON.parse(rows);
+  const fullSheetHeaders = sheetData['values'][0];
   const rowsToAppend = parsedRows.map((row) => {
     const headersForAppendingRow = Object.keys(row);
     const rowData = [];
@@ -68,14 +98,13 @@ async function appendDataToSheet(
     return rowData;
   });
 
-  const response = await got
-    .post(
-      `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${
-        sheet || ''
-      }!A:V:append?valueInputOption=USER_ENTERED`,
-      { headers: authHeader, json: { values: rowsToAppend } },
-    )
-    .json();
+  const requestBody = { values: rowsToAppend };
+  const response = await makeRequestToAppendValues(
+    spreadSheetId,
+    sheet,
+    requestBody,
+    authHeader,
+  );
 
   return response;
 }
@@ -92,21 +121,20 @@ async function deleteDataFromSheet(
         deleteDimension: {
           range: {
             sheetId: sheet,
-            dimension: "ROWS",
+            dimension: 'ROWS',
             startIndex: rowIndex - 1,
-            endIndex: rowIndex
-          }
-        }
-      }
-    ]
-  }
+            endIndex: rowIndex,
+          },
+        },
+      },
+    ],
+  };
 
-  const response = await got
-    .post(
-      `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}:batchUpdate`,
-      { headers: authHeader, json: requestBody },
-    )
-    .json();
+  const response = await makeRequestToBatchUpdate(
+    spreadSheetId,
+    requestBody,
+    authHeader,
+  );
 
   return response;
 }
@@ -116,7 +144,7 @@ export async function readData(
   sheet: string,
   authHeader: any,
 ): Promise<any[]> {
-  return await readDataFromSheet(spreadSheetId, sheet, 'A1:V101', authHeader);
+  return await readDataFromSheet(spreadSheetId, sheet, 'A1:Z500', authHeader);
 }
 
 export async function appendData(
@@ -125,13 +153,7 @@ export async function appendData(
   rows: any[],
   authHeader: any,
 ): Promise<any> {
-  return await appendDataToSheet(
-    spreadSheetId,
-    sheet,
-    rows,
-    'A1:V101',
-    authHeader,
-  );
+  return await appendDataToSheet(spreadSheetId, sheet, rows, authHeader);
 }
 
 export async function deleteData(
@@ -140,10 +162,5 @@ export async function deleteData(
   rowIndex: string,
   authHeader: any,
 ): Promise<any> {
-  return await deleteDataFromSheet(
-    spreadSheetId,
-    sheet,
-    rowIndex,
-    authHeader,
-  );
+  return await deleteDataFromSheet(spreadSheetId, sheet, rowIndex, authHeader);
 }
