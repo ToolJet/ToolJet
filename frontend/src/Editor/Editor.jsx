@@ -221,6 +221,10 @@ class Editor extends React.Component {
   };
 
   switchSidebarTab = (tabIndex) => {
+    if (tabIndex == 2)
+    {
+      this.setState({ selectedComponent: null });
+    }
     this.setState({
       currentSidebarTab: tabIndex
     });
