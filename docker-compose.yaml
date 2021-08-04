@@ -14,7 +14,7 @@ services:
     environment:
       - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
       - NODE_ENV=development
-    command: npm start
+    command: ['npm', 'run', '--prefix', 'server', 'start:prod']
 
   server:
     # env_file: .env
