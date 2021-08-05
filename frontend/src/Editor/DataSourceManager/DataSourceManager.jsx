@@ -31,13 +31,13 @@ class DataSourceManager extends React.Component {
       selectedDataSource,
       options,
       dataSourceMeta,
-      isSaving: false
+      isSaving: false,
     };
   }
 
   componentDidMount() {
     this.setState({
-      appId: this.props.appId
+      appId: this.props.appId,
     });
   }
 
@@ -46,7 +46,7 @@ class DataSourceManager extends React.Component {
       dataSourceMeta: source,
       selectedDataSource: source,
       options: defaultOptions[source.kind],
-      name: source.kind
+      name: source.kind,
     });
   };
 
@@ -54,8 +54,8 @@ class DataSourceManager extends React.Component {
     this.setState({
       selectedDataSource: {
         ...this.state.selectedDataSource,
-        name: newName
-      }
+        name: newName,
+      },
     });
   };
 
@@ -69,8 +69,8 @@ class DataSourceManager extends React.Component {
     return this.setStateAsync({
       options: {
         ...this.state.options,
-        [option]: { value }
-      }
+        [option]: { value },
+      },
     });
   };
 
@@ -88,7 +88,7 @@ class DataSourceManager extends React.Component {
       return {
         key: key,
         value: options[key].value,
-        encrypted: keyMeta ? keyMeta.encrypted : false
+        encrypted: keyMeta ? keyMeta.encrypted : false,
       };
     });
 
@@ -112,26 +112,24 @@ class DataSourceManager extends React.Component {
   };
 
   renderSourceComponent = (kind) => {
-    const {
-      options, isSaving
-    } = this.state;
+    const { options, isSaving } = this.state;
 
     const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
     const ComponentToRender = SourceComponents[sourceComponentName];
-    return <ComponentToRender
+    return (
+      <ComponentToRender
         optionchanged={this.optionchanged}
         createDataSource={this.createDataSource}
         options={options}
         isSaving={isSaving}
         hideModal={this.hideModal}
         selectedDataSource={this.state.selectedDataSource}
-    />;
-  }
+      />
+    );
+  };
 
   render() {
-    const {
-      dataSourceMeta, selectedDataSource, options, isSaving
-    } = this.state;
+    const { dataSourceMeta, selectedDataSource, options, isSaving } = this.state;
 
     return (
       <div>
@@ -169,11 +167,7 @@ class DataSourceManager extends React.Component {
                   </div>
                 </div>
               )}
-              {!selectedDataSource && (
-                <span className="text-muted">
-                  Add new datasource
-                </span>
-              )}
+              {!selectedDataSource && <span className="text-muted">Add new datasource</span>}
             </Modal.Title>
             <Button variant="light" size="sm" onClick={() => this.hideModal()}>
               x
@@ -190,8 +184,13 @@ class DataSourceManager extends React.Component {
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
-                            <img src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`} width="50" height="50" alt="" />
-                            
+                            <img
+                              src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`}
+                              width="50"
+                              height="50"
+                              alt=""
+                            />
+
                             <br></br>
                             <br></br>
                             {dataSource.name}
@@ -208,8 +207,13 @@ class DataSourceManager extends React.Component {
                       <div className="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
-                            <img src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`} width="50" height="50" alt="" />
-                            
+                            <img
+                              src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`}
+                              width="50"
+                              height="50"
+                              alt=""
+                            />
+
                             <br></br>
                             <br></br>
                             {dataSource.name}
@@ -222,46 +226,49 @@ class DataSourceManager extends React.Component {
               </div>
             )}
 
-            {selectedDataSource && (
-              <div>
-                {this.renderSourceComponent(selectedDataSource.kind)}
-              </div>
-            )}
+            {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
           </Modal.Body>
 
           {selectedDataSource && !dataSourceMeta.customTesting && (
             <Modal.Footer>
               <div className="row w-100">
                 <div className="alert alert-info" role="alert">
-                <div className="text-muted">
-                  Please white-list our IP address if your datasource is not publicly accessible.
-                  IP: <span className="bg-light px-2 py-1">{config.SERVER_IP}</span>
-                  <CopyToClipboard
-                    text={config.SERVER_IP}
-                    onCopy={() => toast.success('IP copied to clipboard', {
-                      hideProgressBar: true,
-                      position: 'top-center'
-                    })
-                    }
-                  >
-                    <img src="/assets/images/icons/copy.svg" className="mx-1" width="14" height="14" role="button"/>
-                  </CopyToClipboard>
+                  <div className="text-muted">
+                    Please white-list our IP address if your datasource is not publicly accessible. IP:{' '}
+                    <span className="bg-light px-2 py-1">{config.SERVER_IP}</span>
+                    <CopyToClipboard
+                      text={config.SERVER_IP}
+                      onCopy={() =>
+                        toast.success('IP copied to clipboard', {
+                          hideProgressBar: true,
+                          position: 'top-center',
+                        })
+                      }
+                    >
+                      <img src="/assets/images/icons/copy.svg" className="mx-1" width="14" height="14" role="button" />
+                    </CopyToClipboard>
+                  </div>
                 </div>
-              </div>
               </div>
               <div className="col">
                 <small>
-                  <a href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}>Read documentation</a>
+                  <a href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`} target="_blank">
+                    Read documentation
+                  </a>
                 </small>
               </div>
               <div className="col-auto">
                 <TestConnection kind={selectedDataSource.kind} options={options} />
               </div>
               <div className="col-auto">
-                <Button className={`m-2 ${isSaving ? 'btn-loading' : ''}`} disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                <Button
+                  className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
+                  disabled={isSaving}
+                  variant="primary"
+                  onClick={this.createDataSource}
+                >
                   {'Save'}
                 </Button>
-
               </div>
             </Modal.Footer>
           )}
