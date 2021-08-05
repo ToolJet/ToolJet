@@ -138,15 +138,15 @@ class DataSourceManager extends React.Component {
           size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
           className="mt-5"
+          contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
-          backdrop="static"
         >
           <Modal.Header>
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
                   <img
-                    src={`/assets/images/icons/editor/datasources/${dataSourceMeta.name.toLowerCase()}.svg`}
+                    src={`/assets/images/icons/editor/datasources/${dataSourceMeta.kind.toLowerCase()}.svg`}
                     style={{ objectFit: 'contain' }}
                     height="25"
                     width="25"
@@ -169,7 +169,7 @@ class DataSourceManager extends React.Component {
               )}
               {!selectedDataSource && <span className="text-muted">Add new datasource</span>}
             </Modal.Title>
-            <Button variant="light" size="sm" onClick={() => this.hideModal()}>
+            <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
               x
             </Button>
           </Modal.Header>
@@ -233,21 +233,19 @@ class DataSourceManager extends React.Component {
             <Modal.Footer>
               <div className="row w-100">
                 <div className="alert alert-info" role="alert">
-                  <div className="text-muted">
-                    Please white-list our IP address if your datasource is not publicly accessible. IP:{' '}
-                    <span className="bg-light px-2 py-1">{config.SERVER_IP}</span>
-                    <CopyToClipboard
-                      text={config.SERVER_IP}
-                      onCopy={() =>
-                        toast.success('IP copied to clipboard', {
-                          hideProgressBar: true,
-                          position: 'top-center',
-                        })
-                      }
-                    >
-                      <img src="/assets/images/icons/copy.svg" className="mx-1" width="14" height="14" role="button" />
-                    </CopyToClipboard>
-                  </div>
+                <div className="text-muted">
+                  Please white-list our IP address if your datasource is not publicly accessible.
+                  IP: <span className="px-2 py-1">{config.SERVER_IP}</span>
+                  <CopyToClipboard
+                    text={config.SERVER_IP}
+                    onCopy={() => toast.success('IP copied to clipboard', {
+                      hideProgressBar: true,
+                      position: 'top-center'
+                    })
+                    }
+                  >
+                    <img src="/assets/images/icons/copy.svg" className="mx-1 svg-icon" width="14" height="14" role="button"/>
+                  </CopyToClipboard>
                 </div>
               </div>
               <div className="col">
@@ -268,7 +266,7 @@ class DataSourceManager extends React.Component {
                   onClick={this.createDataSource}
                 >
                   {'Save'}
-                </Button>
+              </Button>
               </div>
             </Modal.Footer>
           )}

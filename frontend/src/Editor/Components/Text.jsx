@@ -35,7 +35,9 @@ export const Text = function Text({
   const computedStyles = {
     color,
     width,
-    height
+    height,
+    display: 'flex',
+    alignItems: 'center'
   };
 
   return (
@@ -43,7 +45,7 @@ export const Text = function Text({
       {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />}
       {loadingState === true && (
         <div>
-          <Skeleton count={1} />
+          <div className="skeleton-line w-10"></div>
         </div>
       )}
     </div>

@@ -32,6 +32,22 @@ export const dataBaseSources = [
     }
   },
   {
+    name: 'SQL Server',
+    kind: 'mssql',
+    exposedVariables: {
+      isLoading: {},
+      data: {},
+      rawData: {}
+    },
+    options: {
+      host: { type: 'string' },
+      port: { type: 'string' },
+      database: { type: 'string' },
+      username: { type: 'string' },
+      password: { type: 'string', encrypted: true }
+    }
+  },
+  {
     name: 'MongoDB',
     kind: 'mongodb',
     exposedVariables: {
@@ -43,7 +59,7 @@ export const dataBaseSources = [
       host: { type: 'string' },
       port: { type: 'string' },
       username: { type: 'string' },
-      password: { type: 'string' },
+      password: { type: 'string', encrypted: true },
       connection_type: { type: 'options'},
       connection_string: { type: 'string', encrypted: true }
     }
@@ -124,6 +140,22 @@ export const apiSources = [
       client_auth: { type: 'string' },
       headers: { type: 'array' },
       custom_auth_params: { type: 'array' }
+    },
+    exposedVariables: {
+      isLoading: {},
+      data: {},
+      rawData: {}
+    },
+    customTesting: true
+  },
+  {
+    name: 'GraphQL',
+    kind: 'graphql',
+    options: {
+      url: { type: 'string' },
+      headers: { type: 'array' },
+      url_params: { type: 'array' },
+      body: { type: 'array' },
     },
     exposedVariables: {
       isLoading: {},

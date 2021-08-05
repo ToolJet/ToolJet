@@ -2,6 +2,7 @@ import React from 'react';
 import {
   datasourceService, dataqueryService, appService, authenticationService
 } from '@/_services';
+import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -30,6 +31,8 @@ import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
 import { Resizable } from 're-resizable';
 import { WidgetManager } from './WidgetManager';
+import Fuse from 'fuse.js';
+import queryString from 'query-string';
 
 class Editor extends React.Component {
   constructor(props) {
@@ -38,7 +41,7 @@ class Editor extends React.Component {
     const appId = this.props.match.params.id;
 
     const currentUser = authenticationService.currentUserValue;
-    let userVars = { };
+    let userVars = {};
 
     if (currentUser) {
       userVars = {
@@ -50,6 +53,7 @@ class Editor extends React.Component {
 
     this.state = {
       currentUser: authenticationService.currentUserValue,
+      app: {},
       allComponentTypes: componentTypes,
       queryPaneHeight: '30%',
       isLoading: true,
@@ -71,20 +75,25 @@ class Editor extends React.Component {
         components: {},
         globals: {
           currentUser: userVars,
-          urlparams: {}
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search)))
         }
-      }
+      },
+      apps: [],
+      dataQueriesDefaultText: 'You haven\'t created queries yet.',
+      showQuerySearchField: false
     };
   }
 
   componentDidMount() {
     const appId = this.props.match.params.id;
+    this.fetchApps(0);
 
     appService.getApp(appId).then((data) => this.setState(
       {
         app: data,
         isLoading: false,
-        appDefinition: { ...this.state.appDefinition, ...data.definition }
+        appDefinition: { ...this.state.appDefinition, ...data.definition },
+        slug: data.slug
       },
       () => {
         data.data_queries.forEach((query) => {
@@ -99,7 +108,6 @@ class Editor extends React.Component {
     this.fetchDataQueries();
 
     this.setState({
-      appId,
       currentSidebarTab: 2,
       selectedComponent: null
     });
@@ -138,7 +146,7 @@ class Editor extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                queryState[query.name] = { 
+                queryState[query.name] = {
                   ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
                   ...this.state.currentState.queries[query.name]
                 };
@@ -173,6 +181,13 @@ class Editor extends React.Component {
     );
   };
 
+  fetchApps = (page) => {
+    appService.getAll(page).then((data) => this.setState({
+      apps: data.apps,
+      isLoading: false
+    }));
+  }
+
   computeComponentState = (components) => {
     let componentState = {};
     const currentComponents = this.state.currentState.components;
@@ -180,7 +195,7 @@ class Editor extends React.Component {
       const component = components[key];
       const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
-      const existingComponentName = Object.keys(currentComponents).find(comp => currentComponents[comp].id === key);
+      const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
       const existingValues = currentComponents[existingComponentName];
 
       componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
@@ -206,6 +221,10 @@ class Editor extends React.Component {
   };
 
   switchSidebarTab = (tabIndex) => {
+    if (tabIndex == 2)
+    {
+      this.setState({ selectedComponent: null });
+    }
     this.setState({
       currentSidebarTab: tabIndex
     });
@@ -216,32 +235,47 @@ class Editor extends React.Component {
     let filteredComponents = this.state.allComponentTypes;
 
     if (searchText !== '') {
-      filteredComponents = this.state.allComponentTypes.filter((e) => e.name.toLowerCase() === searchText.toLowerCase());
+      filteredComponents = this.state.allComponentTypes.filter(
+        (e) => e.name.toLowerCase() === searchText.toLowerCase()
+      );
     }
 
     this.setState({ componentTypes: filteredComponents });
   };
 
   appDefinitionChanged = (newDefinition) => {
-    console.log('currentDefinition', this.state.appDefinition);
-    console.log('newDefinition', newDefinition);
-
     this.setState({ appDefinition: newDefinition });
     this.computeComponentState(newDefinition.components);
+  };
+
+  handleInspectorView = (component) => {
+    if (this.state.selectedComponent.hasOwnProperty('component')) {
+      const { id: selectedComponentId } = this.state.selectedComponent;
+      if (selectedComponentId === component.id) {
+        this.setState({ selectedComponent: null });
+        this.switchSidebarTab(2);
+      }
+    }
+  };
+
+  handleSlugChange = (newSlug) => {
+    this.setState({ slug: newSlug });
   };
 
   removeComponent = (component) => {
     let newDefinition = this.state.appDefinition;
 
     // Delete child components when parent is deleted
-    const childComponents = Object.keys(newDefinition.components).filter((key) => newDefinition.components[key].parent === component.id);
+    const childComponents = Object.keys(newDefinition.components).filter(
+      (key) => newDefinition.components[key].parent === component.id
+    );
     childComponents.forEach((componentId) => {
       delete newDefinition.components[componentId];
     });
 
     delete newDefinition.components[component.id];
     this.appDefinitionChanged(newDefinition);
-    this.switchSidebarTab(2);
+    this.handleInspectorView(component);
   };
 
   componentDefinitionChanged = (newDefinition) => {
@@ -274,7 +308,7 @@ class Editor extends React.Component {
         }
       }
     });
-  }
+  };
 
   saveApp = (id, attributes, notify = false) => {
     appService.saveApp(id, attributes).then(() => {
@@ -291,12 +325,16 @@ class Editor extends React.Component {
         role="button"
         key={dataSource.name}
         onClick={() => {
-          console.log('dss', dataSource);
           this.setState({ selectedDataSource: dataSource, showDataSourceManagerModal: true });
         }}
       >
         <td>
-          <img src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`} width="20" height="20" /> {dataSource.name}
+          <img
+            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
+            width="20"
+            height="20"
+          />{' '}
+          {dataSource.name}
         </td>
       </tr>
     );
@@ -312,22 +350,26 @@ class Editor extends React.Component {
 
     const { currentState } = this.state;
 
-    const isLoading = currentState.queries[dataQuery.name] ? currentState.queries[dataQuery.name].isLoading  : false;
+    const isLoading = currentState.queries[dataQuery.name] ? currentState.queries[dataQuery.name].isLoading : false;
 
     return (
-      <div 
+      <div
         className={'row query-row py-2 px-3' + (isSeletedQuery ? ' query-row-selected' : '')}
         key={dataQuery.name}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
       >
         <div className="col">
-          <img src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`} width="20" height="20" />
+          <img
+            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
+            width="20"
+            height="20"
+          />
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto">
-          {!(isLoading === true) &&
-            <button 
+          {!(isLoading === true) && (
+            <button
               className="btn badge bg-azure-lt"
               onClick={() => {
                 runQuery(this, dataQuery.id, dataQuery.name).then(() => {
@@ -338,15 +380,16 @@ class Editor extends React.Component {
                 });
               }}
             >
-              <div><img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" /></div>
+              <div>
+                <img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
+              </div>
             </button>
-          }
-          {isLoading === true && 
-            <div 
-              className="px-2">
-              <div class="text-center spinner-border spinner-border-sm" role="status"></div>
+          )}
+          {isLoading === true && (
+            <div className="px-2">
+              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
             </div>
-          }
+          )}
         </div>
       </div>
     );
@@ -375,6 +418,30 @@ class Editor extends React.Component {
   configHandleClicked = (id, component) => {
     this.switchSidebarTab(1);
     this.setState({ selectedComponent: { id, component } });
+  };
+
+  filterQueries = (value) => {
+    if (value) {
+      const fuse = new Fuse(this.state.dataQueries, { keys: ['name'] });
+      const results = fuse.search(value);
+      this.setState({
+        dataQueries: results.map((result) => result.item),
+        dataQueriesDefaultText: results.length || 'No Queries found.'
+      });
+    } else {
+      this.fetchDataQueries();
+    }
+  }
+
+  toggleQuerySearch = () => {
+    this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
+  }
+
+  onVersionDeploy = (versionId) => {
+    this.setState({ app: {
+      ...this.state.app,
+      current_version_id: versionId
+    }})
   }
 
   render() {
@@ -383,6 +450,7 @@ class Editor extends React.Component {
       selectedComponent,
       appDefinition,
       appId,
+      slug,
       dataSources,
       loadingDataQueries,
       dataQueries,
@@ -400,10 +468,12 @@ class Editor extends React.Component {
       zoomLevel,
       currentLayout,
       deviceWindowWidth,
-      scaleValue
+      scaleValue,
+      dataQueriesDefaultText,
+      showQuerySearchField,
+      apps
     } = this.state;
-
-    const appLink = `/applications/${appId}`;
+    const appLink = slug ? `/applications/${slug}` : '';
 
     return (
       <div className="editor wrapper">
@@ -467,69 +537,74 @@ class Editor extends React.Component {
                   </span>
                 </div>
                 <div className="canvas-buttons">
-                    <button
-                        className="btn btn-light mx-2"
-                        onClick={() => this.setState({ zoomLevel: zoomLevel - 0.1 })}
-                        disabled={zoomLevel <= 0.6}
-                        role="button"
-                    >
-                        <img
-                            src="/assets/images/icons/zoom-out.svg"
-                            width="12"
-                            height="12"
-                        />
-                    </button>
-                    <small>
-                        {zoomLevel * 100}%
-                    </small>
-                    <button
-                        className="btn btn-light mx-2"
-                        onClick={() => this.setState({ zoomLevel: zoomLevel + 0.1 })}
-                        disabled={zoomLevel === 1}
-                        role="button"
-                    >
-                        <img
-                        src="/assets/images/icons/zoom-in.svg"
-                        width="12"
-                        height="12"
-                        />
+                  <button
+                    className="btn btn-light mx-2"
+                    onClick={() => this.setState({ zoomLevel: ((Math.round(zoomLevel*10) - 1)/10).toFixed(1) }) }
+                    disabled={zoomLevel <= 0.6}
+                    role="button"
+                  >
+                    <img src="/assets/images/icons/zoom-out.svg" width="12" height="12" />
+                  </button>
+                  <small>{zoomLevel * 100}%</small>
+                  <button
+                    className="btn btn-light mx-2"
+                    onClick={() => this.setState({ zoomLevel: ((Math.round(zoomLevel*10) + 1)/10).toFixed(1) }) }
+                    disabled={zoomLevel >= 1.0}
+                    role="button"
+                  >
+                    <img src="/assets/images/icons/zoom-in.svg" width="12" height="12" />
                   </button>
                 </div>
                 <div className="layout-buttons">
-                  <div class="btn-group" role="group" aria-label="Basic example">
-                    <button 
-                      type="button" 
-                      class="btn btn-light"
+                  <div className="btn-group" role="group" aria-label="Basic example">
+                    <button
+                      type="button"
+                      className="btn btn-light"
                       onClick={() => this.setState({ currentLayout: 'desktop' })}
                       disabled={currentLayout === 'desktop'}
                     >
                       <img src="/assets/images/icons/editor/desktop.svg" width="12" height="12" />
                     </button>
-                    <button 
-                      type="button" 
-                      class="btn btn-light"
+                    <button
+                      type="button"
+                      className="btn btn-light"
                       onClick={() => this.setState({ currentLayout: 'mobile' })}
                       disabled={currentLayout === 'mobile'}
                     >
                       <img src="/assets/images/icons/editor/mobile.svg" width="12" height="12" />
                     </button>
                   </div>
-
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
-                  <div className="nav-item dropdown d-none d-md-flex me-3">
-                    {app
-                      && <ManageAppUsers app={app} />
-                    }
+                  <div className="mx-3" style={{ marginTop: '7px'}}>
+                    <DarkModeToggle
+                      switchDarkMode={this.props.switchDarkMode}
+                      darkMode={this.props.darkMode}
+                    />
                   </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
-                    <a href={appLink} target="_blank" className="btn btn-sm" rel="noreferrer">
+                    {app.id
+                     && <ManageAppUsers
+                       app={app}
+                       slug={slug}
+                       darkMode={this.props.darkMode}
+                       handleSlugChange={this.handleSlugChange} />}
+                  </div>
+                  <div className="nav-item dropdown d-none d-md-flex me-3">
+                    <a href={appLink} target="_blank" className={`btn btn-sm ${app?.current_version_id ? '': 'disabled'}`} rel="noreferrer">
                       Launch
                     </a>
                   </div>
                   <div className="nav-item dropdown me-2">
-                    {this.state.app && (
-                      <SaveAndPreview appId={appId} appName={app.name} appDefinition={appDefinition} app={app} />
+                    {app.id && (
+                        <SaveAndPreview
+                          appId={app.id}
+                          appName={app.name}
+                          appDefinition={appDefinition}
+                          app={app}
+                          darkMode={this.props.darkMode}
+                          onVersionDeploy={this.onVersionDeploy}
+                        />
                     )}
                   </div>
                 </div>
@@ -544,7 +619,6 @@ class Editor extends React.Component {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: '#f0f0f0',
                 zIndex: '200'
               }}
               maxWidth={showLeftSidebar ? '30%' : '0%'}
@@ -559,6 +633,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         style={{ fontSize: '0.7rem' }}
+                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
                         enableClipboard={false}
                         src={currentState.globals}
                         name={'globals'}
@@ -574,6 +649,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.components}
+                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
                         name={'components'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
@@ -589,6 +665,7 @@ class Editor extends React.Component {
                     <div className="mb-2">
                       <ReactJson
                         src={currentState.queries}
+                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
                         name={'queries'}
                         style={{ fontSize: '0.7rem' }}
                         enableClipboard={false}
@@ -618,6 +695,7 @@ class Editor extends React.Component {
                       {this.state.showDataSourceManagerModal && (
                         <DataSourceManager
                           appId={appId}
+                          darkMode={this.props.darkMode}
                           hideModal={() => this.setState({ showDataSourceManagerModal: false })}
                           dataSourcesChanged={this.dataSourcesChanged}
                           showDataSourceManagerModal={this.state.showDataSourceManagerModal}
@@ -658,11 +736,12 @@ class Editor extends React.Component {
             </Resizable>
             <div className="main">
               <div className="canvas-container align-items-center" style={{ transform: `scale(${zoomLevel})` }}>
-                <div className="canvas-area" style={{width: currentLayout === 'desktop' ? '1292px' : '450px'}}>
+                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
                   <Container
                     appDefinition={appDefinition}
                     appDefinitionChanged={this.appDefinitionChanged}
                     snapToGrid={true}
+                    darkMode={this.props.darkMode}
                     mode={'edit'}
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
@@ -684,10 +763,7 @@ class Editor extends React.Component {
                       onComponentClick(this, id, component);
                     }}
                   />
-                  <CustomDragLayer 
-                    snapToGrid={true} 
-                    currentLayout={currentLayout}
-                  />
+                  <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} />
                 </div>
               </div>
               <div
@@ -706,9 +782,9 @@ class Editor extends React.Component {
                           <h5 className="py-1 px-3 text-muted">QUERIES</h5>
                         </div>
                         <div className="col-auto px-3">
-                          {/* {<button className="btn btn-sm btn-light mx-2">
-                                                        <img className="p-1" src="/search.svg" width="17" height="17"/>
-                                                    </button>} */}
+                          <button className="btn btn-sm btn-light mx-2" onClick={this.toggleQuerySearch}>
+                            <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17"/>
+                          </button>
 
                           <span
                             data-tip="Add new query"
@@ -720,6 +796,22 @@ class Editor extends React.Component {
                         </div>
                       </div>
 
+                      {showQuerySearchField
+                        && <div className="row mt-2 pt-1 px-2">
+                          <div className="col-12">
+                            <div className="queries-search">
+                              <input
+                                type="text"
+                                className="form-control mb-2"
+                                placeholder="Search…"
+                                autoFocus
+                                onChange={(e) => this.filterQueries(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      }
+
                       {loadingDataQueries ? (
                         <div className="p-5">
                           <center>
@@ -728,13 +820,11 @@ class Editor extends React.Component {
                         </div>
                       ) : (
                         <div className="query-list">
-                          <div>
-                            {dataQueries.map((query) => this.renderDataQuery(query))}
-                          </div>
+                          <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
                           {dataQueries.length === 0 && (
                             <div className="mt-5">
                               <center>
-                                <span className="text-muted">You haven&apos;t created queries yet.</span> <br />
+                                <span className="text-muted">{dataQueriesDefaultText}</span> <br />
                                 <button
                                   className="btn btn-sm btn-outline-azure mt-3"
                                   onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
@@ -749,7 +839,7 @@ class Editor extends React.Component {
                       )}
                     </div>
                   </div>
-                  <div className="col-md-9">
+                  <div className="col-md-9 query-definition-pane-wrapper">
                     {!loadingDataSources && (
                       <div className="query-definition-pane">
                         <div>
@@ -765,6 +855,7 @@ class Editor extends React.Component {
                             editingQuery={editingQuery}
                             queryPaneHeight={queryPaneHeight}
                             currentState={currentState}
+                            darkMode={this.props.darkMode}
                           />
                         </div>
                       </div>
@@ -776,33 +867,7 @@ class Editor extends React.Component {
             <div className="editor-sidebar">
               <div className="col-md-12">
                 <div>
-                  <ul className="nav nav-tabs" data-bs-toggle="tabs">
-                    <li className="nav-item col-md-6">
-                      <a
-                        onClick={() => this.switchSidebarTab(1)}
-                        className={currentSidebarTab === 1 ? 'nav-link active' : 'nav-link'}
-                        data-bs-toggle="tab"
-                      >
-                        <img
-                          src="/assets/images/icons/lens.svg"
-                          width="16"
-                          height="16"
-                          className="d-md-none d-lg-block"
-                        />
-                        &nbsp; Inspect
-                      </a>
-                    </li>
-                    <li className="nav-item col-md-6">
-                      <a
-                        onClick={() => this.switchSidebarTab(2)}
-                        className={currentSidebarTab === 2 ? 'nav-link active' : 'nav-link'}
-                        data-bs-toggle="tab"
-                      >
-                        <img src="/assets/images/icons/insert.svg" width="16" height="16" className="d-md-none d-lg-block"/>
-                        &nbsp; Insert
-                      </a>
-                    </li>
-                  </ul>
+
                 </div>
               </div>
 
@@ -818,6 +883,9 @@ class Editor extends React.Component {
                       currentState={currentState}
                       allComponents={appDefinition.components}
                       key={selectedComponent.id}
+                      switchSidebarTab={this.switchSidebarTab}
+                      apps={apps}
+                      darkMode={this.props.darkMode}
                     ></Inspector>
                   ) : (
                     <div className="mt-5 p-2">Please select a component to inspect</div>

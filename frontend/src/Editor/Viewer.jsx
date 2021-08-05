@@ -14,6 +14,8 @@ import {
   onEvent,
   runQuery
 } from '@/_helpers/appUtils';
+import queryString from 'query-string';
+import { DarkModeToggle } from '@/_components/DarkModeToggle';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -36,8 +38,16 @@ class Viewer extends React.Component {
     };
   }
 
-  componentDidMount() {
-    const id = this.props.match.params.id;
+  componentWillReceiveProps(nextProps) {
+    let slug = nextProps.match.params.slug;
+    if(this.state.app?.slug != slug) {
+      this.setState({app: {}, appDefinition: {}}, () => {
+        this.loadApplication(slug);
+      });
+    }
+  }
+
+  loadApplication = (slug) => {
 
     const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
@@ -51,7 +61,7 @@ class Viewer extends React.Component {
       currentLayout: isMobileDevice ? 'mobile' : 'desktop'
     });
 
-    appService.getApp(id).then((data) => this.setState(
+    appService.getAppBySlug(slug).then((data) => this.setState(
       {
         app: data,
         isLoading: false,
@@ -69,14 +79,13 @@ class Viewer extends React.Component {
     const currentUser = authenticationService.currentUserValue;
     let userVars = { };
 
-    if(currentUser) {
+    if (currentUser) {
       userVars = {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name
       };
     }
-
 
     this.setState({
       currentSidebarTab: 2,
@@ -86,17 +95,22 @@ class Viewer extends React.Component {
         components: {},
         globals: {
           current_user: userVars,
-          urlparams: {}
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search)))
         }
       }
     });
   }
 
+  componentDidMount() {
+    const slug = this.props.match.params.slug;
+    this.loadApplication(slug);
+  }
+
   render() {
-    const { 
-      appDefinition, 
-      showQueryConfirmation, 
-      currentState, 
+    const {
+      appDefinition,
+      showQueryConfirmation,
+      currentState,
       isLoading,
       currentLayout,
       deviceWindowWidth,
@@ -124,26 +138,32 @@ class Viewer extends React.Component {
                   </a>
                 </h1>
                 {this.state.app && <span>{this.state.app.name}</span>}
-                <div className="navbar-nav flex-row order-md-last"></div>
+                <div className="navbar-nav flex-row order-md-last">
+                  <DarkModeToggle
+                    switchDarkMode={this.props.switchDarkMode}
+                    darkMode={this.props.darkMode}
+                  />
+                </div>
               </div>
             </header>
           </div>
           <div className="sub-section">
             <div className="main">
               <div className="canvas-container align-items-center">
-                <div className="canvas-area" style={{width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px`}}>
+                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px` }}>
                 <Container
                     appDefinition={appDefinition}
                     appDefinitionChanged={() => false} // function not relevant in viewer
                     snapToGrid={true}
                     appLoading={isLoading}
-                    onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                    darkMode={this.props.darkMode}
+                    onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
                     mode="view"
                     scaleValue={scaleValue}
                     deviceWindowWidth={deviceWindowWidth}
                     currentLayout={currentLayout}
                     currentState={this.state.currentState}
-                    onComponentClick={(id, component) => onComponentClick(this, id, component)}
+                    onComponentClick={(id, component) => onComponentClick(this, id, component, 'view')}
                     onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
                     }
                     onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)

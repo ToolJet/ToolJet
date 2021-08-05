@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AppsController < ApplicationController
-  skip_before_action :authenticate_request, only: [:show]
+  skip_before_action :authenticate_request, only: %i[show slug]
 
   def index
     authorize App
@@ -16,9 +16,9 @@ class AppsController < ApplicationController
     end
 
     @apps = @scope.order("created_at desc")
-    .page(params[:page])
-    .per(10)
-    .includes(:user)
+                  .page(params[:page])
+                  .per(10)
+                  .includes(:user)
 
     @meta = {
       total_pages: @apps.total_pages,
@@ -30,17 +30,17 @@ class AppsController < ApplicationController
 
   def create
     authorize App
-    @app = App.create({
-                        name: "Untitled app",
-                        organization: @current_user.organization,
-                        current_version: AppVersion.new(name: "v0"),
-                        user: @current_user
-                      })
+    @app = App.create!({
+                         name: "Untitled app",
+                         organization: @current_user.organization,
+                         current_version: AppVersion.new(name: "v0"),
+                         user: @current_user
+                       })
     AppUser.create(app: @app, user: @current_user, role: "admin")
   end
 
   def show
-    @app = App.find params[:id]
+    @app = App.find(params[:id])
 
     # Logic to bypass auth for public apps
     unless @app.is_public
@@ -49,10 +49,34 @@ class AppsController < ApplicationController
     end
   end
 
+  def destroy
+    app = App.find params[:id]
+    app.update(current_version: nil)
+    app.destroy
+  end
+
+  def slugs
+    @app = App.find_by(slug: params[:slug])
+
+    unless @app.is_public
+      authenticate_request
+      authorize @app, :show?
+    end
+
+    render :show
+  end
+
   def update
     @app = App.find params[:id]
     authorize @app
-    @app.update(params["app"].permit("name", "current_version_id", "is_public"))
+
+    @app.assign_attributes(params[:app].permit(:name, :current_version_id, :is_public, :slug))
+
+    if @app.valid?
+      @app.save # renders default status 204
+    else
+      render json: { message: @app.errors.full_messages }, status: 422
+    end
   end
 
   def users

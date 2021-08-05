@@ -8,6 +8,7 @@ class AuthenticationController < ApplicationController
 
     if command.success?
       user = User.find_by email: params[:email]
+
       render json: { auth_token: command.result, first_name: user.first_name, last_name: user.last_name,
                      email: user.email }
     else
@@ -27,7 +28,7 @@ class AuthenticationController < ApplicationController
 
       org_user = OrganizationUser.create(user_id: user.id, organization_id: org.id, role: "admin")
 
-      # UserMailer.with(user: user, sender: @current_user).new_signup_email.deliver if org_user.save
+      UserMailer.with(user: user, sender: @current_user).new_signup_email.deliver if org_user.save
     end
   end
 end

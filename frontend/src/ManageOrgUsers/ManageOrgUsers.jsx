@@ -17,7 +17,8 @@ class ManageOrgUsers extends React.Component {
       showNewUserForm: false,
       creatingUser: false,
       newUser: {},
-      idChangingRole: null
+      idChangingRole: null,
+      archivingUser: null,
     };
   }
 
@@ -27,21 +28,23 @@ class ManageOrgUsers extends React.Component {
 
   fetchUsers = () => {
     this.setState({
-      isLoading: true
+      isLoading: true,
     });
 
-    organizationService.getUsers(null).then((data) => this.setState({
-      users: data.users,
-      isLoading: false
-    }));
+    organizationService.getUsers(null).then((data) =>
+      this.setState({
+        users: data.users,
+        isLoading: false,
+      })
+    );
   };
 
   changeNewUserOption = (option, value) => {
     this.setState({
       newUser: {
         ...this.state.newUser,
-        [option]: value
-      }
+        [option]: value,
+      },
     });
   };
 
@@ -54,42 +57,59 @@ class ManageOrgUsers extends React.Component {
         toast.success('User role has been updated', { hideProgressBar: true, position: 'top-center' });
         this.setState({ idChangingRole: null });
       })
-      .catch(( { error } ) => {
+      .catch(({ error }) => {
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
         this.setState({ idChangingRole: null });
       });
   };
 
+  archiveOrgUser = (id) => {
+    this.setState({ archivingUser: id });
+
+    organizationUserService
+      .archive(id)
+      .then(() => {
+        toast.success('The user has been archived', { hideProgressBar: true, position: 'top-center' });
+        this.setState({ archivingUser: null });
+        this.fetchUsers();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        this.setState({ archivingUser: null });
+      });
+  };
+
   createUser = () => {
     this.setState({
-      creatingUser: true
+      creatingUser: true,
     });
 
-    const {
-      firstName, lastName, email, role
-    } = this.state.newUser;
+    const { firstName, lastName, email, role } = this.state.newUser;
 
-    organizationUserService.create(firstName, lastName, email, role).then(() => {
-      this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
-      toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
-      this.fetchUsers();
-    });
+    organizationUserService
+      .create(firstName, lastName, email, role)
+      .then(() => {
+        this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
+        toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
+        this.fetchUsers();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        this.setState({ creatingUser: false, showNewUserForm: true, newUser: {} });
+      });
   };
 
   logout = () => {
     authenticationService.logout();
     history.push('/login');
-  }
+  };
 
   render() {
-    const {
-      isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole
-    } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole, archivingUser } = this.state;
 
     return (
       <div className="wrapper org-users-page">
-
-        <Header/>   
+        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -196,92 +216,109 @@ class ManageOrgUsers extends React.Component {
 
             {!showNewUserForm && (
               <div className="container-xl">
-                  <div className="card">
-                    <div className="card-table table-responsive table-bordered">
-                      <table className="table table-vcenter" disabled={true}>
-                        <thead>
-                          <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>
-                              <center>Role</center>
-                            </th>
-                            <th>Status</th>
-                            <th className="w-1"></th>
-                          </tr>
-                        </thead>
-                        {isLoading ? (
-                          <tbody className="w-100" style={{minHeight: '300px'}}>
-                            {Array.from(Array(4)).map(() => (
-                                <tr>
-                                  <td className="col-2 p-3">
-                                    <div className="row">
-                                      <div class="skeleton-image col-auto" style={{width: '25px', height: '25px'}}></div>
-                                      <div className="skeleton-line w-10 col mx-3"></div>
-                                    </div>
-                                  </td>
-                                  <td className="col-4 p-3">
-                                    <div className="skeleton-line w-10"></div> 
-                                  </td>
-                                  <td className="col-2 p-3">
-                                    <div className="skeleton-line"></div>
-                                  </td>
-                                  <td className="text-muted col-auto col-1 pt-3">
-                                    <div className="skeleton-line"></div>
-                                  </td>
-                                  <td className="text-muted col-auto col-1 pt-3">
-                                    <div className="skeleton-line"></div>
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        ) : (
-                          <tbody>
-                            {users.map((user) => (
-                              <tr key={user.id}>
-                                <td>
-                                  <span className="avatar bg-azure-lt avatar-sm">{user.first_name ? user.first_name[0]: ''}{user.last_name ? user.last_name[0] : ''}</span>
-                                  <span className="mx-3" style={{display: 'inline-flex', marginBottom: '7px'}}>{user.name}</span>
-                                </td>
-                                <td className="text-muted">
-                                  <a href="#" className="text-reset">
-                                    {user.email}
+                <div className="card">
+                  <div className="card-table table-responsive table-bordered">
+                    <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>
+                            <center>Role</center>
+                          </th>
+                          <th>Status</th>
+                          <th className="w-1"></th>
+                        </tr>
+                      </thead>
+                      {isLoading ? (
+                        <tbody className="w-100" style={{ minHeight: '300px' }}>
+                          {Array.from(Array(4)).map(() => (
+                            <tr>
+                              <td className="col-2 p-3">
+                                <div className="row">
+                                  <div
+                                    className="skeleton-image col-auto"
+                                    style={{ width: '25px', height: '25px' }}
+                                  ></div>
+                                  <div className="skeleton-line w-10 col mx-3"></div>
+                                </div>
+                              </td>
+                              <td className="col-4 p-3">
+                                <div className="skeleton-line w-10"></div>
+                              </td>
+                              <td className="col-2 p-3">
+                                <div className="skeleton-line"></div>
+                              </td>
+                              <td className="text-muted col-auto col-1 pt-3">
+                                <div className="skeleton-line"></div>
+                              </td>
+                              <td className="text-muted col-auto col-1 pt-3">
+                                <div className="skeleton-line"></div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      ) : (
+                        <tbody>
+                          {users.map((user) => (
+                            <tr key={user.id}>
+                              <td>
+                                <span className="avatar bg-azure-lt avatar-sm">
+                                  {user.first_name ? user.first_name[0] : ''}
+                                  {user.last_name ? user.last_name[0] : ''}
+                                </span>
+                                <span className="mx-3" style={{ display: 'inline-flex', marginBottom: '7px' }}>
+                                  {user.name}
+                                </span>
+                              </td>
+                              <td className="text-muted">
+                                <a href="#" className="text-reset user-email">
+                                  {user.email}
+                                </a>
+                              </td>
+                              <td className="text-muted" style={{ width: '280px' }}>
+                                <center className="mx-5 select-search-role">
+                                  <SelectSearch
+                                    options={['Admin', 'Developer', 'Viewer'].map((role) => {
+                                      return { name: role, value: role.toLowerCase() };
+                                    })}
+                                    value={user.role}
+                                    search={false}
+                                    disabled={idChangingRole === user.id}
+                                    onChange={(value) => {
+                                      this.changeNewUserRole(user.id, value);
+                                    }}
+                                    filterOptions={fuzzySearch}
+                                    placeholder="Select.."
+                                  />
+                                  {idChangingRole === user.id && <small>Updating role...</small>}
+                                </center>
+                              </td>
+                              <td className="text-muted">
+                                <span
+                                  className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
+                                ></span>
+                                <small className="user-status">{user.status}</small>
+                              </td>
+                              <td>
+                                {archivingUser === null && (
+                                  <a
+                                    onClick={() => {
+                                      this.archiveOrgUser(user.id);
+                                    }}
+                                  >
+                                    Archive
                                   </a>
-                                </td>
-                                <td className="text-muted" style={{ width: '280px' }}>
-                                  <center className="mx-5">
-                                    <SelectSearch
-                                      options={['Admin', 'Developer', 'Viewer'].map((role) => {
-                                        return { name: role, value: role.toLowerCase() };
-                                      })}
-                                      value={user.role}
-                                      search={false}
-                                      disabled={idChangingRole === user.id}
-                                      onChange={(value) => {
-                                        this.changeNewUserRole(user.id, value);
-                                      }}
-                                      filterOptions={fuzzySearch}
-                                      placeholder="Select.."
-                                    />
-                                    {idChangingRole === user.id && <small>Updating role...</small>}
-                                  </center>
-                                </td>
-                                <td className="text-muted">
-                                  <span
-                                    className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
-                                  ></span>
-                                  <small>{user.status}</small>
-                                </td>
-                                <td>
-                                  <a href="#">Remove</a>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        )}
-                      </table>
-                    </div>
+                                )}
+                                {archivingUser === user.id && <small>Archiving user...</small>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      )}
+                    </table>
                   </div>
+                </div>
               </div>
             )}
           </div>

@@ -98,6 +98,7 @@ export function handleChange(editor, onChange, suggestions, ignoreBraces = false
 
   const options = {
     alignWithWord: true,
+    completeSingle: false,
     hint: function () {
       return {
         from: { line: cursor.line, ch: cursor.ch - currentWord.length },

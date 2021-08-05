@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class StripeQueryService
   attr_accessor :data_query, :options, :data_source, :source_options, :current_user
 
@@ -18,22 +20,22 @@ class StripeQueryService
   end
 
   def process
-    stripe_api_key = source_options['api_key']
-    api_base_url = 'https://api.stripe.com'
-    operation = options['operation']
-    path = options['path']
+    stripe_api_key = source_options["api_key"]
+    api_base_url = "https://api.stripe.com"
+    operation = options["operation"]
+    path = options["path"]
 
     url = "#{api_base_url}#{path}"
 
     # Replace path params in url with their values
-    path_params = options['params']['path']
-    query_params = options['params']['query']
-    body_params = options['params']['request']
+    path_params = options["params"]["path"]
+    query_params = options["params"]["query"]
+    body_params = options["params"]["request"]
 
     url = replace_path_params(url, path_params)
 
     headers = {
-      'Authorization': "Bearer #{stripe_api_key}"
+      "Authorization": "Bearer #{stripe_api_key}"
     }
 
     response = HTTParty.send(

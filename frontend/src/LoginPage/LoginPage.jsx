@@ -35,7 +35,7 @@ class LoginPage extends React.Component {
         this.setState({ isLoading: false });
       },
       () => {
-        toast.error('Invalid username or password', { hideProgressBar: true, position: 'top-center' });
+        toast.error('Invalid email or password', { toastId: 'toast-login-auth-error', hideProgressBar: true, position: 'top-center' });
         this.setState({ isLoading: false });
       }
     );
@@ -48,7 +48,7 @@ class LoginPage extends React.Component {
       <div className="page page-center">
         <div className="container-tight py-2">
           <div className="text-center mb-4">
-            <a href=".">
+            <a href="." className="navbar-brand-autodark">
               <img src="/assets/images/logo-text.svg" height="30" alt="" />
             </a>
           </div>
@@ -63,13 +63,16 @@ class LoginPage extends React.Component {
                   type="email"
                   className="form-control"
                   placeholder="Enter email"
+                  data-testid="emailField"
                 />
               </div>
               <div className="mb-2">
                 <label className="form-label">
                   Password
                   <span className="form-label-description">
-                    <a tabIndex="-1" href="/forgot-password">Forgot password</a>
+                    <Link to={'/forgot-password'} tabIndex="-1">
+                    Forgot password
+                    </Link>
                   </span>
                 </label>
                 <div className="input-group input-group-flat">
@@ -80,12 +83,13 @@ class LoginPage extends React.Component {
                     className="form-control"
                     placeholder="Password"
                     autoComplete="off"
+                    data-testid="passwordField"
                   />
                   <span className="input-group-text"></span>
                 </div>
               </div>
               <div className="form-footer">
-                <button className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`} onClick={this.authUser}>
+                <button data-testid="loginButton" className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`} onClick={this.authUser}>
                   Sign in
                 </button>
               </div>

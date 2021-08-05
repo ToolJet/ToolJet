@@ -25,7 +25,7 @@ class Table extends React.Component {
       eventUpdated,
       eventOptionUpdated,
       components,
-      currentState
+      currentState,
     };
   }
 
@@ -101,6 +101,7 @@ class Table extends React.Component {
                 { name: 'Multiple badges', value: 'badges' },
                 { name: 'Tags', value: 'tags' },
                 { name: 'Dropdown', value: 'dropdown' },
+                { name: 'Radio', value: 'radio' },
                 { name: 'Multiselect', value: 'multiselect' }
               ]}
               value={column.columnType}
@@ -138,7 +139,7 @@ class Table extends React.Component {
             />
           </div>
 
-          {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges') && (
+          {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges' || column.columnType === 'radio') && (
             <div>
               <div className="field mb-2">
                 <label className="form-label">Values</label>
@@ -239,8 +240,8 @@ class Table extends React.Component {
   actionButton(action, index) {
     return (
       <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.actionPopOver(action, index)}>
-        <div className="card p-2 bg-light" role="button">
-          <div className="row bg-light">
+        <div className={`card p-2 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
+          <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`}>
             <div className="col-auto">
               <div className="text">{action.buttonText}</div>
             </div>
@@ -355,13 +356,14 @@ class Table extends React.Component {
           <div>
             <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
               {columns.value.map((item, index) => (
-                <div className="card p-2 bg-light column-sort-row" key={index}>
+                <div className={`card p-2 column-sort-row ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
                   <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.columnPopover(item, index)}>
-                    <div className="row bg-light" role="button">
+                    <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
                       <div className="col-auto">
                         <SortableItem key={item.name}>
                           <img
                             style={{ cursor: 'move' }}
+                            className="svg-icon"
                             src="/assets/images/icons/editor/rearrange.svg"
                             width="10"
                             height="10"
@@ -372,7 +374,7 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <span class="badge bg-red-lt" onClick={() => this.removeColumn(index)}>x</span>
+                        <span className="badge bg-red-lt" onClick={() => this.removeColumn(index)}>x</span>
                       </div>
                     </div>
                   </OverlayTrigger>
@@ -403,7 +405,7 @@ class Table extends React.Component {
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
 
-          <div class="hr-text">Events</div>
+          <div className="hr-text">Events</div>
 
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked, currentState, components)}
           {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged, currentState, components)}
@@ -411,7 +413,7 @@ class Table extends React.Component {
 
           {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
 
-          <div class="hr-text">Style</div>
+          <div className="hr-text">Style</div>
         </div>
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}

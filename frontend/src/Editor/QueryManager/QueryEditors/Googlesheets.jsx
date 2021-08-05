@@ -61,6 +61,7 @@ class Googlesheets extends React.Component {
                   { value: 'read', name: 'Read data from a spreadsheet' },
                   { value: 'append', name: 'Append data to a spreadsheet' },
                   { value: 'info', name: 'Get spreadsheet info' },
+                  { value: 'delete_row', name: 'Delete row from a spreadsheet' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -71,7 +72,7 @@ class Googlesheets extends React.Component {
                 placeholder="Select.."
               />
             </div>
-            {['read', 'append'].includes(this.state.options.operation) && (
+            {['read', 'append', 'delete_row'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2 row">
                   <div className="col">
@@ -109,12 +110,30 @@ class Googlesheets extends React.Component {
             <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={options.rows}
-                  theme="duotone-light"
+                  theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                   lineNumbers={true}
                   className="query-hinter"
                   onChange={(value) => changeOption(this, 'rows', value)}
             />
           </div>
+      )}
+
+      {this.state.options.operation === 'delete_row' && (
+        <div>
+          <div className="mb-3 mt-2 row">
+            <div className="col">
+              <label className="form-label">Delete row number</label>
+              <input
+                type="text"
+                value={this.state.options.row_index}
+                onChange={(e) => {
+                  changeOption(this, 'row_index', e.target.value);
+                }}
+                className="form-control"
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       {this.state.options.operation === 'info' && (
