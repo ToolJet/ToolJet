@@ -17,6 +17,7 @@ import Papa from 'papaparse';
 import { Pagination } from './Pagination';
 import { CustomSelect } from './CustomSelect';
 import { Tags } from './Tags';
+import { Radio } from './Radio';
 
 var _ = require('lodash');
 
@@ -31,7 +32,8 @@ export function Table({
   paramUpdated,
   changeCanDrag,
   onComponentOptionChanged,
-  onComponentOptionsChanged
+  onComponentOptionsChanged,
+  darkMode
 }) {
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
@@ -137,7 +139,10 @@ export function Table({
 
     obj = _.set(rowData, key, value);
 
-    let newDataUpdates = [...dataUpdates, { ...obj }];
+    let newDataUpdates = {
+      ...dataUpdates, 
+      [index]: { ...obj }
+    };
 
     onComponentOptionsChanged(component, [
       ['dataUpdates', newDataUpdates],
@@ -225,7 +230,7 @@ export function Table({
     const columnType = column.columnType;
 
     const columnOptions = {};
-    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges') {
+    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges' || columnType === 'radio') {
       const values = resolveReferences(column.values, currentState) || [];
       const labels = resolveReferences(column.labels, currentState, []) || [];
 
@@ -278,7 +283,7 @@ export function Table({
               onBlur={(e) => {
                 handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
               }}
-              value={cellValue}
+              defaultValue={cellValue}
             >
           </textarea>;
         } if (columnType === 'dropdown') {
@@ -342,6 +347,19 @@ export function Table({
             <div>
               <Tags
                 value={cellValue}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+              />
+            </div>
+          );
+        } if (columnType === 'radio') {
+          return (
+            <div>
+              <Radio
+                options={columnOptions.selectOptions}
+                value={cellValue}
+                readOnly={!column.isEditable}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
@@ -472,6 +490,7 @@ export function Table({
       <div className="ms-2 d-inline-block">
         Search:{' '}
         <input
+          className="global-search-field"
           defaultValue={value || ''}
           onBlur={(e) => {
             handleSearchTextChange(e.target.value)
@@ -494,7 +513,7 @@ export function Table({
 
   return (
     <div
-      className="card"
+      className="card jet-table"
       style={{ width: `${width}px`, height: `${height}px` }}
       onClick={() => onComponentClick(id, component)}
     >
@@ -587,7 +606,9 @@ export function Table({
         </table>
         {loadingState === true && (
           <div style={{ width: '100%' }} className="p-2">
-            <Skeleton count={5} />
+            <center>
+              <div className="spinner-border mt-5" role="status"></div>
+            </center>
           </div>
         )}
       </div>
@@ -625,7 +646,7 @@ export function Table({
             <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
               <img src="/assets/images/icons/filter.svg" width="13" height="13" />
               {filters.length > 0 && 
-                <a class="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
+                <a className="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
               }
             </span>
             <span

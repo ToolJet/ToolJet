@@ -67,9 +67,9 @@ class Dynamodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={typeof this.state.options.query_condition === 'string' ? this.state.options.query_condition  : JSON.stringify(this.state.options.query_condition )}
-                    theme="duotone-light"
                     mode="javascript"
                     lineNumbers={true}
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                     className="query-hinter"
                     onChange={(value) => changeOption(this, 'query_condition', value)}
                   />
@@ -84,9 +84,9 @@ class Dynamodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={typeof this.state.options.scan_condition === 'string' ? this.state.options.scan_condition  : JSON.stringify(this.state.options.scan_condition )}
-                    theme="duotone-light"
                     mode="javascript"
                     lineNumbers={true}
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                     className="query-hinter"
                     onChange={(value) => changeOption(this, 'scan_condition', value)}
                   />
@@ -101,6 +101,7 @@ class Dynamodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={this.state.options.table}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     className="codehinter-query-editor-input"
                     onChange={(value) => changeOption(this, 'table', value)}
                   />
@@ -110,7 +111,7 @@ class Dynamodb extends React.Component {
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={typeof this.state.options.key === 'string' ? this.state.options.key  : JSON.stringify(this.state.options.key )}
-                    theme="duotone-light"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
                     mode="javascript"
                     lineNumbers={true}
                     className="query-hinter"

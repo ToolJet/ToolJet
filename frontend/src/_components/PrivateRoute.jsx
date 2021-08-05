@@ -3,7 +3,7 @@ import { Route, Redirect } from 'react-router-dom';
 
 import { authenticationService } from '@/_services';
 
-export const PrivateRoute = ({ component: Component, ...rest }) => (
+export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, ...rest }) => (
   <Route
     {...rest}
     render={(props) => {
@@ -14,7 +14,7 @@ export const PrivateRoute = ({ component: Component, ...rest }) => (
       }
 
       // authorised so return component
-      return <Component {...props} />;
+      return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode}/>;
     }}
   />
 );

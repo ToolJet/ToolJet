@@ -1,8 +1,9 @@
 Rails.application.routes.draw do
-  resources :apps, only: %i[index create show update] do
+  resources :apps, only: %i[index create show update destroy] do
     resources :versions, only: %i[index create update]
 
     get '/users', to: 'apps#users'
+    get '/slugs/:slug', to: 'apps#slugs', on: :collection
   end
 
   resources :data_sources, only: %i[create index update] do
@@ -26,6 +27,7 @@ Rails.application.routes.draw do
   end
 
   resources :organization_users, only: [:create] do
+    post '/archive', to: 'organization_users#archive'
     post '/change_role', to: 'organization_users#change_role'
   end
 
@@ -42,7 +44,7 @@ Rails.application.routes.draw do
   post 'authenticate', to: 'authentication#authenticate'
   post 'signup', to: 'authentication#signup'
 
-  resources :metadata, only: [:index] do 
+  resources :metadata, only: [:index] do
     collection do
       post '/skip_version', to: 'metadata#skip_version'
       post '/skip_onboarding', to: 'metadata#skip_onboarding'
@@ -51,5 +53,6 @@ Rails.application.routes.draw do
   end
 
   get '/health', to: 'probe#health_check'
-
+  post 'password/forgot', to: 'forgot_password#forgot'
+  post 'password/reset', to: 'forgot_password#reset'
 end

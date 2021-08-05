@@ -7,6 +7,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { debounce } from 'lodash';
 
 class ManageAppUsers extends React.Component {
   constructor(props) {
@@ -14,8 +15,10 @@ class ManageAppUsers extends React.Component {
 
     this.state = {
       showModal: false,
-      app: props.app,
+      app: { ...props.app },
+      slugError: null,
       isLoading: true,
+      isSlugVerificationInProgress: false,
       addingUser: false,
       organizationUsers: [],
       newUser: {}
@@ -61,20 +64,20 @@ class ManageAppUsers extends React.Component {
         toast.success('Added user successfully', { hideProgressBar: true, position: 'top-center' });
         this.fetchAppUsers();
       })
-      .catch(( { error }) => {
+      .catch(({ error }) => {
         this.setState({ addingUser: false });
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });
   };
 
   toggleAppVisibility = () => {
-    const newState =  !this.state.app.is_public;
+    const newState = !this.state.app.is_public;
     this.setState({
-        ischangingVisibility: true
+      ischangingVisibility: true
     });
 
-    appService.setVisibility(this.state.app.id, newState).then(data =>  { 
-      this.setState({ 
+    appService.setVisibility(this.state.app.id, newState).then(data => {
+      this.setState({
         ischangingVisibility: false,
         app: {
           ...this.state.app,
@@ -82,7 +85,7 @@ class ManageAppUsers extends React.Component {
         }
       });
 
-      if(newState) {
+      if (newState) {
         toast.success('Application is now public.', {
           hideProgressBar: true,
           position: 'top-center'
@@ -93,28 +96,71 @@ class ManageAppUsers extends React.Component {
           position: 'top-center'
         });
       }
-      
     });
   }
 
-  render() {
-    const {
-      addingUser, isLoading, users, organizationUsers, newUser
-    } = this.state;
-    const shareableLink = `${window.location.origin}/applications/${this.state.app.id}`;
+    handleSetSlug = (event) => {
+      const newSlug = event.target.value || null;
+      this.setState({ isSlugVerificationInProgress: true });
 
-    return (
+      appService
+        .setSlug(this.state.app.id, newSlug)
+        .then(() => {
+          this.setState({ 
+            slugError: null, 
+            isSlugVerificationInProgress: false 
+          });
+          this.props.handleSlugChange(newSlug);
+        })
+        .catch(({ error }) => {
+          this.setState({ 
+            slugError: error, 
+            isSlugVerificationInProgress: false 
+          });
+        });
+    }
+
+    delayedSlugChange = debounce(e => {
+      this.handleSetSlug(e);
+    }, 500);
+
+    render() {
+      const {
+        addingUser, 
+        isLoading, 
+        users, 
+        organizationUsers, 
+        newUser, 
+        app, 
+        slugError, 
+        isSlugVerificationInProgress
+      } = this.state;
+      const appId = app.id;
+      const appLink = `${window.location.origin}/applications/`;
+      const shareableLink = appLink + (this.props.slug || appId);
+      const slugButtonClass = isSlugVerificationInProgress? '' : slugError !== null ? 'is-invalid' : 'is-valid';
+
+      return (
       <div>
         <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}>
-          {' '}
           Share
         </button>
 
-        <Modal show={this.state.showModal} size="lg" backdrop="static" centered={true} keyboard={true} onEscapeKeyDown={this.hideModal}>
+        <Modal 
+          show={this.state.showModal} 
+          size="lg" 
+          backdrop="static" 
+          centered={true} 
+          keyboard={true} 
+          animation={false}
+          onEscapeKeyDown={this.hideModal} 
+          className="app-sharing-modal"
+          contentClassName={this.props.darkMode ? 'theme-dark' : ''}
+        >
           <Modal.Header>
             <Modal.Title>Users and permissions</Modal.Title>
             <div>
-              <Button variant="light" size="sm" onClick={() => this.hideModal()}>
+              <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
                 x
               </Button>
             </div>
@@ -144,7 +190,19 @@ class ManageAppUsers extends React.Component {
                     <small>Get shareable link for this application</small>
                   </label>
                   <div className="input-group">
-                    <input type="text" className="form-control form-control-sm" value={shareableLink} />
+                    <span className="input-group-text">{appLink}</span>
+                    <div className="input-with-icon">
+                      <input type="text"
+                            className={`form-control form-control-sm ${slugButtonClass}`}
+                            placeholder={appId}
+                            onChange={(e) => { e.persist(); this.delayedSlugChange(e); }}
+                            defaultValue={this.props.slug} />
+                      { isSlugVerificationInProgress && (
+                        <div className="icon-container">
+                          <div className="spinner-border text-azure spinner-border-sm" role="status"></div>
+                        </div>
+                      )}                            
+                    </div>
                     <span className="input-group-text">
                       <CopyToClipboard
                         text={shareableLink}
@@ -154,9 +212,10 @@ class ManageAppUsers extends React.Component {
                         })
                         }
                       >
-                        <button className="btn btn-light btn-sm">Copy</button>
+                        <button className="btn btn-secondary btn-sm">Copy</button>
                       </CopyToClipboard>
                     </span>
+                    <div className="invalid-feedback">{slugError}</div>
                   </div>
                 </div>
                 <hr />
@@ -207,7 +266,7 @@ class ManageAppUsers extends React.Component {
                   </div>
                 </div>
                 <div className="table-responsive">
-                  <table className="table table-vcenter">
+                  <table className="table table-vcenter app-users-list">
                     <thead>
                       <tr>
                         <th>Name</th>
@@ -243,8 +302,8 @@ class ManageAppUsers extends React.Component {
           </Modal.Footer>
         </Modal>
       </div>
-    );
-  }
+      );
+    }
 }
 
 export { ManageAppUsers };

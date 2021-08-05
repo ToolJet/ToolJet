@@ -1,4 +1,4 @@
-ENV['RAILS_ENV'] ||= 'test'
+ENV['RAILS_ENV'] = 'test'
 require_relative '../config/environment'
 require 'rails/test_help'
 
@@ -11,6 +11,6 @@ class ActiveSupport::TestCase
 
   def auth_header(user)
     token = JsonWebToken.encode(user_id: user.id)
-    { 'Authorization' => token }
+    { "Authorization" => token }
   end
 end

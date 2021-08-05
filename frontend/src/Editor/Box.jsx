@@ -14,7 +14,9 @@ import { DaterangePicker } from './Components/DaterangePicker';
 import { Multiselect } from './Components/Multiselect';
 import { Modal } from './Components/Modal';
 import { Chart } from './Components/Chart';
-import { Map } from './Components/Map';
+import { Map } from './Components/Map/Map';
+import { renderTooltip } from '../_helpers/appUtils';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 const AllComponents = {
   Button,
@@ -32,7 +34,7 @@ const AllComponents = {
   Multiselect,
   Modal,
   Chart,
-  Map
+  Map,
 };
 
 export const Box = function Box({
@@ -51,23 +53,30 @@ export const Box = function Box({
   onComponentOptionsChanged,
   paramUpdated,
   changeCanDrag,
-  containerProps
+  containerProps,
+  darkMode
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
   let styles = {
-    
+    height: '100%',
   };
 
   if (inCanvas) {
     styles = {
-      ...styles
+      ...styles,
     };
   }
 
   const ComponentToRender = AllComponents[component.component];
 
   return (
+    <OverlayTrigger
+      placement="top"
+      delay={{ show: 500, hide: 0 }}
+      trigger={!inCanvas? ['hover', 'focus']: null}
+      overlay={(props) => renderTooltip({props, text: `${component.description}`})}
+    >
     <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
       {inCanvas ? (
         <ComponentToRender
@@ -83,26 +92,30 @@ export const Box = function Box({
           height={height}
           component={component}
           containerProps={containerProps}
+          darkMode={darkMode}
         ></ComponentToRender>
       ) : (
-        <div className="row p-1 m-1">
-          <div className="col-auto component-image-holder p-3">
-            <div
-              style={{
-                width: '20px',
-                height: '20px',
-                backgroundSize: 'contain',
-                backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
-                backgroundRepeat: 'no-repeat'
-              }}
-            ></div>
-          </div>
-          <div className="col">
+        <div className="m-1" style={{ height: '100%' }}>
+          <div
+            className="component-image-holder p-3 d-flex flex-column justify-content-center"
+            style={{ height: '100%' }}
+          >
+            <center>
+              <div
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  backgroundSize: 'contain',
+                  backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                  backgroundRepeat: 'no-repeat',
+                }}
+              ></div>
+            </center>
             <span className="component-title">{component.displayName}</span>
-            <small className="component-description">{component.description}</small>
           </div>
         </div>
       )}
     </div>
+    </OverlayTrigger>
   );
 };

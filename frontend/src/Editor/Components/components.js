@@ -408,7 +408,7 @@ export const componentTypes = [
   },
   {
     name: 'DateRangePicker',
-    displayName: 'Date Range Picker',
+    displayName: 'Range Picker',
     description: 'Select a date range',
     component: 'DaterangePicker',
     defaultSize: {
@@ -460,8 +460,8 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Show loading state' }
     },
     defaultSize: {
-      width: 210,
-      height: 24
+      width: 200,
+      height: 30
     },
     events: [
 
@@ -564,11 +564,11 @@ export const componentTypes = [
   },
   {
     name: 'Dropdown',
-    displayName: 'Dropdown Selector',
+    displayName: 'Dropdown',
     description: 'Select one value from options',
     defaultSize: {
       width: 200,
-      height: 30
+      height: 37
     },
     component: 'DropDown',
     others: {
@@ -588,7 +588,7 @@ export const componentTypes = [
 
     },
     exposedVariables: {
-      value: {}
+      value: null
     },
     definition: {
       others: {
@@ -660,7 +660,7 @@ export const componentTypes = [
   },
   {
     name: 'RichTextEditor',
-    displayName: 'Rich Text Editor',
+    displayName: 'Text Editor',
     description: 'Rich text editor',
     component: 'RichTextEditor',
     defaultSize: {

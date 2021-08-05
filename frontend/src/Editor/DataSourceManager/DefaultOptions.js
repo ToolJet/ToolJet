@@ -13,6 +13,13 @@ export const defaultOptions = {
     username: { value: '' },
     password: { value: '' }
   },
+  mssql: {
+    host: { value: 'localhost' },
+    port: { value: 1433 },
+    database: { value: '' },
+    username: { value: '' },
+    password: { value: '' }
+  },
   redis: {
     host: { value: 'localhost' },
     port: { value: 6379 },
@@ -28,7 +35,7 @@ export const defaultOptions = {
     connection_type: { value: 'manual' },
     connection_string: { value: ''}
   },
-  
+
   elasticsearch: {
     scheme: { value: 'https' },
     host: { value: 'localhost' },
@@ -59,6 +66,11 @@ export const defaultOptions = {
     client_auth: { value: 'header' },
     headers: { value: [['', '']] },
     custom_auth_params: { value: [['', '']] }
+  },
+  graphql: {
+    url: { value: '' },
+    headers: { value: [['', '']] },
+    url_params: { value: [['', '']] }
   },
   googlesheets: {
     access_type: { value: 'read' }

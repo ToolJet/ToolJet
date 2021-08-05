@@ -14,7 +14,7 @@ class SaveAndPreview extends React.Component {
       showModal: false,
       appId: props.appId,
       isLoading: true,
-      showVersionForm: false
+      showVersionForm: false,
     };
   }
 
@@ -52,36 +52,47 @@ class SaveAndPreview extends React.Component {
   };
 
   saveVersion = (versionId) => {
-    this.setState({ isSaving: true });
+    this.setState({ savingVersionId: versionId });
     appVersionService.save(this.props.appId, versionId, this.props.appDefinition).then(() => {
-      this.setState({ showVersionForm: false, isSaving: false });
+      this.setState({ showVersionForm: false, savingVersionId: null });
       toast.success('Version Saved', { hideProgressBar: true, position: 'top-center' });
       this.fetchVersions();
     });
   };
 
   deployVersion = (versionId) => {
-    this.setState({ isDeploying: true });
+    this.setState({ deployingVersionId: versionId });
     appService.saveApp(this.props.appId, { name: this.props.appName, current_version_id: versionId }).then(() => {
-      this.setState({ isDeploying: false });
+      this.setState({ deployingVersionId: null });
       toast.success('Version Deployed', { hideProgressBar: true, position: 'top-center' });
+
+      this.props.onVersionDeploy(versionId);
     });
+
   };
 
   render() {
     const {
-      showModal, isLoading, versions, showVersionForm, isSaving, isDeploying, creatingVersion
+      showModal, isLoading, versions, showVersionForm, savingVersionId, deployingVersionId, creatingVersion
     } = this.state;
 
     return (
       <div>
-        {!showModal && (
-          <button className="btn btn-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
-            Deploy
-          </button>
-        )}
+        <button className="btn btn-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
+          Deploy
+        </button>
 
-        <Modal show={this.state.showModal} size="md" backdrop="static" centered={true} keyboard={true}>
+        <Modal 
+          show={this.state.showModal} 
+          size="md" 
+          backdrop="static" 
+          centered={true} 
+          keyboard={true}
+          enforceFocus={false}
+          animation={false}
+          onEscapeKeyDown={() => this.hideModal()}
+          contentClassName={this.props.darkMode ? 'theme-dark' : ''}
+        >
           <Modal.Header>
             <Modal.Title>Versions and deployments</Modal.Title>
             <div>
@@ -91,7 +102,7 @@ class SaveAndPreview extends React.Component {
                 </button>
               )}
 
-              <Button variant="light" size="sm" onClick={() => this.hideModal()}>
+              <Button variant={this.props.darkMode ? 'secondary' : 'light'}size="sm" onClick={() => this.hideModal()}>
                 x
               </Button>
             </div>
@@ -138,15 +149,15 @@ class SaveAndPreview extends React.Component {
                               <button
                                 className="btn btn-sm"
                                 onClick={() => this.saveVersion(version.id)}
-                                disabled={isSaving}
+                                disabled={savingVersionId === version.id}
                               >
-                                {isSaving ? 'saving...' : 'save'}
+                                {savingVersionId === version.id ? 'saving...' : 'save'}
                               </button>
                               <button
                                 className="btn btn-primary btn-sm mx-2"
                                 onClick={() => this.deployVersion(version.id)}
                               >
-                                {isDeploying ? 'deploying...' : 'deploy'}
+                                {deployingVersionId === version.id ? 'deploying...' : 'deploy'}
                               </button>
                             </div>
                           </div>

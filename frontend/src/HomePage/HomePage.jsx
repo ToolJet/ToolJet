@@ -7,6 +7,8 @@ import { AppMenu } from './AppMenu';
 import { BlankPage } from './BlankPage';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { renderTooltip } from '@/_helpers/appUtils';
+import { ConfirmDialog } from '@/_components';
+import { toast } from 'react-toastify';
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -18,6 +20,7 @@ class HomePage extends React.Component {
       isLoading: true,
       creatingApp: false,
       currentFolder: {},
+      showAppDeletionConfirmation: false, 
       apps: [],
       folders: [],
       meta: {
@@ -56,6 +59,7 @@ class HomePage extends React.Component {
   }
 
   pageChanged = (page) => {
+    this.setState({ currentPage: page });
     this.fetchApps(page, this.state.currentFolder.id);
   }
 
@@ -77,27 +81,64 @@ class HomePage extends React.Component {
     });
   };
 
+  deleteApp = (app) => {
+    this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app })
+  }
+
+  executeAppDeletion = () => {
+    this.setState({ isDeletingApp: true });
+    appService.deleteApp(this.state.appToBeDeleted.id).then((data) => {
+      toast.info('App deleted successfully.', {
+        hideProgressBar: true,
+        position: 'top-center'
+      });
+      this.setState({ 
+        isDeletingApp: false, 
+        appToBeDeleted: null,
+        showAppDeletionConfirmation: false
+      });
+      this.fetchApps(this.state.currentPage || 0, this.state.currentFolder.id)
+    }).catch(({ error }) => {
+      toast.error('Could not delete the app.', { hideProgressBar: true, position: 'top-center' });
+      this.setState({ 
+        isDeletingApp: false, 
+        appToBeDeleted: null,
+        showAppDeletionConfirmation: false
+      });
+    });
+    ;
+  }
+
   render() {
     const {
-      apps, isLoading, creatingApp, meta, currentFolder
+      apps, isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp
     } = this.state;
     return (
       <div className="wrapper home-page">
 
-        <Header
-
+        <ConfirmDialog
+          show={showAppDeletionConfirmation}
+          message={'The app and the associated data will be permanently deleted, do you want to continue?'}
+          confirmButtonLoading={isDeletingApp}
+          onConfirm={() => this.executeAppDeletion()}
+          onCancel={() => {}}
         />
-        {!isLoading && meta.total_count === 0 && 
-          <BlankPage 
+
+        <Header
+           switchDarkMode={this.props.switchDarkMode}
+           darkMode={this.props.darkMode}
+        />
+        {!isLoading && meta.total_count === 0 &&
+          <BlankPage
             createApp={this.createApp}
           />
         }
 
-        {(isLoading || meta.total_count > 0) && 
+        {(isLoading || meta.total_count > 0) &&
 
         <div className="page-body homepage-body">
           <div className="container-xl">
-            <div className="row">              
+            <div className="row">
               <div className="col-12 col-lg-3 mb-5">
                 <br />
                 <Folders
@@ -111,7 +152,7 @@ class HomePage extends React.Component {
               </div>
 
               <div className="col-md-9">
-                
+
                     <div className="w-100 mb-5">
                       <div className="row align-items-center">
                         <div className="col">
@@ -122,29 +163,30 @@ class HomePage extends React.Component {
                       </div>
                     </div>
 
-                    <div class="table-responsive bg-white w-100 apps-table mt-3" style={{minHeight: '600px'}}>
+                    <div className={currentFolder.count == 0 ? 'table-responsive w-100 apps-table mt-3 d-flex align-items-center' : 'table-responsive w-100 apps-table mt-3'} style={{minHeight: '600px'}}>
                       <table
-                        class="table table-vcenter">
+                        data-testid="appsTable"
+                        className={`table table-vcenter ${this.props.darkMode ? 'bg-dark' : 'bg-white' }`}>
                         <tbody>
                           {isLoading && (
                             <>
                               {Array.from(Array(10)).map(() => (
-                                 <tr class="row">
-                                   <td class="col-3 p-3">
-                                      <div class="skeleton-line w-10"></div>
-                                      <div class="skeleton-line w-10"></div>
+                                 <tr className="row">
+                                   <td className="col-3 p-3">
+                                      <div className="skeleton-line w-10"></div>
+                                      <div className="skeleton-line w-10"></div>
                                     </td>
-                                    <td class="col p-3">
+                                    <td className="col p-3">
                                     </td>
-                                    <td class="text-muted col-auto col-1 pt-4">
-                                      <div class="skeleton-line"></div>
+                                    <td className="text-muted col-auto col-1 pt-4">
+                                      <div className="skeleton-line"></div>
                                     </td>
-                                    <td class="text-muted col-auto col-1 pt-4">
-                                      <div class="skeleton-line"></div>
+                                    <td className="text-muted col-auto col-1 pt-4">
+                                      <div className="skeleton-line"></div>
                                     </td>
                                  </tr>
                                ))}
-                              
+
                             </>
                           )}
 
@@ -152,12 +194,12 @@ class HomePage extends React.Component {
                             <>
 
                             {apps.map((app) => (
-                            <tr class="row">
-                              <td class="col p-3">
+                            <tr className="row">
+                              <td className="col p-3">
                                 <span className="app-title mb-3">{app.name}</span> <br />
-                                <small className="pt-2">created {app.created_at} ago by {app.user.first_name} {app.user.last_name} </small>
+                                <small className="pt-2 app-description">created {app.created_at} ago by {app.user.first_name} {app.user.last_name} </small>
                               </td>
-                              <td class="text-muted col-auto pt-4">
+                              <td className="text-muted col-auto pt-4">
                                 <Link
                                   to={`/apps/${app.id}`}
                                   className="d-none d-lg-inline"
@@ -166,34 +208,41 @@ class HomePage extends React.Component {
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: 'Open in app builder'})}
                                   >
-                                    <span class="badge bg-green-lt">
+                                    <span className="badge bg-green-lt">
                                     Edit
                                     </span>
                                   </OverlayTrigger>
                                 </Link>
                                 <Link
-                                  to={`/applications/${app.id}`}
+                                  to={`/applications/${app.slug}`}
                                   target="_blank"
                                 >
                                   <OverlayTrigger
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: 'Open in app viewer'})}
                                   >
-                                    <span class="badge bg-blue-lt mx-2">launch</span>
+                                    <span className="badge bg-blue-lt mx-2">launch</span>
 
                                   </OverlayTrigger>
                                 </Link>
 
-                                <AppMenu 
-                                  app={app} 
+                                <AppMenu
+                                  app={app}
                                   folders={this.state.folders}
                                   foldersChanged={this.foldersChanged}
+                                  deleteApp={() => this.deleteApp(app)}
                                 />
                               </td>
                             </tr>))
                             }
                             </>)
                           }
+                          {currentFolder.count == 0  && (
+                            <div>
+                              <img className = "mx-auto d-block" src ="assets/images/icons/empty-folder-svgrepo-com.svg" height="120px"/>
+                              <span className= "d-block text-center text-body">This folder is empty</span>
+                              </div>
+                          )}
                         </tbody>
                       </table>
                     </div>

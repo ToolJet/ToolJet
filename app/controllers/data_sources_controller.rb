@@ -2,6 +2,11 @@
 
 class DataSourcesController < ApplicationController
   def index
+    app = App.find_by_id params[:app_id]
+    unless AppPolicy.new(@current_user, app).update?
+      render json: { message: "Insufficient permissions" }, status: :internal_server_error
+      return
+    end
     @data_sources = DataSource.where(app_id: params[:app_id])
   end
 

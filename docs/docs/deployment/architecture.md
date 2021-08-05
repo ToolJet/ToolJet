@@ -18,7 +18,7 @@ ToolJet have two main components: ToolJet Server and ToolJet Client.
     2.  Email service (SMTP/Sendgrid/Mailgun/etc) - Required to send user invitations and password reset emails.
     
 2. ToolJet Client  
-    ToolJet client is a ReactJS application. Client is responsble for visually editing the applications, building & editing queries, rendering applications, executing events and their trigger, etc. 
+    ToolJet client is a ReactJS application. Client is responsible for visually editing the applications, building & editing queries, rendering applications, executing events and their trigger, etc.
 
 ## Requirements
 

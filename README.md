@@ -13,17 +13,16 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/120830570-4211a000-c57c-11eb-97f5-a650b177a082.png" />
+    <img src="https://user-images.githubusercontent.com/7828962/124362436-6aabb900-dc52-11eb-8459-2525adfd1b3d.gif" />
   </kbd>
 </p>
-
-<a href="https://www.producthunt.com/posts/tooljet?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-tooljet" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=298959&theme=dark" alt="ToolJet - Open-source alternative for Retool | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 
 ## Features
 
 - Visual app builder with widgets such as tables, charts, modals, buttons, dropdowns and more
-- Mobile &desktop layouts
+- Mobile 📱 & desktop layouts 🖥
+- Dark mode 🌛
 - Connect to databases, APIs and external services
 - Deploy on-premise ( supports docker, kubernetes, heroku and more )
 - Granular access control on organization level and app level
