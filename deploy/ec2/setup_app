@@ -1,56 +1,37 @@
-#!/usr/bin/env ruby
+#!/bin/bash
 
-def ensure_db_connectivity(user = ENV.fetch("PG_USER"), pass = ENV.fetch("PG_PASS"), host = ENV.fetch("PG_HOST"))
-  cmd = %{psql -d 'postgresql://#{user}:#{pass}@#{host}' -c 'select now()' > /dev/null 2>&1}
-  res = system(cmd)
-  if res
-    puts "Successfully pinged the database!"
-  else
-    puts "Can't connect to the database using the credenials provided in the .env file!"
-    exit(1)
-  end
-end
+if grep __required__ .env
+then
+  echo "Please set the required values within the .env file"
+  exit 1
+fi
 
-def install_script_deps
-  system("gem install bundler")
-  system("gem install dotenv")
-end
+export $(grep -v '^#' .env | xargs)
 
-def load_env
-  require "dotenv"
-  Dir.chdir "/home/ubuntu/app"
-  Dotenv.load!
-  Dotenv.require_keys("TOOLJET_HOST", "LOCKBOX_MASTER_KEY", "SECRET_KEY_BASE", "PG_DB", "PG_USER", "PG_HOST", "PG_PASS")
-end
+if psql -d postgresql://$PG_USER:$PG_PASS@$PG_HOST -c 'select now()' > /dev/null 2>&1
+then
+  echo "Successfully pinged the database!";
+else
+  echo "Can't connect to the database. Kindly check the credenials provided in the .env file!"
+  exit 1
+fi
 
-def install_be_app_deps
-  system("RAILS_ENV=production bundle install")
-  system("RAILS_ENV=production bundle exec dotenv rails db:create")
-  system("RAILS_ENV=production bundle exec dotenv rails db:migrate")
-  system("RAILS_ENV=production bundle exec dotenv rails db:seed")
-end
+if sudo systemctl start openresty
+then
+  echo "Successfully started reverse proxy!"
+else
+  echo "Failed to start reverse proxy"
+  exit 1
+fi
 
+sudo npm --prefix server run db:create
+sudo npm --prefix server run db:migrate
+sudo npm --prefix server run db:seed
 
-def build_fe
-  backend_url = "#{ENV.fetch("TOOLJET_HOST")}/_backend_"
-  front_end_working_dir = "/home/ubuntu/app/frontend"
-  Dir.chdir front_end_working_dir
-  system("npm install --only=production")
-  system("NODE_ENV=production TOOLJET_SERVER_URL=#{backend_url} npm run-script build")
-end
-
-def start_services
-  system("sudo systemctl start openresty")
-  system("bundle binstubs puma && rbenv rehash && sudo systemctl start puma")
-end
-
-
-install_script_deps
-load_env
-ensure_db_connectivity
-install_be_app_deps
-build_fe
-start_services
-
-
-puts "The app will be served at #{ENV.fetch("TOOLJET_HOST")}"
+if sudo systemctl start nest
+then
+  echo "The app will be served at ${TOOLJET_HOST}"
+else
+  echo "Failed to start the server!"
+  exit 1
+fi
