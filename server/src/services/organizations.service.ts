@@ -39,7 +39,8 @@ export class OrganizationsService {
         name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
         id: orgUser.id,
         role: orgUser.role,
-        status: orgUser.status
+        status: orgUser.status,
+        invitationToken: orgUser.user.invitationToken
       });
     }
 
