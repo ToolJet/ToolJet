@@ -8,22 +8,20 @@ export const Elasticsearch = ({
     <div>
       <div className="row">
         <div className="col-md-2 mb-2">
-          <label className="form-label">
-            Scheme
-          </label>
+          <label className="form-label">Scheme</label>
           <SelectSearch
-              options={[
-                {name: 'http', value: 'http'},
-                {name: 'https', value: 'https'}
-              ]}
-              value={options.scheme.value}
-              search={true}
-              onChange={(value) => {
-                optionchanged('scheme', value);
-              }}
-              filterOptions={fuzzySearch}
-              placeholder="Select.."
-            />
+            options={[
+              { name: 'http', value: 'http' },
+              { name: 'https', value: 'https' },
+            ]}
+            value={options.scheme.value}
+            search={true}
+            onChange={(value) => {
+              optionchanged('scheme', value);
+            }}
+            filterOptions={fuzzySearch}
+            placeholder="Select.."
+          />
         </div>
         <div className="col-md-7">
           <label className="form-label">Host</label>
@@ -54,9 +52,15 @@ export const Elasticsearch = ({
             />
           </div>
           <div className="col-md-6">
-            <label className="form-label">Password</label>
+            <label className="form-label">
+              Password
+              <small className="text-green mx-2">
+                <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+                Encrypted
+              </small>
+            </label>
             <input
-              type="text"
+              type="password"
               className="form-control"
               onChange={(e) => optionchanged('password', e.target.value)}
               value={options.password.value}

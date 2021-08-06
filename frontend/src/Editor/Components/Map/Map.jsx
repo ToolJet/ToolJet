@@ -4,12 +4,15 @@ import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { Marker } from '@react-google-maps/api';
 import { resolveReferences } from '@/_helpers/utils';
 import { Autocomplete } from '@react-google-maps/api';
+import { darkModeStyles } from './styles';
+
 
 export const Map = function Map({
   id,
   width,
   height,
   component,
+  darkMode,
   onComponentClick,
   currentState,
   onComponentOptionChanged,
@@ -60,14 +63,14 @@ export const Map = function Map({
   function handleBoundsChange() {
     const mapBounds = gmap.getBounds();
 
-    const bounds = { 
+    const bounds = {
       northEast: mapBounds.getNorthEast().toJSON(),
       southWest: mapBounds.getSouthWest().toJSON(),
     }
 
     const newCenter = gmap.center.toJSON();
     setMapCenter(newCenter);
-    
+
     onComponentOptionsChanged(component, [
       ['bounds', bounds],
       ['center', newCenter]
@@ -110,6 +113,7 @@ export const Map = function Map({
           mapContainerStyle={containerStyle}
           zoom={12}
           options={{
+            styles: darkMode === true ? darkModeStyles : '',
             streetViewControl: false,
             mapTypeControl: false,
             draggable: true
@@ -130,7 +134,7 @@ export const Map = function Map({
                 />
             </Autocomplete>
           }
-          {Array.isArray(markers) && 
+          {Array.isArray(markers) &&
             <>
               {markers.map((marker, index) =>
                 <Marker
