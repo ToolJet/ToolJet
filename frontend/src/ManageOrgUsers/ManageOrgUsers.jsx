@@ -7,6 +7,7 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
 import { Button } from 'react-bootstrap'
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -105,16 +106,13 @@ class ManageOrgUsers extends React.Component {
     history.push('/login');
   };
 
-  copyInvitation = user => {
-    const temporaryElement = document.createElement('textarea');
-    temporaryElement.value = this.generateInvitationURL(user);
-    document.body.appendChild(temporaryElement);
-    temporaryElement.select();
-    document.execCommand('copy');
-    document.body.removeChild(temporaryElement);
+  generateInvitationURL = user => window.location.origin + '/invitations/' + user.invitation_token
+
+
+  invitationLinkCopyHandler = () => {
+    toast.info('Invitation URL copied', { hideProgressBar: true, position: 'bottom-right' });
   }
 
-  generateInvitationURL = user => window.location.origin + '/invitations/' + user.invitation_token
 
   render() {
     const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole, archivingUser } = this.state;
@@ -242,7 +240,6 @@ class ManageOrgUsers extends React.Component {
                             <center>Role</center>
                           </th>
                           <th>Status</th>
-                          <th></th>
                           <th className="w-1"></th>
                         </tr>
                       </thead>
@@ -315,23 +312,17 @@ class ManageOrgUsers extends React.Component {
                                   className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
                                 ></span>
                                 <small className="user-status">{user.status}</small>
-                              </td>
-                              <td>
                                 {
                                   user.status === 'invited' ?
-                                    <div>
-                                      <Button
-                                        size='sm'
-                                        variant="outline-info"
-                                        style={{fontSize: 10}}
-                                        onClick={() => this.copyInvitation(user)}>
 
-                                          Copy invitation
-
-                                      </Button>
-                                    </div>
+                                    <CopyToClipboard
+                                      text={this.generateInvitationURL(user)}
+                                      onCopy={this.invitationLinkCopyHandler}
+                                    >
+                                      <img className='svg-icon' src="/assets/images/icons/copy.svg" width="15" height="15"></img>
+                                    </CopyToClipboard>
                                   :
-                                  ''
+                                    ''
                                 }
                               </td>
                               <td>
