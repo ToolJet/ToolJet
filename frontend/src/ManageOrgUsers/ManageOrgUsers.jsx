@@ -107,7 +107,6 @@ class ManageOrgUsers extends React.Component {
 
   generateInvitationURL = user => window.location.origin + '/invitations/' + user.invitation_token
 
-
   invitationLinkCopyHandler = () => {
     toast.info('Invitation URL copied', { hideProgressBar: true, position: 'bottom-right' });
   }
