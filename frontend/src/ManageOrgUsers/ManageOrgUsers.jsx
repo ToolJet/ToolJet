@@ -6,6 +6,7 @@ import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
+import { Button } from 'react-bootstrap'
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -103,6 +104,17 @@ class ManageOrgUsers extends React.Component {
     authenticationService.logout();
     history.push('/login');
   };
+
+  copyInvitation = user => {
+    const temporaryElement = document.createElement('textarea');
+    temporaryElement.value = this.generateInvitationURL(user);
+    document.body.appendChild(temporaryElement);
+    temporaryElement.select();
+    document.execCommand('copy');
+    document.body.removeChild(temporaryElement);
+  }
+
+  generateInvitationURL = user => window.location.origin + '/invitations/' + user.invitation_token
 
   render() {
     const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole, archivingUser } = this.state;
@@ -230,6 +242,7 @@ class ManageOrgUsers extends React.Component {
                             <center>Role</center>
                           </th>
                           <th>Status</th>
+                          <th></th>
                           <th className="w-1"></th>
                         </tr>
                       </thead>
@@ -247,6 +260,9 @@ class ManageOrgUsers extends React.Component {
                                 <div className="skeleton-line w-10"></div>
                               </td>
                               <td className="col-2 p-3">
+                                <div className="skeleton-line"></div>
+                              </td>
+                              <td className="text-muted col-auto col-1 pt-3">
                                 <div className="skeleton-line"></div>
                               </td>
                               <td className="text-muted col-auto col-1 pt-3">
@@ -299,6 +315,24 @@ class ManageOrgUsers extends React.Component {
                                   className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
                                 ></span>
                                 <small className="user-status">{user.status}</small>
+                              </td>
+                              <td>
+                                {
+                                  user.status === 'invited' ?
+                                    <div>
+                                      <Button
+                                        size='sm'
+                                        variant="outline-info"
+                                        style={{fontSize: 10}}
+                                        onClick={() => this.copyInvitation(user)}>
+
+                                          Copy invitation
+
+                                      </Button>
+                                    </div>
+                                  :
+                                  ''
+                                }
                               </td>
                               <td>
                                 {archivingUser === null && (
