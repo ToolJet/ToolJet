@@ -263,9 +263,6 @@ class ManageOrgUsers extends React.Component {
                               <td className="text-muted col-auto col-1 pt-3">
                                 <div className="skeleton-line"></div>
                               </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
                             </tr>
                           ))}
                         </tbody>
