@@ -29,23 +29,23 @@ build {
     "source.amazon-ebs.ubuntu"
   ]
 
-  provisioner "file"{
-    source = "puma.service"
-    destination = "/tmp/puma.service"
+  provisioner "file" {
+    source      = "nest.service"
+    destination = "/tmp/nest.service"
   }
 
-  provisioner "file"{
-    source = "nginx.conf"
+  provisioner "file" {
+    source      = "nginx.conf"
     destination = "/tmp/nginx.conf"
   }
 
-  provisioner "file"{
-    source = ".env"
+  provisioner "file" {
+    source      = ".env"
     destination = "/tmp/.env"
   }
 
-  provisioner "file"{
-    source = "setup_app"
+  provisioner "file" {
+    source      = "setup_app"
     destination = "/tmp/setup_app"
   }
 
