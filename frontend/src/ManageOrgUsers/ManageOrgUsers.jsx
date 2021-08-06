@@ -6,7 +6,6 @@ import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
-import { Button } from 'react-bootstrap'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 class ManageOrgUsers extends React.Component {
