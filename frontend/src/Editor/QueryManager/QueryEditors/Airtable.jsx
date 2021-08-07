@@ -35,6 +35,11 @@ class Airtable extends React.Component {
 
   render() {
     const { options } = this.state;
+    const { currentState } = this.props;
+
+    const key = _.findKey(currentState.components, 'updatedOptionSet');
+    const getOptions = _.get(currentState.components, `${key}.updatedOptionSet`, {});
+    options.option_body = getOptions;
 
     return (
       <div>
@@ -46,6 +51,7 @@ class Airtable extends React.Component {
                 options={[
                   { value: 'list_records', name: 'List records' },
                   { value: 'retrieve_record', name: 'Retrieve record' },
+                  { value: 'update_record', name: 'Update record' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -57,7 +63,7 @@ class Airtable extends React.Component {
               />
             </div>
 
-            {(['list_records'].includes(this.state.options.operation)) && (
+            {['list_records'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label text-muted">Base ID</label>
@@ -102,7 +108,7 @@ class Airtable extends React.Component {
               </div>
             )}
 
-            {(['retrieve_record'].includes(this.state.options.operation)) && (
+            {['retrieve_record'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label text-muted">Base ID</label>
@@ -137,6 +143,20 @@ class Airtable extends React.Component {
               </div>
             )}
 
+            {['update_record'].includes(this.state.options.operation) && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Base ID</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.base_id}
+                    className="codehinter-query-editor-input"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => changeOption(this, 'base_id', value)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
