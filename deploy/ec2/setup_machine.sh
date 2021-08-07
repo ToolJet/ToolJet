@@ -22,24 +22,30 @@ sudo apt-get install -y curl g++ gcc autoconf automake bison libc6-dev \
      freetds-dev libpq-dev
 sudo apt-get install -y luarocks
 sudo luarocks install lua-resty-auto-ssl
-sudo mkdir /etc/resty-auto-ssl
+sudo mkdir /etc/resty-auto-ssl /var/log/openresty /etc/fallback-certs
 sudo chown -R www-data:www-data /etc/resty-auto-ssl
-sudo mkdir /var/log/openresty
 
 # Gen fallback certs
 sudo openssl rand -out /home/ubuntu/.rnd -hex 256
 sudo chown www-data:www-data /home/ubuntu/.rnd
 sudo openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
      -subj '/CN=sni-support-required-for-valid-ssl' \
-     -keyout /etc/ssl/resty-auto-ssl-fallback.key \
-     -out /etc/ssl/resty-auto-ssl-fallback.crt
+     -keyout /etc/fallback-certs/resty-auto-ssl-fallback.key \
+     -out /etc/fallback-certs/resty-auto-ssl-fallback.crt
 
-# Setup directories
-sudo mv /tmp/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+# Setup nginx config
+export SERVER_HOST="${SERVER_HOST:=localhost}"
+export SERVER_USER="${SERVER_USER:=www-data}"
+VARS_TO_SUBSTITUTE='$SERVER_HOST:$SERVER_USER'
+envsubst "${VARS_TO_SUBSTITUTE}" < /tmp/nginx.conf > /tmp/nginx.conf
+sudo cp /tmp/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+
+# Setup app as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
 
+# Setup app directory
 mkdir -p ~/app
-git clone -b nestjs-packer-changes https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b docker-deploy-setup https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
