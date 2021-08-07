@@ -57,6 +57,16 @@ export default class AirtableQueryService implements QueryService {
           result = JSON.parse(response.body);
 
           break;
+          case 'delete_record':
+            const _recordId = queryOptions['record_id'];  
+  
+            response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/${_recordId}`, { 
+              method: 'delete',   
+              headers: this.authHeader(accessToken)
+            });
+            
+            result = JSON.parse(response.body);
+            break;
       }
     } catch (error) {
       console.log(error.response);

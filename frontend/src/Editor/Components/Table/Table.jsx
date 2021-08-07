@@ -661,20 +661,6 @@ export function Table({
             </div>
           )}
 
-          {/* {Object.keys(componentState.changeSet || {}).length > 0 && (
-            <div className="col">
-              <button
-                className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                onClick={() => handleChangesSaved()}
-              >
-                Update Changes
-              </button>
-              <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
-                Cancel
-              </button>
-            </div>
-          )} */}
-
           <div className="col-auto">
             <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
               <img src="/assets/images/icons/filter.svg" width="13" height="13" />
