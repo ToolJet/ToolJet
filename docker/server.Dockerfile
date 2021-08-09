@@ -1,4 +1,4 @@
-FROM node:14.17.0-buster
+FROM node:14.17.3-buster
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=2048"
@@ -16,7 +16,7 @@ ENV NODE_ENV=production
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli ts-node typescript tsconfig-paths
+RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
 COPY ./docker/ ./docker/
