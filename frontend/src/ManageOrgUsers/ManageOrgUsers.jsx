@@ -308,7 +308,7 @@ class ManageOrgUsers extends React.Component {
                                 ></span>
                                 <small className="user-status">{user.status}</small>
                                 {
-                                  user.status === 'invited' && this.state.currentUser.role === 'admin'?
+                                  user.status === 'invited' && ('invitation_token' in user) ?
 
                                     <CopyToClipboard
                                       text={this.generateInvitationURL(user)}
