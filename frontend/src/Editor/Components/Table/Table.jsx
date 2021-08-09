@@ -7,7 +7,7 @@ import {
   useAsyncDebounce,
   usePagination,
   useBlockLayout,
-  useResizeColumns,
+  useResizeColumns
 } from 'react-table';
 import { resolveReferences } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
@@ -33,7 +33,7 @@ export function Table({
   changeCanDrag,
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  darkMode,
+  darkMode
 }) {
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
@@ -81,7 +81,7 @@ export function Table({
     const newFilters = filters;
     newFilters[index].value = {
       ...newFilters[index].value,
-      operation: value,
+      operation: value
     };
     setFilters(newFilters);
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
@@ -91,7 +91,7 @@ export function Table({
     const newFilters = filters;
     newFilters[index].value = {
       ...newFilters[index].value,
-      value: value,
+      value: value
     };
     setFilters(newFilters);
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
@@ -116,7 +116,7 @@ export function Table({
   const defaultColumn = React.useMemo(
     () => ({
       minWidth: 60,
-      width: 268,
+      width: 268
     }),
     []
   );
@@ -133,24 +133,26 @@ export function Table({
     let newChangeset = {
       ...changeSet,
       [index]: {
-        ...obj,
-      },
+        ...obj
+      }
     };
 
     obj = _.set(rowData, key, value);
 
     let newDataUpdates = {
-      ...dataUpdates,
-      [index]: { ...obj },
+      ...dataUpdates, 
+      [index]: { ...obj }
     };
 
     onComponentOptionsChanged(component, [
       ['dataUpdates', newDataUpdates],
-      ['changeSet', newChangeset],
+      ['changeSet', newChangeset]
     ]);
   }
 
-  function getExportFileBlob({ columns, data }) {
+  function getExportFileBlob({
+    columns, data
+  }) {
     const headerNames = columns.map((col) => col.exportValue);
     const csvString = Papa.unparse({ fields: headerNames, data });
     return new Blob([csvString], { type: 'text/csv' });
@@ -158,14 +160,14 @@ export function Table({
 
   function onPageIndexChanged(page) {
     onComponentOptionChanged(component, 'pageIndex', page).then(() => {
-      onEvent('onPageChanged', { component, data: {} });
+        onEvent('onPageChanged', { component, data: {} });
     });
   }
 
   function handleChangesSaved() {
     Object.keys(changeSet).forEach((key) => {
       tableData[key] = {
-        ..._.merge(tableData[key], changeSet[key]),
+        ..._.merge(tableData[key], changeSet[key])
       };
     });
 
@@ -185,9 +187,7 @@ export function Table({
       }
 
       if (filterValue.operation === 'matches') {
-        return rows.filter((row) =>
-          row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase())
-        );
+        return rows.filter((row) => row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase()));
       }
 
       if (filterValue.operation === 'gt') {
@@ -230,13 +230,7 @@ export function Table({
     const columnType = column.columnType;
 
     const columnOptions = {};
-    if (
-      columnType === 'dropdown' ||
-      columnType === 'multiselect' ||
-      columnType === 'badge' ||
-      columnType === 'badges' ||
-      columnType === 'radio'
-    ) {
+    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges' || columnType === 'radio') {
       const values = resolveReferences(column.values, currentState) || [];
       const labels = resolveReferences(column.labels, currentState, []) || [];
 
@@ -261,8 +255,7 @@ export function Table({
 
         if (columnType === undefined || columnType === 'default') {
           return <span>{cellValue}</span>;
-        }
-        if (columnType === 'string') {
+        } if (columnType === 'string') {
           if (column.isEditable) {
             return (
               <input
@@ -281,22 +274,19 @@ export function Table({
             );
           }
           return <span>{cellValue}</span>;
-        }
-        if (columnType === 'text') {
-          return (
-            <textarea
-              rows="1"
+        } if (columnType === 'text') {
+          return <textarea 
+              rows="1" 
               className="form-control-plaintext text-container text-muted"
               readOnly={!column.isEditable}
-              style={{ maxWidth: width, minWidth: width - 10 }}
+              style={{maxWidth: width, minWidth: width - 10}}
               onBlur={(e) => {
                 handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
               }}
               defaultValue={cellValue}
-            ></textarea>
-          );
-        }
-        if (columnType === 'dropdown') {
+            >
+          </textarea>;
+        } if (columnType === 'dropdown') {
           return (
             <div>
               <SelectSearch
@@ -311,8 +301,7 @@ export function Table({
               />
             </div>
           );
-        }
-        if (columnType === 'multiselect') {
+        } if (columnType === 'multiselect') {
           return (
             <div>
               <SelectSearch
@@ -328,8 +317,7 @@ export function Table({
               />
             </div>
           );
-        }
-        if (columnType === 'badge') {
+        } if (columnType === 'badge') {
           return (
             <div>
               <CustomSelect
@@ -341,8 +329,7 @@ export function Table({
               />
             </div>
           );
-        }
-        if (columnType === 'badges') {
+        } if (columnType === 'badges') {
           return (
             <div>
               <CustomSelect
@@ -355,8 +342,7 @@ export function Table({
               />
             </div>
           );
-        }
-        if (columnType === 'tags') {
+        } if (columnType === 'tags') {
           return (
             <div>
               <Tags
@@ -367,8 +353,7 @@ export function Table({
               />
             </div>
           );
-        }
-        if (columnType === 'radio') {
+        } if (columnType === 'radio') {
           return (
             <div>
               <Radio
@@ -383,7 +368,7 @@ export function Table({
           );
         }
         return cellValue || '';
-      },
+      }
     };
   });
 
@@ -396,16 +381,15 @@ export function Table({
 
   tableData = tableData || [];
 
-  const actionsCellData =
-    actions.value.length > 0
-      ? [
-          {
-            id: 'actions',
-            Header: 'Actions',
-            accessor: 'edit',
-            width: columnSizes.actions || defaultColumn.width,
-            Cell: (cell) => {
-              return actions.value.map((action) => (
+  const actionsCellData = actions.value.length > 0
+    ? [
+      {
+        id: 'actions',
+        Header: 'Actions',
+        accessor: 'edit',
+        width: columnSizes.actions || defaultColumn.width,
+        Cell: (cell) => {
+          return actions.value.map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
@@ -417,11 +401,11 @@ export function Table({
                 >
                   {action.buttonText}
                 </button>
-              ));
-            },
-          },
-        ]
-      : [];
+          ));
+        }
+      }
+    ]
+    : [];
 
   const columns = useMemo(
     () => [...columnData, ...actionsCellData],
@@ -432,7 +416,7 @@ export function Table({
 
   const computedStyles = {
     color,
-    width: `${width}px`,
+    width: `${width}px`
   };
 
   const {
@@ -454,16 +438,16 @@ export function Table({
     preGlobalFilteredRows,
     setGlobalFilter,
     state: { pageIndex, pageSize },
-    exportData,
+    exportData
   } = useTable(
     {
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : 10 }, // pageSize should be unset if server-side pagination is enabled
-      pageCount: -1,
-      manualPagination: false,
-      getExportFileBlob,
+      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : 10}, // pageSize should be unset if server-side pagination is enabled
+	  pageCount: -1,
+	  manualPagination: false,
+      getExportFileBlob
     },
     useFilters,
     useGlobalFilter,
@@ -477,7 +461,7 @@ export function Table({
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths });
+      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths});
     } else {
       changeCanDrag(false);
     }
@@ -491,15 +475,16 @@ export function Table({
     }, 200);
 
     const handleSearchTextChange = (text) => {
+
       setValue(text);
       onChange(text);
 
       onComponentOptionChanged(component, 'searchText', text).then(() => {
-        if (serverSideSearch === true) {
+        if(serverSideSearch === true ) {
           onEvent('onSearch', { component, data: {} });
         }
       });
-    };
+    }
 
     return (
       <div className="ms-2 d-inline-block">
@@ -508,16 +493,18 @@ export function Table({
           className="global-search-field"
           defaultValue={value || ''}
           onBlur={(e) => {
-            handleSearchTextChange(e.target.value);
+            handleSearchTextChange(e.target.value)
           }}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearchTextChange(e.target.value);
+            if(e.key === 'Enter') {
+              handleSearchTextChange(e.target.value)
             }
-          }}
+          }
+
+          }
           placeholder={`${count} records`}
           style={{
-            border: '0',
+            border: '0'
           }}
         />
       </div>
@@ -532,7 +519,7 @@ export function Table({
     >
       <div className="card-body border-bottom py-3 jet-data-table-header">
         <div className="d-flex">
-          {!serverSidePagination && (
+          {!serverSidePagination &&
             <div className="text-muted">
               Show
               <div className="mx-2 d-inline-block">
@@ -552,7 +539,7 @@ export function Table({
               </div>
               entries
             </div>
-          )}
+          }
           <div className="ms-auto text-muted">
             <GlobalFilter />
           </div>
@@ -580,11 +567,9 @@ export function Table({
             ))}
           </thead>
 
-          {!loadingState && page.length === 0 && (
-            <center className="w-100">
-              <div className="py-5"> no data </div>
-            </center>
-          )}
+          {!loadingState && page.length === 0 && 
+            <center className="w-100"><div className="py-5"> no data </div></center>
+          }
 
           {!loadingState && (
             <tbody {...getTableBodyProps()}>
@@ -631,12 +616,12 @@ export function Table({
         <div className="table-footer row">
           <div className="col">
             <Pagination
-              serverSide={serverSidePagination}
-              autoGotoPage={gotoPage}
-              autoCanNextPage={canNextPage}
-              autoPageCount={pageCount}
-              autoPageOptions={pageOptions}
-              onPageIndexChanged={onPageIndexChanged}
+                serverSide={serverSidePagination}
+                autoGotoPage={gotoPage}
+                autoCanNextPage={canNextPage}
+                autoPageCount={pageCount}
+                autoPageOptions={pageOptions}
+                onPageIndexChanged={onPageIndexChanged}
             />
           </div>
 
@@ -644,10 +629,9 @@ export function Table({
             <div className="col">
               <button
                 className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                onClick={() =>
-                  onEvent('onBulkUpdate', { component }).then(() => {
-                    handleChangesSaved();
-                  })
+                onClick={() => onEvent('onBulkUpdate', { component }).then(() => {
+                  handleChangesSaved();
+                })
                 }
               >
                 Save Changes
@@ -661,9 +645,9 @@ export function Table({
           <div className="col-auto">
             <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
               <img src="/assets/images/icons/filter.svg" width="13" height="13" />
-              {filters.length > 0 && (
-                <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-              )}
+              {filters.length > 0 && 
+                <a className="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
+              }
             </span>
             <span
               data-tip="Download as CSV"
@@ -716,7 +700,7 @@ export function Table({
                       { name: 'greater than', value: 'gt' },
                       { name: 'less than', value: 'lt' },
                       { name: 'greater than or equals', value: 'gte' },
-                      { name: 'less than or equals', value: 'lte' },
+                      { name: 'less than or equals', value: 'lte' }
                     ]}
                     value={filter.value.operation}
                     search={true}

@@ -9,13 +9,13 @@ class Airtable extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options,
+      options: this.props.options
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options,
+      options: this.props.options
     });
   }
 
@@ -24,8 +24,8 @@ class Airtable extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation,
-        },
+          operation
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -139,40 +139,6 @@ class Airtable extends React.Component {
               </div>
             )}
 
-            {['delete_record'].includes(this.state.options.operation) && (
-              <div>
-                <div className="mb-3 mt-2">
-                  <label className="form-label text-muted">Base ID</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={this.state.options.base_id}
-                    className="codehinter-query-editor-input"
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    onChange={(value) => changeOption(this, 'base_id', value)}
-                  />
-                </div>
-                <div className="mb-3 mt-2">
-                  <label className="form-label text-muted">Table name</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={this.state.options.table_name}
-                    className="codehinter-query-editor-input"
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    onChange={(value) => changeOption(this, 'table_name', value)}
-                  />
-                </div>
-                <div className="mb-3 mt-2">
-                  <label className="form-label text-muted">Record ID</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={this.state.options.record_id}
-                    className="codehinter-query-editor-input"
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    onChange={(value) => changeOption(this, 'record_id', value)}
-                  />
-                </div>
-              </div>
-            )}
             {['update_record'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2">
@@ -218,6 +184,41 @@ class Airtable extends React.Component {
                       onChange={(value) => changeOption(this, 'body', value)}
                     />
                   </div>
+                </div>
+              </div>
+            )}
+
+            {['delete_record'].includes(this.state.options.operation) && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Base ID</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.base_id}
+                    className="codehinter-query-editor-input"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => changeOption(this, 'base_id', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Table name</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.table_name}
+                    className="codehinter-query-editor-input"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => changeOption(this, 'table_name', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label text-muted">Record ID</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.record_id}
+                    className="codehinter-query-editor-input"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => changeOption(this, 'record_id', value)}
+                  />
                 </div>
               </div>
             )}
