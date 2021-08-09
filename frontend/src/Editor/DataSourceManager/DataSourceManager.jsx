@@ -31,13 +31,13 @@ class DataSourceManager extends React.Component {
       selectedDataSource,
       options,
       dataSourceMeta,
-      isSaving: false
+      isSaving: false,
     };
   }
 
   componentDidMount() {
     this.setState({
-      appId: this.props.appId
+      appId: this.props.appId,
     });
   }
 
@@ -46,7 +46,7 @@ class DataSourceManager extends React.Component {
       dataSourceMeta: source,
       selectedDataSource: source,
       options: defaultOptions[source.kind],
-      name: source.kind
+      name: source.kind,
     });
   };
 
@@ -54,8 +54,8 @@ class DataSourceManager extends React.Component {
     this.setState({
       selectedDataSource: {
         ...this.state.selectedDataSource,
-        name: newName
-      }
+        name: newName,
+      },
     });
   };
 
@@ -70,8 +70,8 @@ class DataSourceManager extends React.Component {
       connectionTestError: null,
       options: {
         ...this.state.options,
-        [option]: { value }
-      }
+        [option]: { value },
+      },
     });
   };
 
@@ -89,7 +89,7 @@ class DataSourceManager extends React.Component {
       return {
         key: key,
         value: options[key].value,
-        encrypted: keyMeta ? keyMeta.encrypted : false
+        encrypted: keyMeta ? keyMeta.encrypted : false,
       };
     });
 
@@ -113,21 +113,21 @@ class DataSourceManager extends React.Component {
   };
 
   renderSourceComponent = (kind) => {
-    const {
-      options, isSaving
-    } = this.state;
+    const { options, isSaving } = this.state;
 
     const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
     const ComponentToRender = SourceComponents[sourceComponentName];
-    return <ComponentToRender
+    return (
+      <ComponentToRender
         optionchanged={this.optionchanged}
         createDataSource={this.createDataSource}
         options={options}
         isSaving={isSaving}
         hideModal={this.hideModal}
         selectedDataSource={this.state.selectedDataSource}
-    />;
-  }
+      />
+    );
+  };
 
   onConnectionTestFailed = (data) => {
     this.setState({ connectionTestError: data });
@@ -174,11 +174,7 @@ class DataSourceManager extends React.Component {
                   </div>
                 </div>
               )}
-              {!selectedDataSource && (
-                <span className="text-muted">
-                  Add new datasource
-                </span>
-              )}
+              {!selectedDataSource && <span className="text-muted">Add new datasource</span>}
             </Modal.Title>
             <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
               x
@@ -195,8 +191,13 @@ class DataSourceManager extends React.Component {
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
-                            <img src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`} width="50" height="50" alt="" />
-                            
+                            <img
+                              src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`}
+                              width="50"
+                              height="50"
+                              alt=""
+                            />
+
                             <br></br>
                             <br></br>
                             {dataSource.name}
@@ -213,8 +214,13 @@ class DataSourceManager extends React.Component {
                       <div className="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
-                            <img src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`} width="50" height="50" alt="" />
-                            
+                            <img
+                              src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`}
+                              width="50"
+                              height="50"
+                              alt=""
+                            />
+
                             <br></br>
                             <br></br>
                             {dataSource.name}
@@ -227,11 +233,7 @@ class DataSourceManager extends React.Component {
               </div>
             )}
 
-            {selectedDataSource && (
-              <div>
-                {this.renderSourceComponent(selectedDataSource.kind)}
-              </div>
-            )}
+            {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
           </Modal.Body>
 
           {selectedDataSource && !dataSourceMeta.customTesting && (
@@ -267,7 +269,9 @@ class DataSourceManager extends React.Component {
               
               <div className="col">
                 <small>
-                  <a href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}>Read documentation</a>
+                  <a href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`} target="_blank">
+                    Read documentation
+                  </a>
                 </small>
               </div>
               <div className="col-auto">
@@ -278,10 +282,14 @@ class DataSourceManager extends React.Component {
                 />
               </div>
               <div className="col-auto">
-                <Button className={`m-2 ${isSaving ? 'btn-loading' : ''}`} disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                <Button
+                  className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
+                  disabled={isSaving}
+                  variant="primary"
+                  onClick={this.createDataSource}
+                >
                   {'Save'}
               </Button>
-
               </div>
             </Modal.Footer>
           )}

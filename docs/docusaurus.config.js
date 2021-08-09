@@ -35,6 +35,16 @@ module.exports = {
           label: 'GitHub',
           position: 'right',
         },
+        {
+          href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+          label: 'Slack',
+          position: 'right',
+        },
+        {
+          href: 'https://twitter.com/ToolJet',
+          label: 'Twitter',
+          position: 'right',
+        },
       ],
     },
     footer: {
@@ -65,6 +75,14 @@ module.exports = {
               label: 'GitHub',
               href: 'https://github.com/ToolJet/ToolJet',
             },
+            {
+              label: 'Slack',
+              href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+            },
+            {
+              label: 'Twitter',
+              href: 'https://twitter.com/ToolJet',
+            },
           ],
         },
       ],
@@ -79,7 +97,7 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl:
-            'https://github.com/ToolJet/Tooljet/main/',
+            'https://github.com/ToolJet/Tooljet/blob/main/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

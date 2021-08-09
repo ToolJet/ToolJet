@@ -8,15 +8,15 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
 1. ## Setting up the environment
     ### Install Homebrew
     ```bash
-    $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+     /bin/bash -c "(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     ```
     ### Install Node.js ( version: v14.17.3 )
     ```bash
-    $ brew install nvm
-    $ export NVM_DIR=~/.nvm
-    $ source $(brew --prefix nvm)/nvm.sh
-    $ nvm install 14.17.3
-    $ nvm use 14.17.3
+    brew install nvm
+    export NVM_DIR=~/.nvm
+    source $(brew --prefix nvm)/nvm.sh
+    nvm install 14.17.3
+    nvm use 14.17.3
     ```
 
     ### Install Postgres
@@ -25,12 +25,12 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
     :::
 
     ```bash
-    $ brew install postgresql
+    brew install postgresql
     ```
 2. ## Setup environment variables
     Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given here: env variable reference
     ```bash
-    $ cp .env.example .env
+     cp .env.example .env
     ```
 
 3. ## Populate the keys in the env file.
@@ -42,7 +42,7 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
 
    Example:
    ```bash
-   $ cat .env
+    cat .env
    TOOLJET_HOST=http://localhost:8082
    LOCKBOX_MASTER_KEY=1d291a926ddfd221205a23adb4cc1db66cb9fcaf28d97c8c1950e3538e3b9281
    SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
@@ -50,29 +50,29 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
 
 4. ## Install dependencies
     ```bash
-    $ npm install --prefix server
-    $ npm install --prefix frontend
+    npm install --prefix server
+    npm install --prefix frontend
     ```
 5. ## Setup database
     ```bash
-    $ npm run --prefix server db:reset
-    $ npm run --prefix server start:dev
+    npm run --prefix server db:reset
+    npm run --prefix server start:dev
     ```
 6. ## Install webpack & nest-cli
     ```bash
-    $ npm install -g webpack
-    $ npm install -g webpack-cli
-    $ npm install -g @nestjs/cli
+    npm install -g webpack
+    npm install -g webpack-cli
+    npm install -g @nestjs/cli
     ```
 
 7. ## Running the server 
     ```bash
-    $ cd ./server && npm run start:dev
+    cd ./server && npm run start:dev
     ```
 
 8. ## Running the client
     ```bash
-    $ cd ./frontend && npm start
+     cd ./frontend && npm start
     ```
 
     The client will start on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
