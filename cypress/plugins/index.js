@@ -19,11 +19,10 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
 }
-const clipboardy = require('clipboardy');
 module.exports = (on, config) => {
-  on('task', {
-    getClipboard() {
-      return clipboardy.readSync();
-    }
-  });
-};
+  // modify env value
+  config.env = process.env
+
+  // return config
+  return config
+}
