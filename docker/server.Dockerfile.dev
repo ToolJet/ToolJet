@@ -19,5 +19,6 @@ COPY ./server/ ./
 COPY ./docker/ ./docker/
 
 COPY ./.env ../.env
+COPY ./.env.test ../.env.test
 
 RUN ["chmod", "755", "entrypoint.sh"]
