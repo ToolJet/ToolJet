@@ -35,7 +35,7 @@ build {
   }
 
   provisioner "file" {
-    source      = "nginx.conf"
+    source      = "../../frontend/config/nginx.conf.template"
     destination = "/tmp/nginx.conf"
   }
 
