@@ -1,5 +1,4 @@
 export const componentTypes = [
-  
   {
     name: 'Table',
     displayName: 'Table',
@@ -348,55 +347,6 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Checkbox label' }
-      },
-      events: {
-        onCheck: {
-          options: {
-
-          }
-        },
-        onUnCheck: {
-          options: {
-
-          }
-        }
-      },
-      styles: {
-        textColor: { value: '#000' }
-      }
-    }
-  },
-  {
-    name: 'Radiobutton',
-    displayName: 'Radio Button',
-    description: 'A single radio button',
-    component: 'RadioButton',
-    defaultSize: {
-      width: 200,
-      height: 25
-    },
-    others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
-    },
-    properties: {
-      label: { type: 'code', displayName: 'Label' }
-    },
-    events: {
-        onCheck: { displayName: 'On check'},
-        onUnCheck: { displayName: 'On uncheck'},
-    },
-    styles: {
-      textColor: { type: 'color', displayName: 'Text Color' }
-    },
-    exposedVariables: {},
-    definition: {
-      others: {
-        showOnDesktop: { value: true },
-        showOnMobile: { value : false }
-      },
-      properties: {
-        label: { value: 'Radio Button' }
       },
       events: {
         onCheck: {
@@ -809,5 +759,4 @@ defaultMarkers: { value: `[{
       }
     }
   },
- 
 ];

@@ -9,7 +9,6 @@ import { Container } from './Components/Container';
 import { RichTextEditor } from './Components/RichTextEditor';
 import { DropDown } from './Components/DropDown';
 import { Checkbox } from './Components/Checkbox';
-import { RadioButton } from './Components/RadioButon';
 import { Datepicker } from './Components/Datepicker';
 import { DaterangePicker } from './Components/DaterangePicker';
 import { Multiselect } from './Components/Multiselect';
@@ -30,7 +29,6 @@ const AllComponents = {
   RichTextEditor,
   DropDown,
   Checkbox,
-  RadioButton,
   Datepicker,
   DaterangePicker,
   Multiselect,
