@@ -5,7 +5,7 @@ export function authHeader() {
   const currentUser = authenticationService.currentUserValue;
   if (currentUser && currentUser.auth_token) {
     return {
-      Authorization: `${currentUser.auth_token}`,
+      Authorization: `Bearer ${currentUser.auth_token}`,
       'Content-Type': 'application/json'
     };
   }

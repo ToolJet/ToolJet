@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import { datasourceService } from '@/_services';
 
-export const TestConnection = ({ kind, options }) => {
+export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [buttonText, setButtonText] = useState('Test Connection');
@@ -27,14 +27,14 @@ export const TestConnection = ({ kind, options }) => {
     setTestingStatus(true);
 
     datasourceService.test(kind, options).then(
-      () => {
+      (data) => {
         setTestingStatus(false);
-        setConnectionStatus('success');
-        toast.success('Datasource Connection Tested, Successfully!', {
-          hideProgressBar: true,
-          position: 'top-center',
-          containerId: kind,
-        });
+        if(data.status === 'ok') {
+          setConnectionStatus('success');
+        } else {
+          setConnectionStatus('failed');
+          onConnectionTestFailed(data);
+        }
       },
       ({ error }) => {
         setTestingStatus(false);

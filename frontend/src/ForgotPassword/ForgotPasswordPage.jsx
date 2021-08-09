@@ -19,12 +19,12 @@ class ForgotPassword extends React.Component {
 
   handleClick = (event) => {
     event.preventDefault();
-    fetch(`${config.apiUrl}/password/forgot`, {
+    fetch(`${config.apiUrl}/forgot_password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(this.state.email),
+      body: JSON.stringify({ email: this.state.email }),
     })
       .then((res) => res.json())
       .then((res) => {

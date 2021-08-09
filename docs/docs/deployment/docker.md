@@ -74,7 +74,7 @@ For example, if the server is an AWS EC2 instance and the installation should re
 
 8.  Seed the database:
   ```bash
-  docker-compose run server rake db:seed
+  docker-compose run server npm run db:seed
   ```
   This seeds the database with a default user with the following credentials:   
     email: `dev@tooljet.io`   

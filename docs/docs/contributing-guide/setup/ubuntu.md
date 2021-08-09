@@ -6,26 +6,10 @@ sidebar_position: 1
 Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the commands below.
 
 1. ## Setting up the environment
-
-    ### Install RVM
-    RVM is used to manage Ruby versions on your local machine. Skip this step if you are using rbenv or any other tool to manage ruby versions.
-    ```bash
-     sudo apt-get install software-properties-common
-     sudo apt-add-repository -y ppa:rael-gc/rvm
-     sudo apt-get update
-     sudo apt-get install rvm
-    ```
-
-    ### Install Ruby using RVM
-    ```bash
-     rvm install ruby-2.7.3
-     rvm use 2.7.3
-    ```
-
     ### Install Node.js
     ```bash
-     curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-     sudo apt-get install -y nodejs
+    curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+    sudo apt-get install -y nodejs
     ```
 
     ### Install Postgres
@@ -56,49 +40,27 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
    SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
    ```
 
-4. ## Install Ruby on Rails dependencies
+4. ## Install dependencies
     ```bash
-     bundle
+    npm install --prefix server
+    npm install --prefix frontend
     ```
-
-5. ## install React dependencies
+5. ## Setup database
     ```bash
-     npm install
+    npm run --prefix server db:reset
+    npm run --prefix server start:dev
     ```
-
-6. ## Setup Rails server
+6. ## Running the server
     ```bash
-     bundle exec rake db:create
-     bundle exec rake db:reset
-     bundle exec rails server
+    cd ./server && npm run start:dev
     ```
 
-7. ## Create login credentials
-
-    1.  Open rails console using:
-
+7. ## Running the client
     ```bash
-     bundle exec rails console
+    cd ./frontend && npm start
     ```
 
-    2.  Create a new organization
-    ```ruby
-    Organization.create(name: 'Dev')
-    ```
+    The client will start running on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
 
-    3.  Create a new user
-    ```ruby
-    User.create(first_name: 'dev', email: 'dev@tooljet.io', password: 'password', organization: Organization.first)
-    ```
-
-    4. Add user to the organization as admin
-    ```ruby
-    OrganizationUser.create(user: User.first, organization: Organization.first, role: 'admin', status: 'active')
-    ```
-
-8. ## Running the React frontend ( Client )
-    ```bash
-     cd ./frontend && npm start
-    ```
-
-The client will start running on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
+9. ## Creating login credentials
+Visiting https://localhost:8082 should redirect you to the login page, click on the signup link and enter your email. The emails sent by the server in development environment are captured and are opened in your default browser. Click the invitation link in the email preview to setup the account.

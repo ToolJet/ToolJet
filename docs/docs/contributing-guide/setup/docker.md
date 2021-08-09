@@ -52,9 +52,10 @@ We recommend:
     docker-compose build
    ```
 
-5. ToolJet server is built using Ruby on Rails. You have to reset the database if building for the first time.
+5. ToolJet server is built using NestJS and the data such as application definitions are persisted on a postgres database. You have to reset the database if building for the first time.
    ```bash
-    docker-compose run server rails db:reset
+   docker-compose run server npm run db:reset
+   docker-compose run server npm run db:seed
    ```
 
 6. Run ToolJet
@@ -87,43 +88,51 @@ Caveat:
 Example:   
 Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:   
 ```
-FROM ruby:2.7.3-buster
+FROM node:14.17.0-buster
 
-#Notice the newly added imagemagick package
 RUN apt update && apt install -y \
   build-essential  \
   postgresql \
   freetds-dev \
   imagemagick
 
-
 RUN mkdir -p /app
 WORKDIR /app
 
-COPY Gemfile Gemfile.lock ./
-RUN gem install bundler && bundle install --jobs 20 --retry 5
+COPY ./server/package.json ./server/package-lock.json ./
+RUN npm install
 
-ENV RAILS_ENV=development
+ENV NODE_ENV=development
 
-COPY . ./
+COPY ./server/ ./
 
-RUN ["chmod", "755", "docker/entrypoints/server.sh"]
+COPY ./docker/ ./docker/
+
+COPY ./.env ../.env
+
+RUN ["chmod", "755", "entrypoint.sh"]
 
 ```
 Once you've updated the Dockerfile, rebuild the image by running `docker-compose build server`. After building the new image, start the services by running `docker-compose up`.
 
 
-## Running Rails tests
+## Running tests
 
-To run all the tests
+To run the unit tests
 
 ```bash
- docker-compose run server rails test
+$ docker-compose run server npm run test
 ```
 
-To run a specific test
+To run e2e tests
+
 ```bash
- docker-compose run server rails test <path-to-file>:<line:number>
+docker-compose run server npm run test:e2e
+```
+
+To run a specific unit test
+```bash
+docker-compose run server npm run test <path-to-file>
 ```
 
 ## Troubleshooting
