@@ -60,7 +60,7 @@ class Postgresql extends React.Component {
             )}
             {options.mode === 'gui' && (
               <div>
-                <div className="row">
+                <div className="row">  
                   <div className="col">
                     <label className="form-label">Table</label>
                     <CodeHinter
@@ -71,16 +71,18 @@ class Postgresql extends React.Component {
                   </div>
                   <div className="col">
                     <label className="form-label">Operation</label>
-                    <SelectSearch
-                      options={[{ name: 'Bulk update using primary key', value: 'bulk_update_pkey' }]}
-                      value={options.operation}
-                      search={true}
-                      onChange={(value) => {
-                        changeOption(this, 'operation', value);
-                      }}
-                      filterOptions={fuzzySearch}
-                      placeholder="Select.."
-                    />
+                    <div className="gui-select-wrappper">
+                      <SelectSearch
+                        options={[{ name: 'Bulk update using primary key', value: 'bulk_update_pkey' }]}
+                        value={options.operation}
+                        search={true}
+                        onChange={(value) => {
+                          changeOption(this, 'operation', value);
+                        }}
+                        filterOptions={fuzzySearch}
+                        placeholder="Select.."
+                      />
+                    </div>
                   </div>
                 </div>
 

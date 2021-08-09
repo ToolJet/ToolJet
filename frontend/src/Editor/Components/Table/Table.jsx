@@ -17,6 +17,7 @@ import Papa from 'papaparse';
 import { Pagination } from './Pagination';
 import { CustomSelect } from './CustomSelect';
 import { Tags } from './Tags';
+import { Radio } from './Radio';
 
 var _ = require('lodash');
 
@@ -138,7 +139,10 @@ export function Table({
 
     obj = _.set(rowData, key, value);
 
-    let newDataUpdates = [...dataUpdates, { ...obj }];
+    let newDataUpdates = {
+      ...dataUpdates, 
+      [index]: { ...obj }
+    };
 
     onComponentOptionsChanged(component, [
       ['dataUpdates', newDataUpdates],
@@ -226,7 +230,7 @@ export function Table({
     const columnType = column.columnType;
 
     const columnOptions = {};
-    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges') {
+    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges' || columnType === 'radio') {
       const values = resolveReferences(column.values, currentState) || [];
       const labels = resolveReferences(column.labels, currentState, []) || [];
 
@@ -343,6 +347,19 @@ export function Table({
             <div>
               <Tags
                 value={cellValue}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+              />
+            </div>
+          );
+        } if (columnType === 'radio') {
+          return (
+            <div>
+              <Radio
+                options={columnOptions.selectOptions}
+                value={cellValue}
+                readOnly={!column.isEditable}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
@@ -589,7 +606,9 @@ export function Table({
         </table>
         {loadingState === true && (
           <div style={{ width: '100%' }} className="p-2">
-            <Skeleton count={5} />
+            <center>
+              <div className="spinner-border mt-5" role="status"></div>
+            </center>
           </div>
         )}
       </div>

@@ -4,7 +4,7 @@ const path = require('path');
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const API_URL = {
-  production: process.env.TOOLJET_SERVER_URL,
+  production: process.env.TOOLJET_SERVER_URL || '',
   development: 'http://localhost:3000'
 };
 
@@ -63,7 +63,7 @@ module.exports = {
   externals: {
     // global app config object
     config: JSON.stringify({
-      apiUrl: API_URL[environment],
+      apiUrl: `${API_URL[environment] || ''}/api`,
       assetPath: ASSET_PATH[environment],
       GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
       SERVER_IP: process.env.SERVER_IP
