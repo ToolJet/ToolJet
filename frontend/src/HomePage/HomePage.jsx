@@ -9,7 +9,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-toastify';
-
+import moment from 'moment'
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -197,7 +197,7 @@ class HomePage extends React.Component {
                             <tr className="row">
                               <td className="col p-3">
                                 <span className="app-title mb-3">{app.name}</span> <br />
-                                <small className="pt-2 app-description">created {app.created_at} ago by {app.user.first_name} {app.user.last_name} </small>
+                                <small className="pt-2 app-description">created {moment(app.created_at).fromNow()} ago by {app.user.first_name} {app.user.last_name} </small>
                               </td>
                               <td className="text-muted col-auto pt-4">
                                 <Link
