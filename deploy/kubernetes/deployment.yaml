@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tooljet-deployment
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      component: tooljet
+  template:
+    metadata:
+      labels:
+        component: tooljet
+    spec:
+      imagePullSecrets:
+        - name: docker-secret
+      containers:
+        - name: container
+          image: tooljet/saas:latest
+          imagepullpolicy: Always
+          command: ["npm", "run", '--prefix', 'server', 'start:prod']
+          resources:
+            limits:
+              memory: "2000Mi"
+              cpu: "2000m"
+            requests:
+              memory: "1000Mi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /api/health
+            successThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+          env:
+            - name: RAILS_ENV
+              value: "production"
+            - name: PG_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: host
+            - name: PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: user
+            - name: PG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: password
+            - name: PG_DB
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: db
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: secret_key_base
+            - name: LOCKBOX_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: lockbox_key
+            - name: ENCRYPTION_SERVICE_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: secret_key_base
+            - name: TOOLJET_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: tj_host
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: smtp
+                  key: username
+            - name: SMTP_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: smtp
+                  key: address
+            - name: SMTP_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: smtp
+                  key: domain
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smtp
+                  key: password
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sources
+                  key: google_client_id
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sources
+                  key: google_client_secret
+            - name: SLACK_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sources
+                  key: slack_client_id
+            - name: SLACK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sources
+                  key: slack_client_secret
+
+      imagePullSecrets:
+        - name: docker-secret

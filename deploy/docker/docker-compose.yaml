@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  client:
+    tty: true
+    stdin_open: true
+    image: tooljet/tooljet-client-ce:latest
+    restart: always
+    depends_on:
+      - server
+    volumes:
+      - logs:/var/log/openresty/
+      - certs:/etc/resty-auto-ssl/
+      - fallbackcerts:/etc/fallback-certs
+    ports:
+      - 80:80
+      - 443:443
+    command: openresty -g "daemon off;"
+
+  server:
+    image: tooljet/tooljet-server-ce:latest
+    tty: true
+    stdin_open: true
+    restart: always
+    ports:
+      - 3000
+    env_file: .env
+    environment:
+      RAILS_LOG_TO_STDOUT: "true"
+    command: ['npm', 'run', '--prefix', 'server', 'start:prod']
+
+volumes:
+  certs:
+  logs:
+  fallbackcerts:

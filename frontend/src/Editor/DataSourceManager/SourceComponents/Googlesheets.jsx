@@ -9,7 +9,7 @@ export const Googlesheets = ({
   const [authStatus, setAuthStatus] = useState(null);
 
   function authGoogle() {
-    const provider = 'google';
+    const provider = 'googlesheets';
     setAuthStatus('waiting_for_url');
 
     const scope = options.access_type.value === 'read'

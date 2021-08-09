@@ -29,6 +29,7 @@
 /frontend/.firebaserc
 /frontend/.firebase
 /.env
+/.env.test
 /docs/.firebase
 /docs/.firebaserc
 /node_modules

@@ -1,15 +1,19 @@
 export const defaultOptions = {
-  postgresql: {},
+  postgresql: {
+    mode: 'sql'
+  },
   redis: {
     query: 'PING'
   },
   mysql: {},
   graphql: {},
   firestore: {
-    path: ''
+    path: '',
+    operation: 'get_document'
   },
   elasticsearch: {
-    query: ''
+    query: '',
+    operation: 'search'
   },
   restapi: {
     method: 'GET',
