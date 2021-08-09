@@ -17,7 +17,7 @@ Follow the steps below to deploy ToolJet server on a Kubernetes cluster.
 3. Create a Kubernetes deployment
 
 ```bash
-$ kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/server-deployment.yaml
+ kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/server-deployment.yaml
 ```
 
 :::info
@@ -27,7 +27,7 @@ The file given above is just a template and might not suit production environmen
 4. Verify if the server is running 
 
 ```bash
-$ kubectl get pods
+ kubectl get pods
 ```
 
 5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/server-service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.   
