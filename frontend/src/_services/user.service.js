@@ -41,5 +41,5 @@ function setPasswordFromToken({ token, password, organization, newSignup, firstN
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/user/set_password_from_token`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/users/set_password_from_token`, requestOptions).then(handleResponse);
 }

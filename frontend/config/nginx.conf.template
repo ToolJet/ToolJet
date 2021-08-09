@@ -1,4 +1,4 @@
-user root;
+user ${SERVER_USER};
 worker_processes auto;
 pid /usr/local/openresty/nginx/logs/nginx.pid;
 
@@ -57,13 +57,6 @@ http
 
     location /
     {
-      root /var/www;
-      try_files $uri $uri/ /index.html;
-    }
-
-    location /_backend_
-    {
-      rewrite /_backend_/(.*) /$1 break;
       proxy_pass http://${SERVER_HOST}:3000;
       proxy_redirect off;
       proxy_set_header Host $host;
@@ -83,18 +76,10 @@ http
 
     location /
     {
-      root /var/www;
-      try_files $uri $uri/ /index.html;
-    }
-
-    location /_backend_
-    {
-      rewrite /_backend_/(.*) /$1 break;
       proxy_pass http://${SERVER_HOST}:3000;
       proxy_redirect off;
       proxy_set_header Host $host;
     }
-
   }
 
   server

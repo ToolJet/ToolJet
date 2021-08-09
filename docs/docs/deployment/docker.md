@@ -28,14 +28,14 @@ For example, if the server is an AWS EC2 instance and the installation should re
 
 4. Download our production docker-compose file into the server by running:
   ```bash
-  $ curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose.yaml
+   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose.yaml
   ```
 
 5. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded):
 
   ```bash
-    $ curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/.env.example 
-    $ mv .env.example .env
+     curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/.env.example 
+     mv .env.example .env
   ```
 
   Set up environment variables in `.env` file as explained in [environment variables reference](/docs/deployment/env-vars)
@@ -59,7 +59,7 @@ For example, if the server is an AWS EC2 instance and the installation should re
 6. Once you've populated the `.env` file, run 
 
   ```bash
-    $ docker-compose up -d
+     docker-compose up -d
   ``` 
   to start all the required services. 
 
@@ -74,7 +74,7 @@ For example, if the server is an AWS EC2 instance and the installation should re
 
 8.  Seed the database:
   ```bash
-  docker-compose run server rake db:seed
+  docker-compose run server npm run db:seed
   ```
   This seeds the database with a default user with the following credentials:   
     email: `dev@tooljet.io`   

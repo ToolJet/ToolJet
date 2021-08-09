@@ -158,7 +158,7 @@ class ManageAppUsers extends React.Component {
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
         >
           <Modal.Header>
-            <Modal.Title>Users and permissions</Modal.Title>
+            <Modal.Title>Share</Modal.Title>
             <div>
               <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
                 x
@@ -219,7 +219,7 @@ class ManageAppUsers extends React.Component {
                   </div>
                 </div>
                 <hr />
-                <div className="add-user mb-3">
+                {/* <div className="add-user mb-3">
                   <div className="row">
                     <div className="col">
                       <SelectSearch
@@ -290,7 +290,7 @@ class ManageAppUsers extends React.Component {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </div> */}
               </div>
             )}
           </Modal.Body>

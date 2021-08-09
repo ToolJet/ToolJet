@@ -1,14 +1,13 @@
-
 variable "ami_name" {
-  type =  string
+  type = string
 }
 
 variable "instance_type" {
-  type = string
+  type    = string
   default = "t2.medium"
 }
 
 variable "ami_region" {
-  type = string
+  type    = string
   default = "us-west-2"
 }
