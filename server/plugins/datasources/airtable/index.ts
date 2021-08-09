@@ -45,18 +45,24 @@ export default class AirtableQueryService implements QueryService {
           break;
 
           case 'update_record':
-            
+
           response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}`, { 
             method: 'patch',   
             headers: this.authHeader(accessToken),
             json: {
-              "records": queryOptions.option_body
+              "records": [
+                {
+                   "id": queryOptions['record_id'],
+                   "fields": JSON.parse(queryOptions['body'])
+               }
+           ]
             }
           });
 
           result = JSON.parse(response.body);
 
           break;
+
           case 'delete_record':
             const _recordId = queryOptions['record_id'];  
   
@@ -64,8 +70,8 @@ export default class AirtableQueryService implements QueryService {
               method: 'delete',   
               headers: this.authHeader(accessToken)
             });
-            
             result = JSON.parse(response.body);
+  
             break;
       }
     } catch (error) {

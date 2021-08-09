@@ -43,7 +43,6 @@ export function Table({
   const serverSideSearch = serverSideSearchProperty ? serverSideSearchProperty.value : false;
 
   const [loadingState, setLoadingState] = useState(false);
-  const [dataUpdateState, setDataUpdateState] = useState([]);
 
   useEffect(() => {
     const loadingStateProperty = component.definition.properties.loadingState;
@@ -145,14 +144,6 @@ export function Table({
       ['dataUpdates', newDataUpdates],
       ['changeSet', newChangeset],
     ]);
-
-    for (let update of newDataUpdates) {
-      for (const key in update) {
-        if (/createdTime/.test(key)) delete update[key];
-      }
-    }
-
-    setDataUpdateState(() => newDataUpdates);
   }
 
   function getExportFileBlob({ columns, data }) {
@@ -176,13 +167,11 @@ export function Table({
 
     onComponentOptionChanged(component, 'changeSet', {});
     onComponentOptionChanged(component, 'dataUpdates', []);
-    onComponentOptionChanged(component, 'updatedOptionSet', dataUpdateState);
   }
 
   function handleChangesDiscarded() {
     onComponentOptionChanged(component, 'changeSet', {});
     onComponentOptionChanged(component, 'dataUpdates', []);
-    onComponentOptionChanged(component, 'updatedOptionSet', []);
   }
 
   function customFilter(rows, columnIds, filterValue) {
@@ -634,27 +623,16 @@ export function Table({
 
           {Object.keys(componentState.changeSet || {}).length > 0 && (
             <div className="col">
-              {_.isEmpty(component.definition.events.onBulkUpdate.options) ? (
-                <button
-                  className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                  onClick={() => {
+              <button
+                className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                onClick={() =>
+                  onEvent('onBulkUpdate', { component }).then(() => {
                     handleChangesSaved();
-                  }}
-                >
-                  Save Changes
-                </button>
-              ) : (
-                <button
-                  className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                  onClick={() =>
-                    onEvent('onBulkUpdate', { component }).then(() => {
-                      handleChangesSaved();
-                    })
-                  }
-                >
-                  Update Changes
-                </button>
-              )}
+                  })
+                }
+              >
+                Save Changes
+              </button>
               <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
                 Cancel
               </button>
