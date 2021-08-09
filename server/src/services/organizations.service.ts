@@ -32,7 +32,7 @@ export class OrganizationsService {
     // serialize 
     const serializedUsers = []
     for(const orgUser of organizationUsers) {
-      serializedUsers.push({
+      const serializedUser = {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName,
         lastName: orgUser.user.lastName,
@@ -40,7 +40,11 @@ export class OrganizationsService {
         id: orgUser.id,
         role: orgUser.role,
         status: orgUser.status
-      });
+      }
+
+      if (user.isAdmin && orgUser.user.invitationToken) serializedUser['invitationToken'] = orgUser.user.invitationToken
+
+      serializedUsers.push(serializedUser);
     }
 
     return serializedUsers;
