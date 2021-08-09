@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import { datasourceService } from '@/_services';
 
 export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
@@ -35,16 +36,17 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
           onConnectionTestFailed(data);
         }
       },
-      ({error}) => {
+      ({ error }) => {
         setTestingStatus(false);
         setConnectionStatus('failed');
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { hideProgressBar: true, position: 'top-center', containerId: kind });
       }
     );
   }
 
   return (
     <div>
+      <ToastContainer containerId={kind} />
       {connectionStatus === 'failed' && <span className="badge bg-red-lt">could not connect</span>}
 
       {connectionStatus === 'success' && <span className="badge bg-green-lt">connection verified</span>}

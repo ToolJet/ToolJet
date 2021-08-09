@@ -16,12 +16,12 @@ For example: `TOOLJET_SERVER_URL=https://server.tooljet.io npm run build && fire
 
 1. Initialize firebase project
     ```bash
-    $ firebase init
+     firebase init 
     ```
     Select Firebase Hosting and set build as the static file directory
 2. Deploy client to Firebase
     ```bash
-    $ firebase deploy
+     firebase deploy
     ```
 
 :::tip
