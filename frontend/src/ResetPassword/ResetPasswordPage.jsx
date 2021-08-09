@@ -29,7 +29,7 @@ class ResetPassword extends React.Component {
         password_confirmation: '',
       });
     } else {
-      fetch(`${config.apiUrl}/password/reset`, {
+      fetch(`${config.apiUrl}/reset_password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ class ResetPassword extends React.Component {
         .then((res) => res.json())
         .then((res) => {
           if (res.error) {
-            toast.error(res.error);
+            toast.error(res.message);
           } else {
             toast.success(res.message);
             this.props.history.push('/login');
