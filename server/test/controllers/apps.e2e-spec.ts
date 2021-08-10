@@ -312,7 +312,7 @@ describe('apps controller', () => {
 
   });
 
-  describe('delete', () => {
+  describe('delete app', () => {
     it('should be possible for the admin to delete an app, cascaded with its versions, queries and data sources', async () => {
       const admin = await createUser(app, { email: 'adminForDelete@tooljet.io', role: 'admin' });
       const application = await createApplication(app, { name: 'AppTObeDeleted', user: admin.user });
@@ -331,6 +331,23 @@ describe('apps controller', () => {
       expect(await AppVersion.findOne(version.id)).toBeUndefined()
       expect(await DataQuery.findOne(dataQuery.id)).toBeUndefined()
       expect(await DataSource.findOne(dataSource.id)).toBeUndefined()
+    })
+
+    it('should not be possible for non-admin user to delete an app, cascaded with its versions, queries and data sources', async () => {
+      const developer = await createUser(app, { email: 'developer@tooljet.io', role: 'developer' });
+      const application = await createApplication(app, { name: 'AppTObeDeleted', user: developer.user });
+      const version = await createApplicationVersion(app, application)
+      const dataQuery = await createDataQuery(app, { application, kind: 'test_kind' })
+      const dataSource = await createDataSource(app, { application, kind: 'test_kind', name: 'test_name' })
+
+
+      const response = await request(app.getHttpServer())
+      .delete(`/apps/${application.id}`)
+      .set('Authorization', authHeaderForUser(developer.user))
+
+      expect(response.statusCode).toBe(403);
+
+      expect(await App.findOne(application.id)).not.toBeUndefined()
     })
   })
 
