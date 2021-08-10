@@ -1459,6 +1459,15 @@ body {
     font-size: 0.9rem;
   }
 
+  img.svg-icon {
+    cursor: pointer;
+    padding-left: 2px;
+    border-radius: 10px;
+  }
+
+  img.svg-icon:hover {
+    background-color: rgba(224, 214, 214, 0.507);
+  }
 }
 
 .CodeMirror-placeholder {
@@ -1989,4 +1998,3 @@ input:focus-visible {
 .theme-dark .input-group-text, .theme-dark .markdown > table thead th, .theme-dark .table thead th {
   background: #1c252f;
 }
-

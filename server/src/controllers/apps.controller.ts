@@ -1,4 +1,4 @@
-import { Controller, ForbiddenException, Get, Param, Post, Put, Query, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, Param, Post, Put, Delete, Query, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
 import { decamelizeKeys } from 'humps';
@@ -31,6 +31,16 @@ export class AppsController {
     const app = await this.appsService.find(params.id);
     let response = decamelizeKeys(app);
 
+    const seralizedQueries = [];
+
+    // serialize queries
+    for(const query of app.dataQueries) {
+      let decamelizedQuery = decamelizeKeys(query);
+      decamelizedQuery['options'] = query.options;
+      seralizedQueries.push(decamelizedQuery);
+    }
+
+    response['data_queries'] = seralizedQueries;
     response['definition'] = app['definition'];
 
     return response;
@@ -74,6 +84,23 @@ export class AppsController {
     }
     
     const result = await this.appsService.update(req.user, params.id, req.body.app);
+    let response = decamelizeKeys(result);
+
+    return response;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async delete(@Request() req, @Param() params) {
+
+    const app = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if(!ability.can('deleteApp', app)) {
+      throw new ForbiddenException('Only administrators are allowed to delete apps.');
+    }
+
+    const result = await this.appsService.delete(params.id);
     let response = decamelizeKeys(result);
 
     return response;
@@ -161,12 +188,11 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id/versions/:versionId')
-  async updateVersion(@Request() req) {
+  async updateVersion(@Request() req, @Param() params) {
 
-    const params = req.body;
-    const definition = params['definition'];
+    const definition = req.body['definition'];
 
-    const version = await this.appsService.findVersion(params.id);
+    const version = await this.appsService.findVersion(params.versionId);
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
     if(!ability.can('updateVersions', version.app)) {

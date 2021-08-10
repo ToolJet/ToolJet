@@ -103,6 +103,10 @@ export class AppsService {
     return await this.appsRepository.update(appId, updateableParams);
   }
 
+  async delete(appId: string) {
+    return await this.appsRepository.delete(appId);
+  }
+
   async fetchUsers(user: any, appId: string): Promise<AppUser[]> {
 
     const appUsers = await this.appUsersRepository.find({
