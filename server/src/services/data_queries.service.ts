@@ -90,7 +90,7 @@ export class DataQueriesService {
   async parseSourceOptions(options: any): Promise<object> {
 
     // For adhoc queries such as REST API queries, source options will be null
-    if(!options) return;
+    if(!options) return {};
 
     const parsedOptions = {};
 
