@@ -30,7 +30,18 @@ export class DataQueriesController {
     }
     
     const queries = await this.dataQueriesService.all(req.user, query.app_id);
-    let response = decamelizeKeys({ data_queries: queries });
+    const seralizedQueries = [];
+
+    // serialize
+    for(const query of queries) {
+      let decamelizedQuery = decamelizeKeys(query);
+      console.log(query);
+
+      decamelizedQuery['options'] = query.options;
+      seralizedQueries.push(decamelizedQuery);
+    }
+
+    const response = { data_queries: seralizedQueries };
 
     return response;
   }
