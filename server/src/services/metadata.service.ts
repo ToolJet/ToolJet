@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
+import { gt } from 'semver';
 const got = require('got');
-
 @Injectable()
 export class MetadataService {
 
@@ -58,7 +58,7 @@ export class MetadataService {
       'last_checked': new Date()
     }
 
-    if(latestVersion > installedVersion && installedVersion !== ignoredVersion) {
+    if(gt(latestVersion, installedVersion) && installedVersion !== ignoredVersion) {
       newOptions['latest_version']  = latestVersion;
       newOptions['version_ignored'] = false;
     }

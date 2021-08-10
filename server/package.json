@@ -61,10 +61,11 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
+    "semver": "^7.3.5",
     "tedious": "^11.2.0",
-    "typeorm": "^0.2.34",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
+    "typeorm": "^0.2.34",
     "typescript": "^4.3.5"
   },
   "devDependencies": {
