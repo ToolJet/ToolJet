@@ -1,6 +1,11 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createApplication, createUser, createNestAppInstance, createApplicationVersion } from '../test.helper';
+import { authHeaderForUser, clearDB, createApplication, createUser, createNestAppInstance, createApplicationVersion, createDataQuery, createDataSource } from '../test.helper';
+import { EntityNotFoundError } from 'typeorm';
+import { App } from 'src/entities/app.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { DataQuery } from 'src/entities/data_query.entity';
+import { DataSource } from 'src/entities/data_source.entity';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -306,6 +311,28 @@ describe('apps controller', () => {
     expect(response.statusCode).toBe(200);
 
   });
+
+  describe('delete', () => {
+    it('should be possible for the admin to delete an app, cascaded with its versions, queries and data sources', async () => {
+      const admin = await createUser(app, { email: 'adminForDelete@tooljet.io', role: 'admin' });
+      const application = await createApplication(app, { name: 'AppTObeDeleted', user: admin.user });
+      const version = await createApplicationVersion(app, application)
+      const dataQuery = await createDataQuery(app, { application, kind: 'test_kind' })
+      const dataSource = await createDataSource(app, { application, kind: 'test_kind', name: 'test_name' })
+
+
+      const response = await request(app.getHttpServer())
+      .delete(`/apps/${application.id}`)
+      .set('Authorization', authHeaderForUser(admin.user))
+
+      expect(response.statusCode).toBe(200);
+
+      expect(await App.findOne(application.id)).toBeUndefined()
+      expect(await AppVersion.findOne(version.id)).toBeUndefined()
+      expect(await DataQuery.findOne(dataQuery.id)).toBeUndefined()
+      expect(await DataSource.findOne(dataSource.id)).toBeUndefined()
+    })
+  })
 
 
   afterAll(async () => {
