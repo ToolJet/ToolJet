@@ -2,6 +2,7 @@ import { User } from '../../src/entities/user.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, AfterLoad, BaseEntity, } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 import { DataQuery } from './data_query.entity';
+import { DataSource } from './data_source.entity';
 
 @Entity({ name: "apps" })
 export class App extends BaseEntity {
@@ -34,14 +35,17 @@ export class App extends BaseEntity {
   @JoinColumn({ name: "user_id" })
     user: User;
     
-  @OneToMany(() => AppVersion, appVersion => appVersion.app, { eager: false })
+  @OneToMany(() => AppVersion, appVersion => appVersion.app, { eager: false, onDelete: "CASCADE" })
   appVersions: AppVersion[];
   
   @OneToOne(() => AppVersion, appVersion => appVersion.app, { eager: true })
   currentVersion: AppVersion;
 
-  @OneToMany(() => DataQuery, dataQuery => dataQuery.app)
+  @OneToMany(() => DataQuery, dataQuery => dataQuery.app, { onDelete: "CASCADE" })
   dataQueries: DataQuery[];
+
+  @OneToMany(() => DataSource, dataSource => dataSource.app, { onDelete: "CASCADE" })
+  dataSources: DataSource[];
 
   @AfterInsert()
   updateSlug() {
