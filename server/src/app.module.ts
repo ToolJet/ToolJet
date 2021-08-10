@@ -20,6 +20,7 @@ import { EmailService } from '@services/email.service';
 import { MetaModule } from './modules/meta/meta.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { SampleAppModule } from './modules/sample_app/sample_app.module';
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { join } from 'path';
     DataSourcesModule,
     OrganizationsModule,
     CaslModule,
-    MetaModule
+    MetaModule,
+    SampleAppModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService, SeedsService],
