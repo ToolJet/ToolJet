@@ -31,6 +31,16 @@ export class AppsController {
     const app = await this.appsService.find(params.id);
     let response = decamelizeKeys(app);
 
+    const seralizedQueries = [];
+
+    // serialize queries
+    for(const query of app.dataQueries) {
+      let decamelizedQuery = decamelizeKeys(query);
+      decamelizedQuery['options'] = query.options;
+      seralizedQueries.push(decamelizedQuery);
+    }
+
+    response['data_queries'] = seralizedQueries;
     response['definition'] = app['definition'];
 
     return response;

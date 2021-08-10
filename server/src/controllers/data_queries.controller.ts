@@ -35,7 +35,6 @@ export class DataQueriesController {
     // serialize
     for(const query of queries) {
       let decamelizedQuery = decamelizeKeys(query);
-      console.log(query);
 
       decamelizedQuery['options'] = query.options;
       seralizedQueries.push(decamelizedQuery);
