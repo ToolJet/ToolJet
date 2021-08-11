@@ -36,10 +36,10 @@ We recommend:
    :::info
    `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure   random key)
 
-   `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key) 
+   `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
    :::
 
-   Example:   
+   Example:
    ```bash
     cat .env
    TOOLJET_HOST=http://localhost:8082
@@ -63,9 +63,9 @@ We recommend:
     docker-compose up
    ```
 
-7. ToolJet should now be served locally at `http://localhost:8082`. You can login using the default user created.   
+7. ToolJet should now be served locally at `http://localhost:8082`. You can login using the default user created.
   ```
-  email: dev@tooljet.io   
+  email: dev@tooljet.io
   password: password
   ```
 
@@ -81,12 +81,12 @@ If you make any changes to the codebase/pull the latest changes from upstream, t
 
 Caveat:
 
-1. If the changes include database migrations or new gem additions in the Gemfile, you would need to restart the ToolJet server container by running `docker-compose restart server`.
+1. If the changes include database migrations or new npm package additions in the package.json, you would need to restart the ToolJet server container by running `docker-compose restart server`.
 
-2. If you need to add a new binary or system libary to the container itself, you would need to add those dependencies in `docker/server.Dockerfile.dev` and then rebuild the ToolJet server image. You can do that by running `docker-compose build server`. Once that completes you can start everything normally with `docker-compose up`.   
+2. If you need to add a new binary or system libary to the container itself, you would need to add those dependencies in `docker/server.Dockerfile.dev` and then rebuild the ToolJet server image. You can do that by running `docker-compose build server`. Once that completes you can start everything normally with `docker-compose up`.
 
-Example:   
-Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:   
+Example:
+Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:
 ```
 FROM node:14.17.0-buster
 
@@ -117,6 +117,8 @@ Once you've updated the Dockerfile, rebuild the image by running `docker-compose
 
 
 ## Running tests
+
+Test config requires the presence of `.env.test` file at the root of the project.
 
 To run the unit tests
 

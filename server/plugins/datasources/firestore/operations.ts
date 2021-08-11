@@ -11,7 +11,7 @@ export async function queryCollection(db, collection: string): Promise<object> {
    })
   });
 
-  return { data };
+  return data;
 }
 
 export async function getDocument(db, path: string): Promise<object> { 
