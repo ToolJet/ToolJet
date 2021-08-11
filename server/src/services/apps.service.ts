@@ -5,6 +5,9 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { FolderApp } from 'src/entities/folder_app.entity';
+import { DataSource } from 'src/entities/data_source.entity';
+import { DataQuery } from 'src/entities/data_query.entity';
 
 @Injectable()
 export class AppsService {
@@ -18,6 +21,15 @@ export class AppsService {
 
     @InjectRepository(AppUser)
     private appUsersRepository: Repository<AppUser>,
+
+    @InjectRepository(DataSource)
+    private dataSourcesRepository: Repository<DataSource>,
+
+    @InjectRepository(DataQuery)
+    private dataQueriesRepository: Repository<DataQuery>,
+
+    @InjectRepository(FolderApp)
+    private folderAppsRepository: Repository<FolderApp>,
   ) { }
 
   async find(id: string): Promise<App> {
@@ -104,11 +116,18 @@ export class AppsService {
   }
 
   async delete(appId: string) {
-    const appUsers = await this.appUsersRepository.find({
-      where: { appId }
-    });
+    const repositoriesToFetchEntitiesToBeDeleted:Repository<any>[] = [
+      this.appUsersRepository, this.folderAppsRepository,
+      this.dataSourcesRepository, this.dataQueriesRepository,
+      this.appVersionsRepository
+    ];
 
-    appUsers.forEach(async appUser => await this.appUsersRepository.delete(appUser.id))
+    repositoriesToFetchEntitiesToBeDeleted.forEach(async repository => {
+      const entities = await repository.find({
+        where: { appId }
+      })
+      entities.forEach(async entity => await repository.delete(entity.id));
+    })
 
     return await this.appsRepository.delete(appId);
   }
