@@ -365,13 +365,14 @@ export const componentTypes = [
       }
     }
   },
+  //drop
   {
     name: 'Radio-button',
     displayName: 'Radio Button',
     description: 'A single radio button',
     component: 'RadioButton',
     defaultSize: {
-      width: 200,
+      width: 300,
       height: 25
     },
     others: {
@@ -379,12 +380,14 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' }
+      label: { type: 'code', displayName: 'Label' },
+      value: { type: 'code', displayName: 'Default value' },
+      values: { type: 'code', displayName: 'Option values' },
+      display_values: { type: 'code', displayName: 'Option labels' }
     },
     events: {
-        onCheck: { displayName: 'On check'},
-        onUnCheck: { displayName: 'On uncheck'},
-    },
+      onCheck: { displayName: 'On select'},
+   },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' }
     },
@@ -395,19 +398,18 @@ export const componentTypes = [
         showOnMobile: { value : false }
       },
       properties: {
-        label: { value: 'Radio Button label' }
+        label: { value: 'Select' },
+        value: { value: '' },
+        values: { value: '{{[1,2,3]}}' },
+        display_values: { value: '{{["one", "two", "three"]}}' },
+        visible: { value: true }
       },
       events: {
-        onCheck: {
+        onCheck: { 
           options: {
 
           }
         },
-        onUnCheck: {
-          options: {
-
-          }
-        }
       },
       styles: {
         textColor: { value: '#000' }
