@@ -116,18 +116,23 @@ export class AppsService {
   }
 
   async delete(appId: string) {
+
+    await this.appsRepository.update(appId, { currentVersionId: null } );
+
     const repositoriesToFetchEntitiesToBeDeleted:Repository<any>[] = [
-      this.appUsersRepository, this.folderAppsRepository,
-      this.dataSourcesRepository, this.dataQueriesRepository,
+      this.appUsersRepository,
+      this.folderAppsRepository,
+      this.dataQueriesRepository,
+      this.dataSourcesRepository,
       this.appVersionsRepository
     ];
 
-    repositoriesToFetchEntitiesToBeDeleted.forEach(async repository => {
+    for(const repository of repositoriesToFetchEntitiesToBeDeleted) {
       const entities = await repository.find({
         where: { appId }
       })
-      entities.forEach(async entity => await repository.delete(entity.id));
-    })
+      for(const entity of entities) { await repository.delete(entity.id) };
+    }
 
     return await this.appsRepository.delete(appId);
   }
