@@ -13,9 +13,10 @@ import { AppsService } from '@services/apps.service';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppUser } from 'src/entities/app_user.entity';
+import { FolderApp } from 'src/entities/folder_app.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([App, AppVersion, AppUser, DataQuery, Credential, DataSource]), CaslModule],
+  imports: [TypeOrmModule.forFeature([App, AppVersion, AppUser, DataQuery, Credential, DataSource, FolderApp]), CaslModule],
   providers: [DataQueriesService, CredentialsService, EncryptionService, DataSourcesService, AppsService],
   controllers: [DataQueriesController],
 })

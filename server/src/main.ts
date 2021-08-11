@@ -13,10 +13,17 @@ async function bootstrap() {
 
   await app.setGlobalPrefix('api');
   await app.enableCors();
-  app.use(helmet());
-  
+
+  app.use(
+    helmet.contentSecurityPolicy({
+      useDefaults: true,
+      directives: {
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      },
+    }),
+  );
   const port = parseInt(process.env.PORT) || 3000;
-  
+
   await app.listen(port, '0.0.0.0', function() {
     console.log('Listening on port %d', port);
   });
