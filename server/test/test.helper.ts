@@ -61,7 +61,7 @@ export async function createApplication(app, { name, user, isPublic }: any) {
   }));
 
   await appUsersRepository.save(appUsersRepository.create({
-    app: newApp, 
+    app: newApp,
     user,
     role: 'admin',
     createdAt: new Date(),
@@ -71,14 +71,20 @@ export async function createApplication(app, { name, user, isPublic }: any) {
   return newApp;
 }
 
-export async function createApplicationVersion(app, application) {
+export async function createApplicationVersion(
+  app,
+  application,
+  optional_fields = {},
+) {
   let appVersionsRepository: Repository<AppVersion>;
   appVersionsRepository = app.get('AppVersionRepository');
 
-  return await appVersionsRepository.save(appVersionsRepository.create({
-    app: application,
-    name: 'v0'
-  }));
+  const fields = Object.assign(
+    { app: application, name: 'v0' },
+    optional_fields,
+  );
+
+  return await appVersionsRepository.save(appVersionsRepository.create(fields));
 }
 
 export async function createUser(app, { firstName, lastName, email, role, organization }: any) {
@@ -90,27 +96,27 @@ export async function createUser(app, { firstName, lastName, email, role, organi
   organizationRepository = app.get('OrganizationRepository');
   organizationUsersRepository = app.get('OrganizationUserRepository');
 
-  organization = organization || await organizationRepository.save(organizationRepository.create({ 
-    name: 'test org', 
-    createdAt: new Date(), 
-    updatedAt: new Date() 
+  organization = organization || await organizationRepository.save(organizationRepository.create({
+    name: 'test org',
+    createdAt: new Date(),
+    updatedAt: new Date()
   }));
 
-  const user = await userRepository.save(userRepository.create({ 
-    firstName: firstName || 'test', 
-    lastName: lastName || 'test', 
-    email: email || 'dev@tooljet.io', 
-    password: 'password', 
-    organization, 
-    createdAt: new Date(), 
-    updatedAt: new Date(), 
+  const user = await userRepository.save(userRepository.create({
+    firstName: firstName || 'test',
+    lastName: lastName || 'test',
+    email: email || 'dev@tooljet.io',
+    password: 'password',
+    organization,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }));
 
-  const orgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ 
-    user: user, 
-    organization, 
-    role: role || 'admin', 
-    createdAt: new Date(), 
+  const orgUser = await organizationUsersRepository.save(organizationUsersRepository.create({
+    user: user,
+    organization,
+    role: role || 'admin',
+    createdAt: new Date(),
     updatedAt: new Date()
   }));
 
@@ -126,7 +132,7 @@ export async function createDataSource(nestInstance, { name, application, kind, 
     options,
     app: application,
     kind,
-    createdAt: new Date(), 
+    createdAt: new Date(),
     updatedAt: new Date()
   }));
 }
@@ -141,8 +147,7 @@ export async function createDataQuery(nestInstance, { application, kind, dataSou
     app: application,
     kind,
     dataSource,
-    createdAt: new Date(), 
+    createdAt: new Date(),
     updatedAt: new Date()
   }));
 }
-

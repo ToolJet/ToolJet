@@ -48,7 +48,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: host  
+                  key: host
             - name: PG_USER
               valueFrom:
                 secretKeyRef:
@@ -73,7 +73,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: lockbox_key                  
+                  key: lockbox_key
             - name: ENCRYPTION_SERVICE_SALT
               valueFrom:
                 secretKeyRef:
@@ -83,7 +83,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: tj_host      
+                  key: tj_host
             - name: SMTP_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -93,17 +93,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: smtp
-                  key: address   
+                  key: address
             - name: SMTP_DOMAIN
               valueFrom:
                 secretKeyRef:
                   name: smtp
-                  key: domain    
+                  key: domain
             - name: SMTP_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: smtp
-                  key: password      
+                  key: password
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
