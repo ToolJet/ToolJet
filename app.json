@@ -6,15 +6,11 @@
   "logo": "https://app.tooljet.io/assets/images/logo.svg",
   "success_url": "/",
   "scripts":{
-    "postdeploy": "bundle exec rails db:seed"
+    "predeploy": "npm install --prefix server && npm run build --prefix server"
   },
   "env": {
-    "RAILS_ENV": {
-      "description": "Environment for rails middleware.",
-      "value": "production"
-    },
-    "RACK_ENV": {
-      "description": "Environment for rack middleware.",
+    "NODE_ENV": {
+      "description": "Environment [production/development]",
       "value": "production"
     },
     "TOOLJET_HOST": {
@@ -26,11 +22,11 @@
       "value": "https://<app-name-in-first-step>.herokuapp.com"
     },
     "LOCKBOX_MASTER_KEY": {
-      "description": "Key for encrypting datasource credentials.",
+      "description": "Master key for encrypting datasource credentials.",
       "value": ""
     },
     "SECRET_KEY_BASE": {
-      "description": "Used by ruby on rails as the input secret to the application's key generator.",
+      "description": "Used by ToolJet server as the input secret to the application's key generator.",
       "value": ""
     }
   },
@@ -39,23 +35,17 @@
       "quantity": 1
     }
   },
-  "image": "heroku/ruby",
+  "image": "heroku/nodejs",
   "addons": ["heroku-postgresql"],
   "buildpacks": [
     {
       "url": "heroku/nodejs"
-    },
-    {
-      "url": "https://github.com/rails-sqlserver/heroku-buildpack-freetds#v1.1.2"
-    },
-    {
-      "url": "heroku/ruby"
     }
   ],
   "environments": {
     "test": {
       "scripts": {
-        "test": "bundle exec rake test"
+        "test": "npm run test --prefix server && npm run test:e2e --prefix server"
       }
     }
   }

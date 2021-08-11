@@ -11,14 +11,14 @@ labels: 'bug, needs triage'
     ToolJet Cloud / Docker / Linux / MacOS ...
 -->
 
-### What is the expected behavior?
+### What is the expected behaviour?
 <!--
   Provide a clear description of what you want to happen.
 -->
 
-### What is the current behavior?
+### What is the current behaviour?
 <!--
-  Provide a clear description of what is the current behavior.
+  Provide a clear description of what is the current behaviour.
 -->
 
 ### How to reproduce the issue?
@@ -29,7 +29,7 @@ labels: 'bug, needs triage'
 
 ### Screenshots or Screencast
 <!--
-  Providing relevent Screenshots/ Screencasts would help us to debug the issue quickly.
+  Providing relevant Screenshots/ Screencasts would help us to debug the issue quickly.
 -->
 
 ### Please provide any traces or logs that could help here.

@@ -1,5 +1,6 @@
-frontend/*
+# frontend/*
+app/*
 docs/*
 tmp/*
-node_modules/*
-/.env
+server/node_modules/*
+server/dist/*

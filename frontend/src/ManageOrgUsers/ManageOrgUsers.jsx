@@ -6,6 +6,7 @@ import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -104,15 +105,19 @@ class ManageOrgUsers extends React.Component {
     history.push('/login');
   };
 
+  generateInvitationURL = user => window.location.origin + '/invitations/' + user.invitation_token
+
+  invitationLinkCopyHandler = () => {
+    toast.info('Invitation URL copied', { hideProgressBar: true, position: 'bottom-right' });
+  }
+
+
   render() {
     const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole, archivingUser } = this.state;
 
     return (
       <div className="wrapper org-users-page">
-        <Header 
-          switchDarkMode={this.props.switchDarkMode}
-          darkMode={this.props.darkMode}
-        />
+        <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -239,7 +244,10 @@ class ManageOrgUsers extends React.Component {
                             <tr>
                               <td className="col-2 p-3">
                                 <div className="row">
-                                  <div className="skeleton-image col-auto" style={{ width: '25px', height: '25px' }}></div>
+                                  <div
+                                    className="skeleton-image col-auto"
+                                    style={{ width: '25px', height: '25px' }}
+                                  ></div>
                                   <div className="skeleton-line w-10 col mx-3"></div>
                                 </div>
                               </td>
@@ -277,7 +285,7 @@ class ManageOrgUsers extends React.Component {
                                 </a>
                               </td>
                               <td className="text-muted" style={{ width: '280px' }}>
-                                <center className="mx-5">
+                                <center className="mx-5 select-search-role">
                                   <SelectSearch
                                     options={['Admin', 'Developer', 'Viewer'].map((role) => {
                                       return { name: role, value: role.toLowerCase() };
@@ -299,6 +307,18 @@ class ManageOrgUsers extends React.Component {
                                   className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
                                 ></span>
                                 <small className="user-status">{user.status}</small>
+                                {
+                                  user.status === 'invited' && ('invitation_token' in user) ?
+
+                                    <CopyToClipboard
+                                      text={this.generateInvitationURL(user)}
+                                      onCopy={this.invitationLinkCopyHandler}
+                                    >
+                                      <img className='svg-icon' src="/assets/images/icons/copy.svg" width="15" height="15"></img>
+                                    </CopyToClipboard>
+                                  :
+                                    ''
+                                }
                               </td>
                               <td>
                                 {archivingUser === null && (

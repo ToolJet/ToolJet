@@ -17,6 +17,7 @@ import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import posthog from 'posthog-js';
 import {ForgotPassword} from '@/ForgotPassword'
 import { ResetPassword } from '@/ResetPassword';
+import { lt } from 'semver';
 
 class App extends React.Component {
   constructor(props) {
@@ -73,7 +74,7 @@ class App extends React.Component {
       tooljetService.fetchMetaData().then((data) => {
         this.setState({ fetchedMetadata: true, onboarded: data.onboarded });
 
-        if(data.installed_version < data.latest_version && data.version_ignored === false) {
+        if(lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
       })
