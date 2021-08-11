@@ -365,7 +365,6 @@ export const componentTypes = [
       }
     }
   },
-  //drop
   {
     name: 'Radio-button',
     displayName: 'Radio Button',
