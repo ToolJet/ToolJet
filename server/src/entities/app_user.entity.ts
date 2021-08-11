@@ -1,9 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { App } from './app.entity';
 import { User } from './user.entity';
 
 @Entity({ name: "app_users" })
-export class AppUser {
+export class AppUser extends BaseEntity {
 
   @PrimaryGeneratedColumn("uuid")
   id: string;

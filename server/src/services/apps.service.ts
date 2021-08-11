@@ -104,6 +104,12 @@ export class AppsService {
   }
 
   async delete(appId: string) {
+    const appUsers = await this.appUsersRepository.find({
+      where: { appId }
+    });
+
+    appUsers.forEach(async appUser => await this.appUsersRepository.delete(appUser.id))
+
     return await this.appsRepository.delete(appId);
   }
 

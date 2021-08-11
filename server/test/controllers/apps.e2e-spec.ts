@@ -6,6 +6,7 @@ import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { AppUser } from 'src/entities/app_user.entity';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -331,6 +332,7 @@ describe('apps controller', () => {
       expect(await AppVersion.findOne(version.id)).toBeUndefined()
       expect(await DataQuery.findOne(dataQuery.id)).toBeUndefined()
       expect(await DataSource.findOne(dataSource.id)).toBeUndefined()
+      expect(await AppUser.findOne({appId: application.id})).toBeUndefined()
     })
 
     it('should not be possible for non-admin user to delete an app, cascaded with its versions, queries and data sources', async () => {
