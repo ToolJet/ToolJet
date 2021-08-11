@@ -81,7 +81,7 @@ If you make any changes to the codebase/pull the latest changes from upstream, t
 
 Caveat:
 
-1. If the changes include database migrations or new gem additions in the Gemfile, you would need to restart the ToolJet server container by running `docker-compose restart server`.
+1. If the changes include database migrations or new npm package additions in the package.json, you would need to restart the ToolJet server container by running `docker-compose restart server`.
 
 2. If you need to add a new binary or system libary to the container itself, you would need to add those dependencies in `docker/server.Dockerfile.dev` and then rebuild the ToolJet server image. You can do that by running `docker-compose build server`. Once that completes you can start everything normally with `docker-compose up`.
 
