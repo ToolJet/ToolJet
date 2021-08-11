@@ -221,6 +221,10 @@ class Editor extends React.Component {
   };
 
   switchSidebarTab = (tabIndex) => {
+    if (tabIndex == 2)
+    {
+      this.setState({ selectedComponent: null });
+    }
     this.setState({
       currentSidebarTab: tabIndex
     });
@@ -433,8 +437,8 @@ class Editor extends React.Component {
     this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
   }
 
-  onVersionDeploy = (versionId) => { 
-    this.setState({ app: { 
+  onVersionDeploy = (versionId) => {
+    this.setState({ app: {
       ...this.state.app,
       current_version_id: versionId
     }})
@@ -535,7 +539,7 @@ class Editor extends React.Component {
                 <div className="canvas-buttons">
                   <button
                     className="btn btn-light mx-2"
-                    onClick={() => this.setState({ zoomLevel: zoomLevel - 0.1 })}
+                    onClick={() => this.setState({ zoomLevel: ((Math.round(zoomLevel*10) - 1)/10).toFixed(1) }) }
                     disabled={zoomLevel <= 0.6}
                     role="button"
                   >
@@ -544,8 +548,8 @@ class Editor extends React.Component {
                   <small>{zoomLevel * 100}%</small>
                   <button
                     className="btn btn-light mx-2"
-                    onClick={() => this.setState({ zoomLevel: zoomLevel + 0.1 })}
-                    disabled={zoomLevel === 1}
+                    onClick={() => this.setState({ zoomLevel: ((Math.round(zoomLevel*10) + 1)/10).toFixed(1) }) }
+                    disabled={zoomLevel >= 1.0}
                     role="button"
                   >
                     <img src="/assets/images/icons/zoom-in.svg" width="12" height="12" />
@@ -863,7 +867,7 @@ class Editor extends React.Component {
             <div className="editor-sidebar">
               <div className="col-md-12">
                 <div>
-                  
+
                 </div>
               </div>
 

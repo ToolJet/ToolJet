@@ -270,6 +270,22 @@ export function previewQuery(_ref, query) {
       }
 
       _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+
+      if(data.status === 'failed') {
+        toast.error(`${data.message}: ${data.description}`, { position: 'bottom-center', hideProgressBar: true, autoClose: 10000 });
+      } else { 
+        if (data.status === 'needs_oauth') {
+          const url = data.data.auth_url; // Backend generates and return sthe auth url
+          fetchOAuthToken(url, query.data_source_id);
+        }
+        if(data.status === 'ok') {
+          toast.info(`Query completed.`, {
+            hideProgressBar: true,
+            position: 'bottom-center',
+          });
+        }
+      }
+
       resolve();
     }).catch(({ error, data } ) => {
       _ref.setState({ previewLoading: false, queryPreviewData: data });
@@ -324,12 +340,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
       dataqueryService.run(queryId, options).then(data => {
         resolve();
 
-        if (data.error) {
-          if (data.error.code === 'oauth2_needs_auth') {
-            const url = data.error.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, dataQuery.data_source_id);
-            return;
-          }
+        if (data.status === 'needs_oauth') {
+          const url = data.data.auth_url; // Backend generates and return sthe auth url
+          fetchOAuthToken(url, dataQuery.data_source_id);
         }
 
         if (data.status === 'failed') {

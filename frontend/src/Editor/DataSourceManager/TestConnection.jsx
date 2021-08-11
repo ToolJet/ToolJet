@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import { datasourceService } from '@/_services';
 
-export const TestConnection = ({ kind, options }) => {
+export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [buttonText, setButtonText] = useState('Test Connection');
@@ -26,21 +27,26 @@ export const TestConnection = ({ kind, options }) => {
     setTestingStatus(true);
 
     datasourceService.test(kind, options).then(
-      () => {
+      (data) => {
         setTestingStatus(false);
-        setConnectionStatus('success');
-        toast.success('Datasource Connection Tested, Successfully!', { hideProgressBar: true, position: 'top-center' });
+        if(data.status === 'ok') {
+          setConnectionStatus('success');
+        } else {
+          setConnectionStatus('failed');
+          onConnectionTestFailed(data);
+        }
       },
-      ({error}) => {
+      ({ error }) => {
         setTestingStatus(false);
         setConnectionStatus('failed');
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { hideProgressBar: true, position: 'top-center', containerId: kind });
       }
     );
   }
 
   return (
     <div>
+      <ToastContainer containerId={kind} />
       {connectionStatus === 'failed' && <span className="badge bg-red-lt">could not connect</span>}
 
       {connectionStatus === 'success' && <span className="badge bg-green-lt">connection verified</span>}

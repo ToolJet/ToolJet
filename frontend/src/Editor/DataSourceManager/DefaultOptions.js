@@ -55,7 +55,7 @@ export const defaultOptions = {
   restapi: {
     url: { value: '' },
     auth_type: { value: 'none' },
-    grant_type: { value: 'client_credentials' },
+    grant_type: { value: 'authorization_code' },
     add_token_to: { value: 'header' },
     header_prefix: { value: 'Bearer ' },
     access_token_url: { value: '' },
