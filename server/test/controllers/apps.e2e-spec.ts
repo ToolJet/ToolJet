@@ -6,6 +6,7 @@ import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { AppUser } from 'src/entities/app_user.entity';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -320,7 +321,6 @@ describe('apps controller', () => {
       const dataQuery = await createDataQuery(app, { application, kind: 'test_kind' })
       const dataSource = await createDataSource(app, { application, kind: 'test_kind', name: 'test_name' })
 
-
       const response = await request(app.getHttpServer())
       .delete(`/apps/${application.id}`)
       .set('Authorization', authHeaderForUser(admin.user))
@@ -331,14 +331,15 @@ describe('apps controller', () => {
       expect(await AppVersion.findOne(version.id)).toBeUndefined()
       expect(await DataQuery.findOne(dataQuery.id)).toBeUndefined()
       expect(await DataSource.findOne(dataSource.id)).toBeUndefined()
+      expect(await AppUser.findOne({appId: application.id})).toBeUndefined()
     })
 
     it('should not be possible for non-admin user to delete an app, cascaded with its versions, queries and data sources', async () => {
       const developer = await createUser(app, { email: 'developer@tooljet.io', role: 'developer' });
       const application = await createApplication(app, { name: 'AppTObeDeleted', user: developer.user });
-      const version = await createApplicationVersion(app, application)
-      const dataQuery = await createDataQuery(app, { application, kind: 'test_kind' })
-      const dataSource = await createDataSource(app, { application, kind: 'test_kind', name: 'test_name' })
+      await createApplicationVersion(app, application)
+      await createDataQuery(app, { application, kind: 'test_kind' })
+      await createDataSource(app, { application, kind: 'test_kind', name: 'test_name' })
 
 
       const response = await request(app.getHttpServer())
