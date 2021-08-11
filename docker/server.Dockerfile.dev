@@ -1,4 +1,5 @@
-FROM ruby:2.7.3-buster
+# pull official base image
+FROM node:14.17.0-buster
 
 RUN apt update && apt install -y \
   build-essential  \
@@ -8,11 +9,16 @@ RUN apt update && apt install -y \
 RUN mkdir -p /app
 WORKDIR /app
 
-COPY Gemfile Gemfile.lock ./
-RUN gem install bundler && bundle install --jobs 20 --retry 5
+COPY ./server/package.json ./server/package-lock.json ./
+RUN npm install
 
-ENV RAILS_ENV=development
+ENV NODE_ENV=development
 
-COPY . ./
+COPY ./server/ ./
 
-RUN ["chmod", "755", "docker/entrypoints/server.sh"]
+COPY ./docker/ ./docker/
+
+COPY ./.env ../.env
+COPY ./.env.test ../.env.test
+
+RUN ["chmod", "755", "entrypoint.sh"]
