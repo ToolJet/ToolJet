@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: tooljet-deployment
 spec:
-  replicas: 4
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -21,12 +21,12 @@ spec:
         - name: docker-secret
       containers:
         - name: container
-          image: tooljet/tooljet-te-ce:latest
+          image: tooljet/saas:latest
           imagePullPolicy: Always
           command: ["npm", "run", '--prefix', 'server', 'start:prod']
           resources:
             limits:
-              memory: "3002Mi"
+              memory: "3001Mi"
               cpu: "500m"
             requests:
               memory: "3000Mi"
@@ -95,10 +95,9 @@ spec:
                   name: smtp
                   key: address
             - name: SMTP_DOMAIN
-              valueFrom:
-                secretKeyRef:
-                  name: smtp
-                  key: domain
+              value: "smtp.sendgrid.net"
+            - name: SMTP_PORT
+              value: "465"
             - name: SMTP_PASSWORD
               valueFrom:
                 secretKeyRef:
