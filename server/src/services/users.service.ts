@@ -93,5 +93,4 @@ export class UsersService {
 
     return await this.usersRepository.update(userId, updateableParams);
   }
-
 }
