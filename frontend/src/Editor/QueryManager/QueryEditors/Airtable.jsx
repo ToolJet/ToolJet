@@ -177,10 +177,9 @@ class Airtable extends React.Component {
                     <CodeHinter
                       currentState={this.props.currentState}
                       initialValue={'{}'}
-                      theme="duotone-light"
                       lineNumbers={true}
                       className="query-hinter"
-                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      theme={'duotone-light'}
                       onChange={(value) => changeOption(this, 'body', value)}
                     />
                   </div>
