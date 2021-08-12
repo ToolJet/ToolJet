@@ -366,12 +366,12 @@ export const componentTypes = [
     }
   },
   {
-    name: 'Toggle',
-    displayName: 'Toggle',
-    description: 'A single Toggle',
-    component: 'Toggle',
+    name: 'ToggleSwitch',
+    displayName: 'Toggle Switch',
+    description: 'Toggle Switch',
+    component: 'ToggleSwitch',
     defaultSize: {
-      width: 100,
+      width: 200,
       height: 25
     },
     others: {
@@ -382,8 +382,7 @@ export const componentTypes = [
       label: { type: 'code', displayName: 'Label' }
     },
     events: {
-        onToggle: { displayName: 'On toggle'},
-        onUnToggle: { displayName: 'On untoggle'},
+        onChange: { displayName: 'On change'},
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' }

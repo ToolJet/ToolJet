@@ -21,7 +21,7 @@ class Switch extends React.Component {
     }
   }
 
-export const Toggle = ({
+export const ToggleSwitch = ({
   id,
   width,
   height,
@@ -39,11 +39,8 @@ export const Toggle = ({
   function toggleValue(e) {
     const toggled = e.target.checked;
     onComponentOptionChanged(component, 'value', toggled);
-    if (toggled) {
-      onEvent('onToggle', { component });
-    } else {
-      onEvent('onUnToggle', { component });
-    }
+    onEvent('onChange', { component });
+
   }
 
   const toggle = () => setOn(!on)
