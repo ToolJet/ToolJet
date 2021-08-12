@@ -5,7 +5,8 @@ export const userService = {
   getAll,
   createUser,
   deleteUser,
-  setPasswordFromToken
+  setPasswordFromToken,
+  updateCurrentUser,
 };
 
 function getAll() {
@@ -42,4 +43,10 @@ function setPasswordFromToken({ token, password, organization, newSignup, firstN
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/set_password_from_token`, requestOptions).then(handleResponse);
+}
+
+function updateCurrentUser(firstName , lastName, password) {
+  const body = { firstName, lastName, password };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/users/update`, requestOptions).then(handleResponse);
 }
