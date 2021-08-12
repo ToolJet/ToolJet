@@ -77,12 +77,14 @@ export class UsersService {
 
   async update(userId: string, params: any) {
 
-    const { forgotPasswordToken, password } = params;
+    const { forgotPasswordToken, password, firstName, lastName } = params;
 
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
 
     const updateableParams = {
       forgotPasswordToken,
+      firstName,
+      lastName,
       password: hashedPassword
     }
 
