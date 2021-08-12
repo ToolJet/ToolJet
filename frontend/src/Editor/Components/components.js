@@ -371,8 +371,8 @@ export const componentTypes = [
     description: 'Radio buttons',
     component: 'RadioButton',
     defaultSize: {
-      width: 300,
-      height: 25
+      width: 150,
+      height: 50
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
@@ -399,7 +399,7 @@ export const componentTypes = [
       properties: {
         label: { value: 'Select' },
         value: { value: '' },
-        values: { value: '{{[1,2]}}' },
+        values: { value: '{{[true,false]}}' },
         display_values: { value: '{{["yes", "no"]}}' },
         visible: { value: true }
       },

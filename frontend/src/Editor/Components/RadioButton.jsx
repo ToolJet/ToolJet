@@ -55,6 +55,7 @@ export const RadioButton = function RadioButton({
 
   return (
     <div style={{ width, height }}  onClick={() => onComponentClick(id, component)}>
+      <span className="form-check-label" style={{color: textColor}}>{label}</span>
       <div onChange={(e) => onSelect(e)}>
         {selectOptions.map((option, index) => (
           <label key={index} class="form-check form-check-inline">
