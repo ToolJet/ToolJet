@@ -26,7 +26,7 @@ function SettingsPage(props) {
     response.then(() => {
       toast.success('Password updated successfully', { hideProgressBar: true, autoClose: 3000 });
     }).catch(() => {
-      toast.error('Please verify you entered the correct password', { hideProgressBar: true, autoClose: 3000 });
+      toast.error('Please verify that you have entered the correct password', { hideProgressBar: true, autoClose: 3000 });
     })
     setPasswordChangeInProgress(false);
   }
