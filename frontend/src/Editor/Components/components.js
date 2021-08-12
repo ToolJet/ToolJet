@@ -371,8 +371,8 @@ export const componentTypes = [
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
-      width: 200,
-      height: 25
+      width: 150,
+      height: 50
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},

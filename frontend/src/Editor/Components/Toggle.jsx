@@ -33,6 +33,7 @@ export const ToggleSwitch = ({
 }) => {
     
   const [on, setOn] = React.useState(false)
+  const label = component.definition.properties.label.value;
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
 
@@ -47,6 +48,7 @@ export const ToggleSwitch = ({
 
   return (
     <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+        <span className="form-check-label" style={{color: textColor}}>{label}</span>
         <Switch on={on} onClick={toggle} onChange={toggleValue} />
     </div>
   );
