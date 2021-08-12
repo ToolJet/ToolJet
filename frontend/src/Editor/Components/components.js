@@ -368,7 +368,7 @@ export const componentTypes = [
   {
     name: 'Radio-button',
     displayName: 'Radio Button',
-    description: 'A single radio button',
+    description: 'Radio buttons',
     component: 'RadioButton',
     defaultSize: {
       width: 300,
