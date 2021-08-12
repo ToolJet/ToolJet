@@ -25,10 +25,18 @@ function SettingsPage(props) {
     const response = userService.changePassword(currentpassword, newPassword)
     response.then(() => {
       toast.success('Password updated successfully', { hideProgressBar: true, autoClose: 3000 });
+      setCurrentPassword('')
+      setNewPassword('')
     }).catch(() => {
       toast.error('Please verify that you have entered the correct password', { hideProgressBar: true, autoClose: 3000 });
     })
     setPasswordChangeInProgress(false);
+  }
+
+  const newPasswordKeyPressHandler = async event => {
+    if (event.key === 'Enter') {
+      changePassword()
+    }
   }
 
   return (
@@ -125,6 +133,7 @@ function SettingsPage(props) {
                               placeholder="Enter new password"
                               value={newPassword}
                               onChange={event => setNewPassword(event.target.value)}
+                              onKeyPress={newPasswordKeyPressHandler}
                             />
                       </div>
                     </div>
