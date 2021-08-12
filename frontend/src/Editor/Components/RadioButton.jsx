@@ -44,10 +44,10 @@ export const RadioButton = function RadioButton({
 
 
   function onSelect(event) {
-    const checked = event.target.value
-    onComponentOptionChanged(component, 'value', checked);
-    if (checked) {
-      onEvent('onCheck', { component });
+    const selection = event.target.value
+    onComponentOptionChanged(component, 'value', selection);
+    if (selection) {
+      onEvent('onSelectionChange', { component });
     } 
   }
 

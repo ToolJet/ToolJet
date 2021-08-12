@@ -385,8 +385,8 @@ export const componentTypes = [
       display_values: { type: 'code', displayName: 'Option labels' }
     },
     events: {
-      onCheck: { displayName: 'On select'},
-   },
+      onSelectionChange: { displayName: 'On select'},
+    },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' }
     },
@@ -399,12 +399,12 @@ export const componentTypes = [
       properties: {
         label: { value: 'Select' },
         value: { value: '' },
-        values: { value: '{{[1,2,3]}}' },
-        display_values: { value: '{{["one", "two", "three"]}}' },
+        values: { value: '{{[1,2]}}' },
+        display_values: { value: '{{["yes", "no"]}}' },
         visible: { value: true }
       },
       events: {
-        onCheck: { 
+        onSelectionChange: { 
           options: {
 
           }
