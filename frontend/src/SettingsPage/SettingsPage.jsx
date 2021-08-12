@@ -7,15 +7,28 @@ import { toast } from 'react-toastify';
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name)
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name)
-  const [password, setPassword] = React.useState('')
+  const [currentpassword, setCurrentPassword] = React.useState('')
+  const [newPassword, setNewPassword] = React.useState('')
   const [updateInProgress, setUpdateInProgress] = React.useState(false)
+  const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false)
 
   const updateDetails = async () => {
     setUpdateInProgress(true);
-    const updatedDetails = await userService.updateCurrentUser(firstName, lastName, password);
+    const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
     authenticationService.updateCurrentUserDetails(updatedDetails)
     toast.success('Details updated!', { hideProgressBar: true, autoClose: 3000 });
     setUpdateInProgress(false);
+  }
+
+  const changePassword = async () => {
+    setPasswordChangeInProgress(true)
+    const response = userService.changePassword(currentpassword, newPassword)
+    response.then(() => {
+      toast.success('Password updated successfully', { hideProgressBar: true, autoClose: 3000 });
+    }).catch(() => {
+      toast.error('Please verify you entered the correct password', { hideProgressBar: true, autoClose: 3000 });
+    })
+    setPasswordChangeInProgress(false);
   }
 
   return (
@@ -69,17 +82,7 @@ function SettingsPage(props) {
                     </div>
                   </div>
                 </div>
-                <div className="mb-3">
-                  <label className="form-label">Password</label>
-                  <input
-                        type="password"
-                        className="form-control"
-                        name="last-name"
-                        placeholder="Enter new password if you wish to change it"
-                        value={password}
-                        onChange={event => setPassword(event.target.value)}
-                      />
-                </div>
+
                 <a
                   href="#"
                   className={"btn btn-primary" + (updateInProgress ? '  btn-loading' : '')}
@@ -91,6 +94,52 @@ function SettingsPage(props) {
                 {/* The div below is a placeholder to prevent it from affecting the button above.  */}
                 <div></div>
               </div>
+            </div>
+            <br />
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Change password</h3>
+              </div>
+              <div class="card-body">
+                <div className="row">
+                    <div className="col">
+                      <div className="mb-3">
+                        <label className="form-label">Current password</label>
+                        <input
+                              type="password"
+                              className="form-control"
+                              name="last-name"
+                              placeholder="Enter current password"
+                              value={currentpassword}
+                              onChange={event => setCurrentPassword(event.target.value)}
+                            />
+                      </div>
+                    </div>
+                    <div className="col">
+                      <div className="mb-3">
+                        <label className="form-label">New password</label>
+                        <input
+                              type="password"
+                              className="form-control"
+                              name="last-name"
+                              placeholder="Enter new password"
+                              value={newPassword}
+                              onChange={event => setNewPassword(event.target.value)}
+                            />
+                      </div>
+                    </div>
+                  </div>
+                  <a
+                    href="#"
+                    className={"btn btn-primary" + (passwordChangeInProgress ? '  btn-loading' : '')}
+                    onClick={changePassword}
+                    >
+                      Change password
+                  </a>
+                  {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
+                  {/* The div below is a placeholder to prevent it from affecting the button above.  */}
+                  <div></div>
+                </div>
             </div>
           </div>
         </div>
