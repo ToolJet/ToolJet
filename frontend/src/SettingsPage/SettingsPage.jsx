@@ -80,9 +80,16 @@ function SettingsPage(props) {
                         onChange={event => setPassword(event.target.value)}
                       />
                 </div>
-                <a href="#" className={"btn btn-primary" + (updateInProgress ? '  btn-loading' : '')} onClick={updateDetails}>
-                  Update
+                <a
+                  href="#"
+                  className={"btn btn-primary" + (updateInProgress ? '  btn-loading' : '')}
+                  onClick={updateDetails}
+                  >
+                    Update
                 </a>
+                {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
+                {/* The div below is a placeholder to prevent it from affecting the button above.  */}
+                <div></div>
               </div>
             </div>
           </div>
