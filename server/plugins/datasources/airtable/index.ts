@@ -52,10 +52,10 @@ export default class AirtableQueryService implements QueryService {
             json: {
               "records": [
                 {
-                   "id": queryOptions['record_id'],
-                   "fields": JSON.parse(queryOptions['body'])
-               }
-           ]
+                  "id": queryOptions['record_id'],
+                  "fields": JSON.parse(queryOptions['body'])
+                }
+              ]
             }
           });
 
