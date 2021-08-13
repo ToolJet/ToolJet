@@ -15,6 +15,7 @@ import { Multiselect } from './Components/Multiselect';
 import { Modal } from './Components/Modal';
 import { Chart } from './Components/Chart';
 import { Map } from './Components/Map/Map';
+import { RadioButton } from './Components/RadioButton'
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
@@ -35,6 +36,7 @@ const AllComponents = {
   Modal,
   Chart,
   Map,
+  RadioButton
 };
 
 export const Box = function Box({
