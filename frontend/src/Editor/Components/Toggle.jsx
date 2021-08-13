@@ -8,14 +8,14 @@ class Switch extends React.Component {
         onChange
       } = this.props
       return (
-        <label className="form-check form-switch my-2">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            checked={on}
-            onChange={onChange}
-            onClick={onClick}
-          />
+          <label className="form-check form-switch form-check-inline">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              checked={on}
+              onChange={onChange}
+              onClick={onClick}
+            />
         </label>
       )
     }
@@ -47,9 +47,11 @@ export const ToggleSwitch = ({
   const toggle = () => setOn(!on)
 
   return (
-    <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
-        <span className="form-check-label" style={{color: textColor}}>{label}</span>
-        <Switch on={on} onClick={toggle} onChange={toggleValue} />
+    <div className="row" style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+        <span className="form-check-label form-check-label col-auto" style={{color: textColor}}>{label}</span>
+        <div className="col">
+          <Switch on={on} onClick={toggle} onChange={toggleValue} />
+        </div>
     </div>
   );
 };
