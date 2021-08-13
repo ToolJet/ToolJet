@@ -35,12 +35,18 @@ function dropDatabase(): void {
       process.env.PG_DB;
 
     exec(dropdb, (err, _stdout, _stderr) => {
-      if (err) {
-        console.error(err);
+      if (!err) {
+        console.log(`Dropped database ${envVars.PG_DB}`);
         return;
       }
 
-      console.log(`Dropped database ${envVars.PG_DB}`);
+      const errorMessage = `database "${envVars.PG_DB}" does not exist`;
+
+      if (err.message.includes(errorMessage)) {
+        console.log(errorMessage);
+      } else {
+        console.error(err);
+      }
     });
   });
 }
