@@ -35,7 +35,7 @@ function buildConnectionOptions(
     uuidExtension: 'pgcrypto',
     migrationsRun: false,
     logging: data.ORM_LOGGING || false,
-    migrations: ['dist/migrations/**/*{.ts,.js}'],
+    migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
     cli: {
       migrationsDir: 'migrations',
     },

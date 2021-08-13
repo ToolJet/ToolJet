@@ -5,6 +5,9 @@ import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { FolderApp } from 'src/entities/folder_app.entity';
+import { DataSource } from 'src/entities/data_source.entity';
+import { DataQuery } from 'src/entities/data_query.entity';
 
 @Injectable()
 export class AppsService {
@@ -18,6 +21,15 @@ export class AppsService {
 
     @InjectRepository(AppUser)
     private appUsersRepository: Repository<AppUser>,
+
+    @InjectRepository(DataSource)
+    private dataSourcesRepository: Repository<DataSource>,
+
+    @InjectRepository(DataQuery)
+    private dataQueriesRepository: Repository<DataQuery>,
+
+    @InjectRepository(FolderApp)
+    private folderAppsRepository: Repository<FolderApp>,
   ) { }
 
   async find(id: string): Promise<App> {
@@ -101,6 +113,28 @@ export class AppsService {
     Object.keys(updateableParams).forEach(key => updateableParams[key] === undefined ? delete updateableParams[key] : {});
 
     return await this.appsRepository.update(appId, updateableParams);
+  }
+
+  async delete(appId: string) {
+
+    await this.appsRepository.update(appId, { currentVersionId: null } );
+
+    const repositoriesToFetchEntitiesToBeDeleted:Repository<any>[] = [
+      this.appUsersRepository,
+      this.folderAppsRepository,
+      this.dataQueriesRepository,
+      this.dataSourcesRepository,
+      this.appVersionsRepository
+    ];
+
+    for(const repository of repositoriesToFetchEntitiesToBeDeleted) {
+      const entities = await repository.find({
+        where: { appId }
+      })
+      for(const entity of entities) { await repository.delete(entity.id) };
+    }
+
+    return await this.appsRepository.delete(appId);
   }
 
   async fetchUsers(user: any, appId: string): Promise<AppUser[]> {

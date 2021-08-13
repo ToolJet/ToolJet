@@ -13,9 +13,11 @@ import '@/_styles/theme.scss';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import {ForgotPassword} from '@/ForgotPassword'
 import { ResetPassword } from '@/ResetPassword';
+import { lt } from 'semver';
 
 class App extends React.Component {
   constructor(props) {
@@ -52,7 +54,7 @@ class App extends React.Component {
       tooljetService.fetchMetaData().then((data) => {
         this.setState({ fetchedMetadata: true, onboarded: data.onboarded });
 
-        if(data.installed_version < data.latest_version && data.version_ignored === false) {
+        if(lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
       })
@@ -86,6 +88,7 @@ class App extends React.Component {
           <PrivateRoute exact path="/applications/:slug" component={Viewer} switchDarkMode={this.switchDarkMode} darkMode={darkMode}/>
           <PrivateRoute exact path="/oauth2/authorize" component={Authorize} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
           <PrivateRoute exact path="/users" component={ManageOrgUsers} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+          <PrivateRoute exact path="/settings" component={SettingsPage} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
         </div>
       </Router>
     );

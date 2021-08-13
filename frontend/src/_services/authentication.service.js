@@ -9,6 +9,7 @@ export const authenticationService = {
   login,
   logout,
   signup,
+  updateCurrentUserDetails,
   currentUser: currentUserSubject.asObservable(),
   get currentUserValue() { return currentUserSubject.value; }
 };
@@ -29,6 +30,13 @@ function login(email, password) {
 
       return user;
     });
+}
+
+function updateCurrentUserDetails(details) {
+  const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
+  const updatedUserDetails = Object.assign({}, currentUserDetails, details)
+  localStorage.setItem('currentUser', JSON.stringify(updatedUserDetails));
+  currentUserSubject.next(updatedUserDetails);
 }
 
 function signup(email) {

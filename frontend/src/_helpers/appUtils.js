@@ -204,7 +204,7 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
     }
   }
 
-  if (['onPageChanged', 'onSearch'].includes(eventName)) {
+  if (['onPageChanged', 'onSearch', 'onSelectionChange'].includes(eventName)) {
     const { component } = options;
     const event = component.definition.events[eventName];
 

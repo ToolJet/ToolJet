@@ -6,6 +6,7 @@ import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -103,6 +104,13 @@ class ManageOrgUsers extends React.Component {
     authenticationService.logout();
     history.push('/login');
   };
+
+  generateInvitationURL = user => window.location.origin + '/invitations/' + user.invitation_token
+
+  invitationLinkCopyHandler = () => {
+    toast.info('Invitation URL copied', { hideProgressBar: true, position: 'bottom-right' });
+  }
+
 
   render() {
     const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole, archivingUser } = this.state;
@@ -299,6 +307,18 @@ class ManageOrgUsers extends React.Component {
                                   className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
                                 ></span>
                                 <small className="user-status">{user.status}</small>
+                                {
+                                  user.status === 'invited' && ('invitation_token' in user) ?
+
+                                    <CopyToClipboard
+                                      text={this.generateInvitationURL(user)}
+                                      onCopy={this.invitationLinkCopyHandler}
+                                    >
+                                      <img className='svg-icon' src="/assets/images/icons/copy.svg" width="15" height="15"></img>
+                                    </CopyToClipboard>
+                                  :
+                                    ''
+                                }
                               </td>
                               <td>
                                 {archivingUser === null && (

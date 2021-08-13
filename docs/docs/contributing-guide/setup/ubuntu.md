@@ -29,7 +29,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
    :::info
    `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure   random key)
 
-   `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key) 
+   `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
    :::
 
    Example:
@@ -64,3 +64,25 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
 9. ## Creating login credentials
 Visiting https://localhost:8082 should redirect you to the login page, click on the signup link and enter your email. The emails sent by the server in development environment are captured and are opened in your default browser. Click the invitation link in the email preview to setup the account.
+
+
+10. ## Running tests
+
+Test config requires the presence of `.env.test` file at the root of the project.
+
+To run the unit tests
+
+```bash
+$ npm run --prefix server test
+```
+
+To run e2e tests
+
+```bash
+npm run --prefix server test:e2e
+```
+
+To run a specific unit test
+```bash
+npm run --prefix server test <path-to-file>
+```
