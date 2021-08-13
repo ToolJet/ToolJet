@@ -17,7 +17,6 @@ services:
     command: ['npm', 'start']
 
   server:
-    # env_file: .env
     build:
       context: .
       dockerfile: ./docker/server.Dockerfile.dev
@@ -29,13 +28,6 @@ services:
       - /app/node_modules/
     ports:
       - 3000:3000
-    environment:
-      - NODE_ENV=development
-      - PG_DB=tooljet_development
-      - PG_USER=postgres
-      - PG_PASS=postgres
-      - PG_HOST=postgres
-    entrypoint: ./entrypoint.sh  
     command: npm run start:dev
 
   postgres:
@@ -46,8 +38,6 @@ services:
     volumes:
       - postgres:/data/postgres
     environment:
-      - POSTGRES_DB=tooljet_development
-      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
 
 volumes:
