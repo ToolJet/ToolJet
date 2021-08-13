@@ -59,7 +59,7 @@ export const RadioButton = function RadioButton({
       <div className="col" onChange={(e) => onSelect(e)}>
         {selectOptions.map((option, index) => (
           <label key={index} class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" value={option.name} name="radio-options" /> 
+            <input class="form-check-input" type="radio" value={option.value} name="radio-options" /> 
             <span className="form-check-label" style={{color: textColor}}>{option.name}</span>
           </label>
         ))}
