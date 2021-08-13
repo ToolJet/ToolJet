@@ -8,7 +8,8 @@
     "empty-state-dashboard.spec.js",
     "dashboard.spec.js",
     "apps-page-operations.spec.js",
-    "editor-navigation-bar.spec.js"
+    "editor-navigation-bar.spec.js",
+    "editor-datasource-postgres.spec.js"
     ]
     
 }

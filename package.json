@@ -25,6 +25,8 @@
         "start:prod": "npm --prefix server run start:prod",
         "deploy": "cp -a frontend/build/. public/",
         "heroku-postbuild": "npm run build && npm run deploy",
-        "heroku-prebuild": "npm --prefix frontend install && npm --prefix server install "
+        "heroku-prebuild": "npm --prefix frontend install && npm --prefix server install ",
+        "cy:run": "cypress run --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
+        "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD"
     }
 }
