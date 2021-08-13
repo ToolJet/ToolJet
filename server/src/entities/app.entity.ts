@@ -49,8 +49,10 @@ export class App extends BaseEntity {
 
   @AfterInsert()
   updateSlug() {
-    const userRepository = getRepository(App);
-    userRepository.update(this.id, { slug: this.id })
+    if (!this.slug) {
+      const appRepository = getRepository(App);
+      appRepository.update(this.id, { slug: this.id })
+    }
   }
 
   protected definition;
@@ -58,13 +60,5 @@ export class App extends BaseEntity {
   @AfterLoad()
   afterLoad(): void {
     this.definition = this.currentVersion?.definition;
-  }
-
-  @AfterInsert()
-  generateSlug() {
-    if (!this.slug) {
-      this.slug = this.id;
-      this.save();
-    }
   }
 }
