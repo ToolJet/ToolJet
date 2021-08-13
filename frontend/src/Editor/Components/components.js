@@ -416,6 +416,54 @@ export const componentTypes = [
     }
   },
   {
+    name: 'ToggleSwitch',
+    displayName: 'Toggle Switch',
+    description: 'Toggle Switch',
+    component: 'ToggleSwitch',
+    defaultSize: {
+      width: 150,
+      height: 50
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
+    properties: {
+      label: { type: 'code', displayName: 'Label' }
+    },
+    events: {
+        onChange: { displayName: 'On change'},
+    },
+    styles: {
+      textColor: { type: 'color', displayName: 'Text Color' }
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
+      properties: {
+        label: { value: 'Toggle label' }
+      },
+      events: {
+        onToggle: {
+          options: {
+
+          }
+        },
+        onUnToggle: {
+          options: {
+
+          }
+        }
+      },
+      styles: {
+        textColor: { value: '#000' }
+      }
+    }
+  },
+  {
     name: 'Textarea',
     displayName: 'Textarea',
     description: 'Text area form field',
