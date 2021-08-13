@@ -1,0 +1,47 @@
+@import './colors.scss';
+
+.left-sidebar {
+  background: $white;
+
+  .left-sidebar-item {
+    margin: 10px;
+    text-align: center;
+    padding-top: 1vw;
+    padding-bottom: 1vw;
+    border-bottom: 1px solid $grey;
+    transition: all .2s ease-in-out;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+  .left-sidebar-stack-bottom {
+    width: 3%;
+    position: fixed;
+    bottom: 12vw;
+    height: 50px;
+    text-align: center;
+  }
+  .popover {
+    position: fixed;
+    left: 3%;
+    top: 7.5%;
+    overflow: auto;
+    max-height: 60%;
+  }
+  .datasources-popover {
+    top: 17.5%;
+  }
+  .zoom-popover {
+    top: 69.5%;
+  }
+  .show {
+    display: block;
+  }
+  .hide {
+    display: none;
+  }
+  .dark-mode {
+    transform: scale(.7);
+  }
+}

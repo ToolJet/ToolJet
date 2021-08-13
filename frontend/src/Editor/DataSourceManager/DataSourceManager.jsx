@@ -41,6 +41,16 @@ class DataSourceManager extends React.Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    if(prevProps.selectedDataSource != this.props.selectedDataSource) {
+      this.setState({
+        selectedDataSource: this.props.selectedDataSource,
+        options: this.props.selectedDataSource?.options,
+        dataSourceMeta: DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource?.kind)
+      })
+    }
+  }
+
   selectDataSource = (source) => {
     this.setState({
       dataSourceMeta: source,
@@ -207,7 +217,7 @@ class DataSourceManager extends React.Component {
                     </div>
                   ))}
                 </div>
-                <div className="row row-deck mt-5">
+                <div className="row row-deck mt-2">
                   <h4 className="text-muted mb-2">APIS</h4>
                   {apiSources.map((dataSource) => (
                     <div className="col-md-2" key={dataSource.name}>

@@ -64,12 +64,11 @@ body {
 
   .left-sidebar {
     height: 100%;
-    width: 12%;
-    // position: fixed;
+    width: 3%;
+    position: fixed;
     z-index: 1;
     left: 0;
     overflow-x: hidden;
-
     flex: 1 1 auto;
     background-color: #fff;
     background-clip: border-box;
@@ -237,8 +236,8 @@ body {
   }
 
   .main {
-    margin-left: 12%;
-    width: 73%;
+    margin-left: 3%;
+    width: 82%;
     top: 0;
 
     .canvas-container::-webkit-scrollbar {
@@ -258,7 +257,7 @@ body {
 
     .canvas-container {
       height: 100%;
-      width: 73%;
+      width: 82%;
       top: 56px;
       position: fixed;
       overflow-y: auto;
@@ -298,10 +297,10 @@ body {
 
     .query-pane {
       height: 350px;
-      width: 73%;
+      width: 82%;
       position: fixed;
-      z-index: 1;
-      left: 12%;
+      // z-index: 1;
+      left: 3%;
       bottom: 0;
       overflow-x: hidden;
       flex: 1 1 auto;
@@ -366,9 +365,10 @@ body {
           border-width: 0px 0px 1px 0px;
           background: white;
           position: fixed;
-          z-index: 2;
-          width: 54%;
+          z-index: 3;
+          width: 61.5%;
           margin-top: 0px;
+          padding: 0.5px;
         }
 
         .preview-header {

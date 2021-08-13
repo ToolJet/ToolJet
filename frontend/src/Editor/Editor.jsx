@@ -2,15 +2,16 @@ import React from 'react';
 import {
   datasourceService, dataqueryService, appService, authenticationService
 } from '@/_services';
-import { DarkModeToggle } from '@/_components/DarkModeToggle';
+// import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
+import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
-import ReactJson from 'react-json-view';
-import { DataSourceManager } from './DataSourceManager';
+// import ReactJson from 'react-json-view';
+// import { DataSourceManager } from './DataSourceManager';
 import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
 import { QueryManager } from './QueryManager';
 import { toast } from 'react-toastify';
@@ -29,7 +30,7 @@ import {
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
-import { Resizable } from 're-resizable';
+// import { Resizable } from 're-resizable';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import queryString from 'query-string';
@@ -221,8 +222,7 @@ class Editor extends React.Component {
   };
 
   switchSidebarTab = (tabIndex) => {
-    if (tabIndex == 2)
-    {
+    if (tabIndex == 2) {
       this.setState({ selectedComponent: null });
     }
     this.setState({
@@ -438,10 +438,18 @@ class Editor extends React.Component {
   }
 
   onVersionDeploy = (versionId) => {
-    this.setState({ app: {
-      ...this.state.app,
-      current_version_id: versionId
-    }})
+    this.setState({
+      app: {
+        ...this.state.app,
+        current_version_id: versionId
+      }
+    })
+  }
+
+  onZoomChanged = (zoom) => {
+    this.setState({
+      zoomLevel: zoom
+    })
   }
 
   render() {
@@ -515,7 +523,7 @@ class Editor extends React.Component {
                     value={this.state.app.name}
                   />
                 )}
-                <div className="editor-buttons">
+                {/* <div className="editor-buttons">
                   <span
                     className={`btn ${showLeftSidebar ? 'btn-light' : 'btn-default'} mx-2`}
                     onClick={this.toggleLeftSidebar}
@@ -535,8 +543,8 @@ class Editor extends React.Component {
                       height="12"
                     />
                   </span>
-                </div>
-                <div className="canvas-buttons">
+                </div> */}
+                {/* <div className="canvas-buttons">
                   <button
                     className="btn btn-light mx-2"
                     onClick={() => this.setState({ zoomLevel: ((Math.round(zoomLevel*10) - 1)/10).toFixed(1) }) }
@@ -554,7 +562,7 @@ class Editor extends React.Component {
                   >
                     <img src="/assets/images/icons/zoom-in.svg" width="12" height="12" />
                   </button>
-                </div>
+                </div> */}
                 <div className="layout-buttons">
                   <div className="btn-group" role="group" aria-label="Basic example">
                     <button
@@ -576,35 +584,35 @@ class Editor extends React.Component {
                   </div>
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
-                  <div className="mx-3" style={{ marginTop: '7px'}}>
+                  {/* <div className="mx-3" style={{ marginTop: '7px'}}>
                     <DarkModeToggle
                       switchDarkMode={this.props.switchDarkMode}
                       darkMode={this.props.darkMode}
                     />
-                  </div>
+                  </div> */}
                   <div className="nav-item dropdown d-none d-md-flex me-3">
                     {app.id
-                     && <ManageAppUsers
-                       app={app}
-                       slug={slug}
-                       darkMode={this.props.darkMode}
-                       handleSlugChange={this.handleSlugChange} />}
+                      && <ManageAppUsers
+                        app={app}
+                        slug={slug}
+                        darkMode={this.props.darkMode}
+                        handleSlugChange={this.handleSlugChange} />}
                   </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
-                    <a href={appLink} target="_blank" className={`btn btn-sm ${app?.current_version_id ? '': 'disabled'}`} rel="noreferrer">
+                    <a href={appLink} target="_blank" className={`btn btn-sm ${app?.current_version_id ? '' : 'disabled'}`} rel="noreferrer">
                       Launch
                     </a>
                   </div>
                   <div className="nav-item dropdown me-2">
                     {app.id && (
-                        <SaveAndPreview
-                          appId={app.id}
-                          appName={app.name}
-                          appDefinition={appDefinition}
-                          app={app}
-                          darkMode={this.props.darkMode}
-                          onVersionDeploy={this.onVersionDeploy}
-                        />
+                      <SaveAndPreview
+                        appId={app.id}
+                        appName={app.name}
+                        appDefinition={appDefinition}
+                        app={app}
+                        darkMode={this.props.darkMode}
+                        onVersionDeploy={this.onVersionDeploy}
+                      />
                     )}
                   </div>
                 </div>
@@ -612,7 +620,18 @@ class Editor extends React.Component {
             </header>
           </div>
           <div className="sub-section">
-            <Resizable
+            <LeftSidebar
+              queries={currentState.queries}
+              components={currentState.components}
+              globals={currentState.globals}
+              appId={appId}
+              darkMode={this.props.darkMode} 
+              dataSources={this.state.dataSources}
+              dataSourcesChanged={this.dataSourcesChanged}
+              onZoomChanged={this.onZoomChanged}
+              switchDarkMode={this.props.switchDarkMode}
+            />
+            {/* <Resizable
               minWidth={showLeftSidebar ? '12%' : '0%'}
               style={{
                 position: 'fixed',
@@ -733,7 +752,7 @@ class Editor extends React.Component {
                   )}
                 </div>
               </div>
-            </Resizable>
+            </Resizable> */}
             <div className="main">
               <div className="canvas-container align-items-center" style={{ transform: `scale(${zoomLevel})` }}>
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
@@ -783,7 +802,7 @@ class Editor extends React.Component {
                         </div>
                         <div className="col-auto px-3">
                           <button className="btn btn-sm btn-light mx-2" onClick={this.toggleQuerySearch}>
-                            <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17"/>
+                            <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17" />
                           </button>
 
                           <span
