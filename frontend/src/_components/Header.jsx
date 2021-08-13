@@ -19,6 +19,10 @@ export const Header = function Header({
     history.push('/login');
   }
 
+  function openSettings() {
+    history.push('/settings')
+  }
+
   const { first_name, last_name } = authenticationService.currentUserValue;
 
   return <header className="navbar navbar-expand-md navbar-light d-print-none">
@@ -78,6 +82,9 @@ export const Header = function Header({
             </div>
           </a>
           <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+          <a data-testId="settingsBtn" onClick={openSettings} className="dropdown-item">
+              Settings
+            </a>
             <a data-testId="logoutBtn" onClick={logout} className="dropdown-item">
               Logout
             </a>
