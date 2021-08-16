@@ -16,7 +16,7 @@ export const LeftSidebar = ({ appId, switchDarkMode, darkMode = false, globals, 
       <LeftSidebarDataSources darkMode={darkMode} appId={appId} dataSources={dataSources} dataSourcesChanged={dataSourcesChanged} />
       {/* <LeftSidebarItem icon='debugger' className='left-sidebar-item' /> */}
       <Link to={'/'}>
-        <LeftSidebarItem tip='back to home' icon='back' className='left-sidebar-item no-border' />
+        <LeftSidebarItem tip='Back to home' icon='back' className='left-sidebar-item no-border' />
       </Link>
       <div className='left-sidebar-stack-bottom'>
         <LeftSidebarZoom onZoomChanged={onZoomChanged} />
