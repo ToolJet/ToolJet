@@ -69,7 +69,7 @@ export const DarkModeToggle = function DarkModeToggle({ darkMode = false, switch
           <animated.circle style={maskedCircleProps} r="9" fill="black" />
         </mask>
 
-        <animated.circle cx="12" cy="12" style={centerCircleProps} fill={darkMode ? 'black' : '#808080'} mask="url(#myMask2)" />
+        <animated.circle cx="12" cy="12" style={centerCircleProps} fill={darkMode ? 'white' : '#808080'} mask="url(#myMask2)" />
         <animated.g stroke="currentColor" style={linesProps}>
           <line x1="12" y1="1" x2="12" y2="3" />
           <line x1="12" y1="21" x2="12" y2="23" />
