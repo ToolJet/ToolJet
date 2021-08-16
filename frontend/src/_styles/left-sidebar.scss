@@ -4,7 +4,7 @@
   background: $white;
 
   .left-sidebar-item {
-    margin: 10px;
+    margin: 5px;
     text-align: center;
     padding-top: 1vw;
     padding-bottom: 1vw;
@@ -35,6 +35,10 @@
   }
   .zoom-popover {
     top: 69.5%;
+  }
+  .sidebar-zoom {
+    white-space: nowrap;
+    font-size: 12px;
   }
   .show {
     display: block;

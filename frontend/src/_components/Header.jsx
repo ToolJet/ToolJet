@@ -60,7 +60,7 @@ export const Header = function Header({
         </li>
       </ul>
       <div className="navbar-nav flex-row order-md-last">
-        <div className="p-1">
+        <div className="p-1 m-1">
           <DarkModeToggle
             switchDarkMode={switchDarkMode}
             darkMode={darkMode}

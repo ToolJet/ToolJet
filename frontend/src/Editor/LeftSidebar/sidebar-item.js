@@ -5,7 +5,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 export const LeftSidebarItem = ({ tip = '', className, icon, text, onClick, ...rest }) => {
   return (
     <OverlayTrigger
-      placement="right"
+      placement="bottom"
       delay={{ show: 250, hide: 400 }}
       overlay={<Tooltip id="button-tooltip">
         {tip}

@@ -42,7 +42,7 @@ export const DarkModeToggle = function DarkModeToggle({ darkMode = false, switch
 
   return (
     <OverlayTrigger
-      placement="right"
+      placement="bottom"
       delay={{ show: 250, hide: 400 }}
       overlay={<Tooltip id="button-tooltip">{darkMode ? 'Activate light mode' : 'Activate dark mode'}</Tooltip>}
     >
