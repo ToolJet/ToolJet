@@ -35,12 +35,18 @@ function createDatabase(): void {
       process.env.PG_DB;
 
     exec(createdb, (err, _stdout, _stderr) => {
-      if (err) {
-        console.error(err);
+      if (!err) {
+        console.log(`Created database ${envVars.PG_DB}`);
         return;
       }
 
-      console.log(`Created database ${envVars.PG_DB}`);
+      const errorMessage = `database "${envVars.PG_DB}" already exists`;
+
+      if (err.message.includes(errorMessage)) {
+        console.log(errorMessage);
+      } else {
+        console.error(err);
+      }
     });
   });
 }
