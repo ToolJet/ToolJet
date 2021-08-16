@@ -8,15 +8,15 @@ export const QrScanner = function QrScanner({
 }) {
 
   const handleError = async (errorMessage) => {
-    console.log(errorMessage)
-    setErrorOccured(true)
+    console.log(errorMessage);
+    setErrorOccured(true);
   };
 
   const handleScan = async (data) => {
     if (data != null) {
-      onEvent('onDetect', { component, data: data })
-      onComponentOptionChanged(component, 'lastDetectedValue', data)
-    }
+      onEvent('onDetect', { component, data: data });
+      onComponentOptionChanged(component, 'lastDetectedValue', data);
+    };
   };
 
   const active = resolveReferences(
