@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
-const noop = () => { };
+const noop = () => {};
 const useEscapeHandler = (handler = noop, dependencies = []) => {
   const escapeHandler = (e) => {
     if (e.code === 'Escape') {
@@ -8,16 +8,15 @@ const useEscapeHandler = (handler = noop, dependencies = []) => {
   };
   useEffect(() => {
     document === null || document === void 0 ? void 0 : document.addEventListener('keyup', escapeHandler);
-    return () => document === null || document === void 0 ? void 0 : document.removeEventListener('keyup', escapeHandler);
+    return () =>
+      document === null || document === void 0 ? void 0 : document.removeEventListener('keyup', escapeHandler);
   }, dependencies);
 };
 const useClickOutside = (handler = noop, dependencies) => {
   const callbackRef = useRef(handler);
   const ref = useRef(null);
   const outsideClickHandler = (e) => {
-    if (callbackRef.current &&
-      ref.current &&
-      !ref.current.contains(e.target)) {
+    if (callbackRef.current && ref.current && !ref.current.contains(e.target)) {
       callbackRef.current(e);
     }
   };
@@ -27,7 +26,8 @@ const useClickOutside = (handler = noop, dependencies) => {
   });
   useEffect(() => {
     document === null || document === void 0 ? void 0 : document.addEventListener('click', outsideClickHandler);
-    return () => document === null || document === void 0 ? void 0 : document.removeEventListener('click', outsideClickHandler);
+    return () =>
+      document === null || document === void 0 ? void 0 : document.removeEventListener('click', outsideClickHandler);
   }, dependencies);
   return ref;
 };

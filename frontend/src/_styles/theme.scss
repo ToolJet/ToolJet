@@ -7,6 +7,8 @@ body {
 .editor {
   .header-container {
     max-width: 100%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 
   .resizer-active {
@@ -1666,7 +1668,7 @@ input:focus-visible {
   }
 
   .card-body > :last-child {
-    color: #c3c3c3!important;
+    color: #fff!important;
   }
 
   .form-control { 
@@ -1674,7 +1676,7 @@ input:focus-visible {
   }
 
   .card {
-    background-color: #2f3c4c!important;
+    background-color: #1f2936!important;
   }
 
   .DateInput {
@@ -1721,7 +1723,7 @@ input:focus-visible {
   .modal-content, .modal-header {
     background-color: #1f2936!important;
     .text-muted {
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
@@ -1748,7 +1750,7 @@ input:focus-visible {
 
   .query-list {
     .text-muted { 
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
@@ -1791,16 +1793,16 @@ input:focus-visible {
     border: solid rgba(255, 255, 255, 0.09);
     border-width: 0px 1px 3px 0px;
     .text-muted { 
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
   .folder-list {
-    color: #c3c3c3!important;
+    color: #fff!important;
   }
 
   .app-title {
-    color: #c3c3c3!important;
+    color: #fff!important;
   }
 
   .RichEditor-root {
@@ -1809,7 +1811,7 @@ input:focus-visible {
   }
 
   .app-description {
-    color: #c3c3c3!important;
+    color: #fff!important;
   }
 
   .btn-light, .btn-outline-light {
@@ -1842,7 +1844,7 @@ input:focus-visible {
 
   .app-users-list { 
     .text-muted {
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
@@ -1856,7 +1858,7 @@ input:focus-visible {
     border-width: 0px 0px 1px 0px!important;
 
     .text-muted { 
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
@@ -1879,7 +1881,7 @@ input:focus-visible {
   .alert {
     background: transparent;
     .text-muted { 
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
@@ -1957,7 +1959,7 @@ input:focus-visible {
   }
 
   .codehinter-query-editor-input .CodeMirror {
-    color: #c3c3c3!important; 
+    color: #fff!important; 
   }
 
   .select-search:not(.is-loading):not(.select-search--multiple) .select-search__value::after {

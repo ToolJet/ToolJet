@@ -42,12 +42,12 @@ class DataSourceManager extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if(prevProps.selectedDataSource != this.props.selectedDataSource) {
+    if (prevProps.selectedDataSource != this.props.selectedDataSource) {
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
-        dataSourceMeta: DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource?.kind)
-      })
+        dataSourceMeta: DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource?.kind),
+      });
     }
   }
 
@@ -69,6 +69,15 @@ class DataSourceManager extends React.Component {
     });
   };
 
+  onExit = () => {
+    console.log('here');
+    this.setState({
+      dataSourceMeta: {},
+      selectedDataSource: null,
+      options: {},
+    });
+  };
+
   setStateAsync = (state) => {
     return new Promise((resolve) => {
       this.setState(state, resolve);
@@ -86,6 +95,7 @@ class DataSourceManager extends React.Component {
   };
 
   hideModal = () => {
+    this.onExit();
     this.props.hideModal();
   };
 
@@ -141,12 +151,10 @@ class DataSourceManager extends React.Component {
 
   onConnectionTestFailed = (data) => {
     this.setState({ connectionTestError: data });
-  }
+  };
 
   render() {
-    const {
-      dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError
-    } = this.state;
+    const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError } = this.state;
 
     return (
       <div>
@@ -157,6 +165,7 @@ class DataSourceManager extends React.Component {
           className="mt-5"
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
+          onExit={this.onExit}
         >
           <Modal.Header>
             <Modal.Title>
@@ -250,33 +259,38 @@ class DataSourceManager extends React.Component {
             <Modal.Footer>
               <div className="row w-100">
                 <div className="alert alert-info" role="alert">
-                <div className="text-muted">
-                  Please white-list our IP address if your datasource is not publicly accessible.
-                  IP: <span className="px-2 py-1">{config.SERVER_IP}</span>
-                  <CopyToClipboard
-                    text={config.SERVER_IP}
-                    onCopy={() => toast.success('IP copied to clipboard', {
-                      hideProgressBar: true,
-                      position: 'top-center'
-                    })
-                    }
-                  >
-                    <img src="/assets/images/icons/copy.svg" className="mx-1 svg-icon" width="14" height="14" role="button"/>
-                  </CopyToClipboard>
-                </div>
-              </div>
-              </div>
-              
-              {connectionTestError &&
-                <div className="row w-100">
-                  <div className="alert alert-danger" role="alert">
                   <div className="text-muted">
-                    {connectionTestError.message}
+                    Please white-list our IP address if your datasource is not publicly accessible. IP:{' '}
+                    <span className="px-2 py-1">{config.SERVER_IP}</span>
+                    <CopyToClipboard
+                      text={config.SERVER_IP}
+                      onCopy={() =>
+                        toast.success('IP copied to clipboard', {
+                          hideProgressBar: true,
+                          position: 'top-center',
+                        })
+                      }
+                    >
+                      <img
+                        src="/assets/images/icons/copy.svg"
+                        className="mx-1 svg-icon"
+                        width="14"
+                        height="14"
+                        role="button"
+                      />
+                    </CopyToClipboard>
                   </div>
                 </div>
+              </div>
+
+              {connectionTestError && (
+                <div className="row w-100">
+                  <div className="alert alert-danger" role="alert">
+                    <div className="text-muted">{connectionTestError.message}</div>
+                  </div>
                 </div>
-              }
-              
+              )}
+
               <div className="col">
                 <small>
                   <a href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`} target="_blank">
@@ -285,9 +299,9 @@ class DataSourceManager extends React.Component {
                 </small>
               </div>
               <div className="col-auto">
-                <TestConnection 
-                  kind={selectedDataSource.kind} 
-                  options={options} 
+                <TestConnection
+                  kind={selectedDataSource.kind}
+                  options={options}
                   onConnectionTestFailed={this.onConnectionTestFailed}
                 />
               </div>
@@ -299,7 +313,7 @@ class DataSourceManager extends React.Component {
                   onClick={this.createDataSource}
                 >
                   {'Save'}
-              </Button>
+                </Button>
               </div>
             </Modal.Footer>
           )}

@@ -10,6 +10,7 @@
     padding-bottom: 1vw;
     border-bottom: 1px solid $grey;
     transition: all .2s ease-in-out;
+    cursor: pointer;
 
     &:hover {
       transform: scale(1.2);
@@ -43,5 +44,8 @@
   }
   .dark-mode {
     transform: scale(.7);
+  }
+  .no-border {
+    border: 0;
   }
 }

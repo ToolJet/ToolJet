@@ -3,17 +3,17 @@ import usePopover from '../../_hooks/use-popover';
 import { LeftSidebarItem } from './sidebar-item';
 import ReactJson from 'react-json-view';
 
-export const LeftSidebarInspector = ({ globals, components, queries }) => {
+export const LeftSidebarInspector = ({ darkMode, globals, components, queries }) => {
   const [open, trigger, content] = usePopover(false)
 
   return (
     <>
-      <LeftSidebarItem {...trigger} icon='inspector' className='left-sidebar-item' />
+      <LeftSidebarItem tip='Inspector' {...trigger} icon='inspector' className='left-sidebar-item' />
       <div {...content} className={`card popover ${open ? 'show' : 'hide'}`}>
         <div className="card-body">
           <ReactJson
             src={queries}
-            // theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
+            theme={darkMode ? 'shapeshifter' : 'rjv-default'}
             name={'queries'}
             style={{ fontSize: '0.7rem' }}
             enableClipboard={false}
@@ -25,7 +25,7 @@ export const LeftSidebarInspector = ({ globals, components, queries }) => {
           />
           <ReactJson
             src={components}
-            // theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
+            theme={darkMode ? 'shapeshifter' : 'rjv-default'}
             name={'components'}
             style={{ fontSize: '0.7rem' }}
             enableClipboard={false}
@@ -38,8 +38,7 @@ export const LeftSidebarInspector = ({ globals, components, queries }) => {
           />
           <ReactJson
             style={{ fontSize: '0.7rem' }}
-            // theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-            theme={'rjv-default'}
+            theme={darkMode ? 'shapeshifter' : 'rjv-default'}
             enableClipboard={false}
             src={globals}
             name={'globals'}

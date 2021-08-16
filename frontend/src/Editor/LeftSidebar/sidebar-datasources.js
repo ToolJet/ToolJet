@@ -4,7 +4,7 @@ import { LeftSidebarItem } from './sidebar-item';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/DataSourceTypes';
 
-export const LeftSidebarDataSources = ({ appId, darkMode, dataSources, dataSourcesChanged }) => {
+export const LeftSidebarDataSources = ({ appId, darkMode, dataSources= [], dataSourcesChanged }) => {
   const [open, trigger, content] = usePopover(false)
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
@@ -17,6 +17,7 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources, dataSourc
         key={sourceMeta.kind.toLowerCase()}
         onClick={() => {
           setSelectedDataSource(dataSource)
+          console.log(selectedDataSource)
           toggleDataSourceManagerModal(true)
         }}
       >
@@ -34,21 +35,23 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources, dataSourc
 
   return (
     <>
-      <LeftSidebarItem {...trigger} icon='database' className='left-sidebar-item' />
+      <LeftSidebarItem tip='Add or edit datasources' {...trigger} icon='database' className='left-sidebar-item' />
       <div {...content} className={`card popover datasources-popover ${open ? 'show' : 'hide'}`}>
         <div className="card-body">
           <div className="table-responsive">
             <table className="table table-vcenter table-nowrap">
-              <tbody>{dataSources.map((source) => renderDataSource(source))}</tbody>
+              <tbody>{dataSources?.map((source) => renderDataSource(source))}</tbody>
             </table>
-            {dataSources.length === 0 && (
+            {dataSources?.length === 0 && (
               <center className="p-2 text-muted">
                 You haven&apos;t added any datasources yet. <br />
               </center>
             )}
-            <button onClick={() => toggleDataSourceManagerModal(true)} className="btn btn-sm btn-outline-azure mt-3">
-              Add datasource
-            </button>
+            <center>
+              <button onClick={() => toggleDataSourceManagerModal(true)} className="btn btn-sm btn-outline-azure mt-3">
+                Add datasource
+              </button>
+            </center>
           </div>
         </div>
       </div>

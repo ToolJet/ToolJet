@@ -7,7 +7,7 @@ export const LeftSidebarZoom = ({ onZoomChanged }) => {
   const [text, setText] = React.useState(100)
   return (
     <>
-      <LeftSidebarItem {...trigger} text={text} className='left-sidebar-item' />
+      <LeftSidebarItem tip='Select zoom level' {...trigger} text={text} className='left-sidebar-item' />
       <div {...content} className={`card popover zoom-popover ${open ? 'show' : 'hide'}`}>
         <div className="card-body">
           <div className="table-responsive">
