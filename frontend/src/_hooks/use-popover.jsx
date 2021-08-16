@@ -25,9 +25,9 @@ const useClickOutside = (handler = noop, dependencies) => {
     callbackRef.current = handler;
   });
   useEffect(() => {
-    document === null || document === void 0 ? void 0 : document.addEventListener('click', outsideClickHandler);
+    document === null || document === void 0 ? void 0 : document.addEventListener('click', outsideClickHandler, { capture: true });
     return () =>
-      document === null || document === void 0 ? void 0 : document.removeEventListener('click', outsideClickHandler);
+      document === null || document === void 0 ? void 0 : document.removeEventListener('click', outsideClickHandler), { capture: true };
   }, dependencies);
   return ref;
 };
