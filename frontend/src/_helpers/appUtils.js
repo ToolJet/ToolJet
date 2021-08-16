@@ -222,6 +222,16 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
     }
   }
 
+  /* Events for QrScanner */
+  if (['onDetect'].includes(eventName)) {
+    const { component } = options;
+    const event = component.definition.events[eventName];
+
+    if (event.actionId) {
+      executeAction(_self, event, mode);
+    }
+  }
+
   if (eventName === 'onBulkUpdate') {
     return new Promise(function (resolve, reject) {
       onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
