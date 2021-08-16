@@ -70,7 +70,6 @@ class DataSourceManager extends React.Component {
   };
 
   onExit = () => {
-    console.log('here');
     this.setState({
       dataSourceMeta: {},
       selectedDataSource: null,

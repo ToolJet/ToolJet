@@ -17,7 +17,6 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources= [], dataS
         key={sourceMeta.kind.toLowerCase()}
         onClick={() => {
           setSelectedDataSource(dataSource)
-          console.log(selectedDataSource)
           toggleDataSourceManagerModal(true)
         }}
       >
