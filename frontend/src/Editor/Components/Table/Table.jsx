@@ -497,7 +497,7 @@ export function Table({
             handleSearchTextChange(e.target.value)
           }}
           onKeyDown={(e) => {
-            if(e.key === 'Enter') {
+            if (e.key === 'Enter') {
               handleSearchTextChange(e.target.value)
             }
           }
