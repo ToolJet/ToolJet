@@ -7,6 +7,8 @@ sidebar_position: 3
 
 ToolJet can connect to Airtable using Airtable API ( https://airtable.com/api ). Airtable API key is required to create Airtable datasource on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
 
+<img class="screenshot-full" src="/img/datasource-reference/airtable-intro.gif" alt="ToolJet - Airtable" height="420" />
+
 :::tip
 Airtable API has a rate limit and at the time of writing this documentation, the limit is 5 requests per second per base. You can read more about rate limits here ( https://airtable.com/api ).
 :::
@@ -131,7 +133,7 @@ Required parameters:
 - Table name
 - Record ID
 
-<img class="screenshot-full" src="/img/datasource-reference/airtable-delete.png" alt="ToolJet - Airtable Update Operarion" height="420" width="650" />
+<img class="screenshot-full" src="/img/datasource-reference/airtable-delete.png" alt="ToolJet - Airtable Delete Operarion" height="420" width="650" />
 
 
 Click on the `run` button to run the query.
