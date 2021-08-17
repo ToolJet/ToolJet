@@ -140,7 +140,7 @@ export function Table({
     obj = _.set(rowData, key, value);
 
     let newDataUpdates = {
-      ...dataUpdates, 
+      ...dataUpdates,
       [index]: { ...obj }
     };
 
@@ -160,7 +160,7 @@ export function Table({
 
   function onPageIndexChanged(page) {
     onComponentOptionChanged(component, 'pageIndex', page).then(() => {
-        onEvent('onPageChanged', { component, data: {} });
+      onEvent('onPageChanged', { component, data: {} });
     });
   }
 
@@ -276,16 +276,16 @@ export function Table({
           }
           return <span>{cellValue}</span>;
         } if (columnType === 'text') {
-          return <textarea 
-              rows="1" 
-              className="form-control-plaintext text-container text-muted"
-              readOnly={!column.isEditable}
-              style={{maxWidth: width, minWidth: width - 10}}
-              onBlur={(e) => {
-                handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-              }}
-              defaultValue={cellValue}
-            >
+          return <textarea
+            rows="1"
+            className="form-control-plaintext text-container text-muted"
+            readOnly={!column.isEditable}
+            style={{ maxWidth: width, minWidth: width - 10 }}
+            onBlur={(e) => {
+              handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+            }}
+            defaultValue={cellValue}
+          >
           </textarea>;
         } if (columnType === 'dropdown') {
           return (
@@ -391,17 +391,17 @@ export function Table({
         width: columnSizes.actions || defaultColumn.width,
         Cell: (cell) => {
           return actions.value.map((action) => (
-                <button
-                  key={action.name}
-                  className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
-                  }}
-                >
-                  {action.buttonText}
-                </button>
+            <button
+              key={action.name}
+              className="btn btn-sm m-1 btn-light"
+              style={{ background: action.backgroundColor, color: action.textColor }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+              }}
+            >
+              {action.buttonText}
+            </button>
           ));
         }
       }
@@ -445,9 +445,9 @@ export function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : 10}, // pageSize should be unset if server-side pagination is enabled
-	  pageCount: -1,
-	  manualPagination: false,
+      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : 10 }, // pageSize should be unset if server-side pagination is enabled
+      pageCount: -1,
+      manualPagination: false,
       getExportFileBlob
     },
     useFilters,
@@ -462,7 +462,7 @@ export function Table({
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths});
+      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths });
     } else {
       changeCanDrag(false);
     }
@@ -481,7 +481,7 @@ export function Table({
       onChange(text);
 
       onComponentOptionChanged(component, 'searchText', text).then(() => {
-        if(serverSideSearch === true ) {
+        if (serverSideSearch === true) {
           onEvent('onSearch', { component, data: {} });
         }
       });
@@ -497,7 +497,7 @@ export function Table({
             handleSearchTextChange(e.target.value)
           }}
           onKeyDown={(e) => {
-            if(e.key === 'Enter') {
+            if (e.key === 'Enter') {
               handleSearchTextChange(e.target.value)
             }
           }
@@ -568,7 +568,7 @@ export function Table({
             ))}
           </thead>
 
-          {!loadingState && page.length === 0 && 
+          {!loadingState && page.length === 0 &&
             <center className="w-100"><div className="py-5"> no data </div></center>
           }
 
@@ -617,12 +617,12 @@ export function Table({
         <div className="table-footer row">
           <div className="col">
             <Pagination
-                serverSide={serverSidePagination}
-                autoGotoPage={gotoPage}
-                autoCanNextPage={canNextPage}
-                autoPageCount={pageCount}
-                autoPageOptions={pageOptions}
-                onPageIndexChanged={onPageIndexChanged}
+              serverSide={serverSidePagination}
+              autoGotoPage={gotoPage}
+              autoCanNextPage={canNextPage}
+              autoPageCount={pageCount}
+              autoPageOptions={pageOptions}
+              onPageIndexChanged={onPageIndexChanged}
             />
           </div>
 
@@ -646,8 +646,8 @@ export function Table({
           <div className="col-auto">
             <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
               <img src="/assets/images/icons/filter.svg" width="13" height="13" />
-              {filters.length > 0 && 
-                <a className="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
+              {filters.length > 0 &&
+                <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
               }
             </span>
             <span
