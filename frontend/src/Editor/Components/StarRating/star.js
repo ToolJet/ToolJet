@@ -1,10 +1,11 @@
 import React from 'react'
+import { animated } from 'react-spring';
 
-const Star = ({ active, ...rest }) => {
+const Star = ({ active, color, ...rest }) => {
   return (
-    <span {...rest} className="star" role="button">
+    <animated.span {...rest} style={{color}} className="star" role="button">
       {active ? '\u2605' : '\u2606'}
-    </span>
+    </animated.span>
   );
 };
 

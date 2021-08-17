@@ -781,33 +781,58 @@ defaultMarkers: { value: `[{
     }
   },
   {
+<<<<<<< HEAD
     name: 'QrScanner',
     displayName: 'QR Scanner',
     description: 'Scan QR codes and hold its data',
     component: 'QrScanner',
+=======
+    name: 'StarRating',
+    displayName: 'Rating',
+    description: 'Star rating',
+    component: 'StarRating',
+>>>>>>> a860bc2 (add events, properties)
     defaultSize: {
-      width: 300,
-      height: 300
+      width: 200,
+      height: 75
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
     },
-    properties: {},
+    properties: {
+      label: { type: 'code', displayName: 'Label' },
+      // value: { type: 'code', displayName: 'Default value' },
+      // values: { type: 'code', displayName: 'Option values' },
+      // display_values: { type: 'code', displayName: 'Option labels' }
+    },
     events: {
-      onDetect: { displayName: 'On detect'},
+      onChange: { displayName: 'On Change'},
     },
     styles: {
+<<<<<<< HEAD
       
     },
     exposedVariables: {
       lastDetectedValue: ''
+=======
+      textColor: { type: 'color', displayName: 'Star Color' }
+>>>>>>> a860bc2 (add events, properties)
     },
+    exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : true },
+        showOnMobile: { value : false }
       },
+      properties: {
+        label: { value: 'Select your rating' },
+        // value: { value: '' },
+        // values: { value: '{{[true,false]}}' },
+        // display_values: { value: '{{["yes", "no"]}}' },
+        visible: { value: true }
+      },
+<<<<<<< HEAD
       properties: {},
       events: [],
       styles: {
@@ -854,6 +879,8 @@ defaultMarkers: { value: `[{
         visible: { value: true },
         tooltips: { value: '{{[]}}' }
       },
+=======
+>>>>>>> a860bc2 (add events, properties)
       events: {
         onChange: { 
           options: {
