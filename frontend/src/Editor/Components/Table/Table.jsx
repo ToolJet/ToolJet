@@ -1,4 +1,4 @@
-import React,{useMemo,useState,useEffect} from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   useTable,
   useFilters,
@@ -9,15 +9,15 @@ import {
   useBlockLayout,
   useResizeColumns
 } from 'react-table';
-import {resolveReferences} from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
-import SelectSearch,{fuzzySearch} from 'react-select-search';
-import {useExportData} from 'react-table-plugins';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
-import {Pagination} from './Pagination';
-import {CustomSelect} from './CustomSelect';
-import {Tags} from './Tags';
-import {Radio} from './Radio';
+import { Pagination } from './Pagination';
+import { CustomSelect } from './CustomSelect';
+import { Tags } from './Tags';
+import { Radio } from './Radio';
 
 var _ = require('lodash');
 
@@ -27,7 +27,7 @@ export function Table({
   height,
   component,
   onComponentClick,
-  currentState = {components: {}},
+  currentState = { components: {} },
   onEvent,
   paramUpdated,
   changeCanDrag,
@@ -36,31 +36,31 @@ export function Table({
   darkMode
 }) {
   const color = component.definition.styles.textColor.value;
-  const actions = component.definition.properties.actions || {value: []};
+  const actions = component.definition.properties.actions || { value: [] };
   const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
   const serverSidePagination = serverSidePaginationProperty ? serverSidePaginationProperty.value : false;
 
   const serverSideSearchProperty = component.definition.properties.serverSideSearch;
   const serverSideSearch = serverSideSearchProperty ? serverSideSearchProperty.value : false;
 
-  const [loadingState,setLoadingState] = useState(false);
+  const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
     const loadingStateProperty = component.definition.properties.loadingState;
-    if(loadingStateProperty && currentState) {
-      const newState = resolveReferences(loadingStateProperty.value,currentState,false);
+    if (loadingStateProperty && currentState) {
+      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
       setLoadingState(newState);
     }
-  },[currentState]);
+  }, [currentState]);
 
-  const [componentState,setcomponentState] = useState(currentState.components[component.component] || {});
+  const [componentState, setcomponentState] = useState(currentState.components[component.component] || {});
 
   useEffect(() => {
     setcomponentState(currentState.components[component.name] || {});
-  },[currentState.components[component.name]]);
+  }, [currentState.components[component.name]]);
 
-  const [isFiltersVisible,setFiltersVisibility] = useState(false);
-  const [filters,setFilters] = useState([]);
+  const [isFiltersVisible, setFiltersVisibility] = useState(false);
+  const [filters, setFilters] = useState([]);
 
   function showFilters() {
     setFiltersVisibility(true);
@@ -70,14 +70,14 @@ export function Table({
     setFiltersVisibility(false);
   }
 
-  function filterColumnChanged(index,value) {
+  function filterColumnChanged(index, value) {
     const newFilters = filters;
     newFilters[index].id = value;
     setFilters(newFilters);
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
 
-  function filterOperationChanged(index,value) {
+  function filterOperationChanged(index, value) {
     const newFilters = filters;
     newFilters[index].value = {
       ...newFilters[index].value,
@@ -87,7 +87,7 @@ export function Table({
     setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
 
-  function filterValueChanged(index,value) {
+  function filterValueChanged(index, value) {
     const newFilters = filters;
     newFilters[index].value = {
       ...newFilters[index].value,
@@ -98,12 +98,12 @@ export function Table({
   }
 
   function addFilter() {
-    setFilters([...filters,{id: '',value: {operation: 'contains',value: ''}}]);
+    setFilters([...filters, { id: '', value: { operation: 'contains', value: '' } }]);
   }
 
   function removeFilter(index) {
     let newFilters = filters;
-    newFilters.splice(index,1);
+    newFilters.splice(index, 1);
     setFilters(newFilters);
     setAllFilters(newFilters);
   }
@@ -123,12 +123,12 @@ export function Table({
 
   const columnSizes = component.definition.properties.columnSizes || {};
 
-  function handleCellValueChange(index,key,value,rowData) {
+  function handleCellValueChange(index, key, value, rowData) {
     const changeSet = componentState.changeSet;
     const dataUpdates = componentState.dataUpdates || [];
 
     let obj = changeSet ? changeSet[index] || {} : {};
-    obj = _.set(obj,key,value);
+    obj = _.set(obj, key, value);
 
     let newChangeset = {
       ...changeSet,
@@ -137,83 +137,83 @@ export function Table({
       }
     };
 
-    obj = _.set(rowData,key,value);
+    obj = _.set(rowData, key, value);
 
     let newDataUpdates = {
-      ...dataUpdates,
-      [index]: {...obj}
+      ...dataUpdates, 
+      [index]: { ...obj }
     };
 
-    onComponentOptionsChanged(component,[
-      ['dataUpdates',newDataUpdates],
-      ['changeSet',newChangeset]
+    onComponentOptionsChanged(component, [
+      ['dataUpdates', newDataUpdates],
+      ['changeSet', newChangeset]
     ]);
   }
 
   function getExportFileBlob({
-    columns,data
+    columns, data
   }) {
     const headerNames = columns.map((col) => col.exportValue);
-    const csvString = Papa.unparse({fields: headerNames,data});
-    return new Blob([csvString],{type: 'text/csv'});
+    const csvString = Papa.unparse({ fields: headerNames, data });
+    return new Blob([csvString], { type: 'text/csv' });
   }
 
   function onPageIndexChanged(page) {
-    onComponentOptionChanged(component,'pageIndex',page).then(() => {
-      onEvent('onPageChanged',{component,data: {}});
+    onComponentOptionChanged(component, 'pageIndex', page).then(() => {
+        onEvent('onPageChanged', { component, data: {} });
     });
   }
 
   function handleChangesSaved() {
     Object.keys(changeSet).forEach((key) => {
       tableData[key] = {
-        ..._.merge(tableData[key],changeSet[key])
+        ..._.merge(tableData[key], changeSet[key])
       };
     });
 
-    onComponentOptionChanged(component,'changeSet',{});
-    onComponentOptionChanged(component,'dataUpdates',[]);
+    onComponentOptionChanged(component, 'changeSet', {});
+    onComponentOptionChanged(component, 'dataUpdates', []);
   }
 
   function handleChangesDiscarded() {
-    onComponentOptionChanged(component,'changeSet',{});
-    onComponentOptionChanged(component,'dataUpdates',[]);
+    onComponentOptionChanged(component, 'changeSet', {});
+    onComponentOptionChanged(component, 'dataUpdates', []);
   }
 
-  function customFilter(rows,columnIds,filterValue) {
+  function customFilter(rows, columnIds, filterValue) {
     try {
-      if(filterValue.operation === 'equals') {
+      if (filterValue.operation === 'equals') {
         return rows.filter((row) => row.values[columnIds[0]] === filterValue.value);
       }
 
-      if(filterValue.operation === 'matches') {
+      if (filterValue.operation === 'matches') {
         return rows.filter((row) => row.values[columnIds[0]].toString().toLowerCase().includes(filterValue.value.toLowerCase()));
       }
 
-      if(filterValue.operation === 'gt') {
+      if (filterValue.operation === 'gt') {
         return rows.filter((row) => row.values[columnIds[0]] > filterValue.value);
       }
 
-      if(filterValue.operation === 'lt') {
+      if (filterValue.operation === 'lt') {
         return rows.filter((row) => row.values[columnIds[0]] < filterValue.value);
       }
 
-      if(filterValue.operation === 'gte') {
+      if (filterValue.operation === 'gte') {
         return rows.filter((row) => row.values[columnIds[0]] >= filterValue.value);
       }
 
-      if(filterValue.operation === 'lte') {
+      if (filterValue.operation === 'lte') {
         return rows.filter((row) => row.values[columnIds[0]] <= filterValue.value);
       }
 
       let value = filterValue.value;
-      if(typeof value === 'string') {
+      if (typeof value === 'string') {
         value = value.toLowerCase();
       }
 
       return rows.filter((row) => {
         let rowValue = row.values[columnIds[0]];
-        if(typeof rowValue === 'string') {
+        if (typeof rowValue === 'string') {
           rowValue = rowValue.toLowerCase();
         }
         return rowValue.includes(value);
@@ -230,13 +230,13 @@ export function Table({
     const columnType = column.columnType;
 
     const columnOptions = {};
-    if(columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges' || columnType === 'radio') {
-      const values = resolveReferences(column.values,currentState) || [];
-      const labels = resolveReferences(column.labels,currentState,[]) || [];
+    if (columnType === 'dropdown' || columnType === 'multiselect' || columnType === 'badge' || columnType === 'badges' || columnType === 'radio') {
+      const values = resolveReferences(column.values, currentState) || [];
+      const labels = resolveReferences(column.labels, currentState, []) || [];
 
-      if(typeof labels === 'object') {
-        columnOptions.selectOptions = labels.map((label,index) => {
-          return {name: label,value: values[index]};
+      if (typeof labels === 'object') {
+        columnOptions.selectOptions = labels.map((label, index) => {
+          return { name: label, value: values[index] };
         });
       }
     }
@@ -244,30 +244,29 @@ export function Table({
     const width = columnSize || defaultColumn.width;
 
     return {
-      id: column.id,
       Header: column.name,
       accessor: column.key || column.name,
       filter: customFilter,
       width: width,
 
-      Cell: function(cell) {
+      Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
 
-        if(columnType === undefined || columnType === 'default') {
+        if (columnType === undefined || columnType === 'default') {
           return <span>{cellValue}</span>;
-        } if(columnType === 'string') {
-          if(column.isEditable) {
+        } if (columnType === 'string') {
+          if (column.isEditable) {
             return (
               <input
                 type="text"
                 onKeyDown={(e) => {
-                  if(e.key === 'Enter') {
-                    handleCellValueChange(cell.row.index,column.key || column.name,e.target.value,cell.row.original);
+                  if (e.key === 'Enter') {
+                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
                 onBlur={(e) => {
-                  handleCellValueChange(cell.row.index,column.key || column.name,e.target.value,cell.row.original);
+                  handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                 }}
                 className="form-control-plaintext form-control-plaintext-sm"
                 defaultValue={cellValue}
@@ -275,19 +274,19 @@ export function Table({
             );
           }
           return <span>{cellValue}</span>;
-        } if(columnType === 'text') {
-          return <textarea
-            rows="1"
-            className="form-control-plaintext text-container text-muted"
-            readOnly={!column.isEditable}
-            style={{maxWidth: width,minWidth: width - 10}}
-            onBlur={(e) => {
-              handleCellValueChange(cell.row.index,column.key || column.name,e.target.value,cell.row.original);
-            }}
-            defaultValue={cellValue}
-          >
+        } if (columnType === 'text') {
+          return <textarea 
+              rows="1" 
+              className="form-control-plaintext text-container text-muted"
+              readOnly={!column.isEditable}
+              style={{maxWidth: width, minWidth: width - 10}}
+              onBlur={(e) => {
+                handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+              }}
+              defaultValue={cellValue}
+            >
           </textarea>;
-        } if(columnType === 'dropdown') {
+        } if (columnType === 'dropdown') {
           return (
             <div>
               <SelectSearch
@@ -295,14 +294,14 @@ export function Table({
                 value={cellValue}
                 search={true}
                 onChange={(value) => {
-                  handleCellValueChange(cell.row.index,column.key || column.name,value,cell.row.original);
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
                 filterOptions={fuzzySearch}
                 placeholder="Select.."
               />
             </div>
           );
-        } if(columnType === 'multiselect') {
+        } if (columnType === 'multiselect') {
           return (
             <div>
               <SelectSearch
@@ -313,24 +312,24 @@ export function Table({
                 options={columnOptions.selectOptions}
                 value={cellValue}
                 onChange={(value) => {
-                  handleCellValueChange(cell.row.index,column.key || column.name,value,cell.row.original);
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
               />
             </div>
           );
-        } if(columnType === 'badge') {
+        } if (columnType === 'badge') {
           return (
             <div>
               <CustomSelect
                 options={columnOptions.selectOptions}
                 value={cellValue}
                 onChange={(value) => {
-                  handleCellValueChange(cell.row.index,column.key || column.name,value,cell.row.original);
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
               />
             </div>
           );
-        } if(columnType === 'badges') {
+        } if (columnType === 'badges') {
           return (
             <div>
               <CustomSelect
@@ -338,23 +337,23 @@ export function Table({
                 value={cellValue}
                 multiple={true}
                 onChange={(value) => {
-                  handleCellValueChange(cell.row.index,column.key || column.name,value,cell.row.original);
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
               />
             </div>
           );
-        } if(columnType === 'tags') {
+        } if (columnType === 'tags') {
           return (
             <div>
               <Tags
                 value={cellValue}
                 onChange={(value) => {
-                  handleCellValueChange(cell.row.index,column.key || column.name,value,cell.row.original);
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
               />
             </div>
           );
-        } if(columnType === 'radio') {
+        } if (columnType === 'radio') {
           return (
             <div>
               <Radio
@@ -362,7 +361,7 @@ export function Table({
                 value={cellValue}
                 readOnly={!column.isEditable}
                 onChange={(value) => {
-                  handleCellValueChange(cell.row.index,column.key || column.name,value,cell.row.original);
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
               />
             </div>
@@ -374,10 +373,10 @@ export function Table({
   });
 
   let tableData = [];
-  if(currentState) {
-    tableData = resolveReferences(component.definition.properties.data.value,currentState,[]);
-    if(!Array.isArray(tableData)) tableData = [];
-    console.log('resolved param',tableData);
+  if (currentState) {
+    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+    if (!Array.isArray(tableData)) tableData = [];
+    console.log('resolved param', tableData);
   }
 
   tableData = tableData || [];
@@ -391,17 +390,17 @@ export function Table({
         width: columnSizes.actions || defaultColumn.width,
         Cell: (cell) => {
           return actions.value.map((action) => (
-            <button
-              key={action.name}
-              className="btn btn-sm m-1 btn-light"
-              style={{background: action.backgroundColor,color: action.textColor}}
-              onClick={(e) => {
-                e.stopPropagation();
-                onEvent('onTableActionButtonClicked',{component,data: cell.row.original,action});
-              }}
-            >
-              {action.buttonText}
-            </button>
+                <button
+                  key={action.name}
+                  className="btn btn-sm m-1 btn-light"
+                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                  }}
+                >
+                  {action.buttonText}
+                </button>
           ));
         }
       }
@@ -409,11 +408,11 @@ export function Table({
     : [];
 
   const columns = useMemo(
-    () => [...columnData,...actionsCellData],
-    [JSON.stringify(columnData),actionsCellData.length,componentState.changeSet] // Hack: need to fix
+    () => [...columnData, ...actionsCellData],
+    [JSON.stringify(columnData), actionsCellData.length, componentState.changeSet] // Hack: need to fix
   );
 
-  const data = useMemo(() => tableData,[tableData.length]);
+  const data = useMemo(() => tableData, [tableData.length]);
 
   const computedStyles = {
     color,
@@ -438,16 +437,16 @@ export function Table({
     setAllFilters,
     preGlobalFilteredRows,
     setGlobalFilter,
-    state: {pageIndex,pageSize},
+    state: { pageIndex, pageSize },
     exportData
   } = useTable(
     {
       columns,
       data,
       defaultColumn,
-      initialState: {pageIndex: 0,pageSize: serverSidePagination ? -1 : 10}, // pageSize should be unset if server-side pagination is enabled
-      pageCount: -1,
-      manualPagination: false,
+      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : 10}, // pageSize should be unset if server-side pagination is enabled
+	  pageCount: -1,
+	  manualPagination: false,
       getExportFileBlob
     },
     useFilters,
@@ -460,29 +459,29 @@ export function Table({
   );
 
   useEffect(() => {
-    if(!state.columnResizing.isResizingColumn) {
+    if (!state.columnResizing.isResizingColumn) {
       changeCanDrag(true);
-      paramUpdated(id,'columnSizes',{...columnSizes,...state.columnResizing.columnWidths});
+      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths});
     } else {
       changeCanDrag(false);
     }
-  },[state.columnResizing.isResizingColumn]);
+  }, [state.columnResizing.isResizingColumn]);
 
   function GlobalFilter() {
     const count = preGlobalFilteredRows.length;
-    const [value,setValue] = React.useState(state.globalFilter);
+    const [value, setValue] = React.useState(state.globalFilter);
     const onChange = useAsyncDebounce((filterValue) => {
       setGlobalFilter(filterValue || undefined);
-    },200);
+    }, 200);
 
     const handleSearchTextChange = (text) => {
 
       setValue(text);
       onChange(text);
 
-      onComponentOptionChanged(component,'searchText',text).then(() => {
-        if(serverSideSearch === true) {
-          onEvent('onSearch',{component,data: {}});
+      onComponentOptionChanged(component, 'searchText', text).then(() => {
+        if(serverSideSearch === true ) {
+          onEvent('onSearch', { component, data: {} });
         }
       });
     }
@@ -515,8 +514,8 @@ export function Table({
   return (
     <div
       className="card jet-table"
-      style={{width: `${width}px`,height: `${height}px`}}
-      onClick={() => onComponentClick(id,component)}
+      style={{ width: `${width}px`, height: `${height}px` }}
+      onClick={() => onComponentClick(id, component)}
     >
       <div className="card-body border-bottom py-3 jet-data-table-header">
         <div className="d-flex">
@@ -531,7 +530,7 @@ export function Table({
                     setPageSize(Number(e.target.value));
                   }}
                 >
-                  {[10,20,30,40,50].map((itemsCount) => (
+                  {[10, 20, 30, 40, 50].map((itemsCount) => (
                     <option key={itemsCount} value={itemsCount}>
                       {itemsCount}
                     </option>
@@ -568,13 +567,13 @@ export function Table({
             ))}
           </thead>
 
-          {!loadingState && page.length === 0 &&
+          {!loadingState && page.length === 0 && 
             <center className="w-100"><div className="py-5"> no data </div></center>
           }
 
           {!loadingState && (
             <tbody {...getTableBodyProps()}>
-              {console.log('page',page)}
+              {console.log('page', page)}
               {page.map((row) => {
                 prepareRow(row);
                 return (
@@ -583,16 +582,16 @@ export function Table({
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEvent('onRowClicked',{component,data: row.original});
+                      onEvent('onRowClicked', { component, data: row.original });
                     }}
                   >
                     {row.cells.map((cell) => {
                       let cellProps = cell.getCellProps();
 
-                      if(componentState.changeSet) {
-                        if(componentState.changeSet[cell.row.index]) {
-                          if(_.get(componentState.changeSet[cell.row.index],cell.column.id,undefined)) {
-                            console.log('componentState.changeSet',componentState.changeSet);
+                      if (componentState.changeSet) {
+                        if (componentState.changeSet[cell.row.index]) {
+                          if (_.get(componentState.changeSet[cell.row.index], cell.column.id, undefined)) {
+                            console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
                           }
                         }
@@ -606,7 +605,7 @@ export function Table({
           )}
         </table>
         {loadingState === true && (
-          <div style={{width: '100%'}} className="p-2">
+          <div style={{ width: '100%' }} className="p-2">
             <center>
               <div className="spinner-border mt-5" role="status"></div>
             </center>
@@ -617,12 +616,12 @@ export function Table({
         <div className="table-footer row">
           <div className="col">
             <Pagination
-              serverSide={serverSidePagination}
-              autoGotoPage={gotoPage}
-              autoCanNextPage={canNextPage}
-              autoPageCount={pageCount}
-              autoPageOptions={pageOptions}
-              onPageIndexChanged={onPageIndexChanged}
+                serverSide={serverSidePagination}
+                autoGotoPage={gotoPage}
+                autoCanNextPage={canNextPage}
+                autoPageCount={pageCount}
+                autoPageOptions={pageOptions}
+                onPageIndexChanged={onPageIndexChanged}
             />
           </div>
 
@@ -630,7 +629,7 @@ export function Table({
             <div className="col">
               <button
                 className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                onClick={() => onEvent('onBulkUpdate',{component}).then(() => {
+                onClick={() => onEvent('onBulkUpdate', { component }).then(() => {
                   handleChangesSaved();
                 })
                 }
@@ -646,14 +645,14 @@ export function Table({
           <div className="col-auto">
             <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
               <img src="/assets/images/icons/filter.svg" width="13" height="13" />
-              {filters.length > 0 &&
-                <a className="badge bg-azure" style={{width: '4px',height: '4px',marginTop: '5px'}}></a>
+              {filters.length > 0 && 
+                <a className="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
               }
             </span>
             <span
               data-tip="Download as CSV"
               className="btn btn-light btn-sm p-1"
-              onClick={() => exportData('csv',true)}
+              onClick={() => exportData('csv', true)}
             >
               <img src="/assets/images/icons/download.svg" width="13" height="13" />
             </span>
@@ -673,40 +672,40 @@ export function Table({
             </div>
           </div>
           <div className="card-body">
-            {filters.map((filter,index) => (
+            {filters.map((filter, index) => (
               <div className="row mb-2" key={index}>
-                <div className="col p-2" style={{maxWidth: '70px'}}>
+                <div className="col p-2" style={{ maxWidth: '70px' }}>
                   <small>{index > 0 ? 'and' : 'where'}</small>
                 </div>
                 <div className="col">
                   <SelectSearch
                     options={columnData.map((column) => {
-                      return {name: column.Header,value: column.accessor};
+                      return { name: column.Header, value: column.accessor };
                     })}
                     value={filter.id}
                     search={true}
                     onChange={(value) => {
-                      filterColumnChanged(index,value);
+                      filterColumnChanged(index, value);
                     }}
                     filterOptions={fuzzySearch}
                     placeholder="Select.."
                   />
                 </div>
-                <div className="col" style={{maxWidth: '180px'}}>
+                <div className="col" style={{ maxWidth: '180px' }}>
                   <SelectSearch
                     options={[
-                      {name: 'contains',value: 'contains'},
-                      {name: 'matches',value: 'matches'},
-                      {name: 'equals',value: 'equals'},
-                      {name: 'greater than',value: 'gt'},
-                      {name: 'less than',value: 'lt'},
-                      {name: 'greater than or equals',value: 'gte'},
-                      {name: 'less than or equals',value: 'lte'}
+                      { name: 'contains', value: 'contains' },
+                      { name: 'matches', value: 'matches' },
+                      { name: 'equals', value: 'equals' },
+                      { name: 'greater than', value: 'gt' },
+                      { name: 'less than', value: 'lt' },
+                      { name: 'greater than or equals', value: 'gte' },
+                      { name: 'less than or equals', value: 'lte' }
                     ]}
                     value={filter.value.operation}
                     search={true}
                     onChange={(value) => {
-                      filterOperationChanged(index,value);
+                      filterOperationChanged(index, value);
                     }}
                     filterOptions={fuzzySearch}
                     placeholder="Select.."
@@ -718,7 +717,7 @@ export function Table({
                     value={filter.value.value}
                     placeholder="value"
                     className="form-control"
-                    onChange={(e) => filterValueChanged(index,e.target.value)}
+                    onChange={(e) => filterValueChanged(index, e.target.value)}
                   />
                 </div>
                 <div className="col-auto">
