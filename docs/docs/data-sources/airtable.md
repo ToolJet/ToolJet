@@ -20,6 +20,8 @@ Supported queries:
 
 - Listing records 
 - Retrieving a record
+- Updating a record
+- Deleting a record
 
 ## Listing records 
 
@@ -87,5 +89,37 @@ Example response from Airtable:
         "Name": "dsfdsf"
     },
     "createdTime": "2021-05-12T14:30:33.000Z"
+}
+```
+
+## Updating a record
+
+Required parameters:
+- Base ID
+- Table name
+- Record ID
+
+<img class="screenshot-full" src="/img/datasource-reference/airtable-update.png" alt="ToolJet - Airtable Update Operarion" height="420"/>
+
+Example body for "update-operation" from Airtable: 
+
+<img class="screenshot-full" src="/img/datasource-reference/airtable-update-example-body.png" alt="ToolJet - Airtable Update Operarion Body" height="200" width="650" />
+
+
+Click on the `run` button to run the query.
+
+:::info
+NOTE: Query must be saved before running.
+:::
+
+Example response from Airtable:
+```json
+{
+    "id": "recu9xMnUdr2n2cw8",
+    "fields": {
+        "Notes": "Example Notes",
+        "Name": "change"
+    },
+    "createdTime": "2021-08-08T17:27:17.000Z"
 }
 ```
