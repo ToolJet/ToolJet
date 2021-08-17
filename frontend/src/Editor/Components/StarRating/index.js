@@ -1,10 +1,15 @@
 import React from 'react';
-import { useTrail, animated } from 'react-spring';
+import { useTrail } from 'react-spring';
 
 import Star from './star'
 
-export const StarRating = function StarRating({rating = 5, component, onComponentOptionChanged, onEvent}) {
-  const animatedStars = useTrail(5, {
+export const StarRating = function StarRating({component, onComponentOptionChanged, onEvent}) {
+  const label = component.definition.properties.label.value;
+  const rating = +component.definition.properties.rating.value ?? 5;
+  const textColorProperty = component.definition.styles.textColor;
+  const textColor = textColorProperty ? textColorProperty.value : '#000';
+
+  const animatedStars = useTrail(rating, {
     config: {
       friction: 22,
       tension: 500
@@ -14,10 +19,6 @@ export const StarRating = function StarRating({rating = 5, component, onComponen
     opacity: 1,
     transform: "scale(1)"
   });
-
-  const label = component.definition.properties.label.value;
-  const textColorProperty = component.definition.styles.textColor;
-  const textColor = textColorProperty ? textColorProperty.value : '#000';
 
   const [currentRating, setRating] = React.useState(rating);
 

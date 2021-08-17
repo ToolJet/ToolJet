@@ -802,6 +802,7 @@ defaultMarkers: { value: `[{
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
+      rating: { type: 'code', displayName: 'Number of stars' }
       // value: { type: 'code', displayName: 'Default value' },
       // values: { type: 'code', displayName: 'Option values' },
       // display_values: { type: 'code', displayName: 'Option labels' }
@@ -827,6 +828,7 @@ defaultMarkers: { value: `[{
       },
       properties: {
         label: { value: 'Select your rating' },
+        rating: { value: '5' },
         // value: { value: '' },
         // values: { value: '{{[true,false]}}' },
         // display_values: { value: '{{["yes", "no"]}}' },
