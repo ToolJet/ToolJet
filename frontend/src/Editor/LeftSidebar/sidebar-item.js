@@ -3,8 +3,10 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 
 export const LeftSidebarItem = ({ tip = '', className, icon, text, onClick, ...rest }) => {
+
   return (
     <OverlayTrigger
+      trigger={['click','hover', 'focus']}
       placement="bottom"
       delay={{ show: 250, hide: 400 }}
       overlay={<Tooltip id="button-tooltip">
@@ -13,7 +15,7 @@ export const LeftSidebarItem = ({ tip = '', className, icon, text, onClick, ...r
     >
       <div {...rest} className={className} onClick={onClick && onClick}>
       {icon && <img className="svg-icon" src={`/assets/images/icons/editor/left-sidebar/${icon}.svg`} width="20" height="20" />}
-      {text && text} 
+      {text && text}
     </div>
     </OverlayTrigger>
   )
