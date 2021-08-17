@@ -813,6 +813,58 @@ defaultMarkers: { value: `[{
       styles: {
       }
     }
-  }
+  },
+  {
+    name: 'StarRating',
+    displayName: 'Rating',
+    description: 'Star rating',
+    component: 'StarRating',
+    defaultSize: {
+      width: 220,
+      height: 75
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
+    properties: {
+      label: { type: 'code', displayName: 'Label' },
+      maxRating: { type: 'code', displayName: 'Number of stars' },
+      allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
+      tooltips: { type: 'code', displayName: 'Tooltips' },
+    },
+    events: {
+      onChange: { displayName: 'On Change'},
+    },
+    styles: {
+      textColor: { type: 'color', displayName: 'Star Color' }
+    },
+    exposedVariables: {
+      value: 0
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
+      properties: {
+        label: { value: 'Select your rating' },
+        maxRating: { value: '5' },
+        allowHalfStar: { value: false },
+        visible: { value: true },
+        tooltips: { value: '{{[]}}' }
+      },
+      events: {
+        onChange: { 
+          options: {
+
+          }
+        },
+      },
+      styles: {
+        textColor: { value: '#000' }
+      }
+    }
+  },
 ];
 

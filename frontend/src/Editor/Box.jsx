@@ -18,6 +18,7 @@ import { Map } from './Components/Map/Map';
 import { QrScanner } from './Components/QrScanner/QrScanner';
 import { ToggleSwitch } from './Components/Toggle'
 import { RadioButton } from './Components/RadioButton'
+import { StarRating } from './Components/StarRating'
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
@@ -40,7 +41,8 @@ const AllComponents = {
   Map,
   QrScanner,
   ToggleSwitch,
-  RadioButton
+  RadioButton,
+  StarRating
 };
 
 export const Box = function Box({
