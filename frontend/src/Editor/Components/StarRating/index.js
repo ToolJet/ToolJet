@@ -17,7 +17,8 @@ export const StarRating = function StarRating({component, onComponentOptionChang
     from: { opacity: 0,
      transform: "scale(0.8)" },
     opacity: 1,
-    transform: "scale(1)"
+    transform: "scale(1)",
+    color: textColor
   });
 
   const [currentRating, setRating] = React.useState(rating);
