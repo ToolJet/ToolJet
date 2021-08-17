@@ -123,3 +123,28 @@ Example response from Airtable:
     "createdTime": "2021-08-08T17:27:17.000Z"
 }
 ```
+
+## Deleting a record
+
+Required parameters:
+- Base ID
+- Table name
+- Record ID
+
+<img class="screenshot-full" src="/img/datasource-reference/airtable-delete.png" alt="ToolJet - Airtable Update Operarion" height="420" width="650" />
+
+
+Click on the `run` button to run the query.
+
+:::info
+NOTE: Query must be saved before running.
+:::
+
+Example response from Airtable:
+
+```json
+{
+    deleted: true
+    id: "recIKsyZgqI4zoqS7"
+}
+```
