@@ -870,9 +870,7 @@ defaultMarkers: { value: `[{
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
     },
-    properties: {
-      active: { type: 'code', displayName: 'Active'}
-    },
+    properties: {},
     events: {
       onDetect: { displayName: 'On detect'},
     },
@@ -887,11 +885,7 @@ defaultMarkers: { value: `[{
         showOnDesktop: { value: true },
         showOnMobile: { value : true },
       },
-      properties: {
-        active: {
-          value: '{{true}}',
-        }
-      },
+      properties: {},
       events: {
         onDetect: {
         }
