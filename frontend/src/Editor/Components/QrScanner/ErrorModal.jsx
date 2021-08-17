@@ -19,7 +19,7 @@ export default function ErrorModal() {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={close}></button>
               </div>
               <div class="modal-body">
-                Corresponding error log is available on your browser console. Try reloading the page, if it doesn't work, please contact support.
+                Please make sure a camera is available on your device. Try closing your browser and opening it again, if it doesn't work, please contact support.
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn" data-bs-dismiss="modal" onClick={close}>Close</button>
