@@ -1,16 +1,15 @@
 import React from 'react';
-import {
-  datasourceService, dataqueryService, appService, authenticationService
-} from '@/_services';
-import { DarkModeToggle } from '@/_components/DarkModeToggle';
+import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
+// import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
+import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
-import ReactJson from 'react-json-view';
-import { DataSourceManager } from './DataSourceManager';
+// import ReactJson from 'react-json-view';
+// import { DataSourceManager } from './DataSourceManager';
 import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
 import { QueryManager } from './QueryManager';
 import { toast } from 'react-toastify';
@@ -25,11 +24,11 @@ import {
   onQueryConfirm,
   onQueryCancel,
   runQuery,
-  setStateAsync
+  setStateAsync,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
-import { Resizable } from 're-resizable';
+// import { Resizable } from 're-resizable';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import queryString from 'query-string';
@@ -47,7 +46,7 @@ class Editor extends React.Component {
       userVars = {
         email: currentUser.email,
         firstName: currentUser.first_name,
-        lastName: currentUser.last_name
+        lastName: currentUser.last_name,
       };
     }
 
@@ -68,19 +67,19 @@ class Editor extends React.Component {
       scaleValue: 1,
       deviceWindowWidth: 450,
       appDefinition: {
-        components: null
+        components: null,
       },
       currentState: {
         queries: {},
         components: {},
         globals: {
           currentUser: userVars,
-          urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search)))
-        }
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
+        },
       },
       apps: [],
-      dataQueriesDefaultText: 'You haven\'t created queries yet.',
-      showQuerySearchField: false
+      dataQueriesDefaultText: "You haven't created queries yet.",
+      showQuerySearchField: false,
     };
   }
 
@@ -88,41 +87,45 @@ class Editor extends React.Component {
     const appId = this.props.match.params.id;
     this.fetchApps(0);
 
-    appService.getApp(appId).then((data) => this.setState(
-      {
-        app: data,
-        isLoading: false,
-        appDefinition: { ...this.state.appDefinition, ...data.definition },
-        slug: data.slug
-      },
-      () => {
-        data.data_queries.forEach((query) => {
-          if (query.options.runOnPageLoad) {
-            runQuery(this, query.id, query.name);
-          }
-        });
-      }
-    ));
+    appService.getApp(appId).then((data) =>
+      this.setState(
+        {
+          app: data,
+          isLoading: false,
+          appDefinition: { ...this.state.appDefinition, ...data.definition },
+          slug: data.slug,
+        },
+        () => {
+          data.data_queries.forEach((query) => {
+            if (query.options.runOnPageLoad) {
+              runQuery(this, query.id, query.name);
+            }
+          });
+        }
+      )
+    );
 
     this.fetchDataSources();
     this.fetchDataQueries();
 
     this.setState({
       currentSidebarTab: 2,
-      selectedComponent: null
+      selectedComponent: null,
     });
   }
 
   fetchDataSources = () => {
     this.setState(
       {
-        loadingDataSources: true
+        loadingDataSources: true,
       },
       () => {
-        datasourceService.getAll(this.state.appId).then((data) => this.setState({
-          dataSources: data.data_sources,
-          loadingDataSources: false
-        }));
+        datasourceService.getAll(this.state.appId).then((data) =>
+          this.setState({
+            dataSources: data.data_sources,
+            loadingDataSources: false,
+          })
+        );
       }
     );
   };
@@ -130,7 +133,7 @@ class Editor extends React.Component {
   fetchDataQueries = () => {
     this.setState(
       {
-        loadingDataQueries: true
+        loadingDataQueries: true,
       },
       () => {
         dataqueryService.getAll(this.state.appId).then((data) => {
@@ -140,15 +143,15 @@ class Editor extends React.Component {
               loadingDataQueries: false,
               app: {
                 ...this.state.app,
-                data_queries: data.data_queries
-              }
+                data_queries: data.data_queries,
+              },
             },
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
                 queryState[query.name] = {
                   ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-                  ...this.state.currentState.queries[query.name]
+                  ...this.state.currentState.queries[query.name],
                 };
               });
 
@@ -170,9 +173,9 @@ class Editor extends React.Component {
                 currentState: {
                   ...this.state.currentState,
                   queries: {
-                    ...queryState
-                  }
-                }
+                    ...queryState,
+                  },
+                },
               });
             }
           );
@@ -182,11 +185,13 @@ class Editor extends React.Component {
   };
 
   fetchApps = (page) => {
-    appService.getAll(page).then((data) => this.setState({
-      apps: data.apps,
-      isLoading: false
-    }));
-  }
+    appService.getAll(page).then((data) =>
+      this.setState({
+        apps: data.apps,
+        isLoading: false,
+      })
+    );
+  };
 
   computeComponentState = (components) => {
     let componentState = {};
@@ -205,9 +210,9 @@ class Editor extends React.Component {
       currentState: {
         ...this.state.currentState,
         components: {
-          ...componentState
-        }
-      }
+          ...componentState,
+        },
+      },
     });
   };
 
@@ -221,12 +226,11 @@ class Editor extends React.Component {
   };
 
   switchSidebarTab = (tabIndex) => {
-    if (tabIndex == 2)
-    {
+    if (tabIndex == 2) {
       this.setState({ selectedComponent: null });
     }
     this.setState({
-      currentSidebarTab: tabIndex
+      currentSidebarTab: tabIndex,
     });
   };
 
@@ -288,10 +292,10 @@ class Editor extends React.Component {
           [newDefinition.id]: {
             ...this.state.appDefinition.components[newDefinition.id],
             component: newDefinition.component,
-            layouts: newDefinition.layouts
-          }
-        }
-      }
+            layouts: newDefinition.layouts,
+          },
+        },
+      },
     });
   };
 
@@ -303,10 +307,10 @@ class Editor extends React.Component {
           ...this.state.appDefinition.components,
           [newComponent.id]: {
             ...this.state.appDefinition.components[newComponent.id],
-            ...newComponent
-          }
-        }
-      }
+            ...newComponent,
+          },
+        },
+      },
     });
   };
 
@@ -375,7 +379,7 @@ class Editor extends React.Component {
                 runQuery(this, dataQuery.id, dataQuery.name).then(() => {
                   toast.info(`Query (${dataQuery.name}) completed.`, {
                     hideProgressBar: true,
-                    position: 'bottom-center'
+                    position: 'bottom-center',
                   });
                 });
               }}
@@ -397,13 +401,13 @@ class Editor extends React.Component {
 
   onNameChanged = (newName) => {
     this.setState({
-      app: { ...this.state.app, name: newName }
+      app: { ...this.state.app, name: newName },
     });
   };
 
   toggleQueryPaneHeight = () => {
     this.setState({
-      queryPaneHeight: this.state.queryPaneHeight === '30%' ? '80%' : '30%'
+      queryPaneHeight: this.state.queryPaneHeight === '30%' ? '80%' : '30%',
     });
   };
 
@@ -426,23 +430,31 @@ class Editor extends React.Component {
       const results = fuse.search(value);
       this.setState({
         dataQueries: results.map((result) => result.item),
-        dataQueriesDefaultText: results.length || 'No Queries found.'
+        dataQueriesDefaultText: results.length || 'No Queries found.',
       });
     } else {
       this.fetchDataQueries();
     }
-  }
+  };
 
   toggleQuerySearch = () => {
     this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
-  }
+  };
 
   onVersionDeploy = (versionId) => {
-    this.setState({ app: {
-      ...this.state.app,
-      current_version_id: versionId
-    }})
-  }
+    this.setState({
+      app: {
+        ...this.state.app,
+        current_version_id: versionId,
+      },
+    });
+  };
+
+  onZoomChanged = (zoom) => {
+    this.setState({
+      zoomLevel: zoom,
+    });
+  };
 
   render() {
     const {
@@ -471,7 +483,7 @@ class Editor extends React.Component {
       scaleValue,
       dataQueriesDefaultText,
       showQuerySearchField,
-      apps
+      apps,
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
 
@@ -515,7 +527,7 @@ class Editor extends React.Component {
                     value={this.state.app.name}
                   />
                 )}
-                <div className="editor-buttons">
+                {/* <div className="editor-buttons">
                   <span
                     className={`btn ${showLeftSidebar ? 'btn-light' : 'btn-default'} mx-2`}
                     onClick={this.toggleLeftSidebar}
@@ -535,8 +547,8 @@ class Editor extends React.Component {
                       height="12"
                     />
                   </span>
-                </div>
-                <div className="canvas-buttons">
+                </div> */}
+                {/* <div className="canvas-buttons">
                   <button
                     className="btn btn-light mx-2"
                     onClick={() => this.setState({ zoomLevel: ((Math.round(zoomLevel*10) - 1)/10).toFixed(1) }) }
@@ -554,7 +566,7 @@ class Editor extends React.Component {
                   >
                     <img src="/assets/images/icons/zoom-in.svg" width="12" height="12" />
                   </button>
-                </div>
+                </div> */}
                 <div className="layout-buttons">
                   <div className="btn-group" role="group" aria-label="Basic example">
                     <button
@@ -576,35 +588,42 @@ class Editor extends React.Component {
                   </div>
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
-                  <div className="mx-3" style={{ marginTop: '7px'}}>
+                  {/* <div className="mx-3" style={{ marginTop: '7px'}}>
                     <DarkModeToggle
                       switchDarkMode={this.props.switchDarkMode}
                       darkMode={this.props.darkMode}
                     />
+                  </div> */}
+                  <div className="nav-item dropdown d-none d-md-flex me-3">
+                    {app.id && (
+                      <ManageAppUsers
+                        app={app}
+                        slug={slug}
+                        darkMode={this.props.darkMode}
+                        handleSlugChange={this.handleSlugChange}
+                      />
+                    )}
                   </div>
                   <div className="nav-item dropdown d-none d-md-flex me-3">
-                    {app.id
-                     && <ManageAppUsers
-                       app={app}
-                       slug={slug}
-                       darkMode={this.props.darkMode}
-                       handleSlugChange={this.handleSlugChange} />}
-                  </div>
-                  <div className="nav-item dropdown d-none d-md-flex me-3">
-                    <a href={appLink} target="_blank" className={`btn btn-sm ${app?.current_version_id ? '': 'disabled'}`} rel="noreferrer">
+                    <a
+                      href={appLink}
+                      target="_blank"
+                      className={`btn btn-sm ${app?.current_version_id ? '' : 'disabled'}`}
+                      rel="noreferrer"
+                    >
                       Launch
                     </a>
                   </div>
                   <div className="nav-item dropdown me-2">
                     {app.id && (
-                        <SaveAndPreview
-                          appId={app.id}
-                          appName={app.name}
-                          appDefinition={appDefinition}
-                          app={app}
-                          darkMode={this.props.darkMode}
-                          onVersionDeploy={this.onVersionDeploy}
-                        />
+                      <SaveAndPreview
+                        appId={app.id}
+                        appName={app.name}
+                        appDefinition={appDefinition}
+                        app={app}
+                        darkMode={this.props.darkMode}
+                        onVersionDeploy={this.onVersionDeploy}
+                      />
                     )}
                   </div>
                 </div>
@@ -612,7 +631,18 @@ class Editor extends React.Component {
             </header>
           </div>
           <div className="sub-section">
-            <Resizable
+            <LeftSidebar
+              queries={currentState.queries}
+              components={currentState.components}
+              globals={currentState.globals}
+              appId={appId}
+              darkMode={this.props.darkMode}
+              dataSources={this.state.dataSources}
+              dataSourcesChanged={this.dataSourcesChanged}
+              onZoomChanged={this.onZoomChanged}
+              switchDarkMode={this.props.switchDarkMode}
+            />
+            {/* <Resizable
               minWidth={showLeftSidebar ? '12%' : '0%'}
               style={{
                 position: 'fixed',
@@ -733,7 +763,7 @@ class Editor extends React.Component {
                   )}
                 </div>
               </div>
-            </Resizable>
+            </Resizable> */}
             <div className="main">
               <div className="canvas-container align-items-center" style={{ transform: `scale(${zoomLevel})` }}>
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
@@ -750,9 +780,11 @@ class Editor extends React.Component {
                     scaleValue={scaleValue}
                     appLoading={isLoading}
                     onEvent={(eventName, options) => onEvent(this, eventName, options)}
-                    onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
+                    onComponentOptionChanged={(component, optionName, value) =>
+                      onComponentOptionChanged(this, component, optionName, value)
                     }
-                    onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
+                    onComponentOptionsChanged={(component, options) =>
+                      onComponentOptionsChanged(this, component, options)
                     }
                     currentState={this.state.currentState}
                     configHandleClicked={this.configHandleClicked}
@@ -771,7 +803,7 @@ class Editor extends React.Component {
                 style={{
                   height: showQueryEditor ? this.state.queryPaneHeight : '0px',
                   width: !showLeftSidebar ? '85%' : '',
-                  left: !showLeftSidebar ? '0' : ''
+                  left: !showLeftSidebar ? '0' : '',
                 }}
               >
                 <div className="row main-row">
@@ -783,7 +815,7 @@ class Editor extends React.Component {
                         </div>
                         <div className="col-auto px-3">
                           <button className="btn btn-sm btn-light mx-2" onClick={this.toggleQuerySearch}>
-                            <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17"/>
+                            <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17" />
                           </button>
 
                           <span
@@ -796,8 +828,8 @@ class Editor extends React.Component {
                         </div>
                       </div>
 
-                      {showQuerySearchField
-                        && <div className="row mt-2 pt-1 px-2">
+                      {showQuerySearchField && (
+                        <div className="row mt-2 pt-1 px-2">
                           <div className="col-12">
                             <div className="queries-search">
                               <input
@@ -810,7 +842,7 @@ class Editor extends React.Component {
                             </div>
                           </div>
                         </div>
-                      }
+                      )}
 
                       {loadingDataQueries ? (
                         <div className="p-5">
@@ -827,7 +859,8 @@ class Editor extends React.Component {
                                 <span className="text-muted">{dataQueriesDefaultText}</span> <br />
                                 <button
                                   className="btn btn-sm btn-outline-azure mt-3"
-                                  onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
+                                  onClick={() =>
+                                    this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
                                   }
                                 >
                                   create query
@@ -866,9 +899,7 @@ class Editor extends React.Component {
             </div>
             <div className="editor-sidebar">
               <div className="col-md-12">
-                <div>
-
-                </div>
+                <div></div>
               </div>
 
               {currentSidebarTab === 1 && (
