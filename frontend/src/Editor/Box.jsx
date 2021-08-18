@@ -15,6 +15,7 @@ import { Multiselect } from './Components/Multiselect';
 import { Modal } from './Components/Modal';
 import { Chart } from './Components/Chart';
 import { Map } from './Components/Map/Map';
+import { QrScanner } from './Components/QrScanner/QrScanner';
 import { ToggleSwitch } from './Components/Toggle'
 import { RadioButton } from './Components/RadioButton'
 import { renderTooltip } from '../_helpers/appUtils';
@@ -37,6 +38,7 @@ const AllComponents = {
   Modal,
   Chart,
   Map,
+  QrScanner,
   ToggleSwitch,
   RadioButton
 };
