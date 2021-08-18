@@ -15,8 +15,12 @@ async function bootstrap() {
   await app.enableCors();
 
   app.use(
-    helmet({
-      contentSecurityPolicy: false,
+    helmet.contentSecurityPolicy({
+      useDefaults: true,
+      directives: {
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+        'default-src': ["'self'", "blob:"],
+      },
     }),
   );
   const port = parseInt(process.env.PORT) || 3000;
