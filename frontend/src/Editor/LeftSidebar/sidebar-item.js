@@ -7,8 +7,8 @@ export const LeftSidebarItem = ({ tip = '', className, icon, text, onClick, ...r
   return (
     <OverlayTrigger
       trigger={['click','hover', 'focus']}
-      placement="bottom"
-      delay={{ show: 250, hide: 400 }}
+      placement="right"
+      delay={{ show: 800, hide: 100 }}
       overlay={<Tooltip id="button-tooltip">
         {tip}
       </Tooltip>}
