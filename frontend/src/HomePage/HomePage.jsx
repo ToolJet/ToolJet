@@ -220,7 +220,7 @@ class HomePage extends React.Component {
                                 >
                                   <OverlayTrigger
                                     placement="top"
-                                    overlay={(props) => renderTooltip({props, text: app?.current_version_id == null ? 'Kindly save & deploy the version' : 'Open in app viewer'})}
+                                    overlay={(props) => renderTooltip({props, text: app?.current_version_id == null ? 'App does not have a deployed version' : 'Open in app viewer'})}
                                   >
                                     <span className={`${app?.current_version_id ? 'badge bg-blue-lt mx-2 ' : 'badge bg-light-grey mx-2'}`} 
                                     >launch </span>
