@@ -8,6 +8,7 @@ import Popover from 'react-bootstrap/Popover';
 import { EventSelector } from '../EventSelector';
 import { Color } from '../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { v4 as uuidv4 } from 'uuid'; 
 
 class Table extends React.Component {
   constructor(props) {
@@ -276,7 +277,7 @@ class Table extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value) });
+    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4() });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
   };
 

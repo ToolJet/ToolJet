@@ -51,9 +51,9 @@ export const componentTypes = [
         serverSidePagination: { value: false },
         columns: {
           value: [
-            { name: 'id', id: Math.random() * 10 },
-            { name: 'name', id: Math.random() * 10 },
-            { name: 'email', id: Math.random() * 10 }
+            { name: 'id', id: "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737"},
+            { name: 'name', id: "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a"},
+            { name: 'email', id: "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f"}
           ]
         }
       },
