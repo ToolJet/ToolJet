@@ -21,28 +21,34 @@ import { MetaModule } from './modules/meta/meta.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
-@Module({
-  imports: [
+const imports = [
+  ConfigModule.forRoot({
+    isGlobal: true,
+    envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env']
+  }),
+  TypeOrmModule.forRoot(ormconfig),
+  SeedsModule,
+  AuthModule,
+  UsersModule,
+  AppsModule,
+  FoldersModule,
+  FolderAppsModule,
+  DataQueriesModule,
+  DataSourcesModule,
+  OrganizationsModule,
+  CaslModule,
+  MetaModule
+]
+
+if(process.argv.includes('--serve-frontend'))
+  imports.unshift(
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../', 'frontend/build'),
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env']
-    }),
-    TypeOrmModule.forRoot(ormconfig),
-    SeedsModule,
-    AuthModule,
-    UsersModule,
-    AppsModule,
-    FoldersModule,
-    FolderAppsModule,
-    DataQueriesModule,
-    DataSourcesModule,
-    OrganizationsModule,
-    CaslModule,
-    MetaModule
-  ],
+    })
+  )
+
+@Module({
+  imports,
   controllers: [AppController],
   providers: [AppService, EmailService, SeedsService],
 })
