@@ -103,7 +103,7 @@ Required parameters:
 
 <img class="screenshot-full" src="/img/datasource-reference/airtable-update.png" alt="ToolJet - Airtable Update Operarion" height="420"/>
 
-Example body for "update-operation" from Airtable: 
+#### Example body:
 
 <img class="screenshot-full" src="/img/datasource-reference/airtable-update-example-body.png" alt="ToolJet - Airtable Update Operarion Body" height="200" width="650" />
 
