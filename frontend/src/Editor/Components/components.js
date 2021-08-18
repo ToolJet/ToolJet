@@ -857,4 +857,41 @@ defaultMarkers: { value: `[{
       }
     }
   },
+  {
+    name: 'QrScanner',
+    displayName: 'QR Scanner',
+    description: 'Scan QR codes and hold its data',
+    component: 'QrScanner',
+    defaultSize: {
+      width: 300,
+      height: 300
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
+    properties: {},
+    events: {
+      onDetect: { displayName: 'On detect'},
+    },
+    styles: {
+      
+    },
+    exposedVariables: {
+      lastDetectedValue: ''
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : true },
+      },
+      properties: {},
+      events: {
+        onDetect: {
+        }
+      },
+      styles: {
+      }
+    }
+  }
 ];
