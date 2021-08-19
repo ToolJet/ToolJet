@@ -6,6 +6,7 @@ import Star from './star'
 export const StarRating = function StarRating({component, onComponentOptionChanged, onEvent}) {
   const label = component.definition.properties.label.value;
   const rating = +component.definition.properties.rating.value ?? 5;
+  const allowHalfStar = +component.definition.properties.allowHalfStar.value ?? false;
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
 
@@ -14,8 +15,10 @@ export const StarRating = function StarRating({component, onComponentOptionChang
       friction: 22,
       tension: 500
     },
-    from: { opacity: 0,
-     transform: "scale(0.8)" },
+    from: {
+      opacity: 0,
+      transform: "scale(0.8)" 
+    },
     opacity: 1,
     transform: "scale(1)",
     color: textColor
@@ -23,7 +26,7 @@ export const StarRating = function StarRating({component, onComponentOptionChang
 
   const [currentRating, setRating] = React.useState(rating);
 
-  function onChange() {
+  function handleClick() {
     onComponentOptionChanged(component, 'value', currentRating);
     onEvent('onChange', { component });
   }
@@ -34,12 +37,13 @@ export const StarRating = function StarRating({component, onComponentOptionChang
       {animatedStars.map((props, index) => (
         <Star
           active={index + 1 <= currentRating}
-          color={textColor}
+          rating={rating}
           onClick={e => {
             e.stopPropagation();
             setRating(index + 1);
-            onChange()
+            handleClick()
           }}
+          allowHalfStar={allowHalfStar}
           key={index}
           style={{ ...props }}
         />

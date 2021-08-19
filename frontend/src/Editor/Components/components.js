@@ -765,13 +765,13 @@ export const componentTypes = [
       },
       properties: {
         initialLocation: { value: `{
-  "lat": 40.7128,
-  "lng": -73.935242
-}`},
-defaultMarkers: { value: `[{
-  "lat": 40.7128,
-  "lng": -73.935242
-}]`}
+        "lat": 40.7128,
+        "lng": -73.935242
+      }`},
+      defaultMarkers: { value: `[{
+        "lat": 40.7128,
+        "lng": -73.935242
+      }]`}
       },
       addNewMarkers: { value: '{{false}}'},
       events: [],
@@ -802,10 +802,9 @@ defaultMarkers: { value: `[{
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
-      rating: { type: 'code', displayName: 'Number of stars' }
-      // value: { type: 'code', displayName: 'Default value' },
-      // values: { type: 'code', displayName: 'Option values' },
-      // display_values: { type: 'code', displayName: 'Option labels' }
+      rating: { type: 'code', displayName: 'Number of stars' },
+      allowHalfStar: { type: 'code', displayName: 'Enable half star' },
+      // tooltips: { type: 'array', displayName: 'Tooltips' },
     },
     events: {
       onChange: { displayName: 'On Change'},
@@ -829,10 +828,11 @@ defaultMarkers: { value: `[{
       properties: {
         label: { value: 'Select your rating' },
         rating: { value: '5' },
-        // value: { value: '' },
-        // values: { value: '{{[true,false]}}' },
-        // display_values: { value: '{{["yes", "no"]}}' },
-        visible: { value: true }
+        allowHalfStar: { value: false },
+        visible: { value: true },
+        // tooltips: {
+        //   value: []
+        // }
       },
 <<<<<<< HEAD
       properties: {},
