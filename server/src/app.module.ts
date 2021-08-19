@@ -40,7 +40,7 @@ const imports = [
   MetaModule
 ]
 
-if(process.argv.includes('--serve-frontend'))
+if(process.env.SERVE_CLIENT !== 'false')
   imports.unshift(
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../', 'frontend/build'),
