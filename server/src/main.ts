@@ -18,7 +18,8 @@ async function bootstrap() {
     helmet.contentSecurityPolicy({
       useDefaults: true,
       directives: {
-        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+        'default-src': ["'self'", "blob:"],
       },
     }),
   );

@@ -51,9 +51,9 @@ export const componentTypes = [
         serverSidePagination: { value: false },
         columns: {
           value: [
-            { name: 'id' },
-            { name: 'name' },
-            { name: 'email' }
+            { name: 'id', id: "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737"},
+            { name: 'name', id: "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a"},
+            { name: 'email', id: "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f"}
           ]
         }
       },
@@ -857,4 +857,41 @@ defaultMarkers: { value: `[{
       }
     }
   },
+  {
+    name: 'QrScanner',
+    displayName: 'QR Scanner',
+    description: 'Scan QR codes and hold its data',
+    component: 'QrScanner',
+    defaultSize: {
+      width: 300,
+      height: 300
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
+    properties: {},
+    events: {
+      onDetect: { displayName: 'On detect'},
+    },
+    styles: {
+      
+    },
+    exposedVariables: {
+      lastDetectedValue: ''
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : true },
+      },
+      properties: {},
+      events: {
+        onDetect: {
+        }
+      },
+      styles: {
+      }
+    }
+  }
 ];

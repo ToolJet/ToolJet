@@ -244,6 +244,7 @@ export function Table({
     const width = columnSize || defaultColumn.width;
 
     return {
+      id: column.id,
       Header: column.name,
       accessor: column.key || column.name,
       filter: customFilter,
