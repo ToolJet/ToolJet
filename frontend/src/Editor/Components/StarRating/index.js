@@ -25,6 +25,7 @@ export const StarRating = function StarRating({component, onComponentOptionChang
   });
 
   const [currentRating, setRating] = React.useState(rating);
+  const [hoverIndex, setHoverIndex] = React.useState(null);
 
   function handleClick() {
     onComponentOptionChanged(component, 'value', currentRating);
@@ -36,16 +37,19 @@ export const StarRating = function StarRating({component, onComponentOptionChang
       <span className="form-check-label form-check-label col-auto mb-1">{label}</span>
       {animatedStars.map((props, index) => (
         <Star
-          active={index + 1 <= currentRating}
+          active={index <= currentRating || index <= hoverIndex}
+          // inActive={currentRating > hoverIndex}
           rating={rating}
           onClick={e => {
             e.stopPropagation();
-            setRating(index + 1);
+            setRating(index);
             handleClick()
           }}
           allowHalfStar={allowHalfStar}
           key={index}
+          index={index}
           style={{ ...props }}
+          setHoverIndex={setHoverIndex}
         />
       ))}
     </div>

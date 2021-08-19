@@ -1,7 +1,7 @@
 import React from 'react'
 import { animated } from 'react-spring';
 
-const Star = ({ active, rating, allowHalfStar, ...rest }) => {
+const Star = ({ index, active, inActive, rating, setHoverIndex, allowHalfStar, ...rest }) => {
   const star = <img width="20" height="20" src={`/assets/images/icons/star.svg`} />
   const halfStar = <img width="20" height="20" src={`/assets/images/icons/half-star.svg`} />
   const starOutline = <img width="20" height="20" src={`/assets/images/icons/widgets/starrating.svg`} />
@@ -39,8 +39,9 @@ const Star = ({ active, rating, allowHalfStar, ...rest }) => {
   }
 
   const handleMouseLeave = () => {
-    setIcon(star)
-    setOutlineIcon(starOutline)
+    setHoverIndex(null)
+    // setIcon(star)
+    // setOutlineIcon(starOutline)
   }
 
   let conditionalProps = {}
@@ -52,12 +53,25 @@ const Star = ({ active, rating, allowHalfStar, ...rest }) => {
     }
   }
 
+  const handleMouseOver = (e) => {
+    console.log('here', index)
+    setHoverIndex(index)
+  }
+
+  // const getIcon = () => {
+  //   if(inActive) return outlineIcon
+
+  //   if(active) return icon
+
+  //   return outlineIcon
+  // }
+
   // const handleClick = (e) => {
 
   // }
 
   return (
-    <animated.span ref={ref} {...rest} {...conditionalProps} className="star" role="button">
+    <animated.span ref={ref} {...rest} onMouseEnter={handleMouseOver} onMouseLeave={handleMouseLeave} {...conditionalProps} className="star" role="button">
       {active ? icon : outlineIcon}
     </animated.span>
   );
