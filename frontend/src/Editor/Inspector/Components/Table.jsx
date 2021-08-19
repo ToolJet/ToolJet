@@ -103,7 +103,8 @@ class Table extends React.Component {
                 { name: 'Tags', value: 'tags' },
                 { name: 'Dropdown', value: 'dropdown' },
                 { name: 'Radio', value: 'radio' },
-                { name: 'Multiselect', value: 'multiselect' }
+                { name: 'Multiselect', value: 'multiselect' },
+                { name: 'Toggle switch', value: 'toggle' }
               ]}
               value={column.columnType}
               search={true}
