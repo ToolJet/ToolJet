@@ -20,7 +20,6 @@ class ManageOrgUsers extends React.Component {
       newUser: {},
       idChangingRole: null,
       archivingUser: null,
-      currentUserDetails: null,
     };
   }
 
@@ -37,9 +36,6 @@ class ManageOrgUsers extends React.Component {
       this.setState({
         users: data.users,
         isLoading: false,
-        currentUserDetails: data.users.find(
-          (user) => user.role == 'admin' && user.email == this.state.currentUser.email
-        ),
       })
     );
   };
@@ -116,17 +112,7 @@ class ManageOrgUsers extends React.Component {
   };
 
   render() {
-    const {
-      isLoading,
-      showNewUserForm,
-      creatingUser,
-      users,
-      newUser,
-      idChangingRole,
-      archivingUser,
-      currentUserDetails,
-      currentUser,
-    } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole, archivingUser } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -140,14 +126,11 @@ class ManageOrgUsers extends React.Component {
                   <h2 className="page-title">Users & Permissions</h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
-                  {!showNewUserForm &&
-                    currentUser &&
-                    currentUserDetails &&
-                    currentUserDetails.email == currentUser.email && (
-                      <div className="btn btn-primary" onClick={() => this.setState({ showNewUserForm: true })}>
-                        Invite new user
-                      </div>
-                    )}
+                  {!showNewUserForm && (
+                    <div className="btn btn-primary" onClick={() => this.setState({ showNewUserForm: true })}>
+                      Invite new user
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
