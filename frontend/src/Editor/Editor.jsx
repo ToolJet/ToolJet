@@ -527,14 +527,7 @@ class Editor extends React.Component {
                     value={this.state.app.name}
                   />
                 )}
-                {/* <div className="editor-buttons">
-                  <span
-                    className={`btn ${showLeftSidebar ? 'btn-light' : 'btn-default'} mx-2`}
-                    onClick={this.toggleLeftSidebar}
-                    data-tip={showLeftSidebar ? 'Hide left sidebar' : 'Show left sidebar'}
-                  >
-                    <img src="/assets/images/icons/editor/sidebar-toggle.svg" width="12" height="12" />
-                  </span>
+                <div className="editor-buttons">
                   <span
                     className={`btn ${showQueryEditor ? 'btn-light' : 'btn-default'} mx-2`}
                     onClick={this.toggleQueryEditor}
@@ -547,7 +540,7 @@ class Editor extends React.Component {
                       height="12"
                     />
                   </span>
-                </div> */}
+                </div>
                 {/* <div className="canvas-buttons">
                   <button
                     className="btn btn-light mx-2"
@@ -765,7 +758,10 @@ class Editor extends React.Component {
               </div>
             </Resizable> */}
             <div className="main">
-              <div className="canvas-container align-items-center" style={{ transform: `scale(${zoomLevel})` }}>
+              <div
+                className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
+                style={{ transform: `scale(${zoomLevel})` }}
+              >
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
                   <Container
                     appDefinition={appDefinition}
