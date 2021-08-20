@@ -15,6 +15,8 @@ const dateChange = (e) => {
     const _date = e.format(dateFormat)
     // console.log('__date-change__',_date );
     setDate(_date)
+
+    onChange(_date)
 }
 
 
