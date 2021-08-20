@@ -529,13 +529,6 @@ class Editor extends React.Component {
                 )}
                 <div className="editor-buttons">
                   <span
-                    className={`btn ${showLeftSidebar ? 'btn-light' : 'btn-default'} mx-2`}
-                    onClick={this.toggleLeftSidebar}
-                    data-tip={showLeftSidebar ? 'Hide left sidebar' : 'Show left sidebar'}
-                  >
-                    <img src="/assets/images/icons/editor/sidebar-toggle.svg" width="12" height="12" />
-                  </span>
-                  <span
                     className={`btn ${showQueryEditor ? 'btn-light' : 'btn-default'} mx-2`}
                     onClick={this.toggleQueryEditor}
                     data-tip={showQueryEditor ? 'Hide query editor' : 'Show query editor'}
@@ -631,7 +624,7 @@ class Editor extends React.Component {
             </header>
           </div>
           <div className="sub-section">
-            {showLeftSidebar && <LeftSidebar
+            <LeftSidebar
               queries={currentState.queries}
               components={currentState.components}
               globals={currentState.globals}
@@ -641,7 +634,7 @@ class Editor extends React.Component {
               dataSourcesChanged={this.dataSourcesChanged}
               onZoomChanged={this.onZoomChanged}
               switchDarkMode={this.props.switchDarkMode}
-            />}
+            />
             {/* <Resizable
               minWidth={showLeftSidebar ? '12%' : '0%'}
               style={{
@@ -765,7 +758,10 @@ class Editor extends React.Component {
               </div>
             </Resizable> */}
             <div className="main">
-              <div className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`} style={{ transform: `scale(${zoomLevel})` }}>
+              <div
+                className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
+                style={{ transform: `scale(${zoomLevel})` }}
+              >
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
                   <Container
                     appDefinition={appDefinition}
