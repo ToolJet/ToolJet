@@ -32,13 +32,17 @@ export const StarRating = function StarRating({component, onComponentOptionChang
     onEvent('onChange', { component });
   }
 
+  const getActive = (index) => {
+    if(hoverIndex !== null) return index <= hoverIndex
+    return index <= currentRating
+  }
+
   return (
     <div>
       <span className="form-check-label form-check-label col-auto mb-1">{label}</span>
       {animatedStars.map((props, index) => (
         <Star
-          active={index <= currentRating || index <= hoverIndex}
-          // inActive={currentRating > hoverIndex}
+          active={getActive(index)}
           rating={rating}
           onClick={e => {
             e.stopPropagation();

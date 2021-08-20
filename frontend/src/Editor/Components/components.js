@@ -803,8 +803,8 @@ export const componentTypes = [
     properties: {
       label: { type: 'code', displayName: 'Label' },
       rating: { type: 'code', displayName: 'Number of stars' },
-      allowHalfStar: { type: 'code', displayName: 'Enable half star' },
-      // tooltips: { type: 'array', displayName: 'Tooltips' },
+      allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
+      tooltips: { type: 'code', displayName: 'Tooltips' },
     },
     events: {
       onChange: { displayName: 'On Change'},
@@ -830,9 +830,7 @@ export const componentTypes = [
         rating: { value: '5' },
         allowHalfStar: { value: false },
         visible: { value: true },
-        // tooltips: {
-        //   value: []
-        // }
+        tooltips: { value: '{{[]}}' }
       },
 <<<<<<< HEAD
       properties: {},

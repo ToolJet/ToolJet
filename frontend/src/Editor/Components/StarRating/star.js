@@ -1,6 +1,13 @@
 import React from 'react'
 import { animated } from 'react-spring';
 
+/**
+ 1. on hover show filled icon
+ 2. on dismiss show outline icon
+ 3. on hover reaching 50% of the icon show half filled icon
+ 4. on dismiss show outline icon for half filled icon
+ 5. on click set the half-filled icon if precision = 0.5 else set the filled icon
+ */
 const Star = ({ index, active, inActive, rating, setHoverIndex, allowHalfStar, ...rest }) => {
   const star = <img width="20" height="20" src={`/assets/images/icons/star.svg`} />
   const halfStar = <img width="20" height="20" src={`/assets/images/icons/half-star.svg`} />
@@ -8,6 +15,7 @@ const Star = ({ index, active, inActive, rating, setHoverIndex, allowHalfStar, .
 
   const [icon, setIcon] = React.useState(star)
   const [outlineIcon, setOutlineIcon] = React.useState(starOutline)
+  const [currentPrecision, setPrecision] = React.useState(0)
 
   const ref = React.useRef(null)
 
@@ -35,13 +43,25 @@ const Star = ({ index, active, inActive, rating, setHoverIndex, allowHalfStar, .
     if(isHalfStarHover === 0.5) {
       setIcon(halfStar)
       setOutlineIcon(halfStar)
+      setPrecision(0.5)
+    } else {
+      setIcon(star)
+      setOutlineIcon(starOutline)
+      setPrecision(0)
     }
   }
 
   const handleMouseLeave = () => {
     setHoverIndex(null)
-    // setIcon(star)
-    // setOutlineIcon(starOutline)
+    setPrecision(0)
+    setIcon(star)
+    setOutlineIcon(starOutline)
+  }
+
+  const handleClick = (e) => {
+    if(currentPrecision === 0.5) setIcon(halfStar)
+    else setIcon(star)
+    // onClick(e)
   }
 
   let conditionalProps = {}
@@ -49,29 +69,15 @@ const Star = ({ index, active, inActive, rating, setHoverIndex, allowHalfStar, .
   if(allowHalfStar) {
     conditionalProps = {
       onMouseMove: handleMouseMove,
-      onMouseLeave: handleMouseLeave
     }
   }
 
-  const handleMouseOver = (e) => {
-    console.log('here', index)
+  const handleMouseEnter = (e) => {
     setHoverIndex(index)
   }
 
-  // const getIcon = () => {
-  //   if(inActive) return outlineIcon
-
-  //   if(active) return icon
-
-  //   return outlineIcon
-  // }
-
-  // const handleClick = (e) => {
-
-  // }
-
   return (
-    <animated.span ref={ref} {...rest} onMouseEnter={handleMouseOver} onMouseLeave={handleMouseLeave} {...conditionalProps} className="star" role="button">
+    <animated.span ref={ref} {...rest} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...conditionalProps} className="star" role="button">
       {active ? icon : outlineIcon}
     </animated.span>
   );
