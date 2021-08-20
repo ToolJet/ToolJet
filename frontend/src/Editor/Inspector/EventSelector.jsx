@@ -45,12 +45,13 @@ export const EventSelector = ({
         })
       }
     })
-    
+
     return modalOptions;
   }
 
   function getAllApps() {
     let appsOptionsList = [];
+
     apps.map((item) => {
       appsOptionsList.push({
         name: item.name,
@@ -136,6 +137,15 @@ export const EventSelector = ({
                     }}
                     filterOptions={fuzzySearch}
                     placeholder="Select.."
+                  />
+                  <label className="form-label mt-1">Query params</label>
+
+                  <CodeHinter
+                    currentState={currentState}
+                    initialValue={definition.options.queryParams}
+                    onChange={(value) => eventOptionUpdated(param, 'queryParams', value, extraData)}
+                    mode='javascript'
+                    singleLine={false}
                   />
                 </div>
               )}

@@ -21,7 +21,7 @@ export const Inspector = ({
   darkMode,
   switchSidebarTab
 }) => {
-  
+
   const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component, layouts: allComponents[selectedComponentId].layouts}
   const [component, setComponent] = useState(selectedComponent);
 
@@ -191,6 +191,7 @@ export const Inspector = ({
           components={components}
           currentState={currentState}
           darkMode={darkMode}
+          apps={apps}
         />
       }
 

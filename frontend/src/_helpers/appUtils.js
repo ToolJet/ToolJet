@@ -6,6 +6,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { history } from '@/_helpers';
+import { serializeNestedObjectToQueryParams } from './utils';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -100,8 +101,16 @@ function executeAction(_ref, event, mode) {
 
     if (event.actionId === 'go-to-app') {
       const slug = resolveReferences(event.options.slug, _ref.state.currentState);
+      const queryParams = resolveReferences(event.options.queryParams, _ref.state.currentState);
 
-      const url = `/applications/${slug}`;
+      let url =`/applications/${slug}`;
+
+      if (queryParams) {
+        const queryPart = serializeNestedObjectToQueryParams(queryParams)
+
+        if (queryPart.length > 0)
+          url = url + `?${queryPart}`
+      }
 
       if(mode === 'view') {
         _ref.props.history.push(url);

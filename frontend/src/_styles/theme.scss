@@ -1328,6 +1328,7 @@ body {
     font-family: 'Roboto', sans-serif;
     font-size: 0.9rem;
     padding: 0px;
+    z-index: 10000;
 
     li.CodeMirror-hint-active {
         background: #3c92dc;
