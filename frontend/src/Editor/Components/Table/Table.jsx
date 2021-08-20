@@ -227,7 +227,7 @@ export function Table({
   const changeSet = componentState ? componentState.changeSet : {};
 
   const columnData = component.definition.properties.columns.value.map((column) => {
-    const columnSize = columnSizes[column.key] || columnSizes[column.name];
+    const columnSize = columnSizes[column.id] || columnSizes[column.name];
     const columnType = column.columnType;
 
     const columnOptions = {};
