@@ -91,10 +91,11 @@ export default class MysqlQueryService implements QueryService {
 
       for(const key of Object.keys(record)) {
         if(key !== primaryKey) {
-          queryText = ` ${queryText} ${key} = '${record[key]}'`;
+          queryText = ` ${queryText} ${key} = '${record[key]}',`;
         }
       }
 
+      queryText = queryText.slice(0, -1);
       queryText = `${queryText} WHERE ${primaryKey} = ${record[primaryKey]};`;
     }
 
