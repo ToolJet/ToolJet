@@ -604,7 +604,8 @@ export function Table({
 
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
-                          if (_.get(componentState.changeSet[cell.row.index], cell.column.id, undefined)) {
+
+                          if (_.get(componentState.changeSet[cell.row.index], cell.column.Header, undefined) !== undefined) {
                             console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
                           }
