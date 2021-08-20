@@ -122,4 +122,4 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: sources
-                  key: slack_client_secret                        
+                  key: slack_client_secret

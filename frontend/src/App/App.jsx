@@ -13,6 +13,7 @@ import '@/_styles/theme.scss';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import posthog from 'posthog-js';
 import {ForgotPassword} from '@/ForgotPassword'
@@ -109,6 +110,7 @@ class App extends React.Component {
           <PrivateRoute exact path="/oauth2/authorize" component={Authorize} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
           <PrivateRoute exact path="/users" component={ManageOrgUsers} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
           <PrivateRoute exact path="/library" component={Library} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+          <PrivateRoute exact path="/settings" component={SettingsPage} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
         </div>
       </Router>
     );

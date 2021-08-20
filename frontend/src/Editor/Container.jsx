@@ -304,9 +304,8 @@ export const Container = ({
         }
         }
       )}
-
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
-        <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '15%' }}>
+        <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '10%'}}>
           <center className="text-muted">You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.</center>
         </div>
       )}

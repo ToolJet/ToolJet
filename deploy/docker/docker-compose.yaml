@@ -27,6 +27,7 @@ services:
     env_file: .env
     environment:
       RAILS_LOG_TO_STDOUT: "true"
+      SERVE_CLIENT: "false"
     command: ['npm', 'run', '--prefix', 'server', 'start:prod']
 
 volumes:

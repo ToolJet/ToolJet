@@ -19,6 +19,10 @@ export const Header = function Header({
     history.push('/login');
   }
 
+  function openSettings() {
+    history.push('/settings')
+  }
+
   const { first_name, last_name } = authenticationService.currentUserValue;
 
   return <header className="navbar navbar-expand-md navbar-light d-print-none">
@@ -67,7 +71,7 @@ export const Header = function Header({
         </li>
       </ul>
       <div className="navbar-nav flex-row order-md-last">
-        <div className="p-1">
+        <div className="p-1 m-1 d-flex align-items-center">
           <DarkModeToggle
             switchDarkMode={switchDarkMode}
             darkMode={darkMode}
@@ -89,6 +93,9 @@ export const Header = function Header({
             </div>
           </a>
           <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+          <a data-testId="settingsBtn" onClick={openSettings} className="dropdown-item">
+              Settings
+            </a>
             <a data-testId="logoutBtn" onClick={logout} className="dropdown-item">
               Logout
             </a>

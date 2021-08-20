@@ -51,9 +51,9 @@ export const componentTypes = [
         serverSidePagination: { value: false },
         columns: {
           value: [
-            { name: 'id' },
-            { name: 'name' },
-            { name: 'email' }
+            { name: 'id', id: "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737"},
+            { name: 'name', id: "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a"},
+            { name: 'email', id: "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f"}
           ]
         }
       },
@@ -355,6 +355,104 @@ export const componentTypes = [
           }
         },
         onUnCheck: {
+          options: {
+
+          }
+        }
+      },
+      styles: {
+        textColor: { value: '#000' }
+      }
+    }
+  },
+  {
+    name: 'Radio-button',
+    displayName: 'Radio Button',
+    description: 'Radio buttons',
+    component: 'RadioButton',
+    defaultSize: {
+      width: 200,
+      height: 50
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
+    properties: {
+      label: { type: 'code', displayName: 'Label' },
+      value: { type: 'code', displayName: 'Default value' },
+      values: { type: 'code', displayName: 'Option values' },
+      display_values: { type: 'code', displayName: 'Option labels' }
+    },
+    events: {
+      onSelectionChange: { displayName: 'On select'},
+    },
+    styles: {
+      textColor: { type: 'color', displayName: 'Text Color' }
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
+      properties: {
+        label: { value: 'Select' },
+        value: { value: '' },
+        values: { value: '{{[true,false]}}' },
+        display_values: { value: '{{["yes", "no"]}}' },
+        visible: { value: true }
+      },
+      events: {
+        onSelectionChange: { 
+          options: {
+
+          }
+        },
+      },
+      styles: {
+        textColor: { value: '#000' }
+      }
+    }
+  },
+  {
+    name: 'ToggleSwitch',
+    displayName: 'Toggle Switch',
+    description: 'Toggle Switch',
+    component: 'ToggleSwitch',
+    defaultSize: {
+      width: 150,
+      height: 50
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
+    properties: {
+      label: { type: 'code', displayName: 'Label' }
+    },
+    events: {
+        onChange: { displayName: 'On change'},
+    },
+    styles: {
+      textColor: { type: 'color', displayName: 'Text Color' }
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : false }
+      },
+      properties: {
+        label: { value: 'Toggle label' }
+      },
+      events: {
+        onToggle: {
+          options: {
+
+          }
+        },
+        onUnToggle: {
           options: {
 
           }
@@ -759,4 +857,41 @@ defaultMarkers: { value: `[{
       }
     }
   },
+  {
+    name: 'QrScanner',
+    displayName: 'QR Scanner',
+    description: 'Scan QR codes and hold its data',
+    component: 'QrScanner',
+    defaultSize: {
+      width: 300,
+      height: 300
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+    },
+    properties: {},
+    events: {
+      onDetect: { displayName: 'On detect'},
+    },
+    styles: {
+      
+    },
+    exposedVariables: {
+      lastDetectedValue: ''
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value : true },
+      },
+      properties: {},
+      events: {
+        onDetect: {
+        }
+      },
+      styles: {
+      }
+    }
+  }
 ];

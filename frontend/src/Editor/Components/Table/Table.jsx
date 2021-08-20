@@ -18,6 +18,7 @@ import { Pagination } from './Pagination';
 import { CustomSelect } from './CustomSelect';
 import { Tags } from './Tags';
 import { Radio } from './Radio';
+import { Toggle } from './Toggle'
 
 var _ = require('lodash');
 
@@ -244,6 +245,7 @@ export function Table({
     const width = columnSize || defaultColumn.width;
 
     return {
+      id: column.id,
       Header: column.name,
       accessor: column.key || column.name,
       filter: customFilter,
@@ -358,6 +360,18 @@ export function Table({
             <div>
               <Radio
                 options={columnOptions.selectOptions}
+                value={cellValue}
+                readOnly={!column.isEditable}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+                />
+            </div>
+          );
+        } if (columnType === 'toggle') {
+          return (
+            <div>
+              <Toggle
                 value={cellValue}
                 readOnly={!column.isEditable}
                 onChange={(value) => {

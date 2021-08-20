@@ -39,6 +39,7 @@ To display email column, the key for the column should be `user.email`.
 - Tags - similar to badges but the values are not predefined.
 - Dropdown
 - Multiselect dropdown
+- Toggle switch
 
 ## Client-side pagination
 
