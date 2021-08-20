@@ -104,7 +104,8 @@ class Table extends React.Component {
                 { name: 'Dropdown', value: 'dropdown' },
                 { name: 'Radio', value: 'radio' },
                 { name: 'Multiselect', value: 'multiselect' },
-                { name: 'Toggle switch', value: 'toggle' }
+                { name: 'Toggle switch', value: 'toggle' },
+                { name: 'Date Picker', value: 'datepicker' }
               ]}
               value={column.columnType}
               search={true}
@@ -170,6 +171,21 @@ class Table extends React.Component {
                 />
               </div>
             </div>
+          )}
+
+          {column.columnType === 'datepicker' && (
+           <label className="form-check form-switch my-2">
+           <input
+             className="form-check-input"
+             type="checkbox"
+             onClick={() => {
+               console.log('okay: is Time', column)
+              this.onColumnItemChange(index, 'isTimeChecked', !column.isTimeChecked)
+             }}
+             checked={column.isTimeChecked}
+           />
+           <span className="form-check-label">time</span>
+          </label>
           )}
 
           <label className="form-check form-switch my-2">
