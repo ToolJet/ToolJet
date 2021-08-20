@@ -9,9 +9,20 @@ import { cacheConnection, getCachedConnection } from 'src/helpers/utils.helper';
 export default class MysqlQueryService implements QueryService {
 
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string, dataSourceUpdatedAt: string): Promise<QueryResult> {
-    
-    let result = { };
-    let query = queryOptions.query;
+
+    let result = {
+      rows: []
+    };
+    let query = '';
+
+    if(queryOptions.mode === 'gui') {
+      if(queryOptions.operation === 'bulk_update_pkey') {
+        query = await this.buildBulkUpdateQuery(queryOptions);
+      }
+    } else {
+      query = queryOptions.query;
+    }
+
     const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
     try {
@@ -44,13 +55,14 @@ export default class MysqlQueryService implements QueryService {
         password : sourceOptions.password,
         database : sourceOptions.database,
         port: sourceOptions.port,
+        multipleStatements: true
       }
     };
 
     return knex(config);
   }
 
-  async getConnection(sourceOptions: any, options:any, checkCache: boolean, dataSourceId?: string, dataSourceUpdatedAt?: string): Promise<any> { 
+  async getConnection(sourceOptions: any, options:any, checkCache: boolean, dataSourceId?: string, dataSourceUpdatedAt?: string): Promise<any> {
     if(checkCache) {
       let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
 
@@ -64,6 +76,28 @@ export default class MysqlQueryService implements QueryService {
     } else {
       return await this.buildConnection(sourceOptions);
     }
-   
+
+  }
+
+  async buildBulkUpdateQuery(queryOptions: any): Promise<string> {
+    let queryText = '';
+
+    const tableName = queryOptions['table'];
+    const primaryKey = queryOptions['primary_key_column'];
+    const records = queryOptions['records'];
+
+    for(const record of records ) {
+      queryText = `${queryText} UPDATE ${tableName} SET`;
+
+      for(const key of Object.keys(record)) {
+        if(key !== primaryKey) {
+          queryText = ` ${queryText} ${key} = '${record[key]}'`;
+        }
+      }
+
+      queryText = `${queryText} WHERE ${primaryKey} = ${record[primaryKey]};`;
+    }
+
+    return queryText.trim();
   }
 }
