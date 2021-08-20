@@ -51,6 +51,10 @@ If want to restrict the signups and allow new users only by invitations, set the
 You will still be able to see the signup page but won't be able to successfully submit the form.
 :::
 
+#### Serve client as a server end-point ( optional )
+
+By default, the `SERVE_CLIENT` variable will be set to `false` and the server won't serve the client at its `/`  end-point.
+You can set `SERVE_CLIENT` to `true` and the server will attempt to serve the client at its root end-point (`/`).
 
 #### SMTP configuration ( optional )
 
