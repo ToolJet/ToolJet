@@ -138,7 +138,7 @@ class Viewer extends React.Component {
                   </a>
                 </h1>
                 {this.state.app && <span>{this.state.app.name}</span>}
-                <div className="navbar-nav flex-row order-md-last">
+                <div className="d-flex align-items-center m-1 p-1">
                   <DarkModeToggle
                     switchDarkMode={this.props.switchDarkMode}
                     darkMode={this.props.darkMode}
