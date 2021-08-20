@@ -47,7 +47,7 @@ export const ToggleSwitch = ({
   const toggle = () => setOn(!on)
 
   return (
-    <div className="row" style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+    <div className="row  py-1" style={{ width, height }} onClick={() => onComponentClick(id, component)}>
         <span className="form-check-label form-check-label col-auto" style={{color: textColor}}>{label}</span>
         <div className="col">
           <Switch on={on} onClick={toggle} onChange={toggleValue} />
