@@ -47,7 +47,7 @@ export const componentTypes = [
         title: { value: 'Table' },
         visible: { value: true },
         loadingState: { value: false },
-        data: { value: '{{[]}}' },
+        data: { value: "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}" },
         serverSidePagination: { value: false },
         columns: {
           value: [
