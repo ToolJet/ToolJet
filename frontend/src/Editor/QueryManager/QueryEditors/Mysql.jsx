@@ -51,9 +51,11 @@ class Mysql extends React.Component {
                   mode="sql"
                   theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                   lineNumbers={true}
+                  lineWrapping={true}
                   className="query-hinter"
                   enablePreview
-                  height="120px"
+                  height="auto"
+                  minHeight="120px"
                   onChange={(value) => changeOption(this, 'query', value)}
                 />
               </div>

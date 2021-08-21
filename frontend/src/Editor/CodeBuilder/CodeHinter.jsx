@@ -24,11 +24,14 @@ export function CodeHinter({
   placeholder, 
   ignoreBraces, 
   enablePreview, 
-  height
+  height,
+  minHeight,
+  lineWrapping
 }) {
   console.log('theme', theme)
   const options = {
     lineNumbers: lineNumbers,
+    lineWrapping: lineWrapping,
     singleLine: true,
     mode: mode || 'handlebars',
     tabSize: 2,
@@ -55,12 +58,16 @@ export function CodeHinter({
   }
 
   return (
-    <div className={`code-hinter ${className || 'codehinter-default-input'}`} key={suggestions.length}>
+    <div 
+      className={`code-hinter ${className || 'codehinter-default-input'}`} 
+      key={suggestions.length}
+      style={{ height: height || 'auto', minHeight }}
+    >
       <CodeMirror
         value={initialValue}
         realState={realState}
         scrollbarStyle={null}
-        height={height || '100%'}
+        height={height || 'auto'}
         onBlur={(editor) => { 
           const value = editor.getValue();
           onChange(value);
@@ -70,7 +77,7 @@ export function CodeHinter({
         options={options}
       />
       {enablePreview && 
-        <div className="dynamic-variable-preview bg-azure-lt px-2 py-1">
+        <div className="dynamic-variable-preview bg-green-lt px-2 py-1">
           {resolveReferences(currentValue, realState)}
         </div>
       }
