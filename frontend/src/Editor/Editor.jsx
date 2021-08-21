@@ -288,6 +288,7 @@ class Editor extends React.Component {
 
   componentDefinitionChanged = (newDefinition) => {
     let _self = this;
+
     return setStateAsync(_self, {
       appDefinition: {
         ...this.state.appDefinition,
@@ -295,8 +296,7 @@ class Editor extends React.Component {
           ...this.state.appDefinition.components,
           [newDefinition.id]: {
             ...this.state.appDefinition.components[newDefinition.id],
-            component: newDefinition.component,
-            layouts: newDefinition.layouts,
+            component: newDefinition.component
           },
         },
       },
