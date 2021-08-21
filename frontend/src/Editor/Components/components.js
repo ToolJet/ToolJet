@@ -372,7 +372,7 @@ export const componentTypes = [
     component: 'RadioButton',
     defaultSize: {
       width: 200,
-      height: 50
+      height: 30
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
