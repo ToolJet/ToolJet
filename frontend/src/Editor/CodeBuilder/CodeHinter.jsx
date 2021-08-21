@@ -61,13 +61,13 @@ export function CodeHinter({
     <div 
       className={`code-hinter ${className || 'codehinter-default-input'}`} 
       key={suggestions.length}
-      style={{ height: height || 'auto', minHeight }}
+      style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'scroll' }}
     >
       <CodeMirror
         value={initialValue}
         realState={realState}
         scrollbarStyle={null}
-        height={height || 'auto'}
+        height={height}
         onBlur={(editor) => { 
           const value = editor.getValue();
           onChange(value);

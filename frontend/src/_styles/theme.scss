@@ -1266,6 +1266,12 @@ body {
     margin-bottom: 0rem;
 }
 
+.code-hinter::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
 .codehinter-query-editor-input {
   .CodeMirror {
     font-family: 'Roboto', sans-serif;
@@ -1305,6 +1311,7 @@ body {
       .CodeMirror {
           font-family: 'Roboto', sans-serif;
           height: 50px!important;
+          max-height: 300px;
       }
     }
 
