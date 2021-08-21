@@ -59,9 +59,15 @@ export function runTransformation(_ref, rawData, transformation) {
   return result;
 }
 
+export function executeActionsForEventId(_ref, eventId, component, mode) {
+  const events = component.definition.events.filter(event => event.eventId === eventId);
+  events.forEach(event => {
+    executeAction(_ref, event, mode);
+  });
+}
+
 export function onComponentClick(_ref, id, component, mode = 'edit') {
-  const onClickEvent = component.definition.events.onClick;
-  executeAction(_ref, onClickEvent, mode);
+  executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
 export function onQueryConfirm(_ref, queryConfirmationData) {
@@ -89,17 +95,17 @@ async function copyToClipboard(text) {
 function executeAction(_ref, event, mode) {
   if (event) {
     if (event.actionId === 'show-alert') {
-      const message = resolveReferences(event.options.message, _ref.state.currentState);
+      const message = resolveReferences(event.message, _ref.state.currentState);
       toast(message, { hideProgressBar: true });
     }
 
     if (event.actionId === 'open-webpage') {
-      const url = resolveReferences(event.options.url, _ref.state.currentState);
+      const url = resolveReferences(event.url, _ref.state.currentState);
       window.open(url, '_blank');
     }
 
     if (event.actionId === 'go-to-app') {
-      const slug = resolveReferences(event.options.slug, _ref.state.currentState);
+      const slug = resolveReferences(event.slug, _ref.state.currentState);
 
       const url = `/applications/${slug}`;
 
@@ -113,12 +119,12 @@ function executeAction(_ref, event, mode) {
     }
 
     if (event.actionId === 'run-query') {
-      const { queryId, queryName } = event.options;
+      const { queryId, queryName } = event;
       return runQuery(_ref, queryId, queryName);
     }
 
     if (event.actionId === 'show-modal') {
-      const modalId = event.options.modal;
+      const modalId = event.modal;
       const modalMeta = _ref.state.appDefinition.components[modalId];
 
       const newState = {
@@ -138,7 +144,7 @@ function executeAction(_ref, event, mode) {
     }
 
     if (event.actionId === 'copy-to-clipboard') {
-      const contentToCopy = resolveReferences(event.options.contentToCopy, _ref.state.currentState);
+      const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
       copyToClipboard(contentToCopy);
     }
   }
@@ -150,7 +156,6 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
 
   if (eventName === 'onRowClicked') {
     const { component, data } = options;
-    const event = component.definition.events[eventName];
     _self.setState({
       currentState: {
         ..._self.state.currentState,
@@ -163,9 +168,7 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
         }
       }
     }, () => {
-      if (event.actionId) {
-        executeAction(_self, event, mode);
-      }
+      executeActionsForEventId(_ref, 'onRowClicked', component, mode);
     });
   }
 
@@ -195,41 +198,9 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
     });
   }
 
-  if (eventName === 'onCheck' || eventName === 'onUnCheck') {
+  if (['onDetect', 'onCheck', 'onUnCheck', 'onBoundsChange', 'onCreateMarker', 'onMarkerClick', 'onPageChanged', 'onSearch', 'onSelectionChange'].includes(eventName)) {
     const { component } = options;
-    const event = (eventName === 'onCheck') ? component.definition.events.onCheck : component.definition.events.onUnCheck;
-
-    if (event.actionId) {
-      executeAction(_self, event, mode);
-    }
-  }
-
-  if (['onPageChanged', 'onSearch', 'onSelectionChange'].includes(eventName)) {
-    const { component } = options;
-    const event = component.definition.events[eventName];
-
-    if (event.actionId) {
-      executeAction(_self, event, mode);
-    }
-  }
-
-  if (['onBoundsChange', 'onCreateMarker', 'onMarkerClick'].includes(eventName)) {
-    const { component } = options;
-    const event = component.definition.events[eventName];
-
-    if (event.actionId) {
-      executeAction(_self, event, mode);
-    }
-  }
-
-  /* Events for QrScanner */
-  if (['onDetect'].includes(eventName)) {
-    const { component } = options;
-    const event = component.definition.events[eventName];
-
-    if (event.actionId) {
-      executeAction(_self, event, mode);
-    }
+    executeActionsForEventId(_ref, eventName, component, mode);
   }
 
   if (eventName === 'onBulkUpdate') {

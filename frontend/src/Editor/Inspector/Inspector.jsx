@@ -3,11 +3,9 @@ import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement, renderEvent } from './Utils';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
-import ReactTooltip from 'react-tooltip';
 import { toast } from 'react-toastify';
 import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
+import { EventManager } from './EventManager';
 
 export const Inspector = ({
   selectedComponentId,
@@ -137,6 +135,18 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
+  function eventsChanged(newEvents) {
+    let newDefinition = { ...component.component.definition };
+    newDefinition.events = newEvents;
+
+    let newComponent = {
+      ...component
+    };
+
+    setComponent(newComponent);
+    componentDefinitionChanged(newComponent);
+  }
+
   function eventOptionUpdated(event, option, value) {
     console.log('eventOptionUpdated', event, option, value);
 
@@ -191,6 +201,7 @@ export const Inspector = ({
           components={components}
           currentState={currentState}
           darkMode={darkMode}
+          eventsChanged={eventsChanged}
         />
       }
 
@@ -216,7 +227,16 @@ export const Inspector = ({
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
 
           {Object.keys(componentMeta.events).length > 0 && <div className="hr-text">Events</div>}
-          {Object.keys(componentMeta.events).map((eventName) => renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, componentMeta.events[eventName], currentState, components, apps))}
+
+          <EventManager
+            component={component}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            dataQueries={dataQueries}
+            components={components}
+            eventsChanged={eventsChanged}
+            apps={apps}
+          />
         </div>
       }
 
