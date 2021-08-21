@@ -226,17 +226,21 @@ export const Inspector = ({
           {Object.keys(componentMeta.styles).length > 0 && <div className="hr-text">Style</div>}
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
 
-          {Object.keys(componentMeta.events).length > 0 && <div className="hr-text">Events</div>}
+          {Object.keys(componentMeta.events).length > 0 &&
+            <div>
+              {Object.keys(componentMeta.events).length > 0 && <div className="hr-text">Events</div>}
 
-          <EventManager
-            component={component}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            dataQueries={dataQueries}
-            components={components}
-            eventsChanged={eventsChanged}
-            apps={apps}
-          />
+              <EventManager
+                component={component}
+                componentMeta={componentMeta}
+                currentState={currentState}
+                dataQueries={dataQueries}
+                components={components}
+                eventsChanged={eventsChanged}
+                apps={apps}
+              />
+            </div>
+          }
         </div>
       }
 

@@ -22,6 +22,8 @@ export const EventManager = ({
     return { name: action.name, value: action.id };
   });
 
+  excludeEvents = excludeEvents || [];
+
   /* Filter events based on excludesEvents ( a list of event ids to exclude ) */
   let possibleEvents = Object.keys(componentMeta.events).filter(eventId => !excludeEvents.includes(eventId)).map(eventId => { return { 
     name: componentMeta.events[eventId].displayName, value: eventId 
