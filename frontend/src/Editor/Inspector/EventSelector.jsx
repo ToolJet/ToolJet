@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import Collapse from 'react-bootstrap/Collapse'
+import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 
 export const EventSelector = ({
   param,
@@ -78,36 +79,6 @@ export const EventSelector = ({
     value: 'none'
   });
 
-  const queryParamChangeHandler = (index, key, value) => {
-    definition.options.queryParams[index][key] = value
-    eventOptionUpdated('queryParams', definition.options.queryParams)
-  }
-
-  const addQueryParam = () => {
-    if (!definition.options.queryParams) {
-      definition.options.queryParams = []
-      eventOptionUpdated('queryParams', [])
-    }
-
-    definition.options.queryParams.push(['', ''])
-    eventOptionUpdated('queryParams', definition.options.queryParams)
-    setNumberOfQueryparams(numberOfQueryParams + 1)
-  }
-
-  const deleteQueryParam = index => {
-    definition.options.queryParams.splice(index, 1)
-    setNumberOfQueryparams(numberOfQueryParams - 1)
-  }
-
-  const [numberOfQueryParams, setNumberOfQueryparams] = React.useState(0)
-
-  useEffect(() => {
-    if (definition.options.queryParams) {
-      setNumberOfQueryparams(definition.options.queryParams.length)
-    }
-  })
-
-
   return (
     <div className="field mb-3 mt-1 px-2">
       <label className="form-label" role="button" onClick={() => setOpen(!open)}>
@@ -155,55 +126,16 @@ export const EventSelector = ({
                 </div>
               )}
 
-              {definition.actionId === 'go-to-app' && (
-                <div className="p-1">
-                  <label className="form-label mt-1">App</label>
-                  <SelectSearch
-                    options={getAllApps()}
-                    search={true}
-                    value={definition.options.slug}
-                    onChange={(value) => {
-                      eventOptionUpdated(param, 'slug', value, extraData);
-                    }}
-                    filterOptions={fuzzySearch}
-                    placeholder="Select.."
-                  />
-                  <label className="form-label mt-2">Query params</label>
-
-                  {Array(numberOfQueryParams).fill(0).map((_, index) =>
-                    <div key={index}>
-                      <div className="input-group mt-1">
-                        <CodeHinter
-                          currentState={currentState}
-                          initialValue={definition.options.queryParams[index][0]}
-                          onChange={(value) => queryParamChangeHandler(index, 0, value)}
-                          mode='javascript'
-                          singleLine={false}
-                          className="form-control codehinter-query-editor-input"
-                        />
-                        <CodeHinter
-                          currentState={currentState}
-                          initialValue={definition.options.queryParams[index][1]}
-                          onChange={(value) => queryParamChangeHandler(index, 1, value)}
-                          mode='javascript'
-                          singleLine={false}
-                          className="form-control codehinter-query-editor-input"
-                        />
-                        <span
-                          className="input-group-text btn-sm"
-                          role="button"
-                          onClick={() => deleteQueryParam(index)}
-                        >x</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    className="btn btn-sm btn-outline-azure mt-2 mx-0 mb-0"
-                    onClick={addQueryParam}
-                  >+</button>
-                </div>
-              )}
+              {definition.actionId === 'go-to-app' &&
+                <GotoApp
+                  eventOptionUpdated={eventOptionUpdated}
+                  definition={definition}
+                  getAllApps={getAllApps}
+                  currentState={currentState}
+                  param={param}
+                  extraData={extraData}
+                />
+              }
 
               {definition.actionId === 'show-modal' && (
                 <div className="p-1">
