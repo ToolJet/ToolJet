@@ -5,6 +5,7 @@ export class UpdateDefinitionsForEvents1625814801430 implements MigrationInterfa
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = getManager();
+    const queryBuilder = await getConnection().createQueryBuilder();
     const appVersionRepository = entityManager.getRepository(AppVersion);
 
     const appVersions = await appVersionRepository.find();
@@ -25,12 +26,19 @@ export class UpdateDefinitionsForEvents1625814801430 implements MigrationInterfa
             const newEvents = [];
 
             for(const eventId of Object.keys(events)) {
+
               const actionId = events[eventId]['actionId'];
 
               if(actionId) {
                 const newEvent = { ...events[eventId]['options'], actionId, eventId };
                 newEvents.push(newEvent);
+              } else {
+                if(eventId === 'onBulkUpdate') {
+                  const newEvent = { ...events[eventId]['options'], actionId: 'run-query', eventId };
+                  newEvents.push(newEvent);
+                }
               }
+
             }
 
             component.component.definition.events = newEvents;
@@ -53,8 +61,7 @@ export class UpdateDefinitionsForEvents1625814801430 implements MigrationInterfa
 
         // console.log(util.inspect(definition, {showHidden: false, depth: null}))
         
-        await getConnection().createQueryBuilder()
-          .update(AppVersion)
+        await queryBuilder.update(AppVersion)
           .set({ definition })
           .where('id = :id', { id: version.id })
           .execute();

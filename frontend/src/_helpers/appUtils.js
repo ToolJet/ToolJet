@@ -59,11 +59,13 @@ export function runTransformation(_ref, rawData, transformation) {
   return result;
 }
 
-export function executeActionsForEventId(_ref, eventId, component, mode) {
+export async function executeActionsForEventId(_ref, eventId, component, mode) {
   const events = component.definition.events.filter(event => event.eventId === eventId);
-  events.forEach(event => {
-    executeAction(_ref, event, mode);
-  });
+
+  for(const event of events) {
+    await executeAction(_ref, event, mode);
+  };
+
 }
 
 export function onComponentClick(_ref, id, component, mode = 'edit') {
@@ -97,11 +99,17 @@ function executeAction(_ref, event, mode) {
     if (event.actionId === 'show-alert') {
       const message = resolveReferences(event.message, _ref.state.currentState);
       toast(message, { hideProgressBar: true });
+      return new Promise(function (resolve, reject) {
+        resolve();
+      })
     }
 
     if (event.actionId === 'open-webpage') {
       const url = resolveReferences(event.url, _ref.state.currentState);
       window.open(url, '_blank');
+      return new Promise(function (resolve, reject) {
+        resolve();
+      })
     }
 
     if (event.actionId === 'go-to-app') {
@@ -116,6 +124,9 @@ function executeAction(_ref, event, mode) {
           window.open(url, '_blank');
         }
       }
+      return new Promise(function (resolve, reject) {
+        resolve();
+      })
     }
 
     if (event.actionId === 'run-query') {
@@ -141,16 +152,24 @@ function executeAction(_ref, event, mode) {
       }
 
       _ref.setState(newState)
+
+      return new Promise(function (resolve, reject) {
+        resolve();
+      })
     }
 
     if (event.actionId === 'copy-to-clipboard') {
       const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
       copyToClipboard(contentToCopy);
+
+      return new Promise(function (resolve, reject) {
+        resolve();
+      })
     }
   }
 }
 
-export function onEvent(_ref, eventName, options, mode = 'edit') {
+export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
   console.log('Event: ', eventName);
 
@@ -204,13 +223,9 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 
   if (eventName === 'onBulkUpdate') {
-    return new Promise(function (resolve, reject) {
-      onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
-      executeAction(_self, { actionId: 'run-query', ...options.component.definition.events.onBulkUpdate }, mode).then(() => {
-        onComponentOptionChanged(_self, options.component, 'isSavingChanges', false);
-        resolve();
-      });
-    });
+    onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
+    await executeActionsForEventId(_self, eventName, options.component, mode);
+    onComponentOptionChanged(_self, options.component, 'isSavingChanges', false);
   }
 }
 

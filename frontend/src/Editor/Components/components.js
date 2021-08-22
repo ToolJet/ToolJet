@@ -23,10 +23,10 @@ export const componentTypes = [
       height: 300
     },
     events: {
-      onRowClicked: { displayName: 'On row clicked'},
-      onBulkUpdate: { displayName: 'Bulk update query'},
-      onPageChanged: { displayName: 'On page changed'},
-      onSearch: { displayName: 'On search'}
+      onRowClicked: { displayName: 'Row clicked'},
+      onBulkUpdate: { displayName: 'Bulk update'},
+      onPageChanged: { displayName: 'Page changed'},
+      onSearch: { displayName: 'Search'}
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' }
@@ -224,7 +224,7 @@ export const componentTypes = [
 
     },
     exposedVariables: {
-      value: {}
+      value: ''
     },
     definition: {
       others: {

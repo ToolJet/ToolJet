@@ -417,12 +417,7 @@ class Table extends React.Component {
             dataQueries={dataQueries}
             components={components}
             eventsChanged={this.props.eventsChanged}
-            excludeEvents={['onBulkUpdate']}
           />
-
-          <br/>
-
-          {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
 
           <div className="hr-text">Style</div>
         </div>
