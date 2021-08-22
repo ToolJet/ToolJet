@@ -1,6 +1,6 @@
 import { AppVersion } from "../src/entities/app_version.entity";
-import { MigrationInterface, QueryRunner, getManager } from "typeorm";
-
+import { MigrationInterface, QueryRunner, getManager, getConnection } from "typeorm";
+const util = require('util')
 export class UpdateDefinitionsForEvents1625814801430 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -34,13 +34,30 @@ export class UpdateDefinitionsForEvents1625814801430 implements MigrationInterfa
             }
 
             component.component.definition.events = newEvents;
-            components[componentId] = component;
+            components[componentId] = {
+              ...component,
+              component: {
+                ...component.component,
+                definition: {
+                  ...component.component.definition,
+                  events: newEvents
+                }
+              }
+            };
           }
         }
 
         definition['components'] = components;
 
-        await appVersionRepository.update(version.id, { definition: definition });
+        version.definition = definition;
+
+        // console.log(util.inspect(definition, {showHidden: false, depth: null}))
+        
+        await getConnection().createQueryBuilder()
+          .update(AppVersion)
+          .set({ definition })
+          .where('id = :id', { id: version.id })
+          .execute();
 
       }
     }
