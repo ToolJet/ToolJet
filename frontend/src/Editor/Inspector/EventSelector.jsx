@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
@@ -61,11 +61,11 @@ export const EventSelector = ({
     return appsOptionsList;
   }
 
-  function eventChanged(param, value, extraData) { 
-    if(value === 'none') { 
+  function eventChanged(param, value, extraData) {
+    if(value === 'none') {
       eventUpdated(param, null, null);
-    } else { 
-      eventUpdated(param, value, extraData) 
+    } else {
+      eventUpdated(param, value, extraData)
     }
   }
 
@@ -77,6 +77,36 @@ export const EventSelector = ({
     name: 'None',
     value: 'none'
   });
+
+  const queryParamChangeHandler = (index, key, value) => {
+    definition.options.queryParams[index][key] = value
+    eventOptionUpdated('queryParams', definition.options.queryParams)
+  }
+
+  const addQueryParam = () => {
+    if (!definition.options.queryParams) {
+      definition.options.queryParams = []
+      eventOptionUpdated('queryParams', [])
+    }
+
+    definition.options.queryParams.push(['', ''])
+    eventOptionUpdated('queryParams', definition.options.queryParams)
+    setNumberOfQueryparams(numberOfQueryParams + 1)
+  }
+
+  const deleteQueryParam = index => {
+    definition.options.queryParams.splice(index, 1)
+    setNumberOfQueryparams(numberOfQueryParams - 1)
+  }
+
+  const [numberOfQueryParams, setNumberOfQueryparams] = React.useState(0)
+
+  useEffect(() => {
+    if (definition.options.queryParams) {
+      setNumberOfQueryparams(definition.options.queryParams.length)
+    }
+  })
+
 
   return (
     <div className="field mb-3 mt-1 px-2">
@@ -110,7 +140,7 @@ export const EventSelector = ({
                     currentState={currentState}
                     onChange={(value) => eventOptionUpdated(param, 'message', value, extraData)}
                   />
-                  
+
                 </div>
               )}
 
@@ -138,15 +168,40 @@ export const EventSelector = ({
                     filterOptions={fuzzySearch}
                     placeholder="Select.."
                   />
-                  <label className="form-label mt-1">Query params</label>
+                  <label className="form-label mt-2">Query params</label>
 
-                  <CodeHinter
-                    currentState={currentState}
-                    initialValue={definition.options.queryParams}
-                    onChange={(value) => eventOptionUpdated(param, 'queryParams', value, extraData)}
-                    mode='javascript'
-                    singleLine={false}
-                  />
+                  {Array(numberOfQueryParams).fill(0).map((_, index) =>
+                    <div key={index}>
+                      <div className="input-group mt-1">
+                        <CodeHinter
+                          currentState={currentState}
+                          initialValue={definition.options.queryParams[index][0]}
+                          onChange={(value) => queryParamChangeHandler(index, 0, value)}
+                          mode='javascript'
+                          singleLine={false}
+                          className="form-control codehinter-query-editor-input"
+                        />
+                        <CodeHinter
+                          currentState={currentState}
+                          initialValue={definition.options.queryParams[index][1]}
+                          onChange={(value) => queryParamChangeHandler(index, 1, value)}
+                          mode='javascript'
+                          singleLine={false}
+                          className="form-control codehinter-query-editor-input"
+                        />
+                        <span
+                          className="input-group-text btn-sm"
+                          role="button"
+                          onClick={() => deleteQueryParam(index)}
+                        >x</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    className="btn btn-sm btn-outline-azure mt-2 mx-0 mb-0"
+                    onClick={addQueryParam}
+                  >+</button>
                 </div>
               )}
 

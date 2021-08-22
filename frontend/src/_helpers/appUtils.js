@@ -101,7 +101,12 @@ function executeAction(_ref, event, mode) {
 
     if (event.actionId === 'go-to-app') {
       const slug = resolveReferences(event.options.slug, _ref.state.currentState);
-      const queryParams = resolveReferences(event.options.queryParams, _ref.state.currentState);
+      const queryParams = event.options.queryParams.reduce((result, queryParam) => ({
+        ...result,
+        ...{
+          [resolveReferences(queryParam[0], _ref.state.currentState)]: resolveReferences(queryParam[1], _ref.state.currentState)
+        }
+      }), {})
 
       let url =`/applications/${slug}`;
 
