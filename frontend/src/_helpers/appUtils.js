@@ -209,7 +209,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     }, () => {
       if(event) {
         if (event.actionId) {
-          executeAction(_self, event, mode);
+          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+          executeAction(_self, { ...event, ...event.options } , mode);
         }
       } else { 
         console.log('No action is associated with this event');
