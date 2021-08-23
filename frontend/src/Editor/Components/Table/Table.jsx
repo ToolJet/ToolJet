@@ -241,12 +241,10 @@ export function Table({
           return { name: label, value: values[index] };
         });
       }
-      console.log('from column options: ', column);
     }
     if (columnType === 'datepicker') {
-      // const _time = resolveReferences(column.isTimeChecked, currentState) || false;
-      // console.log('_time: ', _time);
       column.isTimeChecked =  column.isTimeChecked ? column.isTimeChecked : false
+      column.dateFormat =  column.dateFormat ? column.dateFormat : ''
     }
 
     const width = columnSize || defaultColumn.width;
@@ -391,9 +389,10 @@ export function Table({
           return (
             <div>
               <Datepicker
+                dateFormat={column.dateFormat}
                 isTimeChecked={column.isTimeChecked}
                 value={cellValue}
-                readOnly={!column.isEditable}
+                readOnly={column.isEditable}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}

@@ -2,37 +2,52 @@ import React from 'react';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 import '@/_styles/custom.scss';
+import moment from 'moment'
 
+export const Datepicker = function Datepicker({value, onChange, readOnly, isTimeChecked, dateFormat}) {
+   
+    const [date, setDate] = React.useState(value)
 
-export const Datepicker = function Datepicker({value, onChange, readOnly, isTimeChecked}) {
-const [date, setDate] = React.useState(value)
-
-const dateChange = (e) => {
-    let dateFormat = 'DD/MM/YYYY'
-    if(isTimeChecked) {
-        dateFormat = 'DD/MM/YYYY LT'
+    const dateChange = (e) => {
+        if(isTimeChecked) {
+            setDate(moment(e, `${dateFormat} LT`))
+        } else {
+            setDate(moment(e, dateFormat))
+        } 
     }
-    const _date = e.format(dateFormat)
-    // console.log('__date-change__',_date );
-    setDate(_date)
 
-    onChange(_date)
-}
+    React.useEffect(() => {
+        const date = moment(value, 'DD/MM/YYYY')
+
+        if(!isTimeChecked) {
+            setDate(date.format(dateFormat))
+        }
+
+        if(isTimeChecked) {
+            setDate(date.format(`${dateFormat} LT`))
+        }
+
+    },[isTimeChecked, readOnly, dateFormat])
+
+
+    let inputProps = {
+        // placeholder: 'N/A',
+        disabled: !readOnly,
+    };
 
 
     return (
-        <>
-        {readOnly ? (
-            <span>{date}</span>
-        ) : (
-            <Datetime 
-            timeFormat={isTimeChecked} 
-            className='cell-type-datepicker' 
-            dateFormat='DD/MM/YYYY' 
-            value={date} 
-            onChange={dateChange}/>
-        )}
-        </>
+            <>
+              <Datetime
+                inputProps={inputProps}
+                timeFormat={isTimeChecked} 
+                className='cell-type-datepicker' 
+                dateFormat={dateFormat} 
+                value={date} 
+                onChange={dateChange}
+                onClose={() => onChange(date)}
+              />
+            </>
     )
 
 };
