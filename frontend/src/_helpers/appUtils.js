@@ -86,6 +86,25 @@ async function copyToClipboard(text) {
   }
 };
 
+function showModal(_ref, modalId, show) {
+  const modalMeta = _ref.state.appDefinition.components[modalId];
+
+  const newState = {
+    currentState: {
+      ..._ref.state.currentState,
+      components: {
+        ..._ref.state.currentState.components,
+        [modalMeta.component.name]: {
+          ..._ref.state.currentState.components[modalMeta.component.name],
+          show: show
+        }
+      }
+    }
+  }
+
+  _ref.setState(newState)
+}
+
 function executeAction(_ref, event, mode) {
   if (event) {
     if (event.actionId === 'show-alert') {
@@ -112,30 +131,11 @@ function executeAction(_ref, event, mode) {
       }
     }
 
-    if (event.actionId === 'run-query') {
-      const { queryId, queryName } = event.options;
-      return runQuery(_ref, queryId, queryName);
-    }
+    if (event.actionId === 'show-modal')
+      showModal(_ref, event.options.modal, true)
 
-    if (event.actionId === 'show-modal') {
-      const modalId = event.options.modal;
-      const modalMeta = _ref.state.appDefinition.components[modalId];
-
-      const newState = {
-        currentState: { 
-          ..._ref.state.currentState,
-          components: {
-            ..._ref.state.currentState.components,
-            [modalMeta.component.name]: {
-              ..._ref.state.currentState.components[modalMeta.component.name],
-              show: true
-            }
-          }
-        }
-      }
-
-      _ref.setState(newState)
-    }
+    if (event.actionId === 'close-modal')
+      showModal(_ref, event.options.modal, false)
 
     if (event.actionId === 'copy-to-clipboard') {
       const contentToCopy = resolveReferences(event.options.contentToCopy, _ref.state.currentState);
