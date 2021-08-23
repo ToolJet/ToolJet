@@ -12,7 +12,8 @@ export const componentTypes = [
       serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination'},
       serverSideSearch: { type: 'toggle', displayName: 'Server-side search'},
       actionButtonBackgroundColor: { type: 'color', displayName: 'Background color'},
-      actionButtonTextColor: { type: 'color', displayName: 'Text color'}
+      actionButtonTextColor: { type: 'color', displayName: 'Text color'},
+      displaySearchBox: { type: 'toggle', displayName: 'Display search box' }
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
@@ -49,6 +50,7 @@ export const componentTypes = [
         loadingState: { value: false },
         data: { value: "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}" },
         serverSidePagination: { value: false },
+        displaySearchBox: { value: true },
         columns: {
           value: [
             { name: 'id', id: "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737"},
