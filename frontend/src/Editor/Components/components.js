@@ -793,7 +793,7 @@ export const componentTypes = [
     component: 'StarRating',
 >>>>>>> a860bc2 (add events, properties)
     defaultSize: {
-      width: 200,
+      width: 220,
       height: 75
     },
     others: {

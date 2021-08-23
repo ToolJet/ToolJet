@@ -1,7 +1,9 @@
-@import './colors.scss';
+@import '../colors.scss';
 
 .star-rating {
-  .star {
-    
+  display: flex;
+
+  .label {
+    flex: 1;
   }
 }

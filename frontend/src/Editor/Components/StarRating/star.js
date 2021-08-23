@@ -10,8 +10,8 @@ import Tooltip from 'react-bootstrap/Tooltip';
  4. on dismiss show outline icon for half filled icon
  5. on click set the half-filled icon if precision = 0.5 else set the filled icon
  */
-const Star = ({ index, active, isHalfStar, onClick, maxRating, setHoverIndex, tooltip, allowHalfStar, ...rest }) => {
-  const star = <img width="20" height="20" src={`/assets/images/icons/star.svg`} />
+const Star = ({ index, active, color, isHalfStar, onClick, maxRating, setHoverIndex, tooltip, allowHalfStar, ...rest }) => {
+  const star = <img  width="20" height="20" src={`/assets/images/icons/star.svg`} />
   const halfStar = <img width="20" height="20" src={`/assets/images/icons/half-star.svg`} />
   const starOutline = <img width="20" height="20" src={`/assets/images/icons/widgets/starrating.svg`} />
 

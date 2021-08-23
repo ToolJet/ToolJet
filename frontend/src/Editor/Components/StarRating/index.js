@@ -1,3 +1,5 @@
+import '@/_styles/widgets/star-rating.scss';
+
 import React from 'react';
 import { useTrail } from 'react-spring';
 import { resolveReferences } from '@/_helpers/utils';
@@ -9,7 +11,7 @@ export const StarRating = function StarRating({component, onComponentOptionChang
   const maxRating = +component.definition.properties.maxRating.value ?? 5;
   const allowHalfStar = component.definition.properties.allowHalfStar.value ?? false;
   const textColorProperty = component.definition.styles.textColor;
-  const textColor = textColorProperty ? textColorProperty.value : '#000';
+  const color = textColorProperty ? textColorProperty.value : '#000';
 
   const tooltips = component.definition.properties.tooltips.value ?? [];
   const _tooltips = resolveReferences(tooltips, currentState, []) ?? [];
@@ -25,7 +27,6 @@ export const StarRating = function StarRating({component, onComponentOptionChang
     },
     opacity: 1,
     transform: "scale(1)",
-    color: textColor
   });
 
   const [currentRatingIndex, setRatingIndex] = React.useState(maxRating);
@@ -52,8 +53,8 @@ export const StarRating = function StarRating({component, onComponentOptionChang
   }
 
   return (
-    <div>
-      <span className="form-check-label form-check-label col-auto mb-1">{label}</span>
+    <div className='star-rating'>
+      <span className="label form-check-label form-check-label col-auto">{label}</span>
       {animatedStars.map((props, index) => (
         <Star
           tooltip={getTooltip(index)}
@@ -68,6 +69,7 @@ export const StarRating = function StarRating({component, onComponentOptionChang
           allowHalfStar={allowHalfStar}
           key={index}
           index={index}
+          color={color}
           style={{ ...props }}
           setHoverIndex={setHoverIndex}
         />
