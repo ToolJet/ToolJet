@@ -802,7 +802,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
-      rating: { type: 'code', displayName: 'Number of stars' },
+      maxRating: { type: 'code', displayName: 'Number of stars' },
       allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
       tooltips: { type: 'code', displayName: 'Tooltips' },
     },
@@ -819,7 +819,9 @@ export const componentTypes = [
       textColor: { type: 'color', displayName: 'Star Color' }
 >>>>>>> a860bc2 (add events, properties)
     },
-    exposedVariables: {},
+    exposedVariables: {
+      value: 0
+    },
     definition: {
       others: {
         showOnDesktop: { value: true },
@@ -827,7 +829,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select your rating' },
-        rating: { value: '5' },
+        maxRating: { value: '5' },
         allowHalfStar: { value: false },
         visible: { value: true },
         tooltips: { value: '{{[]}}' }

@@ -1,5 +1,7 @@
 import React from 'react'
 import { animated } from 'react-spring';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 
 /**
  1. on hover show filled icon
@@ -8,7 +10,7 @@ import { animated } from 'react-spring';
  4. on dismiss show outline icon for half filled icon
  5. on click set the half-filled icon if precision = 0.5 else set the filled icon
  */
-const Star = ({ index, active, inActive, rating, setHoverIndex, allowHalfStar, ...rest }) => {
+const Star = ({ index, active, isHalfStar, onClick, maxRating, setHoverIndex, tooltip, allowHalfStar, ...rest }) => {
   const star = <img width="20" height="20" src={`/assets/images/icons/star.svg`} />
   const halfStar = <img width="20" height="20" src={`/assets/images/icons/half-star.svg`} />
   const starOutline = <img width="20" height="20" src={`/assets/images/icons/widgets/starrating.svg`} />
@@ -36,9 +38,9 @@ const Star = ({ index, active, inActive, rating, setHoverIndex, allowHalfStar, .
   const handleMouseMove = (e) => {
     const { left } = ref.current.getBoundingClientRect()
     const { width } = ref.current.firstChild.getBoundingClientRect();
-    const percent = (e.clientX - left) / (width * rating);
+    const percent = (e.clientX - left) / (width * maxRating);
     const precision = 0.5;
-    const isHalfStarHover = roundValueToPrecision(rating * percent + precision / 2, precision)
+    const isHalfStarHover = roundValueToPrecision(maxRating * percent + precision / 2, precision)
 
     if(isHalfStarHover === 0.5) {
       setIcon(halfStar)
@@ -59,9 +61,8 @@ const Star = ({ index, active, inActive, rating, setHoverIndex, allowHalfStar, .
   }
 
   const handleClick = (e) => {
-    if(currentPrecision === 0.5) setIcon(halfStar)
-    else setIcon(star)
-    // onClick(e)
+    if(currentPrecision === 0.5) onClick(e, index - 0.5)
+    else onClick(e, index)
   }
 
   let conditionalProps = {}
@@ -72,14 +73,40 @@ const Star = ({ index, active, inActive, rating, setHoverIndex, allowHalfStar, .
     }
   }
 
-  const handleMouseEnter = (e) => {
+  const handleMouseEnter = () => {
     setHoverIndex(index)
   }
 
+  const getIcon = () => {
+    if(isHalfStar) return halfStar
+    if(active) return icon
+    return outlineIcon
+  }
+
+  const getAnimatedStar = () => {
+    return (
+      <animated.span onClick={handleClick} ref={ref} {...rest} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...conditionalProps} className="star" role="button">
+        {getIcon()}
+      </animated.span>
+    )
+  }
+
+  if(tooltip) {
+    return (
+    <OverlayTrigger
+      placement="bottom"
+      delay={{ show: 250, hide: 400 }}
+      overlay={<Tooltip>
+        {tooltip}
+      </Tooltip>}
+    >
+      {getAnimatedStar()}
+    </OverlayTrigger>
+    )
+  }
+
   return (
-    <animated.span ref={ref} {...rest} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...conditionalProps} className="star" role="button">
-      {active ? icon : outlineIcon}
-    </animated.span>
+    <>{getAnimatedStar()}</>
   );
 };
 

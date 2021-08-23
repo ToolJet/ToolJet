@@ -1,16 +1,20 @@
 import React from 'react';
 import { useTrail } from 'react-spring';
+import { resolveReferences } from '@/_helpers/utils';
 
 import Star from './star'
 
-export const StarRating = function StarRating({component, onComponentOptionChanged, onEvent}) {
+export const StarRating = function StarRating({component, onComponentOptionChanged, currentState, onEvent}) {
   const label = component.definition.properties.label.value;
-  const rating = +component.definition.properties.rating.value ?? 5;
-  const allowHalfStar = +component.definition.properties.allowHalfStar.value ?? false;
+  const maxRating = +component.definition.properties.maxRating.value ?? 5;
+  const allowHalfStar = component.definition.properties.allowHalfStar.value ?? false;
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
 
-  const animatedStars = useTrail(rating, {
+  const tooltips = component.definition.properties.tooltips.value ?? [];
+  const _tooltips = resolveReferences(tooltips, currentState, []) ?? [];
+
+  const animatedStars = useTrail(maxRating, {
     config: {
       friction: 22,
       tension: 500
@@ -24,17 +28,27 @@ export const StarRating = function StarRating({component, onComponentOptionChang
     color: textColor
   });
 
-  const [currentRating, setRating] = React.useState(rating);
+  const [currentRatingIndex, setRatingIndex] = React.useState(maxRating);
   const [hoverIndex, setHoverIndex] = React.useState(null);
 
   function handleClick() {
-    onComponentOptionChanged(component, 'value', currentRating);
+    onComponentOptionChanged(component, 'value', currentRatingIndex);
     onEvent('onChange', { component });
   }
 
   const getActive = (index) => {
     if(hoverIndex !== null) return index <= hoverIndex
-    return index <= currentRating
+    return index <= currentRatingIndex
+  }
+
+  const isHalfStar = (index) => {
+    if(hoverIndex !== null) return false
+    return ((index - 0.5) === currentRatingIndex)
+  }
+
+  const getTooltip = (index) => {
+    if(_tooltips && Array.isArray(_tooltips) && _tooltips.length > 0) return _tooltips[index]
+    return ''
   }
 
   return (
@@ -42,11 +56,13 @@ export const StarRating = function StarRating({component, onComponentOptionChang
       <span className="form-check-label form-check-label col-auto mb-1">{label}</span>
       {animatedStars.map((props, index) => (
         <Star
+          tooltip={getTooltip(index)}
           active={getActive(index)}
-          rating={rating}
-          onClick={e => {
+          isHalfStar={isHalfStar(index)}
+          maxRating={maxRating}
+          onClick={(e, idx) => {
             e.stopPropagation();
-            setRating(index);
+            setRatingIndex(idx);
             handleClick()
           }}
           allowHalfStar={allowHalfStar}
