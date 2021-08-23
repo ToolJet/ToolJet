@@ -23,6 +23,7 @@ export const Code = ({
           initialValue={initialValue}
           mode={options.mode}
           theme={darkMode? 'monokai' : options.theme}
+          lineWrapping={true}
           className={options.className}
           onChange={(value) => handleCodeChanged(value)}
       />
