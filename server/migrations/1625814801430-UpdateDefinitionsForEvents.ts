@@ -1,32 +1,29 @@
 import { AppVersion } from "../src/entities/app_version.entity";
-import { MigrationInterface, QueryRunner, getManager, getConnection } from "typeorm";
-const util = require('util')
+import { MigrationInterface, QueryRunner } from "typeorm";
+
 export class UpdateDefinitionsForEvents1625814801430 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const entityManager = getManager();
-    const queryBuilder = await getConnection().createQueryBuilder();
+    const entityManager = queryRunner.manager;
+    const queryBuilder = queryRunner.connection.createQueryBuilder();
     const appVersionRepository = entityManager.getRepository(AppVersion);
 
     const appVersions = await appVersionRepository.find();
 
     for(const version of appVersions) {
-
       const definition = version['definition'];
 
       if(definition) {
         const components = definition['components']
 
-        for(const componentId of Object.keys(components)) { 
+        for(const componentId of Object.keys(components)) {
           const component = components[componentId];
-
           const events = component.component.definition.events;
 
           if(events) {
             const newEvents = [];
 
             for(const eventId of Object.keys(events)) {
-
               const actionId = events[eventId]['actionId'];
 
               if(actionId) {
@@ -56,11 +53,8 @@ export class UpdateDefinitionsForEvents1625814801430 implements MigrationInterfa
         }
 
         definition['components'] = components;
-
         version.definition = definition;
 
-        // console.log(util.inspect(definition, {showHidden: false, depth: null}))
-        
         await queryBuilder.update(AppVersion)
           .set({ definition })
           .where('id = :id', { id: version.id })
