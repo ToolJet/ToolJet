@@ -701,7 +701,7 @@ export function Table({
                 <div className="col">
                   <SelectSearch
                     options={columnData.map((column) => {
-                      return { name: column.Header, value: column.accessor };
+                      return { name: column.Header, value: column.id };
                     })}
                     value={filter.id}
                     search={true}
