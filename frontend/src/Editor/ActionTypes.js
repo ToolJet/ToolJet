@@ -24,7 +24,7 @@ export const ActionTypes = [
     name: 'Go to app',
     id: 'go-to-app',
     options: [
-      { name: 'app', type: 'url', default: 'https://app.tooljet.io/applications/app-id' },
+      { name: 'app', type: 'text', default: '' },
       { name: 'queryParams', type: 'code', default: '[]' }
     ]
   },
