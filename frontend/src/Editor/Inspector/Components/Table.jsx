@@ -340,6 +340,8 @@ class Table extends React.Component {
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
 
+    const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
+
     return (
       <div className="properties-container p-2 " key={this.props.component.id}>
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', currentState, components)}
@@ -405,8 +407,8 @@ class Table extends React.Component {
           <hr></hr>
 
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
-          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'displaySearchBox', 'properties', currentState)}
+          {displaySearchBox && renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
 
           <div className="hr-text">Events</div>
 
