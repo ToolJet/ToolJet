@@ -20,17 +20,18 @@ class HomePage extends React.Component {
       isLoading: true,
       creatingApp: false,
       currentFolder: {},
-      showAppDeletionConfirmation: false, 
+      showAppDeletionConfirmation: false,
       apps: [],
       folders: [],
       meta: {
-        count: 1
+        count: 1,
+        folders: []
       }
     };
   }
 
   componentDidMount() {
-    this.fetchApps(0, this.state.currentFolder.id);
+    this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
   }
 
@@ -42,7 +43,7 @@ class HomePage extends React.Component {
 
     appService.getAll(page, folder).then((data) => this.setState({
       apps: data.apps,
-      meta: data.meta,
+      meta: {...this.state.meta, ...data.meta},
       isLoading: false
     }));
   }
@@ -65,7 +66,7 @@ class HomePage extends React.Component {
 
   folderChanged = (folder) => {
     this.setState({'currentFolder': folder});
-    this.fetchApps(0, folder.id);
+    this.fetchApps(1, folder.id);
   }
 
   foldersChanged = () => {
@@ -82,7 +83,7 @@ class HomePage extends React.Component {
   };
 
   deleteApp = (app) => {
-    this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app })
+    this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
   }
 
   executeAppDeletion = () => {
@@ -92,21 +93,26 @@ class HomePage extends React.Component {
         hideProgressBar: true,
         position: 'top-center'
       });
-      this.setState({ 
-        isDeletingApp: false, 
+      this.setState({
+        isDeletingApp: false,
         appToBeDeleted: null,
         showAppDeletionConfirmation: false
       });
-      this.fetchApps(this.state.currentPage || 0, this.state.currentFolder.id)
+      this.fetchApps(this.state.currentPage || 1, this.state.currentFolder.id);
+      this.fetchFolders();
     }).catch(({ error }) => {
       toast.error('Could not delete the app.', { hideProgressBar: true, position: 'top-center' });
-      this.setState({ 
-        isDeletingApp: false, 
+      this.setState({
+        isDeletingApp: false,
         appToBeDeleted: null,
         showAppDeletionConfirmation: false
       });
     });
     ;
+  }
+
+  pageCount = () => {
+    return this.state.currentFolder.id ? this.state.meta.folder_count : this.state.meta.total_count;
   }
 
   render() {
@@ -128,7 +134,7 @@ class HomePage extends React.Component {
            switchDarkMode={this.props.switchDarkMode}
            darkMode={this.props.darkMode}
         />
-        {!isLoading && meta.total_count === 0 &&
+        {!isLoading && meta.total_count === 0 && !currentFolder.id &&
           <BlankPage
             createApp={this.createApp}
           />
@@ -215,14 +221,14 @@ class HomePage extends React.Component {
                                 </Link>
                                 <Link
                                   to={app?.current_version_id ? `/applications/${app.slug}` : '' }
-                                  
+
                                   target={app?.current_version_id ? '_blank' : ''}
                                 >
                                   <OverlayTrigger
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: app?.current_version_id == null ? 'App does not have a deployed version' : 'Open in app viewer'})}
                                   >
-                                    <span className={`${app?.current_version_id ? 'badge bg-blue-lt mx-2 ' : 'badge bg-light-grey mx-2'}`} 
+                                    <span className={`${app?.current_version_id ? 'badge bg-blue-lt mx-2 ' : 'badge bg-light-grey mx-2'}`}
                                     >launch </span>
                                   </OverlayTrigger>
                                 </Link>
@@ -247,10 +253,10 @@ class HomePage extends React.Component {
                         </tbody>
                       </table>
                     </div>
-                    {meta.total_count > 0 && (
+                      {this.pageCount() > 10 && (
                       <Pagination
                         currentPage={meta.current_page}
-                        count={meta.folder_count}
+                        count={this.pageCount()}
                         totalPages={meta.total_pages}
                         pageChanged={this.pageChanged}
                       />
