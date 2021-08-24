@@ -3,6 +3,10 @@ import { animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 
+import StarSvg from './icons/star'
+import HalfStarSvg from './icons/half-star'
+import OutlineStarSvg from './icons/star-outline'
+
 /**
  1. on hover show filled icon
  2. on dismiss show outline icon
@@ -11,13 +15,18 @@ import Tooltip from 'react-bootstrap/Tooltip';
  5. on click set the half-filled icon if precision = 0.5 else set the filled icon
  */
 const Star = ({ index, active, color, isHalfStar, onClick, maxRating, setHoverIndex, tooltip, allowHalfStar, ...rest }) => {
-  const star = <img  width="20" height="20" src={`/assets/images/icons/star.svg`} />
-  const halfStar = <img width="20" height="20" src={`/assets/images/icons/half-star.svg`} />
-  const starOutline = <img width="20" height="20" src={`/assets/images/icons/widgets/starrating.svg`} />
+  const star = <StarSvg fill={color} />
+  const halfStar = <HalfStarSvg fill={color} />
+  const starOutline = <OutlineStarSvg fill={color} />
 
   const [icon, setIcon] = React.useState(star)
   const [outlineIcon, setOutlineIcon] = React.useState(starOutline)
   const [currentPrecision, setPrecision] = React.useState(0)
+
+  React.useEffect(() => {
+    setIcon(isHalfStar ? halfStar : star)
+    setOutlineIcon(isHalfStar ? halfStar : starOutline)
+  }, [color]);
 
   const ref = React.useRef(null)
 
@@ -86,7 +95,7 @@ const Star = ({ index, active, color, isHalfStar, onClick, maxRating, setHoverIn
   const getAnimatedStar = () => {
     return (
       <animated.span onClick={handleClick} ref={ref} {...rest} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...conditionalProps} className="star" role="button">
-        {getIcon()}
+        {getIcon(color)}
       </animated.span>
     )
   }
