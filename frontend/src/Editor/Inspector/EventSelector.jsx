@@ -51,7 +51,7 @@ export const EventSelector = ({
 
   function getAllApps() {
     let appsOptionsList = [];
-    apps.map((item) => {
+    apps.filter(item => item.slug != undefined).map((item) => {
       appsOptionsList.push({
         name: item.name,
         value: item.slug
