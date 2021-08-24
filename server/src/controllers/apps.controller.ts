@@ -19,7 +19,7 @@ export class AppsController {
   @Post()
   async create(@Request() req) {
     const params = req.body;
-    
+
     const app = await this.appsService.create(req.user);
     return decamelizeKeys(app);
   }
@@ -27,7 +27,7 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async show(@Request() req, @Param() params) {
-    
+
     const app = await this.appsService.find(params.id);
     let response = decamelizeKeys(app);
 
@@ -82,7 +82,7 @@ export class AppsController {
     if(!ability.can('updateParams', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
-    
+
     const result = await this.appsService.update(req.user, params.id, req.body.app);
     let response = decamelizeKeys(result);
 
@@ -115,20 +115,26 @@ export class AppsController {
     const folderId = req.query.folder;
 
     let apps = [];
+    let folderCount = 0;
 
     if(folderId) {
       const folder = await this.foldersService.findOne(folderId);
       apps = await this.foldersService.getAppsFor(req.user, folder, page);
+      folderCount = await this.foldersService.userAppCount(req.user, folder);
     } else {
       apps = await this.appsService.all(req.user, page);
-    }
+    };
 
-    const totalCount = await this.appsService.count(req.user);
+    let totalCount = await this.appsService.count(req.user);
 
+    const totalPageCount = folderId ? folderCount : totalCount;
+
+    console.log(folderCount, totalCount);
     const meta = {
-      total_pages: Math.round(totalCount/10),
+      total_pages: Math.ceil(totalPageCount/10),
       total_count: totalCount,
-      current_page: parseInt(page || 0)
+      folder_count: folderCount,
+      current_page: parseInt(page || 1)
     }
 
     const response = {
