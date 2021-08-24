@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
 // import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DndProvider } from 'react-dnd';
@@ -413,6 +413,8 @@ class Editor extends React.Component {
 
   toggleQueryEditor = () => {
     this.setState({ showQueryEditor: !this.state.showQueryEditor });
+    this.toolTipRefHide.current.style.display = this.state.showQueryEditor ? 'none' : 'block';
+    this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'block' : 'none';
   };
 
   toggleLeftSidebar = () => {
@@ -455,6 +457,9 @@ class Editor extends React.Component {
       zoomLevel: zoom,
     });
   };
+
+  toolTipRefHide = createRef(null);
+  toolTipRefShow = createRef(null);
 
   render() {
     const {
@@ -529,9 +534,25 @@ class Editor extends React.Component {
                 )}
                 <div className="editor-buttons">
                   <span
-                    className={`btn ${showQueryEditor ? 'btn-light' : 'btn-default'} mx-2`}
+                    className={`btn btn-light mx-2`}
                     onClick={this.toggleQueryEditor}
-                    data-tip={showQueryEditor ? 'Hide query editor' : 'Show query editor'}
+                    data-tip="Hide query editor"
+                    ref={this.toolTipRefHide}
+                  >
+                    <img
+                      style={{ transform: 'rotate(-90deg)' }}
+                      src="/assets/images/icons/editor/sidebar-toggle.svg"
+                      width="12"
+                      height="12"
+                    />
+                  </span>
+
+                  <span
+                    className={`btn btn-default mx-2`}
+                    onClick={this.toggleQueryEditor}
+                    data-tip="Show query editor"
+                    ref={this.toolTipRefShow}
+                    style={{ display: 'none' }}
                   >
                     <img
                       style={{ transform: 'rotate(-90deg)' }}
