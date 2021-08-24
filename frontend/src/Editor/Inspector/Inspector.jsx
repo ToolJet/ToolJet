@@ -202,6 +202,7 @@ export const Inspector = ({
           currentState={currentState}
           darkMode={darkMode}
           eventsChanged={eventsChanged}
+          apps={apps}
         />
       }
 

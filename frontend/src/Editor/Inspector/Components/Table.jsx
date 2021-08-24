@@ -231,6 +231,7 @@ class Table extends React.Component {
             eventOptionUpdated={this.actionButtonEventOptionUpdated}
             currentState={this.state.currentState}
             extraData={{ actionButton: action, index: index }} // This data is returned in the callbacks
+            apps={this.props.apps}
           />
           <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
             Remove
