@@ -191,6 +191,7 @@ export const Inspector = ({
           components={components}
           currentState={currentState}
           darkMode={darkMode}
+          apps={apps}
         />
       }
 
