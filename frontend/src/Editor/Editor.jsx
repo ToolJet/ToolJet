@@ -76,6 +76,7 @@ class Editor extends React.Component {
           currentUser: userVars,
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
+        errors: {}
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
@@ -625,6 +626,7 @@ class Editor extends React.Component {
           </div>
           <div className="sub-section">
             <LeftSidebar
+              queriesErrors={currentState.errors}
               queries={currentState.queries}
               components={currentState.components}
               globals={currentState.globals}

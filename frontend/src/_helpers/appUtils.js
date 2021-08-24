@@ -326,6 +326,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         data: [],
         rawData: []
       }
+    },
+    error: {
+      ..._ref.state.currentState.queries_error,
+      [queryName]: {
+        ..._ref.state.currentState.queries[queryName],
+        errors: [],
+      }
     }
   };
 
@@ -343,6 +350,24 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
         if (data.status === 'failed') {
           toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
+          return (
+            _self.setState({
+              currentState: {
+                ..._self.state.currentState,
+                queries: {
+                  ..._self.state.currentState.queries,
+                  [queryName]: {
+                    ..._self.state.currentState.queries[queryName],
+                    isLoading: false
+                  }
+                },
+                errors: {
+                  ..._self.state.currentState.error,
+                  [queryName]: data
+                }
+              }
+            })
+          )
         }
 
         let rawData = data.data;

@@ -8,15 +8,16 @@ import { LeftSidebarDataSources } from './sidebar-datasources';
 import { LeftSidebarZoom } from './sidebar-zoom';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
+import { LeftSidebarDebugger } from './sidebar-debugger';
 
-export const LeftSidebar = ({ appId, switchDarkMode, darkMode = false, globals, components, queries, onZoomChanged, dataSources = [], dataSourcesChanged }) => {
+export const LeftSidebar = ({ appId, switchDarkMode, darkMode = false, globals, components, queries, onZoomChanged, dataSources = [], dataSourcesChanged, queriesErrors }) => {
   const router = useRouter()
   return (
     <div className='left-sidebar'>
       <LeftSidebarInspector darkMode={darkMode} globals={globals} components={components} queries={queries} />
       <LeftSidebarDataSources darkMode={darkMode} appId={appId} dataSources={dataSources} dataSourcesChanged={dataSourcesChanged} />
-      {/* <LeftSidebarItem icon='debugger' className='left-sidebar-item' /> */}
-        <LeftSidebarItem onClick={() => router.push('/')} tip='Back to home' icon='back' className='left-sidebar-item no-border' />
+      <LeftSidebarDebugger darkMode={darkMode} components={components} errors={queriesErrors} />
+      <LeftSidebarItem onClick={() => router.push('/')} tip='Back to home' icon='back' className='left-sidebar-item no-border' />
       <div className='left-sidebar-stack-bottom'>
         <LeftSidebarZoom onZoomChanged={onZoomChanged} />
         <div className='left-sidebar-item no-border'>
