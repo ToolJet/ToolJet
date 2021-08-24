@@ -129,7 +129,6 @@ export class AppsController {
 
     const totalPageCount = folderId ? folderCount : totalCount;
 
-    console.log(folderCount, totalCount);
     const meta = {
       total_pages: Math.ceil(totalPageCount/10),
       total_count: totalCount,
