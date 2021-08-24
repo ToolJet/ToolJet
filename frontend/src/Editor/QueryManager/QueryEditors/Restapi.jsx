@@ -94,6 +94,7 @@ class Restapi extends React.Component {
                 <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={options.url}
+                  height='36px'
                   className="codehinter-query-editor-input"
                   theme={this.props.darkMode ? 'monokai' : 'default'}
                   onChange={(value) => {
