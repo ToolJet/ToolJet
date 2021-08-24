@@ -62,12 +62,12 @@ export class EmailService {
         </head>
         <body>
           <p>Hi ${name || ''},</p>
-          <br>
-          <p>
+          <span>
             Please use the link below to set up your account and get started.
-          </p>
+          </span>
+          <br>
           <a href="${inviteUrl}">${inviteUrl}</a>
-          <br><br>
+          <br>
           <p>
             Welcome aboard,<br>
             ToolJet Team
@@ -90,12 +90,12 @@ export class EmailService {
         </head>
         <body>
           <p>Hi ${name || ''},</p>
-          <br>
-          <p>
+          <span>
           ${sender} has invited you to use ToolJet. Use the link below to set up your account and get started.
-          </p>
+          </span>
+          <br>
           <a href="<%= @url %>">${`${this.TOOLJET_HOST}/invitations/${invitationtoken}`}</a>
-          <br><br>
+          <br>
           <p>
             Welcome aboard,<br>
             ToolJet Team

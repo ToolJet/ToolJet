@@ -21,12 +21,12 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 3. Create a Kubernetes deployment
 
 ```bash
- kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/server-deployment.yaml
+ kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/deployment.yaml
 ```
 
-    :::info
-    The file given above is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
-    :::
+:::info
+The file given above is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
+:::
 
 4. Verify if ToolJet is running 
 

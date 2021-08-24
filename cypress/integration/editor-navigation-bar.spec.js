@@ -164,7 +164,7 @@ describe('Editor - Navigation Bar', () => {
         cy.get('.modal-content')
             .find('.modal-header')
             .find('.modal-title')
-            .should('have.text', 'Users and permissions')
+            .should('have.text', 'Share')
 
         cy.get('.form-label')
             .should('have.text', 'Get shareable link for this application')
@@ -172,13 +172,7 @@ describe('Editor - Navigation Bar', () => {
         cy.get('.input-group')
             .find('.btn.btn-secondary.btn-sm')
             .should('have.text', 'Copy')
-            .click() // check how to validate cliboard content
-
-        cy.document().then(doc => {
-            doc.execCommand('copy');
-        });
-        cy.task('getClipboard').should('contain', '/applications/')
-
+            .click() //check how to validate clipboard content
     });
 
     it('should deploy app', () => {
@@ -214,6 +208,7 @@ describe('Editor - Navigation Bar', () => {
     });
 
     it('should launch app', () => {
+        
         cy.get('.navbar-nav.flex-row.order-md-last')
             .find('a[target="_blank"]')
             .should('have.text', 'Launch')

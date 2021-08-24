@@ -7,6 +7,8 @@ body {
 .editor {
   .header-container {
     max-width: 100%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 
   .resizer-active {
@@ -64,12 +66,11 @@ body {
 
   .left-sidebar {
     height: 100%;
-    width: 12%;
-    // position: fixed;
+    width: 3%;
+    position: fixed;
     z-index: 1;
     left: 0;
     overflow-x: hidden;
-
     flex: 1 1 auto;
     background-color: #fff;
     background-clip: border-box;
@@ -237,8 +238,8 @@ body {
   }
 
   .main {
-    margin-left: 12%;
-    width: 73%;
+    margin-left: 3%;
+    width: 82%;
     top: 0;
 
     .canvas-container::-webkit-scrollbar {
@@ -258,7 +259,7 @@ body {
 
     .canvas-container {
       height: 100%;
-      width: 73%;
+      width: 82%;
       top: 56px;
       position: fixed;
       overflow-y: auto;
@@ -298,10 +299,10 @@ body {
 
     .query-pane {
       height: 350px;
-      width: 73%;
+      width: 82%;
       position: fixed;
-      z-index: 1;
-      left: 12%;
+      // z-index: 1;
+      left: 3%;
       bottom: 0;
       overflow-x: hidden;
       flex: 1 1 auto;
@@ -366,9 +367,10 @@ body {
           border-width: 0px 0px 1px 0px;
           background: white;
           position: fixed;
-          z-index: 2;
-          width: 54%;
+          z-index: 3;
+          width: 61.5%;
           margin-top: 0px;
+          padding: 0.5px;
         }
 
         .preview-header {
@@ -1264,6 +1266,12 @@ body {
     margin-bottom: 0rem;
 }
 
+.code-hinter::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
 .codehinter-query-editor-input {
   .CodeMirror {
     font-family: 'Roboto', sans-serif;
@@ -1303,11 +1311,11 @@ body {
       .CodeMirror {
           font-family: 'Roboto', sans-serif;
           height: 50px!important;
+          max-height: 300px;
       }
     }
 
     .CodeMirror-focused {
-        padding-top: 3px;
     }
 
     .CodeMirror-vscrollbar, .CodeMirror-hscrollbar {
@@ -1318,7 +1326,6 @@ body {
 
     .CodeMirror-scroll {
         overflow:hidden !important;
-        margin-bottom: 0px;
     }
 }
 
@@ -1658,6 +1665,7 @@ input:focus-visible {
   margin-top: -2px;
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
+  font-family: 'Source Code Pro', monospace;
 }
 
 .theme-dark {
@@ -1666,7 +1674,7 @@ input:focus-visible {
   }
 
   .card-body > :last-child {
-    color: #c3c3c3!important;
+    color: #fff!important;
   }
 
   .form-control { 
@@ -1674,7 +1682,7 @@ input:focus-visible {
   }
 
   .card {
-    background-color: #2f3c4c!important;
+    background-color: #324156!important;
   }
 
   .DateInput {
@@ -1721,7 +1729,7 @@ input:focus-visible {
   .modal-content, .modal-header {
     background-color: #1f2936!important;
     .text-muted {
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
@@ -1748,7 +1756,7 @@ input:focus-visible {
 
   .query-list {
     .text-muted { 
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
@@ -1791,16 +1799,16 @@ input:focus-visible {
     border: solid rgba(255, 255, 255, 0.09);
     border-width: 0px 1px 3px 0px;
     .text-muted { 
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
   .folder-list {
-    color: #c3c3c3!important;
+    color: #fff!important;
   }
 
   .app-title {
-    color: #c3c3c3!important;
+    color: #fff!important;
   }
 
   .RichEditor-root {
@@ -1809,7 +1817,7 @@ input:focus-visible {
   }
 
   .app-description {
-    color: #c3c3c3!important;
+    color: #fff!important;
   }
 
   .btn-light, .btn-outline-light {
@@ -1842,7 +1850,7 @@ input:focus-visible {
 
   .app-users-list { 
     .text-muted {
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
@@ -1856,7 +1864,7 @@ input:focus-visible {
     border-width: 0px 0px 1px 0px!important;
 
     .text-muted { 
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 
@@ -1879,7 +1887,7 @@ input:focus-visible {
   .alert {
     background: transparent;
     .text-muted { 
-      color: #c3c3c3!important;
+      color: #fff!important;
     }
   }
 

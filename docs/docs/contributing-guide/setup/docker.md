@@ -30,9 +30,10 @@ We recommend:
 2. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given here: env variable reference
    ```bash
     cp .env.example .env
+    cp .env.example .env.test
    ```
 
-3. Populate the keys in the `.env` file.
+3. Populate the keys in the `.env` and `.env.test` file.
    :::info
    `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure   random key)
 
@@ -42,9 +43,32 @@ We recommend:
    Example:
    ```bash
     cat .env
-   TOOLJET_HOST=http://localhost:8082
-   LOCKBOX_MASTER_KEY=1d291a926ddfd221205a23adb4cc1db66cb9fcaf28d97c8c1950e3538e3b9281
-   SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
+    TOOLJET_HOST=http://localhost:8082
+    LOCKBOX_MASTER_KEY=13c9b8364ae71f714774c82498ba328813069e48d80029bb29f49d0ada5a8e40
+    SECRET_KEY_BASE=ea85064ed42ad02cfc022e66d8bccf452e3fa1142421cbd7a13592d91a2cbb866d6001060b73a98a65be57e65524357d445efae00a218461088a706decd62dcb
+    NODE_ENV=development
+    # DATABASE CONFIG
+    PG_HOST=postgres
+    PG_PORT=5432
+    PG_USER=postgres
+    PG_PASS=postgres
+    PG_DB=tooljet_development
+    ORM_LOGGING=all
+   ```
+
+   ```bash
+    cat .env.test
+    TOOLJET_HOST=http://localhost:8082
+    LOCKBOX_MASTER_KEY=13c9b8364ae71f714774c82498ba328813069e48d80029bb29f49d0ada5a8e40
+    SECRET_KEY_BASE=ea85064ed42ad02cfc022e66d8bccf452e3fa1142421cbd7a13592d91a2cbb866d6001060b73a98a65be57e65524357d445efae00a218461088a706decd62dcb
+    NODE_ENV=test
+    # DATABASE CONFIG
+    PG_HOST=postgres
+    PG_PORT=5432
+    PG_USER=postgres
+    PG_PASS=postgres
+    PG_DB=tooljet_test
+    ORM_LOGGING=error
    ```
 
 4. Build docker images
@@ -52,9 +76,10 @@ We recommend:
     docker-compose build
    ```
 
-5. ToolJet server is built using NestJS and the data such as application definitions are persisted on a postgres database. You have to reset the database if building for the first time.
+5. ToolJet server is built using NestJS and the data such as application definitions are persisted on a postgres database. You have to create and migrate the database if building for the first time.
    ```bash
-   docker-compose run server npm run db:reset
+   docker-compose run server npm run db:create
+   docker-compose run server npm run db:migrate
    docker-compose run server npm run db:seed
    ```
 
@@ -118,7 +143,13 @@ Once you've updated the Dockerfile, rebuild the image by running `docker-compose
 
 ## Running tests
 
-Test config requires the presence of `.env.test` file at the root of the project.
+Test config picks up config from `.env.test` file at the root of the project.
+
+Run the following command to create and migrate data for test db
+```bash
+docker-compose run -e NODE_ENV=test server npm run db:create
+docker-compose run -e NODE_ENV=test server npm run db:migrate
+```
 
 To run the unit tests
 

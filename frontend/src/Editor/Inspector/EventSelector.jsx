@@ -54,7 +54,7 @@ export const EventSelector = ({
     apps.map((item) => {
       appsOptionsList.push({
         name: item.name,
-        value: item.id
+        value: item.slug
       })
     })
     return appsOptionsList;
