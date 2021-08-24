@@ -10,23 +10,23 @@ export const Datepicker = function Datepicker({value, onChange, readOnly, isTime
 
     const dateChange = (e) => {
         if(isTimeChecked) {
-            setDate(moment(e, `${dateFormat} LT`))
+            setDate(e.format(`${dateFormat} LT`))
         } else {
-            setDate(moment(e, dateFormat))
+            setDate(e.format(dateFormat))
         } 
     }
 
     React.useEffect(() => {
-        const date = moment(value, 'DD/MM/YYYY')
+        const _date = isTimeChecked ? moment(value, `${dateFormat} hh:mm`) :  moment(value, dateFormat)
 
         if(!isTimeChecked) {
-            setDate(date.format(dateFormat))
+            setDate(_date)
         }
 
         if(isTimeChecked) {
-            setDate(date.format(`${dateFormat} LT`))
+            setDate(_date)
         }
-
+    
     },[isTimeChecked, readOnly, dateFormat])
 
 

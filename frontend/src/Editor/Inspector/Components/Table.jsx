@@ -184,7 +184,7 @@ class Table extends React.Component {
                     e.stopPropagation();
                     this.onColumnItemChange(index, 'dateFormat', e.target.value);
                   }}
-                  value={column.dateFormat}
+                  defaultValue={column.dateFormat}
                   placeholder={'DD-MM-YYYY'}
                 />
               </div>

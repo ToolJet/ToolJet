@@ -244,7 +244,7 @@ export function Table({
     }
     if (columnType === 'datepicker') {
       column.isTimeChecked =  column.isTimeChecked ? column.isTimeChecked : false
-      column.dateFormat =  column.dateFormat ? column.dateFormat : ''
+      column.dateFormat =  column.dateFormat ? column.dateFormat : 'DD/MM/YYYY'
     }
 
     const width = columnSize || defaultColumn.width;
