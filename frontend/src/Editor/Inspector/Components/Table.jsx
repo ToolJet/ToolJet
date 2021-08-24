@@ -9,6 +9,7 @@ import { EventSelector } from '../EventSelector';
 import { Color } from '../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid'; 
+import { EventManager } from '../EventManager';
 
 class Table extends React.Component {
   constructor(props) {
@@ -414,11 +415,14 @@ class Table extends React.Component {
 
           <div className="hr-text">Events</div>
 
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked, currentState, components)}
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged, currentState, components)}
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onSearch', componentMeta.events.onSearch, currentState, components)}
-
-          {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
+          <EventManager
+            component={component}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            dataQueries={dataQueries}
+            components={components}
+            eventsChanged={this.props.eventsChanged}
+          />
 
           <div className="hr-text">Style</div>
         </div>
