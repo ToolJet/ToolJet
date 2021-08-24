@@ -56,7 +56,6 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
 5. ## Setup database
     ```bash
     npm run --prefix server db:reset
-    npm run --prefix server start:dev
     ```
 6. ## Install webpack & nest-cli
     ```bash

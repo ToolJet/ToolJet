@@ -73,6 +73,7 @@ export const Modal = function Modal({
               snapToGrid={true}
               parentRef={parentRef}
               parent={id}
+              currentLayout={containerProps.currentLayout}
             />
         </BootstrapModal.Body>
       </BootstrapModal>

@@ -39,6 +39,7 @@ To display email column, the key for the column should be `user.email`.
 - Tags - similar to badges but the values are not predefined.
 - Dropdown
 - Multiselect dropdown
+- Toggle switch
 
 ## Client-side pagination
 
@@ -50,6 +51,8 @@ Server-side pagination can be used to run a query whenever the page is changed. 
 
 ## Search
 Client-side search is enabled by default and server-side search can be enabled from the events section of the inspector. Whenever the search text is changed, the `searchText` property of the table component is updated. If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your datasource.
+
+If you don't wish to use the search feature altogether, you can disable it from the inspector.
 
 ## Event: On row clicked
 

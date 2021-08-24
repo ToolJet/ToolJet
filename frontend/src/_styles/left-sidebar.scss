@@ -1,0 +1,55 @@
+@import './colors.scss';
+
+.left-sidebar {
+  background: $white;
+
+  .left-sidebar-item {
+    margin: 5px;
+    text-align: center;
+    padding-top: 1vw;
+    padding-bottom: 1vw;
+    border-bottom: 1px solid $grey;
+    transition: all .2s ease-in-out;
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+  .left-sidebar-stack-bottom {
+    width: 3%;
+    position: fixed;
+    bottom: 12vw;
+    height: 50px;
+    text-align: center;
+  }
+  .popover {
+    position: fixed;
+    left: 3%;
+    top: 55px;
+    overflow: auto;
+    max-height: 60%;
+  }
+  .datasources-popover {
+    top: 100px;
+  }
+  .zoom-popover {
+    top: 500px;
+  }
+  .sidebar-zoom {
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .show {
+    display: block;
+  }
+  .hide {
+    display: none;
+  }
+  .dark-mode {
+    transform: scale(.7);
+  }
+  .no-border {
+    border: 0;
+  }
+}

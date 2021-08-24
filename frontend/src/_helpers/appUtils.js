@@ -204,7 +204,7 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
     }
   }
 
-  if (['onPageChanged', 'onSearch'].includes(eventName)) {
+  if (['onPageChanged', 'onSearch', 'onSelectionChange'].includes(eventName)) {
     const { component } = options;
     const event = component.definition.events[eventName];
 
@@ -214,6 +214,16 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 
   if (['onBoundsChange', 'onCreateMarker', 'onMarkerClick'].includes(eventName)) {
+    const { component } = options;
+    const event = component.definition.events[eventName];
+
+    if (event.actionId) {
+      executeAction(_self, event, mode);
+    }
+  }
+
+  /* Events for QrScanner */
+  if (['onDetect'].includes(eventName)) {
     const { component } = options;
     const event = component.definition.events[eventName];
 
@@ -319,7 +329,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
       return;
     }
   }
-
   const newState = {
     ..._ref.state.currentState,
     queries: {
@@ -346,7 +355,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         }
 
         if (data.status === 'failed') {
-          toast.error(data.error.message, { hideProgressBar: true, autoClose: 3000 });
+          toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
         }
 
         let rawData = data.data;
