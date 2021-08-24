@@ -44,6 +44,9 @@ export function Table({
   const serverSideSearchProperty = component.definition.properties.serverSideSearch;
   const serverSideSearch = serverSideSearchProperty ? serverSideSearchProperty.value : false;
 
+  const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
+  const displaySearchBox = displaySearchBoxProperty ? displaySearchBoxProperty.value : true;
+
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
@@ -227,7 +230,7 @@ export function Table({
   const changeSet = componentState ? componentState.changeSet : {};
 
   const columnData = component.definition.properties.columns.value.map((column) => {
-    const columnSize = columnSizes[column.key] || columnSizes[column.name];
+    const columnSize = columnSizes[column.id] || columnSizes[column.name];
     const columnType = column.columnType;
 
     const columnOptions = {};
@@ -531,34 +534,37 @@ export function Table({
       style={{ width: `${width}px`, height: `${height}px` }}
       onClick={() => onComponentClick(id, component)}
     >
-      <div className="card-body border-bottom py-3 jet-data-table-header">
-        <div className="d-flex">
-          {!serverSidePagination &&
-            <div className="text-muted">
-              Show
-              <div className="mx-2 d-inline-block">
-                <select
-                  value={pageSize}
-                  className="form-control form-control-sm"
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                  }}
-                >
-                  {[10, 20, 30, 40, 50].map((itemsCount) => (
-                    <option key={itemsCount} value={itemsCount}>
-                      {itemsCount}
-                    </option>
-                  ))}
-                </select>
+      {/* Show top bar unless search box is disabled and server pagination is enabled */}
+      {(!(!displaySearchBox && serverSidePagination) &&
+        <div className="card-body border-bottom py-3 jet-data-table-header">
+          <div className="d-flex">
+            {!serverSidePagination &&
+              <div className="text-muted">
+                Show
+                <div className="mx-2 d-inline-block">
+                  <select
+                    value={pageSize}
+                    className="form-control form-control-sm"
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                    }}
+                  >
+                    {[10, 20, 30, 40, 50].map((itemsCount) => (
+                      <option key={itemsCount} value={itemsCount}>
+                        {itemsCount}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                entries
               </div>
-              entries
-            </div>
-          }
-          <div className="ms-auto text-muted">
-            <GlobalFilter />
+            }
+            {displaySearchBox && <div className="ms-auto text-muted">
+              <GlobalFilter />
+            </div>}
           </div>
         </div>
-      </div>
+      )}
       <div className="table-responsive jet-data-table">
         <table {...getTableProps()} className="table table-vcenter table-nowrap table-bordered" style={computedStyles}>
           <thead>
@@ -695,7 +701,7 @@ export function Table({
                 <div className="col">
                   <SelectSearch
                     options={columnData.map((column) => {
-                      return { name: column.Header, value: column.accessor };
+                      return { name: column.Header, value: column.id };
                     })}
                     value={filter.id}
                     search={true}

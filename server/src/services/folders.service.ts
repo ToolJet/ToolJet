@@ -44,6 +44,19 @@ export class FoldersService {
     return await this.foldersRepository.findOneOrFail(folderId);
   }
 
+  async userAppCount(user: User, folder: Folder) {
+    const result = await this.foldersRepository
+      .createQueryBuilder('folder')
+      .where("id = :id", { id: folder.id })
+      .loadRelationCountAndMap(
+        'folder.appCount', 'folder.apps', 'apps',
+        qb => qb.andWhere("apps.user_id = :user_id", { user_id: user.id })
+      )
+      .getMany();
+
+    return result[0].appCount;
+  }
+
   async getAppsFor(user: User, folder: Folder, page: number): Promise<App[]> {
     const folderApps = await this.folderAppsRepository.find({
       where: {
@@ -57,7 +70,7 @@ export class FoldersService {
       },
       relations: ['user'],
       take: 10,
-      skip: 10 * ( page || 0 ),
+      skip: 10 * (page - 1),
       order: {
         createdAt: 'DESC'
       }

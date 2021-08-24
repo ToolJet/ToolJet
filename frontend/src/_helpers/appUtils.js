@@ -329,7 +329,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
       return;
     }
   }
-
   const newState = {
     ..._ref.state.currentState,
     queries: {
@@ -356,7 +355,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         }
 
         if (data.status === 'failed') {
-          toast.error(data.error.message, { hideProgressBar: true, autoClose: 3000 });
+          toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
         }
 
         let rawData = data.data;

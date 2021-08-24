@@ -288,6 +288,7 @@ class Editor extends React.Component {
 
   componentDefinitionChanged = (newDefinition) => {
     let _self = this;
+
     return setStateAsync(_self, {
       appDefinition: {
         ...this.state.appDefinition,
@@ -295,8 +296,7 @@ class Editor extends React.Component {
           ...this.state.appDefinition.components,
           [newDefinition.id]: {
             ...this.state.appDefinition.components[newDefinition.id],
-            component: newDefinition.component,
-            layouts: newDefinition.layouts,
+            component: newDefinition.component
           },
         },
       },
@@ -804,8 +804,8 @@ class Editor extends React.Component {
                     configHandleClicked={this.configHandleClicked}
                     removeComponent={this.removeComponent}
                     onComponentClick={(id, component) => {
-                      // this.setState({ selectedComponent: { id, component } });
-                      // this.switchSidebarTab(1);
+                      this.setState({ selectedComponent: { id, component } });
+                      this.switchSidebarTab(1);
                       onComponentClick(this, id, component);
                     }}
                   />

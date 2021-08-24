@@ -48,7 +48,6 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 5. ## Setup database
     ```bash
     npm run --prefix server db:reset
-    npm run --prefix server start:dev
     ```
 6. ## Running the server
     ```bash
@@ -62,11 +61,11 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
     The client will start running on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
 
-9. ## Creating login credentials
+8. ## Creating login credentials
 Visiting https://localhost:8082 should redirect you to the login page, click on the signup link and enter your email. The emails sent by the server in development environment are captured and are opened in your default browser. Click the invitation link in the email preview to setup the account.
 
 
-10. ## Running tests
+9. ## Running tests
 
 Test config requires the presence of `.env.test` file at the root of the project.
 
