@@ -340,6 +340,8 @@ class Table extends React.Component {
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
 
+    if (!component.component.definition.properties.displaySearchBox)
+      paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
 
     return (
