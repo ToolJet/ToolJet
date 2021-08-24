@@ -765,13 +765,13 @@ export const componentTypes = [
       },
       properties: {
         initialLocation: { value: `{
-        "lat": 40.7128,
-        "lng": -73.935242
-      }`},
-      defaultMarkers: { value: `[{
-        "lat": 40.7128,
-        "lng": -73.935242
-      }]`}
+  "lat": 40.7128,
+  "lng": -73.935242
+}`},
+defaultMarkers: { value: `[{
+  "lat": 40.7128,
+  "lng": -73.935242
+}]`}
       },
       addNewMarkers: { value: '{{false}}'},
       events: [],
@@ -781,60 +781,33 @@ export const componentTypes = [
     }
   },
   {
-<<<<<<< HEAD
     name: 'QrScanner',
     displayName: 'QR Scanner',
     description: 'Scan QR codes and hold its data',
     component: 'QrScanner',
-=======
-    name: 'StarRating',
-    displayName: 'Rating',
-    description: 'Star rating',
-    component: 'StarRating',
->>>>>>> a860bc2 (add events, properties)
     defaultSize: {
-      width: 220,
-      height: 75
+      width: 300,
+      height: 300
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
     },
-    properties: {
-      label: { type: 'code', displayName: 'Label' },
-      maxRating: { type: 'code', displayName: 'Number of stars' },
-      allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
-      tooltips: { type: 'code', displayName: 'Tooltips' },
-    },
+    properties: {},
     events: {
-      onChange: { displayName: 'On Change'},
+      onDetect: { displayName: 'On detect'},
     },
     styles: {
-<<<<<<< HEAD
       
     },
     exposedVariables: {
       lastDetectedValue: ''
-=======
-      textColor: { type: 'color', displayName: 'Star Color' }
->>>>>>> a860bc2 (add events, properties)
-    },
-    exposedVariables: {
-      value: 0
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value : true },
       },
-      properties: {
-        label: { value: 'Select your rating' },
-        maxRating: { value: '5' },
-        allowHalfStar: { value: false },
-        visible: { value: true },
-        tooltips: { value: '{{[]}}' }
-      },
-<<<<<<< HEAD
       properties: {},
       events: [],
       styles: {
@@ -881,8 +854,6 @@ export const componentTypes = [
         visible: { value: true },
         tooltips: { value: '{{[]}}' }
       },
-=======
->>>>>>> a860bc2 (add events, properties)
       events: {
         onChange: { 
           options: {
