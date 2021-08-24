@@ -257,7 +257,7 @@ export const componentTypes = [
 
     },
     exposedVariables: {
-      value: {}
+      value: ''
     },
     definition: {
       others: {
