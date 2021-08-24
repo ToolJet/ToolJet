@@ -1,12 +1,12 @@
 ---
-sidebar_position: 2
+sidebar_position: 16
 ---
 
 # Toggle Switch
 
 Toggle switch widget allows the user to change a setting between two states.
 
-The Toggle switch widget should be used if we want to make a binary choice, 
+The Toggle switch widget should be used if we want to make a binary choice,
 such as turning something **on or off** or **enable or disable**.
 
 <img class="screenshot-full" src="/img/widgets/toggle-switch/toggle-switch.gif" alt="ToolJet - Toggle switch widget" height="420"/>
