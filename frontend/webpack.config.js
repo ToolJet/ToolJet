@@ -41,6 +41,17 @@ module.exports = {
         }, {
           loader: 'sass-loader'
         }]
+      },
+      {
+        test: /\.svg$/,
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              limit: 10000,
+            },
+          },
+        ],
       }
     ]
   },
