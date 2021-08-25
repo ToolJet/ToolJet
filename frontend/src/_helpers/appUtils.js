@@ -149,10 +149,10 @@ function executeAction(_ref, event, mode) {
     }
 
     if (event.actionId === 'show-modal')
-      showModal(_ref, event.options.modal, true)
+      showModal(_ref, event.modal, true)
 
     if (event.actionId === 'close-modal')
-      showModal(_ref, event.options.modal, false)
+      showModal(_ref, event.modal, false)
 
     if (event.actionId === 'copy-to-clipboard') {
       const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
