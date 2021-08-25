@@ -24,14 +24,14 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
                 Object.fromEntries
             ])(errors);
             
-            console.log(`%c __options| ${JSON.stringify(newError)}`,'color:yellow');
+            // console.log(`%c ### ${JSON.stringify(newError)}`,'color:yellow');
             const errorData = []
             Object.entries(newError).map(([key, value]) => {
                 errorData.push({
                     key: key,
                     message: value.data.message,
                     description: value.data.description,
-                    options: {name: 'substituted variables', data: value.options},
+                    options: {name: 'substitutedVariables', data: value.options},
                     response: {name: 'response', data: value.data.data},
                 })
             })
@@ -83,8 +83,6 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
 function QueriesComponent ({ queryProps, idx, darkMode }) {
 
     const [open, setOpen] = React.useState(false)
-    console.log(`%c --options-- ${JSON.stringify(queryProps)}`,'color:orange');
-
     return (
         <div className="tab-content" key={`${queryProps.key}-${idx}`}>
             
@@ -131,8 +129,4 @@ function QueriesComponent ({ queryProps, idx, darkMode }) {
 
 
 
-LeftSidebarDebugger.Queries = QueriesComponent
-
-
-
-                   
+LeftSidebarDebugger.Queries = QueriesComponent; 

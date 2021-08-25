@@ -366,7 +366,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
                   ..._self.state.currentState.error,
                   [queryName]: {
                     data: data,
-                    options: query.options
+                    options: options
                   }
                 }
               }
