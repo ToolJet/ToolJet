@@ -797,7 +797,7 @@ export const componentTypes = [
     component: 'StarRating',
     defaultSize: {
       width: 220,
-      height: 20,
+      height: 30,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },

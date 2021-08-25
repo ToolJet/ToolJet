@@ -43,7 +43,14 @@ export const StarRating = function StarRating({
 
   React.useEffect(() => {
     setRatingIndex(defaultSelected - 1);
+    onComponentOptionChanged(component, 'value', defaultSelected);
   }, [defaultSelected]);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      onComponentOptionChanged(component, 'value', defaultSelected);
+    }, 1000)
+  }, []);
 
   function handleClick(idx) {
     // +1 cos code is considering index from 0,1,2.....
