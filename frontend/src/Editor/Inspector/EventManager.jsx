@@ -4,6 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
+import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 
 export const EventManager = ({
   component,
@@ -148,25 +149,15 @@ export const EventManager = ({
                 </div>
               )}
 
-              {event.actionId === 'go-to-app' && (
-                <div className="row">
-                  <div className="col-3 p-2">
-                    App
-                  </div>
-                  <div className="col-9">
-                    <SelectSearch
-                        options={getAllApps()}
-                        search={true}
-                        value={event.slug}
-                        onChange={(value) => {
-                          handlerChanged(index, 'slug', value);
-                        }}
-                        filterOptions={fuzzySearch}
-                        placeholder="Select.."
-                      />
-                  </div>
-                </div>
-              )}
+              {event.actionId === 'go-to-app' &&
+                <GotoApp
+                  event={event}
+                  handlerChanged={handlerChanged}
+                  eventIndex={index}
+                  getAllApps={getAllApps}
+                  currentState={currentState}
+                />
+              }
 
               {event.actionId === 'show-modal' && (
                 <div className="row">

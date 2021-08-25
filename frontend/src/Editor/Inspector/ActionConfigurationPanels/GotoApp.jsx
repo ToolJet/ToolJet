@@ -3,39 +3,39 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 export function GotoApp({ 
-  eventOptionUpdated,
-  definition,
   getAllApps,
   currentState,
-  param,
-  extraData,
+  event,
+  handlerChanged,
+  eventIndex
   }) {
   const queryParamChangeHandler = (index, key, value) => {
-    definition.options.queryParams[index][key] = value
-    eventOptionUpdated(param, 'queryParams', definition.options.queryParams, extraData)
+    event.queryParams[index][key] = value
+    handlerChanged(eventIndex, 'queryParams', event.queryParams)
   }
 
   const addQueryParam = () => {
-    if (!definition.options.queryParams) {
-      definition.options.queryParams = []
-      eventOptionUpdated(param, 'queryParams', [], extraData)
+    if (!event.queryParams) {
+      event.queryParams = []
+      handlerChanged(eventIndex, 'queryParams', event.queryParams)
     }
 
-    definition.options.queryParams.push(['', ''])
-    eventOptionUpdated(param, 'queryParams', definition.options.queryParams, extraData)
+    event.queryParams.push(['', ''])
+    handlerChanged(eventIndex, 'queryParams', event.queryParams)
     setNumberOfQueryparams(numberOfQueryParams + 1)
   }
 
   const deleteQueryParam = index => {
-    definition.options.queryParams.splice(index, 1)
+    event.queryParams.splice(index, 1)
+    handlerChanged(eventIndex, 'queryParams', event.queryParams)
     setNumberOfQueryparams(numberOfQueryParams - 1)
   }
 
   const [numberOfQueryParams, setNumberOfQueryparams] = useState(0)
 
   useEffect(() => {
-    if (definition.options.queryParams) {
-      setNumberOfQueryparams(definition.options.queryParams.length)
+    if (event.queryParams) {
+      setNumberOfQueryparams(event.queryParams.length)
     }
   })
 
@@ -45,9 +45,9 @@ export function GotoApp({
       <SelectSearch
         options={getAllApps()}
         search={true}
-        value={definition.options.slug}
+        value={event.slug}
         onChange={(value) => {
-          eventOptionUpdated(param, 'slug', value, extraData);
+          handlerChanged(eventIndex, 'slug', value);
         }}
         filterOptions={fuzzySearch}
         placeholder="Select.."
@@ -59,19 +59,19 @@ export function GotoApp({
           <div className="input-group mt-1">
             <CodeHinter
               currentState={currentState}
-              initialValue={definition.options.queryParams[index][0]}
+              initialValue={event.queryParams[index][0]}
               onChange={(value) => queryParamChangeHandler(index, 0, value)}
               mode='javascript'
-              singleLine={false}
               className="form-control codehinter-query-editor-input"
+              height={30}
             />
             <CodeHinter
               currentState={currentState}
-              initialValue={definition.options.queryParams[index][1]}
+              initialValue={event.queryParams[index][1]}
               onChange={(value) => queryParamChangeHandler(index, 1, value)}
               mode='javascript'
-              singleLine={false}
               className="form-control codehinter-query-editor-input"
+              height={30}
             />
             <span
               className="input-group-text btn-sm"
