@@ -1,2 +1,2 @@
 frontend/node_modules/**
-**/*.js
+# **/*.js

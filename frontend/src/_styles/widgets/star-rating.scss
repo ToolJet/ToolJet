@@ -1,0 +1,10 @@
+@import '../colors.scss';
+
+.star-rating {
+  display: flex;
+  padding: 5px;
+
+  .label {
+    flex: 1;
+  }
+}
