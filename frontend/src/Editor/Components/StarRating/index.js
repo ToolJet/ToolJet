@@ -6,7 +6,14 @@ import { resolveReferences } from '@/_helpers/utils';
 
 import Star from './star';
 
-export const StarRating = function StarRating({ component, onComponentOptionChanged, currentState, onEvent }) {
+export const StarRating = function StarRating({
+  id,
+  component,
+  onComponentClick,
+  onComponentOptionChanged,
+  currentState,
+  onEvent,
+}) {
   const label = component.definition.properties.label.value;
   const defaultSelected = +component.definition.properties.defaultSelected.value ?? 5;
   const maxRating = +component.definition.properties.maxRating.value ?? 5;
@@ -35,8 +42,8 @@ export const StarRating = function StarRating({ component, onComponentOptionChan
   const [hoverIndex, setHoverIndex] = React.useState(null);
 
   React.useEffect(() => {
-    setRatingIndex(defaultSelected - 1)
-  }, [defaultSelected])
+    setRatingIndex(defaultSelected - 1);
+  }, [defaultSelected]);
 
   function handleClick(idx) {
     // +1 cos code is considering index from 0,1,2.....
@@ -60,8 +67,11 @@ export const StarRating = function StarRating({ component, onComponentOptionChan
   };
 
   return (
-    <div className="star-rating">
-      <span className="label form-check-label form-check-label col-auto">{label}</span>
+    <div className="star-rating" onClick={() => onComponentClick(id, component)}>
+      {/* TODO: Add label color defination property instead of hardcoded color*/}
+      <span className="label form-check-label form-check-label col-auto" style={{ color: '#000' }}>
+        {label}
+      </span>
       {animatedStars.map((props, index) => (
         <Star
           tooltip={getTooltip(index)}
