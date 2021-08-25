@@ -8,6 +8,7 @@ import Star from './star';
 
 export const StarRating = function StarRating({ component, onComponentOptionChanged, currentState, onEvent }) {
   const label = component.definition.properties.label.value;
+  const defaultSelected = +component.definition.properties.defaultSelected.value ?? 5;
   const maxRating = +component.definition.properties.maxRating.value ?? 5;
   const allowHalfStar = component.definition.properties.allowHalfStar.value ?? false;
   const textColorProperty = component.definition.styles.textColor;
@@ -29,11 +30,17 @@ export const StarRating = function StarRating({ component, onComponentOptionChan
     transform: 'scale(1)',
   });
 
-  const [currentRatingIndex, setRatingIndex] = React.useState(maxRating);
+  // -1 cos code is considering index from 0,1,2.....
+  const [currentRatingIndex, setRatingIndex] = React.useState(defaultSelected - 1);
   const [hoverIndex, setHoverIndex] = React.useState(null);
 
-  function handleClick() {
-    onComponentOptionChanged(component, 'value', currentRatingIndex);
+  React.useEffect(() => {
+    setRatingIndex(defaultSelected - 1)
+  }, [defaultSelected])
+
+  function handleClick(idx) {
+    // +1 cos code is considering index from 0,1,2.....
+    onComponentOptionChanged(component, 'value', idx + 1);
     onEvent('onChange', { component });
   }
 
@@ -64,7 +71,7 @@ export const StarRating = function StarRating({ component, onComponentOptionChan
           onClick={(e, idx) => {
             e.stopPropagation();
             setRatingIndex(idx);
-            handleClick();
+            handleClick(idx);
           }}
           allowHalfStar={allowHalfStar}
           key={index}

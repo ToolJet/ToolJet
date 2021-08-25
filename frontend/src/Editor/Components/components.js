@@ -797,7 +797,7 @@ export const componentTypes = [
     component: 'StarRating',
     defaultSize: {
       width: 220,
-      height: 40,
+      height: 20,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -806,6 +806,7 @@ export const componentTypes = [
     properties: {
       label: { type: 'code', displayName: 'Label' },
       maxRating: { type: 'code', displayName: 'Number of stars' },
+      defaultSelected: { type: 'code', displayName: 'Default no of selected stars' },
       allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
       tooltips: { type: 'code', displayName: 'Tooltips' },
     },
@@ -826,6 +827,7 @@ export const componentTypes = [
       properties: {
         label: { value: 'Select your rating' },
         maxRating: { value: '5' },
+        defaultSelected: { value: '2' },
         allowHalfStar: { value: false },
         visible: { value: true },
         tooltips: { value: '{{[]}}' },
