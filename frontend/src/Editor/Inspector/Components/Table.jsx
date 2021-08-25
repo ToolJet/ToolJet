@@ -9,6 +9,7 @@ import { EventSelector } from '../EventSelector';
 import { Color } from '../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid'; 
+import { EventManager } from '../EventManager';
 
 class Table extends React.Component {
   constructor(props) {
@@ -341,6 +342,10 @@ class Table extends React.Component {
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
 
+    if (!component.component.definition.properties.displaySearchBox)
+      paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
+    const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
+
     return (
       <div className="properties-container p-2 " key={this.props.component.id}>
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', currentState, components)}
@@ -406,15 +411,19 @@ class Table extends React.Component {
           <hr></hr>
 
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
-          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
+          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'displaySearchBox', 'properties', currentState)}
+          {displaySearchBox && renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
 
           <div className="hr-text">Events</div>
 
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked, currentState, components)}
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged, currentState, components)}
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onSearch', componentMeta.events.onSearch, currentState, components)}
-
-          {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
+          <EventManager
+            component={component}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            dataQueries={dataQueries}
+            components={components}
+            eventsChanged={this.props.eventsChanged}
+          />
 
           <div className="hr-text">Style</div>
         </div>

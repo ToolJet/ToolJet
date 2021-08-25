@@ -36,6 +36,13 @@ export const ActionTypes = [
     ]
   },
   {
+    name: 'Close Modal',
+    id: 'close-modal',
+    options: [
+      { name: 'modal', type: 'text', default: '' }
+    ]
+  },
+  {
     name: 'Copy to clipboard',
     id: 'copy-to-clipboard',
     options: [

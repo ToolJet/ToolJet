@@ -12,7 +12,8 @@ export const componentTypes = [
       serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination'},
       serverSideSearch: { type: 'toggle', displayName: 'Server-side search'},
       actionButtonBackgroundColor: { type: 'color', displayName: 'Background color'},
-      actionButtonTextColor: { type: 'color', displayName: 'Text color'}
+      actionButtonTextColor: { type: 'color', displayName: 'Text color'},
+      displaySearchBox: { type: 'toggle', displayName: 'Display search box' }
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
@@ -23,10 +24,10 @@ export const componentTypes = [
       height: 300
     },
     events: {
-      onRowClicked: { displayName: 'On row clicked'},
-      onBulkUpdate: { displayName: 'Bulk update query'},
-      onPageChanged: { displayName: 'On page changed'},
-      onSearch: { displayName: 'On search'}
+      onRowClicked: { displayName: 'Row clicked'},
+      onBulkUpdate: { displayName: 'Bulk update'},
+      onPageChanged: { displayName: 'Page changed'},
+      onSearch: { displayName: 'Search'}
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' }
@@ -47,8 +48,9 @@ export const componentTypes = [
         title: { value: 'Table' },
         visible: { value: true },
         loadingState: { value: false },
-        data: { value: '{{[]}}' },
+        data: { value: "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}" },
         serverSidePagination: { value: false },
+        displaySearchBox: { value: true },
         columns: {
           value: [
             { name: 'id', id: "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737"},
@@ -57,28 +59,7 @@ export const componentTypes = [
           ]
         }
       },
-      events: {
-        onRowClicked: {
-          options: {
-
-          }
-        },
-        onBulkUpdate: {
-            options: {
-  
-            }
-        },
-        onPageChanged: {
-            options: {
-  
-            }
-        },
-        onSearch: {
-          options: {
-
-          }
-        }
-      },
+      events: [],
       styles: {
         textColor: { value: '' }
       }
@@ -119,13 +100,7 @@ export const componentTypes = [
         visible: { value: true },
         loadingState: { value: `{{false}}` }
       },
-      events: {
-        onClick: {
-          options: {
-
-          }
-        }
-      },
+      events: [],
       styles: {
         backgroundColor: { value: '#3c92dc' },
         textColor: { value: '#fff' }
@@ -181,9 +156,7 @@ export const componentTypes = [
   { "x": 40, "y": "Mar"}
 ]`}
       },
-      events: {
-
-      },
+      events: [],
       styles: {
 
       }
@@ -226,9 +199,7 @@ export const componentTypes = [
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
       },
-      events: {
-
-      },
+      events: [],
       styles: {
 
       }
@@ -255,7 +226,7 @@ export const componentTypes = [
 
     },
     exposedVariables: {
-      value: {}
+      value: ''
     },
     definition: {
       others: {
@@ -265,9 +236,7 @@ export const componentTypes = [
       properties: {
         placeholder: { value: 'Placeholder text' }
       },
-      events: {
-
-      },
+      events: [],
       styles: {
 
       }
@@ -308,9 +277,7 @@ export const componentTypes = [
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' }
       },
-      events: {
-
-      },
+      events: [],
       styles: {
 
       }
@@ -348,18 +315,7 @@ export const componentTypes = [
       properties: {
         label: { value: 'Checkbox label' }
       },
-      events: {
-        onCheck: {
-          options: {
-
-          }
-        },
-        onUnCheck: {
-          options: {
-
-          }
-        }
-      },
+      events: [],
       styles: {
         textColor: { value: '#000' }
       }
@@ -372,7 +328,7 @@ export const componentTypes = [
     component: 'RadioButton',
     defaultSize: {
       width: 200,
-      height: 50
+      height: 30
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
@@ -403,13 +359,7 @@ export const componentTypes = [
         display_values: { value: '{{["yes", "no"]}}' },
         visible: { value: true }
       },
-      events: {
-        onSelectionChange: { 
-          options: {
-
-          }
-        },
-      },
+      events: [],
       styles: {
         textColor: { value: '#000' }
       }
@@ -421,8 +371,8 @@ export const componentTypes = [
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
-      width: 150,
-      height: 50
+      width: 130,
+      height: 30
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
@@ -446,18 +396,7 @@ export const componentTypes = [
       properties: {
         label: { value: 'Toggle label' }
       },
-      events: {
-        onToggle: {
-          options: {
-
-          }
-        },
-        onUnToggle: {
-          options: {
-
-          }
-        }
-      },
+      events: [],
       styles: {
         textColor: { value: '#000' }
       }
@@ -496,9 +435,7 @@ export const componentTypes = [
         value: { value: '' },
         placeholder: { value: 'Placeholder text' }
       },
-      events: {
-
-      },
+      events: [],
       styles: {
 
       }
@@ -536,9 +473,7 @@ export const componentTypes = [
       properties: {
         format: { value: 'DD/MM/YYYY' }
       },
-      events: {
-
-      },
+      events: [],
       styles: {
 
       }
@@ -578,9 +513,7 @@ export const componentTypes = [
         visible: { value: true },
         loadingState: { value: false }
       },
-      events: {
-        onClick: { }
-      },
+      events: [],
       styles: {
         textColor: { value: '#000' }
       }
@@ -618,9 +551,7 @@ export const componentTypes = [
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
         visible: { value: true }
       },
-      events: {
-        onClick: { }
-      },
+      events: [],
       styles: {
 
       }
@@ -654,7 +585,7 @@ export const componentTypes = [
       properties: {
         visible: { value: true }
       },
-      events: { },
+      events: [],
       styles: {
         backgroundColor: { value: '#fff' }
       }
@@ -700,9 +631,7 @@ export const componentTypes = [
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true }
       },
-      events: {
-        onSelect: { }
-      },
+      events: [],
       styles: {
 
       }
@@ -714,7 +643,7 @@ export const componentTypes = [
     description: 'Select multiple values from options',
     defaultSize: {
       width: 200,
-      height: 60
+      height: 37
     },
     component: 'Multiselect',
     others: {
@@ -748,9 +677,7 @@ export const componentTypes = [
         display_values: { value: '["one", "two", "three"]' },
         visible: { value: true }
       },
-      events: {
-        onSelect: { }
-      },
+      events: [],
       styles: {
 
       }
@@ -787,9 +714,7 @@ export const componentTypes = [
       properties: {
         placeholder: { value: 'Placeholder text' }
       },
-      events: {
-        
-      },
+      events: [],
       styles: {
 
       }
@@ -849,9 +774,7 @@ defaultMarkers: { value: `[{
 }]`}
       },
       addNewMarkers: { value: '{{false}}'},
-      events: {
-        
-      },
+      events: [],
       styles: {
 
       }
@@ -886,12 +809,10 @@ defaultMarkers: { value: `[{
         showOnMobile: { value : true },
       },
       properties: {},
-      events: {
-        onDetect: {
-        }
-      },
+      events: [],
       styles: {
       }
     }
   }
 ];
+

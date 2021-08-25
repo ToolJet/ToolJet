@@ -6,6 +6,7 @@ import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
+import { Folder } from 'src/entities/folder.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 
@@ -15,7 +16,7 @@ export class AppsService {
   constructor(
     @InjectRepository(App)
     private appsRepository: Repository<App>,
-    
+
     @InjectRepository(AppVersion)
     private appVersionsRepository: Repository<AppVersion>,
 
@@ -63,10 +64,10 @@ export class AppsService {
     }));
 
     await this.appUsersRepository.save(this.appUsersRepository.create({
-      userId: user.id, 
-      appId: app.id, 
+      userId: user.id,
+      appId: app.id,
       role: 'admin',
-      createdAt: new Date(), 
+      createdAt: new Date(),
       updatedAt: new Date()
     }));
 
@@ -74,7 +75,7 @@ export class AppsService {
   }
 
   async count(user: User) {
-    return await this.appsRepository.count({ 
+    return await this.appsRepository.count({
         where: {
             organizationId: user.organizationId,
         },
@@ -89,7 +90,7 @@ export class AppsService {
             organizationId: user.organizationId,
         },
         take: 10,
-        skip: 10 * ( page || 0 ),
+        skip: 10 * (page - 1),
         order: {
             createdAt: 'DESC'
         }
@@ -144,7 +145,7 @@ export class AppsService {
       relations: ['user']
     });
 
-    // serialize 
+    // serialize
     const serializedUsers = []
     for(const appUser of appUsers) {
       serializedUsers.push({
@@ -176,7 +177,7 @@ export class AppsService {
       createdAt: new Date(),
       updatedAt: new Date()
     }));
-    
+
   }
 
   async updateVersion(user: User, version: AppVersion, definition: any) {
