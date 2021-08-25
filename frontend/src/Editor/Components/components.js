@@ -827,7 +827,7 @@ export const componentTypes = [
       properties: {
         label: { value: 'Select your rating' },
         maxRating: { value: '5' },
-        defaultSelected: { value: '2' },
+        defaultSelected: { value: '5' },
         allowHalfStar: { value: false },
         visible: { value: true },
         tooltips: { value: '{{[]}}' },
