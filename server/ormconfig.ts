@@ -30,7 +30,7 @@ function buildConnectionOptions(
   return {
     type: 'postgres',
     ...connectionParams,
-    autoLoadEntities: true,
+    entities: [__dirname + "/**/*.entity{.ts,.js}"],
     synchronize: false,
     uuidExtension: 'pgcrypto',
     migrationsRun: false,

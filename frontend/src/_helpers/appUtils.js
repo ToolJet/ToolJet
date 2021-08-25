@@ -59,9 +59,17 @@ export function runTransformation(_ref, rawData, transformation) {
   return result;
 }
 
+export async function executeActionsForEventId(_ref, eventId, component, mode) {
+  const events = component.definition.events.filter(event => event.eventId === eventId);
+
+  for(const event of events) {
+    await executeAction(_ref, event, mode);
+  };
+
+}
+
 export function onComponentClick(_ref, id, component, mode = 'edit') {
-  const onClickEvent = component.definition.events.onClick;
-  executeAction(_ref, onClickEvent, mode);
+  executeActionsForEventId(_ref, 'onClick', component, mode);
 }
 
 export function onQueryConfirm(_ref, queryConfirmationData) {
@@ -108,17 +116,23 @@ function showModal(_ref, modalId, show) {
 function executeAction(_ref, event, mode) {
   if (event) {
     if (event.actionId === 'show-alert') {
-      const message = resolveReferences(event.options.message, _ref.state.currentState);
+      const message = resolveReferences(event.message, _ref.state.currentState);
       toast(message, { hideProgressBar: true });
+      return new Promise(function (resolve, reject) {
+        resolve();
+      })
     }
 
     if (event.actionId === 'open-webpage') {
-      const url = resolveReferences(event.options.url, _ref.state.currentState);
+      const url = resolveReferences(event.url, _ref.state.currentState);
       window.open(url, '_blank');
+      return new Promise(function (resolve, reject) {
+        resolve();
+      })
     }
 
     if (event.actionId === 'go-to-app') {
-      const slug = resolveReferences(event.options.slug, _ref.state.currentState);
+      const slug = resolveReferences(event.slug, _ref.state.currentState);
 
       const url = `/applications/${slug}`;
 
@@ -129,6 +143,9 @@ function executeAction(_ref, event, mode) {
           window.open(url, '_blank');
         }
       }
+      return new Promise(function (resolve, reject) {
+        resolve();
+      })
     }
 
     if (event.actionId === 'show-modal')
@@ -138,19 +155,22 @@ function executeAction(_ref, event, mode) {
       showModal(_ref, event.options.modal, false)
 
     if (event.actionId === 'copy-to-clipboard') {
-      const contentToCopy = resolveReferences(event.options.contentToCopy, _ref.state.currentState);
+      const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
       copyToClipboard(contentToCopy);
+
+      return new Promise(function (resolve, reject) {
+        resolve();
+      })
     }
   }
 }
 
-export function onEvent(_ref, eventName, options, mode = 'edit') {
+export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
   console.log('Event: ', eventName);
 
   if (eventName === 'onRowClicked') {
     const { component, data } = options;
-    const event = component.definition.events[eventName];
     _self.setState({
       currentState: {
         ..._self.state.currentState,
@@ -163,9 +183,7 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
         }
       }
     }, () => {
-      if (event.actionId) {
-        executeAction(_self, event, mode);
-      }
+      executeActionsForEventId(_ref, 'onRowClicked', component, mode);
     });
   }
 
@@ -187,7 +205,8 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
     }, () => {
       if(event) {
         if (event.actionId) {
-          executeAction(_self, event, mode);
+          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+          executeAction(_self, { ...event, ...event.options } , mode);
         }
       } else { 
         console.log('No action is associated with this event');
@@ -195,51 +214,15 @@ export function onEvent(_ref, eventName, options, mode = 'edit') {
     });
   }
 
-  if (eventName === 'onCheck' || eventName === 'onUnCheck') {
+  if (['onDetect', 'onCheck', 'onUnCheck', 'onBoundsChange', 'onCreateMarker', 'onMarkerClick', 'onPageChanged', 'onSearch', 'onSelectionChange'].includes(eventName)) {
     const { component } = options;
-    const event = (eventName === 'onCheck') ? component.definition.events.onCheck : component.definition.events.onUnCheck;
-
-    if (event.actionId) {
-      executeAction(_self, event, mode);
-    }
-  }
-
-  if (['onPageChanged', 'onSearch', 'onSelectionChange'].includes(eventName)) {
-    const { component } = options;
-    const event = component.definition.events[eventName];
-
-    if (event.actionId) {
-      executeAction(_self, event, mode);
-    }
-  }
-
-  if (['onBoundsChange', 'onCreateMarker', 'onMarkerClick'].includes(eventName)) {
-    const { component } = options;
-    const event = component.definition.events[eventName];
-
-    if (event.actionId) {
-      executeAction(_self, event, mode);
-    }
-  }
-
-  /* Events for QrScanner */
-  if (['onDetect'].includes(eventName)) {
-    const { component } = options;
-    const event = component.definition.events[eventName];
-
-    if (event.actionId) {
-      executeAction(_self, event, mode);
-    }
+    executeActionsForEventId(_ref, eventName, component, mode);
   }
 
   if (eventName === 'onBulkUpdate') {
-    return new Promise(function (resolve, reject) {
-      onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
-      executeAction(_self, { actionId: 'run-query', ...options.component.definition.events.onBulkUpdate }, mode).then(() => {
-        onComponentOptionChanged(_self, options.component, 'isSavingChanges', false);
-        resolve();
-      });
-    });
+    onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
+    await executeActionsForEventId(_self, eventName, options.component, mode);
+    onComponentOptionChanged(_self, options.component, 'isSavingChanges', false);
   }
 }
 
@@ -329,7 +312,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
       return;
     }
   }
-
   const newState = {
     ..._ref.state.currentState,
     queries: {
@@ -356,7 +338,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         }
 
         if (data.status === 'failed') {
-          toast.error(data.error.message, { hideProgressBar: true, autoClose: 3000 });
+          toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
         }
 
         let rawData = data.data;
