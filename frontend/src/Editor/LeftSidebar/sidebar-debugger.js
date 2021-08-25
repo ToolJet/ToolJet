@@ -24,7 +24,6 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
                 Object.fromEntries
             ])(errors);
             
-            // console.log(`%c ### ${JSON.stringify(newError)}`,'color:yellow');
             const errorData = []
             Object.entries(newError).map(([key, value]) => {
                 errorData.push({
@@ -86,18 +85,18 @@ function QueriesComponent ({ queryProps, idx, darkMode }) {
     return (
         <div className="tab-content" key={`${queryProps.key}-${idx}`}>
             
-            <p onClick={() => setOpen((prev) => !prev)}>
+            <p className='text-azure' onClick={() => setOpen((prev) => !prev)}>
                 <img className={`svg-icon ${open ? 'iopen': ''}`} src={`/assets/images/icons/caret-right.svg`} width="16" height="16"/>
                 [Query {queryProps.key}] &nbsp;
                 <span className="text-red">{`Query Failed: ${queryProps.description}`} {queryProps.message}.</span>
             </p>
-            <div className={` queryData ${open ? 'open' : 'close'}`} >
+            <div className={` queryData ${open ? 'open' : 'close'} py-0`} >
                 <span>
                     <ReactJson
                         src={queryProps.options.data}
                         theme={darkMode ? 'shapeshifter' : 'rjv-default'}
                         name={queryProps.options.name}
-                        style={{ fontSize: '0.8rem' }}
+                        style={{ fontSize: '0.7rem', paddingLeft:'0.35rem' }}
                         enableClipboard={false}
                         displayDataTypes={false}
                         collapsed={true}
@@ -107,12 +106,12 @@ function QueriesComponent ({ queryProps, idx, darkMode }) {
                     /> 
                 </span>
                 <div>
-                    {/* <span>{queryProps.response.name}</span> */}
+
                 <ReactJson
                     src={queryProps.response.data}
                     theme={darkMode ? 'shapeshifter' : 'rjv-default'}
                     name={queryProps.response.name}
-                    style={{ fontSize: '0.8rem' }}
+                    style={{ fontSize: '0.7rem',paddingLeft:'0.35rem' }}
                     enableClipboard={false}
                     displayDataTypes={false}
                     collapsed={true}
@@ -122,7 +121,7 @@ function QueriesComponent ({ queryProps, idx, darkMode }) {
                     />  
                 </div>
             </div>
-            <hr className="border-1 border-top bg-grey" />
+            <hr className="border-1 border-top bg-grey py-0" />
         </div>
     )
 }

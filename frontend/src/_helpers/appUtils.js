@@ -304,7 +304,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
   }
 
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
-  console.log(`%c __options__ ${JSON.stringify(dataQuery.options)}`,'color:red',);
 
   if (options.requestConfirmation) {
     if (confirmed === undefined) {
