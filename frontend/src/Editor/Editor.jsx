@@ -537,6 +537,7 @@ class Editor extends React.Component {
                     className={`btn btn-light mx-2`}
                     onClick={this.toggleQueryEditor}
                     data-tip="Hide query editor"
+                    data-class="py-1 px-2"
                     ref={this.toolTipRefHide}
                   >
                     <img
@@ -546,11 +547,11 @@ class Editor extends React.Component {
                       height="12"
                     />
                   </span>
-
                   <span
                     className={`btn btn-default mx-2`}
                     onClick={this.toggleQueryEditor}
                     data-tip="Show query editor"
+                    data-class="py-1 px-2"
                     ref={this.toolTipRefShow}
                     style={{ display: 'none' }}
                   >
@@ -837,6 +838,7 @@ class Editor extends React.Component {
 
                           <span
                             data-tip="Add new query"
+                            data-class="py-1 px-2"
                             className="btn btn-sm btn-light text-muted"
                             onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })}
                           >
