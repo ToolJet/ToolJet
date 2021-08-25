@@ -188,6 +188,26 @@ export const EventManager = ({
                 </div>
               )}
 
+              {event.actionId === 'close-modal' && (
+                <div className="row">
+                  <div className="col-3 p-2">
+                  Modal
+                  </div>
+                  <div className="col-9">
+                    <SelectSearch
+                      options={getModalOptions()}
+                      value={event.model}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'modal', value);
+                      }}
+                      filterOptions={fuzzySearch}
+                      placeholder="Select.."
+                    />
+                  </div>
+                </div>
+              )}
+
               {event.actionId === 'copy-to-clipboard' && (
                 <div className="p-1">
                   <label className="form-label mt-1">Text</label>

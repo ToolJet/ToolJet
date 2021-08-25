@@ -156,6 +156,22 @@ export const EventSelector = ({
                 </div>
               )}
 
+              {definition.actionId === 'close-modal' && (
+                <div className="p-1">
+                  <label className="form-label mt-1">Modal</label>
+                  <SelectSearch
+                    options={getModalOptions()}
+                    value={definition.options.model}
+                    search={true}
+                    onChange={(value) => {
+                      eventOptionUpdated(param, 'modal', value, extraData);
+                    }}
+                    filterOptions={fuzzySearch}
+                    placeholder="Select.."
+                  />
+                </div>
+              )}
+
               {definition.actionId === 'copy-to-clipboard' && (
                 <div className="p-1">
                   <label className="form-label mt-1">Text</label>
