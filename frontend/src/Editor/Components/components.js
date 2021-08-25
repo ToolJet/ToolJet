@@ -862,7 +862,7 @@ defaultMarkers: { value: `[{
         },
       },
       styles: {
-        textColor: { value: '#000' }
+        textColor: { value: '#ffb400' }
       }
     }
   },

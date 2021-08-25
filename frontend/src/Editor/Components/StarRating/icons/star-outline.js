@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default ({ fill = '#000'}) => {
+export default ({ fill = '#ffb400'}) => {
   return (
     <svg height="20" width="20" fill={fill} version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
       viewBox="0 0 500 500" xmlSpace="preserve">
