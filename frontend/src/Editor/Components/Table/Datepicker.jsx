@@ -31,7 +31,6 @@ export const Datepicker = function Datepicker({value, onChange, readOnly, isTime
 
 
     let inputProps = {
-        // placeholder: 'N/A',
         disabled: !readOnly,
     };
 
@@ -41,7 +40,6 @@ export const Datepicker = function Datepicker({value, onChange, readOnly, isTime
        onChange(date)
        setIsDatepickerOpen((prev) => !prev)
     }
-
 
     React.useEffect(() => {
         const myElement = document.querySelector('.cell-type-datepicker')
@@ -64,9 +62,6 @@ export const Datepicker = function Datepicker({value, onChange, readOnly, isTime
         }
 
     },[isDatepickerOpen])
-
-
-
 
     return (
             <>
