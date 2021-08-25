@@ -105,7 +105,8 @@ class Table extends React.Component {
                 { name: 'Dropdown', value: 'dropdown' },
                 { name: 'Radio', value: 'radio' },
                 { name: 'Multiselect', value: 'multiselect' },
-                { name: 'Toggle switch', value: 'toggle' }
+                { name: 'Toggle switch', value: 'toggle' },
+                { name: 'Date Picker', value: 'datepicker' }
               ]}
               value={column.columnType}
               search={true}
@@ -171,6 +172,39 @@ class Table extends React.Component {
                 />
               </div>
             </div>
+          )}
+
+          {column.columnType === 'datepicker' && (
+            <div>
+              <label className="form-label">Date Format</label>
+              <div className="field mb-2">
+                <input
+                  type="text"
+                  className="form-control text-field"
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    this.onColumnItemChange(index, 'dateFormat', e.target.value);
+                  }}
+                  defaultValue={column.dateFormat}
+                  placeholder={'DD-MM-YYYY'}
+                />
+              </div>
+              <div  className="field mb-2">
+                <label className="form-check form-switch my-2">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    onClick={() => {
+                      this.onColumnItemChange(index, 'isTimeChecked', !column.isTimeChecked)
+                    }}
+                    checked={column.isTimeChecked}
+                  />
+                  <span className="form-check-label">show time</span>
+                </label>
+              </div>
+            
+            </div>
+           
           )}
 
           <label className="form-check form-switch my-2">
