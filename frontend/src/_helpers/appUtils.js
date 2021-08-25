@@ -111,6 +111,10 @@ function showModal(_ref, modalId, show) {
   }
 
   _ref.setState(newState)
+
+  return new Promise(function (resolve, reject) {
+    resolve();
+  })
 }
 
 function executeAction(_ref, event, mode) {
@@ -149,10 +153,10 @@ function executeAction(_ref, event, mode) {
     }
 
     if (event.actionId === 'show-modal')
-      showModal(_ref, event.modal, true)
+      return showModal(_ref, event.modal, true)
 
     if (event.actionId === 'close-modal')
-      showModal(_ref, event.modal, false)
+      return showModal(_ref, event.modal, false)
 
     if (event.actionId === 'copy-to-clipboard') {
       const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
