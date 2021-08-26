@@ -1,5 +1,6 @@
 # pull official base image
-FROM node:14.17.0-alpine AS builder
+FROM node:14.17.3-alpine AS builder
+ENV NODE_ENV=production
 
 # set working directory
 WORKDIR /app
@@ -11,9 +12,9 @@ ENV PATH /app/node_modules/.bin:$PATH
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # install app dependencies
-COPY package.json package-lock.json  ./
+COPY ./frontend/package.json ./frontend/package-lock.json  ./
 RUN npm install --only=production
-COPY . .
+COPY ./frontend .
 RUN NODE_ENV=production npm run-script build
 
 
@@ -29,6 +30,6 @@ RUN mkdir /etc/resty-auto-ssl /var/log/openresty /var/www /etc/fallback-certs
 
 COPY --from=builder /app/build /var/www
 
-COPY ./config/nginx.conf.template /etc/openresty/nginx.conf.template
-COPY ./config/entrypoint.sh /entrypoint.sh
+COPY ./frontend/config/nginx.conf.template /etc/openresty/nginx.conf.template
+COPY ./frontend/config/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
