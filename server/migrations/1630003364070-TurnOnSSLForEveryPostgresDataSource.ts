@@ -11,9 +11,8 @@ export class TurnOnSSLForEveryPostgresDataSource1630003364070 implements Migrati
     const dataSources = await dataSourceRepository.find();
 
     for(const dataSource of dataSources) {
-      if(dataSource.kind === 'postgres') {
+      if(dataSource.kind === 'postgresql') {
         const options = dataSource.options;
-
         if(options) {
           options['ssl_enabled'] = { value: true, encrypted: false };
           await queryBuilder.update(DataSource)
