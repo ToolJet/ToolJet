@@ -13,20 +13,29 @@ class Restapi extends React.Component {
     this.state = {
       options: this.props.options,
     };
+    console.log('22', this.props.options)
   }
 
   componentDidMount() {
-    this.addNewKeyValuePair('headers');
-    setTimeout(() => {
-      this.addNewKeyValuePair('url_params');
-    }, 1000);
-    setTimeout(() => {
-      this.addNewKeyValuePair('body');
-    }, 1000);
+    console.log(this.props.isEditMode, "this.props.isEditMode")
+    if(!this.props.isEditMode) {
+      try {
+        this.addNewKeyValuePair('headers');
+        setTimeout(() => {
+          this.addNewKeyValuePair('url_params');
+        }, 1000);
+        setTimeout(() => {
+          this.addNewKeyValuePair('body');
+        }, 1000);
+      } catch (error) {
+        console.log(error)
+      }
+    }
   }
 
   addNewKeyValuePair = (option) => {
     const { options } = this.state;
+    console.log(options)
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
 
     this.setState({ options: newOptions }, () => {
@@ -86,7 +95,7 @@ class Restapi extends React.Component {
                 />
               </div>
 
-              <div className="col no-padding" style={{ display: 'flex' }}>
+              <div className="col" style={{ display: 'flex' }}>
                 {dataSourceURL && (
                   <span
                     htmlFor=""

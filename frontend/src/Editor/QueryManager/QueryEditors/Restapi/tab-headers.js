@@ -3,7 +3,7 @@ import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
 export default ({ options = [], currentState, theme, removeKeyValuePair, onChange }) => {
   return (
-    <div className="table-responsive">
+    <div className="table-responsive table-no-divider">
       <table className="table table-vcenter">
         <thead>
           <tr>

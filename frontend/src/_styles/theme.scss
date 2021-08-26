@@ -2026,6 +2026,7 @@ input:focus-visible {
   border: 0;
   border-bottom: 1px solid #206bc4;
   font-weight: 400;
+  // color: #fff;
 }
 
 .nav-tabs .nav-link.active:hover {
@@ -2035,4 +2036,10 @@ input:focus-visible {
 .nav-tabs .nav-link:hover {
   border: 0;
   font-weight: 400;
+}
+
+.table-no-divider {
+  td {
+    border-bottom-width: 0px;
+  }
 }

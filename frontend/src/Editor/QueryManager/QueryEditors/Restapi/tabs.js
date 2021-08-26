@@ -9,7 +9,6 @@ import Body from './tab-body';
 function ControlledTabs({ options, currentState, theme, onChange, removeKeyValuePair }) {
   const [key, setKey] = React.useState('headers');
 
-  console.log(key)
   return (
     <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
       <Tab eventKey="headers" title="Headers">
