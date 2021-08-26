@@ -1,6 +1,5 @@
 import React from 'react';
-import { renderElement, renderEvent, renderQuerySelector } from '../Utils';
-import { EventSelector } from '../EventSelector';
+import { renderElement } from '../Utils';
 import { Color } from '../Elements/Color';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 

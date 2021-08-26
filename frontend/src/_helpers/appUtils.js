@@ -6,6 +6,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { history } from '@/_helpers';
+import { serializeNestedObjectToQueryParams } from './utils';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -137,8 +138,21 @@ function executeAction(_ref, event, mode) {
 
     if (event.actionId === 'go-to-app') {
       const slug = resolveReferences(event.slug, _ref.state.currentState);
+      const queryParams = event.queryParams?.reduce((result, queryParam) => ({
+        ...result,
+        ...{
+          [resolveReferences(queryParam[0], _ref.state.currentState)]: resolveReferences(queryParam[1], _ref.state.currentState)
+        }
+      }), {})
 
-      const url = `/applications/${slug}`;
+      let url =`/applications/${slug}`;
+
+      if (queryParams) {
+        const queryPart = serializeNestedObjectToQueryParams(queryParams)
+
+        if (queryPart.length > 0)
+          url = url + `?${queryPart}`
+      }
 
       if(mode === 'view') {
         _ref.props.history.push(url);
@@ -193,7 +207,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
 
   if (eventName === 'onTableActionButtonClicked') {
     const { component, data, action } = options;
-    const event = action.onClick;
 
     _self.setState({
       currentState: {
@@ -207,11 +220,13 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         }
       }
     }, () => {
-      if(event) {
-        if (event.actionId) {
-          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-          executeAction(_self, { ...event, ...event.options } , mode);
-        }
+      if(action) {
+        action.events?.forEach((event => {
+          if (event.actionId) {
+            // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+            executeAction(_self, { ...event, ...event.options } , mode);
+          }
+        }) )
       } else { 
         console.log('No action is associated with this event');
       }
