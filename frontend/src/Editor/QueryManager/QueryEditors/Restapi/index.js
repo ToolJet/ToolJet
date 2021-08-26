@@ -13,11 +13,9 @@ class Restapi extends React.Component {
     this.state = {
       options: this.props.options,
     };
-    console.log('22', this.props.options)
   }
 
   componentDidMount() {
-    console.log(this.props.isEditMode, "this.props.isEditMode")
     if(!this.props.isEditMode) {
       try {
         this.addNewKeyValuePair('headers');
@@ -35,7 +33,6 @@ class Restapi extends React.Component {
 
   addNewKeyValuePair = (option) => {
     const { options } = this.state;
-    console.log(options)
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
 
     this.setState({ options: newOptions }, () => {
