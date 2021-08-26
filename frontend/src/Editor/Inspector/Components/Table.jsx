@@ -1,11 +1,10 @@
 import React from 'react';
-import { renderElement, renderEvent, renderQuerySelector } from '../Utils';
+import { renderElement } from '../Utils';
 import { computeActionName } from '@/_helpers/utils';
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { EventSelector } from '../EventSelector';
 import { Color } from '../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid'; 
