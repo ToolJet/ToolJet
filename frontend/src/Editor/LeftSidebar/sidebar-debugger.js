@@ -9,6 +9,7 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
     const [open, trigger, content] = usePopover(false)
     const [currrentTab, setCurrentTab] = React.useState(1)
     const [errorLogs, setErrorLogs] = React.useState([])
+    const [unReadErrorCount, setUnReadErrorCount] = React.useState({read: 0, unread: 0})
 
     const switchCurrentTab = (tab) => {
         setCurrentTab(tab)
@@ -54,9 +55,30 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
         })
     },[errors])
 
+    React.useEffect(() => {
+        const unRead = errorLogs.length - unReadErrorCount.read
+
+        if(open ===  false && errorLogs.length !== unReadErrorCount.read) {
+            setUnReadErrorCount((prev) => {
+                let copy = JSON.parse(JSON.stringify(prev))
+                copy.unread = unRead
+                return copy
+            })
+        }
+        
+        if(open === true) {
+            setUnReadErrorCount((prev) => {
+                let copy = JSON.parse(JSON.stringify(prev))
+                copy.read = errorLogs.length
+                copy.unread = 0
+                return copy
+            })
+        }
+    },[errorLogs.length, open])
+
     return (
     <>
-      <LeftSidebarItem tip='Debugger' {...trigger} icon='debugger' className='left-sidebar-item' />
+      <LeftSidebarItem tip='Debugger' {...trigger} icon='debugger' className='left-sidebar-item' badge={true} count={unReadErrorCount.unread} />
       <div {...content} className={`card popover debugger-popover ${open ? 'show' : 'hide'}`} style={{minWidth:'180px', minHeight:'108px', maxWidth:'480px'}} >
           <div className="row-header">
               <div className="nav-header">
