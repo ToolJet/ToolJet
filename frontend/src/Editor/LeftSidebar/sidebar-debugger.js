@@ -105,23 +105,23 @@ function QueriesComponent ({ queryProps, idx, darkMode }) {
                         sortKeys={false}
                     /> 
                 </span>
-                <div>
-
-                <ReactJson
-                    src={queryProps.response.data}
-                    theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-                    name={queryProps.response.name}
-                    style={{ fontSize: '0.7rem',paddingLeft:'0.35rem' }}
-                    enableClipboard={false}
-                    displayDataTypes={false}
-                    collapsed={true}
-                    displayObjectSize={false}
-                    quotesOnKeys={false}
-                    sortKeys={false}
-                    />  
-                </div>
+                <span>
+                    <ReactJson
+                        src={queryProps.response.data}
+                        theme={darkMode ? 'shapeshifter' : 'rjv-default'}
+                        name={queryProps.response.name}
+                        style={{ fontSize: '0.7rem', paddingLeft:'0.35rem' }}
+                        enableClipboard={false}
+                        displayDataTypes={false}
+                        collapsed={true}
+                        displayObjectSize={false}
+                        quotesOnKeys={false}
+                        sortKeys={false}
+                    /> 
+                </span>
+ 
+            <hr className="border-1 border-bottom bg-grey py-0" />
             </div>
-            <hr className="border-1 border-top bg-grey py-0" />
         </div>
     )
 }
