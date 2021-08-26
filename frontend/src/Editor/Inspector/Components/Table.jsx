@@ -28,6 +28,8 @@ class Table extends React.Component {
       eventOptionUpdated,
       components,
       currentState,
+      actionPopOverRootClose: true,
+      showPopOver: false
     };
   }
 
@@ -61,6 +63,12 @@ class Table extends React.Component {
     this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
   };
 
+  actionButtonEventsChanged = (events, index) => {
+    let actions = this.props.component.component.definition.properties.actions.value;
+    actions[index]['events'] = events
+    this.props.paramUpdated({ name: 'actions' }, 'value', actions, 'properties');
+  }
+
   actionButtonEventUpdated = (event, value, extraData) => {
     const actions = this.props.component.component.definition.properties.actions;
     const index = extraData.index;
@@ -90,7 +98,7 @@ class Table extends React.Component {
 
   columnPopover = (column, index) => {
     return (
-      <Popover id="popover-basic">
+      <Popover id="popover-basic-2">
         <Popover.Content>
           <div className="field mb-2">
             <label className="form-label">Column type</label>
@@ -192,6 +200,14 @@ class Table extends React.Component {
   };
 
   actionPopOver = (action, index) => {
+    const dummyComponentForActionButton = {
+      component: {
+        definition: {
+          events: this.props.component.component.definition.properties.actions.value[index].events || []
+        }
+      }
+    }
+
     return (
       <Popover id="popover-basic">
         <Popover.Content>
@@ -222,16 +238,18 @@ class Table extends React.Component {
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
           />
-          <EventSelector
-            param={{ name: 'onClick' }}
-            eventMeta={{ displayName: 'On click' }}
-            definition={action.onClick}
-            eventUpdated={this.actionButtonEventUpdated}
-            dataQueries={this.props.dataQueries}
-            eventOptionUpdated={this.actionButtonEventOptionUpdated}
+          <EventManager
+            component={dummyComponentForActionButton}
+            componentMeta={{events: { onClick: {displayName: 'On click' }}}}
             currentState={this.state.currentState}
-            extraData={{ actionButton: action, index: index }} // This data is returned in the callbacks
+            dataQueries={this.props.dataQueries}
+            components={this.props.components}
+            eventsChanged={events => this.actionButtonEventsChanged(events, index)}
             apps={this.props.apps}
+            popOverCallback={(showing) => {
+              this.setState({actionPopOverRootClose: !showing})
+              this.setState({showPopOver: showing})
+            }}
           />
           <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
             Remove
@@ -243,7 +261,13 @@ class Table extends React.Component {
 
   actionButton(action, index) {
     return (
-      <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.actionPopOver(action, index)}>
+      <OverlayTrigger
+        trigger="click"
+        placement="left"
+        rootClose={this.state.actionPopOverRootClose}
+        overlay={this.actionPopOver(action, index)}
+        onToggle={showing => this.setState({showPopOver: showing})}
+      >
         <div className={`card p-2 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
           <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`}>
             <div className="col-auto">
@@ -287,7 +311,7 @@ class Table extends React.Component {
   addNewAction = () => {
     const actions = this.props.component.component.definition.properties.actions;
     const newValue = actions ? actions.value : [];
-    newValue.push({ name: computeActionName(actions), buttonText: 'Button' });
+    newValue.push({ name: computeActionName(actions), buttonText: 'Button', events: [] });
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
@@ -423,6 +447,7 @@ class Table extends React.Component {
             dataQueries={dataQueries}
             components={components}
             eventsChanged={this.props.eventsChanged}
+            apps={this.props.apps}
           />
 
           <div className="hr-text">Style</div>

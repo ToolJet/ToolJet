@@ -14,7 +14,8 @@ export const EventManager = ({
   dataQueries,
   eventsChanged,
   apps,
-  excludeEvents
+  excludeEvents,
+  popOverCallback
 }) => {
 
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
@@ -86,7 +87,7 @@ export const EventManager = ({
     return (
       <Popover id="popover-basic" style={{ width: '350px', maxWidth: '350px' }} className="shadow">
         <Popover.Content>
-        <div className="row">
+          <div className="row">
             <div className="col-3 p-2">
               <span>
                 Event
@@ -251,7 +252,7 @@ export const EventManager = ({
         <OverlayTrigger 
           trigger="click" 
           placement="left" 
-          rootClose 
+          rootClose={true}
           overlay={eventPopover(event, index)}
           onHide={(e) => setFocusedEventIndex(null) }
           onToggle={ (showing) => { 
@@ -260,6 +261,8 @@ export const EventManager = ({
             } else {
               setFocusedEventIndex(null);
             }
+            if (typeof popOverCallback === 'function')
+              popOverCallback(showing);
           }}
         >
           <div className={rowClassName} role="button">
