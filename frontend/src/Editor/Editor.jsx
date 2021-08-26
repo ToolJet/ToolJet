@@ -810,12 +810,13 @@ class Editor extends React.Component {
                           <h5 className="py-1 px-3 text-muted">QUERIES</h5>
                         </div>
                         <div className="col-auto px-3">
-                          <button className="btn btn-sm btn-light mx-2" onClick={this.toggleQuerySearch}>
+                          <button className="btn btn-sm btn-light mx-2" onClick={this.toggleQuerySearch} data-tip="Search" data-class="py-1 px-2">
                             <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17" />
                           </button>
 
                           <span
                             data-tip="Add new query"
+                            style={{width: '35px', height: '23px'}}
                             className="btn btn-sm btn-light text-muted"
                             onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })}
                           >
