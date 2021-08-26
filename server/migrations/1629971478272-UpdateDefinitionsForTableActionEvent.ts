@@ -22,10 +22,10 @@ export class UpdateDefinitionsForTableActionEvent1629971478272 implements Migrat
                         const actions = component.component.definition.properties.actions.value;
 
                         for(const actionIndex in actions) {
-                            const oneClickEvent = actions[actionIndex].onClick;
+                            const onClickEvent = actions[actionIndex].onClick;
 
-                            if(oneClickEvent) {
-                                const newEvents = [oneClickEvent];
+                            if(onClickEvent) {
+                                const newEvents = [{actionId: onClickEvent.actionId, eventId: 'onClick', ...onClickEvent.options}  ];
                                 actions[actionIndex]['events'] = newEvents
                             } else {
                                 actions[actionIndex]['events'] = []
