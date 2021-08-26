@@ -1,8 +1,11 @@
-import React from 'react';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import 'codemirror/theme/duotone-light.css';
+
+import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
-import { changeOption } from './utils';
+import Tabs from './tabs';
+
+import { changeOption } from '../utils';
+import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -13,27 +16,31 @@ class Restapi extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({
-      options: this.props.options,
-    });
+    this.addNewKeyValuePair('headers');
+    setTimeout(() => {
+      this.addNewKeyValuePair('url_params');
+    }, 1000);
+    setTimeout(() => {
+      this.addNewKeyValuePair('body');
+    }, 1000);
   }
 
   addNewKeyValuePair = (option) => {
     const { options } = this.state;
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
 
-    this.setState({
-      options: newOptions,
+    this.setState({ options: newOptions }, () => {
+      this.props.optionsChanged(newOptions);
     });
-    this.props.optionsChanged(newOptions);
   };
 
   removeKeyValuePair = (option, index) => {
     const { options } = this.state;
     options[option].splice(index, 1);
 
-    this.setState({ options });
-    this.props.optionsChanged(options);
+    this.setState({ options }, () => {
+      this.props.optionsChanged(options);
+    });
   };
 
   keyValuePairValueChanged = (value, keyIndex, option, index) => {
@@ -41,8 +48,14 @@ class Restapi extends React.Component {
 
     options[option][index][keyIndex] = value;
 
-    this.setState({ options });
-    this.props.optionsChanged(options);
+    this.setState({ options }, () => {
+      this.props.optionsChanged(options);
+    });
+  };
+
+  handleChange = (key, keyIndex, idx) => (value) => {
+    if (this.state.options[key].length - 1 === idx) this.addNewKeyValuePair(key);
+    this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
   render() {
@@ -73,7 +86,7 @@ class Restapi extends React.Component {
                 />
               </div>
 
-              <div className="col" style={{ display: 'flex' }}>
+              <div className="col no-padding" style={{ display: 'flex' }}>
                 {dataSourceURL && (
                   <span
                     htmlFor=""
@@ -94,65 +107,24 @@ class Restapi extends React.Component {
                 <CodeHinter
                   currentState={this.props.currentState}
                   initialValue={options.url}
-                  height='36px'
+                  height="36px"
                   className="codehinter-query-editor-input"
                   theme={this.props.darkMode ? 'monokai' : 'default'}
                   onChange={(value) => {
                     changeOption(this, 'url', value);
                   }}
+                  placeholder="Enter request URL"
                 />
               </div>
             </div>
           </div>
-
-          {[
-            { name: 'URL parameters', value: 'url_params' },
-            { name: 'Headers', value: 'headers' },
-            { name: 'Body', value: 'body' },
-          ].map((option) => (
-            <div className="mb-3" key={option}>
-              <div className="row g-2">
-                <div className="col-md-2">
-                  <label className="form-label pt-2">{option.name}</label>
-                </div>
-                <div className="col-md-10">
-                  {(options[option.value] || []).map((pair, index) => (
-                    <div className="input-group" key={index}>
-                      <CodeHinter
-                        currentState={this.props.currentState}
-                        initialValue={pair[0]}
-                        theme={this.props.darkMode ? 'monokai' : 'default'}
-                        className="form-control codehinter-query-editor-input"
-                        onChange={(value) => this.keyValuePairValueChanged(value, 0, option.value, index)}
-                      />
-                      <CodeHinter
-                        currentState={this.props.currentState}
-                        className="form-control codehinter-query-editor-input"
-                        initialValue={pair[1]}
-                        theme={this.props.darkMode ? 'monokai' : 'default'}
-                        onChange={(value) => this.keyValuePairValueChanged(value, 1, option.value, index)}
-                      />
-                      <span
-                        className="input-group-text btn-sm"
-                        role="button"
-                        onClick={() => {
-                          this.removeKeyValuePair(option.value, index);
-                        }}
-                      >
-                        x
-                      </span>
-                    </div>
-                  ))}
-                  <button
-                    className="btn btn-sm btn-outline-azure"
-                    onClick={() => this.addNewKeyValuePair(option.value)}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+          <Tabs
+            theme={this.props.darkMode ? 'monokai' : 'default'}
+            options={this.state.options}
+            currentState={this.props.currentState}
+            onChange={this.handleChange}
+            removeKeyValuePair={this.removeKeyValuePair}
+          />
         </div>
       </div>
     );
