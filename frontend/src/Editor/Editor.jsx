@@ -413,8 +413,8 @@ class Editor extends React.Component {
 
   toggleQueryEditor = () => {
     this.setState({ showQueryEditor: !this.state.showQueryEditor });
-    this.toolTipRefHide.current.style.display = this.state.showQueryEditor ? 'none' : 'block';
-    this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'block' : 'none';
+    this.toolTipRefHide.current.style.display = this.state.showQueryEditor ? 'none' : 'flex';
+    this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'flex' : 'none';
   };
 
   toggleLeftSidebar = () => {
