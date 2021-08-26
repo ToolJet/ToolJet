@@ -250,7 +250,7 @@ class Table extends React.Component {
               this.setState({showPopOver: showing})
             }}
           />
-          <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
+          <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
             Remove
           </button>
         </Popover.Content>
