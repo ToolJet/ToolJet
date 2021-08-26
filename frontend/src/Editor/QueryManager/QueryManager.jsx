@@ -44,7 +44,7 @@ class QueryManager extends React.Component {
       () => {
         if (this.props.mode === 'edit') {
           let source = props.dataSources.find((datasource) => datasource.id === selectedQuery.data_source_id);
-          if (selectedQuery.kind === 'restapi') { 
+          if (selectedQuery.kind === 'restapi') {
             if(!selectedQuery.data_source_id) {
               source = { kind: 'restapi' };
             }
@@ -278,7 +278,7 @@ class QueryManager extends React.Component {
                       this.previewPanelRef.current.scrollIntoView();
                     })
                     .catch(({ error, data }) => {
-                      
+
                     });
                 }}
                 className={`btn btn-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''}`}
@@ -300,6 +300,7 @@ class QueryManager extends React.Component {
                 className="btn btn-light m-1"
                 onClick={this.props.toggleQueryPaneHeight}
                 data-tip="Maximize query editor"
+                data-class="py-1 px-2"
               >
                 <img src="/assets/images/icons/maximize.svg" width="12" height="12" />
               </span>
@@ -308,6 +309,7 @@ class QueryManager extends React.Component {
                 className="btn btn-light m-1"
                 onClick={this.props.toggleQueryPaneHeight}
                 data-tip="Minimize query editor"
+                data-class="py-1 px-2"
               >
                 <img src="/assets/images/icons/minimize.svg" width="12" height="12" />
               </span>
