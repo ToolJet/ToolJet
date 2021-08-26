@@ -8,7 +8,7 @@ import { LeftSidebarDataSources } from './sidebar-datasources';
 import { LeftSidebarZoom } from './sidebar-zoom';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
-import { LeftSidebarDebugger } from './sidebarDebugger';
+import { LeftSidebarDebugger } from './SidebarDebugger';
 
 export const LeftSidebar = ({ appId, switchDarkMode, darkMode = false, globals, components, queries, onZoomChanged, dataSources = [], dataSourcesChanged, errorLogs }) => {
   const router = useRouter()
