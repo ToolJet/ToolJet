@@ -327,8 +327,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         rawData: []
       }
     },
-    error: {
-      ..._ref.state.currentState.queries_error,
+    errors: {
+      ..._ref.state.currentState.errors,
       [queryName]: {
         ..._ref.state.currentState.queries[queryName],
         errors: [],
@@ -362,8 +362,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
                   }
                 },
                 errors: {
-                  ..._self.state.currentState.error,
+                  ..._self.state.currentState.errors,
                   [queryName]: {
+                    type: 'query',
                     data: data,
                     options: options
                   }

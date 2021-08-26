@@ -626,7 +626,7 @@ class Editor extends React.Component {
           </div>
           <div className="sub-section">
             <LeftSidebar
-              queriesErrors={currentState.errors}
+              errorLogs={currentState.errors}
               queries={currentState.queries}
               components={currentState.components}
               globals={currentState.globals}

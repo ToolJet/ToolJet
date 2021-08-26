@@ -2,12 +2,13 @@ import React from 'react';
 import usePopover from '../../_hooks/use-popover';
 import { LeftSidebarItem } from './sidebar-item';
 import ReactJson from 'react-json-view';
+import _ from 'lodash'
 
 
 export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
     const [open, trigger, content] = usePopover(false)
     const [currrentTab, setCurrentTab] = React.useState(1)
-    const [queryErrors, setQueryErrors] = React.useState([])
+    const [errorLogs, setErrorLogs] = React.useState([])
 
     const switchCurrentTab = (tab) => {
         setCurrentTab(tab)
@@ -15,7 +16,7 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
 
     React.useEffect(() => {
         
-        setQueryErrors(prev => {
+        setErrorLogs(prev => {
             let copy = JSON.parse(JSON.stringify(prev))
             copy = copy.filter(val => Object.keys(val).length !== 0)
             const newError = _.flow([
@@ -26,16 +27,27 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
             
             const errorData = []
             Object.entries(newError).map(([key, value]) => {
+                const variableNames = {
+                    options: '',
+                    response: ''
+                }
+                switch (value.type) {
+                    case 'query': 
+                        variableNames.options = 'substitutedVariables';
+                        variableNames.response = 'response';
+                        break;
+                    default: 'options';
+                }
                 errorData.push({
+                    type: value.type,
                     key: key,
                     message: value.data.message,
                     description: value.data.description,
-                    options: {name: 'substitutedVariables', data: value.options},
-                    response: {name: 'response', data: value.data.data},
+                    options: {name: variableNames.options, data: value.options},
+                    response: {name: variableNames.response, data: value.data.data},
                 })
             })
-            const newState = [...copy, ...errorData]
-            return newState
+            return errorData
         })
     },[errors])
 
@@ -58,15 +70,15 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
         
         {currrentTab === 1 && (
             <div className="card-body">
-                {queryErrors.length === 0 && (
+                {errorLogs.length === 0 && (
                 <center className="p-2 text-muted">
                     No errors found.
                 </center>
                 )}
 
                 <div className="tab-content">
-                    {queryErrors.map((query, index) => (
-                        <LeftSidebarDebugger.Queries queryProps={query} idx={index} darkMode={darkMode} />
+                    {errorLogs.map((error, index) => (
+                        <LeftSidebarDebugger.ErrorLogs errorProps={error} idx={index} darkMode={darkMode} />
                     ))} 
                 </div>
 
@@ -79,23 +91,23 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
 }
 
 
-function QueriesComponent ({ queryProps, idx, darkMode }) {
+function ErrorLogsComponent ({ errorProps, idx, darkMode }) {
 
     const [open, setOpen] = React.useState(false)
     return (
-        <div className="tab-content" key={`${queryProps.key}-${idx}`}>
+        <div className="tab-content" key={`${errorProps.key}-${idx}`}>
             
             <p className='text-azure' onClick={() => setOpen((prev) => !prev)}>
                 <img className={`svg-icon ${open ? 'iopen': ''}`} src={`/assets/images/icons/caret-right.svg`} width="16" height="16"/>
-                [Query {queryProps.key}] &nbsp;
-                <span className="text-red">{`Query Failed: ${queryProps.description}`} {queryProps.message}.</span>
+                [{_.capitalize(errorProps.type)} {errorProps.key}] &nbsp;
+                <span className="text-red">{`Query Failed: ${errorProps.description}`} {errorProps.message}.</span>
             </p>
             <div className={` queryData ${open ? 'open' : 'close'} py-0`} >
                 <span>
                     <ReactJson
-                        src={queryProps.options.data}
+                        src={errorProps.options.data}
                         theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-                        name={queryProps.options.name}
+                        name={errorProps.options.name}
                         style={{ fontSize: '0.7rem', paddingLeft:'0.35rem' }}
                         enableClipboard={false}
                         displayDataTypes={false}
@@ -107,9 +119,9 @@ function QueriesComponent ({ queryProps, idx, darkMode }) {
                 </span>
                 <span>
                     <ReactJson
-                        src={queryProps.response.data}
+                        src={errorProps.response.data}
                         theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-                        name={queryProps.response.name}
+                        name={errorProps.response.name}
                         style={{ fontSize: '0.7rem', paddingLeft:'0.35rem' }}
                         enableClipboard={false}
                         displayDataTypes={false}
@@ -128,4 +140,4 @@ function QueriesComponent ({ queryProps, idx, darkMode }) {
 
 
 
-LeftSidebarDebugger.Queries = QueriesComponent; 
+LeftSidebarDebugger.ErrorLogs = ErrorLogsComponent; 
