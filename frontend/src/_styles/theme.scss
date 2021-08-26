@@ -1266,6 +1266,12 @@ body {
     margin-bottom: 0rem;
 }
 
+.code-hinter::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
 .codehinter-query-editor-input {
   .CodeMirror {
     font-family: 'Roboto', sans-serif;
@@ -1305,11 +1311,11 @@ body {
       .CodeMirror {
           font-family: 'Roboto', sans-serif;
           height: 50px!important;
+          max-height: 300px;
       }
     }
 
     .CodeMirror-focused {
-        padding-top: 3px;
     }
 
     .CodeMirror-vscrollbar, .CodeMirror-hscrollbar {
@@ -1320,7 +1326,6 @@ body {
 
     .CodeMirror-scroll {
         overflow:hidden !important;
-        margin-bottom: 0px;
     }
 }
 
@@ -1660,6 +1665,7 @@ input:focus-visible {
   margin-top: -2px;
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
+  font-family: 'Source Code Pro', monospace;
 }
 
 .theme-dark {

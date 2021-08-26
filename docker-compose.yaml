@@ -28,6 +28,9 @@ services:
       - /app/node_modules/
     ports:
       - 3000:3000
+    environment:
+      - SERVE_CLIENT=false
+      - FORCE_COLOR=1
     command: npm run start:dev
 
   postgres:

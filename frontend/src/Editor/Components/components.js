@@ -9,80 +9,64 @@ export const componentTypes = [
       data: { type: 'code', displayName: 'Table data' },
       loadingState: { type: 'code', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
-      serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination'},
-      serverSideSearch: { type: 'toggle', displayName: 'Server-side search'},
-      actionButtonBackgroundColor: { type: 'color', displayName: 'Background color'},
-      actionButtonTextColor: { type: 'color', displayName: 'Text color'}
+      serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination' },
+      serverSideSearch: { type: 'toggle', displayName: 'Server-side search' },
+      actionButtonBackgroundColor: { type: 'color', displayName: 'Background color' },
+      actionButtonTextColor: { type: 'color', displayName: 'Text color' },
+      displaySearchBox: { type: 'toggle', displayName: 'Display search box' },
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     defaultSize: {
       width: 810,
-      height: 300
+      height: 300,
     },
     events: {
-      onRowClicked: { displayName: 'On row clicked'},
-      onBulkUpdate: { displayName: 'Bulk update query'},
-      onPageChanged: { displayName: 'On page changed'},
-      onSearch: { displayName: 'On search'}
+      onRowClicked: { displayName: 'Row clicked' },
+      onBulkUpdate: { displayName: 'Bulk update' },
+      onPageChanged: { displayName: 'Page changed' },
+      onSearch: { displayName: 'Search' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' }
+      textColor: { type: 'color', displayName: 'Text Color' },
     },
     exposedVariables: {
       selectedRow: {},
       changeSet: {},
       dataUpdates: [],
       pageIndex: 0,
-      searchText: ''
+      searchText: '',
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         title: { value: 'Table' },
         visible: { value: true },
         loadingState: { value: false },
-        data: { value: '{{[]}}' },
+        data: {
+          value:
+            "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
+        },
         serverSidePagination: { value: false },
+        displaySearchBox: { value: true },
         columns: {
           value: [
-            { name: 'id', id: "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737"},
-            { name: 'name', id: "5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a"},
-            { name: 'email', id: "afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f"}
-          ]
-        }
+            { name: 'id', id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737' },
+            { name: 'name', id: '5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a' },
+            { name: 'email', id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f' },
+          ],
+        },
       },
-      events: {
-        onRowClicked: {
-          options: {
-
-          }
-        },
-        onBulkUpdate: {
-            options: {
-  
-            }
-        },
-        onPageChanged: {
-            options: {
-  
-            }
-        },
-        onSearch: {
-          options: {
-
-          }
-        }
-      },
+      events: [],
       styles: {
-        textColor: { value: '' }
-      }
-    }
+        textColor: { value: '' },
+      },
+    },
   },
   {
     name: 'Button',
@@ -91,46 +75,40 @@ export const componentTypes = [
     component: 'Button',
     defaultSize: {
       width: 120,
-      height: 30
+      height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
       text: { type: 'code', displayName: 'Button Text' },
-      loadingState: { type: 'code', displayName: 'Loading State'}
+      loadingState: { type: 'code', displayName: 'Loading State' },
     },
     events: {
-      onClick: { displayName: 'On click'},
+      onClick: { displayName: 'On click' },
     },
     styles: {
       backgroundColor: { type: 'color', displayName: 'Background color' },
-      textColor: { type: 'color', displayName: 'Text color' }
+      textColor: { type: 'color', displayName: 'Text color' },
     },
     exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         text: { value: `Button` },
         visible: { value: true },
-        loadingState: { value: `{{false}}` }
+        loadingState: { value: `{{false}}` },
       },
-      events: {
-        onClick: {
-          options: {
-
-          }
-        }
-      },
+      events: [],
       styles: {
         backgroundColor: { value: '#3c92dc' },
-        textColor: { value: '#fff' }
-      }
-    }
+        textColor: { value: '#fff' },
+      },
+    },
   },
   {
     name: 'Chart',
@@ -139,35 +117,37 @@ export const componentTypes = [
     component: 'Chart',
     defaultSize: {
       width: 600,
-      height: 400
+      height: 400,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
       title: { type: 'string', displayName: 'Title' },
       data: { type: 'json', displayName: 'Data' },
-      loadingState: { type: 'code', displayName: 'Loading State'},
-      markerColor: { type: 'color', displayName: 'Marker color'},
-      showGridLines: { type: 'toggle', displayName: 'Show grid lines'},
-      type: { type: 'select', displayName: 'Chart type', options: [
-        { name: 'Line', value: 'line' },
-        { name: 'Bar', value: 'bar' },
-        { name: 'Pie', value: 'pie' }
-      ] },
+      loadingState: { type: 'code', displayName: 'Loading State' },
+      markerColor: { type: 'color', displayName: 'Marker color' },
+      showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
+      type: {
+        type: 'select',
+        displayName: 'Chart type',
+        options: [
+          { name: 'Line', value: 'line' },
+          { name: 'Bar', value: 'bar' },
+          { name: 'Pie', value: 'pie' },
+        ],
+      },
     },
     events: {},
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {
-      show: null
+      show: null,
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         title: { value: 'This title can be changed' },
@@ -175,19 +155,17 @@ export const componentTypes = [
         showGridLines: { value: true },
         loadingState: { value: `{{false}}` },
         type: { value: `line` },
-        data: { value: `[
+        data: {
+          value: `[
   { "x": 100, "y": "Jan"},
   { "x": 80, "y": "Feb"}, 
   { "x": 40, "y": "Mar"}
-]`}
+]`,
+        },
       },
-      events: {
-
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'Modal',
@@ -196,43 +174,41 @@ export const componentTypes = [
     component: 'Modal',
     defaultSize: {
       width: 600,
-      height: 400
+      height: 400,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
       title: { type: 'string', displayName: 'Title' },
-      size: { type: 'select', displayName: 'Modal size', options: [
-        { name: 'small', value: 'sm' },
-        { name: 'medium', value: 'md' },
-        { name: 'large', value: 'lg' }
-      ] },
+      size: {
+        type: 'select',
+        displayName: 'Modal size',
+        options: [
+          { name: 'small', value: 'sm' },
+          { name: 'medium', value: 'md' },
+          { name: 'large', value: 'lg' },
+        ],
+      },
     },
     events: {},
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {
-      show: null
+      show: null,
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
       },
-      events: {
-
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'TextInput',
@@ -241,37 +217,31 @@ export const componentTypes = [
     component: 'TextInput',
     defaultSize: {
       width: 200,
-      height: 30
+      height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' }
+      placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {
-      value: {}
+      value: '',
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
-        placeholder: { value: 'Placeholder text' }
+        placeholder: { value: 'Placeholder text' },
       },
-      events: {
-
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'Datepicker',
@@ -280,41 +250,35 @@ export const componentTypes = [
     component: 'Datepicker',
     defaultSize: {
       width: 150,
-      height: 30
+      height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
       format: { type: 'code', displayName: 'Format' },
       enableTime: { type: 'code', displayName: 'Enable time selection?' },
-      enableDate: { type: 'code', displayName: 'Enable date selection?' }
+      enableDate: { type: 'code', displayName: 'Enable date selection?' },
     },
     events: {},
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {
-      value: {}
+      value: {},
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
-        enableDate: { value: '{{true}}' }
+        enableDate: { value: '{{true}}' },
       },
-      events: {
-
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'Checkbox',
@@ -323,47 +287,36 @@ export const componentTypes = [
     component: 'Checkbox',
     defaultSize: {
       width: 200,
-      height: 25
+      height: 25,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' }
+      label: { type: 'code', displayName: 'Label' },
     },
     events: {
-        onCheck: { displayName: 'On check'},
-        onUnCheck: { displayName: 'On uncheck'},
+      onCheck: { displayName: 'On check' },
+      onUnCheck: { displayName: 'On uncheck' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' }
+      textColor: { type: 'color', displayName: 'Text Color' },
     },
     exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
-        label: { value: 'Checkbox label' }
+        label: { value: 'Checkbox label' },
       },
-      events: {
-        onCheck: {
-          options: {
-
-          }
-        },
-        onUnCheck: {
-          options: {
-
-          }
-        }
-      },
+      events: [],
       styles: {
-        textColor: { value: '#000' }
-      }
-    }
+        textColor: { value: '#000' },
+      },
+    },
   },
   {
     name: 'Radio-button',
@@ -372,48 +325,42 @@ export const componentTypes = [
     component: 'RadioButton',
     defaultSize: {
       width: 200,
-      height: 50
+      height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
-      display_values: { type: 'code', displayName: 'Option labels' }
+      display_values: { type: 'code', displayName: 'Option labels' },
     },
     events: {
-      onSelectionChange: { displayName: 'On select'},
+      onSelectionChange: { displayName: 'On select' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' }
+      textColor: { type: 'color', displayName: 'Text Color' },
     },
     exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         label: { value: 'Select' },
         value: { value: '' },
         values: { value: '{{[true,false]}}' },
         display_values: { value: '{{["yes", "no"]}}' },
-        visible: { value: true }
+        visible: { value: true },
       },
-      events: {
-        onSelectionChange: { 
-          options: {
-
-          }
-        },
-      },
+      events: [],
       styles: {
-        textColor: { value: '#000' }
-      }
-    }
+        textColor: { value: '#000' },
+      },
+    },
   },
   {
     name: 'ToggleSwitch',
@@ -421,47 +368,36 @@ export const componentTypes = [
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
-      width: 150,
-      height: 50
+      width: 130,
+      height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      label: { type: 'code', displayName: 'Label' }
+      label: { type: 'code', displayName: 'Label' },
     },
     events: {
-        onChange: { displayName: 'On change'},
+      onChange: { displayName: 'On change' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' }
+      textColor: { type: 'color', displayName: 'Text Color' },
     },
     exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
-        label: { value: 'Toggle label' }
+        label: { value: 'Toggle label' },
       },
-      events: {
-        onToggle: {
-          options: {
-
-          }
-        },
-        onUnToggle: {
-          options: {
-
-          }
-        }
-      },
+      events: [],
       styles: {
-        textColor: { value: '#000' }
-      }
-    }
+        textColor: { value: '#000' },
+      },
+    },
   },
   {
     name: 'Textarea',
@@ -470,39 +406,33 @@ export const componentTypes = [
     component: 'TextArea',
     defaultSize: {
       width: 250,
-      height: 100
+      height: 100,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
       value: { type: 'code', displayName: 'Default value' },
-      placeholder: { type: 'code', displayName: 'Placeholder' }
+      placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {
-      value: {}
+      value: {},
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         value: { value: '' },
-        placeholder: { value: 'Placeholder text' }
+        placeholder: { value: 'Placeholder text' },
       },
-      events: {
-
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'DateRangePicker',
@@ -511,38 +441,32 @@ export const componentTypes = [
     component: 'DaterangePicker',
     defaultSize: {
       width: 300,
-      height: 32
+      height: 32,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      format: { type: 'code', displayName: 'Format' }
+      format: { type: 'code', displayName: 'Format' },
     },
     events: {},
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {
       endDate: {},
-      startDate: {}
+      startDate: {},
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
-        format: { value: 'DD/MM/YYYY' }
+        format: { value: 'DD/MM/YYYY' },
       },
-      events: {
-
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'Text',
@@ -550,41 +474,37 @@ export const componentTypes = [
     description: 'Display markdown or HTML',
     component: 'Text',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
       text: { type: 'code', displayName: 'Text' },
-      loadingState: { type: 'code', displayName: 'Show loading state' }
+      loadingState: { type: 'code', displayName: 'Show loading state' },
     },
     defaultSize: {
       width: 200,
-      height: 30
+      height: 30,
     },
-    events: [
-
-    ],
+    events: [],
     styles: {
-      textColor: { type: 'color', displayName: 'Text Color' }
+      textColor: { type: 'color', displayName: 'Text Color' },
     },
     exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         text: { value: 'Text goes here !' },
         visible: { value: true },
-        loadingState: { value: false }
+        loadingState: { value: false },
       },
-      events: {
-        onClick: { }
-      },
+      events: [],
       styles: {
-        textColor: { value: '#000' }
-      }
-    }
+        textColor: { value: '#000' },
+      },
+    },
   },
   {
     name: 'Image',
@@ -592,39 +512,33 @@ export const componentTypes = [
     description: 'Display an Image',
     defaultSize: {
       width: 200,
-      height: 200
+      height: 200,
     },
     component: 'Image',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
       source: { type: 'code', displayName: 'URL' },
     },
     events: {
-        onClick: { displayName: 'On click'},
+      onClick: { displayName: 'On click' },
     },
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
-        visible: { value: true }
+        visible: { value: true },
       },
-      events: {
-        onClick: { }
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'Container',
@@ -632,33 +546,32 @@ export const componentTypes = [
     description: 'Wrapper for multiple components',
     defaultSize: {
       width: 200,
-      height: 200
+      height: 200,
     },
     component: 'Container',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
-    properties: {
-    },
+    properties: {},
     events: {},
     styles: {
-      backgroundColor: { type: 'color' }
+      backgroundColor: { type: 'color' },
     },
     exposedVariables: {},
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
-        visible: { value: true }
+        visible: { value: true },
       },
-      events: { },
+      events: [],
       styles: {
-        backgroundColor: { value: '#fff' }
-      }
-    }
+        backgroundColor: { value: '#fff' },
+      },
+    },
   },
   {
     name: 'Dropdown',
@@ -666,47 +579,41 @@ export const componentTypes = [
     description: 'Select one value from options',
     defaultSize: {
       width: 200,
-      height: 37
+      height: 37,
     },
     component: 'DropDown',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
-      display_values: { type: 'code', displayName: 'Option labels' }
+      display_values: { type: 'code', displayName: 'Option labels' },
     },
     events: {
-        onSelect: { displayName: 'On select'},
+      onSelect: { displayName: 'On select' },
     },
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {
-      value: null
+      value: null,
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         label: { value: 'Select' },
         value: { value: '' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visible: { value: true }
+        visible: { value: true },
       },
-      events: {
-        onSelect: { }
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'Multiselect',
@@ -714,47 +621,41 @@ export const componentTypes = [
     description: 'Select multiple values from options',
     defaultSize: {
       width: 200,
-      height: 60
+      height: 37,
     },
     component: 'Multiselect',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-        label: { type: 'code', displayName: 'Label' },
-        value: { type: 'code', displayName: 'Default value' },
-        values: { type: 'code', displayName: 'Option values' },
-        display_values: { type: 'code', displayName: 'Option labels' }
+      label: { type: 'code', displayName: 'Label' },
+      value: { type: 'code', displayName: 'Default value' },
+      values: { type: 'code', displayName: 'Option values' },
+      display_values: { type: 'code', displayName: 'Option labels' },
     },
     events: {
-        onSelect: { displayName: 'On select'},
+      onSelect: { displayName: 'On select' },
     },
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {
-      values: {}
+      values: {},
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
         label: { value: 'Select' },
         values: { value: '[]' },
         option_values: { value: '[1,2,3]' },
         display_values: { value: '["one", "two", "three"]' },
-        visible: { value: true }
+        visible: { value: true },
       },
-      events: {
-        onSelect: { }
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'RichTextEditor',
@@ -763,37 +664,31 @@ export const componentTypes = [
     component: 'RichTextEditor',
     defaultSize: {
       width: 600,
-      height: 210
+      height: 210,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' }
+      placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
-    styles: {
-
-    },
+    styles: {},
     exposedVariables: {
-        value: {}
+      value: {},
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
-        placeholder: { value: 'Placeholder text' }
+        placeholder: { value: 'Placeholder text' },
       },
-      events: {
-        
-      },
-      styles: {
-
-      }
-    }
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'Map',
@@ -802,60 +697,67 @@ export const componentTypes = [
     component: 'Map',
     defaultSize: {
       width: 400,
-      height: 400
+      height: 400,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      initialLocation: { type: 'code', displayName: 'Initial location', tip: 'This location will be the initial center of the map', options: { 
-        mode: 'javascript',
-        theme: 'duotone-light',
-        className: 'map-location-input pr-2'
-      }},
-      defaultMarkers: { type: 'code', displayName: 'Default markers', options: { 
-        mode: 'javascript',
-        theme: 'duotone-light',
-        className: 'map-location-input pr-2'
-      }},
-      addNewMarkers: { type: 'toggle', displayName: 'Add new markers'},
-      canSearch: { type: 'toggle', displayName: 'Search for places'},
+      initialLocation: {
+        type: 'code',
+        displayName: 'Initial location',
+        tip: 'This location will be the initial center of the map',
+        options: {
+          mode: 'javascript',
+          theme: 'duotone-light',
+          className: 'map-location-input pr-2',
+        },
+      },
+      defaultMarkers: {
+        type: 'code',
+        displayName: 'Default markers',
+        options: {
+          mode: 'javascript',
+          theme: 'duotone-light',
+          className: 'map-location-input pr-2',
+        },
+      },
+      addNewMarkers: { type: 'toggle', displayName: 'Add new markers' },
+      canSearch: { type: 'toggle', displayName: 'Search for places' },
     },
     events: {
-      onBoundsChange: { displayName: 'On bounds change'},
-      onCreateMarker: { displayName: 'On create marker'},
-      onMarkerClick: { displayName: 'On marker click'},
-  },
-    styles: {
-
+      onBoundsChange: { displayName: 'On bounds change' },
+      onCreateMarker: { displayName: 'On create marker' },
+      onMarkerClick: { displayName: 'On marker click' },
     },
+    styles: {},
     exposedVariables: {
-        center: {}
+      center: {},
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : false }
+        showOnMobile: { value: false },
       },
       properties: {
-        initialLocation: { value: `{
+        initialLocation: {
+          value: `{
   "lat": 40.7128,
   "lng": -73.935242
-}`},
-defaultMarkers: { value: `[{
+}`,
+        },
+        defaultMarkers: {
+          value: `[{
   "lat": 40.7128,
   "lng": -73.935242
-}]`}
+}]`,
+        },
       },
-      addNewMarkers: { value: '{{false}}'},
-      events: {
-        
-      },
-      styles: {
-
-      }
-    }
+      addNewMarkers: { value: '{{false}}' },
+      events: [],
+      styles: {},
+    },
   },
   {
     name: 'QrScanner',
@@ -864,34 +766,76 @@ defaultMarkers: { value: `[{
     component: 'QrScanner',
     defaultSize: {
       width: 300,
-      height: 300
+      height: 300,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? '},
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?'},
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {},
     events: {
-      onDetect: { displayName: 'On detect'},
+      onDetect: { displayName: 'On detect' },
     },
-    styles: {
-      
-    },
+    styles: {},
     exposedVariables: {
-      lastDetectedValue: ''
+      lastDetectedValue: '',
     },
     definition: {
       others: {
         showOnDesktop: { value: true },
-        showOnMobile: { value : true },
+        showOnMobile: { value: true },
       },
       properties: {},
-      events: {
-        onDetect: {
-        }
+      events: [],
+      styles: {},
+    },
+  },
+  {
+    name: 'StarRating',
+    displayName: 'Rating',
+    description: 'Star rating',
+    component: 'StarRating',
+    defaultSize: {
+      width: 220,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+    },
+    properties: {
+      label: { type: 'code', displayName: 'Label' },
+      maxRating: { type: 'code', displayName: 'Number of stars' },
+      defaultSelected: { type: 'code', displayName: 'Default no of selected stars' },
+      allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
+      tooltips: { type: 'code', displayName: 'Tooltips' },
+    },
+    events: {
+      onChange: { displayName: 'On Change' },
+    },
+    styles: {
+      textColor: { type: 'color', displayName: 'Star Color' },
+    },
+    exposedVariables: {
+      value: 0,
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
       },
+      properties: {
+        label: { value: 'Select your rating' },
+        maxRating: { value: '5' },
+        defaultSelected: { value: '5' },
+        allowHalfStar: { value: false },
+        visible: { value: true },
+        tooltips: { value: '{{[]}}' },
+      },
+      events: [],
       styles: {
-      }
-    }
-  }
+        textColor: { value: '#ffb400' },
+      },
+    },
+  },
 ];

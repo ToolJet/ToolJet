@@ -51,10 +51,10 @@ export const EventSelector = ({
 
   function getAllApps() {
     let appsOptionsList = [];
-    apps.map((item) => {
+    apps.filter(item => item.slug != undefined).map((item) => {
       appsOptionsList.push({
         name: item.name,
-        value: item.id
+        value: item.slug
       })
     })
     return appsOptionsList;
@@ -141,6 +141,22 @@ export const EventSelector = ({
               )}
 
               {definition.actionId === 'show-modal' && (
+                <div className="p-1">
+                  <label className="form-label mt-1">Modal</label>
+                  <SelectSearch
+                    options={getModalOptions()}
+                    value={definition.options.model}
+                    search={true}
+                    onChange={(value) => {
+                      eventOptionUpdated(param, 'modal', value, extraData);
+                    }}
+                    filterOptions={fuzzySearch}
+                    placeholder="Select.."
+                  />
+                </div>
+              )}
+
+              {definition.actionId === 'close-modal' && (
                 <div className="p-1">
                   <label className="form-label mt-1">Modal</label>
                   <SelectSearch

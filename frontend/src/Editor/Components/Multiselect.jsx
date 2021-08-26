@@ -40,11 +40,11 @@ export const Multiselect = function Multiselect({
   }, [newValue]);
 
   return (
-    <div className="row" style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+    <div className="row g-0" style={{ width, height }} onClick={() => onComponentClick(id, component)}>
       <div className="col-auto">
-        <label className="form-label p-2">{label}</label>
+        <label style={{marginRight: '1rem'}} className="form-label py-2">{label}</label>
       </div>
-      <div className="col">
+      <div className="col px-0">
         <SelectSearch
           options={selectOptions}
           value={currentValue}

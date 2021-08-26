@@ -16,7 +16,10 @@ export const appService = {
 
 function getAll(page, folder) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/apps?page=${page}&folder=${folder || ''}`, requestOptions).then(handleResponse);
+  if (page === 0)
+    return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+  else
+    return fetch(`${config.apiUrl}/apps?page=${page}&folder=${folder || ''}`, requestOptions).then(handleResponse);
 }
 
 function createApp() {

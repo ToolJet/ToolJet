@@ -20,29 +20,50 @@ import { EmailService } from '@services/email.service';
 import { MetaModule } from './modules/meta/meta.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { LoggerModule } from 'nestjs-pino';
 
-@Module({
-  imports: [
+const imports = [
+  ConfigModule.forRoot({
+    isGlobal: true,
+    envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
+  }),
+  LoggerModule.forRoot({
+    pinoHttp: {
+      level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+      prettyPrint:
+        process.env.NODE_ENV !== 'production'
+          ? {
+              colorize: true,
+              levelFirst: true,
+              translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+            }
+          : false,
+      redact: ['req.headers.authorization'],
+    },
+  }),
+  TypeOrmModule.forRoot(ormconfig),
+  SeedsModule,
+  AuthModule,
+  UsersModule,
+  AppsModule,
+  FoldersModule,
+  FolderAppsModule,
+  DataQueriesModule,
+  DataSourcesModule,
+  OrganizationsModule,
+  CaslModule,
+  MetaModule,
+];
+
+if (process.env.SERVE_CLIENT !== 'false')
+  imports.unshift(
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../', 'frontend/build'),
     }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env']
-    }),
-    TypeOrmModule.forRoot(ormconfig),
-    SeedsModule,
-    AuthModule,
-    UsersModule,
-    AppsModule,
-    FoldersModule,
-    FolderAppsModule,
-    DataQueriesModule,
-    DataSourcesModule,
-    OrganizationsModule,
-    CaslModule,
-    MetaModule
-  ],
+  );
+
+@Module({
+  imports,
   controllers: [AppController],
   providers: [AppService, EmailService, SeedsService],
 })

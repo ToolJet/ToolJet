@@ -9,6 +9,7 @@ import { EventSelector } from '../EventSelector';
 import { Color } from '../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid'; 
+import { EventManager } from '../EventManager';
 
 class Table extends React.Component {
   constructor(props) {
@@ -103,7 +104,9 @@ class Table extends React.Component {
                 { name: 'Tags', value: 'tags' },
                 { name: 'Dropdown', value: 'dropdown' },
                 { name: 'Radio', value: 'radio' },
-                { name: 'Multiselect', value: 'multiselect' }
+                { name: 'Multiselect', value: 'multiselect' },
+                { name: 'Toggle switch', value: 'toggle' },
+                { name: 'Date Picker', value: 'datepicker' }
               ]}
               value={column.columnType}
               search={true}
@@ -171,6 +174,39 @@ class Table extends React.Component {
             </div>
           )}
 
+          {column.columnType === 'datepicker' && (
+            <div>
+              <label className="form-label">Date Format</label>
+              <div className="field mb-2">
+                <input
+                  type="text"
+                  className="form-control text-field"
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    this.onColumnItemChange(index, 'dateFormat', e.target.value);
+                  }}
+                  defaultValue={column.dateFormat}
+                  placeholder={'DD-MM-YYYY'}
+                />
+              </div>
+              <div  className="field mb-2">
+                <label className="form-check form-switch my-2">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    onClick={() => {
+                      this.onColumnItemChange(index, 'isTimeChecked', !column.isTimeChecked)
+                    }}
+                    checked={column.isTimeChecked}
+                  />
+                  <span className="form-check-label">show time</span>
+                </label>
+              </div>
+            
+            </div>
+           
+          )}
+
           <label className="form-check form-switch my-2">
             <input
               className="form-check-input"
@@ -229,6 +265,7 @@ class Table extends React.Component {
             eventOptionUpdated={this.actionButtonEventOptionUpdated}
             currentState={this.state.currentState}
             extraData={{ actionButton: action, index: index }} // This data is returned in the callbacks
+            apps={this.props.apps}
           />
           <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
             Remove
@@ -339,6 +376,10 @@ class Table extends React.Component {
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
 
+    if (!component.component.definition.properties.displaySearchBox)
+      paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
+    const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
+
     return (
       <div className="properties-container p-2 " key={this.props.component.id}>
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', currentState, components)}
@@ -404,15 +445,19 @@ class Table extends React.Component {
           <hr></hr>
 
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
-          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
+          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'displaySearchBox', 'properties', currentState)}
+          {displaySearchBox && renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
 
           <div className="hr-text">Events</div>
 
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onRowClicked', componentMeta.events.onRowClicked, currentState, components)}
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onPageChanged', componentMeta.events.onPageChanged, currentState, components)}
-          {renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, 'onSearch', componentMeta.events.onSearch, currentState, components)}
-
-          {renderQuerySelector(component, dataQueries, eventOptionUpdated, 'onBulkUpdate', componentMeta.events.onBulkUpdate)}
+          <EventManager
+            component={component}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            dataQueries={dataQueries}
+            components={components}
+            eventsChanged={this.props.eventsChanged}
+          />
 
           <div className="hr-text">Style</div>
         </div>

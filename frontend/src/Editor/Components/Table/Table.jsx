@@ -18,6 +18,8 @@ import { Pagination } from './Pagination';
 import { CustomSelect } from './CustomSelect';
 import { Tags } from './Tags';
 import { Radio } from './Radio';
+import { Toggle } from './Toggle'
+import { Datepicker } from './Datepicker';
 
 var _ = require('lodash');
 
@@ -42,6 +44,9 @@ export function Table({
 
   const serverSideSearchProperty = component.definition.properties.serverSideSearch;
   const serverSideSearch = serverSideSearchProperty ? serverSideSearchProperty.value : false;
+
+  const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
+  const displaySearchBox = displaySearchBoxProperty ? displaySearchBoxProperty.value : true;
 
   const [loadingState, setLoadingState] = useState(false);
 
@@ -226,7 +231,7 @@ export function Table({
   const changeSet = componentState ? componentState.changeSet : {};
 
   const columnData = component.definition.properties.columns.value.map((column) => {
-    const columnSize = columnSizes[column.key] || columnSizes[column.name];
+    const columnSize = columnSizes[column.id] || columnSizes[column.name];
     const columnType = column.columnType;
 
     const columnOptions = {};
@@ -239,6 +244,10 @@ export function Table({
           return { name: label, value: values[index] };
         });
       }
+    }
+    if (columnType === 'datepicker') {
+      column.isTimeChecked =  column.isTimeChecked ? column.isTimeChecked : false
+      column.dateFormat =  column.dateFormat ? column.dateFormat : 'DD/MM/YYYY'
     }
 
     const width = columnSize || defaultColumn.width;
@@ -361,6 +370,32 @@ export function Table({
                 options={columnOptions.selectOptions}
                 value={cellValue}
                 readOnly={!column.isEditable}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+                />
+            </div>
+          );
+        } if (columnType === 'toggle') {
+          return (
+            <div>
+              <Toggle
+                value={cellValue}
+                readOnly={!column.isEditable}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+              />
+            </div>
+          );
+        } if (columnType === 'datepicker') {
+          return (
+            <div>
+              <Datepicker
+                dateFormat={column.dateFormat}
+                isTimeChecked={column.isTimeChecked}
+                value={cellValue}
+                readOnly={column.isEditable}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
@@ -518,34 +553,37 @@ export function Table({
       style={{ width: `${width}px`, height: `${height}px` }}
       onClick={() => onComponentClick(id, component)}
     >
-      <div className="card-body border-bottom py-3 jet-data-table-header">
-        <div className="d-flex">
-          {!serverSidePagination &&
-            <div className="text-muted">
-              Show
-              <div className="mx-2 d-inline-block">
-                <select
-                  value={pageSize}
-                  className="form-control form-control-sm"
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                  }}
-                >
-                  {[10, 20, 30, 40, 50].map((itemsCount) => (
-                    <option key={itemsCount} value={itemsCount}>
-                      {itemsCount}
-                    </option>
-                  ))}
-                </select>
+      {/* Show top bar unless search box is disabled and server pagination is enabled */}
+      {(!(!displaySearchBox && serverSidePagination) &&
+        <div className="card-body border-bottom py-3 jet-data-table-header">
+          <div className="d-flex">
+            {!serverSidePagination &&
+              <div className="text-muted">
+                Show
+                <div className="mx-2 d-inline-block">
+                  <select
+                    value={pageSize}
+                    className="form-control form-control-sm"
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                    }}
+                  >
+                    {[10, 20, 30, 40, 50].map((itemsCount) => (
+                      <option key={itemsCount} value={itemsCount}>
+                        {itemsCount}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                entries
               </div>
-              entries
-            </div>
-          }
-          <div className="ms-auto text-muted">
-            <GlobalFilter />
+            }
+            {displaySearchBox && <div className="ms-auto text-muted">
+              <GlobalFilter />
+            </div>}
           </div>
         </div>
-      </div>
+      )}
       <div className="table-responsive jet-data-table">
         <table {...getTableProps()} className="table table-vcenter table-nowrap table-bordered" style={computedStyles}>
           <thead>
@@ -591,7 +629,8 @@ export function Table({
 
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
-                          if (_.get(componentState.changeSet[cell.row.index], cell.column.id, undefined)) {
+
+                          if (_.get(componentState.changeSet[cell.row.index], cell.column.Header, undefined) !== undefined) {
                             console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
                           }
@@ -681,7 +720,7 @@ export function Table({
                 <div className="col">
                   <SelectSearch
                     options={columnData.map((column) => {
-                      return { name: column.Header, value: column.accessor };
+                      return { name: column.Header, value: column.id };
                     })}
                     value={filter.id}
                     search={true}
