@@ -327,13 +327,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         rawData: []
       }
     },
-    errors: {
-      ..._ref.state.currentState.errors,
-      [queryName]: {
-        ..._ref.state.currentState.queries[queryName],
-        errors: [],
-      }
-    }
+    errors: {}
   };
 
   let _self = _ref;
