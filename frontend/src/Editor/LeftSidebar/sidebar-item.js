@@ -25,7 +25,7 @@ export const LeftSidebarItem = ({ tip = '', className, icon, text, onClick, badg
 function NotificationBadge({count}) {
   return (
     <>
-      {count > 0 && <span class="badge badge-pill bg-red debugger-badge p-1">{count}</span>}
+      {count > 0 && <span class="badge bg-red debugger-badge p-1">{count}</span>}
     </>
   )
 }

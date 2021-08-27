@@ -2,13 +2,13 @@ import React from 'react';
 import usePopover from '../../_hooks/use-popover';
 import { LeftSidebarItem } from './sidebar-item';
 import ReactJson from 'react-json-view';
-import _ from 'lodash'
-
+import _ from 'lodash';
 
 export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
     const [open, trigger, content] = usePopover(false)
     const [currrentTab, setCurrentTab] = React.useState(1)
     const [errorLogs, setErrorLogs] = React.useState([])
+    const [unReadErrorCount, setUnReadErrorCount] = React.useState({read: 0, unread: 0})
 
     const switchCurrentTab = (tab) => {
         setCurrentTab(tab)
@@ -44,30 +44,52 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
                     message: value.data.message,
                     description: value.data.description,
                     options: {name: variableNames.options, data: value.options},
-                    response: {name: variableNames.response, data: value.data.data},
+                    response: {name: variableNames.response, data: value.data.data}
                 })
             })
 
-            const newData = [...copy, ...errorData]
+            const newData = [...copy, ...errorData,]
             return newData
 
         })
     },[errors])
 
+    React.useEffect(() => {
+        const unReadErrors = errorLogs.length - unReadErrorCount.read
+
+        if(open ===  false && errorLogs.length !== unReadErrorCount.read) {
+            setUnReadErrorCount((prev) => {
+                let copy = JSON.parse(JSON.stringify(prev))
+                copy.unread = unReadErrors
+                return copy
+            })
+        }
+        
+        if(open === true) {
+            setUnReadErrorCount((prev) => {
+                let copy = JSON.parse(JSON.stringify(prev))
+                copy.read = errorLogs.length
+                copy.unread = 0
+                return copy
+            })
+        }
+    },[errorLogs.length, open])
+
     return (
     <>
-      <LeftSidebarItem tip='Debugger' {...trigger} icon='debugger' className='left-sidebar-item' />
+      <LeftSidebarItem tip='Debugger' {...trigger} icon='debugger' className='left-sidebar-item' badge={true} count={unReadErrorCount.unread} />
       <div {...content} className={`card popover debugger-popover ${open ? 'show' : 'hide'}`} style={{minWidth:'180px', minHeight:'108px', maxWidth:'480px'}} >
           <div className="row-header">
               <div className="nav-header">
-                  <ul className="nav nav-tabs" data-bs-toggle="tabs">
+                  {/* clear button */}
+                  <ul className="nav nav-tabs d-flex justify-content-between" data-bs-toggle="tabs"> 
                       <li className="nav-item">
                           <a onClick={() => switchCurrentTab(1)} className={currrentTab === 1 ? "nav-link active" : "nav-link"}>
                               Errors
                           </a>
                       </li>
-                  </ul>
-              </div>
+                  </ul> 
+              </div> 
           </div>
         
         
@@ -143,4 +165,4 @@ function ErrorLogsComponent ({ errorProps, idx, darkMode }) {
 
 
 
-LeftSidebarDebugger.ErrorLogs = ErrorLogsComponent; 
+LeftSidebarDebugger.ErrorLogs = ErrorLogsComponent;
