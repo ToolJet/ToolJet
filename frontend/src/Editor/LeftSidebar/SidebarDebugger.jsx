@@ -81,7 +81,7 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
       <div {...content} className={`card popover debugger-popover ${open ? 'show' : 'hide'}`} style={{minWidth:'180px', minHeight:'108px', maxWidth:'480px'}} >
           <div className="row-header">
               <div className="nav-header">
-                  <ul className="nav nav-tabs d-flex justify-content-between" data-bs-toggle="tabs"> 
+                  <ul className="nav nav-tabs" data-bs-toggle="tabs"> 
                       <li className="nav-item">
                           <a onClick={() => switchCurrentTab(1)} className={currrentTab === 1 ? "nav-link active" : "nav-link"}>
                               Errors
