@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
-import fs = require('fs');
+import * as fs from 'fs';
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8');
 globalThis.CACHED_CONNECTIONS = {};
