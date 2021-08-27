@@ -8,18 +8,16 @@ export class TurnOnSSLForEveryPostgresDataSource1630003364070 implements Migrati
     const queryBuilder = queryRunner.connection.createQueryBuilder();
     const dataSourceRepository = entityManager.getRepository(DataSource);
 
-    const dataSources = await dataSourceRepository.find();
+    const dataSources = await dataSourceRepository.find({ where: { kind: 'postgresql' } });
 
     for(const dataSource of dataSources) {
-      if(dataSource.kind === 'postgresql') {
-        const options = dataSource.options;
-        if(options) {
-          options['ssl_enabled'] = { value: true, encrypted: false };
-          await queryBuilder.update(DataSource)
-          .set({ options })
-          .where('id = :id', { id: dataSource.id })
-          .execute();
-        }
+      const options = dataSource.options;
+      if(options) {
+        options['ssl_enabled'] = { value: true, encrypted: false };
+        await queryBuilder.update(DataSource)
+        .set({ options })
+        .where('id = :id', { id: dataSource.id })
+        .execute();
       }
     }
   }
