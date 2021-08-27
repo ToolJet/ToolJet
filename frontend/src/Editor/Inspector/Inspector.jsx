@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
-import { renderElement, renderEvent } from './Utils';
+import { renderElement } from './Utils';
 import { toast } from 'react-toastify';
 import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
 import { EventManager } from './EventManager';
@@ -19,7 +19,7 @@ export const Inspector = ({
   darkMode,
   switchSidebarTab
 }) => {
-  
+
   const selectedComponent = { id: selectedComponentId, component: allComponents[selectedComponentId].component, layouts: allComponents[selectedComponentId].layouts}
   const [component, setComponent] = useState(selectedComponent);
 

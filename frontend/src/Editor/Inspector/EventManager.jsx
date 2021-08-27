@@ -4,6 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
+import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 
 export const EventManager = ({
   component,
@@ -13,7 +14,8 @@ export const EventManager = ({
   dataQueries,
   eventsChanged,
   apps,
-  excludeEvents
+  excludeEvents,
+  popOverCallback
 }) => {
 
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
@@ -45,7 +47,7 @@ export const EventManager = ({
 
   function getAllApps() {
     let appsOptionsList = [];
-    apps.map((item) => {
+    apps.filter(item => item.slug != undefined).map((item) => {
       appsOptionsList.push({
         name: item.name,
         value: item.slug
@@ -85,7 +87,7 @@ export const EventManager = ({
     return (
       <Popover id="popover-basic" style={{ width: '350px', maxWidth: '350px' }} className="shadow">
         <Popover.Content>
-        <div className="row">
+          <div className="row">
             <div className="col-3 p-2">
               <span>
                 Event
@@ -148,27 +150,37 @@ export const EventManager = ({
                 </div>
               )}
 
-              {event.actionId === 'go-to-app' && (
+              {event.actionId === 'go-to-app' &&
+                <GotoApp
+                  event={event}
+                  handlerChanged={handlerChanged}
+                  eventIndex={index}
+                  getAllApps={getAllApps}
+                  currentState={currentState}
+                />
+              }
+
+              {event.actionId === 'show-modal' && (
                 <div className="row">
                   <div className="col-3 p-2">
-                    App
+                  Modal
                   </div>
                   <div className="col-9">
                     <SelectSearch
-                        options={getAllApps()}
-                        search={true}
-                        value={event.slug}
-                        onChange={(value) => {
-                          handlerChanged(index, 'slug', value);
-                        }}
-                        filterOptions={fuzzySearch}
-                        placeholder="Select.."
-                      />
+                      options={getModalOptions()}
+                      value={event.model}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'modal', value);
+                      }}
+                      filterOptions={fuzzySearch}
+                      placeholder="Select.."
+                    />
                   </div>
                 </div>
               )}
 
-              {event.actionId === 'show-modal' && (
+              {event.actionId === 'close-modal' && (
                 <div className="row">
                   <div className="col-3 p-2">
                   Modal
@@ -240,7 +252,7 @@ export const EventManager = ({
         <OverlayTrigger 
           trigger="click" 
           placement="left" 
-          rootClose 
+          rootClose={true}
           overlay={eventPopover(event, index)}
           onHide={(e) => setFocusedEventIndex(null) }
           onToggle={ (showing) => { 
@@ -249,6 +261,8 @@ export const EventManager = ({
             } else {
               setFocusedEventIndex(null);
             }
+            if (typeof popOverCallback === 'function')
+              popOverCallback(showing);
           }}
         >
           <div className={rowClassName} role="button">

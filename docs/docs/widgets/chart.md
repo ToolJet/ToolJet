@@ -7,6 +7,7 @@ sidebar_position: 2
 Chart widget takes the chart type, data and styles to draw charts using Plotly.js.
 
 Support chart types:
+
 - Line charts
 - Bar charts
 - Pie charts
@@ -21,9 +22,9 @@ Example:
 
 ```
 [
-  { "x": 100, "y": "Jan"},
-  { "x": 80, "y": "Feb"},
-  { "x": 40, "y": "Mar"}
+  { "x": "Jan", "y": 100},
+  { "x": "Feb", "y": 80},
+  { "x": "Mar", "y": 40}
 ]
 ```
 
@@ -40,15 +41,14 @@ Example:
 
 ```
 [
-  { "x": 100, "y": "Jan"},
-  { "x": 80, "y": "Feb"},
-  { "x": 40, "y": "Mar"}
+  { "x": "Jan", "y": 100},
+  { "x": "Feb", "y": 80},
+  { "x": "Mar", "y": 40}
 ]
 ```
 
 The chart will look like this:
 <img class="screenshot-full" src="/img/widgets/chart/bar.png" alt="ToolJet - line charts" height="420"/>
-
 
 ## Pie charts
 

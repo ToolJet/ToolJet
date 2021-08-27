@@ -19,6 +19,7 @@ import { CustomSelect } from './CustomSelect';
 import { Tags } from './Tags';
 import { Radio } from './Radio';
 import { Toggle } from './Toggle'
+import { Datepicker } from './Datepicker';
 
 var _ = require('lodash');
 
@@ -244,6 +245,10 @@ export function Table({
         });
       }
     }
+    if (columnType === 'datepicker') {
+      column.isTimeChecked =  column.isTimeChecked ? column.isTimeChecked : false
+      column.dateFormat =  column.dateFormat ? column.dateFormat : 'DD/MM/YYYY'
+    }
 
     const width = columnSize || defaultColumn.width;
 
@@ -377,6 +382,20 @@ export function Table({
               <Toggle
                 value={cellValue}
                 readOnly={!column.isEditable}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+              />
+            </div>
+          );
+        } if (columnType === 'datepicker') {
+          return (
+            <div>
+              <Datepicker
+                dateFormat={column.dateFormat}
+                isTimeChecked={column.isTimeChecked}
+                value={cellValue}
+                readOnly={column.isEditable}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}

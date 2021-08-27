@@ -6,6 +6,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { history } from '@/_helpers';
+import { serializeNestedObjectToQueryParams } from './utils';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -94,6 +95,29 @@ async function copyToClipboard(text) {
   }
 };
 
+function showModal(_ref, modalId, show) {
+  const modalMeta = _ref.state.appDefinition.components[modalId];
+
+  const newState = {
+    currentState: {
+      ..._ref.state.currentState,
+      components: {
+        ..._ref.state.currentState.components,
+        [modalMeta.component.name]: {
+          ..._ref.state.currentState.components[modalMeta.component.name],
+          show: show
+        }
+      }
+    }
+  }
+
+  _ref.setState(newState)
+
+  return new Promise(function (resolve, reject) {
+    resolve();
+  })
+}
+
 function executeAction(_ref, event, mode) {
   if (event) {
     if (event.actionId === 'show-alert') {
@@ -114,8 +138,21 @@ function executeAction(_ref, event, mode) {
 
     if (event.actionId === 'go-to-app') {
       const slug = resolveReferences(event.slug, _ref.state.currentState);
+      const queryParams = event.queryParams?.reduce((result, queryParam) => ({
+        ...result,
+        ...{
+          [resolveReferences(queryParam[0], _ref.state.currentState)]: resolveReferences(queryParam[1], _ref.state.currentState)
+        }
+      }), {})
 
-      const url = `/applications/${slug}`;
+      let url =`/applications/${slug}`;
+
+      if (queryParams) {
+        const queryPart = serializeNestedObjectToQueryParams(queryParams)
+
+        if (queryPart.length > 0)
+          url = url + `?${queryPart}`
+      }
 
       if(mode === 'view') {
         _ref.props.history.push(url);
@@ -129,34 +166,11 @@ function executeAction(_ref, event, mode) {
       })
     }
 
-    if (event.actionId === 'run-query') {
-      const { queryId, queryName } = event;
-      return runQuery(_ref, queryId, queryName);
-    }
+    if (event.actionId === 'show-modal')
+      return showModal(_ref, event.modal, true)
 
-    if (event.actionId === 'show-modal') {
-      const modalId = event.modal;
-      const modalMeta = _ref.state.appDefinition.components[modalId];
-
-      const newState = {
-        currentState: { 
-          ..._ref.state.currentState,
-          components: {
-            ..._ref.state.currentState.components,
-            [modalMeta.component.name]: {
-              ..._ref.state.currentState.components[modalMeta.component.name],
-              show: true
-            }
-          }
-        }
-      }
-
-      _ref.setState(newState)
-
-      return new Promise(function (resolve, reject) {
-        resolve();
-      })
-    }
+    if (event.actionId === 'close-modal')
+      return showModal(_ref, event.modal, false)
 
     if (event.actionId === 'copy-to-clipboard') {
       const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
@@ -193,7 +207,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
 
   if (eventName === 'onTableActionButtonClicked') {
     const { component, data, action } = options;
-    const event = action.onClick;
 
     _self.setState({
       currentState: {
@@ -207,18 +220,20 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         }
       }
     }, () => {
-      if(event) {
-        if (event.actionId) {
-          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-          executeAction(_self, { ...event, ...event.options } , mode);
-        }
+      if(action) {
+        action.events?.forEach((event => {
+          if (event.actionId) {
+            // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+            executeAction(_self, { ...event, ...event.options } , mode);
+          }
+        }) )
       } else { 
         console.log('No action is associated with this event');
       }
     });
   }
 
-  if (['onDetect', 'onCheck', 'onUnCheck', 'onBoundsChange', 'onCreateMarker', 'onMarkerClick', 'onPageChanged', 'onSearch', 'onSelectionChange'].includes(eventName)) {
+  if (['onDetect', 'onCheck', 'onUnCheck', 'onBoundsChange', 'onCreateMarker', 'onMarkerClick', 'onPageChanged', 'onSearch', 'onChange', 'onSelectionChange'].includes(eventName)) {
     const { component } = options;
     executeActionsForEventId(_ref, eventName, component, mode);
   }

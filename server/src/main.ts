@@ -1,19 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8');
 globalThis.CACHED_CONNECTIONS = {};
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn'],
-  });
+  const app = await NestFactory.create(AppModule, { logger: false });
 
   await app.setGlobalPrefix('api');
   await app.enableCors();
 
+  app.useLogger(app.get(Logger));
   app.use(
     helmet.contentSecurityPolicy({
       useDefaults: true,
@@ -25,7 +25,7 @@ async function bootstrap() {
   );
   const port = parseInt(process.env.PORT) || 3000;
 
-  await app.listen(port, '0.0.0.0', function() {
+  await app.listen(port, '0.0.0.0', function () {
     console.log('Listening on port %d', port);
   });
 }

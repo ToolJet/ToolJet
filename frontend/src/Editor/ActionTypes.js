@@ -24,12 +24,20 @@ export const ActionTypes = [
     name: 'Go to app',
     id: 'go-to-app',
     options: [
-      { name: 'app', type: 'url', default: 'https://app.tooljet.io/applications/app-id' }
+      { name: 'app', type: 'text', default: '' },
+      { name: 'queryParams', type: 'code', default: '[]' }
     ]
   },
   {
     name: 'Show Modal',
     id: 'show-modal',
+    options: [
+      { name: 'modal', type: 'text', default: '' }
+    ]
+  },
+  {
+    name: 'Close Modal',
+    id: 'close-modal',
     options: [
       { name: 'modal', type: 'text', default: '' }
     ]

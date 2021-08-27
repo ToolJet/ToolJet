@@ -25,7 +25,7 @@ export default class PostgresqlQueryService implements QueryService {
       query = queryOptions.query;
     }
 
-    result = await pool.query(queryOptions.query);
+    result = await pool.query(query);
 
     return {
       status: 'ok',
@@ -78,19 +78,19 @@ export default class PostgresqlQueryService implements QueryService {
     const primaryKey = queryOptions['primary_key_column'];
     const records = queryOptions['records'];
 
-    for( const record of records ) {
+    for(const record of records ) {
       queryText = `${queryText} UPDATE ${tableName} SET`;
 
       for(const key of Object.keys(record)) {
         if(key !== primaryKey) {
-          queryText = ` ${queryText} ${key} = '${record[key]}', `;
+          queryText = ` ${queryText} ${key} = '${record[key]}',`;
         }
       }
 
+      queryText = queryText.slice(0, -1);
       queryText = `${queryText} WHERE ${primaryKey} = ${record[primaryKey]};`;
     }
 
     return queryText.trim();
-
   }
 }

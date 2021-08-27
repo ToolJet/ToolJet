@@ -25,6 +25,17 @@ module.exports = {
         use: ['file-loader']
       },
       {
+        test: /\.svg$/,
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              limit: 10000,
+            },
+          },
+        ],
+      },
+      {
         test: /\.jsx?$/,
         loader: 'babel-loader'
       },
