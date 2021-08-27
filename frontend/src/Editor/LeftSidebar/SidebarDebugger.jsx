@@ -2,7 +2,8 @@ import React from 'react';
 import usePopover from '../../_hooks/use-popover';
 import { LeftSidebarItem } from './sidebar-item';
 import ReactJson from 'react-json-view';
-import _ from 'lodash'
+import _ from 'lodash';
+import moment from 'moment';
 
 
 export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
@@ -45,6 +46,7 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
                     description: value.data.description,
                     options: {name: variableNames.options, data: value.options},
                     response: {name: variableNames.response, data: value.data.data},
+                    timestamp: moment()
                 })
             })
 
@@ -104,6 +106,8 @@ function ErrorLogsComponent ({ errorProps, idx, darkMode }) {
                 <img className={`svg-icon ${open ? 'iopen': ''}`} src={`/assets/images/icons/caret-right.svg`} width="16" height="16"/>
                 [{_.capitalize(errorProps.type)} {errorProps.key}] &nbsp;
                 <span className="text-red">{`Query Failed: ${errorProps.description}`} {errorProps.message}.</span>
+                <br />
+                <small className="text-muted px-1">{moment(errorProps.timestamp).fromNow()}</small>
             </p>
             <div className={` queryData ${open ? 'open' : 'close'} py-0`} >
                 <span>
