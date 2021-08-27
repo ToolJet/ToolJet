@@ -15,11 +15,11 @@ Make sure you have the latest version of `docker` and `docker-compose` installed
 
 We recommend:
 ```bash
-> docker --version
-  Docker version 19.03.12, build 48a66213fe
+docker --version
+Docker version 19.03.12, build 48a66213fe
   
-> docker-compose --version
-  docker-compose version 1.26.2, build eefe0d31
+docker-compose --version
+docker-compose version 1.26.2, build eefe0d31
 ```
 
 ## Setting up
