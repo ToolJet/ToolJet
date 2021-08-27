@@ -48,7 +48,7 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
                 })
             })
 
-            const newData = [...copy, ...errorData]
+            const newData = [...errorData, ...copy]
             return newData
 
         })
