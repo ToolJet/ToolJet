@@ -14,6 +14,14 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
         setCurrentTab(tab)
     }
 
+    const clearErrorLogs = () => {
+        setUnReadErrorCount(() => {
+            return { read: 0, unread: 0 }
+        })
+
+        setErrorLogs(() => [])
+    }
+
     React.useEffect(() => {
         
         setErrorLogs(prev => {
@@ -81,12 +89,19 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
       <div {...content} className={`card popover debugger-popover ${open ? 'show' : 'hide'}`} style={{minWidth:'180px', minHeight:'108px', maxWidth:'480px'}} >
           <div className="row-header">
               <div className="nav-header">
-                  <ul className="nav nav-tabs" data-bs-toggle="tabs"> 
+                  <ul className="nav nav-tabs d-flex justify-content-between" data-bs-toggle="tabs"> 
                       <li className="nav-item">
                           <a onClick={() => switchCurrentTab(1)} className={currrentTab === 1 ? "nav-link active" : "nav-link"}>
                               Errors
                           </a>
                       </li>
+                      {errorLogs.length > 0 && (
+                        <li>
+                            <button onClick={clearErrorLogs} type="button" className="btn btn-light btn-sm m-1 py-1" aria-label="clear button">
+                                <span className="text-muted">clear</span>
+                            </button>
+                        </li> 
+                       )}
                   </ul> 
               </div> 
           </div>
