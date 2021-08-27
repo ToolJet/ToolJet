@@ -5,6 +5,7 @@
         ]
     },
     "devDependencies": {
+        "@4tw/cypress-drag-drop": "^1.8.0",
         "@babel/core": "^7.4.3",
         "@babel/plugin-proposal-class-properties": "^7.10.4",
         "@babel/preset-env": "^7.4.3",
