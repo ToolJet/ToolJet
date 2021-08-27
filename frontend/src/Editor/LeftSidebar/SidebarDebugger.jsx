@@ -147,7 +147,7 @@ function ErrorLogsComponent ({ errorProps, idx, darkMode }) {
                         src={errorProps.options.data}
                         theme={darkMode ? 'shapeshifter' : 'rjv-default'}
                         name={errorProps.options.name}
-                        style={{ fontSize: '0.7rem', paddingLeft:'0.35rem' }}
+                        style={{ fontSize: '0.7rem', paddingLeft:'0.17rem' }}
                         enableClipboard={false}
                         displayDataTypes={false}
                         collapsed={true}
@@ -161,7 +161,7 @@ function ErrorLogsComponent ({ errorProps, idx, darkMode }) {
                         src={errorProps.response.data}
                         theme={darkMode ? 'shapeshifter' : 'rjv-default'}
                         name={errorProps.response.name}
-                        style={{ fontSize: '0.7rem', paddingLeft:'0.35rem' }}
+                        style={{ fontSize: '0.7rem', paddingLeft:'0.17rem' }}
                         enableClipboard={false}
                         displayDataTypes={false}
                         collapsed={true}

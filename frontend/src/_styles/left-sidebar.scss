@@ -51,6 +51,21 @@
       transition: max-height 0.25s cubic-bezier(0.5, 0, 0.1, 1);
       overflow: hidden;
     }
+
+    .react-json-view {
+      .object-key-val {
+        margin-top: 0;
+      }
+      .icon-container + span  {
+        margin-top: -0.14rem;
+        + span {
+          transform: translateY(-0.2rem);
+        }
+      }        
+      .brace-row > span {
+        transform: translateY(-0.2rem)
+      }
+    }
   }
   .iopen {
     transform: rotate(90deg);
