@@ -33,6 +33,26 @@
   .datasources-popover {
     top: 100px;
   }
+  .debugger-popover {
+    top: 180px;
+    cursor: pointer;
+  }
+  .queryData {
+    &.close {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s cubic-bezier(0.5, 0, 0.1, 1);
+    }
+    &.open {
+      transition: max-height 0.25s cubic-bezier(0.5, 0, 0.1, 1);
+      overflow: hidden;
+    }
+  }
+
+  .iopen {
+    transform: rotate(90deg);
+    transition: 0.12s;
+  }
   .zoom-popover {
     top: 500px;
   }
