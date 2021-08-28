@@ -31,6 +31,13 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      tableType: { type: 'select', displayName: 'Table type', options: [
+        { name: 'Bordered', value: '' },
+        { name: 'Borderless', value: 'table-borderless' },
+        { name: 'Classic', value: 'table-classic' },
+        { name: 'Striped', value: 'table-striped' },
+        { name: 'Striped & bordered', value: 'table-striped table-bordered' }
+      ] },
     },
     exposedVariables: {
       selectedRow: {},
@@ -64,7 +71,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#00' },
       },
     },
   },
