@@ -503,6 +503,7 @@ class Table extends React.Component {
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'tableType', 'styles', currentState)}
       </div>
     );
   }
