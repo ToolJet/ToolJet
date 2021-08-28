@@ -382,6 +382,7 @@ export function Table({
               <Toggle
                 value={cellValue}
                 readOnly={!column.isEditable}
+                activeColor={column.activeColor}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
