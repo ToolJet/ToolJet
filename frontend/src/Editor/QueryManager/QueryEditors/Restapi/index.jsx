@@ -2,7 +2,7 @@ import 'codemirror/theme/duotone-light.css';
 
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
-import Tabs from './tabs';
+import Tabs from './Tabs';
 
 import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';

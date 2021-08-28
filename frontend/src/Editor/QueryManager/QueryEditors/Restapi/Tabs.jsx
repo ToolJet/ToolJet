@@ -2,9 +2,9 @@ import React from 'react';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
 
-import Headers from './tab-headers';
-import Params from './tab-params';
-import Body from './tab-body';
+import Headers from './TabHeaders';
+import Params from './TabParams';
+import Body from './TabBody';
 
 function ControlledTabs({ options, currentState, theme, onChange, removeKeyValuePair }) {
   const [key, setKey] = React.useState('headers');
