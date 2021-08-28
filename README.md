@@ -11,7 +11,7 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 [![GitHub license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
 
  <a href="https://github.com/Pravalli21/ToolJet">
-    <img alt=" views" title=" views" src="https://custom-icon-badges.herokuapp.com/views/github.com/Pravalli21/ToolJet?color=%23E1AD0E&logo=video&logoColor=white&style=for-the-badge&labelColor=C79600"/></a> 
+    <img alt=" views" title=" views" src="https://custom-icon-badges.herokuapp.com/github.com/views/Pravalli21/ToolJet?color=%23E1AD0E&logo=video&logoColor=white&style=for-the-badge&labelColor=C79600"/></a> 
 
 
 <p align="center">
