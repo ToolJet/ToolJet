@@ -23,9 +23,17 @@ export const LeftSidebarItem = ({ tip = '', className, icon, text, onClick, badg
 }
 
 function NotificationBadge({count}) {
+  const fontSize = count > 999 ? '7.5px' : '8.5px'
   return (
     <>
-      {count > 0 && <span class="badge bg-red rounded-circle debugger-badge p-0">{count}</span>}
+      {count > 0 && (
+        <span 
+        class="badge bg-red rounded-circle debugger-badge p-0"
+        style={{fontSize: fontSize}}
+        >
+          {count > 999 ? `999+` : count}
+        </span>
+      )}
     </>
   )
 }
