@@ -9,6 +9,8 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 [![GitHub issues](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
 [![GitHub stars](https://img.shields.io/github/stars/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
 [![GitHub license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
+[![GitHub views](https://img.shields.io/github/views/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
+
 
 
 <p align="center">
