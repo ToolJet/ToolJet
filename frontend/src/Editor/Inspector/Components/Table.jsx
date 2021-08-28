@@ -97,7 +97,7 @@ class Table extends React.Component {
 
   columnPopover = (column, index) => {
     return (
-      <Popover id="popover-basic-2">
+      <Popover id="popover-basic-2" className="shadow">
         <Popover.Content>
           <div className="field mb-2">
             <label className="form-label">Column type</label>
@@ -146,9 +146,24 @@ class Table extends React.Component {
                 e.stopPropagation();
                 this.onColumnItemChange(index, 'key', e.target.value);
               }}
+              placeholder={column.name}
               defaultValue={column.key}
             />
           </div>
+
+          {true && 
+            <div>
+              <div className="field mb-2">
+                <Color
+                  param={{ name: 'Active color' }}
+                  paramType="properties"
+                  componentMeta={{ properties: { color: { displayName: 'Active color'} } }}
+                  definition={{ value: column.activeColor || '#3c92dc' }}
+                  onChange={(name, value, color) => this.onColumnItemChange(index, 'activeColor', color)}
+                />
+              </div>
+            </div>
+          }
 
           {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges' || column.columnType === 'radio') && (
             <div>
