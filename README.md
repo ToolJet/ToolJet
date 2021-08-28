@@ -71,7 +71,7 @@ ToolJet © 2021, ToolJet Inc - Released under the GNU General Public License v3.
 
 <div align="center">
  
-### Show ❤️ by  <img src="https://media.giphy.com/media/ObNTw8Uzwy6KQ/giphy.gif" width="26px"> this [repositories](https://github.com/Pravalli21?tab=repositories)!
+### Show ❤️ by  <img src="https://media.giphy.com/media/ObNTw8Uzwy6KQ/giphy.gif" width="26px"> this [repositorie](https://github.com/Pravalli21/ToolJet/blob/develop/README.md)!
 <p align="Center" ><img src="https://camo.githubusercontent.com/3b7c592ede97b6138ffd4b1cc1541c2f3b11fd39/687474703a2f2f33312e6d656469612e74756d626c722e636f6d2f31376665613932306666333665663466356238373764353231366137616164392f74756d626c725f6d6f39786a65387a5a34317163626975666f315f313238302e676966" height="230px" width ="230px"></p>
 
 </div>
