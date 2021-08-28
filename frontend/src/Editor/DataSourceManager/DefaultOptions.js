@@ -4,7 +4,8 @@ export const defaultOptions = {
     port: { value: 5432 },
     database: { value: '' },
     username: { value: '' },
-    password: { value: '' }
+    password: { value: '' },
+    ssl_enabled: { value: true }
   },
   mysql: {
     host: { value: 'localhost' },
