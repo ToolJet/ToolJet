@@ -162,11 +162,12 @@ export class AppsService {
   }
 
   async fetchVersions(user: any, appId: string): Promise<AppVersion[]> {
-
     return await this.appVersionsRepository.find({
       where: { appId },
+      order: {
+        createdAt: 'DESC',
+      },
     });
-
   }
 
   async createVersion(user: User, app: App, versionName: string): Promise<AppVersion> {

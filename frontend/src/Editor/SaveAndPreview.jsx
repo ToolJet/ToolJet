@@ -48,6 +48,7 @@ class SaveAndPreview extends React.Component {
       this.setState({ showVersionForm: false, creatingVersion: false });
       toast.success('Version Created', { hideProgressBar: true, position: 'top-center' });
       this.fetchVersions();
+      this.props.setAppDefinitionFromVersion(version)
     });
   };
 
@@ -73,7 +74,7 @@ class SaveAndPreview extends React.Component {
 
   render() {
     const {
-      showModal, isLoading, versions, showVersionForm, savingVersionId, deployingVersionId, creatingVersion
+      showModal, isLoading, versions, showVersionForm, savingVersionId, deployingVersionId, creatingVersion, appId
     } = this.state;
 
     return (
@@ -82,11 +83,11 @@ class SaveAndPreview extends React.Component {
           Deploy
         </button>
 
-        <Modal 
-          show={this.state.showModal} 
-          size="md" 
-          backdrop="static" 
-          centered={true} 
+        <Modal
+          show={this.state.showModal}
+          size="md"
+          backdrop="static"
+          centered={true}
           keyboard={true}
           enforceFocus={false}
           animation={false}
@@ -139,7 +140,7 @@ class SaveAndPreview extends React.Component {
                       <tr key={version.id}>
                         <td>
                           <div className="row">
-                            <div className="col">
+                            <div classname="col">
                             {version.name}
                             {version.id === this.props.app.current_version_id && (
                               <small className="mx-2">(current)</small>
@@ -149,10 +150,25 @@ class SaveAndPreview extends React.Component {
                               <button
                                 className="btn btn-sm"
                                 onClick={() => this.saveVersion(version.id)}
-                                disabled={savingVersionId === version.id}
+                                disabled={savingVersionId === version.id || (this.props.editingVersionId && this.props.editingVersionId !== version.id)}
                               >
                                 {savingVersionId === version.id ? 'saving...' : 'save'}
                               </button>
+                              <button
+                                className="btn btn btn-sm mx-2"
+                                onClick={() => this.props.setAppDefinitionFromVersion(version)}
+                                disabled={this.props.editingVersionId == version.id}
+                              >
+                                edit
+                              </button>
+                              <a
+                                className="btn btn btn-sm mx"
+                                href={`/applications/${appId}/versions/${version.id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                preview
+                              </a>
                               <button
                                 className="btn btn-primary btn-sm mx-2"
                                 onClick={() => this.deployVersion(version.id)}
