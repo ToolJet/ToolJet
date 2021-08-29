@@ -450,7 +450,11 @@ export function Table({
 
   const columns = useMemo(
     () => [...columnData, ...actionsCellData],
-    [JSON.stringify(columnData), actionsCellData.length, componentState.changeSet] // Hack: need to fix
+    [JSON.stringify(columnData), 
+      actionsCellData.length, 
+      componentState.changeSet,
+      JSON.stringify(component.definition.properties.columns)
+    ] // Hack: need to fix
   );
 
   const data = useMemo(() => tableData, [tableData.length]);
