@@ -9,6 +9,7 @@ import { Color } from '../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid'; 
 import { EventManager } from '../EventManager';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Table extends React.Component {
   constructor(props) {
@@ -169,28 +170,26 @@ class Table extends React.Component {
             <div>
               <div className="field mb-2">
                 <label className="form-label">Values</label>
-                <input
-                  type="text"
-                  className="form-control text-field"
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    this.onColumnItemChange(index, 'values', e.target.value);
-                  }}
-                  value={column.values}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.values}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode= "javascript"
+                  lineNumbers={false}
                   placeholder={'{{[1, 2, 3]}}'}
+                  onChange={(value) => this.onColumnItemChange(index, 'values', value)}
                 />
               </div>
               <div className="field mb-2">
                 <label className="form-label">Labels</label>
-                <input
-                  type="text"
-                  className="form-control text-field"
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    this.onColumnItemChange(index, 'labels', e.target.value);
-                  }}
-                  value={column.labels}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.labels}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode= "javascript"
+                  lineNumbers={false}
                   placeholder={'{{["one", "two", "three"]}}'}
+                  onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
                 />
               </div>
             </div>
