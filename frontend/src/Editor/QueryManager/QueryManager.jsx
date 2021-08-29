@@ -27,6 +27,7 @@ class QueryManager extends React.Component {
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
+    const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
 
     this.setState(
       {
@@ -60,6 +61,7 @@ class QueryManager extends React.Component {
           this.setState({
             options: {},
             selectedQuery: null,
+            selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource
           });
         }
       }

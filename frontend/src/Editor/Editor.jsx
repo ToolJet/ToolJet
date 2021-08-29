@@ -842,7 +842,11 @@ class Editor extends React.Component {
                             data-tip="Add new query"
                             data-class="py-1 px-2"
                             className="btn btn-sm btn-light text-muted"
-                            onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })}
+                            onClick={() => this.setState({ 
+                              selectedQuery: {}, 
+                              editingQuery: false, 
+                              addingQuery: true
+                            })}
                           >
                             +
                           </span>
