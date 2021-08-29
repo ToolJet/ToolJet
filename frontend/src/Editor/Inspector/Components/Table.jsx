@@ -453,7 +453,7 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <span className="badge bg-red-lt" onClick={() => this.removeColumn(index)}>x</span>
+                        <img onClick={() => this.removeColumn(index)} class="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12"/>
                       </div>
                     </div>
                   </OverlayTrigger>
@@ -466,11 +466,11 @@ class Table extends React.Component {
           <div className="field mb-2 mt-2">
             <div className="row g-2">
               <div className="col">
-                <label className="form-label col pt-1">Actions</label>
+                <label className="form-label col pt-1">Action buttons</label>
               </div>
               <div className="col-auto">
                 <button onClick={this.addNewAction} className="btn btn-sm btn-outline-azure col-auto">
-                  + Action
+                  + Button
                 </button>
               </div>
             </div>
