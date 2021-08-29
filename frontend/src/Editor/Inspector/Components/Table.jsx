@@ -152,7 +152,7 @@ class Table extends React.Component {
             />
           </div>
 
-          {true && 
+          {column.columnType === 'toggle' && 
             <div>
               <div className="field mb-2">
                 <Color
