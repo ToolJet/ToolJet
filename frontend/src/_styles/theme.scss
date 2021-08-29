@@ -2003,3 +2003,7 @@ input:focus-visible {
 .theme-dark .input-group-text, .theme-dark .markdown > table thead th, .theme-dark .table thead th {
   background: #1c252f;
 }
+
+.sketch-picker { 
+  z-index: 1000;
+}
