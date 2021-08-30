@@ -264,7 +264,7 @@ function getQueryVariables(options, state) {
       _.merge(queryVariables, getQueryVariables(element, state))
     })
   } else if(typeof options ==="object") {
-    Object.keys(options).forEach((key) => {
+    Object.keys(options || {}).forEach((key) => {
       _.merge(queryVariables, getQueryVariables(options[key], state))
     })
   }
