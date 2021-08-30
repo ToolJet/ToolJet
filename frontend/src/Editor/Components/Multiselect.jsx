@@ -47,7 +47,7 @@ export const Multiselect = function Multiselect({
   }, [newValue]);
 
   return (
-    <div className="row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={() => onComponentClick(id, component)}>
+    <div className="row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <div className="col-auto">
         <label style={{marginRight: '1rem'}} className="form-label py-2">{label}</label>
       </div>

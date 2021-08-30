@@ -34,7 +34,7 @@ export const Checkbox = function Checkbox({
   }
 
   return (
-    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={() => onComponentClick(id, component)}>
+    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <label className="form-check form-check-inline">
         <input
           className="form-check-input"
