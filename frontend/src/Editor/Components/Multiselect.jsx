@@ -16,6 +16,7 @@ export const Multiselect = function Multiselect({
   const label = component.definition.properties.label.value;
   const values = component.definition.properties.option_values.value;
   const displayValues = component.definition.properties.display_values.value;
+  const widgetVisibility = component.definition.styles.visibility.value;
 
   const parsedValues = JSON.parse(values);
   const parsedDisplayValues = JSON.parse(displayValues);
@@ -35,12 +36,18 @@ export const Multiselect = function Multiselect({
     newValue = resolveReferences(currentValueProperty.value, currentState, '');
   }
 
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
+
   useEffect(() => {
     setCurrentValue(newValue);
   }, [newValue]);
 
   return (
-    <div className="row g-0" style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+    <div className="row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={() => onComponentClick(id, component)}>
       <div className="col-auto">
         <label style={{marginRight: '1rem'}} className="form-label py-2">{label}</label>
       </div>

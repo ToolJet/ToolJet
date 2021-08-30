@@ -24,8 +24,15 @@ export const TextArea = function TextArea({
   useEffect(() => {
     setText(newText);
   }, [newText]);
-
+  
   const placeholder = component.definition.properties.placeholder.value;
+  const widgetVisibility = component.definition.styles.visibility.value
+
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
 
   return (
     <textarea
@@ -37,7 +44,7 @@ export const TextArea = function TextArea({
       type="text"
       className="form-control"
       placeholder={placeholder}
-      style={{ width, height }}
+      style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }}
       value={text}
     ></textarea>
   );
