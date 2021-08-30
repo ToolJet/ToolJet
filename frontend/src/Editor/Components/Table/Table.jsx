@@ -52,7 +52,7 @@ export function Table({
   let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
-  const widgetVisibility = component.definition.styles.visibility.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
   let parsedWidgetVisibility = widgetVisibility;
   
   try {

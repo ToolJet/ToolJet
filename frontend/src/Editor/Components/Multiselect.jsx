@@ -16,7 +16,7 @@ export const Multiselect = function Multiselect({
   const label = component.definition.properties.label.value;
   const values = component.definition.properties.option_values.value;
   const displayValues = component.definition.properties.display_values.value;
-  const widgetVisibility = component.definition.styles.visibility.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   const parsedValues = JSON.parse(values);
   const parsedDisplayValues = JSON.parse(displayValues);

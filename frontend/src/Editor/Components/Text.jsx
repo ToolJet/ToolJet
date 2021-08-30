@@ -8,7 +8,7 @@ export const Text = function Text({
 }) {
   const text = component.definition.properties.text.value;
   const color = component.definition.styles.textColor.value;
-  const widgetVisibility = component.definition.styles.visibility.value
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   const [loadingState, setLoadingState] = useState(false);
 

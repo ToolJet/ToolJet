@@ -19,7 +19,7 @@ export const DaterangePicker = function DaterangePicker({
   const startDateProp = component.definition.properties.startDate;
   const endDateProp = component.definition.properties.endDate;
   const formatProp = component.definition.properties.format;
-  const widgetVisibility = component.definition.styles.visibility.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   const [focusedInput, setFocusedInput] = useState(null);
   const [startDate, setStartDate] = useState(startDateProp ? startDateProp.value : null);

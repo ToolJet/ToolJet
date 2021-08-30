@@ -19,7 +19,7 @@ export const RadioButton = function RadioButton({
 
   const values = component.definition.properties.values.value;
   const displayValues = component.definition.properties.display_values.value;
-  const widgetVisibility = component.definition.styles.visibility.value
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   let parsedValues = values;
 

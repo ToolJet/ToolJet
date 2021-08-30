@@ -21,7 +21,7 @@ export const QrScanner = function QrScanner({
 
   let [errorOccured, setErrorOccured] = useState(false);
 
-  const widgetVisibility = component.definition.styles.visibility.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   let parsedWidgetVisibility = widgetVisibility;
   

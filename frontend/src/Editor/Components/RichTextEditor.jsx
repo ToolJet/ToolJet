@@ -15,7 +15,7 @@ export const RichTextEditor = function RichTextEditor({
 }) {
 
   const placeholder = component.definition.properties.placeholder.value;
-  const widgetVisibility = component.definition.styles.visibility.value
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
 
   let parsedWidgetVisibility = widgetVisibility;
