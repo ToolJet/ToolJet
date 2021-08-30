@@ -484,7 +484,7 @@ class Table extends React.Component {
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'displaySearchBox', 'properties', currentState)}
           {displaySearchBox && renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
-
+          {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <div className="hr-text">Events</div>
 
           <EventManager

@@ -20,12 +20,20 @@ export const Button = function Button({
   const text = component.definition.properties.text.value;
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const color = component.definition.styles.textColor.value;
+  const widgetVisibility = component.definition.styles.visibility.value;
+
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
 
   const computedStyles = {
     backgroundColor,
     color,
     width,
     height,
+    display: parsedWidgetVisibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString() 
   };
 

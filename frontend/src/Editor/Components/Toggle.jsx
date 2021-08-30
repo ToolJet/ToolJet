@@ -1,4 +1,5 @@
 import React from 'react';
+import { resolveReferences } from '@/_helpers/utils';
 
 class Switch extends React.Component {
     render() {
@@ -36,6 +37,14 @@ export const ToggleSwitch = ({
   const label = component.definition.properties.label.value;
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
+  const widgetVisibility = component.definition.styles.visibility.value;
+
+
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
 
   function toggleValue(e) {
     const toggled = e.target.checked;
@@ -47,7 +56,7 @@ export const ToggleSwitch = ({
   const toggle = () => setOn(!on)
 
   return (
-    <div className="row  py-1" style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+    <div className="row  py-1" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={() => onComponentClick(id, component)}>
         <span className="form-check-label form-check-label col-auto" style={{color: textColor}}>{label}</span>
         <div className="col">
           <Switch on={on} onClick={toggle} onChange={toggleValue} />

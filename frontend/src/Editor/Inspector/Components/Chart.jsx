@@ -78,6 +78,7 @@ class Chart extends React.Component {
               onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
             />
         </div>
+        {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
 

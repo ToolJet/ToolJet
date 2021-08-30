@@ -52,6 +52,13 @@ export function Table({
   let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
+  const widgetVisibility = component.definition.styles.visibility.value;
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
+
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
@@ -559,7 +566,7 @@ export function Table({
   return (
     <div
       className="card jet-table"
-      style={{ width: `${width}px`, height: `${height}px` }}
+      style={{ width: `${width}px`, height: `${height}px`, display:parsedWidgetVisibility ? '' : 'none' }}
       onClick={() => onComponentClick(id, component)}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
