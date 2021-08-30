@@ -15,7 +15,7 @@ export const TextInput = function TextInput({
 
   return (
     <input
-      onClick={() => onComponentClick(id, component)}
+      onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
       onChange={(e) => onComponentOptionChanged(component, 'value', e.target.value)}
       type="text"
       className="form-control"

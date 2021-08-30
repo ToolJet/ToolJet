@@ -20,7 +20,7 @@ export const RichTextEditor = function RichTextEditor({
   }
 
   return (
-    <div style={{ width: `${width}px`, height: `${height}px` }} onClick={() => onComponentClick(id, component)}>
+    <div style={{ width: `${width}px`, height: `${height}px` }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <DraftEditor
         handleChange={handleChange}
         height={height}

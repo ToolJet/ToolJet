@@ -17,7 +17,7 @@ export const Image = function Image({
   }
 
   return (
-    <div onClick={() => onComponentClick(id, component)}>
+    <div onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <LazyLoad width={width} height={height} placeholder={<Placeholder/>} debounce={500}>
         <img style={{ objectFit: 'contain' }} src={data} width={width} height={height} />
       </LazyLoad>

@@ -7,7 +7,8 @@ export const Container = function Container({
   component,
   height,
   containerProps,
-  width
+  width,
+  removeComponent
 }) {
 
   const backgroundColor = component.definition.styles.backgroundColor.value;
@@ -26,6 +27,7 @@ export const Container = function Container({
               parent={id}
               {...containerProps}
               parentRef={parentRef}
+              removeComponent={removeComponent}
             />
             <SubCustomDragLayer 
               parent={id}

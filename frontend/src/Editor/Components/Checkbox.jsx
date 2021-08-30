@@ -26,7 +26,7 @@ export const Checkbox = function Checkbox({
   }
 
   return (
-    <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+    <div style={{ width, height }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <label className="form-check form-check-inline">
         <input
           className="form-check-input"

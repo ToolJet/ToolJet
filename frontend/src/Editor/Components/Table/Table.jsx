@@ -560,7 +560,7 @@ export function Table({
     <div
       className="card jet-table"
       style={{ width: `${width}px`, height: `${height}px` }}
-      onClick={() => onComponentClick(id, component)}
+      onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
       {(!(!displaySearchBox && serverSidePagination) &&

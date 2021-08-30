@@ -29,7 +29,7 @@ export const TextArea = function TextArea({
 
   return (
     <textarea
-      onClick={() => onComponentClick(id, component)}
+      onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
       onChange={(e) => {
         setText(e.target.value);
         onComponentOptionChanged(component, 'value', e.target.value);

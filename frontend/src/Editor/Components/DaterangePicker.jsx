@@ -44,7 +44,7 @@ export const DaterangePicker = function DaterangePicker({
   }
 
   return (
-    <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+    <div style={{ width, height }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <DateRangePicker
         startDate={startDate}
         startDateId="startDate"

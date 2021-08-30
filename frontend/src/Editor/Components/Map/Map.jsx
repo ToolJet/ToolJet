@@ -103,7 +103,7 @@ export const Map = function Map({
   }
 
   return (
-    <div style={{ width, height }} onClick={() => onComponentClick(id, component)} className="map-widget">
+    <div style={{ width, height }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
       <LoadScript
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
         libraries={["places"]}

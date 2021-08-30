@@ -41,7 +41,7 @@ export const Text = function Text({
   };
 
   return (
-    <div className="text-widget" style={computedStyles} onClick={() => onComponentClick(id, component)}>
+    <div className="text-widget" style={computedStyles} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />}
       {loadingState === true && (
         <div>

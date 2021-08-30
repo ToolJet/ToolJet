@@ -112,7 +112,7 @@ export const Chart = function Chart({
   return (
     <div
       style={computedStyles}
-      onClick={() => onComponentClick(id, component)}
+      onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
     >
       {loadingState === true ?
         <div style={{ width: '100%' }} className="p-2">

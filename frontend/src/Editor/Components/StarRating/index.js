@@ -74,7 +74,7 @@ export const StarRating = function StarRating({
   };
 
   return (
-    <div className="star-rating" onClick={() => onComponentClick(id, component)}>
+    <div className="star-rating" onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       {/* TODO: Add label color defination property instead of hardcoded color*/}
       <span className="label form-check-label form-check-label col-auto" style={{ color: '#000' }}>
         {label}
