@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 export const Radio = ({ options, value, onChange, readOnly }) => {
 
   value = value === undefined ? [] : value;
+  options = Array.isArray(options) ? options : [];
 
   return (
     <div className="radio row">

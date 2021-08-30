@@ -224,13 +224,26 @@ class HomePage extends React.Component {
 
                                   target={app?.current_version_id ? '_blank' : ''}
                                 >
+                                  {!this.props.darkMode &&
                                   <OverlayTrigger
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: app?.current_version_id == null ? 'App does not have a deployed version' : 'Open in app viewer'})}
                                   >
-                                    <span className={`${app?.current_version_id ? 'badge bg-blue-lt mx-2 ' : 'badge bg-light-grey mx-2'}`}
-                                    >launch </span>
+                                    {<span className={`${app?.current_version_id ? 'badge bg-blue-lt mx-2 ' : 'badge bg-light-grey mx-2'}`}
+                                    >launch </span>}
                                   </OverlayTrigger>
+                                  }
+                                  {this.props.darkMode &&
+                                  <OverlayTrigger
+                                    placement="top"
+                                    overlay={(props) => renderTooltip({props, text: app?.current_version_id == null ? 'App does not have a deployed version' : 'Open in app viewer'})}
+                                  >
+                                    {<span className={`${app?.current_version_id == null ? 'badge mx-2 ' : 'badge bg-azure-lt mx-2'}`} 
+                                    style={{
+                                      filter: app?.current_version_id == null ? 'brightness(0.8)' : 'brightness(1) invert(1)'}}
+                                    >launch </span>}
+                                  </OverlayTrigger>
+                                  }
                                 </Link>
 
                                 <AppMenu

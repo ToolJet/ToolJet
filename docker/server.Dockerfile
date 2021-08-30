@@ -1,5 +1,7 @@
 FROM node:14.17.3-buster
 
+ENV NODE_ENV=production
+
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
@@ -8,17 +10,15 @@ RUN apt update && apt install -y \
   postgresql \
   freetds-dev
 
+RUN npm install -g @nestjs/cli
+
 RUN mkdir -p /app
 WORKDIR /app
-ENV NODE_ENV=production
 
 # Building ToolJet server
-COPY ./server/package.json ./server/package-lock.json ./server/
-RUN npm --prefix server install
-COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli
-RUN npm --prefix server run build
+COPY ./server/package.json ./server/package-lock.json ./
+RUN npm install --only=production
+COPY ./server/ ./
+RUN npm run build
 
-COPY ./docker/ ./docker/
-
-RUN ["chmod", "755", "./server/entrypoint.sh"]
+RUN ["chmod", "755", "./entrypoint.sh"]

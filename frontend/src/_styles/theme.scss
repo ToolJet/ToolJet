@@ -1333,6 +1333,7 @@ body {
     font-family: 'Roboto', sans-serif;
     font-size: 0.9rem;
     padding: 0px;
+    z-index: 10000;
 
     li.CodeMirror-hint-active {
         background: #3c92dc;
@@ -2001,4 +2002,8 @@ input:focus-visible {
 
 .theme-dark .input-group-text, .theme-dark .markdown > table thead th, .theme-dark .table thead th {
   background: #1c252f;
+}
+
+.sketch-picker { 
+  z-index: 1000;
 }

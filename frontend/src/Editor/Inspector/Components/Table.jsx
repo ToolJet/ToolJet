@@ -1,15 +1,15 @@
 import React from 'react';
-import { renderElement, renderEvent, renderQuerySelector } from '../Utils';
+import { renderElement } from '../Utils';
 import { computeActionName } from '@/_helpers/utils';
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { EventSelector } from '../EventSelector';
 import { Color } from '../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid'; 
 import { EventManager } from '../EventManager';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Table extends React.Component {
   constructor(props) {
@@ -28,6 +28,8 @@ class Table extends React.Component {
       eventOptionUpdated,
       components,
       currentState,
+      actionPopOverRootClose: true,
+      showPopOver: false
     };
   }
 
@@ -61,6 +63,12 @@ class Table extends React.Component {
     this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
   };
 
+  actionButtonEventsChanged = (events, index) => {
+    let actions = this.props.component.component.definition.properties.actions.value;
+    actions[index]['events'] = events
+    this.props.paramUpdated({ name: 'actions' }, 'value', actions, 'properties');
+  }
+
   actionButtonEventUpdated = (event, value, extraData) => {
     const actions = this.props.component.component.definition.properties.actions;
     const index = extraData.index;
@@ -90,7 +98,7 @@ class Table extends React.Component {
 
   columnPopover = (column, index) => {
     return (
-      <Popover id="popover-basic">
+      <Popover id="popover-basic-2" className="shadow">
         <Popover.Content>
           <div className="field mb-2">
             <label className="form-label">Column type</label>
@@ -139,36 +147,49 @@ class Table extends React.Component {
                 e.stopPropagation();
                 this.onColumnItemChange(index, 'key', e.target.value);
               }}
+              placeholder={column.name}
               defaultValue={column.key}
             />
           </div>
+
+          {column.columnType === 'toggle' && 
+            <div>
+              <div className="field mb-2">
+                <Color
+                  param={{ name: 'Active color' }}
+                  paramType="properties"
+                  componentMeta={{ properties: { color: { displayName: 'Active color'} } }}
+                  definition={{ value: column.activeColor || '#3c92dc' }}
+                  onChange={(name, value, color) => this.onColumnItemChange(index, 'activeColor', color)}
+                />
+              </div>
+            </div>
+          }
 
           {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges' || column.columnType === 'radio') && (
             <div>
               <div className="field mb-2">
                 <label className="form-label">Values</label>
-                <input
-                  type="text"
-                  className="form-control text-field"
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    this.onColumnItemChange(index, 'values', e.target.value);
-                  }}
-                  value={column.values}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.values}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode= "javascript"
+                  lineNumbers={false}
                   placeholder={'{{[1, 2, 3]}}'}
+                  onChange={(value) => this.onColumnItemChange(index, 'values', value)}
                 />
               </div>
               <div className="field mb-2">
                 <label className="form-label">Labels</label>
-                <input
-                  type="text"
-                  className="form-control text-field"
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    this.onColumnItemChange(index, 'labels', e.target.value);
-                  }}
-                  value={column.labels}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.labels}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode= "javascript"
+                  lineNumbers={false}
                   placeholder={'{{["one", "two", "three"]}}'}
+                  onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
                 />
               </div>
             </div>
@@ -226,6 +247,14 @@ class Table extends React.Component {
   };
 
   actionPopOver = (action, index) => {
+    const dummyComponentForActionButton = {
+      component: {
+        definition: {
+          events: this.props.component.component.definition.properties.actions.value[index].events || []
+        }
+      }
+    }
+
     return (
       <Popover id="popover-basic">
         <Popover.Content>
@@ -256,18 +285,20 @@ class Table extends React.Component {
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
           />
-          <EventSelector
-            param={{ name: 'onClick' }}
-            eventMeta={{ displayName: 'On click' }}
-            definition={action.onClick}
-            eventUpdated={this.actionButtonEventUpdated}
-            dataQueries={this.props.dataQueries}
-            eventOptionUpdated={this.actionButtonEventOptionUpdated}
+          <EventManager
+            component={dummyComponentForActionButton}
+            componentMeta={{events: { onClick: {displayName: 'On click' }}}}
             currentState={this.state.currentState}
-            extraData={{ actionButton: action, index: index }} // This data is returned in the callbacks
+            dataQueries={this.props.dataQueries}
+            components={this.props.components}
+            eventsChanged={events => this.actionButtonEventsChanged(events, index)}
             apps={this.props.apps}
+            popOverCallback={(showing) => {
+              this.setState({actionPopOverRootClose: !showing})
+              this.setState({showPopOver: showing})
+            }}
           />
-          <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
+          <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
             Remove
           </button>
         </Popover.Content>
@@ -277,7 +308,13 @@ class Table extends React.Component {
 
   actionButton(action, index) {
     return (
-      <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.actionPopOver(action, index)}>
+      <OverlayTrigger
+        trigger="click"
+        placement="left"
+        rootClose={this.state.actionPopOverRootClose}
+        overlay={this.actionPopOver(action, index)}
+        onToggle={showing => this.setState({showPopOver: showing})}
+      >
         <div className={`card p-2 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
           <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`}>
             <div className="col-auto">
@@ -321,7 +358,7 @@ class Table extends React.Component {
   addNewAction = () => {
     const actions = this.props.component.component.definition.properties.actions;
     const newValue = actions ? actions.value : [];
-    newValue.push({ name: computeActionName(actions), buttonText: 'Button' });
+    newValue.push({ name: computeActionName(actions), buttonText: 'Button', events: [] });
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
@@ -416,7 +453,7 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <span className="badge bg-red-lt" onClick={() => this.removeColumn(index)}>x</span>
+                        <img onClick={() => this.removeColumn(index)} class="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12"/>
                       </div>
                     </div>
                   </OverlayTrigger>
@@ -429,11 +466,11 @@ class Table extends React.Component {
           <div className="field mb-2 mt-2">
             <div className="row g-2">
               <div className="col">
-                <label className="form-label col pt-1">Actions</label>
+                <label className="form-label col pt-1">Action buttons</label>
               </div>
               <div className="col-auto">
                 <button onClick={this.addNewAction} className="btn btn-sm btn-outline-azure col-auto">
-                  + Action
+                  + Button
                 </button>
               </div>
             </div>
@@ -457,6 +494,7 @@ class Table extends React.Component {
             dataQueries={dataQueries}
             components={components}
             eventsChanged={this.props.eventsChanged}
+            apps={this.props.apps}
           />
 
           <div className="hr-text">Style</div>
@@ -464,6 +502,7 @@ class Table extends React.Component {
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'tableType', 'styles', currentState)}
       </div>
     );
   }

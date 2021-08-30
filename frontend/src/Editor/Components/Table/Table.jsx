@@ -48,6 +48,10 @@ export function Table({
   const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
   const displaySearchBox = displaySearchBoxProperty ? displaySearchBoxProperty.value : true;
 
+  const tableTypeProperty = component.definition.styles.tableType;
+  let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
+  tableType = tableType === '' ? 'table-bordered' : tableType;
+
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
@@ -382,6 +386,7 @@ export function Table({
               <Toggle
                 value={cellValue}
                 readOnly={!column.isEditable}
+                activeColor={column.activeColor}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
@@ -445,7 +450,11 @@ export function Table({
 
   const columns = useMemo(
     () => [...columnData, ...actionsCellData],
-    [JSON.stringify(columnData), actionsCellData.length, componentState.changeSet] // Hack: need to fix
+    [JSON.stringify(columnData), 
+      actionsCellData.length, 
+      componentState.changeSet,
+      JSON.stringify(component.definition.properties.columns)
+    ] // Hack: need to fix
   );
 
   const data = useMemo(() => tableData, [tableData.length]);
@@ -585,7 +594,7 @@ export function Table({
         </div>
       )}
       <div className="table-responsive jet-data-table">
-        <table {...getTableProps()} className="table table-vcenter table-nowrap table-bordered" style={computedStyles}>
+        <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
           <thead>
             {headerGroups.map((headerGroup) => (
               <tr {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">

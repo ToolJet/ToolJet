@@ -62,7 +62,7 @@ class Restapi extends React.Component {
                     { name: 'PATCH', value: 'patch' },
                     { name: 'DELETE', value: 'delete' },
                   ]}
-                  value={options.method}
+                  value={options.method === '' ? 'get' : options.method}
                   search={false}
                   closeOnSelect={true}
                   onChange={(value) => {

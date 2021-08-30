@@ -30,7 +30,7 @@ export class UpdateDefinitionsForEvents1625814801430 implements MigrationInterfa
                 const newEvent = { ...events[eventId]['options'], actionId, eventId };
                 newEvents.push(newEvent);
               } else {
-                if(eventId === 'onBulkUpdate') {
+                if(eventId === 'onBulkUpdate' && (Object.keys(events[eventId]?.options || {} ).length != 0)) {
                   const newEvent = { ...events[eventId]['options'], actionId: 'run-query', eventId };
                   newEvents.push(newEvent);
                 }

@@ -6,7 +6,6 @@ import { Code } from './Elements/Code';
 import { Select } from './Elements/Select';
 import { Toggle } from './Elements/Toggle';
 import { TypeMapping } from './TypeMapping';
-import { EventSelector } from './EventSelector';
 import { QuerySelector } from './QuerySelector';
 
 const AllElements = {
@@ -48,25 +47,6 @@ export function renderElement(component, componentMeta, paramUpdated, dataQuerie
             componentMeta={componentMeta}
             currentState={currentState}
             darkMode={darkMode}
-        />
-  );
-}
-
-export function renderEvent(component, eventUpdated, dataQueries, eventOptionUpdated, eventName, eventMeta, currentState, components, apps) {
-  let definition = component.component.definition.events[eventName];
-  definition = definition || { };
-
-  return (
-        <EventSelector
-            param={{ name: eventName }}
-            eventMeta={eventMeta}
-            definition={definition}
-            eventUpdated={eventUpdated}
-            dataQueries={dataQueries}
-            eventOptionUpdated={eventOptionUpdated}
-            currentState={currentState}
-            components={components}
-            apps={apps}
         />
   );
 }
