@@ -16,7 +16,7 @@ export const Toggle = ({readOnly, value, onChange, activeColor, options }) => {
               className="form-check-input"
               type="checkbox"
               checked={on}
-              style={{ backgroundColor: activeColor}}
+              style={ on ?  { backgroundColor: activeColor} : {}}
               onClick={() => {if(!readOnly) toggle()}}
             />
         </label>
