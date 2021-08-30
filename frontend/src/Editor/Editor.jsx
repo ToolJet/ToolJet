@@ -547,7 +547,7 @@ class Editor extends React.Component {
                     value={this.state.app.name}
                   />
                 )}
-                <div>{this.state.editingVersion && `Editing Version: ${this.state.editingVersion.name}`}</div>
+                <small>{this.state.editingVersion && `Editing version: ${this.state.editingVersion.name}`}</small>
                 <div className="editor-buttons">
                   <span
                     className={`btn btn-light mx-2`}
