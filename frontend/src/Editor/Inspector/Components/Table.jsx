@@ -9,6 +9,7 @@ import { Color } from '../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid'; 
 import { EventManager } from '../EventManager';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Table extends React.Component {
   constructor(props) {
@@ -97,7 +98,7 @@ class Table extends React.Component {
 
   columnPopover = (column, index) => {
     return (
-      <Popover id="popover-basic-2">
+      <Popover id="popover-basic-2" className="shadow">
         <Popover.Content>
           <div className="field mb-2">
             <label className="form-label">Column type</label>
@@ -146,36 +147,49 @@ class Table extends React.Component {
                 e.stopPropagation();
                 this.onColumnItemChange(index, 'key', e.target.value);
               }}
+              placeholder={column.name}
               defaultValue={column.key}
             />
           </div>
+
+          {column.columnType === 'toggle' && 
+            <div>
+              <div className="field mb-2">
+                <Color
+                  param={{ name: 'Active color' }}
+                  paramType="properties"
+                  componentMeta={{ properties: { color: { displayName: 'Active color'} } }}
+                  definition={{ value: column.activeColor || '#3c92dc' }}
+                  onChange={(name, value, color) => this.onColumnItemChange(index, 'activeColor', color)}
+                />
+              </div>
+            </div>
+          }
 
           {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges' || column.columnType === 'radio') && (
             <div>
               <div className="field mb-2">
                 <label className="form-label">Values</label>
-                <input
-                  type="text"
-                  className="form-control text-field"
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    this.onColumnItemChange(index, 'values', e.target.value);
-                  }}
-                  value={column.values}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.values}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode= "javascript"
+                  lineNumbers={false}
                   placeholder={'{{[1, 2, 3]}}'}
+                  onChange={(value) => this.onColumnItemChange(index, 'values', value)}
                 />
               </div>
               <div className="field mb-2">
                 <label className="form-label">Labels</label>
-                <input
-                  type="text"
-                  className="form-control text-field"
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    this.onColumnItemChange(index, 'labels', e.target.value);
-                  }}
-                  value={column.labels}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.labels}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode= "javascript"
+                  lineNumbers={false}
                   placeholder={'{{["one", "two", "three"]}}'}
+                  onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
                 />
               </div>
             </div>
@@ -439,7 +453,7 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <span className="badge bg-red-lt" onClick={() => this.removeColumn(index)}>x</span>
+                        <img onClick={() => this.removeColumn(index)} class="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12"/>
                       </div>
                     </div>
                   </OverlayTrigger>
@@ -452,11 +466,11 @@ class Table extends React.Component {
           <div className="field mb-2 mt-2">
             <div className="row g-2">
               <div className="col">
-                <label className="form-label col pt-1">Actions</label>
+                <label className="form-label col pt-1">Action buttons</label>
               </div>
               <div className="col-auto">
                 <button onClick={this.addNewAction} className="btn btn-sm btn-outline-azure col-auto">
-                  + Action
+                  + Button
                 </button>
               </div>
             </div>
@@ -488,6 +502,7 @@ class Table extends React.Component {
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'tableType', 'styles', currentState)}
       </div>
     );
   }

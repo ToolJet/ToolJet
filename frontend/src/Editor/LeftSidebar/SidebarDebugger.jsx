@@ -66,17 +66,15 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
     },[errors])
 
     React.useEffect(() => {
-        const unReadErrors = errorLogs.length - unReadErrorCount.read
-
+        
         if(open ===  false && errorLogs.length !== unReadErrorCount.read) {
+            const unReadErrors = errorLogs.length - unReadErrorCount.read
             setUnReadErrorCount((prev) => {
                 let copy = JSON.parse(JSON.stringify(prev))
                 copy.unread = unReadErrors
                 return copy
             })
-        }
-        
-        if(open === true) {
+        } else {
             setUnReadErrorCount((prev) => {
                 let copy = JSON.parse(JSON.stringify(prev))
                 copy.read = errorLogs.length
