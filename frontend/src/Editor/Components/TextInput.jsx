@@ -13,7 +13,7 @@ export const TextInput = function TextInput({
   console.log('currentState', currentState);
 
   const placeholder = component.definition.properties.placeholder.value;
-  const widgetVisibility = component.definition.styles.visibility.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   let parsedWidgetVisibility = widgetVisibility;
   

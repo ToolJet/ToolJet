@@ -16,7 +16,7 @@ export const DropDown = function DropDown({
   const label = component.definition.properties.label.value;
   const values = component.definition.properties.values.value;
   const displayValues = component.definition.properties.display_values.value;
-  const widgetVisibility = component.definition.styles.visibility.value
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   let parsedValues = values;
 
