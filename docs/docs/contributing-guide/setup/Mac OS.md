@@ -42,10 +42,18 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
 
    Example:
    ```bash
-    cat .env
+   cat .env
    TOOLJET_HOST=http://localhost:8082
    LOCKBOX_MASTER_KEY=1d291a926ddfd221205a23adb4cc1db66cb9fcaf28d97c8c1950e3538e3b9281
    SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
+   NODE_ENV=development
+   # DATABASE CONFIG
+   PG_HOST=postgres
+   PG_PORT=5432
+   PG_USER=postgres
+   PG_PASS=postgres
+   PG_DB=tooljet_development
+   ORM_LOGGING=all
    ```
 
 4. ## Install dependencies
