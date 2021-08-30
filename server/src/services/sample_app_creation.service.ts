@@ -68,7 +68,7 @@ export class SampleAppCreationService {
 
   async buildNewAppAssociations(newApp: App, sampleApp: App) {
     const dataSourceMapping = {};
-    const newDefinition = sampleApp.currentVersion.definition;
+    const newDefinition = sampleApp.editingVersion?.definition;
 
     const sampleDataSources = await this.entityManager.find(DataSource, {
       app: sampleApp,
