@@ -32,6 +32,7 @@ import ReactTooltip from 'react-tooltip';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import queryString from 'query-string';
+import '@/_styles/custom.scss';
 
 class Editor extends React.Component {
   constructor(props) {
@@ -816,8 +817,7 @@ class Editor extends React.Component {
 
                           <span
                             data-tip="Add new query"
-                            style={{width: '35px', height: '23px'}}
-                            className="btn btn-sm btn-light text-muted"
+                            className="btn btn-sm btn-light text-muted custom-sizing "
                             onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })}
                           >
                             +

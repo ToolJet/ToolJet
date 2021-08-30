@@ -1,7 +1,7 @@
 
 // overwrites the styles of datepicker [cell-type]
 .cell-type-datepicker {
-    
+
     .rdtPicker {
         thead {
             display: table-header-group;
@@ -14,4 +14,9 @@
             display: table-row;
         }
     }
+}
+
+.custom-sizing {
+    width: 35px;
+    height: 23px;
 }
