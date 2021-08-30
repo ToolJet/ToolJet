@@ -10,7 +10,6 @@ import {
   createDataQuery,
   createDataSource,
 } from '../test.helper';
-import { EntityNotFoundError } from 'typeorm';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
@@ -31,6 +30,28 @@ describe('apps controller', () => {
   describe('/apps/uuid', () => {
     it('should allow only authenticated users to update app params', async () => {
       await request(app.getHttpServer()).put('/apps/uuid').expect(401);
+    });
+  });
+
+  describe('/apps', () => {
+    it('should create app with default values', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        role: 'admin',
+      });
+
+      const response = await request(app.getHttpServer())
+        .post(`/apps`)
+        .set('Authorization', authHeaderForUser(adminUserData.user));
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body.name).toBe('Untitled app');
+
+      const appId = response.body.id;
+      const application = await App.findOne({ id: appId });
+
+      expect(application.name).toBe('Untitled app');
+      expect(application.id).toBe(application.slug);
     });
   });
 
@@ -245,214 +266,299 @@ describe('apps controller', () => {
   });
 
   describe('/apps/:id/versions', () => {
-    it('should not be able to fetch app versions if user of another organization', async () => {
-      const adminUserData = await createUser(app, {
-        email: 'admin@tooljet.io',
-        role: 'admin',
-      });
-      const anotherOrgAdminUserData = await createUser(app, {
-        email: 'another@tooljet.io',
-        role: 'admin',
-      });
-      const application = await createApplication(app, {
-        name: 'name',
-        user: adminUserData.user,
-      });
-      await createApplicationVersion(app, application);
-
-      const response = await request(app.getHttpServer())
-        .get(`/apps/${application.id}/versions`)
-        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
-
-      expect(response.statusCode).toBe(403);
-    });
-
-    it('should be able to fetch app versions if admin/developer/viewer of same organization', async () => {
-      const adminUserData = await createUser(app, {
-        email: 'admin@tooljet.io',
-        role: 'admin',
-      });
-      const organization = adminUserData.organization;
-      const developerUserData = await createUser(app, {
-        email: 'developer@tooljet.io',
-        role: 'developer',
-        organization,
-      });
-      const viewerUserData = await createUser(app, {
-        email: 'viewer@tooljet.io',
-        role: 'viewer',
-        organization,
-      });
-
-      const application = await createApplication(app, {
-        name: 'name',
-        user: adminUserData.user,
-      });
-      await createApplicationVersion(app, application);
-
-      for (const userData of [
-        adminUserData,
-        developerUserData,
-        viewerUserData,
-      ]) {
-        const response = await request(app.getHttpServer())
-          .get(`/apps/${application.id}/versions`)
-          .set('Authorization', authHeaderForUser(userData.user));
-
-        expect(response.statusCode).toBe(200);
-        expect(response.body.versions.length).toBe(1);
-      }
-    });
-
-    it('should be able to create a new app version if admin or developer of same organization', async () => {
-      const adminUserData = await createUser(app, {
-        email: 'admin@tooljet.io',
-        role: 'admin',
-      });
-      const developerUserData = await createUser(app, {
-        email: 'dev@tooljet.io',
-        role: 'developer',
-        organization: adminUserData.organization,
-      });
-      const application = await createApplication(app, {
-        user: adminUserData.user,
-      });
-
-      for (const userData of [adminUserData, developerUserData]) {
-        const response = await request(app.getHttpServer())
-          .post(`/apps/${application.id}/versions`)
-          .set('Authorization', authHeaderForUser(userData.user))
-          .send({
-            versionName: 'v0',
+    describe('get versions', () => {
+      describe('authorization', () => {
+        it('should be able to fetch app versions if admin/developer/viewer of same organization', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+          const organization = adminUserData.organization;
+          const developerUserData = await createUser(app, {
+            email: 'developer@tooljet.io',
+            role: 'developer',
+            organization,
+          });
+          const viewerUserData = await createUser(app, {
+            email: 'viewer@tooljet.io',
+            role: 'viewer',
+            organization,
           });
 
-        expect(response.statusCode).toBe(201);
-      }
+          const application = await createApplication(app, {
+            name: 'name',
+            user: adminUserData.user,
+          });
+          await createApplicationVersion(app, application);
+
+          for (const userData of [
+            adminUserData,
+            developerUserData,
+            viewerUserData,
+          ]) {
+            const response = await request(app.getHttpServer())
+              .get(`/apps/${application.id}/versions`)
+              .set('Authorization', authHeaderForUser(userData.user));
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.versions.length).toBe(1);
+          }
+        });
+      });
     });
 
-    it('should not be able to create app versions if user of another organization', async () => {
-      const adminUserData = await createUser(app, {
-        email: 'admin@tooljet.io',
-        role: 'admin',
-      });
-      const anotherOrgAdminUserData = await createUser(app, {
-        email: 'another@tooljet.io',
-        role: 'admin',
-      });
-      const application = await createApplication(app, {
-        name: 'name',
-        user: adminUserData.user,
-      });
-      await createApplicationVersion(app, application);
+    describe('create version', () => {
+      describe('authorization', () => {
+        it('should not be able to fetch app versions if user of another organization', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+          const anotherOrgAdminUserData = await createUser(app, {
+            email: 'another@tooljet.io',
+            role: 'admin',
+          });
+          const application = await createApplication(app, {
+            name: 'name',
+            user: adminUserData.user,
+          });
+          await createApplicationVersion(app, application);
 
-      const response = await request(app.getHttpServer())
-        .post(`/apps/${application.id}/versions`)
-        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
-        .send({
-          versionName: 'v0',
+          const response = await request(app.getHttpServer())
+            .get(`/apps/${application.id}/versions`)
+            .set(
+              'Authorization',
+              authHeaderForUser(anotherOrgAdminUserData.user),
+            );
+
+          expect(response.statusCode).toBe(403);
         });
 
-      expect(response.statusCode).toBe(403);
-    });
+        it('should be able to create a new app version if admin or developer of same organization', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+          const developerUserData = await createUser(app, {
+            email: 'dev@tooljet.io',
+            role: 'developer',
+            organization: adminUserData.organization,
+          });
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
 
-    it('should not be able to fetch app versions if user is a viewer', async () => {
-      const adminUserData = await createUser(app, {
-        email: 'admin@tooljet.io',
-        role: 'admin',
-      });
-      const viewerUserData = await createUser(app, {
-        email: 'viewer@tooljet.io',
-        role: 'viewer',
-        organization: adminUserData.organization,
-      });
-      const application = await createApplication(app, {
-        name: 'name',
-        user: adminUserData.user,
-      });
-      await createApplicationVersion(app, application);
+          for (const userData of [adminUserData, developerUserData]) {
+            const response = await request(app.getHttpServer())
+              .post(`/apps/${application.id}/versions`)
+              .set('Authorization', authHeaderForUser(userData.user))
+              .send({
+                versionName: 'v0',
+              });
 
-      const response = await request(app.getHttpServer())
-        .post(`/apps/${application.id}/versions`)
-        .set('Authorization', authHeaderForUser(viewerUserData.user))
-        .send({
-          versionName: 'v0',
+            expect(response.statusCode).toBe(201);
+          }
         });
 
-      expect(response.statusCode).toBe(403);
+        it('should not be able to create app versions if user of another organization', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+          const anotherOrgAdminUserData = await createUser(app, {
+            email: 'another@tooljet.io',
+            role: 'admin',
+          });
+          const application = await createApplication(app, {
+            name: 'name',
+            user: adminUserData.user,
+          });
+          await createApplicationVersion(app, application);
+
+          const response = await request(app.getHttpServer())
+            .post(`/apps/${application.id}/versions`)
+            .set(
+              'Authorization',
+              authHeaderForUser(anotherOrgAdminUserData.user),
+            )
+            .send({
+              versionName: 'v0',
+            });
+
+          expect(response.statusCode).toBe(403);
+        });
+
+        it('should not be able to fetch app versions if user is a viewer', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+          const viewerUserData = await createUser(app, {
+            email: 'viewer@tooljet.io',
+            role: 'viewer',
+            organization: adminUserData.organization,
+          });
+          const application = await createApplication(app, {
+            name: 'name',
+            user: adminUserData.user,
+          });
+          await createApplicationVersion(app, application);
+
+          const response = await request(app.getHttpServer())
+            .post(`/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(viewerUserData.user))
+            .send({
+              versionName: 'v0',
+            });
+
+          expect(response.statusCode).toBe(403);
+        });
+      });
+
+      describe('app definition', () => {
+        it('should return null when no previous versions exists', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
+
+          let response = await request(app.getHttpServer())
+            .post(`/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v0',
+            });
+
+          expect(response.statusCode).toBe(201);
+
+          response = await request(app.getHttpServer())
+            .get(`/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user));
+
+          expect(response.statusCode).toBe(200);
+          expect(response.body.versions['0']['definition']).toBe(null);
+        });
+
+        it('should return previous version definition when previous versions exists', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
+
+          const version = await createApplicationVersion(app, application);
+
+          let response = await request(app.getHttpServer())
+            .put(`/apps/${application.id}/versions/${version.id}`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              definition: { foo: 'bar' },
+            });
+
+          expect(response.statusCode).toBe(200);
+
+          response = await request(app.getHttpServer())
+            .post(`/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v1',
+            });
+
+          expect(response.statusCode).toBe(201);
+
+          response = await request(app.getHttpServer())
+            .get(`/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user));
+
+          expect(response.statusCode).toBe(200);
+          expect(response.body.versions['0']['name']).toBe('v1');
+          expect(response.body.versions['0']['definition']).toMatchObject({
+            foo: 'bar',
+          });
+        });
+      });
     });
   });
 
   describe('/apps/:id/versions/:version_id', () => {
     describe('get app version', () => {
-      it('should be able to get app version if admin or developer of same organization', async () => {
-        const adminUserData = await createUser(app, {
-          email: 'admin@tooljet.io',
-          role: 'admin',
-        });
-        const developerUserData = await createUser(app, {
-          email: 'dev@tooljet.io',
-          role: 'developer',
-          organization: adminUserData.organization,
-        });
-        const application = await createApplication(app, {
-          user: adminUserData.user,
-        });
-        const version = await createApplicationVersion(app, application);
+      describe('authorization', () => {
+        it('should be able to get app version if admin or developer of same organization', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+          const developerUserData = await createUser(app, {
+            email: 'dev@tooljet.io',
+            role: 'developer',
+            organization: adminUserData.organization,
+          });
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
+          const version = await createApplicationVersion(app, application);
 
-        for (const userData of [adminUserData, developerUserData]) {
+          for (const userData of [adminUserData, developerUserData]) {
+            const response = await request(app.getHttpServer())
+              .get(`/apps/${application.id}/versions/${version.id}`)
+              .set('Authorization', authHeaderForUser(userData.user));
+
+            expect(response.statusCode).toBe(200);
+          }
+        });
+
+        it('should be able to get app version if viewers of same organization', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+          const viewerUserData = await createUser(app, {
+            email: 'dev@tooljet.io',
+            role: 'viewer',
+            organization: adminUserData.organization,
+          });
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
+          const version = await createApplicationVersion(app, application);
+
           const response = await request(app.getHttpServer())
             .get(`/apps/${application.id}/versions/${version.id}`)
-            .set('Authorization', authHeaderForUser(userData.user));
+            .set('Authorization', authHeaderForUser(viewerUserData.user));
 
           expect(response.statusCode).toBe(200);
-        }
-      });
-
-      it('should be able to get app version if viewers of same organization', async () => {
-        const adminUserData = await createUser(app, {
-          email: 'admin@tooljet.io',
-          role: 'admin',
         });
-        const viewerUserData = await createUser(app, {
-          email: 'dev@tooljet.io',
-          role: 'viewer',
-          organization: adminUserData.organization,
-        });
-        const application = await createApplication(app, {
-          user: adminUserData.user,
-        });
-        const version = await createApplicationVersion(app, application);
 
-        const response = await request(app.getHttpServer())
-          .get(`/apps/${application.id}/versions/${version.id}`)
-          .set('Authorization', authHeaderForUser(viewerUserData.user));
+        it('should not be able to get app versions if user of another organization', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            role: 'admin',
+          });
+          const anotherOrgAdminUserData = await createUser(app, {
+            email: 'another@tooljet.io',
+            role: 'admin',
+          });
+          const application = await createApplication(app, {
+            name: 'name',
+            user: adminUserData.user,
+          });
+          const version = await createApplicationVersion(app, application);
 
-        expect(response.statusCode).toBe(200);
-      });
+          const response = await request(app.getHttpServer())
+            .get(`/apps/${application.id}/versions/${version.id}`)
+            .set(
+              'Authorization',
+              authHeaderForUser(anotherOrgAdminUserData.user),
+            );
 
-      it('should not be able to get app versions if user of another organization', async () => {
-        const adminUserData = await createUser(app, {
-          email: 'admin@tooljet.io',
-          role: 'admin',
+          expect(response.statusCode).toBe(403);
         });
-        const anotherOrgAdminUserData = await createUser(app, {
-          email: 'another@tooljet.io',
-          role: 'admin',
-        });
-        const application = await createApplication(app, {
-          name: 'name',
-          user: adminUserData.user,
-        });
-        const version = await createApplicationVersion(app, application);
-
-        const response = await request(app.getHttpServer())
-          .get(`/apps/${application.id}/versions/${version.id}`)
-          .set(
-            'Authorization',
-            authHeaderForUser(anotherOrgAdminUserData.user),
-          );
-
-        expect(response.statusCode).toBe(403);
       });
     });
 
