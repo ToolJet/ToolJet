@@ -58,6 +58,7 @@ class Editor extends React.Component {
       isLoading: true,
       users: null,
       appId,
+      editingVersion: null,
       loadingDataSources: true,
       loadingDataQueries: true,
       showQueryEditor: true,
@@ -67,7 +68,7 @@ class Editor extends React.Component {
       scaleValue: 1,
       deviceWindowWidth: 450,
       appDefinition: {
-        components: null,
+        components: {},
       },
       currentState: {
         queries: {},
@@ -88,12 +89,14 @@ class Editor extends React.Component {
     const appId = this.props.match.params.id;
     this.fetchApps(0);
 
-    appService.getApp(appId).then((data) =>
+    appService.getApp(appId).then((data) => {
+      const dataDefinition = data.definition || {components: {}}
       this.setState(
         {
           app: data,
           isLoading: false,
-          appDefinition: { ...this.state.appDefinition, ...data.definition },
+          editingVersion: data.editing_version,
+          appDefinition: { ...this.state.appDefinition, ...dataDefinition },
           slug: data.slug,
         },
         () => {
@@ -104,7 +107,7 @@ class Editor extends React.Component {
           });
         }
       )
-    );
+    });
 
     this.fetchDataSources();
     this.fetchDataQueries();
@@ -193,6 +196,13 @@ class Editor extends React.Component {
       })
     );
   };
+
+  setAppDefinitionFromVersion = (version) => {
+    this.appDefinitionChanged(version.definition || {components: {}})
+    this.setState({
+      editingVersion: version
+    })
+  }
 
   computeComponentState = (components) => {
     let componentState = {};
@@ -533,6 +543,7 @@ class Editor extends React.Component {
                     value={this.state.app.name}
                   />
                 )}
+                <div>{this.state.editingVersion && `Editing Version: ${this.state.editingVersion.name}`}</div>
                 <div className="editor-buttons">
                   <span
                     className={`btn btn-light mx-2`}
@@ -639,6 +650,8 @@ class Editor extends React.Component {
                         app={app}
                         darkMode={this.props.darkMode}
                         onVersionDeploy={this.onVersionDeploy}
+                        editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null }
+                        setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                       />
                     )}
                   </div>
