@@ -171,10 +171,17 @@ export class AppsService {
   }
 
   async createVersion(user: User, app: App, versionName: string): Promise<AppVersion> {
+   const lastVersion = await this.appVersionsRepository.findOne({
+     where: { appId: app.id },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
 
     return await this.appVersionsRepository.save(this.appVersionsRepository.create({
       name: versionName,
       app,
+      definition: lastVersion?.definition,
       createdAt: new Date(),
       updatedAt: new Date()
     }));
