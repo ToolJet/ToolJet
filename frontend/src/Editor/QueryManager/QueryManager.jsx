@@ -1,6 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-toastify';
+import { isEmpty } from 'lodash';
 import 'react-toastify/dist/ReactToastify.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
@@ -270,6 +271,15 @@ class QueryManager extends React.Component {
             {(addingQuery || editingQuery) && (
               <span
                 onClick={() => {
+                  options.headers = options.headers.filter(o => {
+                    return o.some(e => !isEmpty(e))
+                  })
+                  options.body = options.body.filter(o => {
+                    return o.some(e => !isEmpty(e))
+                  })
+                  options.url_params = options.url_params.filter(o => {
+                    return o.some(e => !isEmpty(e))
+                  })
                   const query = {
                     data_source_id: selectedDataSource.id === "null" ? null : selectedDataSource.id,
                     options: options,
