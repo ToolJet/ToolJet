@@ -38,7 +38,7 @@ export const Datepicker = function Datepicker({
   }
 
   return (
-    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={() => onComponentClick(id, component)}>
+    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <Datetime onChange={onDateChange} timeFormat={enableTime} dateFormat={enableDate} />
     </div>
   );

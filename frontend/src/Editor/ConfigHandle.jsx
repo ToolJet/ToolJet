@@ -11,7 +11,7 @@ export const ConfigHandle = function ConfigHandle({
 return <div className="config-handle" ref={dragRef}>
          <span 
           style={{cursor: 'move'}} 
-          onClick={(e) => { e.preventDefault(); configHandleClicked(id, component) }} 
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); configHandleClicked(id, component) }}
           className="badge badge bg-azure-lt" 
           role="button"
         >

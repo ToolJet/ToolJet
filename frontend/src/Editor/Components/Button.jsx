@@ -41,7 +41,7 @@ export const Button = function Button({
     <button
       className={`jet-button btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
       style={computedStyles}
-      onClick={() => onComponentClick(id, component)}
+      onClick={(event) => {event.stopPropagation();  onComponentClick(id, component)}}
     >
       {text}
     </button>
