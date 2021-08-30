@@ -1678,6 +1678,10 @@ input:focus-visible {
     color: #fff;
   }
 
+  .nav-tabs .nav-link.active {
+    color: #fff!important;
+  }
+
   .card-body > :last-child {
     color: #fff!important;
   }
