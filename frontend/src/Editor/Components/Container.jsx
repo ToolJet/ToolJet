@@ -9,7 +9,8 @@ export const Container = function Container({
   height,
   containerProps,
   width,
-  currentState
+  currentState,
+  removeComponent
 }) {
 
   const backgroundColor = component.definition.styles.backgroundColor.value;
