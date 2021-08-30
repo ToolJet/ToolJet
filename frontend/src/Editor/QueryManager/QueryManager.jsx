@@ -271,18 +271,19 @@ class QueryManager extends React.Component {
             {(addingQuery || editingQuery) && (
               <span
                 onClick={() => {
-                  options.headers = options.headers.filter(o => {
+                  const _options = { ...options }
+                  _options.headers = options.headers.filter(o => {
                     return o.some(e => !isEmpty(e))
                   })
-                  options.body = options.body.filter(o => {
+                  _options.body = options.body.filter(o => {
                     return o.some(e => !isEmpty(e))
                   })
-                  options.url_params = options.url_params.filter(o => {
+                  _options.url_params = options.url_params.filter(o => {
                     return o.some(e => !isEmpty(e))
                   })
                   const query = {
                     data_source_id: selectedDataSource.id === "null" ? null : selectedDataSource.id,
-                    options: options,
+                    options: _options,
                     kind: selectedDataSource.kind,
                   };
                   previewQuery(this, query)
@@ -290,7 +291,7 @@ class QueryManager extends React.Component {
                       this.previewPanelRef.current.scrollIntoView();
                     })
                     .catch(({ error, data }) => {
-                      
+                      console.log(error)
                     });
                 }}
                 className={`btn btn-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''}`}
