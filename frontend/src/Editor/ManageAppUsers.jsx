@@ -100,22 +100,22 @@ class ManageAppUsers extends React.Component {
   }
 
     handleSetSlug = (event) => {
-      const newSlug = event.target.value || null;
+      const newSlug = event.target.value || this.props.app.id;
       this.setState({ isSlugVerificationInProgress: true });
 
       appService
         .setSlug(this.state.app.id, newSlug)
         .then(() => {
-          this.setState({ 
-            slugError: null, 
-            isSlugVerificationInProgress: false 
+          this.setState({
+            slugError: null,
+            isSlugVerificationInProgress: false
           });
           this.props.handleSlugChange(newSlug);
         })
         .catch(({ error }) => {
-          this.setState({ 
-            slugError: error, 
-            isSlugVerificationInProgress: false 
+          this.setState({
+            slugError: error,
+            isSlugVerificationInProgress: false
           });
         });
     }
