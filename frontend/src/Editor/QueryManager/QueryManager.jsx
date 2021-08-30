@@ -272,15 +272,7 @@ class QueryManager extends React.Component {
               <span
                 onClick={() => {
                   const _options = { ...options }
-                  _options.headers = options.headers.filter(o => {
-                    return o.some(e => !isEmpty(e))
-                  })
-                  _options.body = options.body.filter(o => {
-                    return o.some(e => !isEmpty(e))
-                  })
-                  _options.url_params = options.url_params.filter(o => {
-                    return o.some(e => !isEmpty(e))
-                  })
+                  
                   const query = {
                     data_source_id: selectedDataSource.id === "null" ? null : selectedDataSource.id,
                     options: _options,

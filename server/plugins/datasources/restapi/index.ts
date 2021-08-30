@@ -3,6 +3,7 @@ import { HTTPError } from 'got';
 import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
+import { isEmpty } from 'lodash';
 const got = require('got');
 
 @Injectable()
@@ -10,9 +11,14 @@ export default class RestapiQueryService implements QueryService {
 
   /* Headers of the source will be overridden by headers of the query */
   headers(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
-    if(!hasDataSource) return Object.fromEntries(queryOptions.headers || []);
 
-    const headerData = (queryOptions.headers || []).concat(sourceOptions.headers || []);
+    const _headers = (queryOptions.headers || []).filter(o => {
+      return o.some(e => !isEmpty(e))
+    })
+
+    if(!hasDataSource) return Object.fromEntries(_headers);
+
+    const headerData = (_headers).concat(sourceOptions.headers || []);
 
     let headers = Object.fromEntries(headerData);
     Object.keys(headers).forEach(key => headers[key] === '' ? delete headers[key] : {});
@@ -22,17 +28,27 @@ export default class RestapiQueryService implements QueryService {
 
   /* Body params of the source will be overridden by body params of the query */
   body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
-    if(!hasDataSource) return Object.fromEntries(queryOptions.body || []);
 
-    const bodyParams = (queryOptions.body || []).concat(sourceOptions.body || []);
+    const _body = (queryOptions.body || []).filter(o => {
+      return o.some(e => !isEmpty(e))
+    })
+
+    if(!hasDataSource) return Object.fromEntries(_body);
+
+    const bodyParams = (_body).concat(sourceOptions.body || []);
     return Object.fromEntries(bodyParams);
   }
 
   /* Search params of the source will be overridden by Search params of the query */
   searchParams(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
-    if(!hasDataSource) return Object.fromEntries(queryOptions.url_params || []);
 
-    const urlParams = (queryOptions.url_params || []).concat(sourceOptions.url_params || []);
+    const _urlParams = (queryOptions.url_params || []).filter(o => {
+      return o.some(e => !isEmpty(e))
+    })
+
+    if(!hasDataSource) return Object.fromEntries(_urlParams);
+
+    const urlParams = (_urlParams).concat(sourceOptions.url_params || []);
     return Object.fromEntries(urlParams);
   }
 
