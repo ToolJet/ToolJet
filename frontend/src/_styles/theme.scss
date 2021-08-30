@@ -2044,3 +2044,11 @@ input:focus-visible {
     padding-left: 0;
   }
 }
+
+.no-border {
+  border-radius: 0 !important;
+}
+
+input[type=text] {
+  border-radius: 0 !important;
+}

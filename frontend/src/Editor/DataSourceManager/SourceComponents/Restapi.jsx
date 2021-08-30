@@ -47,7 +47,7 @@ export const Restapi = ({
           <input
             type="text"
             placeholder="https://api.example.com/v1/"
-            className="form-control"
+            className="form-control no-border"
             onChange={(e) => optionchanged('url', e.target.value)}
             value={options.url.value}
           />
@@ -71,7 +71,7 @@ export const Restapi = ({
                 <input
                   type="text"
                   value={pair[0]}
-                  className="form-control"
+                  className="form-control no-border"
                   placeholder="key"
                   autoComplete="off"
                   onChange={(e) => keyValuePairValueChanged(e, 0, 'headers', index)}
@@ -79,7 +79,7 @@ export const Restapi = ({
                 <input
                   type="text"
                   value={pair[1]}
-                  className="form-control"
+                  className="form-control no-border"
                   placeholder="value"
                   autoComplete="off"
                   onChange={(e) => keyValuePairValueChanged(e, 1, 'headers', index)}
