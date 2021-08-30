@@ -7,6 +7,7 @@ export const appService = {
   deleteApp,
   getApp,
   getAppBySlug,
+  getAppByVersion,
   saveApp,
   getAppUsers,
   createAppUser,
@@ -43,6 +44,11 @@ function deleteApp(id) {
 function getAppBySlug(slug) {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then(handleResponse);
+}
+
+function getAppByVersion(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function saveApp(id, attributes) {

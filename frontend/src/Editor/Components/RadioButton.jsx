@@ -19,6 +19,7 @@ export const RadioButton = function RadioButton({
 
   const values = component.definition.properties.values.value;
   const displayValues = component.definition.properties.display_values.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   let parsedValues = values;
 
@@ -42,6 +43,12 @@ export const RadioButton = function RadioButton({
     ];
   } catch (err) { console.log(err); }
 
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
+
 
   function onSelect(event) {
     const selection = event.target.value
@@ -54,7 +61,7 @@ export const RadioButton = function RadioButton({
 
 
   return (
-    <div className="row" style={{ width, height }}  onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div className="row" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'  }}  onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <span className="form-check-label form-check-label col-auto py-1" style={{color: textColor}}>{label}</span>
       <div className="col py-1" onChange={(e) => onSelect(e)}>
         {selectOptions.map((option, index) => (

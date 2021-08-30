@@ -2,6 +2,7 @@ import React from 'react';
 import { Editor, EditorState } from "draft-js";
 import "draft-js/dist/Draft.css";
 import { DraftEditor } from './DraftEditor';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const RichTextEditor = function RichTextEditor({
   id,
@@ -14,13 +15,21 @@ export const RichTextEditor = function RichTextEditor({
 }) {
 
   const placeholder = component.definition.properties.placeholder.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+
+
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
 
   function handleChange(html) {
     onComponentOptionChanged(component, 'value', html);
   }
 
   return (
-    <div style={{ width: `${width}px`, height: `${height}px` }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div style={{ width: `${width}px`, height: `${height}px`, display:parsedWidgetVisibility ? '' : 'none'  }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <DraftEditor
         handleChange={handleChange}
         height={height}
