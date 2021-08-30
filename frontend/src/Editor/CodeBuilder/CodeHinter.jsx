@@ -28,7 +28,6 @@ export function CodeHinter({
   minHeight,
   lineWrapping
 }) {
-  console.log('theme', theme)
   const options = {
     lineNumbers: lineNumbers,
     lineWrapping: lineWrapping,

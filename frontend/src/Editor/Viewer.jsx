@@ -12,7 +12,7 @@ import {
   onQueryConfirm,
   onQueryCancel,
   onEvent,
-  runQuery
+  runQuery,
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
@@ -21,51 +21,35 @@ class Viewer extends React.Component {
   constructor(props) {
     super(props);
 
+    const deviceWindowWidth = window.screen.width - 5;
+    const isMobileDevice = deviceWindowWidth < 600;
+    let scaleValue = isMobileDevice ? deviceWindowWidth / 450 : 1;
+
     this.state = {
+      deviceWindowWidth,
+      scaleValue,
+      currentLayout: isMobileDevice ? 'mobile' : 'desktop',
       currentUser: authenticationService.currentUserValue,
+      isLoading: true,
       users: null,
-      appDefinition: {
-        components: null
-      },
+      appDefinition: { components: {} },
       currentState: {
         queries: {},
         components: {},
         globals: {
           current_user: {},
-          urlparams: {}
-        }
-      }
+          urlparams: {},
+        },
+      },
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    let slug = nextProps.match.params.slug;
-    if(this.state.app?.slug != slug) {
-      this.setState({app: {}, appDefinition: {}}, () => {
-        this.loadApplication(slug);
-      });
-    }
-  }
-
-  loadApplication = (slug) => {
-
-    const deviceWindowWidth = window.screen.width - 5;
-    const isMobileDevice = deviceWindowWidth < 600;
-
-    let scaleValue = isMobileDevice ? deviceWindowWidth / 450 : 1;
-
-    this.setState({
-      isLoading: true,
-      deviceWindowWidth,
-      scaleValue,
-      currentLayout: isMobileDevice ? 'mobile' : 'desktop'
-    });
-
-    appService.getAppBySlug(slug).then((data) => this.setState(
+  setStateForApp = (data) => {
+    this.setState(
       {
         app: data,
         isLoading: false,
-        appDefinition: data.definition
+        appDefinition: data.definition || {components: {}},
       },
       () => {
         data.data_queries.forEach((query) => {
@@ -74,16 +58,18 @@ class Viewer extends React.Component {
           }
         });
       }
-    ));
+    );
+  };
 
+  setStateForContainer = () => {
     const currentUser = authenticationService.currentUserValue;
-    let userVars = { };
+    let userVars = {};
 
     if (currentUser) {
       userVars = {
         email: currentUser.email,
         firstName: currentUser.first_name,
-        lastName: currentUser.last_name
+        lastName: currentUser.last_name,
       };
     }
 
@@ -95,29 +81,33 @@ class Viewer extends React.Component {
         components: {},
         globals: {
           current_user: userVars,
-          urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search)))
-        }
-      }
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+        },
+      },
     });
-  }
+  };
+
+  loadApplicationBySlug = (slug) => {
+    appService.getAppBySlug(slug).then((data) => this.setStateForApp(data));
+    this.setStateForContainer();
+  };
+
+  loadApplicationByVersion = (appId, versionId) => {
+    appService.getAppByVersion(appId, versionId).then((data) => this.setStateForApp(data));
+    this.setStateForContainer();
+  };
 
   componentDidMount() {
     const slug = this.props.match.params.slug;
-    this.loadApplication(slug);
+    const appId = this.props.match.params.id;
+    const versionId = this.props.match.params.versionId;
+
+    slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
   }
 
   render() {
-    const {
-      appDefinition,
-      showQueryConfirmation,
-      currentState,
-      isLoading,
-      currentLayout,
-      deviceWindowWidth,
-      scaleValue
-    } = this.state;
-
-    console.log('currentState', currentState);
+    const { appDefinition, showQueryConfirmation, isLoading, currentLayout, deviceWindowWidth, scaleValue } =
+      this.state;
 
     return (
       <div className="viewer wrapper">
@@ -139,10 +129,7 @@ class Viewer extends React.Component {
                 </h1>
                 {this.state.app && <span>{this.state.app.name}</span>}
                 <div className="d-flex align-items-center m-1 p-1">
-                  <DarkModeToggle
-                    switchDarkMode={this.props.switchDarkMode}
-                    darkMode={this.props.darkMode}
-                  />
+                  <DarkModeToggle switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
                 </div>
               </div>
             </header>
@@ -150,8 +137,13 @@ class Viewer extends React.Component {
           <div className="sub-section">
             <div className="main">
               <div className="canvas-container align-items-center">
-                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px` }}>
-                <Container
+                <div
+                  className="canvas-area"
+                  style={{
+                    width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px`,
+                  }}
+                >
+                  <Container
                     appDefinition={appDefinition}
                     appDefinitionChanged={() => false} // function not relevant in viewer
                     snapToGrid={true}
@@ -164,11 +156,13 @@ class Viewer extends React.Component {
                     currentLayout={currentLayout}
                     currentState={this.state.currentState}
                     onComponentClick={(id, component) => onComponentClick(this, id, component, 'view')}
-                    onComponentOptionChanged={(component, optionName, value) => onComponentOptionChanged(this, component, optionName, value)
+                    onComponentOptionChanged={(component, optionName, value) =>
+                      onComponentOptionChanged(this, component, optionName, value)
                     }
-                    onComponentOptionsChanged={(component, options) => onComponentOptionsChanged(this, component, options)
+                    onComponentOptionsChanged={(component, options) =>
+                      onComponentOptionsChanged(this, component, options)
                     }
-                />
+                  />
                 </div>
               </div>
             </div>
