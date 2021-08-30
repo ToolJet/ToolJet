@@ -1,5 +1,17 @@
-import { User } from '../../src/entities/user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, ManyToOne, JoinColumn, AfterUpdate, Repository, AfterInsert, createQueryBuilder, getRepository, OneToMany, OneToOne, AfterLoad, BaseEntity, } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  getRepository,
+  OneToMany,
+  AfterLoad,
+  BaseEntity,
+} from 'typeorm';
+import { User } from './user.entity';
 import { AppVersion } from './app_version.entity';
 import { DataQuery } from './data_query.entity';
 import { DataSource } from './data_source.entity';
@@ -43,14 +55,6 @@ export class App extends BaseEntity {
 
   @OneToMany(() => DataSource, dataSource => dataSource.app, { onDelete: "CASCADE" })
   dataSources: DataSource[];
-
-  @AfterInsert()
-  updateSlug() {
-    if (!this.slug) {
-      const appRepository = getRepository(App);
-      appRepository.update(this.id, { slug: this.id })
-    }
-  }
 
   public editingVersion;
 

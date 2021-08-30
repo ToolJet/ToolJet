@@ -29,10 +29,11 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Request() req) {
-    const params = req.body;
-
     const app = await this.appsService.create(req.user);
-    return decamelizeKeys(app);
+    const appWithDefaultSlug = await this.appsService.update(req.user, app.id, {
+      slug: app.id,
+    });
+    return decamelizeKeys(appWithDefaultSlug);
   }
 
   @UseGuards(JwtAuthGuard)
