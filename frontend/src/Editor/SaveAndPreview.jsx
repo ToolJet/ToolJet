@@ -140,7 +140,7 @@ class SaveAndPreview extends React.Component {
                       <tr key={version.id}>
                         <td>
                           <div className="row">
-                            <div classname="col">
+                            <div className="col">
                             {version.name}
                             {version.id === this.props.app.current_version_id && (
                               <small className="mx-2">(current)</small>
@@ -148,21 +148,21 @@ class SaveAndPreview extends React.Component {
                             </div>
                             <div className="col-auto">
                               <button
-                                className="btn btn-sm"
+                                className="btn btn-sm text-muted"
                                 onClick={() => this.saveVersion(version.id)}
                                 disabled={savingVersionId === version.id || (this.props.editingVersionId && this.props.editingVersionId !== version.id)}
                               >
                                 {savingVersionId === version.id ? 'saving...' : 'save'}
                               </button>
                               <button
-                                className="btn btn btn-sm mx-2"
+                                className="btn btn btn-sm mx-2 text-muted"
                                 onClick={() => this.props.setAppDefinitionFromVersion(version)}
                                 disabled={this.props.editingVersionId == version.id}
                               >
                                 edit
                               </button>
                               <a
-                                className="btn btn btn-sm mx"
+                                className="btn btn btn-sm mx text-muted"
                                 href={`/applications/${appId}/versions/${version.id}`}
                                 target="_blank"
                                 rel="noreferrer"
