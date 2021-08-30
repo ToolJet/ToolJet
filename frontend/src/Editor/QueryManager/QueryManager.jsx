@@ -1,6 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-toastify';
+import { isEmpty } from 'lodash';
 import 'react-toastify/dist/ReactToastify.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
@@ -50,7 +51,6 @@ class QueryManager extends React.Component {
               source = { kind: 'restapi' };
             }
           }
-          //
           this.setState({
             options: selectedQuery.options,
             selectedDataSource: source,
@@ -60,6 +60,7 @@ class QueryManager extends React.Component {
         } else {
           this.setState({
             options: {},
+            selectedDataSource: null,
             selectedQuery: null,
             selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource
           });
@@ -270,9 +271,19 @@ class QueryManager extends React.Component {
             {(addingQuery || editingQuery) && (
               <span
                 onClick={() => {
+                  const _options = { ...options }
+                  _options.headers = options.headers.filter(o => {
+                    return o.some(e => !isEmpty(e))
+                  })
+                  _options.body = options.body.filter(o => {
+                    return o.some(e => !isEmpty(e))
+                  })
+                  _options.url_params = options.url_params.filter(o => {
+                    return o.some(e => !isEmpty(e))
+                  })
                   const query = {
                     data_source_id: selectedDataSource.id === "null" ? null : selectedDataSource.id,
-                    options: options,
+                    options: _options,
                     kind: selectedDataSource.kind,
                   };
                   previewQuery(this, query)
@@ -280,7 +291,7 @@ class QueryManager extends React.Component {
                       this.previewPanelRef.current.scrollIntoView();
                     })
                     .catch(({ error, data }) => {
-                      
+                      console.log(error)
                     });
                 }}
                 className={`btn btn-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''}`}
@@ -351,6 +362,7 @@ class QueryManager extends React.Component {
                       optionsChanged={this.optionsChanged}
                       currentState={currentState}
                       darkMode={this.props.darkMode}
+                      isEditMode={this.props.mode === 'edit'}
                     />
                     <hr></hr>
                     <div className="mb-3 mt-2">
