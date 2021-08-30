@@ -2,6 +2,7 @@ import 'codemirror/theme/duotone-light.css';
 
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { isEmpty } from 'lodash'
 import Tabs from './Tabs';
 
 import { changeOption } from '../utils';
@@ -16,18 +17,22 @@ class Restapi extends React.Component {
   }
 
   componentDidMount() {
-    if(!this.props.isEditMode) {
-      try {
+    try {
+      if(isEmpty(this.state.options['headers'])) {
         this.addNewKeyValuePair('headers');
-        setTimeout(() => {
-          this.addNewKeyValuePair('url_params');
-        }, 1000);
-        setTimeout(() => {
-          this.addNewKeyValuePair('body');
-        }, 1000);
-      } catch (error) {
-        console.log(error)
       }
+      setTimeout(() => {
+        if(isEmpty(this.state.options['url_params'])) {
+          this.addNewKeyValuePair('url_params');
+        }
+      }, 1000);
+      setTimeout(() => {
+        if(isEmpty(this.state.options['body'])) {
+          this.addNewKeyValuePair('body');
+        }
+      }, 1000);
+    } catch (error) {
+      console.log(error)
     }
   }
 
