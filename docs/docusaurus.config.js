@@ -9,7 +9,38 @@ module.exports = {
   favicon: 'img/logo.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
+  themes: ['docusaurus-theme-search-typesense'],
   themeConfig: {
+    typesense: {
+      typesenseCollectionName: 'docusaurus-2',
+
+      typesenseServerConfig: {
+        nodes: [
+          {
+            host: '14dkq3u5o9jrtb2ip-1.a1.typesense.net',
+            port: 443,
+            protocol: 'https',
+          },
+          {
+            host: '14dkq3u5o9jrtb2ip-1.a1.typesense.net',
+            port: 443,
+            protocol: 'https',
+          },
+          {
+            host: '14dkq3u5o9jrtb2ip-1.a1.typesense.net',
+            port: 443,
+            protocol: 'https',
+          },
+        ],
+        apiKey: 'YQSXcPx0e3m09BkVHFH4k9VvvTfWg2Qs',
+      },
+
+      // Optional: Typesense search parameters
+      typesenseSearchParameters: {},
+
+      // Optional
+      contextualSearch: true,
+    },
     colorMode: {
       switchConfig: {
         darkIcon: '\00a0 ',
@@ -89,6 +120,7 @@ module.exports = {
       copyright: `Copyright © ${new Date().getFullYear()} ToolJet.`,
     },
   },
+
   presets: [
     [
       '@docusaurus/preset-classic',
