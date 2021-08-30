@@ -581,7 +581,7 @@ body {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  border-radius: 4px;
+  border-radius: 0;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -1333,6 +1333,7 @@ body {
     font-family: 'Roboto', sans-serif;
     font-size: 0.9rem;
     padding: 0px;
+    z-index: 10000;
 
     li.CodeMirror-hint-active {
         background: #3c92dc;
@@ -1404,12 +1405,10 @@ body {
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #dadcde;
-  -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
-  border-radius: 4px;
+  border-radius: 0;
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-  height: 36px;
+  height: 36px !important;
  }
 
  .modal-component {
@@ -1480,6 +1479,12 @@ body {
 .CodeMirror-placeholder {
   color: #9e9e9e!important;
   font-size: 0.7rem!important;
+  margin-top: 2px!important;
+  font-size: 12px!important;
+}
+
+.CodeMirror-code {
+  font-weight: 300;
 }
 
 .btn-primary {
@@ -1671,6 +1676,14 @@ input:focus-visible {
 .theme-dark {
   .navbar .navbar-nav .active > .nav-link, .theme-dark .navbar .navbar-nav .nav-link.active, .theme-dark .navbar .navbar-nav .nav-link.show, .theme-dark .navbar .navbar-nav .show > .nav-link {
     color: #fff;
+  }
+
+  .nav-tabs .nav-link.active {
+    color: #fff!important;
+  }
+
+  .nav-tabs .nav-link {
+    color: #c3c3c3!important;
   }
 
   .card-body > :last-child {
@@ -1962,6 +1975,7 @@ input:focus-visible {
   .codehinter-query-editor-input {
     background-color: #272822;
     border: 1px solid #2c3a4c;
+    border-radius: 0;
   }
 
   .codehinter-query-editor-input .CodeMirror {
@@ -2005,4 +2019,47 @@ input:focus-visible {
 
 .theme-dark .input-group-text, .theme-dark .markdown > table thead th, .theme-dark .table thead th {
   background: #1c252f;
+}
+
+.sketch-picker { 
+  z-index: 1000;
+}
+
+.no-padding {
+  padding: 0;
+}
+
+.nav-tabs {
+  font-weight: 300;
+}
+
+.nav-tabs .nav-link.active {
+  // background: 0;
+  border: 0;
+  border-bottom: 1px solid #206bc4;
+  font-weight: 400;
+  // color: #fff;
+}
+
+// .nav-tabs .nav-link.active:hover {
+//   border-bottom: 1px solid #206bc4;
+// }
+
+// .nav-tabs .nav-link:hover {
+//   border: 0;
+// }
+
+.table-no-divider {
+  td {
+    border-bottom-width: 0px;
+    padding-left: 0;
+  }
+}
+
+.no-border {
+  border-radius: 0 !important;
+}
+
+input[type=text] {
+  border-radius: 0 !important;
 }
