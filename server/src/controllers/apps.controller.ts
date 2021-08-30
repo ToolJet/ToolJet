@@ -30,10 +30,11 @@ export class AppsController {
   @Post()
   async create(@Request() req) {
     const app = await this.appsService.create(req.user);
-    const appWithDefaultSlug = await this.appsService.update(req.user, app.id, {
+    await this.appsService.update(req.user, app.id, {
       slug: app.id,
     });
-    return decamelizeKeys(appWithDefaultSlug);
+
+    return decamelizeKeys(app);
   }
 
   @UseGuards(JwtAuthGuard)
