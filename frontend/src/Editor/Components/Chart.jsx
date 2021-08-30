@@ -15,7 +15,7 @@ export const Chart = function Chart({
   const [loadingState, setLoadingState] = useState(false);
   const [chartData, setChartData] = useState([]);
 
-  const widgetVisibility = component.definition.styles.visibility.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   let parsedWidgetVisibility = widgetVisibility;
   

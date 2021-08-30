@@ -37,7 +37,7 @@ export const ToggleSwitch = ({
   const label = component.definition.properties.label.value;
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
-  const widgetVisibility = component.definition.styles.visibility.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
 
   let parsedWidgetVisibility = widgetVisibility;

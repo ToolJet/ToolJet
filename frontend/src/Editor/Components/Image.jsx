@@ -6,7 +6,7 @@ export const Image = function Image({
   id, width, height, component, onComponentClick, currentState
 }) {
   const source = component.definition.properties.source.value;
-  const widgetVisibility = component.definition.styles.visibility.value
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   let data = resolveReferences(source, currentState, null);
 
