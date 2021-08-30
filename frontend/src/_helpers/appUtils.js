@@ -128,6 +128,11 @@ function executeAction(_ref, event, mode) {
       })
     }
 
+    if (event.actionId === 'run-query') {
+      const { queryId, queryName } = event;
+      return runQuery(_ref, queryId, queryName);
+    }
+
     if (event.actionId === 'open-webpage') {
       const url = resolveReferences(event.url, _ref.state.currentState);
       window.open(url, '_blank');
