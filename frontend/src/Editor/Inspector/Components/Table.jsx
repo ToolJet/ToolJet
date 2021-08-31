@@ -272,17 +272,20 @@ class Table extends React.Component {
           </div>
           <div className="field mb-2">
             <label className="form-label">Button position</label>
-            <select
-              className="form-select"
-              onChange={(e) => {
-                e.stopPropagation();
-                this.onActionButtonPropertyChanged(index, 'position', e.currentTarget.value);
-              }}
+            <SelectSearch
+              options={[
+                { name: 'Left', value: 'left' },
+                { name: 'Right', value: 'right' },
+              ]}
               value={action.position ?? 'right'}
-            >
-              <option value="left">Left</option>
-              <option value="right">Right</option>
-            </select>
+              search={false}
+              closeOnSelect={true}
+              onChange={value => {
+                this.onActionButtonPropertyChanged(index, 'position', value);
+              }}
+              filterOptions={fuzzySearch}
+              placeholder="Select position"
+            />
           </div>
           <Color
             param={{ name: 'actionButtonBackgroundColor' }}
