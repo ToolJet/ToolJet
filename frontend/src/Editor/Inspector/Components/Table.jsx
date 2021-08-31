@@ -276,9 +276,9 @@ class Table extends React.Component {
               className="form-select"
               onChange={(e) => {
                 e.stopPropagation();
-                this.onActionButtonPropertyChanged(index, 'buttonPosition', e.currentTarget.value);
+                this.onActionButtonPropertyChanged(index, 'position', e.currentTarget.value);
               }}
-              value={action.buttonPosition ?? 'right'}
+              value={action.position ?? 'right'}
             >
               <option value="left">Left</option>
               <option value="right">Right</option>

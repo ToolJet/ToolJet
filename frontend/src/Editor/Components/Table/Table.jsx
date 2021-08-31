@@ -437,7 +437,7 @@ export function Table({
         accessor: 'edit',
         width: columnSizes.actions || defaultColumn.width,
         Cell: (cell) => {
-          return actions.value.filter(action => action.buttonPosition === 'left').map((action) => (
+          return actions.value.filter(action => action.position === 'left').map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
@@ -463,7 +463,7 @@ export function Table({
         accessor: 'edit',
         width: columnSizes.actions || defaultColumn.width,
         Cell: (cell) => {
-          return actions.value.filter(action => [undefined, 'right'].includes(action.buttonPosition)).map((action) => (
+          return actions.value.filter(action => [undefined, 'right'].includes(action.position)).map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
