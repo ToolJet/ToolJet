@@ -270,6 +270,23 @@ class Table extends React.Component {
               value={action.buttonText}
             />
           </div>
+          <div className="field mb-2">
+            <label className="form-label">Button position</label>
+            <SelectSearch
+              options={[
+                { name: 'Left', value: 'left' },
+                { name: 'Right', value: 'right' },
+              ]}
+              value={action.position ?? 'right'}
+              search={false}
+              closeOnSelect={true}
+              onChange={value => {
+                this.onActionButtonPropertyChanged(index, 'position', value);
+              }}
+              filterOptions={fuzzySearch}
+              placeholder="Select position"
+            />
+          </div>
           <Color
             param={{ name: 'actionButtonBackgroundColor' }}
             paramType="properties"
