@@ -429,7 +429,10 @@ export function Table({
 
   tableData = tableData || [];
 
-  const leftActionsCellData = actions.value.length > 0
+  const leftActions = () => actions.value.filter(action => action.position === 'left')
+  const rightActions = () => actions.value.filter(action => [undefined, 'right'].includes(action.position))
+
+  const leftActionsCellData = leftActions().length > 0
     ? [
       {
         id: 'leftActions',
@@ -437,7 +440,7 @@ export function Table({
         accessor: 'edit',
         width: columnSizes.actions || defaultColumn.width,
         Cell: (cell) => {
-          return actions.value.filter(action => action.position === 'left').map((action) => (
+          return leftActions().map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
@@ -455,7 +458,7 @@ export function Table({
     ]
     : [];
 
-  const rightActionsCellData = actions.value.length > 0
+  const rightActionsCellData = rightActions().length > 0
     ? [
       {
         id: 'rightActions',
@@ -463,7 +466,7 @@ export function Table({
         accessor: 'edit',
         width: columnSizes.actions || defaultColumn.width,
         Cell: (cell) => {
-          return actions.value.filter(action => [undefined, 'right'].includes(action.position)).map((action) => (
+          return rightActions().map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
