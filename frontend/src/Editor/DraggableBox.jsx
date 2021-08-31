@@ -232,6 +232,7 @@ export const DraggableBox = function DraggableBox({
                 currentState={currentState}
                 containerProps={containerProps}
                 darkMode={darkMode}
+                removeComponent={removeComponent}
               />
             </div>
           </Rnd>
@@ -250,6 +251,7 @@ export const DraggableBox = function DraggableBox({
             onComponentClick={onComponentClick}
             currentState={currentState}
             darkMode={darkMode}
+            removeComponent={removeComponent}
           />
         </div>
       )}

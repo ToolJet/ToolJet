@@ -1,4 +1,5 @@
 import React from 'react';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const Checkbox = function Checkbox({
   id,
@@ -14,6 +15,13 @@ export const Checkbox = function Checkbox({
   const label = component.definition.properties.label.value;
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
 
   function toggleValue(e) {
     const checked = e.target.checked;
@@ -26,7 +34,7 @@ export const Checkbox = function Checkbox({
   }
 
   return (
-    <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <label className="form-check form-check-inline">
         <input
           className="form-check-input"

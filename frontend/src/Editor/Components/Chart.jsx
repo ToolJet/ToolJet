@@ -15,6 +15,14 @@ export const Chart = function Chart({
   const [loadingState, setLoadingState] = useState(false);
   const [chartData, setChartData] = useState([]);
 
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
+
   useEffect(() => {
     const loadingStateProperty = component.definition.properties.loadingState;
     if (loadingStateProperty && currentState) {
@@ -26,6 +34,7 @@ export const Chart = function Chart({
   const computedStyles = {
     width,
     height,
+    display: parsedWidgetVisibility ? '' : 'none',
     background: darkMode ? '#1f2936' : 'white'
   };
 
@@ -112,7 +121,7 @@ export const Chart = function Chart({
   return (
     <div
       style={computedStyles}
-      onClick={() => onComponentClick(id, component)}
+      onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
     >
       {loadingState === true ?
         <div style={{ width: '100%' }} className="p-2">

@@ -40,7 +40,7 @@ export const Container = ({
     position: 'absolute'
   };
 
-  const components = appDefinition.components || [];
+  const components = appDefinition.components;
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -73,10 +73,10 @@ export const Container = ({
     if(monitor.isDragging()) {
       if(!monitor.getItem().parent) {
         return { draggingState: true }
-      } else { 
+      } else {
         return { draggingState: false }
       }
-    } else { 
+    } else {
       return { draggingState: false }
     }
   });
@@ -125,17 +125,17 @@ export const Container = ({
             [left, top] = doSnapToGrid(left, top);
           }
 
-          let newBoxes = { 
+          let newBoxes = {
             ...boxes,
             [id]: {
               ...boxes[id],
-              layouts: { 
+              layouts: {
                 ...boxes[id]['layouts'],
                 [item.currentLayout]: {
                   ...boxes[id]['layouts'][item.currentLayout],
                   top: top,
                   left: left,
-                } 
+                }
               }
             }
           };
@@ -162,17 +162,17 @@ export const Container = ({
             [left, top] = doSnapToGrid(left, top);
           }
 
-          if(item.currentLayout === 'mobile') { 
+          if(item.currentLayout === 'mobile') {
             componentData.definition.others.showOnDesktop.value = false;
             componentData.definition.others.showOnMobile.value = true;
           }
-  
+
           setBoxes({
             ...boxes,
             [id]: {
               component: componentData,
               layouts: {
-                [item.currentLayout]: { 
+                [item.currentLayout]: {
                   top: top,
                   left: left,
                   width: componentMeta.defaultSize.width,
@@ -203,23 +203,23 @@ export const Container = ({
     };
 
     let  { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
-    
+
     top = y;
     left = x;
 
     width = width + deltaWidth;
     height = height + deltaHeight;
 
-    let newBoxes = { 
+    let newBoxes = {
       ...boxes,
       [id]: {
         ...boxes[id],
-        layouts: { 
+        layouts: {
           ...boxes[id]['layouts'],
           [currentLayout]: {
             ...boxes[id]['layouts'][currentLayout],
             width, height, top, left
-          } 
+          }
         }
       }
     };

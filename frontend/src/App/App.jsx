@@ -85,6 +85,7 @@ class App extends React.Component {
           <Route path = "/reset-password" component ={ResetPassword} />
           <Route path="/invitations/:token" component={InvitationPage} />
           <PrivateRoute exact path="/apps/:id" component={Editor} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+          <PrivateRoute exact path="/applications/:id/versions/:versionId" component={Viewer} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
           <PrivateRoute exact path="/applications/:slug" component={Viewer} switchDarkMode={this.switchDarkMode} darkMode={darkMode}/>
           <PrivateRoute exact path="/oauth2/authorize" component={Authorize} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
           <PrivateRoute exact path="/users" component={ManageOrgUsers} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />

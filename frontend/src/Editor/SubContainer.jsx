@@ -35,7 +35,8 @@ export const SubContainer = ({
   deviceWindowWidth,
   scaleValue,
   selectedComponent,
-  currentLayout
+  currentLayout,
+  removeComponent
 }) => {
   zoomLevel = zoomLevel || 1;
 
@@ -287,6 +288,7 @@ export const SubContainer = ({
           scaleValue={scaleValue}
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent? selectedComponent.id === key : false}
+          removeComponent={removeComponent}
         />
       ))}
 

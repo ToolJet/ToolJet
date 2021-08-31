@@ -1,4 +1,4 @@
-FROM node:14.17.0-buster
+FROM node:14.17.3-buster
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=2048"
