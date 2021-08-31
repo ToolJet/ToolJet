@@ -156,5 +156,4 @@ export const getParsedValue = (resolverFunction, data, state) => {
   } catch (err) { console.log(err) }
   
   return parsedValue
-  
 }
