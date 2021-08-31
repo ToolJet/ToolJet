@@ -21,7 +21,7 @@ export const StarRating = function StarRating({
   const textColorProperty = component.definition.styles.textColor;
   const color = textColorProperty ? textColorProperty.value : '#ffb400';
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
-  const disableState = component.definition.properties?.disableState?.value || false;
+  const disableState = component.definition.styles?.disableState?.value || false;
 
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 

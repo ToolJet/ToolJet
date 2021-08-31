@@ -82,8 +82,6 @@ class Chart extends React.Component {
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
 
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'disableState', 'properties', currentState)}
-
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'markerColor', 'properties', currentState)}
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showGridLines', 'properties', currentState)}

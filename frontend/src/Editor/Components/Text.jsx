@@ -9,7 +9,7 @@ export const Text = function Text({
   const text = component.definition.properties.text.value;
   const color = component.definition.styles.textColor.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
-  const disableState = component.definition.properties?.disableState?.value || false;
+  const disableState = component.definition.styles?.disableState?.value || false;
 
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 

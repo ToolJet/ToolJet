@@ -33,7 +33,7 @@ export const Map = function Map({
   const canSearchProp = component.definition.properties.canSearch;
   const canSearch = canSearchProp ? canSearchProp.value : false;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
-  const disableState = component.definition.properties?.disableState?.value || false;
+  const disableState = component.definition.styles?.disableState?.value || false;
 
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 

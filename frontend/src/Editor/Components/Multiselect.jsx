@@ -17,7 +17,7 @@ export const Multiselect = function Multiselect({
   const values = component.definition.properties.option_values.value;
   const displayValues = component.definition.properties.display_values.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
-  const disableState = component.definition.properties?.disableState?.value || false;
+  const disableState = component.definition.styles?.disableState?.value || false;
 
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
