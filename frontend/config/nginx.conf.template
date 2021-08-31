@@ -54,9 +54,19 @@ http
     ssl_certificate /etc/fallback-certs/resty-auto-ssl-fallback.crt;
     ssl_certificate_key /etc/fallback-certs/resty-auto-ssl-fallback.key;
 
-
     location /
     {
+      root /var/www;
+      try_files $uri $uri/ /index.html @proxy;
+      error_page 405 @proxy;
+    }
+
+    location /api/
+    {
+      try_files /_bypass_to_proxy @proxy;
+    }
+
+    location @proxy {
       proxy_pass http://${SERVER_HOST}:3000;
       proxy_redirect off;
       proxy_set_header Host $host;
@@ -76,6 +86,17 @@ http
 
     location /
     {
+      root /var/www;
+      try_files $uri $uri/ /index.html @proxy;
+      error_page 405 @proxy;
+    }
+
+    location /api/
+    {
+      try_files /_bypass_to_proxy @proxy;
+    }
+
+    location @proxy {
       proxy_pass http://${SERVER_HOST}:3000;
       proxy_redirect off;
       proxy_set_header Host $host;

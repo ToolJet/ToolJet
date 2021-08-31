@@ -1,0 +1,17 @@
+
+// overwrites the styles of datepicker [cell-type]
+.cell-type-datepicker {
+    
+    .rdtPicker {
+        thead {
+            display: table-header-group;
+            vertical-align: middle;
+        }
+        tbody {
+            display: table-row-group;
+        }
+        tr {
+            display: table-row;
+        }
+    }
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
 // import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DndProvider } from 'react-dnd';
@@ -58,6 +58,7 @@ class Editor extends React.Component {
       isLoading: true,
       users: null,
       appId,
+      editingVersion: null,
       loadingDataSources: true,
       loadingDataQueries: true,
       showQueryEditor: true,
@@ -67,7 +68,7 @@ class Editor extends React.Component {
       scaleValue: 1,
       deviceWindowWidth: 450,
       appDefinition: {
-        components: null,
+        components: {},
       },
       currentState: {
         queries: {},
@@ -76,6 +77,7 @@ class Editor extends React.Component {
           currentUser: userVars,
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
+        errors: {}
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
@@ -87,12 +89,14 @@ class Editor extends React.Component {
     const appId = this.props.match.params.id;
     this.fetchApps(0);
 
-    appService.getApp(appId).then((data) =>
+    appService.getApp(appId).then((data) => {
+      const dataDefinition = data.definition || {components: {}}
       this.setState(
         {
           app: data,
           isLoading: false,
-          appDefinition: { ...this.state.appDefinition, ...data.definition },
+          editingVersion: data.editing_version,
+          appDefinition: { ...this.state.appDefinition, ...dataDefinition },
           slug: data.slug,
         },
         () => {
@@ -103,7 +107,7 @@ class Editor extends React.Component {
           });
         }
       )
-    );
+    });
 
     this.fetchDataSources();
     this.fetchDataQueries();
@@ -192,6 +196,13 @@ class Editor extends React.Component {
       })
     );
   };
+
+  setAppDefinitionFromVersion = (version) => {
+    this.appDefinitionChanged(version.definition || {components: {}})
+    this.setState({
+      editingVersion: version
+    })
+  }
 
   computeComponentState = (components) => {
     let componentState = {};
@@ -413,6 +424,8 @@ class Editor extends React.Component {
 
   toggleQueryEditor = () => {
     this.setState({ showQueryEditor: !this.state.showQueryEditor });
+    this.toolTipRefHide.current.style.display = this.state.showQueryEditor ? 'none' : 'flex';
+    this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'flex' : 'none';
   };
 
   toggleLeftSidebar = () => {
@@ -455,6 +468,9 @@ class Editor extends React.Component {
       zoomLevel: zoom,
     });
   };
+
+  toolTipRefHide = createRef(null);
+  toolTipRefShow = createRef(null);
 
   render() {
     const {
@@ -527,11 +543,29 @@ class Editor extends React.Component {
                     value={this.state.app.name}
                   />
                 )}
+                <small>{this.state.editingVersion && `Editing version: ${this.state.editingVersion.name}`}</small>
                 <div className="editor-buttons">
                   <span
-                    className={`btn ${showQueryEditor ? 'btn-light' : 'btn-default'} mx-2`}
+                    className={`btn btn-light mx-2`}
                     onClick={this.toggleQueryEditor}
-                    data-tip={showQueryEditor ? 'Hide query editor' : 'Show query editor'}
+                    data-tip="Hide query editor"
+                    data-class="py-1 px-2"
+                    ref={this.toolTipRefHide}
+                  >
+                    <img
+                      style={{ transform: 'rotate(-90deg)' }}
+                      src="/assets/images/icons/editor/sidebar-toggle.svg"
+                      width="12"
+                      height="12"
+                    />
+                  </span>
+                  <span
+                    className={`btn btn-default mx-2`}
+                    onClick={this.toggleQueryEditor}
+                    data-tip="Show query editor"
+                    data-class="py-1 px-2"
+                    ref={this.toolTipRefShow}
+                    style={{ display: 'none' }}
                   >
                     <img
                       style={{ transform: 'rotate(-90deg)' }}
@@ -616,6 +650,8 @@ class Editor extends React.Component {
                         app={app}
                         darkMode={this.props.darkMode}
                         onVersionDeploy={this.onVersionDeploy}
+                        editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null }
+                        setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                       />
                     )}
                   </div>
@@ -625,6 +661,7 @@ class Editor extends React.Component {
           </div>
           <div className="sub-section">
             <LeftSidebar
+              errorLogs={currentState.errors}
               queries={currentState.queries}
               components={currentState.components}
               globals={currentState.globals}
@@ -816,8 +853,13 @@ class Editor extends React.Component {
 
                           <span
                             data-tip="Add new query"
+                            data-class="py-1 px-2"
                             className="btn btn-sm btn-light text-muted"
-                            onClick={() => this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })}
+                            onClick={() => this.setState({ 
+                              selectedQuery: {}, 
+                              editingQuery: false, 
+                              addingQuery: true
+                            })}
                           >
                             +
                           </span>

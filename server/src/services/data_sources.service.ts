@@ -25,7 +25,7 @@ export class DataSourcesService {
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
-    return await this.dataSourcesRepository.findOne(dataSourceId, { relations: ['app'] });
+    return await this.dataSourcesRepository.findOne({ where: { id: dataSourceId}, relations: ['app'] });
   }
 
   async create(user: User, name:string, kind:string, options:Array<object>, appId:string): Promise<DataSource> {

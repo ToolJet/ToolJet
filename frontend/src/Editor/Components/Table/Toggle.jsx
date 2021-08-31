@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export const Toggle = ({readOnly, value, onChange, options }) => {
+export const Toggle = ({readOnly, value, onChange, activeColor, options }) => {
   const [on, setOn] = useState(() => value)
 
   const toggle = () => {
@@ -16,6 +16,7 @@ export const Toggle = ({readOnly, value, onChange, options }) => {
               className="form-check-input"
               type="checkbox"
               checked={on}
+              style={ on ?  { backgroundColor: activeColor} : {}}
               onClick={() => {if(!readOnly) toggle()}}
             />
         </label>

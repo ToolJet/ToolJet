@@ -19,6 +19,7 @@ import { CustomSelect } from './CustomSelect';
 import { Tags } from './Tags';
 import { Radio } from './Radio';
 import { Toggle } from './Toggle'
+import { Datepicker } from './Datepicker';
 
 var _ = require('lodash');
 
@@ -46,6 +47,17 @@ export function Table({
 
   const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
   const displaySearchBox = displaySearchBoxProperty ? displaySearchBoxProperty.value : true;
+
+  const tableTypeProperty = component.definition.styles.tableType;
+  let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
+  tableType = tableType === '' ? 'table-bordered' : tableType;
+
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
 
   const [loadingState, setLoadingState] = useState(false);
 
@@ -244,6 +256,10 @@ export function Table({
         });
       }
     }
+    if (columnType === 'datepicker') {
+      column.isTimeChecked =  column.isTimeChecked ? column.isTimeChecked : false
+      column.dateFormat =  column.dateFormat ? column.dateFormat : 'DD/MM/YYYY'
+    }
 
     const width = columnSize || defaultColumn.width;
 
@@ -377,6 +393,21 @@ export function Table({
               <Toggle
                 value={cellValue}
                 readOnly={!column.isEditable}
+                activeColor={column.activeColor}
+                onChange={(value) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                }}
+              />
+            </div>
+          );
+        } if (columnType === 'datepicker') {
+          return (
+            <div>
+              <Datepicker
+                dateFormat={column.dateFormat}
+                isTimeChecked={column.isTimeChecked}
+                value={cellValue}
+                readOnly={column.isEditable}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                 }}
@@ -398,15 +429,44 @@ export function Table({
 
   tableData = tableData || [];
 
-  const actionsCellData = actions.value.length > 0
+  const leftActions = () => actions.value.filter(action => action.position === 'left')
+  const rightActions = () => actions.value.filter(action => [undefined, 'right'].includes(action.position))
+
+  const leftActionsCellData = leftActions().length > 0
     ? [
       {
-        id: 'actions',
+        id: 'leftActions',
         Header: 'Actions',
         accessor: 'edit',
         width: columnSizes.actions || defaultColumn.width,
         Cell: (cell) => {
-          return actions.value.map((action) => (
+          return leftActions().map((action) => (
+                <button
+                  key={action.name}
+                  className="btn btn-sm m-1 btn-light"
+                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                  }}
+                >
+                  {action.buttonText}
+                </button>
+          ));
+        }
+      }
+    ]
+    : [];
+
+  const rightActionsCellData = rightActions().length > 0
+    ? [
+      {
+        id: 'rightActions',
+        Header: 'Actions',
+        accessor: 'edit',
+        width: columnSizes.actions || defaultColumn.width,
+        Cell: (cell) => {
+          return rightActions().map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
@@ -425,8 +485,13 @@ export function Table({
     : [];
 
   const columns = useMemo(
-    () => [...columnData, ...actionsCellData],
-    [JSON.stringify(columnData), actionsCellData.length, componentState.changeSet] // Hack: need to fix
+    () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
+    [JSON.stringify(columnData), 
+      leftActionsCellData.length,
+      rightActionsCellData.length,
+      componentState.changeSet,
+      JSON.stringify(component.definition.properties.columns)
+    ] // Hack: need to fix
   );
 
   const data = useMemo(() => tableData, [tableData.length]);
@@ -531,8 +596,8 @@ export function Table({
   return (
     <div
       className="card jet-table"
-      style={{ width: `${width}px`, height: `${height}px` }}
-      onClick={() => onComponentClick(id, component)}
+      style={{ width: `${width}px`, height: `${height}px`, display:parsedWidgetVisibility ? '' : 'none' }}
+      onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
       {(!(!displaySearchBox && serverSidePagination) &&
@@ -566,7 +631,7 @@ export function Table({
         </div>
       )}
       <div className="table-responsive jet-data-table">
-        <table {...getTableProps()} className="table table-vcenter table-nowrap table-bordered" style={computedStyles}>
+        <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
           <thead>
             {headerGroups.map((headerGroup) => (
               <tr {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">

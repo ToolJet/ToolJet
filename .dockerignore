@@ -1,6 +1,4 @@
-# frontend/*
-app/*
 docs/*
 tmp/*
-server/node_modules/*
-server/dist/*
+**/node_modules/*
+**/dist/*

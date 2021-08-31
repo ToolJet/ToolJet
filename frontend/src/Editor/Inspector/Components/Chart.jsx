@@ -1,6 +1,5 @@
 import React from 'react';
-import { renderElement, renderEvent, renderQuerySelector } from '../Utils';
-import { EventSelector } from '../EventSelector';
+import { renderElement } from '../Utils';
 import { Color } from '../Elements/Color';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
@@ -79,6 +78,7 @@ class Chart extends React.Component {
               onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
             />
         </div>
+        {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
 

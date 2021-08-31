@@ -17,6 +17,14 @@ export const Datepicker = function Datepicker({
   const formatProp = component.definition.properties.format;
   const enableTimeProp = component.definition.properties.enableTime;
   const enableDateProp = component.definition.properties.enableDate;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
+
 
   const enableTime = resolveReferences(enableTimeProp.value, currentState, false);
 
@@ -30,7 +38,7 @@ export const Datepicker = function Datepicker({
   }
 
   return (
-    <div style={{ width, height }} onClick={() => onComponentClick(id, component)}>
+    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <Datetime onChange={onDateChange} timeFormat={enableTime} dateFormat={enableDate} />
     </div>
   );

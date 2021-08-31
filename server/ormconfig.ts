@@ -27,10 +27,15 @@ function buildConnectionOptions(
     host: data.PG_HOST,
   }
 
+  const entitiesDir =
+    process.env.NODE_ENV === 'test'
+      ? [__dirname + '/**/*.entity.ts']
+      : [__dirname + '/**/*.entity{.js,.ts}'];
+
   return {
     type: 'postgres',
     ...connectionParams,
-    autoLoadEntities: true,
+    entities: entitiesDir,
     synchronize: false,
     uuidExtension: 'pgcrypto',
     migrationsRun: false,
