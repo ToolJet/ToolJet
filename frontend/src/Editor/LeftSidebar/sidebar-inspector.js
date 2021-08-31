@@ -1,15 +1,17 @@
 import React from 'react';
-import usePopover from '../../_hooks/use-popover';
+import usePinnedPopover from '@/_hooks/usePinnedPopover';
 import { LeftSidebarItem } from './sidebar-item';
+import { SidebarPinnedButton} from './SidebarPinnedButton';
 import ReactJson from 'react-json-view';
 
 export const LeftSidebarInspector = ({ darkMode, globals, components, queries }) => {
-  const [open, trigger, content] = usePopover(false)
+  const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false)
 
   return (
     <>
       <LeftSidebarItem tip='Inspector' {...trigger} icon='inspector' className='left-sidebar-item' />
-      <div {...content} className={`card popover ${open ? 'show' : 'hide'}`}>
+      <div {...content} className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}>
+      <SidebarPinnedButton component={'Inspector'} state={popoverPinned} updateState={updatePopoverPinnedState} />
         <div className="card-body">
           <ReactJson
             src={queries}

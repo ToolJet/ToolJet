@@ -1,26 +1,20 @@
 import React from 'react';
-import usePopover from '../../_hooks/use-popover';
+import usePinnedPopover from '@/_hooks/usePinnedPopover';
 import { LeftSidebarItem } from './sidebar-item';
 import ReactJson from 'react-json-view';
 import _ from 'lodash';
 import moment from 'moment';
-import { SidebarPinned } from './SidebarPinned';
+import { SidebarPinnedButton } from './SidebarPinnedButton';
 
 
 export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
-    const [open, trigger, content, setOpen] = usePopover(false)
+    const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false)
     const [currrentTab, setCurrentTab] = React.useState(1)
     const [errorLogs, setErrorLogs] = React.useState([])
     const [unReadErrorCount, setUnReadErrorCount] = React.useState({read: 0, unread: 0})
-    const [popoverPinned, setPopoverPinned] = React.useState(false)
 
     const switchCurrentTab = (tab) => {
         setCurrentTab(tab)
-    }
-
-
-    const updatePopoverPinnedState = () => {
-        setPopoverPinned((prev) => !prev)
     }
 
     const clearErrorLogs = () => {
@@ -120,7 +114,7 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
                                     <span className="text-muted">clear</span>
                                 </button>
                             )}
-                            <SidebarPinned component={'Debugger'} state={popoverPinned} updateState={updatePopoverPinnedState} />
+                            <SidebarPinnedButton component={'Debugger'} state={popoverPinned} updateState={updatePopoverPinnedState} />
                         </li> 
                   </ul> 
               </div> 
