@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 
 export const Container = function Container({
   id,
@@ -15,6 +15,9 @@ export const Container = function Container({
 
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -32,7 +35,7 @@ export const Container = function Container({
   const parentRef = useRef(null);
 
   return (
-    <div className="jet-container" ref={parentRef} onClick={() => containerProps.onComponentClick(id, component)} style={computedStyles}>
+    <div disabled={parsedDisableState} className="jet-container" ref={parentRef} onClick={() => containerProps.onComponentClick(id, component)} style={computedStyles}>
             <SubContainer
               parent={id}
               {...containerProps}

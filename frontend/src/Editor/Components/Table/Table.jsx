@@ -9,7 +9,7 @@ import {
   useBlockLayout,
   useResizeColumns
 } from 'react-table';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from 'react-table-plugins';
@@ -53,6 +53,9 @@ export function Table({
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
   let parsedWidgetVisibility = widgetVisibility;
   
   try {
@@ -565,6 +568,7 @@ export function Table({
 
   return (
     <div
+      disabled={parsedDisableState}
       className="card jet-table"
       style={{ width: `${width}px`, height: `${height}px`, display:parsedWidgetVisibility ? '' : 'none' }}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}

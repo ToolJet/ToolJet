@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const DropDown = function DropDown({
@@ -17,6 +17,9 @@ export const DropDown = function DropDown({
   const values = component.definition.properties.values.value;
   const displayValues = component.definition.properties.display_values.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   let parsedValues = values;
 
@@ -70,6 +73,7 @@ export const DropDown = function DropDown({
       </div>
       <div className="col px-0">
         <SelectSearch
+          disabled={parsedDisableState}
           options={selectOptions}
           value={currentValue}
           search={true}

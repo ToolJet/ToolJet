@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import config from 'config';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { Marker } from '@react-google-maps/api';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 import { Autocomplete } from '@react-google-maps/api';
 import { darkModeStyles } from './styles';
 
@@ -33,6 +33,9 @@ export const Map = function Map({
   const canSearchProp = component.definition.properties.canSearch;
   const canSearch = canSearchProp ? canSearchProp.value : false;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -110,7 +113,7 @@ export const Map = function Map({
   }
 
   return (
-    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
+    <div disabled={parsedDisableState} style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
       <LoadScript
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
         libraries={["places"]}

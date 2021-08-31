@@ -1,16 +1,18 @@
 import React from 'react';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 
 class Switch extends React.Component {
     render() {
       const {
         on,
         onClick,
-        onChange
+        onChange,
+        disableState
       } = this.props
       return (
           <label className="form-check form-switch form-check-inline">
             <input
+              disabled={disableState}
               className="form-check-input"
               type="checkbox"
               checked={on}
@@ -38,6 +40,9 @@ export const ToggleSwitch = ({
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
 
   let parsedWidgetVisibility = widgetVisibility;
@@ -59,7 +64,7 @@ export const ToggleSwitch = ({
     <div className="row  py-1" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
         <span className="form-check-label form-check-label col-auto" style={{color: textColor}}>{label}</span>
         <div className="col">
-          <Switch on={on} onClick={toggle} onChange={toggleValue} />
+          <Switch disableState={parsedDisableState} on={on} onClick={toggle} onChange={toggleValue} />
         </div>
     </div>
   );

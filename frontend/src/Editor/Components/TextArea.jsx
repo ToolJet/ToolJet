@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 
 export const TextArea = function TextArea({
   id,
@@ -27,6 +27,9 @@ export const TextArea = function TextArea({
   
   const placeholder = component.definition.properties.placeholder.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -36,6 +39,7 @@ export const TextArea = function TextArea({
 
   return (
     <textarea
+      disabled={parsedDisableState}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
       onChange={(e) => {
         setText(e.target.value);

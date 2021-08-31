@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 import Skeleton from 'react-loading-skeleton';
 
@@ -9,6 +9,9 @@ export const Text = function Text({
   const text = component.definition.properties.text.value;
   const color = component.definition.styles.textColor.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   const [loadingState, setLoadingState] = useState(false);
 
@@ -48,7 +51,7 @@ export const Text = function Text({
   };
 
   return (
-    <div className="text-widget" style={computedStyles} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div disabled={parsedDisableState} className="text-widget" style={computedStyles} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />}
       {loadingState === true && (
         <div>

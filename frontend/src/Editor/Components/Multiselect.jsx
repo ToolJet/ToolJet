@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const Multiselect = function Multiselect({
@@ -17,6 +17,9 @@ export const Multiselect = function Multiselect({
   const values = component.definition.properties.option_values.value;
   const displayValues = component.definition.properties.display_values.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   const parsedValues = JSON.parse(values);
   const parsedDisplayValues = JSON.parse(displayValues);
@@ -53,6 +56,7 @@ export const Multiselect = function Multiselect({
       </div>
       <div className="col px-0">
         <SelectSearch
+          disabled={parsedDisableState}
           options={selectOptions}
           value={currentValue}
           search={true}

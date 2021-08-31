@@ -1,7 +1,7 @@
 import React from 'react';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 
 export const Datepicker = function Datepicker({
   id,
@@ -18,6 +18,9 @@ export const Datepicker = function Datepicker({
   const enableTimeProp = component.definition.properties.enableTime;
   const enableDateProp = component.definition.properties.enableDate;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -38,7 +41,7 @@ export const Datepicker = function Datepicker({
   }
 
   return (
-    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div disabled={parsedDisableState} style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <Datetime onChange={onDateChange} timeFormat={enableTime} dateFormat={enableDate} />
     </div>
   );

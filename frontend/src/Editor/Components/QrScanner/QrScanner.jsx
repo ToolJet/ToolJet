@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import QrReader from 'react-qr-reader';
 import ErrorModal from './ErrorModal';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 
 export const QrScanner = function QrScanner({
   component, onEvent, onComponentOptionChanged, currentState
@@ -22,6 +22,9 @@ export const QrScanner = function QrScanner({
   let [errorOccured, setErrorOccured] = useState(false);
 
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -30,7 +33,7 @@ export const QrScanner = function QrScanner({
   } catch (err) { console.log(err); }
 
   return (
-    <div style={{display:parsedWidgetVisibility ? '' : 'none'}}>
+    <div disabled={parsedDisableState} style={{display:parsedWidgetVisibility ? '' : 'none'}}>
       {
         errorOccured ?
           <ErrorModal />

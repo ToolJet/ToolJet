@@ -8,6 +8,7 @@ export const componentTypes = [
       title: { type: 'string', displayName: 'Title' },
       data: { type: 'code', displayName: 'Table data' },
       loadingState: { type: 'code', displayName: 'Loading state' },
+      disableState: {type: 'code', displayName: 'Disable'},
       columns: { type: 'array', displayName: 'Table Columns' },
       serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination' },
       serverSideSearch: { type: 'toggle', displayName: 'Server-side search' },
@@ -56,6 +57,7 @@ export const componentTypes = [
         title: { value: 'Table' },
         visible: { value: true },
         loadingState: { value: false },
+        disableState: {value: '{{false}}'},
         data: {
           value:
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
@@ -93,6 +95,7 @@ export const componentTypes = [
     properties: {
       text: { type: 'code', displayName: 'Button Text' },
       loadingState: { type: 'code', displayName: 'Loading State' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -112,6 +115,7 @@ export const componentTypes = [
         text: { value: `Button` },
         visible: { value: true },
         loadingState: { value: `{{false}}` },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -149,6 +153,7 @@ export const componentTypes = [
           { name: 'Pie', value: 'pie' },
         ],
       },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {},
     styles: {
@@ -175,6 +180,7 @@ export const componentTypes = [
   { "x": 40, "y": "Mar"}
 ]`,
         },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -206,6 +212,7 @@ export const componentTypes = [
           { name: 'large', value: 'lg' },
         ],
       },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {},
     styles: {},
@@ -220,6 +227,7 @@ export const componentTypes = [
       properties: {
         title: { value: 'This title can be changed' },
         size: { value: 'md' },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {},
@@ -240,6 +248,7 @@ export const componentTypes = [
     },
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {},
     styles: {
@@ -255,6 +264,7 @@ export const componentTypes = [
       },
       properties: {
         placeholder: { value: 'Placeholder text' },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -279,6 +289,7 @@ export const componentTypes = [
       format: { type: 'code', displayName: 'Format' },
       enableTime: { type: 'code', displayName: 'Enable time selection?' },
       enableDate: { type: 'code', displayName: 'Enable date selection?' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {},
     styles: {
@@ -296,6 +307,7 @@ export const componentTypes = [
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -318,6 +330,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {
       onCheck: { displayName: 'On check' },
@@ -335,6 +348,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Checkbox label' },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -361,6 +375,7 @@ export const componentTypes = [
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {
       onSelectionChange: { displayName: 'On select' },
@@ -381,6 +396,7 @@ export const componentTypes = [
         values: { value: '{{[true,false]}}' },
         display_values: { value: '{{["yes", "no"]}}' },
         visible: { value: true },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -404,6 +420,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -420,6 +437,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Toggle label' },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -444,6 +462,7 @@ export const componentTypes = [
     properties: {
       value: { type: 'code', displayName: 'Default value' },
       placeholder: { type: 'code', displayName: 'Placeholder' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {},
     styles: {
@@ -460,6 +479,7 @@ export const componentTypes = [
       properties: {
         value: { value: '' },
         placeholder: { value: 'Placeholder text' },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -482,6 +502,7 @@ export const componentTypes = [
     },
     properties: {
       format: { type: 'code', displayName: 'Format' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {},
     styles: {
@@ -498,6 +519,7 @@ export const componentTypes = [
       },
       properties: {
         format: { value: 'DD/MM/YYYY' },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -517,6 +539,7 @@ export const componentTypes = [
     properties: {
       text: { type: 'code', displayName: 'Text' },
       loadingState: { type: 'code', displayName: 'Show loading state' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     defaultSize: {
       width: 200,
@@ -537,6 +560,7 @@ export const componentTypes = [
         text: { value: 'Text goes here !' },
         visible: { value: true },
         loadingState: { value: false },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -560,6 +584,7 @@ export const componentTypes = [
     },
     properties: {
       source: { type: 'code', displayName: 'URL' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -576,6 +601,7 @@ export const componentTypes = [
       properties: {
         source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
         visible: { value: true },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -596,7 +622,9 @@ export const componentTypes = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
-    properties: {},
+    properties: {
+      disableState: {type: 'code', displayName: 'Disable'}
+    },
     events: {},
     styles: {
       backgroundColor: { type: 'color' },
@@ -610,6 +638,7 @@ export const componentTypes = [
       },
       properties: {
         visible: { value: true },
+        disableState: {value:'{{false}}'}
       },
       events: [],
       styles: {
@@ -636,6 +665,7 @@ export const componentTypes = [
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {
       onSelect: { displayName: 'On select' },
@@ -657,6 +687,7 @@ export const componentTypes = [
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -682,6 +713,7 @@ export const componentTypes = [
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {
       onSelect: { displayName: 'On select' },
@@ -703,6 +735,7 @@ export const componentTypes = [
         option_values: { value: '[1,2,3]' },
         display_values: { value: '["one", "two", "three"]' },
         visible: { value: true },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -725,6 +758,7 @@ export const componentTypes = [
     },
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {},
     styles: {
@@ -740,6 +774,7 @@ export const componentTypes = [
       },
       properties: {
         placeholder: { value: 'Placeholder text' },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {
@@ -782,6 +817,7 @@ export const componentTypes = [
       },
       addNewMarkers: { type: 'toggle', displayName: 'Add new markers' },
       canSearch: { type: 'toggle', displayName: 'Search for places' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {
       onBoundsChange: { displayName: 'On bounds change' },
@@ -812,6 +848,7 @@ export const componentTypes = [
   "lng": -73.935242
 }]`,
         },
+        disableState: {value: '{{false}}'}
       },
       addNewMarkers: { value: '{{false}}' },
       events: [],
@@ -833,7 +870,9 @@ export const componentTypes = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
-    properties: {},
+    properties: {
+      disableState: {type: 'code', displayName: 'Disable'}
+    },
     events: {
       onDetect: { displayName: 'On detect' },
     },
@@ -848,7 +887,9 @@ export const componentTypes = [
         showOnDesktop: { value: true },
         showOnMobile: { value: true },
       },
-      properties: {},
+      properties: {
+        disableState: {value: '{{false}}'}
+      },
       events: [],
       styles: {
         visibility: {value: '{{true}}'}
@@ -874,6 +915,7 @@ export const componentTypes = [
       defaultSelected: { type: 'code', displayName: 'Default no of selected stars' },
       allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
       tooltips: { type: 'code', displayName: 'Tooltips' },
+      disableState: {type: 'code', displayName: 'Disable'}
     },
     events: {
       onChange: { displayName: 'On Change' },
@@ -897,6 +939,7 @@ export const componentTypes = [
         allowHalfStar: { value: false },
         visible: { value: true },
         tooltips: { value: '{{[]}}' },
+        disableState: {value: '{{false}}'}
       },
       events: [],
       styles: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 
 
 export const RadioButton = function RadioButton({
@@ -20,6 +20,9 @@ export const RadioButton = function RadioButton({
   const values = component.definition.properties.values.value;
   const displayValues = component.definition.properties.display_values.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   let parsedValues = values;
 
@@ -66,7 +69,7 @@ export const RadioButton = function RadioButton({
       <div className="col py-1" onChange={(e) => onSelect(e)}>
         {selectOptions.map((option, index) => (
           <label key={index} class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" value={option.value} name="radio-options" /> 
+            <input disabled={parsedDisableState} class="form-check-input" type="radio" value={option.value} name="radio-options" /> 
             <span className="form-check-label" style={{color: textColor}}>{option.name}</span>
           </label>
         ))}

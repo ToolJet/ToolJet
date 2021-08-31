@@ -1,5 +1,5 @@
 import React from 'react';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, getParsedValue } from '@/_helpers/utils';
 
 export const TextInput = function TextInput({
   id,
@@ -14,6 +14,9 @@ export const TextInput = function TextInput({
 
   const placeholder = component.definition.properties.placeholder.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -23,6 +26,7 @@ export const TextInput = function TextInput({
 
   return (
     <input
+      disabled={parsedDisableState}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
       onChange={(e) => onComponentOptionChanged(component, 'value', e.target.value)}
       type="text"

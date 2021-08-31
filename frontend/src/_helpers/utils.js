@@ -147,3 +147,14 @@ export const serializeNestedObjectToQueryParams = function(obj, prefix) {
   }
   return str.join("&");
 }
+
+
+export const getParsedValue = (resolverFunction, data, state) => {
+  let parsedValue = data
+  try {
+    parsedValue = resolverFunction(parsedValue, state);
+  } catch (err) { console.log(err) }
+  
+  return parsedValue
+  
+}

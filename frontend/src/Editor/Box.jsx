@@ -21,6 +21,7 @@ import { RadioButton } from './Components/RadioButton'
 import { StarRating } from './Components/StarRating'
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import '@/_styles/custom.scss';
 
 const AllComponents = {
   Button,

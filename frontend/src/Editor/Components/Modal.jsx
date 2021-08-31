@@ -4,13 +4,15 @@ import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
+import { getParsedValue, resolveReferences } from '../../_helpers/utils';
 
 export const Modal = function Modal({
   id,
   component,
   height,
   mode,
-  containerProps
+  containerProps,
+  currentState
 }) {
   const [show, showModal] = useState(false);
   const parentRef = useRef(null);
@@ -20,6 +22,10 @@ export const Modal = function Modal({
 
   const sizeProp = component.definition.properties.size;
   const size = sizeProp ? sizeProp.value : 'lg';
+
+  const disableState = component.definition.properties?.disableState?.value || false;
+
+  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
   useEffect(() => {
     const componentState = containerProps.currentState.components[component.name];
@@ -33,7 +39,7 @@ export const Modal = function Modal({
   }
 
   return (
-    <div>
+    <div disabled={parsedDisableState}>
       <BootstrapModal
         contentClassName="modal-component"
         show={show}
