@@ -32,13 +32,24 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     if (isEmpty(items)) return null;
     return (
       <>
-        <span className='m-1 widget-header'>{header}</span>
+        <span className="m-1 widget-header">{header}</span>
         {items.map((component, i) => renderComponentCard(component, i))}
       </>
     );
   }
 
   function segregateSections() {
+    if (filteredComponents.length === 0) {
+      return (
+        <div class="empty">
+          {/* <div class="empty-img">
+            <img src="./static/illustrations/undraw_printing_invoices_5r4r.svg" height="128" alt="" />
+          </div> */}
+          <p class="empty-title">No results found</p>
+          <p class="empty-subtitle text-muted">Try adjusting your search or filter to find what you're looking for.</p>
+        </div>
+      );
+    }
     const commonSection = { title: 'commonly used', items: [] };
     const formSection = { title: 'forms', items: [] };
     const otherSection = { title: 'others', items: [] };
