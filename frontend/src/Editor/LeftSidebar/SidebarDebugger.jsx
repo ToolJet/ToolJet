@@ -4,16 +4,23 @@ import { LeftSidebarItem } from './sidebar-item';
 import ReactJson from 'react-json-view';
 import _ from 'lodash';
 import moment from 'moment';
+import { SidebarPinned } from './SidebarPinned';
 
 
 export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
-    const [open, trigger, content] = usePopover(false)
+    const [open, trigger, content, setOpen] = usePopover(false)
     const [currrentTab, setCurrentTab] = React.useState(1)
     const [errorLogs, setErrorLogs] = React.useState([])
     const [unReadErrorCount, setUnReadErrorCount] = React.useState({read: 0, unread: 0})
+    const [popoverPinned, setPopoverPinned] = React.useState(false)
 
     const switchCurrentTab = (tab) => {
         setCurrentTab(tab)
+    }
+
+
+    const updatePopoverPinnedState = () => {
+        setPopoverPinned((prev) => !prev)
     }
 
     const clearErrorLogs = () => {
@@ -74,6 +81,17 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
                 copy.unread = unReadErrors
                 return copy
             })
+
+            if(popoverPinned) {
+                setTimeout(() => {
+                    setUnReadErrorCount((prev) => {
+                        let copy = JSON.parse(JSON.stringify(prev))
+                        copy.read = errorLogs.length
+                        copy.unread = 0
+                        return copy
+                    })
+                }, 900);
+            }
         } else {
             setUnReadErrorCount((prev) => {
                 let copy = JSON.parse(JSON.stringify(prev))
@@ -87,7 +105,7 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
     return (
     <>
       <LeftSidebarItem tip='Debugger' {...trigger} icon='debugger' className='left-sidebar-item' badge={true} count={unReadErrorCount.unread} />
-      <div {...content} className={`card popover debugger-popover ${open ? 'show' : 'hide'}`} style={{minWidth:'180px', minHeight:'108px', maxWidth:'480px'}} >
+      <div {...content} className={`card popover debugger-popover ${open || popoverPinned ? 'show' : 'hide'}`} style={{minWidth:'180px', minHeight:'108px', maxWidth:'480px'}} >
           <div className="row-header">
               <div className="nav-header">
                   <ul className="nav nav-tabs d-flex justify-content-between" data-bs-toggle="tabs"> 
@@ -96,13 +114,14 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
                               Errors
                           </a>
                       </li>
-                      {errorLogs.length > 0 && (
-                        <li>
-                            <button onClick={clearErrorLogs} type="button" className="btn btn-light btn-sm m-1 py-1" aria-label="clear button">
-                                <span className="text-muted">clear</span>
-                            </button>
+                        <li className="btn-group">
+                            {errorLogs.length > 0 && (
+                                <button onClick={clearErrorLogs} type="button" className="btn btn-light btn-sm m-1 py-1" aria-label="clear button">
+                                    <span className="text-muted">clear</span>
+                                </button>
+                            )}
+                            <SidebarPinned component={'Debugger'} state={popoverPinned} updateState={updatePopoverPinnedState} />
                         </li> 
-                       )}
                   </ul> 
               </div> 
           </div>
