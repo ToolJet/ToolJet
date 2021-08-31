@@ -11,8 +11,8 @@ export const LeftSidebarInspector = ({ darkMode, globals, components, queries })
     <>
       <LeftSidebarItem tip='Inspector' {...trigger} icon='inspector' className='left-sidebar-item' />
       <div {...content} className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}>
-      <SidebarPinnedButton component={'Inspector'} state={popoverPinned} updateState={updatePopoverPinnedState} />
-        <div className="card-body">
+        <SidebarPinnedButton component={'Inspector'} state={popoverPinned} updateState={updatePopoverPinnedState} />
+        <div style={{marginTop:'1rem'}} className="card-body">
           <ReactJson
             src={queries}
             theme={darkMode ? 'shapeshifter' : 'rjv-default'}
