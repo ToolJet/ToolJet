@@ -35,19 +35,15 @@ export const Map = function Map({
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   let parsedWidgetVisibility = widgetVisibility;
-  
+
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
   } catch (err) { console.log(err); }
 
   const [gmap, setGmap] = useState(null);
   const [autoComplete, setAutoComplete] = useState(null);
-  const [mapCenter, setMapCenter] = useState(resolveReferences(JSON.parse(center), currentState, false));
-  const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState, []));
-
-  useEffect(() => {
-    setMarkers(resolveReferences(defaultMarkers, currentState, false));
-  }, [currentState]);
+  const [mapCenter, setMapCenter] = useState(resolveReferences(center, currentState));
+  const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState));
 
   const containerStyle = {
     width,
@@ -108,6 +104,7 @@ export const Map = function Map({
   function onAutocompleteLoad(autocompleteInstance) {
     setAutoComplete(autocompleteInstance);
   }
+
 
   return (
     <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
