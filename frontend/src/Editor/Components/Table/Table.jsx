@@ -487,7 +487,8 @@ export function Table({
   const columns = useMemo(
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [JSON.stringify(columnData), 
-      leftActionsCellData.length + rightActionsCellData.length,
+      leftActionsCellData.length,
+      rightActionsCellData.length,
       componentState.changeSet,
       JSON.stringify(component.definition.properties.columns)
     ] // Hack: need to fix
