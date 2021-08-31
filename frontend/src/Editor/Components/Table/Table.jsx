@@ -429,15 +429,41 @@ export function Table({
 
   tableData = tableData || [];
 
-  const actionsCellData = actions.value.length > 0
+  const leftActionsCellData = actions.value.length > 0
     ? [
       {
-        id: 'actions',
+        id: 'leftActions',
         Header: 'Actions',
         accessor: 'edit',
         width: columnSizes.actions || defaultColumn.width,
         Cell: (cell) => {
-          return actions.value.map((action) => (
+          return actions.value.filter(action => action.buttonPosition === 'left').map((action) => (
+                <button
+                  key={action.name}
+                  className="btn btn-sm m-1 btn-light"
+                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                  }}
+                >
+                  {action.buttonText}
+                </button>
+          ));
+        }
+      }
+    ]
+    : [];
+
+  const rightActionsCellData = actions.value.length > 0
+    ? [
+      {
+        id: 'rightActions',
+        Header: 'Actions',
+        accessor: 'edit',
+        width: columnSizes.actions || defaultColumn.width,
+        Cell: (cell) => {
+          return actions.value.filter(action => [undefined, 'right'].includes(action.buttonPosition)).map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
@@ -456,9 +482,9 @@ export function Table({
     : [];
 
   const columns = useMemo(
-    () => [...columnData, ...actionsCellData],
+    () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [JSON.stringify(columnData), 
-      actionsCellData.length, 
+      leftActionsCellData.length + rightActionsCellData.length,
       componentState.changeSet,
       JSON.stringify(component.definition.properties.columns)
     ] // Hack: need to fix
