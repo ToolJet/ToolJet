@@ -164,6 +164,7 @@ body {
         }
 
         .component-action-button {
+          top: 8px;
           right: 10px;
           position: absolute;
         }
@@ -209,7 +210,7 @@ body {
 
     .components-container {
       height: 88%;
-      overflow: scroll;
+      overflow: auto;
 
       .component-image-holder {
         background: #f6f7fb;
@@ -1492,7 +1493,7 @@ body {
 }
 
 .text-widget {
-  overflow: scroll;
+  overflow: auto;
 }
 
 .text-widget::-webkit-scrollbar {
