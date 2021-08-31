@@ -438,7 +438,7 @@ export function Table({
         id: 'leftActions',
         Header: 'Actions',
         accessor: 'edit',
-        width: columnSizes.actions || defaultColumn.width,
+        width: columnSizes.leftActions || defaultColumn.width,
         Cell: (cell) => {
           return leftActions().map((action) => (
                 <button
@@ -464,7 +464,7 @@ export function Table({
         id: 'rightActions',
         Header: 'Actions',
         accessor: 'edit',
-        width: columnSizes.actions || defaultColumn.width,
+        width: columnSizes.rightActions || defaultColumn.width,
         Cell: (cell) => {
           return rightActions().map((action) => (
                 <button
