@@ -107,14 +107,14 @@ export const Box = function Box({
       ) : (
         <div className="m-1" style={{ height: '100%' }}>
           <div
-            className="component-image-holder p-3 d-flex flex-column justify-content-center"
+            className="component-image-holder p-2 d-flex flex-column justify-content-center"
             style={{ height: '100%' }}
           >
             <center>
               <div
                 style={{
-                  width: '20px',
-                  height: '20px',
+                  width: '30px',
+                  height: '30px',
                   backgroundSize: 'contain',
                   backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
                   backgroundRepeat: 'no-repeat',

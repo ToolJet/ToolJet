@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DraggableBox } from './DraggableBox';
 import Fuse from 'fuse.js';
-import { result } from 'lodash';
+import { isEmpty } from 'lodash';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
@@ -28,6 +28,39 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     );
   }
 
+  function renderList(header, items) {
+    if (isEmpty(items)) return null;
+    return (
+      <>
+        <span className='m-1 widget-header'>{header}</span>
+        {items.map((component, i) => renderComponentCard(component, i))}
+      </>
+    );
+  }
+
+  function segregateSections() {
+    const commonSection = { title: 'commonly used', items: [] };
+    const formSection = { title: 'forms', items: [] };
+    const otherSection = { title: 'others', items: [] };
+
+    const commonItems = ['Table', 'Chart', 'Button'];
+    const formItems = ['TextInput', 'Textarea', 'Dropdown', 'Multiselect', 'RichTextEditor', 'Checkbox'];
+
+    filteredComponents.map((f) => {
+      if (commonItems.includes(f.name)) commonSection.items.push(f);
+      else if (formItems.includes(f.name)) formSection.items.push(f);
+      else otherSection.items.push(f);
+    });
+
+    return (
+      <>
+        {renderList(commonSection.title, commonSection.items)}
+        {renderList(formSection.title, formSection.items)}
+        {renderList(otherSection.title, otherSection.items)}
+      </>
+    );
+  }
+
   return (
     <div className="components-container m-2">
       <div className="input-icon">
@@ -38,9 +71,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
           onChange={(e) => filterComponents(e.target.value)}
         />
       </div>
-      <div className="widgets-list col-sm-12 col-lg-12 row">
-        {filteredComponents.map((component, i) => renderComponentCard(component, i))}
-      </div>
+      <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
     </div>
   );
 };

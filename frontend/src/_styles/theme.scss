@@ -130,7 +130,7 @@ body {
 
   .editor-sidebar {
     height: 100%;
-    width: 15%;
+    width: 18%;
     position: fixed;
     z-index: 1;
     right: 0;
@@ -214,12 +214,17 @@ body {
 
       .component-image-holder {
         background: #f6f7fb;
-        border-radius: 8px;
-        border: 1px solid #d0d0d0;
+        border-radius: 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 
         img {
           margin: 0 auto;
           padding: 12px;
+        }
+
+        &:hover {
+          box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
         }
       }
 
@@ -227,8 +232,9 @@ body {
         display: block;
         font-weight: 400;
         margin-top: 5px;
-        font-size: 0.7rem;
+        font-size: 14px;
         color: #3e525b;
+        white-space: nowrap;  
       }
 
       .component-description {
@@ -2070,4 +2076,12 @@ input:focus-visible {
 input[type=text] {
   border-radius: 0 !important;
   outline-color: #dadcde !important;
+}
+
+.widget-header {
+ text-transform: uppercase;
+ font-size: 14px;
+ margin-top: 12px;
+ margin-bottom: 12px;
+ font-weight: 500;
 }
