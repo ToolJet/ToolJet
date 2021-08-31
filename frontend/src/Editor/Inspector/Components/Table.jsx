@@ -270,6 +270,20 @@ class Table extends React.Component {
               value={action.buttonText}
             />
           </div>
+          <div className="field mb-2">
+            <label className="form-label">Button position</label>
+            <select
+              className="form-select"
+              onChange={(e) => {
+                e.stopPropagation();
+                this.onActionButtonPropertyChanged(index, 'buttonPosition', e.currentTarget.value);
+              }}
+              value={action.buttonPosition ?? 'right'}
+            >
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
+          </div>
           <Color
             param={{ name: 'actionButtonBackgroundColor' }}
             paramType="properties"
