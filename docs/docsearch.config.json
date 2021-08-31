@@ -1,6 +1,6 @@
 {
   "index_name": "tooljet_docs",
-  "start_urls": ["https://docs.tooljet.io/"],
+  "start_urls": ["https://6d16-61-2-247-35.ngrok.io/docs/","https://6d16-61-2-247-35.ngrok.io/docs/intro/"],
   "stop_urls": [],
   "selectors": {
     "lvl0": {

@@ -12,7 +12,7 @@ module.exports = {
   themes: ['docusaurus-theme-search-typesense'],
   themeConfig: {
     typesense: {
-      typesenseCollectionName: 'docusaurus-2',
+      typesenseCollectionName: 'tooljet_docs',
 
       typesenseServerConfig: {
         nodes: [
@@ -43,8 +43,6 @@ module.exports = {
     },
     colorMode: {
       switchConfig: {
-        darkIcon: '\00a0 ',
-        lightIcon: '\00a0',
         darkIconStyle: {
           display: 'none',
         },
@@ -128,8 +126,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl:
-            'https://github.com/ToolJet/Tooljet/blob/main/docs/',
+          editUrl: 'https://github.com/ToolJet/Tooljet/blob/main/docs/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
