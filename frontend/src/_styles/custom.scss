@@ -1,6 +1,7 @@
 
 // overwrites the styles of datepicker [cell-type]
 .cell-type-datepicker {
+    z-index: 1;
     
     .rdtPicker {
         thead {
