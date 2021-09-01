@@ -439,22 +439,6 @@ class QueryManager extends React.Component {
                   <span className="form-check-label">Request confirmation before running query?</span>
                 </label>
 
-                <hr />
-
-                <div>
-                  <EventManager
-                    eventsChanged={this.eventsChanged}
-                    component={mockDataQueryComponent.component}
-                    componentMeta={mockDataQueryComponent.componentMeta}
-                    currentState={this.props.currentState}
-                    dataQueries={this.props.dataQueries}
-                    components={this.props.allComponents}
-                    apps={this.props.apps}
-                  />
-                </div>
-
-                <hr />
-
                 <label className="form-check form-switch">
                   <input
                     className="form-check-input"
@@ -464,39 +448,58 @@ class QueryManager extends React.Component {
                   />
                   <span className="form-check-label">Show notification on success?</span>
                 </label>
+                
+                {this.state.options.showSuccessNotification &&
+                  <div>
 
-                <div className="row mt-3">
-                  <div className="col-auto">
-                    <label className="form-label p-2">Success Message</label>
-                  </div>
-                  <div className="col">
-                    <input
-                      type="text"
-                      disabled={!this.state.options.showSuccessNotification}
-                      onChange={(e) => this.optionchanged('successMessage', e.target.value)}
-                      placeholder="Query ran successfully"
-                      className="form-control"
-                      value={this.state.options.successMessage}
-                    />
-                  </div>
-                </div>
 
-                <hr />
+                    <div className="row mt-3">
+                      <div className="col-auto">
+                        <label className="form-label p-2">Success Message</label>
+                      </div>
+                      <div className="col">
+                        <input
+                          type="text"
+                          disabled={!this.state.options.showSuccessNotification}
+                          onChange={(e) => this.optionchanged('successMessage', e.target.value)}
+                          placeholder="Query ran successfully"
+                          className="form-control"
+                          value={this.state.options.successMessage}
+                        />
+                      </div>
+                    </div>
 
-                <div className="row mt-3">
-                  <div className="col-auto">
-                    <label className="form-label p-2">Notification duration (s)</label>
+                    <div className="row mt-3">
+                      <div className="col-auto">
+                        <label className="form-label p-2">Notification duration (s)</label>
+                      </div>
+                      <div className="col">
+                        <input
+                          type="number"
+                          disabled={!this.state.options.showSuccessNotification}
+                          onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
+                          placeholder={5}
+                          className="form-control"
+                          value={this.state.options.notificationDuration}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="col">
-                    <input
-                      type="number"
-                      disabled={!this.state.options.showSuccessNotification}
-                      onChange={(e) => this.optionchanged('notificationDuration', e.target.value)}
-                      placeholder={5}
-                      className="form-control"
-                      value={this.state.options.notificationDuration}
-                    />
-                  </div>
+                }
+
+                <div className="hr-text hr-text-left">Events</div>
+
+                <div className="query-manager-events">
+                  <EventManager
+                    eventsChanged={this.eventsChanged}
+                    component={mockDataQueryComponent.component}
+                    componentMeta={mockDataQueryComponent.componentMeta}
+                    currentState={this.props.currentState}
+                    dataQueries={this.props.dataQueries}
+                    components={this.props.allComponents}
+                    apps={this.props.apps}
+                    popoverPlacement="right"
+                  />
                 </div>
               </div>
             )}

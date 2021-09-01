@@ -15,7 +15,8 @@ export const EventManager = ({
   eventsChanged,
   apps,
   excludeEvents,
-  popOverCallback
+  popOverCallback,
+  popoverPlacement
 }) => {
 
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
@@ -251,7 +252,7 @@ export const EventManager = ({
       return <div>
         <OverlayTrigger
           trigger="click"
-          placement="left"
+          placement={popoverPlacement || 'left'}
           rootClose={true}
           overlay={eventPopover(event, index)}
           onHide={(e) => setFocusedEventIndex(null) }
