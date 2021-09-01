@@ -498,7 +498,7 @@ class QueryManager extends React.Component {
                     dataQueries={this.props.dataQueries}
                     components={this.props.allComponents}
                     apps={this.props.apps}
-                    popoverPlacement="right"
+                    popoverPlacement="top"
                   />
                 </div>
               </div>
