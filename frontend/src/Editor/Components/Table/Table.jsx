@@ -677,11 +677,12 @@ export function Table({
                   >
                     {row.cells.map((cell) => {
                       let cellProps = cell.getCellProps();
-
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
 
-                          if (_.get(componentState.changeSet[cell.row.index], cell.column.Header, undefined) !== undefined) {
+                          const accessor = columnData.find(column => column.id === cell.column.id)?.accessor;
+
+                          if (_.get(componentState.changeSet[cell.row.index], accessor, undefined) !== undefined) {
                             console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
                           }
