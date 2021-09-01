@@ -275,9 +275,7 @@ export function Table({
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
 
-        if (columnType === undefined || columnType === 'default') {
-          return <span>{cellValue}</span>;
-        } if (columnType === 'string') {
+        if (columnType === 'string' || columnType === undefined || columnType === 'default') {
           if (column.isEditable) {
             return (
               <input
