@@ -213,9 +213,8 @@ body {
       overflow: auto;
 
       .component-image-holder {
-        background: #f6f7fb;
+        background: rgba(66, 153, 225, 0.1);
         border-radius: 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
         transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 
         img {
@@ -224,17 +223,20 @@ body {
         }
 
         &:hover {
-          box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+          background: rgba(66, 153, 225, 0.2);
         }
       }
 
       .component-title {
         display: block;
         font-weight: 400;
-        margin-top: 5px;
-        font-size: 14px;
+        margin-top: 10px;
         color: #3e525b;
         white-space: nowrap;  
+        font-size: 10px;
+        line-height: 12px;
+        max-width: 100%;
+        text-align: center;
       }
 
       .component-description {
@@ -375,7 +377,7 @@ body {
           background: white;
           position: fixed;
           z-index: 3;
-          width: 59.5%;
+          width: 58.5%;
           margin-top: 0px;
           padding: 0.5px;
         }
@@ -2079,9 +2081,10 @@ input[type=text] {
 }
 
 .widget-header {
- text-transform: uppercase;
- font-size: 14px;
- margin-top: 12px;
- margin-bottom: 12px;
+ text-transform: capitalize;
+ margin-top: 12px !important;
+ margin-bottom: 12px !important;
  font-weight: 500;
+ font-size: 12px;
+ line-height: 12px;
 }

@@ -73,7 +73,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className="components-container m-2">
+    <div className="components-container m-1">
       <div className="input-icon">
         <input
           type="text"
