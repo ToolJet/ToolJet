@@ -763,6 +763,7 @@ body {
   td {
     min-height: 35px;
     overflow-x: initial;
+    margin: auto;
 
     .text-container {
       padding: 0px;
@@ -847,7 +848,16 @@ body {
 }
 
 .jet-data-table {
+  
     overflow: hidden;
+    .form-check {
+      margin-bottom: 0;
+    }
+  
+    .form-check-inline {
+      margin-right: 0;
+    }
+
     .table-row {
         cursor: pointer;
     }
@@ -1265,6 +1275,7 @@ body {
 
 .table-responsive {
     margin-bottom: 0rem;
+    overflow: visible;
 }
 
 .code-hinter::-webkit-scrollbar {
