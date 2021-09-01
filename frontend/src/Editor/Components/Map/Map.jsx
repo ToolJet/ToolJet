@@ -67,11 +67,11 @@ export const Map = function Map({
     const mapBounds = gmap.getBounds();
 
     const bounds = {
-      northEast: mapBounds.getNorthEast().toJSON(),
-      southWest: mapBounds.getSouthWest().toJSON(),
+      northEast: mapBounds.getNorthEast()?.toJSON(),
+      southWest: mapBounds.getSouthWest()?.toJSON(),
     }
 
-    const newCenter = gmap.center.toJSON();
+    const newCenter = gmap.center?.toJSON();
     setMapCenter(newCenter);
 
     onComponentOptionsChanged(component, [
@@ -84,7 +84,7 @@ export const Map = function Map({
     function onLoad(mapInstance) {
       setGmap(mapInstance);
       onComponentOptionsChanged(component, [
-        ['center', mapInstance.center.toJSON()]
+        ['center', mapInstance.center?.toJSON()]
       ])
     }
   )
@@ -96,7 +96,7 @@ export const Map = function Map({
   }
 
   function onPlaceChanged() {
-    const location = autoComplete.getPlace().geometry.location.toJSON();
+    const location = autoComplete.getPlace().geometry.location?.toJSON();
     setMapCenter(location);
     handleBoundsChange();
   }
