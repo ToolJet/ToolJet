@@ -17,6 +17,7 @@ export const RadioButton = function RadioButton({
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
 
+  const defaultValue = component.definition.properties.value.value;
   const values = component.definition.properties.values.value;
   const displayValues = component.definition.properties.display_values.value;
   const widgetVisibility = component.definition.styles?.visibility?.value || true;
@@ -34,6 +35,12 @@ export const RadioButton = function RadioButton({
 
   try {
     parsedDisplayValues = resolveReferences(displayValues, currentState, []);
+  } catch (err) { console.log(err); }
+
+  let parsedDefaultValue = defaultValue;
+
+  try {
+    parsedDefaultValue = resolveReferences(defaultValue, currentState, []);
   } catch (err) { console.log(err); }
 
   let selectOptions = [];
@@ -61,15 +68,13 @@ export const RadioButton = function RadioButton({
     } 
   }
 
-
-
   return (
     <div className="row" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'  }}  onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <span className="form-check-label form-check-label col-auto py-1" style={{color: textColor}}>{label}</span>
       <div className="col py-1" onChange={(e) => onSelect(e)}>
         {selectOptions.map((option, index) => (
           <label key={index} class="form-check form-check-inline">
-            <input disabled={parsedDisableState} class="form-check-input" type="radio" value={option.value} name="radio-options" /> 
+            <input disabled={parsedDisableState} class="form-check-input" defaultChecked={parsedDefaultValue === option.value} type="radio" value={option.value} name="radio-options"  /> 
             <span className="form-check-label" style={{color: textColor}}>{option.name}</span>
           </label>
         ))}

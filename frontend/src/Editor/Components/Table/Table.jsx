@@ -253,7 +253,7 @@ export function Table({
       const values = resolveReferences(column.values, currentState) || [];
       const labels = resolveReferences(column.labels, currentState, []) || [];
 
-      if (typeof labels === 'object') {
+      if (Array.isArray(labels)) {
         columnOptions.selectOptions = labels.map((label, index) => {
           return { name: label, value: values[index] };
         });
@@ -272,6 +272,7 @@ export function Table({
       accessor: column.key || column.name,
       filter: customFilter,
       width: width,
+      columnOptions,
 
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
@@ -432,15 +433,18 @@ export function Table({
 
   tableData = tableData || [];
 
-  const actionsCellData = actions.value.length > 0
+  const leftActions = () => actions.value.filter(action => action.position === 'left')
+  const rightActions = () => actions.value.filter(action => [undefined, 'right'].includes(action.position))
+
+  const leftActionsCellData = leftActions().length > 0
     ? [
       {
-        id: 'actions',
+        id: 'leftActions',
         Header: 'Actions',
         accessor: 'edit',
-        width: columnSizes.actions || defaultColumn.width,
+        width: columnSizes.leftActions || defaultColumn.width,
         Cell: (cell) => {
-          return actions.value.map((action) => (
+          return leftActions().map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
@@ -458,11 +462,42 @@ export function Table({
     ]
     : [];
 
+  const rightActionsCellData = rightActions().length > 0
+    ? [
+      {
+        id: 'rightActions',
+        Header: 'Actions',
+        accessor: 'edit',
+        width: columnSizes.rightActions || defaultColumn.width,
+        Cell: (cell) => {
+          return rightActions().map((action) => (
+                <button
+                  key={action.name}
+                  className="btn btn-sm m-1 btn-light"
+                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                  }}
+                >
+                  {action.buttonText}
+                </button>
+          ));
+        }
+      }
+    ]
+    : [];
+
+
+  const optionsData = columnData.map(column => column.columnOptions?.selectOptions);
+
   const columns = useMemo(
-    () => [...columnData, ...actionsCellData],
+    () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [JSON.stringify(columnData), 
-      actionsCellData.length, 
+      leftActionsCellData.length,
+      rightActionsCellData.length,
       componentState.changeSet,
+      JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns)
     ] // Hack: need to fix
   );
@@ -646,11 +681,12 @@ export function Table({
                   >
                     {row.cells.map((cell) => {
                       let cellProps = cell.getCellProps();
-
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
 
-                          if (_.get(componentState.changeSet[cell.row.index], cell.column.Header, undefined) !== undefined) {
+                          const accessor = columnData.find(column => column.id === cell.column.id)?.accessor;
+
+                          if (_.get(componentState.changeSet[cell.row.index], accessor, undefined) !== undefined) {
                             console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
                           }

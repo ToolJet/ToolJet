@@ -35,14 +35,19 @@ export const Datepicker = function Datepicker({
   if (enableDateProp) {
     enableDate = resolveReferences(enableDateProp.value, currentState, true);
   }
-
+  
+  let dateFormat = formatProp
+  try {
+    dateFormat = resolveReferences(formatProp, currentState);
+  } catch (err) { console.log(err); }
+  
   function onDateChange(event) {
-    onComponentOptionChanged(component, 'value', event.format(formatProp.value));
+    onComponentOptionChanged(component, 'value', event.format(dateFormat.value));
   }
 
   return (
-    <div disabled={parsedDisableState} style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
-      <Datetime onChange={onDateChange} timeFormat={enableTime} dateFormat={enableDate} />
+    <div disabled={parsedDisableState}  style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+      <Datetime onChange={onDateChange} timeFormat={enableTime} dateFormat={dateFormat.value} />
     </div>
   );
 };

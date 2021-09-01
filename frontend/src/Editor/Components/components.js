@@ -176,7 +176,7 @@ export const componentTypes = [
         data: {
           value: `[
   { "x": 100, "y": "Jan"},
-  { "x": 80, "y": "Feb"}, 
+  { "x": 80, "y": "Feb"},
   { "x": 40, "y": "Mar"}
 ]`,
         },
@@ -394,7 +394,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        value: { value: '' },
+        value: { value: '{{true}}' },
         values: { value: '{{[true,false]}}' },
         display_values: { value: '{{["yes", "no"]}}' },
         visible: { value: true },
@@ -839,16 +839,10 @@ export const componentTypes = [
       },
       properties: {
         initialLocation: {
-          value: `{
-  "lat": 40.7128,
-  "lng": -73.935242
-}`,
+          value: `{{ {"lat": 40.7128, "lng": -73.935242} }}`,
         },
         defaultMarkers: {
-          value: `[{
-  "lat": 40.7128,
-  "lng": -73.935242
-}]`,
+          value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
         },
       },
       addNewMarkers: { value: '{{false}}' },
