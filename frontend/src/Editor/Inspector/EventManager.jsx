@@ -27,8 +27,8 @@ export const EventManager = ({
   excludeEvents = excludeEvents || [];
 
   /* Filter events based on excludesEvents ( a list of event ids to exclude ) */
-  let possibleEvents = Object.keys(componentMeta.events).filter(eventId => !excludeEvents.includes(eventId)).map(eventId => { return { 
-    name: componentMeta.events[eventId].displayName, value: eventId 
+  let possibleEvents = Object.keys(componentMeta.events).filter(eventId => !excludeEvents.includes(eventId)).map(eventId => { return {
+    name: componentMeta.events[eventId].displayName, value: eventId
   }})
 
   function getModalOptions() {
@@ -41,7 +41,7 @@ export const EventManager = ({
         })
       }
     })
-    
+
     return modalOptions;
   }
 
@@ -58,7 +58,7 @@ export const EventManager = ({
 
   function handlerChanged(index, param, value) {
     let newEvents = component.component.definition.events;
-    
+
     let updatedEvent = newEvents[index];
     updatedEvent[param] = value;
 
@@ -73,7 +73,7 @@ export const EventManager = ({
     eventsChanged(newEvents);
   }
 
-  function addHandler() { 
+  function addHandler() {
     let newEvents = component.component.definition.events;
     newEvents.push({
       eventId: Object.keys(componentMeta.events)[0],
@@ -249,13 +249,13 @@ export const EventManager = ({
       const rowClassName = `row g-0 border-bottom pb-2 pt-2 px-2 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
 
       return <div>
-        <OverlayTrigger 
-          trigger="click" 
-          placement="left" 
+        <OverlayTrigger
+          trigger="click"
+          placement="left"
           rootClose={true}
           overlay={eventPopover(event, index)}
           onHide={(e) => setFocusedEventIndex(null) }
-          onToggle={ (showing) => { 
+          onToggle={ (showing) => {
             if(showing) {
               setFocusedEventIndex(index);
             } else {
@@ -267,7 +267,7 @@ export const EventManager = ({
         >
           <div className={rowClassName} role="button">
             <div className="col">
-              {componentMeta.events[event.eventId]['displayName']} 
+              {componentMeta.events[event.eventId]['displayName']}
             </div>
             <div className="col">
             <small className="text-muted">{actionMeta.name}</small>
@@ -288,7 +288,7 @@ export const EventManager = ({
   if(events.length === 0) {
     return <div>
       <center>
-        <button 
+        <button
           className="btn btn-sm btn-outline-azure"
           onClick={addHandler}
         >
@@ -301,9 +301,9 @@ export const EventManager = ({
   return <div className="card">
     <div className="card-body p-0">
       {renderHandlers(events)}
-      
+
     </div>
-    <button 
+    <button
         className="btn btn-sm btn-outline-azure"
         onClick={addHandler}
       >
