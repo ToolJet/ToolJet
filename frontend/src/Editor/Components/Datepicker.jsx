@@ -38,10 +38,9 @@ export const Datepicker = function Datepicker({
     dateFormat = resolveReferences(formatProp, currentState);
   } catch (err) { console.log(err); }
   
-  
-    function onDateChange(event) {
-      onComponentOptionChanged(component, 'value', event.format(dateFormat.value));
-    }
+  function onDateChange(event) {
+    onComponentOptionChanged(component, 'value', event.format(dateFormat.value));
+  }
 
   return (
     <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
