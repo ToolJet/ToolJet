@@ -55,8 +55,8 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     const integrationSection = { title: 'integrations', items: [] };
     const otherSection = { title: 'others', items: [] };
 
-    const commonItems = ['Table', 'Chart', 'Button'];
-    const formItems = ['TextInput', 'Textarea', 'Dropdown', 'Multiselect', 'RichTextEditor', 'Checkbox'];
+    const commonItems = ['Table', 'Chart', 'Button', 'Text', 'Datepicker'];
+    const formItems = ['TextInput', 'Textarea', 'Dropdown', 'Multiselect', 'RichTextEditor', 'Checkbox', 'Radio-button'];
     const integrationItems = ['Map'];
 
     filteredComponents.map((f) => {
