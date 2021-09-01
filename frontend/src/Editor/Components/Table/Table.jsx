@@ -282,11 +282,15 @@ export function Table({
                 type="text"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                    if(e.target.defaultValue !== e.target.value) {
+                      handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                    }
                   }
                 }}
                 onBlur={(e) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  if(e.target.defaultValue !== e.target.value) {
+                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  }
                 }}
                 className="form-control-plaintext form-control-plaintext-sm"
                 defaultValue={cellValue}
