@@ -276,10 +276,17 @@ export function Table({
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
 
         if (columnType === 'string' || columnType === undefined || columnType === 'default') {
+          
+          const textColor = resolveReferences(column.textColor, currentState, { cellValue }) || [];
+          const cellStyles = {
+            color: textColor
+          }
+
           if (column.isEditable) {
             return (
               <input
                 type="text"
+                style={cellStyles}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     if(e.target.defaultValue !== e.target.value) {
@@ -297,7 +304,7 @@ export function Table({
               />
             );
           }
-          return <span>{cellValue}</span>;
+          return <span style={cellStyles}>{cellValue}</span>;
         } if (columnType === 'text') {
           return <textarea 
               rows="1" 
@@ -682,9 +689,9 @@ export function Table({
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
 
-                          const accessor = columnData.find(column => column.id === cell.column.id)?.accessor;
+                          const currentColumn = columnData.find(column => column.id === cell.column.id);
 
-                          if (_.get(componentState.changeSet[cell.row.index], accessor, undefined) !== undefined) {
+                          if (_.get(componentState.changeSet[cell.row.index], currentColumn?.accessor, undefined) !== undefined) {
                             console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
                           }
