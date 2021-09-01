@@ -32,14 +32,20 @@ export const Datepicker = function Datepicker({
   if (enableDateProp) {
     enableDate = resolveReferences(enableDateProp.value, currentState, true);
   }
-
-  function onDateChange(event) {
-    onComponentOptionChanged(component, 'value', event.format(formatProp.value));
-  }
+  
+  let dateFormat = formatProp
+  try {
+    dateFormat = resolveReferences(formatProp, currentState);
+  } catch (err) { console.log(err); }
+  
+  
+    function onDateChange(event) {
+      onComponentOptionChanged(component, 'value', event.format(dateFormat.value));
+    }
 
   return (
     <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
-      <Datetime onChange={onDateChange} timeFormat={enableTime} dateFormat={enableDate} />
+      <Datetime onChange={onDateChange} timeFormat={enableTime} dateFormat={dateFormat.value} />
     </div>
   );
 };
