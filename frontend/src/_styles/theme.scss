@@ -213,7 +213,7 @@ body {
       overflow: auto;
 
       .component-image-holder {
-        background: rgba(66, 153, 225, 0.1);
+        background: #fff;
         border-radius: 0;
         transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 
@@ -223,7 +223,7 @@ body {
         }
 
         &:hover {
-          background: rgba(66, 153, 225, 0.2);
+          background: rgba(66, 153, 225, 0.1);
         }
       }
 
