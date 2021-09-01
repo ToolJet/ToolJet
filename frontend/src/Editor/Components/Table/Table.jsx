@@ -250,7 +250,7 @@ export function Table({
       const values = resolveReferences(column.values, currentState) || [];
       const labels = resolveReferences(column.labels, currentState, []) || [];
 
-      if (typeof labels === 'object') {
+      if (Array.isArray(labels)) {
         columnOptions.selectOptions = labels.map((label, index) => {
           return { name: label, value: values[index] };
         });
@@ -269,6 +269,7 @@ export function Table({
       accessor: column.key || column.name,
       filter: customFilter,
       width: width,
+      columnOptions,
 
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
@@ -484,12 +485,16 @@ export function Table({
     ]
     : [];
 
+
+  const optionsData = columnData.map(column => column.columnOptions?.selectOptions);
+
   const columns = useMemo(
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [JSON.stringify(columnData), 
       leftActionsCellData.length,
       rightActionsCellData.length,
       componentState.changeSet,
+      JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns)
     ] // Hack: need to fix
   );
