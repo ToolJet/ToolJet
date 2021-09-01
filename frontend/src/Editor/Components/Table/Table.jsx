@@ -501,7 +501,7 @@ export function Table({
     ] // Hack: need to fix
   );
 
-  const data = useMemo(() => tableData, [tableData.length]);
+  const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
 
   const computedStyles = {
     color,
@@ -731,7 +731,7 @@ export function Table({
                 Save Changes
               </button>
               <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
-                Cancel
+                Discard changes
               </button>
             </div>
           )}
