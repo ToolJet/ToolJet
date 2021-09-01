@@ -33,8 +33,8 @@ export const Color = ({
         </div>
       )}
 
-      <div className="row mx-1 color-picker-input" onClick={() => setShowPicker(true)}>
-        <div className="col-auto" style={{width: '40px', height: '30px'}}  style={{backgroundColor: definition.value}}>
+      <div className="row mx-0 form-control color-picker-input" onClick={() => setShowPicker(true)}>
+        <div className="col-auto" style={{float: 'right', width: '20px', height: '20px', backgroundColor: definition.value}}>
         </div>
         <div className="col">
           {definition.value}

@@ -28,7 +28,6 @@ export function CodeHinter({
   minHeight,
   lineWrapping
 }) {
-  console.log('theme', theme)
   const options = {
     lineNumbers: lineNumbers,
     lineWrapping: lineWrapping,
@@ -61,7 +60,7 @@ export function CodeHinter({
     <div 
       className={`code-hinter ${className || 'codehinter-default-input'}`} 
       key={suggestions.length}
-      style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'scroll' }}
+      style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
     >
       <CodeMirror
         value={initialValue}

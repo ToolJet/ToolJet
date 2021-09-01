@@ -31,6 +31,14 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      tableType: { type: 'select', displayName: 'Table type', options: [
+        { name: 'Bordered', value: '' },
+        { name: 'Borderless', value: 'table-borderless' },
+        { name: 'Classic', value: 'table-classic' },
+        { name: 'Striped', value: 'table-striped' },
+        { name: 'Striped & bordered', value: 'table-striped table-bordered' }
+      ] },
+      visibility: {type: 'code', displayName: 'Visibility'}
     },
     exposedVariables: {
       selectedRow: {},
@@ -64,7 +72,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#000' },
+        visibility: {value: '{{true}}'}
       },
     },
   },
@@ -91,6 +100,7 @@ export const componentTypes = [
     styles: {
       backgroundColor: { type: 'color', displayName: 'Background color' },
       textColor: { type: 'color', displayName: 'Text color' },
+      visibility: {type: 'code', displayName: 'Visibility'}
     },
     exposedVariables: {},
     definition: {
@@ -107,6 +117,7 @@ export const componentTypes = [
       styles: {
         backgroundColor: { value: '#3c92dc' },
         textColor: { value: '#fff' },
+        visibility: {value: '{{true}}'}
       },
     },
   },
@@ -140,7 +151,9 @@ export const componentTypes = [
       },
     },
     events: {},
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {
       show: null,
     },
@@ -158,13 +171,15 @@ export const componentTypes = [
         data: {
           value: `[
   { "x": 100, "y": "Jan"},
-  { "x": 80, "y": "Feb"}, 
+  { "x": 80, "y": "Feb"},
   { "x": 40, "y": "Mar"}
 ]`,
         },
       },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -227,7 +242,9 @@ export const componentTypes = [
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {
       value: '',
     },
@@ -240,7 +257,9 @@ export const componentTypes = [
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -262,7 +281,9 @@ export const componentTypes = [
       enableDate: { type: 'code', displayName: 'Enable date selection?' },
     },
     events: {},
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {
       value: {},
     },
@@ -277,7 +298,9 @@ export const componentTypes = [
         enableDate: { value: '{{true}}' },
       },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -302,6 +325,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      visibility: {type: 'code', displayName: 'Visibility'}
     },
     exposedVariables: {},
     definition: {
@@ -315,6 +339,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        visibility: {value: '{{true}}'}
       },
     },
   },
@@ -342,6 +367,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      visibility: {type: 'code', displayName: 'Visibility'}
     },
     exposedVariables: {},
     definition: {
@@ -359,6 +385,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        visibility: {value: '{{true}}'}
       },
     },
   },
@@ -383,6 +410,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      visibility: {type: 'code', displayName: 'Visibility'}
     },
     exposedVariables: {},
     definition: {
@@ -396,6 +424,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        visibility: {value: '{{true}}'}
       },
     },
   },
@@ -417,7 +446,9 @@ export const componentTypes = [
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {
       value: {},
     },
@@ -431,7 +462,9 @@ export const componentTypes = [
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -451,7 +484,9 @@ export const componentTypes = [
       format: { type: 'code', displayName: 'Format' },
     },
     events: {},
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {
       endDate: {},
       startDate: {},
@@ -465,7 +500,9 @@ export const componentTypes = [
         format: { value: 'DD/MM/YYYY' },
       },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -488,6 +525,7 @@ export const componentTypes = [
     events: [],
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      visibility: {type: 'code', displayName: 'Visibility'}
     },
     exposedVariables: {},
     definition: {
@@ -503,6 +541,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        visibility: {value: '{{true}}'}
       },
     },
   },
@@ -525,7 +564,9 @@ export const componentTypes = [
     events: {
       onClick: { displayName: 'On click' },
     },
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {},
     definition: {
       others: {
@@ -537,7 +578,9 @@ export const componentTypes = [
         visible: { value: true },
       },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -557,6 +600,7 @@ export const componentTypes = [
     events: {},
     styles: {
       backgroundColor: { type: 'color' },
+      visibility: {type: 'code', displayName: 'Visibility'}
     },
     exposedVariables: {},
     definition: {
@@ -570,6 +614,7 @@ export const componentTypes = [
       events: [],
       styles: {
         backgroundColor: { value: '#fff' },
+        visibility: {value: '{{true}}'}
       },
     },
   },
@@ -595,7 +640,9 @@ export const componentTypes = [
     events: {
       onSelect: { displayName: 'On select' },
     },
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'},
+    },
     exposedVariables: {
       value: null,
     },
@@ -612,7 +659,9 @@ export const componentTypes = [
         visible: { value: true },
       },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -637,7 +686,9 @@ export const componentTypes = [
     events: {
       onSelect: { displayName: 'On select' },
     },
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {
       values: {},
     },
@@ -654,7 +705,9 @@ export const componentTypes = [
         visible: { value: true },
       },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -674,7 +727,9 @@ export const componentTypes = [
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {
       value: {},
     },
@@ -687,7 +742,9 @@ export const componentTypes = [
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -731,7 +788,9 @@ export const componentTypes = [
       onCreateMarker: { displayName: 'On create marker' },
       onMarkerClick: { displayName: 'On marker click' },
     },
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {
       center: {},
     },
@@ -742,21 +801,17 @@ export const componentTypes = [
       },
       properties: {
         initialLocation: {
-          value: `{
-  "lat": 40.7128,
-  "lng": -73.935242
-}`,
+          value: `{{ {"lat": 40.7128, "lng": -73.935242} }}`,
         },
         defaultMarkers: {
-          value: `[{
-  "lat": 40.7128,
-  "lng": -73.935242
-}]`,
+          value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
         },
       },
       addNewMarkers: { value: '{{false}}' },
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -776,7 +831,9 @@ export const componentTypes = [
     events: {
       onDetect: { displayName: 'On detect' },
     },
-    styles: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'}
+    },
     exposedVariables: {
       lastDetectedValue: '',
     },
@@ -787,7 +844,9 @@ export const componentTypes = [
       },
       properties: {},
       events: [],
-      styles: {},
+      styles: {
+        visibility: {value: '{{true}}'}
+      },
     },
   },
   {
@@ -815,6 +874,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Star Color' },
+      visibility: {type: 'code', displayName: 'Visibility'}
     },
     exposedVariables: {
       value: 0,
@@ -835,6 +895,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#ffb400' },
+        visibility: {value: '{{true}}'}
       },
     },
   },

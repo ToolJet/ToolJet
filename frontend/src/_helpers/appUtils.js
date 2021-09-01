@@ -128,6 +128,11 @@ function executeAction(_ref, event, mode) {
       })
     }
 
+    if (event.actionId === 'run-query') {
+      const { queryId, queryName } = event;
+      return runQuery(_ref, queryId, queryName);
+    }
+
     if (event.actionId === 'open-webpage') {
       const url = resolveReferences(event.url, _ref.state.currentState);
       window.open(url, '_blank');
@@ -259,7 +264,7 @@ function getQueryVariables(options, state) {
       _.merge(queryVariables, getQueryVariables(element, state))
     })
   } else if(typeof options ==="object") {
-    Object.keys(options).forEach((key) => {
+    Object.keys(options || {}).forEach((key) => {
       _.merge(queryVariables, getQueryVariables(options[key], state))
     })
   }

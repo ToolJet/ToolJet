@@ -8,6 +8,7 @@ export const Text = function Text({
 }) {
   const text = component.definition.properties.text.value;
   const color = component.definition.styles.textColor.value;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
 
   const [loadingState, setLoadingState] = useState(false);
 
@@ -32,16 +33,22 @@ export const Text = function Text({
     }
   }
 
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
+
   const computedStyles = {
     color,
     width,
     height,
-    display: 'flex',
+    display: parsedWidgetVisibility ? 'flex' : 'none',
     alignItems: 'center'
   };
 
   return (
-    <div className="text-widget" style={computedStyles} onClick={() => onComponentClick(id, component)}>
+    <div className="text-widget" style={computedStyles} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />}
       {loadingState === true && (
         <div>

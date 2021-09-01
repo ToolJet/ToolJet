@@ -43,14 +43,18 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   async buildConnection(sourceOptions: any) {
-    return new Pool({
+    let poolConfig = {
       user: sourceOptions.username,
       host: sourceOptions.host,
       database: sourceOptions.database,
       password: sourceOptions.password,
-      port: sourceOptions.port,
-      ssl: { rejectUnauthorized: false },
-    });
+      port: sourceOptions.port
+    };
+
+    if (sourceOptions.ssl_enabled)
+      poolConfig['ssl'] = { rejectUnauthorized: false };
+
+    return new Pool(poolConfig);
   }
 
   async getConnection(sourceOptions: any, options:any, checkCache: boolean, dataSourceId?: string, dataSourceUpdatedAt?: string): Promise<any> { 

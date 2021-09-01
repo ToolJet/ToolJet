@@ -32,15 +32,18 @@ export const Map = function Map({
 
   const canSearchProp = component.definition.properties.canSearch;
   const canSearch = canSearchProp ? canSearchProp.value : false;
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+
+  let parsedWidgetVisibility = widgetVisibility;
+
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
 
   const [gmap, setGmap] = useState(null);
   const [autoComplete, setAutoComplete] = useState(null);
-  const [mapCenter, setMapCenter] = useState(resolveReferences(JSON.parse(center), currentState, false));
-  const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState, []));
-
-  useEffect(() => {
-    setMarkers(resolveReferences(defaultMarkers, currentState, false));
-  }, [currentState]);
+  const [mapCenter, setMapCenter] = useState(resolveReferences(center, currentState));
+  const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState));
 
   const containerStyle = {
     width,
@@ -64,11 +67,11 @@ export const Map = function Map({
     const mapBounds = gmap.getBounds();
 
     const bounds = {
-      northEast: mapBounds.getNorthEast().toJSON(),
-      southWest: mapBounds.getSouthWest().toJSON(),
+      northEast: mapBounds.getNorthEast()?.toJSON(),
+      southWest: mapBounds.getSouthWest()?.toJSON(),
     }
 
-    const newCenter = gmap.center.toJSON();
+    const newCenter = gmap.center?.toJSON();
     setMapCenter(newCenter);
 
     onComponentOptionsChanged(component, [
@@ -81,7 +84,7 @@ export const Map = function Map({
     function onLoad(mapInstance) {
       setGmap(mapInstance);
       onComponentOptionsChanged(component, [
-        ['center', mapInstance.center.toJSON()]
+        ['center', mapInstance.center?.toJSON()]
       ])
     }
   )
@@ -93,7 +96,7 @@ export const Map = function Map({
   }
 
   function onPlaceChanged() {
-    const location = autoComplete.getPlace().geometry.location.toJSON();
+    const location = autoComplete.getPlace().geometry.location?.toJSON();
     setMapCenter(location);
     handleBoundsChange();
   }
@@ -102,8 +105,9 @@ export const Map = function Map({
     setAutoComplete(autocompleteInstance);
   }
 
+
   return (
-    <div style={{ width, height }} onClick={() => onComponentClick(id, component)} className="map-widget">
+    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
       <LoadScript
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
         libraries={["places"]}

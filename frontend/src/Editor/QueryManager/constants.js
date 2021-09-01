@@ -16,7 +16,7 @@ export const defaultOptions = {
     operation: 'search'
   },
   restapi: {
-    method: 'GET',
+    method: 'get',
     url: null,
     url_params: [],
     headers: [],

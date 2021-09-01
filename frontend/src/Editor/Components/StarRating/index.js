@@ -20,6 +20,13 @@ export const StarRating = function StarRating({
   const allowHalfStar = component.definition.properties.allowHalfStar.value ?? false;
   const textColorProperty = component.definition.styles.textColor;
   const color = textColorProperty ? textColorProperty.value : '#ffb400';
+  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+
+  let parsedWidgetVisibility = widgetVisibility;
+  
+  try {
+    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+  } catch (err) { console.log(err); }
 
   const tooltips = component.definition.properties.tooltips.value ?? [];
   const _tooltips = resolveReferences(tooltips, currentState, []) ?? [];
@@ -74,7 +81,7 @@ export const StarRating = function StarRating({
   };
 
   return (
-    <div className="star-rating" onClick={() => onComponentClick(id, component)}>
+    <div className="star-rating" onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} style={{display:parsedWidgetVisibility ? '' : 'none'}}>
       {/* TODO: Add label color defination property instead of hardcoded color*/}
       <span className="label form-check-label form-check-label col-auto" style={{ color: '#000' }}>
         {label}
