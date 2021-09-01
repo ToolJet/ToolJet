@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-   <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-   <circle cx="16" cy="12" r="2"></circle>
-   <rect x="2" y="6" width="20" height="12" rx="6"></rect>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>toggleswitch</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="toggleswitch">
+            <polygon id="Path" points="0 0 24 0 24 24 0 24"></polygon>
+            <circle id="Oval" stroke="#434B53" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" cx="16" cy="12" r="2"></circle>
+            <rect id="Rectangle" stroke="#434B53" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x="2" y="6" width="20" height="12" rx="6"></rect>
+        </g>
+    </g>
 </svg>

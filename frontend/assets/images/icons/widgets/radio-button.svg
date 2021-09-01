@@ -1,1 +1,11 @@
-<svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g data-name="Layer 2"><g data-name="radio-button-on"><rect width="24" height="24" opacity="0"/><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 7a5 5 0 1 0 5 5 5 5 0 0 0-5-5z"/></g></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="279px" height="279px" viewBox="0 0 279 279" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>radio-button</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="radio-button" fill="#434B53" fill-rule="nonzero">
+            <rect id="Rectangle" opacity="0" x="0" y="0" width="279" height="279"></rect>
+            <path d="M140,23 C75.934969,23 24,75.1588266 24,139.5 C24,203.841173 75.934969,256 140,256 C204.065031,256 256,203.841173 256,139.5 C256,108.602279 243.778607,78.9700481 222.024387,57.12206 C200.270167,35.2740719 170.765113,23 140,23 Z M139.8,239.7 C84.571525,239.7 39.8,194.704617 39.8,139.2 C39.8,83.6953826 84.571525,38.7 139.8,38.7 C195.028475,38.7 239.8,83.6953826 239.8,139.2 C239.8,165.854257 229.264316,191.416825 210.510678,210.264232 C191.75704,229.111638 166.321649,239.7 139.8,239.7 Z" id="Shape"></path>
+            <path d="M140,82 C107.967485,82 82,107.967485 82,140 C82,172.032515 107.967485,198 140,198 C172.032515,198 198,172.032515 198,140 C198,107.967485 172.032515,82 140,82 L140,82 Z" id="Path"></path>
+        </g>
+    </g>
+</svg>
