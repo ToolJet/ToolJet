@@ -499,7 +499,7 @@ export function Table({
     ] // Hack: need to fix
   );
 
-  const data = useMemo(() => tableData, [tableData.length, JSON.stringify(currentState)]);
+  const data = useMemo(() => tableData, [tableData.length]);
 
   const computedStyles = {
     color,
