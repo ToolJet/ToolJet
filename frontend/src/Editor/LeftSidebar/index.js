@@ -24,6 +24,18 @@ export const LeftSidebar = ({ appId, switchDarkMode, darkMode = false, globals, 
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
+        <div className='left-sidebar-item no-border'>
+          <button 
+            type="button" 
+            className="btn btn-sm"
+            onClick={() => {
+              window.$chatwoot.toggle();
+            }}
+            // disabled={currentLayout === 'mobile'}
+          >
+            <img src="/assets/images/icons/editor/chat.svg" width="40" height="40" className="mx-2" />
+          </button>
+        </div>
       </div>
     </div>
   )
