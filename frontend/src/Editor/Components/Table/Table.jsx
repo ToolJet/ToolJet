@@ -277,9 +277,10 @@ export function Table({
 
         if (columnType === 'string' || columnType === undefined || columnType === 'default') {
           
-          const textColor = resolveReferences(column.textColor, currentState, { cellValue }) || [];
+          const textColor = resolveReferences(column.textColor, currentState, { cellValue });
+
           const cellStyles = {
-            color: textColor
+            color: textColor === undefined ? darkMode === true ? '#fff' : 'black' : textColor
           }
 
           if (column.isEditable) {
