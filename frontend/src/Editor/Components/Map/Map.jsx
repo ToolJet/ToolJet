@@ -108,6 +108,22 @@ export const Map = function Map({
 
   return (
     <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
+      <div 
+        className="map-center" 
+        style={
+            {
+              right: width*0.5-18,
+              top: height*0.5-50
+            }
+        }>
+        <img 
+          className="mx-2" 
+          src="/assets/images/icons/marker.svg" 
+          width="24" 
+          height="64"
+          
+        />
+      </div>
       <LoadScript
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
         libraries={["places"]}
