@@ -72,7 +72,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        textColor: { value: '#000' },
+        textColor: { value: '' },
         visibility: {value: '{{true}}'}
       },
     },
@@ -377,7 +377,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        value: { value: '' },
+        value: { value: '{{true}}' },
         values: { value: '{{[true,false]}}' },
         display_values: { value: '{{["yes", "no"]}}' },
         visible: { value: true },

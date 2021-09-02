@@ -275,27 +275,37 @@ export function Table({
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
 
-        if (columnType === undefined || columnType === 'default') {
-          return <span>{cellValue}</span>;
-        } if (columnType === 'string') {
+        if (columnType === 'string' || columnType === undefined || columnType === 'default') {
+          
+          const textColor = resolveReferences(column.textColor, currentState, { cellValue });
+
+          const cellStyles = {
+            color: textColor === undefined ? darkMode === true ? '#fff' : 'black' : textColor
+          }
+
           if (column.isEditable) {
             return (
               <input
                 type="text"
+                style={cellStyles}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                    if(e.target.defaultValue !== e.target.value) {
+                      handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                    }
                   }
                 }}
                 onBlur={(e) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  if(e.target.defaultValue !== e.target.value) {
+                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  }
                 }}
                 className="form-control-plaintext form-control-plaintext-sm"
                 defaultValue={cellValue}
               />
             );
           }
-          return <span>{cellValue}</span>;
+          return <span style={cellStyles}>{cellValue}</span>;
         } if (columnType === 'text') {
           return <textarea 
               rows="1" 
@@ -499,7 +509,7 @@ export function Table({
     ] // Hack: need to fix
   );
 
-  const data = useMemo(() => tableData, [tableData.length]);
+  const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
 
   const computedStyles = {
     color,
@@ -677,11 +687,12 @@ export function Table({
                   >
                     {row.cells.map((cell) => {
                       let cellProps = cell.getCellProps();
-
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
 
-                          if (_.get(componentState.changeSet[cell.row.index], cell.column.Header, undefined) !== undefined) {
+                          const currentColumn = columnData.find(column => column.id === cell.column.id);
+
+                          if (_.get(componentState.changeSet[cell.row.index], currentColumn?.accessor, undefined) !== undefined) {
                             console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
                           }
@@ -728,7 +739,7 @@ export function Table({
                 Save Changes
               </button>
               <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
-                Cancel
+                Discard changes
               </button>
             </div>
           )}
