@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
-import { getParsedValue, resolveReferences } from '../../_helpers/utils';
+import { resolveWidgetFieldValue, resolveReferences } from '../../_helpers/utils';
 
 export const Modal = function Modal({
   id,
@@ -25,7 +25,7 @@ export const Modal = function Modal({
 
   const disableState = component.definition.styles?.disableState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
+  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
 
   useEffect(() => {
     const componentState = containerProps.currentState.components[component.name];

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
-import { resolveReferences, getParsedValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const Container = function Container({
   id,
@@ -17,7 +17,7 @@ export const Container = function Container({
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disableState = component.definition.styles?.disableState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
+  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   

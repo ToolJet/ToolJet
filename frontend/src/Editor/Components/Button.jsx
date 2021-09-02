@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, getParsedValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 var tinycolor = require("tinycolor2");
 
 export const Button = function Button({
@@ -23,7 +23,7 @@ export const Button = function Button({
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disableState = component.definition.styles?.disableState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
+  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
   let parsedWidgetVisibility = widgetVisibility;
   
   try {
@@ -38,6 +38,8 @@ export const Button = function Button({
     display: parsedWidgetVisibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString() 
   };
+
+  console.log(`%c :: testFunc :: ${parsedDisableState} ::`,'color:orange');
 
   return (
     <button

@@ -1,5 +1,5 @@
 import React from 'react';
-import { resolveReferences, getParsedValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const Checkbox = function Checkbox({
   id,
@@ -18,7 +18,7 @@ export const Checkbox = function Checkbox({
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disableState = component.definition.styles?.disableState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
+  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   

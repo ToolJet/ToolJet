@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, getParsedValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const TextArea = function TextArea({
   id,
@@ -29,7 +29,7 @@ export const TextArea = function TextArea({
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disableState = component.definition.styles?.disableState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
+  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   

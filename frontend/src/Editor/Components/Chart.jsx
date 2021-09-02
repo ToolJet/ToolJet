@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, getParsedValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 // Use plotly basic bundle
 import Plotly from 'plotly.js-basic-dist-min';
@@ -19,7 +19,7 @@ export const Chart = function Chart({
   const disableState = component.definition.styles?.disableState?.value ?? false;
 
   let parsedWidgetVisibility = widgetVisibility;
-  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
+  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
   
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);

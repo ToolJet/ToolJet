@@ -2,7 +2,7 @@ import '@/_styles/widgets/star-rating.scss';
 
 import React from 'react';
 import { useTrail } from 'react-spring';
-import { resolveReferences, getParsedValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 import Star from './star';
 
@@ -23,7 +23,7 @@ export const StarRating = function StarRating({
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disableState = component.definition.styles?.disableState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
+  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
 
   let parsedWidgetVisibility = widgetVisibility;
   

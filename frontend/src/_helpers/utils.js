@@ -149,11 +149,14 @@ export const serializeNestedObjectToQueryParams = function(obj, prefix) {
 }
 
 
-export const getParsedValue = (resolverFunction, data, state) => {
-  let parsedValue = data
+export function resolveWidgetFieldValue(prop, state, _default=[]) {
+  const widgetFieldValue = prop;
+
   try {
-    parsedValue = resolverFunction(parsedValue, state);
-  } catch (err) { console.log(err) }
-  
-  return parsedValue
+    return resolveReferences(widgetFieldValue, state, _default)
+  } catch (error) {
+    console.log(err);
+  }
+
+  return widgetFieldValue
 }
