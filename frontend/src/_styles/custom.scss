@@ -16,3 +16,14 @@
         }
     }
 }
+
+div[data-disabled=true]
+{
+  pointer-events: none;
+  opacity: 0.6;
+  filter: alpha(opacity=50);
+  zoom: 1;  
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";  
+  -moz-opacity: 0.5; 
+  -khtml-opacity: 0.5;  
+}

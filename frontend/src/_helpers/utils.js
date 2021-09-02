@@ -147,3 +147,16 @@ export const serializeNestedObjectToQueryParams = function(obj, prefix) {
   }
   return str.join("&");
 }
+
+
+export function resolveWidgetFieldValue(prop, state, _default=[]) {
+  const widgetFieldValue = prop;
+
+  try {
+    return resolveReferences(widgetFieldValue, state, _default)
+  } catch (error) {
+    console.log(err);
+  }
+
+  return widgetFieldValue
+}

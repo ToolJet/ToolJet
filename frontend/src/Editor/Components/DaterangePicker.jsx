@@ -3,7 +3,7 @@ import 'react-datetime/css/react-datetime.css';
 import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const DaterangePicker = function DaterangePicker({
   id,
@@ -19,7 +19,10 @@ export const DaterangePicker = function DaterangePicker({
   const startDateProp = component.definition.properties.startDate;
   const endDateProp = component.definition.properties.endDate;
   const formatProp = component.definition.properties.format;
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+
 
   const [focusedInput, setFocusedInput] = useState(null);
   const [startDate, setStartDate] = useState(startDateProp ? startDateProp.value : null);
@@ -54,6 +57,7 @@ export const DaterangePicker = function DaterangePicker({
   return (
     <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <DateRangePicker
+        disabled={parsedDisabledState}
         startDate={startDate}
         startDateId="startDate"
         isOutsideRange={() => false}

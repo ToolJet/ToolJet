@@ -1542,6 +1542,11 @@ body {
     left: 50%;
     margin-left: -120px;
   }
+
+  .map-center {
+    position: fixed;
+    z-index: 1000;
+  }
 }
 
 .events-toggle-active {
