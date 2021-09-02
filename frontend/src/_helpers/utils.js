@@ -34,15 +34,15 @@ export function resolveAll(data, state) {
 
 }
 
-export function resolveReferences(object, state) {
+export function resolveReferences(object, state, customObjects = {}) {
   if (typeof object === 'string') {
     if (object.startsWith('{{') && object.endsWith('}}')) {
       const code = object.replace('{{', '').replace('}}', '');
       let result = '';
 
       try {
-        const evalFunction = Function(['components', 'queries', 'globals', 'moment', '_'], `return ${code}`);
-        result = evalFunction(state.components, state.queries, state.globals, moment, _);
+        const evalFunction = Function(['components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)], `return ${code}`);
+        result = evalFunction(state.components, state.queries, state.globals, moment, _, ...Object.values(customObjects));
       } catch (err) {
         console.log('eval_error', err);
       }

@@ -152,6 +152,21 @@ class Table extends React.Component {
             />
           </div>
 
+          {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && 
+            <div className="field mb-2">
+              <label className="form-label">Text color</label>
+              <CodeHinter
+                currentState={this.props.currentState}
+                initialValue={column.textColor}
+                theme={this.props.darkMode ? 'monokai' : 'default'}
+                mode= "javascript"
+                lineNumbers={false}
+                placeholder={'Text color of the cell'}
+                onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
+              />
+            </div>
+          }
+
           {column.columnType === 'toggle' && 
             <div>
               <div className="field mb-2">
@@ -228,7 +243,7 @@ class Table extends React.Component {
            
           )}
 
-          <label className="form-check form-switch my-2">
+          <label className="form-check form-switch my-4">
             <input
               className="form-check-input"
               type="checkbox"
@@ -237,10 +252,6 @@ class Table extends React.Component {
             />
             <span className="form-check-label">make editable</span>
           </label>
-
-          <button className="btn btn-sm btn-outline-danger col" onClick={() => this.removeAction(index)}>
-            Remove
-          </button>
         </Popover.Content>
       </Popover>
     );
