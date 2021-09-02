@@ -38,7 +38,8 @@ export const componentTypes = [
         { name: 'Striped', value: 'table-striped' },
         { name: 'Striped & bordered', value: 'table-striped table-bordered' }
       ] },
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       selectedRow: {},
@@ -73,7 +74,8 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '' },
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -100,7 +102,8 @@ export const componentTypes = [
     styles: {
       backgroundColor: { type: 'color', displayName: 'Background color' },
       textColor: { type: 'color', displayName: 'Text color' },
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {},
     definition: {
@@ -117,7 +120,8 @@ export const componentTypes = [
       styles: {
         backgroundColor: { value: '#3c92dc' },
         textColor: { value: '#fff' },
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -152,7 +156,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       show: null,
@@ -178,7 +183,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -208,7 +214,9 @@ export const componentTypes = [
       },
     },
     events: {},
-    styles: {},
+    styles: {
+      disabledState: {type: 'code', displayName: 'Disable'}
+    },
     exposedVariables: {
       show: null,
     },
@@ -222,7 +230,9 @@ export const componentTypes = [
         size: { value: 'md' },
       },
       events: [],
-      styles: {},
+      styles: {
+        disabledState: {value: '{{false}}'}
+      },
     },
   },
   {
@@ -243,7 +253,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       value: '',
@@ -258,7 +269,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -282,7 +294,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       value: {},
@@ -299,7 +312,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -325,7 +339,8 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {},
     definition: {
@@ -339,7 +354,8 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -367,7 +383,8 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {},
     definition: {
@@ -385,7 +402,8 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -410,7 +428,8 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {},
     definition: {
@@ -424,7 +443,8 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -447,7 +467,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       value: {},
@@ -463,7 +484,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -485,7 +507,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       endDate: {},
@@ -501,7 +524,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -525,7 +549,8 @@ export const componentTypes = [
     events: [],
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {},
     definition: {
@@ -541,7 +566,8 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -565,7 +591,8 @@ export const componentTypes = [
       onClick: { displayName: 'On click' },
     },
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {},
     definition: {
@@ -579,7 +606,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -596,11 +624,13 @@ export const componentTypes = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
-    properties: {},
+    properties: {
+    },
     events: {},
     styles: {
       backgroundColor: { type: 'color' },
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {},
     definition: {
@@ -614,7 +644,8 @@ export const componentTypes = [
       events: [],
       styles: {
         backgroundColor: { value: '#fff' },
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value:'{{false}}'}
       },
     },
   },
@@ -642,6 +673,7 @@ export const componentTypes = [
     },
     styles: {
       visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       value: null,
@@ -660,7 +692,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -687,7 +720,8 @@ export const componentTypes = [
       onSelect: { displayName: 'On select' },
     },
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       values: {},
@@ -706,7 +740,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -728,7 +763,8 @@ export const componentTypes = [
     },
     events: {},
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       value: {},
@@ -743,7 +779,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -789,7 +826,8 @@ export const componentTypes = [
       onMarkerClick: { displayName: 'On marker click' },
     },
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       center: {},
@@ -810,7 +848,8 @@ export const componentTypes = [
       addNewMarkers: { value: '{{false}}' },
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -832,7 +871,8 @@ export const componentTypes = [
       onDetect: { displayName: 'On detect' },
     },
     styles: {
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       lastDetectedValue: '',
@@ -845,7 +885,8 @@ export const componentTypes = [
       properties: {},
       events: [],
       styles: {
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
@@ -874,7 +915,8 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Star Color' },
-      visibility: {type: 'code', displayName: 'Visibility'}
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
       value: 0,
@@ -895,7 +937,8 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#ffb400' },
-        visibility: {value: '{{true}}'}
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
       },
     },
   },
