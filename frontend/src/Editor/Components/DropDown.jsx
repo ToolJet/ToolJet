@@ -17,9 +17,9 @@ export const DropDown = function DropDown({
   const values = component.definition.properties.values.value;
   const displayValues = component.definition.properties.display_values.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedValues = values;
 
@@ -73,7 +73,7 @@ export const DropDown = function DropDown({
       </div>
       <div className="col px-0">
         <SelectSearch
-          disabled={parsedDisableState}
+          disabled={parsedDisabledState}
           options={selectOptions}
           value={currentValue}
           search={true}

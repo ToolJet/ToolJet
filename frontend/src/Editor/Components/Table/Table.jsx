@@ -53,9 +53,9 @@ export function Table({
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   let parsedWidgetVisibility = widgetVisibility;
   
   try {
@@ -603,7 +603,7 @@ export function Table({
 
   return (
     <div
-      data-disabled={parsedDisableState}
+      data-disabled={parsedDisabledState}
       className="card jet-table"
       style={{ width: `${width}px`, height: `${height}px`, display:parsedWidgetVisibility ? '' : 'none' }}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}

@@ -21,9 +21,9 @@ export const Button = function Button({
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const color = component.definition.styles.textColor.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   let parsedWidgetVisibility = widgetVisibility;
   
   try {
@@ -39,11 +39,9 @@ export const Button = function Button({
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString() 
   };
 
-  console.log(`%c :: testFunc :: ${parsedDisableState} ::`,'color:orange');
-
   return (
     <button
-      disabled={parsedDisableState}
+      disabled={parsedDisabledState}
       className={`jet-button btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
       style={computedStyles}
       onClick={(event) => {event.stopPropagation();  onComponentClick(id, component)}}

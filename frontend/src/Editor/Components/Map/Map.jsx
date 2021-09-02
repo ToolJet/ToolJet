@@ -33,9 +33,9 @@ export const Map = function Map({
   const canSearchProp = component.definition.properties.canSearch;
   const canSearch = canSearchProp ? canSearchProp.value : false;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
 
@@ -110,7 +110,7 @@ export const Map = function Map({
 
 
   return (
-    <div data-disabled={parsedDisableState} style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
+    <div data-disabled={parsedDisabledState} style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
       <LoadScript
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
         libraries={["places"]}

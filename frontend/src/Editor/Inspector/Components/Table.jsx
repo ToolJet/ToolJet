@@ -518,7 +518,7 @@ class Table extends React.Component {
         </div>
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'disableState', 'styles', currentState)}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'disabledState', 'styles', currentState)}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'tableType', 'styles', currentState)}
       </div>

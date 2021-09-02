@@ -16,10 +16,10 @@ export const Chart = function Chart({
   const [chartData, setChartData] = useState([]);
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
   let parsedWidgetVisibility = widgetVisibility;
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
@@ -122,7 +122,7 @@ export const Chart = function Chart({
 
   return (
     <div
-      data-disabled={parsedDisableState}
+      data-disabled={parsedDisabledState}
       style={computedStyles}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
     >

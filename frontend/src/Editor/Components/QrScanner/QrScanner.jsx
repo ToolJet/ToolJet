@@ -22,9 +22,9 @@ export const QrScanner = function QrScanner({
   let [errorOccured, setErrorOccured] = useState(false);
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -33,7 +33,7 @@ export const QrScanner = function QrScanner({
   } catch (err) { console.log(err); }
 
   return (
-    <div data-disabled={parsedDisableState} style={{display:parsedWidgetVisibility ? '' : 'none'}}>
+    <div data-disabled={parsedDisabledState} style={{display:parsedWidgetVisibility ? '' : 'none'}}>
       {
         errorOccured ?
           <ErrorModal />

@@ -23,9 +23,9 @@ export const Modal = function Modal({
   const sizeProp = component.definition.properties.size;
   const size = sizeProp ? sizeProp.value : 'lg';
 
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   useEffect(() => {
     const componentState = containerProps.currentState.components[component.name];
@@ -39,7 +39,7 @@ export const Modal = function Modal({
   }
 
   return (
-    <div data-disabled={parsedDisableState}>
+    <div data-disabled={parsedDisabledState}>
       <BootstrapModal
         contentClassName="modal-component"
         show={show}

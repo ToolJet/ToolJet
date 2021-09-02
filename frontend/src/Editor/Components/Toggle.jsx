@@ -7,12 +7,12 @@ class Switch extends React.Component {
         on,
         onClick,
         onChange,
-        disableState
+        disabledState
       } = this.props
       return (
           <label className="form-check form-switch form-check-inline">
             <input
-              disabled={disableState}
+              disabled={disabledState}
               className="form-check-input"
               type="checkbox"
               checked={on}
@@ -40,9 +40,9 @@ export const ToggleSwitch = ({
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
 
   let parsedWidgetVisibility = widgetVisibility;
@@ -64,7 +64,7 @@ export const ToggleSwitch = ({
     <div className="row  py-1" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
         <span className="form-check-label form-check-label col-auto" style={{color: textColor}}>{label}</span>
         <div className="col">
-          <Switch disableState={parsedDisableState} on={on} onClick={toggle} onChange={toggleValue} />
+          <Switch disabledState={parsedDisabledState} on={on} onClick={toggle} onChange={toggleValue} />
         </div>
     </div>
   );

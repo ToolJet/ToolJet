@@ -16,9 +16,9 @@ export const Checkbox = function Checkbox({
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -40,7 +40,7 @@ export const Checkbox = function Checkbox({
     <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <label className="form-check form-check-inline">
         <input
-          disabled={parsedDisableState}
+          disabled={parsedDisabledState}
           className="form-check-input"
           type="checkbox"
           onClick={(e) => {

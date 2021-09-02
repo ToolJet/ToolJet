@@ -15,9 +15,9 @@ export const Container = function Container({
 
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -35,7 +35,7 @@ export const Container = function Container({
   const parentRef = useRef(null);
 
   return (
-    <div data-disabled={parsedDisableState} className="jet-container" ref={parentRef} onClick={() => containerProps.onComponentClick(id, component)} style={computedStyles}>
+    <div data-disabled={parsedDisabledState} className="jet-container" ref={parentRef} onClick={() => containerProps.onComponentClick(id, component)} style={computedStyles}>
             <SubContainer
               parent={id}
               {...containerProps}

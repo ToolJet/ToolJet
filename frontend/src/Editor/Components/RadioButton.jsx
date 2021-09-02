@@ -21,9 +21,9 @@ export const RadioButton = function RadioButton({
   const values = component.definition.properties.values.value;
   const displayValues = component.definition.properties.display_values.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disableState = component.definition.styles?.disableState?.value ?? false;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisableState = typeof disableState !== 'boolean' ? resolveWidgetFieldValue(disableState, currentState) : disableState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedValues = values;
 
@@ -69,7 +69,7 @@ export const RadioButton = function RadioButton({
   }
 
   return (
-    <div data-disabled={parsedDisableState} className="row" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'  }}  onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div data-disabled={parsedDisabledState} className="row" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'  }}  onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <span className="form-check-label form-check-label col-auto py-1" style={{color: textColor}}>{label}</span>
       <div className="col py-1" onChange={(e) => onSelect(e)}>
         {selectOptions.map((option, index) => (
