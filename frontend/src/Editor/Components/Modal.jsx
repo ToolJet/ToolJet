@@ -23,7 +23,7 @@ export const Modal = function Modal({
   const sizeProp = component.definition.properties.size;
   const size = sizeProp ? sizeProp.value : 'lg';
 
-  const disableState = component.definition.styles?.disableState?.value || false;
+  const disableState = component.definition.styles?.disableState?.value ?? false;
 
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 

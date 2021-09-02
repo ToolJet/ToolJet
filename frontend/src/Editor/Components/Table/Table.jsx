@@ -52,8 +52,8 @@ export function Table({
   let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
-  const disableState = component.definition.styles?.disableState?.value || false;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disableState = component.definition.styles?.disableState?.value ?? false;
 
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
   let parsedWidgetVisibility = widgetVisibility;

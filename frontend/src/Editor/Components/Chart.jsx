@@ -15,8 +15,8 @@ export const Chart = function Chart({
   const [loadingState, setLoadingState] = useState(false);
   const [chartData, setChartData] = useState([]);
 
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
-  const disableState = component.definition.styles?.disableState?.value || false;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disableState = component.definition.styles?.disableState?.value ?? false;
 
   let parsedWidgetVisibility = widgetVisibility;
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;

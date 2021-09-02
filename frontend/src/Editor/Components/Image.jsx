@@ -6,8 +6,8 @@ export const Image = function Image({
   id, width, height, component, onComponentClick, currentState
 }) {
   const source = component.definition.properties.source.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
-  const disableState = component.definition.styles?.disableState?.value || false;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disableState = component.definition.styles?.disableState?.value ?? false;
 
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 

@@ -20,8 +20,8 @@ export const RadioButton = function RadioButton({
   const defaultValue = component.definition.properties.value.value;
   const values = component.definition.properties.values.value;
   const displayValues = component.definition.properties.display_values.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
-  const disableState = component.definition.styles?.disableState?.value || false;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disableState = component.definition.styles?.disableState?.value ?? false;
 
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 

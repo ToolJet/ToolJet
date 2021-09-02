@@ -17,8 +17,8 @@ export const Datepicker = function Datepicker({
   const formatProp = component.definition.properties.format;
   const enableTimeProp = component.definition.properties.enableTime;
   const enableDateProp = component.definition.properties.enableDate;
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
-  const disableState = component.definition.styles?.disableState?.value || false;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disableState = component.definition.styles?.disableState?.value ?? false;
 
   const parsedDisableState = typeof disableState !== 'boolean' ? getParsedValue(resolveReferences, disableState, currentState) : disableState;
 
