@@ -72,7 +72,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        textColor: { value: '#000' },
+        textColor: { value: '' },
         visibility: {value: '{{true}}'}
       },
     },
