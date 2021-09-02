@@ -130,7 +130,7 @@ body {
 
   .editor-sidebar {
     height: 100%;
-    width: 15%;
+    width: 18%;
     position: fixed;
     z-index: 1;
     right: 0;
@@ -213,22 +213,30 @@ body {
       overflow: auto;
 
       .component-image-holder {
-        background: #f6f7fb;
-        border-radius: 8px;
-        border: 1px solid #d0d0d0;
+        background: rgb(244, 246, 250);
+        border-radius: 0;
+        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 
         img {
           margin: 0 auto;
           padding: 12px;
+        }
+
+        &:hover {
+          background: rgba(66, 153, 225, 0.1);
         }
       }
 
       .component-title {
         display: block;
         font-weight: 400;
-        margin-top: 5px;
-        font-size: 0.7rem;
+        margin-top: 10px;
         color: #3e525b;
+        white-space: nowrap;  
+        font-size: 10px;
+        line-height: 12px;
+        max-width: 100%;
+        text-align: center;
       }
 
       .component-description {
@@ -260,7 +268,7 @@ body {
 
     .canvas-container {
       height: 100%;
-      width: 82%;
+      width: 79%;
       top: 56px;
       position: fixed;
       overflow-y: auto;
@@ -369,7 +377,7 @@ body {
           background: white;
           position: fixed;
           z-index: 3;
-          width: 61.5%;
+          width: 58.5%;
           margin-top: 0px;
           padding: 0.5px;
         }
@@ -484,6 +492,8 @@ body {
 }
 
 .homepage-body {
+  overflow-y: scroll;
+  max-height: 100vh;
   a {
     color: inherit;
   }
@@ -2073,4 +2083,13 @@ input:focus-visible {
 
 input[type=text] {
   border-radius: 0 !important;
+  outline-color: #dadcde !important;
+}
+
+.widget-header {
+ text-transform: capitalize;
+ margin-top: 12px !important;
+ font-weight: 500;
+ font-size: 12px;
+ line-height: 12px;
 }
