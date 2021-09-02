@@ -2,7 +2,7 @@ import '@/_styles/widgets/star-rating.scss';
 
 import React from 'react';
 import { useTrail } from 'react-spring';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 import Star from './star';
 
@@ -20,7 +20,10 @@ export const StarRating = function StarRating({
   const allowHalfStar = component.definition.properties.allowHalfStar.value ?? false;
   const textColorProperty = component.definition.styles.textColor;
   const color = textColorProperty ? textColorProperty.value : '#ffb400';
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
+
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -81,7 +84,7 @@ export const StarRating = function StarRating({
   };
 
   return (
-    <div className="star-rating" onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} style={{display:parsedWidgetVisibility ? '' : 'none'}}>
+    <div data-disabled={parsedDisabledState} className="star-rating" onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} style={{display:parsedWidgetVisibility ? '' : 'none'}}>
       {/* TODO: Add label color defination property instead of hardcoded color*/}
       <span className="label form-check-label form-check-label col-auto" style={{ color: '#000' }}>
         {label}
