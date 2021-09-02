@@ -5,11 +5,27 @@
   },
   "testFiles": [
     "auth.spec.js",
-    "empty-state-dashboard.spec.js",
-    "dashboard.spec.js",
-    "apps-page-operations.spec.js",
-    "editor-navigation-bar.spec.js",
-    "editor-datasource-postgres.spec.js"
-    ]
-    
+    "dashboard/empty-state-dashboard.spec.js",
+    "dashobard/dashboard.spec.js",
+    "dashboard/apps-page-operations.spec.js",
+    "editor/editor-navigation-bar.spec.js",
+    "editor/editor-datasource-postgres.spec.js",
+    "editor/widgets/editor-widget-checkbox.spec.js",
+    "editor/widgets/editor-widget-table.spec.js",
+    "editor/widgets/editor-widget-button.spec.js",
+    "editor/widgets/editor-widget-chart.spec.js",
+    "editor/widgets/editor-widget-modal.spec.js",
+    "editor/widgets/editor-widget-text-input.spec.js",
+    "editor/widgets/editor-widget-date-picker.spec.js",
+    "editor/widgets/editor-widget-toggle-switch.spec.js",
+    "editor/widgets/editor-widget-text-area.spec.js",
+    "editor/widgets/editor-widget-text.spec.js",
+    "editor/widgets/editor-widget-text-editor.spec.js",
+    "editor/widgets/editor-widget-image.spec.js",
+    "editor/widgets/editor-widget-container.spec.js",
+    "editor/widgets/editor-widget-dropdown.spec.js",
+    "editor/widgets/editor-widget-multiselect.spec.js",
+    "editor/widgets/editor-widget-map.spec.js",
+    "editor/widgets/editor-widget-qr-scanner.spec.js"
+    ] 
 }
