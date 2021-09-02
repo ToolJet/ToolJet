@@ -27,7 +27,7 @@ export const Image = function Image({
   }
 
   return (
-    <div disabled={parsedDisableState} style={{display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div data-disabled={parsedDisableState} style={{display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <LazyLoad width={width} height={height} placeholder={<Placeholder/>} debounce={500}>
         <img style={{ objectFit: 'contain' }} src={data} width={width} height={height} />
       </LazyLoad>

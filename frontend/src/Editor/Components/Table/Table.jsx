@@ -603,7 +603,7 @@ export function Table({
 
   return (
     <div
-      disabled={parsedDisableState}
+      data-disabled={parsedDisableState}
       className="card jet-table"
       style={{ width: `${width}px`, height: `${height}px`, display:parsedWidgetVisibility ? '' : 'none' }}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}

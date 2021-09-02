@@ -39,7 +39,7 @@ export const Modal = function Modal({
   }
 
   return (
-    <div disabled={parsedDisableState}>
+    <div data-disabled={parsedDisableState}>
       <BootstrapModal
         contentClassName="modal-component"
         show={show}

@@ -51,7 +51,7 @@ export const Text = function Text({
   };
 
   return (
-    <div disabled={parsedDisableState} className="text-widget" style={computedStyles} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div data-disabled={parsedDisableState} className="text-widget" style={computedStyles} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />}
       {loadingState === true && (
         <div>

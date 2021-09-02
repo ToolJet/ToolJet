@@ -35,7 +35,7 @@ export const Container = function Container({
   const parentRef = useRef(null);
 
   return (
-    <div disabled={parsedDisableState} className="jet-container" ref={parentRef} onClick={() => containerProps.onComponentClick(id, component)} style={computedStyles}>
+    <div data-disabled={parsedDisableState} className="jet-container" ref={parentRef} onClick={() => containerProps.onComponentClick(id, component)} style={computedStyles}>
             <SubContainer
               parent={id}
               {...containerProps}

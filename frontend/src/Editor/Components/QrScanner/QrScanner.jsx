@@ -33,7 +33,7 @@ export const QrScanner = function QrScanner({
   } catch (err) { console.log(err); }
 
   return (
-    <div disabled={parsedDisableState} style={{display:parsedWidgetVisibility ? '' : 'none'}}>
+    <div data-disabled={parsedDisableState} style={{display:parsedWidgetVisibility ? '' : 'none'}}>
       {
         errorOccured ?
           <ErrorModal />

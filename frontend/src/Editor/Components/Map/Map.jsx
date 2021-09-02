@@ -110,7 +110,7 @@ export const Map = function Map({
 
 
   return (
-    <div disabled={parsedDisableState} style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
+    <div data-disabled={parsedDisableState} style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
       <LoadScript
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
         libraries={["places"]}

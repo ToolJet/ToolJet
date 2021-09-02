@@ -46,7 +46,7 @@ export const Datepicker = function Datepicker({
   }
 
   return (
-    <div disabled={parsedDisableState}  style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div data-disabled={parsedDisableState}  style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <Datetime onChange={onDateChange} timeFormat={enableTime} dateFormat={dateFormat.value} />
     </div>
   );

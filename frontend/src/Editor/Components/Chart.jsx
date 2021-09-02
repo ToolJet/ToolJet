@@ -122,7 +122,7 @@ export const Chart = function Chart({
 
   return (
     <div
-      disabled={parsedDisableState}
+      data-disabled={parsedDisableState}
       style={computedStyles}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
     >
