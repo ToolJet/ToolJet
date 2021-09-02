@@ -23,19 +23,24 @@ export class SampleAppCreationService {
       'github-contributors': '47283446-3c9b-4fbb-b2f3-75540664df8c',
       'customer-dashboard': 'd041993a-4737-4a47-930c-9513eac99645',
     };
+    let newApp: App;
 
-    const sampleApp = await this.findSampleApp(
-      appIdentifierMapping,
-      identifier,
-    );
+    await this.entityManager.transaction(async (manager) => {
+      const sampleApp = await this.findSampleApp(
+        manager,
+        appIdentifierMapping,
+        identifier,
+      );
 
-    const newApp = await this.createNewAppForUser(sampleApp, currentUser);
-    await this.buildNewAppAssociations(newApp, sampleApp);
+      newApp = await this.createNewAppForUser(manager, sampleApp, currentUser);
+      await this.buildNewAppAssociations(manager, newApp, sampleApp);
+    });
 
     return newApp;
   }
 
   async findSampleApp(
+    manager: EntityManager,
     appIdentifierMapping: {
       [x: string]: any;
       'github-contributors'?: string;
@@ -44,69 +49,76 @@ export class SampleAppCreationService {
     identifier: string,
   ): Promise<App> {
     const sampleAppId = appIdentifierMapping[identifier];
-    return await this.entityManager.findOne(App, {
+    return await manager.findOne(App, {
       id: sampleAppId,
     });
   }
 
-  async createNewAppForUser(sampleApp: App, currentUser: User): Promise<App> {
-    const newApp = this.entityManager.create(App, {
+  async createNewAppForUser(
+    manager: EntityManager,
+    sampleApp: App,
+    currentUser: User,
+  ): Promise<App> {
+    const newApp = manager.create(App, {
       name: sampleApp.name,
       organizationId: currentUser.organizationId,
       user: currentUser,
     });
-    await this.entityManager.save(newApp);
+    await manager.save(newApp);
 
-    const newAppUser = this.entityManager.create(AppUser, {
+    const newAppUser = manager.create(AppUser, {
       app: newApp,
       user: currentUser,
       role: 'admin',
     });
-    await this.entityManager.save(newAppUser);
+    await manager.save(newAppUser);
     return newApp;
   }
 
-  async buildNewAppAssociations(newApp: App, sampleApp: App) {
+  async buildNewAppAssociations(manager, newApp: App, sampleApp: App) {
     const dataSourceMapping = {};
     const newDefinition = sampleApp.editingVersion?.definition;
 
-    const sampleDataSources = await this.entityManager.find(DataSource, {
+    const sampleDataSources = await manager.find(DataSource, {
       app: sampleApp,
     });
-    sampleDataSources.forEach(async (source) => {
-      const newSource = this.entityManager.create(DataSource, {
+
+    for (const source of sampleDataSources) {
+      const newSource = manager.create(DataSource, {
         app: newApp,
         name: source.name,
         options: source.options,
         kind: source.kind,
       });
-      await this.entityManager.save(newSource);
-      dataSourceMapping[source.id] = newSource.id;
-    });
 
-    const sampleDataQueries = await this.entityManager.find(DataQuery, {
+      await manager.save(newSource);
+      dataSourceMapping[source.id] = newSource.id;
+    }
+
+    const sampleDataQueries = await manager.find(DataQuery, {
       app: sampleApp,
     });
-    sampleDataQueries.forEach(async (query) => {
-      const newQuery = this.entityManager.create(DataQuery, {
+
+    for (const query of sampleDataQueries) {
+      const newQuery = manager.create(DataQuery, {
         app: newApp,
         name: query.name,
         options: query.options,
         kind: query.kind,
         dataSourceId: dataSourceMapping[query.dataSourceId],
       });
-      await this.entityManager.save(newQuery);
+      await manager.save(newQuery);
       dataSourceMapping[query.id] = newQuery.id;
-    });
+    }
 
-    const version = this.entityManager.create(AppVersion, {
+    const version = manager.create(AppVersion, {
       app: newApp,
       definition: newDefinition,
       name: 'v0',
     });
-    await this.entityManager.save(version);
+    await manager.save(version);
 
-    await this.entityManager.update(App, newApp, {
+    await manager.update(App, newApp, {
       currentVersionId: version.id,
     });
   }
