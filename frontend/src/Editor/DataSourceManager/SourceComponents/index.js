@@ -1,3 +1,7 @@
+import React from 'react'
+
+import DynamicForm from '@/_components/DynamicForm';
+import AirtableSchema from './Airtable.schema.json'
 import { Elasticsearch } from './Elasticsearch';
 import { Redis } from './Redis';
 import { Postgresql } from './Postgresql';
@@ -9,10 +13,11 @@ import { Googlesheets } from './Googlesheets';
 import { Slack } from './Slack';
 import { Mongodb } from './Mongodb';
 import { Dynamodb } from './Dynamodb';
-import { Airtable } from './Airtable';
+// import { Airtable } from './Airtable';
 import { Graphql } from './Graphql';
 import { Mssql } from './Mssql';
 
+const Airtable = ({...rest}) => <DynamicForm schema={AirtableSchema} {...rest} />
 export const SourceComponents = {
     Elasticsearch,
     Redis,
