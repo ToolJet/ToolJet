@@ -34,7 +34,7 @@ export function resolveAll(data, state) {
 
 }
 
-export function resolveReferences(object, state, customObjects) {
+export function resolveReferences(object, state, customObjects = {}) {
   if (typeof object === 'string') {
     if (object.startsWith('{{') && object.endsWith('}}')) {
       const code = object.replace('{{', '').replace('}}', '');
