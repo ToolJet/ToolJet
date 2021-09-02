@@ -145,12 +145,25 @@ export const DraggableBox = function DraggableBox({
     height: 500,
   };
 
-  const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
+
+  const componentDefaultData = {
+    top: 100,
+    left: 0,
+    width: component.defaultData?.width,
+    height: component.defaultData?.height,
+  }
+
+  const layoutData = inCanvas ? layouts[currentLayout] || componentDefaultData : defaultData;
   const [currentLayoutOptions, setCurrentLayoutOptions] = useState(layoutData);
 
   useEffect(() => {
     console.log(layoutData);
-    setCurrentLayoutOptions(layoutData);
+    setCurrentLayoutOptions((prev) => {
+      const copy = JSON.parse(JSON.stringify(prev));
+      const newData = Object.assign(copy, layoutData)
+
+      return newData
+    });
   }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top, currentLayout]);
 
   function scaleWidth(width, scaleValue) {
