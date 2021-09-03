@@ -84,7 +84,6 @@ class DataSourceManager extends React.Component {
   };
 
   optionchanged = (option, value) => {
-    console.log(option, value)
     return this.setStateAsync({
       connectionTestError: null,
       options: {
@@ -156,9 +155,6 @@ class DataSourceManager extends React.Component {
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError } = this.state;
 
-    console.log('selectedDataSource')
-    console.log(selectedDataSource)
-    console.log(dataSourceMeta)
     return (
       <div>
         <Modal

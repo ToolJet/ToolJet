@@ -32,7 +32,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         };
       case 'react-component-headers':
         return {
-          getter: 'headers',
+          getter: $key,
           options: options.headers.value,
           optionchanged
         };

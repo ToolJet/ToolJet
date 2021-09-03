@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Airtable.schema.json",
+  "title": "Graphql datasource",
+  "description": "A schema defining graphql datasource",
+  "type": "object",
+  "properties": {
+    "url": {
+      "$label": "URL",
+      "$key": "url",
+      "type": "text",
+      "description": "https://api.example.com/v1/"
+    },
+    "headers": {
+      "$label": "Headers",
+      "$key": "headers",
+      "type": "react-component-headers",
+      "description": "key-value pair headers for rest api"
+    },
+    "url_params": {
+      "$label": "URL parameters",
+      "$key": "url_params",
+      "type": "react-component-headers",
+      "description": "key-value pair url parameters for rest api"
+    }
+  },
+  "required": ["url"]
+}
