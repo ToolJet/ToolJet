@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Airtable.schema.json",
+  "$id": "https://tooljet.io/GoogleSheets.schema.json",
   "title": "Google Sheets datasource",
   "description": "A schema defining google sheets datasource",
   "type": "object",

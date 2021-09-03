@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Airtable.schema.json",
+  "$id": "https://tooljet.io/Slack.schema.json",
   "title": "Slack datasource",
   "description": "A schema defining slack datasource",
   "type": "object",

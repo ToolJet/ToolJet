@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Airtable.schema.json",
+  "$id": "https://tooljet.io/Restapi.schema.json",
   "title": "Restapi datasource",
   "description": "A schema defining restapi datasource",
   "type": "object",

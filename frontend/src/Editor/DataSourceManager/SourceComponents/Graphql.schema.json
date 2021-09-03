@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Airtable.schema.json",
+  "$id": "https://tooljet.io/Graphql.schema.json",
   "title": "Graphql datasource",
   "description": "A schema defining graphql datasource",
   "type": "object",
