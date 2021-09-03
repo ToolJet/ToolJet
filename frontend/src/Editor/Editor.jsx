@@ -1,6 +1,5 @@
 import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
-// import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -8,8 +7,6 @@ import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
-// import ReactJson from 'react-json-view';
-// import { DataSourceManager } from './DataSourceManager';
 import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
 import { QueryManager } from './QueryManager';
 import { toast } from 'react-toastify';
@@ -28,7 +25,6 @@ import {
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
-// import { Resizable } from 're-resizable';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import queryString from 'query-string';
@@ -575,25 +571,6 @@ class Editor extends React.Component {
                     />
                   </span>
                 </div>
-                {/* <div className="canvas-buttons">
-                  <button
-                    className="btn btn-light mx-2"
-                    onClick={() => this.setState({ zoomLevel: ((Math.round(zoomLevel*10) - 1)/10).toFixed(1) }) }
-                    disabled={zoomLevel <= 0.6}
-                    role="button"
-                  >
-                    <img src="/assets/images/icons/zoom-out.svg" width="12" height="12" />
-                  </button>
-                  <small>{zoomLevel * 100}%</small>
-                  <button
-                    className="btn btn-light mx-2"
-                    onClick={() => this.setState({ zoomLevel: ((Math.round(zoomLevel*10) + 1)/10).toFixed(1) }) }
-                    disabled={zoomLevel >= 1.0}
-                    role="button"
-                  >
-                    <img src="/assets/images/icons/zoom-in.svg" width="12" height="12" />
-                  </button>
-                </div> */}
                 <div className="layout-buttons">
                   <div className="btn-group" role="group" aria-label="Basic example">
                     <button
@@ -615,13 +592,7 @@ class Editor extends React.Component {
                   </div>
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
-                  {/* <div className="mx-3" style={{ marginTop: '7px'}}>
-                    <DarkModeToggle
-                      switchDarkMode={this.props.switchDarkMode}
-                      darkMode={this.props.darkMode}
-                    />
-                  </div> */}
-                  <div className="nav-item dropdown d-none d-md-flex me-3">
+                  <div className="nav-item dropdown d-none d-md-flex me-2">
                     {app.id && (
                       <ManageAppUsers
                         app={app}
@@ -631,7 +602,7 @@ class Editor extends React.Component {
                       />
                     )}
                   </div>
-                  <div className="nav-item dropdown d-none d-md-flex me-3">
+                  <div className="nav-item dropdown d-none d-md-flex me-2">
                     <a
                       href={appLink}
                       target="_blank"
@@ -672,128 +643,6 @@ class Editor extends React.Component {
               onZoomChanged={this.onZoomChanged}
               switchDarkMode={this.props.switchDarkMode}
             />
-            {/* <Resizable
-              minWidth={showLeftSidebar ? '12%' : '0%'}
-              style={{
-                position: 'fixed',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: '200'
-              }}
-              maxWidth={showLeftSidebar ? '30%' : '0%'}
-              defaultSize={{
-                width: '12%',
-                height: '99%'
-              }}
-            >
-              <div className="left-sidebar">
-                <div className="variables-container p-3">
-                  <div className="col-md-12">
-                    <div className="mb-2">
-                      <ReactJson
-                        style={{ fontSize: '0.7rem' }}
-                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                        enableClipboard={false}
-                        src={currentState.globals}
-                        name={'globals'}
-                        displayDataTypes={false}
-                        collapsed={true}
-                        displayObjectSize={false}
-                        quotesOnKeys={false}
-                        sortKeys={true}
-                        indentWidth={1}
-                      />
-                    </div>
-
-                    <div className="mb-2">
-                      <ReactJson
-                        src={currentState.components}
-                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                        name={'components'}
-                        style={{ fontSize: '0.7rem' }}
-                        enableClipboard={false}
-                        displayDataTypes={false}
-                        collapsed={true}
-                        displayObjectSize={false}
-                        quotesOnKeys={false}
-                        sortKeys={true}
-                        indentWidth={0.5}
-                      />
-                    </div>
-
-                    <div className="mb-2">
-                      <ReactJson
-                        src={currentState.queries}
-                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                        name={'queries'}
-                        style={{ fontSize: '0.7rem' }}
-                        enableClipboard={false}
-                        displayDataTypes={false}
-                        collapsed={true}
-                        displayObjectSize={false}
-                        quotesOnKeys={false}
-                        sortKeys={true}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="datasources-container w-100 mt-3">
-                  <div className="row m-2 datasources-header ">
-                    <div className="col-md-9">
-                      <h5 className="p-1 text-muted">DATASOURCES</h5>
-                    </div>
-                    <div className="col-md-3">
-                      <span
-                        className="btn btn-light btn-sm text-muted"
-                        data-tip="Add new datasource"
-                        onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })}
-                      >
-                        +
-                      </span>
-                      {this.state.showDataSourceManagerModal && (
-                        <DataSourceManager
-                          appId={appId}
-                          darkMode={this.props.darkMode}
-                          hideModal={() => this.setState({ showDataSourceManagerModal: false })}
-                          dataSourcesChanged={this.dataSourcesChanged}
-                          showDataSourceManagerModal={this.state.showDataSourceManagerModal}
-                          selectedDataSource={this.state.selectedDataSource}
-                        />
-                      )}
-                    </div>
-                  </div>
-                  {loadingDataSources ? (
-                    <div className="p-5">
-                      <center>
-                        <div className="spinner-border text-azure" role="status"></div>
-                      </center>
-                    </div>
-                  ) : (
-                    <div className="m-2">
-                      <div className="table-responsive">
-                        <table className="table table-vcenter table-nowrap">
-                          <tbody>{this.state.dataSources.map((source) => this.renderDataSource(source))}</tbody>
-                        </table>
-                        {dataSources.length === 0 && (
-                          <center className="p-2 text-muted">
-                            You haven&apos;t added data sources yet. <br />
-                            <button
-                              className="btn btn-sm btn-outline-azure mt-3"
-                              onClick={() => this.setState({ showDataSourceManagerModal: true, selectedDataSource: null })
-                              }
-                            >
-                              add datasource
-                            </button>
-                          </center>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Resizable> */}
             <div className="main">
               <div
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
