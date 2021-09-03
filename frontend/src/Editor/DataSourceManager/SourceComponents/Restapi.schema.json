@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Airtable.schema.json",
+  "title": "Restapi datasource",
+  "description": "A schema defining restapi datasource",
+  "type": "object",
+  "properties": {
+    "url": {
+      "$label": "URL",
+      "$key": "url",
+      "type": "text",
+      "description": "https://api.example.com/v1/"
+    },
+    "headers": {
+      "$label": "Headers",
+      "$key": "headers",
+      "type": "react-component-headers",
+      "description": "key-value pair headers for rest api"
+    },
+    "auth_type": {
+      "$label": "Authentication Type",
+      "$key": "auth_type",
+      "type": "react-component-oauth-authentication",
+      "description": "key-value pair headers for rest api"
+    }
+  },
+  "required": ["url"]
+}

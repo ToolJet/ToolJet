@@ -84,6 +84,7 @@ class DataSourceManager extends React.Component {
   };
 
   optionchanged = (option, value) => {
+    console.log(option, value)
     return this.setStateAsync({
       connectionTestError: null,
       options: {
@@ -155,6 +156,9 @@ class DataSourceManager extends React.Component {
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError } = this.state;
 
+    console.log('selectedDataSource')
+    console.log(selectedDataSource)
+    console.log(dataSourceMeta)
     return (
       <div>
         <Modal
@@ -313,6 +317,19 @@ class DataSourceManager extends React.Component {
                 >
                   {'Save'}
                 </Button>
+              </div>
+            </Modal.Footer>
+          )}
+
+          {selectedDataSource && dataSourceMeta.customTesting && (
+            <Modal.Footer>
+              <div className="row mt-3">
+                <div className="col"></div>
+                <div className="col-auto">
+                  <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                    {isSaving ? 'Saving...' : 'Save'}
+                  </Button>
+                </div>
               </div>
             </Modal.Footer>
           )}
