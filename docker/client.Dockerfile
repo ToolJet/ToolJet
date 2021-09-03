@@ -12,6 +12,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # install app dependencies
+RUN apk --no-cache add g++ gcc libgcc libstdc++ linux-headers make python
 COPY ./frontend/package.json ./frontend/package-lock.json  ./
 RUN npm install --only=production
 COPY ./frontend .
