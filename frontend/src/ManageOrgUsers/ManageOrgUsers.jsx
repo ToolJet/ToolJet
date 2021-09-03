@@ -105,16 +105,14 @@ class ManageOrgUsers extends React.Component {
     history.push('/login');
   };
 
-  generateInvitationURL = user => window.location.origin + '/invitations/' + user.invitation_token
+  generateInvitationURL = (user) => window.location.origin + '/invitations/' + user.invitation_token;
 
   invitationLinkCopyHandler = () => {
     toast.info('Invitation URL copied', { hideProgressBar: true, position: 'bottom-right' });
-  }
-
+  };
 
   render() {
     const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole, archivingUser } = this.state;
-
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -128,9 +126,11 @@ class ManageOrgUsers extends React.Component {
                   <h2 className="page-title">Users & Permissions</h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
-                  <div className="btn btn-primary" onClick={() => this.setState({ showNewUserForm: true })}>
-                    Invite new user
-                  </div>
+                  {!showNewUserForm && (
+                    <div className="btn btn-primary" onClick={() => this.setState({ showNewUserForm: true })}>
+                      Invite new user
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -307,18 +307,21 @@ class ManageOrgUsers extends React.Component {
                                   className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
                                 ></span>
                                 <small className="user-status">{user.status}</small>
-                                {
-                                  user.status === 'invited' && ('invitation_token' in user) ?
-
-                                    <CopyToClipboard
-                                      text={this.generateInvitationURL(user)}
-                                      onCopy={this.invitationLinkCopyHandler}
-                                    >
-                                      <img className='svg-icon' src="/assets/images/icons/copy.svg" width="15" height="15"></img>
-                                    </CopyToClipboard>
-                                  :
-                                    ''
-                                }
+                                {user.status === 'invited' && 'invitation_token' in user ? (
+                                  <CopyToClipboard
+                                    text={this.generateInvitationURL(user)}
+                                    onCopy={this.invitationLinkCopyHandler}
+                                  >
+                                    <img
+                                      className="svg-icon"
+                                      src="/assets/images/icons/copy.svg"
+                                      width="15"
+                                      height="15"
+                                    ></img>
+                                  </CopyToClipboard>
+                                ) : (
+                                  ''
+                                )}
                               </td>
                               <td>
                                 {archivingUser === null && (

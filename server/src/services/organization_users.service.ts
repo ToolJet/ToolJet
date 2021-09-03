@@ -19,12 +19,12 @@ export class OrganizationUsersService {
   ) { }
 
   async findOne(id: string): Promise<OrganizationUser> {
-    return await this.organizationUsersRepository.findOne(id);
+    return await this.organizationUsersRepository.findOne({ id: id });
   }
 
   async inviteNewUser(currentUser: User, params: any): Promise<OrganizationUser> {
 
-    const userParams = <User> { 
+    const userParams = <User> {
       firstName: params['first_name'],
       lastName: params['last_name'],
       email: params['email']
@@ -53,12 +53,12 @@ export class OrganizationUsersService {
     return await this.organizationUsersRepository.update(id, { role });
   }
 
-  async archive(id: string) { 
+  async archive(id: string) {
 
     const organizationUser = await this.organizationUsersRepository.findOne(id);
 
     if(organizationUser.role === 'admin') {
-      // Check if this is the last admin of the org 
+      // Check if this is the last admin of the org
       const adminsCount = await this.organizationUsersRepository.count({
         where: {
           organizationId: organizationUser.organizationId,
