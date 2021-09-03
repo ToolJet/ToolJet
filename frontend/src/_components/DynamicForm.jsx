@@ -1,6 +1,6 @@
 import React from 'react';
 import Input from '@/_ui/Input';
-import Headers from '@/_ui/Headers';
+import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 
 import GoogleSheets from '@/_components/GoogleSheets';

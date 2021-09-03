@@ -1,7 +1,7 @@
 import React from 'react';
 import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
-import Headers from '@/_ui/Headers';
+import Headers from '@/_ui/HttpHeaders';
 
 const Authentication = ({
   auth_type,
