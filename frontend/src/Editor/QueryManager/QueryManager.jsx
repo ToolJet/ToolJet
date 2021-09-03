@@ -267,7 +267,7 @@ class QueryManager extends React.Component {
               </div>
             </div>
           )}
-          <div className="col-auto">
+          <div className="col-auto px-1">
             {(addingQuery || editingQuery) && (
               <span
                 onClick={() => {
