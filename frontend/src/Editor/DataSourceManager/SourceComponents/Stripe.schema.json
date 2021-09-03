@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Airtable.schema.json",
+  "title": "Stripe datasource",
+  "description": "A schema defining stripe datasource",
+  "type": "object",
+  "properties": {
+    "api_key": {
+      "$label": "API key",
+      "$key": "api_key",
+      "type": "password",
+      "description": "Api key for airtable"
+    }
+  },
+  "required": ["api_key"]
+}

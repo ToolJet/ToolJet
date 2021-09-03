@@ -4,11 +4,12 @@ import DynamicForm from '@/_components/DynamicForm';
 import AirtableSchema from './Airtable.schema.json'
 import RestapiSchema from './Restapi.schema.json'
 import GraphqlSchema from './Graphql.schema.json'
+import StripeSchema from './Stripe.schema.json'
 import { Elasticsearch } from './Elasticsearch';
 import { Redis } from './Redis';
 import { Postgresql } from './Postgresql';
 import { Mysql } from './Mysql';
-import { Stripe } from './Stripe';
+// import { Stripe } from './Stripe';
 import { Firestore } from './Firestore';
 // import { Restapi } from './Restapi';
 import { Googlesheets } from './Googlesheets';
@@ -22,6 +23,7 @@ import { Mssql } from './Mssql';
 const Airtable = ({...rest}) => <DynamicForm schema={AirtableSchema} {...rest} />
 const Restapi = ({...rest}) => <DynamicForm schema={RestapiSchema} {...rest} />
 const Graphql = ({...rest}) => <DynamicForm schema={GraphqlSchema} {...rest} />
+const Stripe = ({...rest}) => <DynamicForm schema={StripeSchema} {...rest} />
 export const SourceComponents = {
     Elasticsearch,
     Redis,
