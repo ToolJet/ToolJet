@@ -40,7 +40,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
       case 'react-component-headers':
         return {
           getter: $key,
-          options: options.headers.value,
+          options: options[$key].value,
           optionchanged,
         };
       case 'react-component-oauth-authentication':
