@@ -201,7 +201,8 @@ export const apiSources = [
     options: {
       api_key: { type: 'string', encrypted: true }
     },
-    customTesting: true
+    customTesting: true,
+    hideSave: true
   },
   {
     name: 'Slack',
@@ -214,7 +215,8 @@ export const apiSources = [
     options: {
       api_key: { type: 'string', encrypted: true }
     },
-    customTesting: true
+    customTesting: true,
+    hideSave: true
   }
 ];
 

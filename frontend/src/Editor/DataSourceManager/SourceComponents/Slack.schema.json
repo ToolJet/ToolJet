@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Airtable.schema.json",
+  "title": "Slack datasource",
+  "description": "A schema defining slack datasource",
+  "type": "object",
+  "properties": {
+    "sheets": {
+      "$label": "",
+      "$key": "slack",
+      "type": "react-component-slack",
+      "description": "A component for slack"
+    }
+  }
+}

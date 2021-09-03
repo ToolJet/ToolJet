@@ -3,7 +3,10 @@ import Input from '@/_ui/Input';
 import Headers from '@/_ui/Headers';
 import OAuth from '@/_ui/OAuth';
 
-const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSaving, hideModal, selectedDataSource }) => {
+import GoogleSheets from '@/_components/GoogleSheets';
+import Slack from '@/_components/Slack';
+
+const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
   // if(schema.properties)  todo add empty check
 
   const getElement = (type) => {
@@ -15,6 +18,10 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         return Headers;
       case 'react-component-oauth-authentication':
         return OAuth;
+      case 'react-component-google-sheets':
+        return GoogleSheets;
+      case 'react-component-slack':
+        return Slack;
       default:
         return <div>Type is invalid</div>;
     }
@@ -34,7 +41,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         return {
           getter: $key,
           options: options.headers.value,
-          optionchanged
+          optionchanged,
         };
       case 'react-component-oauth-authentication':
         return {
@@ -49,8 +56,11 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
           scopes: options.scopes.value,
           auth_url: options.auth_url.value,
           custom_auth_params: options.custom_auth_params.value,
-          optionchanged
+          optionchanged,
         };
+      case 'react-component-google-sheets':
+      case 'react-component-slack':
+        return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
       default:
         return {};
     }
@@ -63,7 +73,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         const Element = getElement(type);
         return (
           <div className="col-md-12 my-2">
-            <label className="form-label">{$label}</label>
+            {$label && <label className="form-label">{$label}</label>}
             <Element {...getElementProps(schema.properties[key])} />
           </div>
         );
