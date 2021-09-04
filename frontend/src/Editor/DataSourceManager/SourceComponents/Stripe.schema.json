@@ -9,7 +9,7 @@
       "$label": "API key",
       "$key": "api_key",
       "type": "password",
-      "description": "Api key for airtable"
+      "description": "Api key for stripe"
     }
   },
   "required": ["api_key"]
