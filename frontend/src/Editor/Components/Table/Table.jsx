@@ -552,7 +552,7 @@ export function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : -1}, // pageSize should be unset if server-side pagination is enabled
+      initialState: { pageIndex: 0, pageSize: -1}, // pageSize should be unset if server-side pagination is enabled
 	  pageCount: -1,
 	  manualPagination: false,
       getExportFileBlob
@@ -565,6 +565,18 @@ export function Table({
     useResizeColumns,
     useExportData
   );
+
+
+
+  React.useEffect(() => {
+    if(serverSidePagination || !clientSidePagination) {
+      setPageSize(-1)
+    } 
+    if(!serverSidePagination && clientSidePagination) {
+          setPageSize(10)
+    }
+
+  },[clientSidePagination, serverSidePagination])
 
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
@@ -711,6 +723,7 @@ export function Table({
             <div className="col">
               {(clientSidePagination || serverSidePagination) &&
                 <Pagination
+                    lastActivePageIndex={currentState.components[component.name]?.pageIndex ?? 1  }
                     serverSide={serverSidePagination}
                     autoGotoPage={gotoPage}
                     autoCanNextPage={canNextPage}
