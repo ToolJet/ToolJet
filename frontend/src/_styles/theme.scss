@@ -8,6 +8,10 @@ body {
   max-height: 48px;
   min-height: auto;
   border-bottom: 1px solid #dedede;
+
+  .nav-item.active:after {
+    bottom: 0 !important;
+  }
 }
 
 .editor {
