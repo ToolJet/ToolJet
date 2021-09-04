@@ -242,6 +242,15 @@ export const Inspector = ({
               />
             </div>
           }
+
+          {Object.keys(componentMeta.validation).length > 0 && 
+            <div>
+              <div className="hr-text">Validation</div>
+              {Object.keys(componentMeta.validation).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'validation', currentState, components, darkMode))}
+            </div>
+          }
+            
+        
         </div>
       }
 
