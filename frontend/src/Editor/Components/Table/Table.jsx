@@ -561,10 +561,10 @@ export function Table({
 
   useEffect(() => {
     const pageData = page.map(row => row.original);
-    const currentData = rows;
+    const currentData = rows.map(row => row.original);;
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
-      ['currentData', rows]
+      ['currentData', currentData]
     ]);
   }, [tableData.length, componentState.changeSet]);
 
