@@ -7,7 +7,6 @@ body {
 .navbar {
   max-height: 48px;
   min-height: auto;
-  border-bottom: 1px solid #dedede;
 
   .nav-item.active:after {
     bottom: 0 !important;
@@ -1713,6 +1712,10 @@ input:focus-visible {
   .navbar .navbar-nav .active > .nav-link, .theme-dark .navbar .navbar-nav .nav-link.active, .theme-dark .navbar .navbar-nav .nav-link.show, .theme-dark .navbar .navbar-nav .show > .nav-link {
     color: #fff;
   }
+
+  .left-sidebar .left-sidebar-item {
+    border-bottom: 1px solid #333c48;
+}
 
   .nav-tabs .nav-link.active {
     color: #fff!important;
