@@ -533,6 +533,7 @@ export function Table({
     previousPage,
     setPageSize,
     state,
+    rows,
     prepareRow,
     setAllFilters,
     preGlobalFilteredRows,
@@ -557,6 +558,16 @@ export function Table({
     useResizeColumns,
     useExportData
   );
+
+  useEffect(() => {
+    const pageData = page.map(row => row.original);
+    const currentData = rows.map(row => row.original);;
+    onComponentOptionsChanged(component, [
+      ['currentPageData', pageData],
+      ['currentData', currentData]
+    ]);
+  }, [tableData.length, componentState.changeSet]);
+
 
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
