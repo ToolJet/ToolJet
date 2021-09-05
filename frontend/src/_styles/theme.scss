@@ -4,6 +4,16 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+.navbar {
+  max-height: 48px;
+  min-height: auto;
+  border-bottom: 1px solid #dedede;
+
+  .nav-item.active:after {
+    bottom: 0 !important;
+  }
+}
+
 .editor {
   .header-container {
     max-width: 100%;
@@ -137,7 +147,7 @@ body {
     overflow-x: hidden;
 
     flex: 1 1 auto;
-    top: 56px;
+    top: 48px;
 
     background-color: #fff;
     background-clip: border-box;
@@ -269,7 +279,7 @@ body {
     .canvas-container {
       height: 100%;
       width: 79%;
-      top: 56px;
+      top: 48px;
       position: fixed;
       overflow-y: auto;
       overflow-x: scroll;
