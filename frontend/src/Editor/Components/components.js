@@ -324,7 +324,7 @@ export const componentTypes = [
     component: 'Checkbox',
     defaultSize: {
       width: 200,
-      height: 25,
+      height: 30,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
