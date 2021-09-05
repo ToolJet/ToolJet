@@ -50,9 +50,9 @@ export const Multiselect = function Multiselect({
   }, [newValue]);
 
   return (
-    <div className="row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div className="multiselect-widget row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <div className="col-auto">
-        <label style={{marginRight: '1rem'}} className="form-label py-2">{label}</label>
+        <label style={{marginRight: '1rem'}} className="form-label py-1">{label}</label>
       </div>
       <div className="col px-0">
         <SelectSearch
