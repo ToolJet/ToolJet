@@ -182,9 +182,11 @@ export function validateWidget({ validationObject, widgetValue, currentState }) 
     return { isValid: false, validationError: `Minimum ${resolvedMinLength} characters is needed` }
   }
 
-  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState) ?? 0;
-  if((widgetValue || '').length > parseInt(resolvedMaxLength)) {
-    return { isValid: false, validationError: `Maximum ${resolvedMinLength} characters is allowed` }
+  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState) ?? undefined;
+  if(resolvedMaxLength !== undefined) {
+    if((widgetValue || '').length > parseInt(resolvedMaxLength)) {
+      return { isValid: false, validationError: `Maximum ${resolvedMaxLength} characters is allowed` }
+    }
   }
 
   const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState) ?? 0;
