@@ -42,8 +42,6 @@ spec:
             periodSeconds: 5
             failureThreshold: 6
           env:
-            - name: RAILS_ENV
-              value: "production"
             - name: PG_HOST
               valueFrom:
                 secretKeyRef:
