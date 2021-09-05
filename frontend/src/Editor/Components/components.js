@@ -275,6 +275,45 @@ export const componentTypes = [
     },
   },
   {
+    name: 'NumberInput',
+    displayName: 'Number Input',
+    description: 'Number field for forms',
+    component: 'NumberInput',
+    defaultSize: {
+      width: 200,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+    },
+    properties: {
+      placeholder: { type: 'code', displayName: 'Placeholder' },
+    },
+    events: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
+    },
+    exposedVariables: {
+      value: 0,
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        placeholder: { value: '0' },
+      },
+      events: [],
+      styles: {
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
+      },
+    },
+  },
+  {
     name: 'Datepicker',
     displayName: 'Date Picker',
     description: 'Select a date and time',
