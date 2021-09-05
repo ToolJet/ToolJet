@@ -4,6 +4,7 @@ import { Image } from './Components/Image';
 import { Text } from './Components/Text';
 import { Table } from './Components/Table/Table';
 import { TextInput } from './Components/TextInput';
+import { NumberInput } from './Components/NumberInput';
 import { TextArea } from './Components/TextArea';
 import { Container } from './Components/Container';
 import { RichTextEditor } from './Components/RichTextEditor';
@@ -28,6 +29,7 @@ const AllComponents = {
   Image,
   Text,
   TextInput,
+  NumberInput,
   Table,
   TextArea,
   Container,
