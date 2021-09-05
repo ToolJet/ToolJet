@@ -2098,9 +2098,16 @@ input[type=text] {
 }
 
 .widget-header {
+
  text-transform: capitalize;
  margin-top: 12px !important;
  font-weight: 500;
  font-size: 12px;
  line-height: 12px;
+}
+
+.dropdown-widget, .multiselect-widget {
+  .select-search__input {
+    padding: 0.2375rem 0.75rem;
+  }
 }
