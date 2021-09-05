@@ -2110,4 +2110,12 @@ input[type=text] {
   .select-search__input {
     padding: 0.2375rem 0.75rem;
   }
+
+  .select-search__options {
+    margin-bottom: 0!important;
+
+    .select-search__option {
+      height: 30px;
+    }
+  }
 }
