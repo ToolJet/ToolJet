@@ -154,7 +154,7 @@ export function resolveWidgetFieldValue(prop, state, _default=[]) {
 
   try {
     return resolveReferences(widgetFieldValue, state, _default)
-  } catch (error) {
+  } catch (err) {
     console.log(err);
   }
 

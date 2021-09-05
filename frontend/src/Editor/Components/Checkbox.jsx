@@ -37,18 +37,19 @@ export const Checkbox = function Checkbox({
   }
 
   return (
-    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
-      <label className="form-check form-check-inline">
-        <input
-          disabled={parsedDisabledState}
-          className="form-check-input"
-          type="checkbox"
-          onClick={(e) => {
-            toggleValue(e);
-          }}
-        />
-        <span className="form-check-label" style={{color: textColor}}>{label}</span>
+    <div className="row" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+      <div className="col py-1">
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            onClick={(e) => {
+              toggleValue(e);
+            }}
+          />
+          <span className="form-check-label" style={{color: textColor}}>{label}</span>
       </label>
+      </div>
     </div>
   );
 };

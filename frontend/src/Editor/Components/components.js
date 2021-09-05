@@ -287,6 +287,45 @@ export const componentTypes = [
     },
   },
   {
+    name: 'NumberInput',
+    displayName: 'Number Input',
+    description: 'Number field for forms',
+    component: 'NumberInput',
+    defaultSize: {
+      width: 200,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+    },
+    properties: {
+      placeholder: { type: 'code', displayName: 'Placeholder' },
+    },
+    events: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
+    },
+    exposedVariables: {
+      value: 0,
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        placeholder: { value: '0' },
+      },
+      events: [],
+      styles: {
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
+      },
+    },
+  },
+  {
     name: 'Datepicker',
     displayName: 'Date Picker',
     description: 'Select a date and time',
@@ -336,7 +375,7 @@ export const componentTypes = [
     component: 'Checkbox',
     defaultSize: {
       width: 200,
-      height: 25,
+      height: 30,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -666,8 +705,8 @@ export const componentTypes = [
     displayName: 'Dropdown',
     description: 'Select one value from options',
     defaultSize: {
-      width: 200,
-      height: 37,
+      width: 210,
+      height: 30,
     },
     component: 'DropDown',
     others: {
@@ -714,8 +753,8 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 200,
-      height: 37,
+      width: 210,
+      height: 30,
     },
     component: 'Multiselect',
     others: {
