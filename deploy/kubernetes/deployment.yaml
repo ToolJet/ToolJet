@@ -42,13 +42,11 @@ spec:
             periodSeconds: 5
             failureThreshold: 6
           env:
-            - name: RAILS_ENV
-              value: "production"
             - name: PG_HOST
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: pg_host  
+                  key: pg_host
             - name: PG_USER
               valueFrom:
                 secretKeyRef:
@@ -68,7 +66,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: server
-                  key: lockbox_key      
+                  key: lockbox_key
             - name: SECRET_KEY_BASE
               valueFrom:
                 secretKeyRef:
