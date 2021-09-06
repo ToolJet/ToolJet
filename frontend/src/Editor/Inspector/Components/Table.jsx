@@ -153,6 +153,7 @@ class Table extends React.Component {
           </div>
 
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && 
+          <div>
             <div className="field mb-2">
               <label className="form-label">Text color</label>
               <CodeHinter
@@ -165,6 +166,62 @@ class Table extends React.Component {
                 onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
               />
             </div>
+            {column.isEditable && 
+              <div>
+                <div className="hr-text">Validation</div>
+                <div className="field mb-2">
+                  <label className="form-label">Regex</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.regex}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode= "javascript"
+                    lineNumbers={false}
+                    placeholder={''}
+                    onChange={(value) => this.onColumnItemChange(index, 'regex', value)}
+                  />
+                </div>
+                <div className="field mb-2">
+                  <label className="form-label">Min length</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.minLength}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode= "javascript"
+                    lineNumbers={false}
+                    placeholder={''}
+                    onChange={(value) => this.onColumnItemChange(index, 'minLength', value)}
+                  />
+                </div>
+                <div className="field mb-2">
+                  <label className="form-label">Max length</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.maxLength}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode= "javascript"
+                    lineNumbers={false}
+                    placeholder={''}
+                    onChange={(value) => this.onColumnItemChange(index, 'maxLength', value)}
+                  />
+                </div>
+                <div className="field mb-2">
+                  <label className="form-label">Custom rule</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.customRule}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode= "javascript"
+                    lineNumbers={false}
+                    placeholder={''}
+                    onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
+                  />
+                </div>
+              </div>
+            }
+            
+          </div>
+            
           }
 
           {column.columnType === 'toggle' && 
@@ -209,6 +266,28 @@ class Table extends React.Component {
               </div>
             </div>
           )}
+
+          {column.columnType === 'dropdown' && 
+            <>
+            {column.isEditable && 
+              <div>
+                <div className="hr-text">Validation</div>
+                <div className="field mb-2">
+                  <label className="form-label">Custom rule</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.customRule}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode= "javascript"
+                    lineNumbers={false}
+                    placeholder={''}
+                    onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
+                  />
+                </div>
+              </div>
+            }
+            </>
+          }
 
           {column.columnType === 'datepicker' && (
             <div>
