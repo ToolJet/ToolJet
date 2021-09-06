@@ -23,7 +23,7 @@ spec:
         - name: container
           image: tooljet/tooljet-ce:latest
           imagePullPolicy: Always
-          command: ["npm", "run", '--prefix', 'server', 'start:prod']
+          args: ["npm", 'start:prod']
           resources:
             limits:
               memory: "2000Mi"
