@@ -8,7 +8,10 @@ globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8');
 globalThis.CACHED_CONNECTIONS = {};
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger: false });
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    abortOnError: false,
+  });
 
   await app.setGlobalPrefix('api');
   await app.enableCors();
@@ -18,8 +21,8 @@ async function bootstrap() {
     helmet.contentSecurityPolicy({
       useDefaults: true,
       directives: {
-        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
-        'default-src': ["'self'", "blob:"],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'blob:'],
+        'default-src': ["'self'", 'blob:'],
       },
     }),
   );
