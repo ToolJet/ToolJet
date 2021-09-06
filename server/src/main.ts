@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
+import { urlencoded, json } from 'express';
+
 const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8');
@@ -26,6 +28,10 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
+
   const port = parseInt(process.env.PORT) || 3000;
 
   await app.listen(port, '0.0.0.0', function () {
