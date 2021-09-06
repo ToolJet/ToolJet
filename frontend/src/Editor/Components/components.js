@@ -714,7 +714,6 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     validation: {
-      regex: { type: 'code', displayName: 'Regex' },
       customRule: { type: 'code', displayName: 'Custom validation' }
     },
     properties: {
@@ -739,7 +738,6 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       validation: {
-        regex: { value: '' },
         customRule: { value: null }
       },
       properties: {
