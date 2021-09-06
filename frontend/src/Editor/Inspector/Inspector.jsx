@@ -49,20 +49,27 @@ export const Inspector = ({
   function paramUpdated(param, attr, value, paramType) {
     let newDefinition = { ...component.component.definition };
 
-    const paramObject = newDefinition[paramType][param.name];
+    let allParams = newDefinition[paramType] || {};
+    const paramObject = allParams[param.name];
 
     if (!paramObject) {
-      newDefinition[paramType][param.name] = {};
+      allParams[param.name] = {};
     }
 
     if(attr) {
-      newDefinition[paramType][param.name][attr] = value;
+      allParams[param.name][attr] = value;
     } else {
-      newDefinition[paramType][param.name] = value;
+      allParams[param.name] = value;
     }
 
+    newDefinition[paramType] = allParams;
+
     let newComponent = {
-      ...component
+      ...component,
+      component: {
+        ...component.component,
+        definition: newDefinition
+      }
     };
 
     setComponent(newComponent);

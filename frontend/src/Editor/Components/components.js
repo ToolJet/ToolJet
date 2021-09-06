@@ -713,6 +713,10 @@ export const componentTypes = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
+    validation: {
+      regex: { type: 'code', displayName: 'Regex' },
+      customRule: { type: 'code', displayName: 'Custom validation' }
+    },
     properties: {
       label: { type: 'code', displayName: 'Label' },
       value: { type: 'code', displayName: 'Default value' },
@@ -733,6 +737,10 @@ export const componentTypes = [
       others: {
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
+      },
+      validation: {
+        regex: { value: '' },
+        customRule: { value: null }
       },
       properties: {
         label: { value: 'Select' },
