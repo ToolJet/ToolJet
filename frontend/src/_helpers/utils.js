@@ -160,3 +160,42 @@ export function resolveWidgetFieldValue(prop, state, _default=[]) {
 
   return widgetFieldValue
 }
+
+export function validateWidget({ validationObject, widgetValue, currentState }) {
+  let isValid = true;
+  let validationError = null;
+
+  const regex = validationObject?.regex?.value;
+  const minLength = validationObject?.minLength?.value;
+  const maxLength = validationObject?.maxLength?.value;
+  const customRule = validationObject?.customRule?.value;
+
+  const validationRegex = resolveWidgetFieldValue(regex, currentState);
+  const re = new RegExp(validationRegex, 'g');
+
+  if(!re.test(widgetValue)) { 
+    return { isValid: false, validationError:'The input should match pattern' }
+  }
+
+  const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState) ?? 0;
+  if((widgetValue || '').length < parseInt(resolvedMinLength)) {
+    return { isValid: false, validationError: `Minimum ${resolvedMinLength} characters is needed` }
+  }
+
+  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState) ?? undefined;
+  if(resolvedMaxLength !== undefined) {
+    if((widgetValue || '').length > parseInt(resolvedMaxLength)) {
+      return { isValid: false, validationError: `Maximum ${resolvedMaxLength} characters is allowed` }
+    }
+  }
+
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState) ?? 0;
+  if(typeof resolvedCustomRule === 'string' ) {
+    return { isValid: false, validationError: resolvedCustomRule }
+  }
+
+  return {
+    isValid,
+    validationError
+  }
+}

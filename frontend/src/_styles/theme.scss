@@ -2109,6 +2109,9 @@ input[type=text] {
  line-height: 12px;
 }
 
+.validation-without-icon { 
+  background-image: none!important;
+}
 .dropdown-widget, .multiselect-widget {
   .select-search__input {
     padding: 0.2375rem 0.75rem;

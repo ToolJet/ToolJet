@@ -251,15 +251,27 @@ export const componentTypes = [
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
+    validation: {
+      regex: { type: 'code', displayName: 'Regex' },
+      minLength: { type: 'code', displayName: 'Min length' },
+      maxLength: { type: 'code', displayName: 'Max length' },
+      customRule: { type: 'code', displayName: 'Custom validation' }
+    },
     events: {},
     styles: {
       visibility: {type: 'code', displayName: 'Visibility'},
       disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
-      value: '',
+    value: '',
     },
     definition: {
+      validation: {
+        regex: { value: '' },
+        minLength: { value: null },
+        maxLength: { value: null },
+        customRule: { value: null }
+      },
       others: {
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
