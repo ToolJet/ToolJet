@@ -302,7 +302,8 @@ export function Table({
                 }
               },
               widgetValue: cellValue,
-              currentState
+              currentState,
+              customResolveObjects: { cellValue }
             })
           
             const { isValid, validationError } = validationData;
@@ -345,6 +346,20 @@ export function Table({
             >
           </textarea>;
         } if (columnType === 'dropdown') {
+
+          const validationData = validateWidget({
+            validationObject: {
+              customRule: {
+                value: column.customRule
+              }
+            },
+            widgetValue: cellValue,
+            currentState,
+            customResolveObjects: { cellValue }
+          })
+
+          const { isValid, validationError } = validationData;
+
           return (
             <div>
               <SelectSearch
@@ -357,6 +372,7 @@ export function Table({
                 filterOptions={fuzzySearch}
                 placeholder="Select.."
               />
+              <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
             </div>
           );
         } if (columnType === 'multiselect') {

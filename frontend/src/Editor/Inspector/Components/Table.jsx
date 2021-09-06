@@ -267,6 +267,28 @@ class Table extends React.Component {
             </div>
           )}
 
+          {column.columnType === 'dropdown' && 
+            <>
+            {column.isEditable && 
+              <div>
+                <div className="hr-text">Validation</div>
+                <div className="field mb-2">
+                  <label className="form-label">Custom rule</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.customRule}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode= "javascript"
+                    lineNumbers={false}
+                    placeholder={''}
+                    onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
+                  />
+                </div>
+              </div>
+            }
+            </>
+          }
+
           {column.columnType === 'datepicker' && (
             <div>
               <label className="form-label">Date Format</label>

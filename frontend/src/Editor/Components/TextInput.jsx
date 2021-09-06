@@ -29,7 +29,6 @@ export const TextInput = function TextInput({
 
   const { isValid, validationError } = validationData;
 
-
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
   } catch (err) { console.log(err); }
@@ -45,7 +44,7 @@ export const TextInput = function TextInput({
         placeholder={placeholder}
         style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }}
       />
-      <div class="invalid-feedback">{validationError}</div>
+      <div className="invalid-feedback">{validationError}</div>
     </div>
     
   );
