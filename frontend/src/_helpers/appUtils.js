@@ -192,6 +192,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
   console.log('Event: ', eventName);
 
+
   if (eventName === 'onRowClicked') {
     const { component, data } = options;
     _self.setState({
@@ -232,7 +233,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
             executeAction(_self, { ...event, ...event.options } , mode);
           }
         }) )
-      } else { 
+      } else {
         console.log('No action is associated with this event');
       }
     });
@@ -248,19 +249,23 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     await executeActionsForEventId(_self, eventName, options.component, mode);
     onComponentOptionChanged(_self, options.component, 'isSavingChanges', false);
   }
+
+  if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
+    await executeActionsForEventId(_self, eventName, options, mode);
+  }
 }
 
-function getQueryVariables(options, state) { 
+function getQueryVariables(options, state) {
 
   let queryVariables = {};
 
   if( typeof options === 'string' ) {
     const dynamicVariables = getDynamicVariables(options) || [];
-    dynamicVariables.forEach((variable) => { 
+    dynamicVariables.forEach((variable) => {
       queryVariables[variable] = resolveReferences(variable, state);
     });
-  } else if(Array.isArray(options)) { 
-    options.forEach((element) => { 
+  } else if(Array.isArray(options)) {
+    options.forEach((element) => {
       _.merge(queryVariables, getQueryVariables(element, state))
     })
   } else if(typeof options ==="object") {
@@ -279,7 +284,7 @@ export function previewQuery(_ref, query) {
 
   return new Promise(function (resolve, reject) {
     dataqueryService.preview(query, options).then(data => {
-      
+
       let finalData = data.data;
 
       if (query.options.enableTransformation) {
@@ -290,7 +295,7 @@ export function previewQuery(_ref, query) {
 
       if(data.status === 'failed') {
         toast.error(`${data.message}: ${data.description}`, { position: 'bottom-center', hideProgressBar: true, autoClose: 10000 });
-      } else { 
+      } else {
         if (data.status === 'needs_oauth') {
           const url = data.data.auth_url; // Backend generates and return sthe auth url
           fetchOAuthToken(url, query.data_source_id);
@@ -364,6 +369,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
         if (data.status === 'failed') {
           toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
+
+          onEvent(
+            _self,
+            'onDataQueryFailure',
+            { definition: { events: dataQuery.options.events } }
+          )
+
           return (
             _self.setState({
               currentState: {
@@ -399,6 +411,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
           const notificationDuration = dataQuery.options.notificationDuration || 5;
           toast.success(dataQuery.options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 });
         }
+
+        onEvent(
+          _self,
+          'onDataQuerySuccess',
+          { definition: { events: dataQuery.options.events } }
+        )
 
         _self.setState({
           currentState: {

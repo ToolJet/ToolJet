@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const DropDown = function DropDown({
@@ -58,6 +58,14 @@ export const DropDown = function DropDown({
     newValue = resolveReferences(currentValueProperty.value, currentState, '');
   }
 
+  const validationData = validateWidget({
+    validationObject: component.definition.validation,
+    widgetValue: currentValue,
+    currentState
+  })
+
+  const { isValid, validationError } = validationData;
+
   useEffect(() => {
     setCurrentValue(newValue);
   }, [newValue]);
@@ -84,6 +92,7 @@ export const DropDown = function DropDown({
           placeholder="Select.."
         />
       </div>
+      <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
     </div>
   );
 };

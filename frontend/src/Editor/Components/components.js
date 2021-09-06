@@ -251,15 +251,27 @@ export const componentTypes = [
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
+    validation: {
+      regex: { type: 'code', displayName: 'Regex' },
+      minLength: { type: 'code', displayName: 'Min length' },
+      maxLength: { type: 'code', displayName: 'Max length' },
+      customRule: { type: 'code', displayName: 'Custom validation' }
+    },
     events: {},
     styles: {
       visibility: {type: 'code', displayName: 'Visibility'},
       disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
-      value: '',
+    value: '',
     },
     definition: {
+      validation: {
+        regex: { value: '' },
+        minLength: { value: null },
+        maxLength: { value: null },
+        customRule: { value: null }
+      },
       others: {
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
@@ -701,6 +713,9 @@ export const componentTypes = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
+    validation: {
+      customRule: { type: 'code', displayName: 'Custom validation' }
+    },
     properties: {
       label: { type: 'code', displayName: 'Label' },
       value: { type: 'code', displayName: 'Default value' },
@@ -721,6 +736,9 @@ export const componentTypes = [
       others: {
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
+      },
+      validation: {
+        customRule: { value: null }
       },
       properties: {
         label: { value: 'Select' },

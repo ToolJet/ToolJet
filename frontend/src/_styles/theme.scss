@@ -241,7 +241,7 @@ body {
         font-weight: 400;
         margin-top: 10px;
         color: #3e525b;
-        white-space: nowrap;  
+        white-space: nowrap;
         font-size: 10px;
         line-height: 12px;
         max-width: 100%;
@@ -867,12 +867,12 @@ body {
 }
 
 .jet-data-table {
-  
+
     overflow: hidden;
     .form-check {
       margin-bottom: 0;
     }
-  
+
     .form-check-inline {
       margin-right: 0;
     }
@@ -2060,7 +2060,7 @@ input:focus-visible {
   background: #1c252f;
 }
 
-.sketch-picker { 
+.sketch-picker {
   z-index: 1000;
 }
 
@@ -2104,6 +2104,7 @@ input[type=text] {
   outline-color: #dadcde !important;
 }
 
+
 .widget-header {
 
  text-transform: capitalize;
@@ -2111,6 +2112,14 @@ input[type=text] {
  font-weight: 500;
  font-size: 12px;
  line-height: 12px;
+}
+
+.query-manager-events{
+  max-width: 400px;
+}
+
+.validation-without-icon {
+  background-image: none!important;
 }
 
 .dropdown-widget, .multiselect-widget {
