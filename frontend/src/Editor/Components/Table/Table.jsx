@@ -552,7 +552,7 @@ export function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : -1}, // pageSize should be unset if server-side pagination is enabled
+      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : -1},
 	  pageCount: -1,
 	  manualPagination: false,
       getExportFileBlob
