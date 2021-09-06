@@ -302,7 +302,8 @@ export function Table({
                 }
               },
               widgetValue: cellValue,
-              currentState
+              currentState,
+              customResolveObjects: { cellValue }
             })
           
             const { isValid, validationError } = validationData;
@@ -353,9 +354,10 @@ export function Table({
               }
             },
             widgetValue: cellValue,
-            currentState
+            currentState,
+            customResolveObjects: { cellValue }
           })
-        
+
           const { isValid, validationError } = validationData;
 
           return (
