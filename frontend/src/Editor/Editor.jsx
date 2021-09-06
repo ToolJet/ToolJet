@@ -704,9 +704,9 @@ class Editor extends React.Component {
                             data-tip="Add new query"
                             data-class="py-1 px-2"
                             className="btn btn-sm btn-light text-muted"
-                            onClick={() => this.setState({ 
-                              selectedQuery: {}, 
-                              editingQuery: false, 
+                            onClick={() => this.setState({
+                              selectedQuery: {},
+                              editingQuery: false,
                               addingQuery: true
                             })}
                           >
@@ -776,6 +776,8 @@ class Editor extends React.Component {
                             queryPaneHeight={queryPaneHeight}
                             currentState={currentState}
                             darkMode={this.props.darkMode}
+                            apps={apps}
+                            allComponents={appDefinition.components}
                           />
                         </div>
                       </div>
