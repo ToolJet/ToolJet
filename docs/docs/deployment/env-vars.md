@@ -86,6 +86,14 @@ If your ToolJet installation needs access to datasources such as Google sheets, 
 | GOOGLE_CLIENT_ID      | client id |
 | GOOGLE_CLIENT_SECRET      | client secret |
 
+#### SENTRY  DNS ( optional )
+
+DSN tells a Sentry SDK where to send events so the events are associated with the correct project
+
+| variable      | description |
+| ----------- | ----------- |
+| SENTRY_DNS | Data Source Name |
+
 ## ToolJet client
 
 #### Server URL ( optional )
@@ -101,3 +109,12 @@ If your ToolJet installation requires `Maps` widget, you need to create an API k
 | variable      | description |
 | ----------- | ----------- |
 | GOOGLE_MAPS_API_KEY | Google maps API key |
+
+
+#### SENTRY  DNS ( optional )
+
+DSN tells a Sentry SDK where to send events so the events are associated with the correct project
+
+| variable      | description |
+| ----------- | ----------- |
+| SENTRY_DNS | Data Source Name |
