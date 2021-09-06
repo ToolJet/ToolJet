@@ -30,6 +30,9 @@ const imports = [
   LoggerModule.forRoot({
     pinoHttp: {
       level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+      autoLogging: {
+        ignorePaths: ['/api/health'],
+      },
       prettyPrint:
         process.env.NODE_ENV !== 'production'
           ? {
