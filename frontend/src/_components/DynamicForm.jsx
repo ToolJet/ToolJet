@@ -14,6 +14,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
     switch (type) {
       case 'password':
       case 'text':
+      case 'textarea':
         return Input;
       case 'dropdown':
         return Select;
@@ -30,21 +31,23 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
     }
   };
 
-  const getElementProps = ({ $key, $options, $hasSearch, description, type }) => {
+  const getElementProps = ({ $key, $options, $rows = 5, $hasSearch, description, type }) => {
     switch (type) {
       case 'password':
       case 'text':
+      case 'textarea':
         return {
           type,
           placeholder: description,
           className: 'form-control',
           value: options[$key].value,
-          onChange: e => optionchanged($key, e.target.value)
+          ...(type === 'textarea' && {rows: $rows}),
+          onChange: e => optionchanged($key, e.target.value),
         };
       case 'dropdown':
         return {
           options: $options,
-          value: options[$key].value,
+          value: options[$key]?.value,
           hasSearch: $hasSearch,
           onChange: value => optionchanged($key, value)
         };

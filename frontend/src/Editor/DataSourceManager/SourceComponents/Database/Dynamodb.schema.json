@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/",
   "$id": "https://tooljet.io/Dynamodb.schema.json",
-  "title": "Airtable datasource",
+  "title": "Dynamodb datasource",
   "description": "A schema defining dynamodb datasource",
   "type": "object",
   "properties": {

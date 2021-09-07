@@ -10,12 +10,12 @@ import GooglesheetSchema from './Api/Googlesheets.schema.json';
 import SlackSchema from './Api/Slack.schema.json';
 
 import DynamodbSchema from './Database/Dynamodb.schema.json';
+import ElasticsearchSchema from './Database/Elasticsearch.schema.json';
+import RedisSchema from './Database/Redis.schema.json';
+import FirestoreSchema from './Database/Firestore.schema.json';
 
-import { Elasticsearch } from './Elasticsearch';
-import { Redis } from './Redis';
 import { Postgresql } from './Postgresql';
 import { Mysql } from './Mysql';
-import { Firestore } from './Firestore';
 import { Mongodb } from './Mongodb';
 import { Mssql } from './Mssql';
 
@@ -26,6 +26,9 @@ const Stripe = ({ ...rest }) => <DynamicForm schema={StripeSchema} {...rest} />;
 const Googlesheets = ({ ...rest }) => <DynamicForm schema={GooglesheetSchema} {...rest} />;
 const Slack = ({ ...rest }) => <DynamicForm schema={SlackSchema} {...rest} />;
 const Dynamodb = ({ ...rest }) => <DynamicForm schema={DynamodbSchema} {...rest} />;
+const Elasticsearch = ({ ...rest }) => <DynamicForm schema={ElasticsearchSchema} {...rest} />;
+const Redis = ({ ...rest }) => <DynamicForm schema={RedisSchema} {...rest} />;
+const Firestore = ({ ...rest }) => <DynamicForm schema={FirestoreSchema} {...rest} />;
 
 export const SourceComponents = {
   Elasticsearch,

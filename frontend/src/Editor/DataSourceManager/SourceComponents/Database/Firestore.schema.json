@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Firestore.schema.json",
+  "title": "Firestore datasource",
+  "description": "A schema defining firestore datasource",
+  "type": "object",
+  "properties": {
+    "gcp_key": {
+      "$label": "Private key",
+      "$key": "gcp_key",
+      "$rows": 15,
+      "type": "textarea",
+      "description": "Input for private key"
+    }
+  },
+  "required": ["gcp_key"]
+}

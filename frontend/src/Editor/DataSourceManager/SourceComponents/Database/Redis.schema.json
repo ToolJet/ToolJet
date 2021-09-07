@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Dynamodb.schema.json",
+  "title": "Airtable datasource",
+  "description": "A schema defining dynamodb datasource",
+  "type": "object",
+  "properties": {
+    "host": {
+      "$label": "Host",
+      "$key": "host",
+      "type": "text",
+      "description": "Input for host"
+    },
+    "port": {
+      "$label": "Port",
+      "$key": "port",
+      "type": "text",
+      "description": "Input for port"
+    },
+    "username": {
+      "$label": "Username",
+      "$key": "username",
+      "type": "text",
+      "description": "Input for username field"
+    },
+    "password": {
+      "$label": "Password",
+      "$key": "password",
+      "type": "password",
+      "description": "Input for password field"
+    }
+  },
+  "required": ["scheme", "host", "port", "password"]
+}
