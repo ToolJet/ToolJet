@@ -2,7 +2,7 @@ import 'codemirror/theme/duotone-light.css';
 
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
-import { isEmpty } from 'lodash'
+import { isEmpty, defaults } from 'lodash'
 import Tabs from './Tabs';
 
 import { changeOption } from '../utils';
@@ -11,8 +11,9 @@ import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
+    const options = defaults({...props.options}, {headers: [], url_params: [], body: []})
     this.state = {
-      options: this.props.options,
+      options
     };
   }
 
