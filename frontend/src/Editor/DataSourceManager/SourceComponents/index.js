@@ -15,8 +15,7 @@ import RedisSchema from './Database/Redis.schema.json';
 import FirestoreSchema from './Database/Firestore.schema.json';
 import MongodbSchema from './Database/Mongodb.schema.json';
 import PostgresqlSchema from './Database/Postgresql.schema.json';
-
-// import { Mssql } from './Mssql';
+import MysqlSchema from './Database/Mssql.schema.json';
 
 const Airtable = ({ ...rest }) => <DynamicForm schema={AirtableSchema} {...rest} />;
 const Restapi = ({ ...rest }) => <DynamicForm schema={RestapiSchema} {...rest} />;
@@ -30,12 +29,12 @@ const Redis = ({ ...rest }) => <DynamicForm schema={RedisSchema} {...rest} />;
 const Firestore = ({ ...rest }) => <DynamicForm schema={FirestoreSchema} {...rest} />;
 const Mongodb = ({ ...rest }) => <DynamicForm schema={MongodbSchema} {...rest} />;
 const Postgresql = ({ ...rest }) => <DynamicForm schema={PostgresqlSchema} {...rest} />;
+const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 
 export const SourceComponents = {
   Elasticsearch,
   Redis,
   Postgresql,
-  // Mysql,
   Stripe,
   Firestore,
   Restapi,
@@ -45,5 +44,5 @@ export const SourceComponents = {
   Dynamodb,
   Airtable,
   Graphql,
-  // Mssql,
+  Mysql,
 };
