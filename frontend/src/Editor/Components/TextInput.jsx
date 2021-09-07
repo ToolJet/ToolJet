@@ -20,6 +20,7 @@ export const TextInput = function TextInput({
 
   let parsedWidgetVisibility = widgetVisibility;
   const value = currentState?.components[component?.name]?.value;
+  const currentValidState = currentState?.components[component?.name]?.isValid;
 
   const validationData = validateWidget({
     validationObject: component.definition.validation,
@@ -28,6 +29,10 @@ export const TextInput = function TextInput({
   })
 
   const { isValid, validationError } = validationData;
+
+  if(currentValidState !== isValid) {
+    onComponentOptionChanged(component, 'isValid', isValid);
+  }
 
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);

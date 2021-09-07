@@ -52,6 +52,7 @@ export const DropDown = function DropDown({
   const currentValueProperty = component.definition.properties.value;
   const value = currentValueProperty ? currentValueProperty.value : '';
   const [currentValue, setCurrentValue] = useState('');
+  
 
   let newValue = value;
   if (currentValueProperty && currentState) {
@@ -65,6 +66,12 @@ export const DropDown = function DropDown({
   })
 
   const { isValid, validationError } = validationData;
+
+  const currentValidState = currentState?.components[component?.name]?.isValid;
+
+  if(currentValidState !== isValid) {
+    onComponentOptionChanged(component, 'isValid', isValid);
+  }
 
   useEffect(() => {
     setCurrentValue(newValue);
