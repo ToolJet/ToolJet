@@ -340,6 +340,9 @@ export const componentTypes = [
       width: 150,
       height: 30,
     },
+    validation: {
+      customRule: { type: 'code', displayName: 'Custom validation' }
+    },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
@@ -361,6 +364,9 @@ export const componentTypes = [
       others: {
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
+      },
+      validation: {
+        customRule: { value: null }
       },
       properties: {
         format: { value: 'DD/MM/YYYY' },
