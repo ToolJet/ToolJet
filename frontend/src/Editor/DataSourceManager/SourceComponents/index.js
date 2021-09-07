@@ -16,6 +16,7 @@ import FirestoreSchema from './Database/Firestore.schema.json';
 import MongodbSchema from './Database/Mongodb.schema.json';
 import PostgresqlSchema from './Database/Postgresql.schema.json';
 import MysqlSchema from './Database/Mysql.schema.json';
+import MssqlSchema from './Database/Mssql.schema.json';
 
 const Airtable = ({ ...rest }) => <DynamicForm schema={AirtableSchema} {...rest} />;
 const Restapi = ({ ...rest }) => <DynamicForm schema={RestapiSchema} {...rest} />;
@@ -30,6 +31,7 @@ const Firestore = ({ ...rest }) => <DynamicForm schema={FirestoreSchema} {...res
 const Mongodb = ({ ...rest }) => <DynamicForm schema={MongodbSchema} {...rest} />;
 const Postgresql = ({ ...rest }) => <DynamicForm schema={PostgresqlSchema} {...rest} />;
 const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
+const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
 
 export const SourceComponents = {
   Elasticsearch,
@@ -45,4 +47,5 @@ export const SourceComponents = {
   Airtable,
   Graphql,
   Mysql,
+  Mssql
 };

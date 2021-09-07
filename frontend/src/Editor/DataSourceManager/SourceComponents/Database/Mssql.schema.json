@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Postgresql.schema.json",
+  "title": "Mongodb datasource",
+  "description": "A schema defining mongodb datasource",
+  "type": "object",
+  "properties": {
+    "host": {
+      "$label": "Host",
+      "$key": "host",
+      "type": "text",
+      "description": "Input for host"
+    },
+    "port": {
+      "$label": "Port",
+      "$key": "port",
+      "type": "text",
+      "description": "Input for port"
+    },
+    "database": {
+      "$label": "Database",
+      "$key": "port",
+      "type": "text",
+      "description": "Input for port"
+    },
+    "username": {
+      "$label": "Username",
+      "$key": "username",
+      "type": "text",
+      "description": "Input for username field"
+    },
+    "password": {
+      "$label": "Password",
+      "$key": "password",
+      "type": "password",
+      "description": "Input for password field"
+    },
+    "azure": {
+      "$label": "Azure",
+      "$key": "azure",
+      "type": "toggle",
+      "description": "Toggle for azure" 
+    }
+  },
+  "required": ["host", "port", "username", "password"]
+}
