@@ -16,6 +16,6 @@ describe('Editor- Toggle switch widget', () => {
     it('should be able to drag and drop button to canvas', () => {
         cy.get('input[placeholder="Search…"]').type('toggle');
 
-        cy.get('.draggable-box').contains('toggle switch').drag('.real-canvas', { force: true, position: 'topLeft' });
+        cy.get('.draggable-box').contains('Toggle Switch').drag('.real-canvas', { force: true, position: 'topLeft' });
     });
 });
