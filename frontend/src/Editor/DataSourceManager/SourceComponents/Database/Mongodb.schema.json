@@ -8,41 +8,52 @@
     "connection_type": {
       "$label": "",
       "$key": "connection_type",
-      "type": "dropdown",
+      "type": "dropdown-component-flip",
       "description": "Single select dropdown for connection_type",
-      "$options": [{ "name": "Manual connection", "value": "manual" },
-        { "name": "Connect using connection string", "value": "string" }]
+      "$options": [
+        { "name": "Manual connection", "value": "manual" },
+        { "name": "Connect using connection string", "value": "string" }
+      ]
     },
-    "host": {
-      "$label": "Host",
-      "$key": "host",
-      "type": "text",
-      "description": "Input for host"
+    "manual": {
+      "host": {
+        "$label": "Host",
+        "$key": "host",
+        "type": "text",
+        "description": "Input for host"
+      },
+      "port": {
+        "$label": "Port",
+        "$key": "port",
+        "type": "text",
+        "description": "Input for port"
+      },
+      "database": {
+        "$label": "Database",
+        "$key": "port",
+        "type": "text",
+        "description": "Input for port"
+      },
+      "username": {
+        "$label": "Username",
+        "$key": "username",
+        "type": "text",
+        "description": "Input for username field"
+      },
+      "password": {
+        "$label": "Password",
+        "$key": "password",
+        "type": "password",
+        "description": "Input for password field"
+      }
     },
-    "port": {
-      "$label": "Port",
-      "$key": "port",
-      "type": "text",
-      "description": "Input for port"
-    },
-    "database": {
-      "$label": "Database",
-      "$key": "port",
-      "type": "text",
-      "description": "Input for port"
-    },
-    "username": {
-      "$label": "Username",
-      "$key": "username",
-      "type": "text",
-      "description": "Input for username field"
-    },
-    "password": {
-      "$label": "Password",
-      "$key": "password",
-      "type": "password",
-      "description": "Input for password field"
+    "string": {
+      "connection_string": {
+        "$label": "Connection string",
+        "$key": "connection_string",
+        "type": "text",
+        "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority"
+      }
     }
-  },
-  "required": ["scheme", "host", "port", "password"]
+  }
 }

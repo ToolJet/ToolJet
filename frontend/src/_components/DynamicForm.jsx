@@ -8,6 +8,8 @@ import Toggle from '@/_ui/Toggle';
 import GoogleSheets from '@/_components/GoogleSheets';
 import Slack from '@/_components/Slack';
 
+import { find } from 'lodash';
+
 const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
   // if(schema.properties)  todo add empty check
 
@@ -53,13 +55,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
           onChange: () => optionchanged($key, !options[$key])
         }
       case 'dropdown':
-        return {
-          options: $options,
-          value: options[$key]?.value,
-          hasSearch: $hasSearch,
-          onChange: (value) => optionchanged($key, value),
-        };
-      case 'toggle':
+      case 'dropdown-component-flip':
         return {
           options: $options,
           value: options[$key]?.value,
@@ -95,20 +91,42 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
     }
   };
 
-  return (
-    <div className="row">
-      {Object.keys(schema.properties).map((key) => {
-        const { $label, type } = schema.properties[key];
-        const Element = getElement(type);
-        return (
-          <div className="col-md-12 my-2">
-            {$label && <label className="form-label">{$label}</label>}
-            <Element {...getElementProps(schema.properties[key])} />
+  const getLayout = (obj) => {
+    console.log(obj)
+    return (
+      <div className="row">
+        {Object.keys(obj).map((key) => {
+          const { $label, type } = obj[key];
+          console.log(type)
+
+          const Element = getElement(type);
+  
+          return (
+            <div className="col-md-12 my-2">
+              {$label && <label className="form-label">{$label}</label>}
+              <Element {...getElementProps(obj[key])} />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  const flipComponentDropdown = find(schema.properties, ['type', 'dropdown-component-flip'])
+
+  if(flipComponentDropdown) {
+    return (
+      <div className='row'>
+        <div className="col-md-12 my-2">
+          {flipComponentDropdown.$label && <label className="form-label">{flipComponentDropdown.$label}</label>}
+          <Select {...getElementProps(flipComponentDropdown)} />
           </div>
-        );
-      })}
-    </div>
-  );
+          {getLayout(schema.properties[options[flipComponentDropdown.$key].value])}
+      </div>
+    )
+  }
+
+  return getLayout(schema.properties)
 };
 
 export default DynamicForm;
