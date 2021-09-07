@@ -523,6 +523,7 @@ class Table extends React.Component {
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
+    const serverSidePagination = component.component.definition.properties.serverSidePagination?.value ?? false;
 
     return (
       <div className="properties-container p-2 " key={this.props.component.id}>
@@ -589,8 +590,12 @@ class Table extends React.Component {
           <hr></hr>
 
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
+          {!serverSidePagination && renderElement(component, componentMeta, paramUpdated, dataQueries, 'clientSidePagination', 'properties', currentState)}
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'displaySearchBox', 'properties', currentState)}
           {displaySearchBox && renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
+          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showDownloadButton', 'properties', currentState)}
+          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showFilterButton', 'properties', currentState)}
+
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <div className="hr-text">Events</div>
 
