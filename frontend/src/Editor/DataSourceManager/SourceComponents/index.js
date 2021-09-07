@@ -15,7 +15,7 @@ import RedisSchema from './Database/Redis.schema.json';
 import FirestoreSchema from './Database/Firestore.schema.json';
 import MongodbSchema from './Database/Mongodb.schema.json';
 import PostgresqlSchema from './Database/Postgresql.schema.json';
-import MysqlSchema from './Database/Mssql.schema.json';
+import MysqlSchema from './Database/Mysql.schema.json';
 
 const Airtable = ({ ...rest }) => <DynamicForm schema={AirtableSchema} {...rest} />;
 const Restapi = ({ ...rest }) => <DynamicForm schema={RestapiSchema} {...rest} />;

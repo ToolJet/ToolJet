@@ -34,12 +34,6 @@
       "$key": "password",
       "type": "password",
       "description": "Input for password field"
-    },
-    "azure": {
-      "$label": "Azure",
-      "$key": "azure",
-      "type": "toggle",
-      "description": "Toggle for azure"
     }
   },
   "required": ["host", "port", "username", "password"]
