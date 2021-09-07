@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Dynamodb.schema.json",
-  "title": "Redis datasource",
-  "description": "A schema defining dynamodb datasource",
+  "$id": "https://tooljet.io/Mongodb.schema.json",
+  "title": "Mongodb datasource",
+  "description": "A schema defining mongodb datasource",
   "type": "object",
   "properties": {
     "host": {
@@ -13,6 +13,18 @@
     },
     "port": {
       "$label": "Port",
+      "$key": "port",
+      "type": "text",
+      "description": "Input for port"
+    },
+    "ssl_enabled": {
+      "$label": "SSL",
+      "$key": "ssl_enabled",
+      "type": "toggle",
+      "description": "Toggle for ssl_enabled"
+    },
+    "database": {
+      "$label": "Database",
       "$key": "port",
       "type": "text",
       "description": "Input for port"

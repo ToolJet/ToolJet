@@ -3,6 +3,7 @@ import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
+import Toggle from '@/_ui/Toggle';
 
 import GoogleSheets from '@/_components/GoogleSheets';
 import Slack from '@/_components/Slack';
@@ -18,6 +19,8 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         return Input;
       case 'dropdown':
         return Select;
+      case 'toggle':
+        return Toggle;
       case 'react-component-headers':
         return Headers;
       case 'react-component-oauth-authentication':
@@ -41,15 +44,27 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
           placeholder: description,
           className: 'form-control',
           value: options[$key].value,
-          ...(type === 'textarea' && {rows: $rows}),
-          onChange: e => optionchanged($key, e.target.value),
+          ...(type === 'textarea' && { rows: $rows }),
+          onChange: (e) => optionchanged($key, e.target.value),
         };
+      case 'toggle':
+        return {
+          defaultChecked: options[$key],
+          onChange: () => optionchanged($key, !options[$key])
+        }
       case 'dropdown':
         return {
           options: $options,
           value: options[$key]?.value,
           hasSearch: $hasSearch,
-          onChange: value => optionchanged($key, value)
+          onChange: (value) => optionchanged($key, value),
+        };
+      case 'toggle':
+        return {
+          options: $options,
+          value: options[$key]?.value,
+          hasSearch: $hasSearch,
+          onChange: (value) => optionchanged($key, value),
         };
       case 'react-component-headers':
         return {

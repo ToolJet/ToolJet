@@ -1,10 +1,18 @@
 {
   "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Dynamodb.schema.json",
-  "title": "Redis datasource",
-  "description": "A schema defining dynamodb datasource",
+  "$id": "https://tooljet.io/Mongodb.schema.json",
+  "title": "Mongodb datasource",
+  "description": "A schema defining mongodb datasource",
   "type": "object",
   "properties": {
+    "connection_type": {
+      "$label": "",
+      "$key": "connection_type",
+      "type": "dropdown",
+      "description": "Single select dropdown for connection_type",
+      "$options": [{ "name": "Manual connection", "value": "manual" },
+        { "name": "Connect using connection string", "value": "string" }]
+    },
     "host": {
       "$label": "Host",
       "$key": "host",
@@ -13,6 +21,12 @@
     },
     "port": {
       "$label": "Port",
+      "$key": "port",
+      "type": "text",
+      "description": "Input for port"
+    },
+    "database": {
+      "$label": "Database",
       "$key": "port",
       "type": "text",
       "description": "Input for port"
