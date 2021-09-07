@@ -12,4 +12,4 @@ the debugger icon is clicked.
 ## Pin Debugger
 Pinning the popover can be helpful while debugging the queries and will remain open till it is unpinned.
 
-<iframe class="screenshot-full" width="750" height="420" src="https://www.youtube.com/embed/E_CJKRr1oV0" title="Tooljet - Debugger" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<img class="screenshot-full" src="/img/tutorial/debugger/pinned-debugger.gif" alt="ToolJet - Debugger" height="420"/>
