@@ -16,6 +16,7 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 
+///<reference types="cypress" />
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 Cypress.on('uncaught:exception', (err, runnable) => {

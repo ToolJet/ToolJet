@@ -67,3 +67,13 @@ Cypress.Commands.add('addPostgresDataSource', fn => {
     .should('have.text', 'Save')
     .click()
 });
+Cypress.Commands.add('createAppIfEmptyDashboard', fn => {
+  cy.get('body').then(($title => {
+    //check you are not running tests on empty dashboard state
+    if ($title.text().includes('You haven\'t created any apps yet.')) {
+      cy.get('a.btn').eq(0).should('have.text', 'Create your first app')
+        .click()
+      cy.go('back')
+    }
+  }))
+})
