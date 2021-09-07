@@ -84,7 +84,7 @@ export const DropDown = function DropDown({
   return (
     <div className="dropdown-widget row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <div className="col-auto">
-        <label style={{marginRight: '1rem'}} className="form-label py-1">{label}</label>
+        <label style={{marginRight:  label !== '' ? '1rem' : '0.001rem'}} className="form-label py-1">{label}</label>
       </div>
       <div className="col px-0">
         <SelectSearch
