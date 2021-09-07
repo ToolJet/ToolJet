@@ -99,9 +99,10 @@ Specify application monitoring vendor. Currently supported values - `sentry`.
 
 DSN tells a Sentry SDK where to send events so the events are associated with the correct project
 
-| variable      | description |
-| ----------- | ----------- |
-| SENTRY_DNS | Data Source Name |
+#### SENTRY DEBUG ( optional )
+
+Prints logs for sentry. Supported values: `true` | `false`
+Default value is `false`
 
 ## ToolJet client
 
@@ -131,6 +132,7 @@ Specify application monitoring vendor. Currently supported values - `sentry`.
 
 DSN tells a Sentry SDK where to send events so the events are associated with the correct project
 
-| variable      | description |
-| ----------- | ----------- |
-| SENTRY_DNS | Data Source Name |
+#### SENTRY DEBUG ( optional )
+
+Prints logs for sentry. Supported values: `true` | `false`
+Default value is `false`

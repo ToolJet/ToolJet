@@ -13,7 +13,7 @@ import { SeedsModule } from './modules/seeds/seeds.module';
 import { SeedsService } from '@services/seeds.service';
 
 import { LoggerModule } from 'nestjs-pino';
-import { SentryModule } from './sentry/sentry.module';
+import { SentryModule } from './modules/observability/sentry/sentry.module';
 import * as Sentry from '@sentry/node';
 
 import { ConfigModule } from '@nestjs/config';
@@ -84,6 +84,7 @@ if (process.env.APM_VENDOR == 'sentry') {
     SentryModule.forRoot({
       dsn: process.env.SENTRY_DNS,
       tracesSampleRate: 0.25,
+      debug: !!process.env.SENTRY_DEBUG,
     }),
   );
 }

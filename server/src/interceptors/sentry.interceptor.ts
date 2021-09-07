@@ -6,7 +6,7 @@ import {
   Scope,
 } from '@nestjs/common';
 import { catchError, finalize, Observable, throwError } from 'rxjs';
-import { SentryService } from './sentry.service';
+import { SentryService } from '../services/sentry.service';
 import * as Sentry from '@sentry/node';
 
 /**
