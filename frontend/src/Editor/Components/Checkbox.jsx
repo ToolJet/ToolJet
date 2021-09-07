@@ -37,10 +37,9 @@ export const Checkbox = function Checkbox({
   }
 
   return (
-    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
-      <label className="form-check form-check-inline">
+    <div className="row" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+      <label className="my-auto mx-2 form-check form-check-inline">
         <input
-          disabled={parsedDisabledState}
           className="form-check-input"
           type="checkbox"
           onClick={(e) => {

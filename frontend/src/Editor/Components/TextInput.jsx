@@ -1,5 +1,6 @@
 import React from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
+import escapeStringRegexp from 'escape-string-regexp';
 
 export const TextInput = function TextInput({
   id,
@@ -10,7 +11,6 @@ export const TextInput = function TextInput({
   currentState,
   onComponentOptionChanged
 }) {
-  console.log('currentState', currentState);
 
   const placeholder = component.definition.properties.placeholder.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
@@ -19,20 +19,33 @@ export const TextInput = function TextInput({
   const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
-  
+  const value = currentState?.components[component?.name]?.value;
+
+  const validationData = validateWidget({
+    validationObject: component.definition.validation,
+    widgetValue: value,
+    currentState
+  })
+
+  const { isValid, validationError } = validationData;
+
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
   } catch (err) { console.log(err); }
 
   return (
-    <input
-      disabled={parsedDisabledState}
-      onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
-      onChange={(e) => onComponentOptionChanged(component, 'value', e.target.value)}
-      type="text"
-      className="form-control"
-      placeholder={placeholder}
-      style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }}
-    />
+    <div>
+      <input
+        disabled={parsedDisabledState}
+        onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
+        onChange={(e) => onComponentOptionChanged(component, 'value', e.target.value)}
+        type="text"
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
+        placeholder={placeholder}
+        style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }}
+      />
+      <div className="invalid-feedback">{validationError}</div>
+    </div>
+    
   );
 };
