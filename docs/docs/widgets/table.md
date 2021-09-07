@@ -6,7 +6,7 @@ sidebar_position: 12
 
 Tables can be used for both displaying and editing data.
 
-<img class="screenshot-full" src="/img/widgets/table/adding.gif" alt="ToolJet - line charts" height="420"/>
+<img class="screenshot-full" src="/img/widgets/table/adding.gif" alt="ToolJet - Widget Reference - Table" height="420"/>
 
 ## Displaying Data
 
@@ -129,5 +129,3 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 | Show search box | It can be used to show or hide Table Search box. |
 | Show download button | It can be used to show or hide download button at the Table footer. |
 | Show filter button | It can be used to show or hide filter button at the Table footer. |
-
-#### Styles
