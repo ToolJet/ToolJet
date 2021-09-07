@@ -1,5 +1,6 @@
 import React from 'react';
 import Input from '@/_ui/Input';
+import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 
@@ -14,6 +15,8 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
       case 'password':
       case 'text':
         return Input;
+      case 'dropdown':
+        return Select;
       case 'react-component-headers':
         return Headers;
       case 'react-component-oauth-authentication':
@@ -27,7 +30,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
     }
   };
 
-  const getElementProps = ({ $key, description, type }) => {
+  const getElementProps = ({ $key, $options, $hasSearch, description, type }) => {
     switch (type) {
       case 'password':
       case 'text':
@@ -36,6 +39,14 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
           placeholder: description,
           className: 'form-control',
           value: options[$key].value,
+          onChange: e => optionchanged($key, e.target.value)
+        };
+      case 'dropdown':
+        return {
+          options: $options,
+          value: options[$key].value,
+          hasSearch: $hasSearch,
+          onChange: value => optionchanged($key, value)
         };
       case 'react-component-headers':
         return {
