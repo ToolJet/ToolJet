@@ -10,10 +10,13 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
       serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination' },
+      clientSidePagination: { type: 'toggle', displayName: 'Client-side pagination' },
       serverSideSearch: { type: 'toggle', displayName: 'Server-side search' },
       actionButtonBackgroundColor: { type: 'color', displayName: 'Background color' },
       actionButtonTextColor: { type: 'color', displayName: 'Text color' },
-      displaySearchBox: { type: 'toggle', displayName: 'Display search box' },
+      displaySearchBox: { type: 'toggle', displayName: 'Show search box' },
+      showDownloadButton: { type: 'toggle', displayName: 'Show download button' },
+      showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -62,7 +65,10 @@ export const componentTypes = [
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
         },
         serverSidePagination: { value: false },
+        clientSidePagination: { value: true },
         displaySearchBox: { value: true },
+        showDownloadButton: { value: true },
+        showFilterButton: { value: true },
         columns: {
           value: [
             { name: 'id', id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737' },
