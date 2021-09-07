@@ -93,3 +93,32 @@ Along with `changeSet`, `dataUpdates` property will also be changed when the val
 ```
 
 If the data of a cell is changed, "save changes" button will be shown at the bottom of the table. This button when clicked will trigger the `Bulk update query` event. This event can be used to run a query to update the data on your datasource.
+
+#### Exposed variables
+
+| variable      | description |
+| ----------- | ----------- |
+| currentData      | Data that is currently being displayed by the table ( including edits if any ) |
+| currentPageData  | Data that is displayed on the current page if pagination is enabled ( including edits if any )      |
+| pageIndex | Index of the current page, starting from 1
+| changeSet | Object with row number as the key and object of edited fields and their values as the value |
+| dataUpdates | Just like changeSet but includes the data of the entire row |
+| selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
+| searchText | The value of the search field if server-side paginaton is enabled |
+
+#### Events
+
+| events      | description |
+| ----------- | ----------- |
+| Row clicked | Triggered when a table row is clicked. This event is triggered after `selectedRow` variable is changed. |
+| Bulk update | If any cell of the table is edited, the `save changes` button appears at the footer of the table. Bulk update event is triggered when this button is clicked. |
+| Page changed | If server-side pagination is enabled, this event is fired when the current page is changed. This event is triggered after updating the `pageIndex` variable.|
+| Search | This event is triggered when a text is entered to the search field of the table. `searchText` variable is updated before triggering this event. |
+
+#### Properties
+
+| properties      | description |
+| ----------- | ----------- |
+| Data |  Refer your query data with substituted variables `{{queries.restapi1.data}}`or populate it with sample data `{{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}` |
+
+
