@@ -19,6 +19,8 @@ ToolJet requires the following to connect to your Elasticsearch cluster:
 - **Host**
 - **Port**
 
+<img class="screenshot-full" src="/img/datasource-reference/elasticsearch.png" alt="ToolJet - Datasource Elasticsearch" height="420"/>
+
 ## Querying Firestore 
 
 Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the datasource.  
