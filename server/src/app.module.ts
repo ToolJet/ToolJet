@@ -79,7 +79,7 @@ if (process.env.SERVE_CLIENT !== 'false') {
   );
 }
 
-if (process.env.SENTRY_DNS) {
+if (process.env.APM_VENDOR == 'sentry') {
   imports.unshift(
     SentryModule.forRoot({
       dsn: process.env.SENTRY_DNS,
