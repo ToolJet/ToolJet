@@ -9,8 +9,7 @@ export const Toggle = ({readOnly, value, onChange, activeColor, options }) => {
   }
 
   return (
-    <div className="radio row">
-      <div>
+    <div className="radio row g-0">
         <label className="form-check form-switch form-check-inline">
             <input
               className="form-check-input"
@@ -20,7 +19,6 @@ export const Toggle = ({readOnly, value, onChange, activeColor, options }) => {
               onClick={() => {if(!readOnly) toggle()}}
             />
         </label>
-      </div>
     </div>
   );
 };

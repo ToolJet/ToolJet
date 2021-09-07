@@ -34,15 +34,15 @@ export function resolveAll(data, state) {
 
 }
 
-export function resolveReferences(object, state) {
+export function resolveReferences(object, state, defaultValue, customObjects = {}) {
   if (typeof object === 'string') {
     if (object.startsWith('{{') && object.endsWith('}}')) {
       const code = object.replace('{{', '').replace('}}', '');
       let result = '';
 
       try {
-        const evalFunction = Function(['components', 'queries', 'globals', 'moment', '_'], `return ${code}`);
-        result = evalFunction(state.components, state.queries, state.globals, moment, _);
+        const evalFunction = Function(['components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)], `return ${code}`);
+        result = evalFunction(state.components, state.queries, state.globals, moment, _, ...Object.values(customObjects));
       } catch (err) {
         console.log('eval_error', err);
       }
@@ -146,4 +146,56 @@ export const serializeNestedObjectToQueryParams = function(obj, prefix) {
     }
   }
   return str.join("&");
+}
+
+
+export function resolveWidgetFieldValue(prop, state, _default=[], customResolveObjects = {}) {
+  const widgetFieldValue = prop;
+
+  try {
+    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects)
+  } catch (err) {
+    console.log(err);
+  }
+
+  return widgetFieldValue
+}
+
+export function validateWidget({ validationObject, widgetValue, currentState, customResolveObjects }) {
+  let isValid = true;
+  let validationError = null;
+
+  const regex = validationObject?.regex?.value;
+  const minLength = validationObject?.minLength?.value;
+  const maxLength = validationObject?.maxLength?.value;
+  const customRule = validationObject?.customRule?.value;
+
+  const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
+  const re = new RegExp(validationRegex, 'g');
+
+  if(!re.test(widgetValue)) { 
+    return { isValid: false, validationError:'The input should match pattern' }
+  }
+
+  const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState, 0, customResolveObjects);
+  if((widgetValue || '').length < parseInt(resolvedMinLength)) {
+    return { isValid: false, validationError: `Minimum ${resolvedMinLength} characters is needed` }
+  }
+
+  const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState, undefined, customResolveObjects);
+  if(resolvedMaxLength !== undefined) {
+    if((widgetValue || '').length > parseInt(resolvedMaxLength)) {
+      return { isValid: false, validationError: `Maximum ${resolvedMaxLength} characters is allowed` }
+    }
+  }
+
+  const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
+  if(typeof resolvedCustomRule === 'string' ) {
+    return { isValid: false, validationError: resolvedCustomRule }
+  }
+
+  return {
+    isValid,
+    validationError
+  }
 }

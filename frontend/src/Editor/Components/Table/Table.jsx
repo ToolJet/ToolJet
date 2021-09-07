@@ -9,8 +9,7 @@ import {
   useBlockLayout,
   useResizeColumns
 } from 'react-table';
-import { resolveReferences } from '@/_helpers/utils';
-import Skeleton from 'react-loading-skeleton';
+import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
@@ -48,11 +47,23 @@ export function Table({
   const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
   const displaySearchBox = displaySearchBoxProperty ? displaySearchBoxProperty.value : true;
 
+  const showDownloadButtonProperty = component.definition.properties.showDownloadButton?.value;
+  const showDownloadButton = resolveWidgetFieldValue(showDownloadButtonProperty, currentState) ?? true; // default is true for backward compatibility
+
+  const showFilterButtonProperty = component.definition.properties.showFilterButton?.value;
+  const showFilterButton = resolveWidgetFieldValue(showFilterButtonProperty, currentState) ?? true; // default is true for backward compatibility
+
+  const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
+  const clientSidePagination = resolveWidgetFieldValue(clientSidePaginationProperty, currentState) ?? !serverSidePagination; // default is true for backward compatibility
+
   const tableTypeProperty = component.definition.styles.tableType;
   let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
+
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   let parsedWidgetVisibility = widgetVisibility;
   
   try {
@@ -250,7 +261,7 @@ export function Table({
       const values = resolveReferences(column.values, currentState) || [];
       const labels = resolveReferences(column.labels, currentState, []) || [];
 
-      if (typeof labels === 'object') {
+      if (Array.isArray(labels)) {
         columnOptions.selectOptions = labels.map((label, index) => {
           return { name: label, value: values[index] };
         });
@@ -269,32 +280,68 @@ export function Table({
       accessor: column.key || column.name,
       filter: customFilter,
       width: width,
+      columnOptions,
 
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
 
-        if (columnType === undefined || columnType === 'default') {
-          return <span>{cellValue}</span>;
-        } if (columnType === 'string') {
+        if (columnType === 'string' || columnType === undefined || columnType === 'default') {
+          
+          const textColor = resolveReferences(column.textColor, currentState, { cellValue });
+
+          const cellStyles = {
+            color: textColor === undefined ? darkMode === true ? '#fff' : 'black' : textColor
+          }
+
           if (column.isEditable) {
+            const validationData = validateWidget({
+              validationObject: {
+                regex: {
+                  value: column.regex
+                },
+                minLength: {
+                  value: column.minLength
+                },
+                maxLength: {
+                  value: column.maxLength
+                },
+                customRule: {
+                  value: column.customRule
+                }
+              },
+              widgetValue: cellValue,
+              currentState,
+              customResolveObjects: { cellValue }
+            })
+          
+            const { isValid, validationError } = validationData;
+
             return (
-              <input
-                type="text"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-                  }
-                }}
-                onBlur={(e) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-                }}
-                className="form-control-plaintext form-control-plaintext-sm"
-                defaultValue={cellValue}
-              />
+              <div>
+                <input
+                  type="text"
+                  style={cellStyles}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if(e.target.defaultValue !== e.target.value) {
+                        handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                      }
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if(e.target.defaultValue !== e.target.value) {
+                      handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                    }
+                  }}
+                  className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                  defaultValue={cellValue}
+                />
+                <div class="invalid-feedback">{validationError}</div>
+              </div>
             );
           }
-          return <span>{cellValue}</span>;
+          return <span style={cellStyles}>{cellValue}</span>;
         } if (columnType === 'text') {
           return <textarea 
               rows="1" 
@@ -308,6 +355,20 @@ export function Table({
             >
           </textarea>;
         } if (columnType === 'dropdown') {
+
+          const validationData = validateWidget({
+            validationObject: {
+              customRule: {
+                value: column.customRule
+              }
+            },
+            widgetValue: cellValue,
+            currentState,
+            customResolveObjects: { cellValue }
+          })
+
+          const { isValid, validationError } = validationData;
+
           return (
             <div>
               <SelectSearch
@@ -320,6 +381,7 @@ export function Table({
                 filterOptions={fuzzySearch}
                 placeholder="Select.."
               />
+              <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
             </div>
           );
         } if (columnType === 'multiselect') {
@@ -438,7 +500,7 @@ export function Table({
         id: 'leftActions',
         Header: 'Actions',
         accessor: 'edit',
-        width: columnSizes.actions || defaultColumn.width,
+        width: columnSizes.leftActions || defaultColumn.width,
         Cell: (cell) => {
           return leftActions().map((action) => (
                 <button
@@ -464,7 +526,7 @@ export function Table({
         id: 'rightActions',
         Header: 'Actions',
         accessor: 'edit',
-        width: columnSizes.actions || defaultColumn.width,
+        width: columnSizes.rightActions || defaultColumn.width,
         Cell: (cell) => {
           return rightActions().map((action) => (
                 <button
@@ -484,17 +546,21 @@ export function Table({
     ]
     : [];
 
+
+  const optionsData = columnData.map(column => column.columnOptions?.selectOptions);
+
   const columns = useMemo(
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [JSON.stringify(columnData), 
       leftActionsCellData.length,
       rightActionsCellData.length,
       componentState.changeSet,
+      JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns)
     ] // Hack: need to fix
   );
 
-  const data = useMemo(() => tableData, [tableData.length]);
+  const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
 
   const computedStyles = {
     color,
@@ -515,6 +581,7 @@ export function Table({
     previousPage,
     setPageSize,
     state,
+    rows,
     prepareRow,
     setAllFilters,
     preGlobalFilteredRows,
@@ -526,7 +593,7 @@ export function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0, pageSize: serverSidePagination ? -1 : 10}, // pageSize should be unset if server-side pagination is enabled
+      initialState: { pageIndex: 0, pageSize: -1},
 	  pageCount: -1,
 	  manualPagination: false,
       getExportFileBlob
@@ -539,6 +606,28 @@ export function Table({
     useResizeColumns,
     useExportData
   );
+
+
+
+  React.useEffect(() => {
+    if(serverSidePagination || !clientSidePagination) {
+      setPageSize(-1)
+    } 
+    if(!serverSidePagination && clientSidePagination) {
+          setPageSize(10)
+    }
+
+  },[clientSidePagination, serverSidePagination])
+
+  useEffect(() => {
+    const pageData = page.map(row => row.original);
+    const currentData = rows.map(row => row.original);;
+    onComponentOptionsChanged(component, [
+      ['currentPageData', pageData],
+      ['currentData', currentData]
+    ]);
+  }, [tableData.length, componentState.changeSet]);
+
 
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
@@ -595,41 +684,21 @@ export function Table({
 
   return (
     <div
+      data-disabled={parsedDisabledState}
       className="card jet-table"
       style={{ width: `${width}px`, height: `${height}px`, display:parsedWidgetVisibility ? '' : 'none' }}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {(!(!displaySearchBox && serverSidePagination) &&
+      {displaySearchBox &&
         <div className="card-body border-bottom py-3 jet-data-table-header">
           <div className="d-flex">
-            {!serverSidePagination &&
-              <div className="text-muted">
-                Show
-                <div className="mx-2 d-inline-block">
-                  <select
-                    value={pageSize}
-                    className="form-control form-control-sm"
-                    onChange={(e) => {
-                      setPageSize(Number(e.target.value));
-                    }}
-                  >
-                    {[10, 20, 30, 40, 50].map((itemsCount) => (
-                      <option key={itemsCount} value={itemsCount}>
-                        {itemsCount}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                entries
-              </div>
-            }
             {displaySearchBox && <div className="ms-auto text-muted">
               <GlobalFilter />
             </div>}
           </div>
         </div>
-      )}
+      }
       <div className="table-responsive jet-data-table">
         <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
           <thead>
@@ -672,11 +741,12 @@ export function Table({
                   >
                     {row.cells.map((cell) => {
                       let cellProps = cell.getCellProps();
-
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
 
-                          if (_.get(componentState.changeSet[cell.row.index], cell.column.Header, undefined) !== undefined) {
+                          const currentColumn = columnData.find(column => column.id === cell.column.id);
+
+                          if (_.get(componentState.changeSet[cell.row.index], currentColumn?.accessor, undefined) !== undefined) {
                             console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
                           }
@@ -698,53 +768,62 @@ export function Table({
           </div>
         )}
       </div>
-      <div className="card-footer d-flex align-items-center jet-table-footer">
-        <div className="table-footer row">
-          <div className="col">
-            <Pagination
-                serverSide={serverSidePagination}
-                autoGotoPage={gotoPage}
-                autoCanNextPage={canNextPage}
-                autoPageCount={pageCount}
-                autoPageOptions={pageOptions}
-                onPageIndexChanged={onPageIndexChanged}
-            />
-          </div>
-
-          {Object.keys(componentState.changeSet || {}).length > 0 && (
+      {(clientSidePagination || serverSidePagination || Object.keys(componentState.changeSet || {}).length > 0 || showFilterButton || showDownloadButton) &&
+        <div className="card-footer d-flex align-items-center jet-table-footer">
+          <div className="table-footer row">
             <div className="col">
-              <button
-                className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                onClick={() => onEvent('onBulkUpdate', { component }).then(() => {
-                  handleChangesSaved();
-                })
-                }
-              >
-                Save Changes
-              </button>
-              <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
-                Cancel
-              </button>
-            </div>
-          )}
-
-          <div className="col-auto">
-            <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
-              <img src="/assets/images/icons/filter.svg" width="13" height="13" />
-              {filters.length > 0 && 
-                <a className="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
+              {(clientSidePagination || serverSidePagination) &&
+                <Pagination
+                    lastActivePageIndex={currentState.components[component.name]?.pageIndex ?? 1  }
+                    serverSide={serverSidePagination}
+                    autoGotoPage={gotoPage}
+                    autoCanNextPage={canNextPage}
+                    autoPageCount={pageCount}
+                    autoPageOptions={pageOptions}
+                    onPageIndexChanged={onPageIndexChanged}
+                />
               }
-            </span>
-            <span
-              data-tip="Download as CSV"
-              className="btn btn-light btn-sm p-1"
-              onClick={() => exportData('csv', true)}
-            >
-              <img src="/assets/images/icons/download.svg" width="13" height="13" />
-            </span>
+            </div>
+
+            {Object.keys(componentState.changeSet || {}).length > 0 && (
+              <div className="col">
+                <button
+                  className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                  onClick={() => onEvent('onBulkUpdate', { component }).then(() => {
+                    handleChangesSaved();
+                  })
+                  }
+                >
+                  Save Changes
+                </button>
+                <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
+                  Discard changes
+                </button>
+              </div>
+            )}
+
+            <div className="col-auto">
+              {showFilterButton &&
+                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
+                  <img src="/assets/images/icons/filter.svg" width="13" height="13" />
+                  {filters.length > 0 && 
+                    <a className="badge bg-azure" style={{width: '4px', height: '4px', marginTop: '5px'}}></a>
+                  }
+                </span>
+              }
+              {showDownloadButton &&
+                <span
+                  data-tip="Download as CSV"
+                  className="btn btn-light btn-sm p-1"
+                  onClick={() => exportData('csv', true)}
+                >
+                  <img src="/assets/images/icons/download.svg" width="13" height="13" />
+                </span>
+              }
+            </div>
           </div>
         </div>
-      </div>
+      }
       {isFiltersVisible && (
         <div className="table-filters card">
           <div className="card-header row">

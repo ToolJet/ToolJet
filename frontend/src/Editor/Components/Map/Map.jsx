@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import config from 'config';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import { Marker } from '@react-google-maps/api';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { Autocomplete } from '@react-google-maps/api';
 import { darkModeStyles } from './styles';
 
@@ -32,22 +32,21 @@ export const Map = function Map({
 
   const canSearchProp = component.definition.properties.canSearch;
   const canSearch = canSearchProp ? canSearchProp.value : false;
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
+
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
-  
+
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
   } catch (err) { console.log(err); }
 
   const [gmap, setGmap] = useState(null);
   const [autoComplete, setAutoComplete] = useState(null);
-  const [mapCenter, setMapCenter] = useState(resolveReferences(JSON.parse(center), currentState, false));
-  const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState, []));
-
-  useEffect(() => {
-    setMarkers(resolveReferences(defaultMarkers, currentState, false));
-  }, [currentState]);
+  const [mapCenter, setMapCenter] = useState(resolveReferences(center, currentState));
+  const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState));
 
   const containerStyle = {
     width,
@@ -71,11 +70,11 @@ export const Map = function Map({
     const mapBounds = gmap.getBounds();
 
     const bounds = {
-      northEast: mapBounds.getNorthEast().toJSON(),
-      southWest: mapBounds.getSouthWest().toJSON(),
+      northEast: mapBounds.getNorthEast()?.toJSON(),
+      southWest: mapBounds.getSouthWest()?.toJSON(),
     }
 
-    const newCenter = gmap.center.toJSON();
+    const newCenter = gmap.center?.toJSON();
     setMapCenter(newCenter);
 
     onComponentOptionsChanged(component, [
@@ -88,7 +87,7 @@ export const Map = function Map({
     function onLoad(mapInstance) {
       setGmap(mapInstance);
       onComponentOptionsChanged(component, [
-        ['center', mapInstance.center.toJSON()]
+        ['center', mapInstance.center?.toJSON()]
       ])
     }
   )
@@ -100,7 +99,7 @@ export const Map = function Map({
   }
 
   function onPlaceChanged() {
-    const location = autoComplete.getPlace().geometry.location.toJSON();
+    const location = autoComplete.getPlace().geometry.location?.toJSON();
     setMapCenter(location);
     handleBoundsChange();
   }
@@ -109,8 +108,25 @@ export const Map = function Map({
     setAutoComplete(autocompleteInstance);
   }
 
+
   return (
-    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
+    <div data-disabled={parsedDisabledState} style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
+      <div 
+        className="map-center" 
+        style={
+            {
+              right: width*0.5-18,
+              top: height*0.5-50
+            }
+        }>
+        <img 
+          className="mx-2" 
+          src="/assets/images/icons/marker.svg" 
+          width="24" 
+          height="64"
+          
+        />
+      </div>
       <LoadScript
         googleMapsApiKey={config.GOOGLE_MAPS_API_KEY}
         libraries={["places"]}

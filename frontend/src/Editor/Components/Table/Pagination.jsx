@@ -6,14 +6,24 @@ export const Pagination = function Pagination({
   autoGotoPage,
   autoCanNextPage,
   autoPageCount,
-  autoPageOptions
+  autoPageOptions,
+  lastActivePageIndex
 }) {
-  const [pageIndex, setPageIndex] = useState(1);
+  const [pageIndex, setPageIndex] = useState(lastActivePageIndex ?? 1);
   const [pageCount, setPageCount] = useState(autoPageCount);
 
   useEffect(() => {
     setPageCount(autoPageCount);
   }, [autoPageCount]);
+
+  useEffect(() => {
+
+    if(serverSide && lastActivePageIndex > 0) {
+      setPageCount(lastActivePageIndex)
+    } else if(serverSide || lastActivePageIndex === 0) {
+      setPageIndex(1)
+    }
+  }, [serverSide, lastActivePageIndex ])
 
   function gotoPage(page) {
     setPageIndex(page);
