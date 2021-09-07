@@ -17,7 +17,7 @@ For more than six options, consider using [Dropdown](/docs/widgets/dropdown) wid
 :::
 
 
-## Event: onSelectionChange
+## Event: On select
 
 This event is triggered when an option is clicked.
 

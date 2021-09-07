@@ -17,7 +17,7 @@ On select event is triggered when option is selected.
 
 | properties      | description |
 | ----------- | ----------- |
-| Label | The text to be used in a label of the dropdown. |
+| Label | The text to be used in a label of the multiselect. |
 | Default value | It is the default option that will be selected as user input unless it is changed. |
-| Option values | Values for different items/options in the list of the dropdown. |
-| Option labels | Labels for different items/options in the list of the dropdown.  |
+| Option values | Values for different items/options in the list of the multiselect. |
+| Option labels | Labels for different items/options in the list of the multiselect.  |
