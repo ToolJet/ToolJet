@@ -1,7 +1,7 @@
 import React from 'react';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
 
 export const Datepicker = function Datepicker({
   id,
@@ -45,9 +45,30 @@ export const Datepicker = function Datepicker({
     onComponentOptionChanged(component, 'value', event.format(dateFormat.value));
   }
 
+  const value = currentState?.components[component?.name]?.value;
+
+  const validationData = validateWidget({
+    validationObject: component.definition.validation,
+    widgetValue: value,
+    currentState
+  })
+
+  const { isValid, validationError } = validationData;
+
+  const currentValidState = currentState?.components[component?.name]?.isValid;
+
+  if(currentValidState !== isValid) {
+    onComponentOptionChanged(component, 'isValid', isValid);
+  }
+
   return (
     <div data-disabled={parsedDisabledState}  style={{ width, height, display:parsedWidgetVisibility ? '' : 'none'}} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
-      <Datetime onChange={onDateChange} timeFormat={enableTime} dateFormat={dateFormat.value} />
+      <Datetime 
+        onChange={onDateChange} 
+        timeFormat={enableTime} 
+        dateFormat={dateFormat.value} 
+      />
+      <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
     </div>
   );
 };
