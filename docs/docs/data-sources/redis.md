@@ -9,7 +9,7 @@ ToolJet can run Redis commands on your Redis instances.
 
 ToolJet requires the following to connect to your Redis instances. 
 
-<img src="/img/redis/connect.png" alt="ToolJet - Redis connection" height="250"/>
+<img class="screenshot-full" src="/img/redis/connect.png" alt="ToolJet - Redis connection" height="420"/>
 
 - **Host**
 - **Port** - The default port for Redis server is 6379
