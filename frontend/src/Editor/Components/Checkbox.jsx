@@ -1,5 +1,5 @@
 import React from 'react';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const Checkbox = function Checkbox({
   id,
@@ -15,7 +15,10 @@ export const Checkbox = function Checkbox({
   const label = component.definition.properties.label.value;
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
+
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -34,8 +37,8 @@ export const Checkbox = function Checkbox({
   }
 
   return (
-    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
-      <label className="form-check form-check-inline">
+    <div className="row" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+      <label className="my-auto mx-2 form-check form-check-inline">
         <input
           className="form-check-input"
           type="checkbox"

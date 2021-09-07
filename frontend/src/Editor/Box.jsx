@@ -4,6 +4,7 @@ import { Image } from './Components/Image';
 import { Text } from './Components/Text';
 import { Table } from './Components/Table/Table';
 import { TextInput } from './Components/TextInput';
+import { NumberInput } from './Components/NumberInput';
 import { TextArea } from './Components/TextArea';
 import { Container } from './Components/Container';
 import { RichTextEditor } from './Components/RichTextEditor';
@@ -21,12 +22,14 @@ import { RadioButton } from './Components/RadioButton'
 import { StarRating } from './Components/StarRating'
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import '@/_styles/custom.scss';
 
 const AllComponents = {
   Button,
   Image,
   Text,
   TextInput,
+  NumberInput,
   Table,
   TextArea,
   Container,
@@ -107,7 +110,7 @@ export const Box = function Box({
       ) : (
         <div className="m-1" style={{ height: '100%' }}>
           <div
-            className="component-image-holder p-3 d-flex flex-column justify-content-center"
+            className="component-image-holder p-2 d-flex flex-column justify-content-center"
             style={{ height: '100%' }}
           >
             <center>

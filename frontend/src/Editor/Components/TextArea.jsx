@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const TextArea = function TextArea({
   id,
@@ -26,7 +26,10 @@ export const TextArea = function TextArea({
   }, [newText]);
   
   const placeholder = component.definition.properties.placeholder.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value || true;
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
+
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
   
@@ -36,6 +39,7 @@ export const TextArea = function TextArea({
 
   return (
     <textarea
+      disabled={parsedDisabledState}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
       onChange={(e) => {
         setText(e.target.value);

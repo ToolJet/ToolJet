@@ -1,6 +1,7 @@
 
 // overwrites the styles of datepicker [cell-type]
 .cell-type-datepicker {
+    z-index: 1;
     
     .rdtPicker {
         thead {
@@ -14,4 +15,15 @@
             display: table-row;
         }
     }
+}
+
+div[data-disabled=true]
+{
+  pointer-events: none;
+  opacity: 0.6;
+  filter: alpha(opacity=50);
+  zoom: 1;  
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";  
+  -moz-opacity: 0.5; 
+  -khtml-opacity: 0.5;  
 }
