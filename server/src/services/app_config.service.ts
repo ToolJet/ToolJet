@@ -17,7 +17,7 @@ export class AppConfigService {
   }
 
   fetchDefaultConfig() {
-    return ['SERVER_URL', 'GOOGLE_MAPS_API_KEY']
+    return ['GOOGLE_MAPS_API_KEY']
   }
 
   fetchAllowedConfigFromEnv() {
