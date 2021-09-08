@@ -2,6 +2,7 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import queryString from 'query-string';
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -30,7 +31,8 @@ class LoginPage extends React.Component {
 
     authenticationService.login(email, password).then(
       () => {
-        const { from } = this.props.location.state || { from: { pathname: '/' } };
+        const params = queryString.parse(this.props.location.search)
+        const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
         this.props.history.push(from);
         this.setState({ isLoading: false });
       },

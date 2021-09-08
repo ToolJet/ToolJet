@@ -57,5 +57,5 @@ function logout() {
   // remove user from local storage to log user out
   localStorage.removeItem('currentUser');
   currentUserSubject.next(null);
-  history.push('/login');
+  history.push(`/login?redirectTo=${window.location.pathname}`);
 }
