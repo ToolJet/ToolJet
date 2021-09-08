@@ -126,23 +126,7 @@ describe('Editor - Navigation Bar', () => {
     });
 
     it('should deploy app', () => {
-        cy.get('.navbar')
-            .find('.navbar-nav')
-            .find('.nav-item')
-            .find('button[class="btn btn-primary btn-sm"]')
-            .should('have.text', 'Deploy')
-            .and('be.visible')
-            .click();
-
-        cy.get('.modal-title.h4').should('have.text', 'Versions and deployments').and('be.visible');
-
-        cy.get('.btn.btn-primary.btn-sm.mx-2').contains('+ Version').click();
-
-        cy.get('input[placeholder="version name"]').type('1.0');
-
-        cy.get('button[class="btn btn-primary"]').should('have.text', 'Create').click();
-
-        cy.get('table').contains('td', 'save').click().contains('td', 'deploy').click();
+        cy.deployAppWithSingleVersion();
     });
 
     it('should launch app', () => {

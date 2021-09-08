@@ -17,9 +17,29 @@ describe('Dashboard operations on Apps', () => {
         cy.get('title').should('have.text', 'ToolJet - Dashboard');
     });
 
-    it('should open app in app viewer using Launch button ', () => {
-        cy.get('a[target="_blank"]').invoke('removeAttr', 'target').click();
-        cy.url().should('include', '/applications');
+    it('should show Tooltip "App does not have a deployed version" on Launch button', () => {
+        cy.get('tbody a:nth-child(2)').find('span[class="badge bg-light-grey mx-2"]')
+            .trigger('mouseover')
+            .should('have.attr', 'aria-describedby', 'button-tooltip')
+        cy.get('div[id="button-tooltip"]').should('have.text', 'App does not have a deployed version')
+    });
+
+    it('should launch app and show Tooltip -"Open in app viewer", when App is deployed with a single version', () => {
+        //Create and save App with version 1.0
+        cy.get('.badge').contains('Edit').click();
+        cy.deployAppWithSingleVersion();
+
+        //Go back to dashboard
+        cy.go('back');
+
+        //Check Tooltip text
+        cy.get('tbody a:nth-child(2)').find('span[class="badge bg-light-grey mx-2"]')
+            .trigger('mouseover')
+            .should('have.attr', 'aria-describedby', 'button-tooltip')
+        cy.get('div[id="button-tooltip"]').should('have.text', 'Open in app viewer');
+
+        //Click to launch app
+        cy.get('tbody a:nth-child(2)').find('span[class="badge bg-light-grey mx-2"]').click();
     });
 
     it('should be able to add app to a folder', () => {
@@ -43,5 +63,6 @@ describe('Dashboard operations on Apps', () => {
             'The app and the associated data will be permanently deleted, do you want to continue?'
         );
         cy.get('.btn').contains('Yes').click();
+        cy.get('.Toastify__toast-body').should('have.text', 'App deleted successfully.')
     });
 });
