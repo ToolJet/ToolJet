@@ -362,7 +362,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
   return new Promise(function (resolve, reject) {
     _self.setState({ currentState: newState }, () => {
       dataqueryService.run(queryId, options).then(data => {
-        resolve();
 
         if (data.status === 'needs_oauth') {
           const url = data.data.auth_url; // Backend generates and return sthe auth url
@@ -371,12 +370,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
         if (data.status === 'failed') {
           toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
-
-          onEvent(
-            _self,
-            'onDataQueryFailure',
-            { definition: { events: dataQuery.options.events } }
-          )
 
           return (
             _self.setState({
@@ -398,6 +391,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
                   }
                 }
               }
+            }, () => {
+              resolve();
+              onEvent(
+                _self,
+                'onDataQueryFailure',
+                { definition: { events: dataQuery.options.events } }
+              )
             })
           )
         }
@@ -414,12 +414,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
           toast.success(dataQuery.options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 });
         }
 
-        onEvent(
-          _self,
-          'onDataQuerySuccess',
-          { definition: { events: dataQuery.options.events } }
-        )
-
         _self.setState({
           currentState: {
             ..._self.state.currentState,
@@ -433,6 +427,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
               }
             }
           }
+        }, () => {
+          resolve();
+          onEvent(
+            _self,
+            'onDataQuerySuccess',
+            { definition: { events: dataQuery.options.events } }
+          )
         });
       }).catch(( { error } ) => {
         toast.error(error, { hideProgressBar: true, autoClose: 3000 });
@@ -446,6 +447,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
               }
             }
           }
+        }, () => {
+          resolve();
         });
       });
     });
