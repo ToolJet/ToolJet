@@ -92,12 +92,10 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
   };
 
   const getLayout = (obj) => {
-    console.log(obj)
     return (
       <div className="row">
         {Object.keys(obj).map((key) => {
           const { $label, type } = obj[key];
-          console.log(type)
 
           const Element = getElement(type);
   
