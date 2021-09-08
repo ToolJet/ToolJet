@@ -1,10 +1,25 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-
+import { history } from '@/_helpers';
 import { authenticationService } from '@/_services';
 
-export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, ...rest }) => (
-  <Route
+export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, ...rest }) => {
+  const [destination, setDestination] = React.useState('/');
+  const url = history.location.pathname;
+
+
+  React.useEffect(() => {
+    setDestination(url);
+  },[])
+
+  React.useEffect(() => {
+    const currentUser = authenticationService.currentUserValue;
+    if(currentUser && destination.startsWith('/applications/')) {
+      return history.push(destination);
+    }
+  },[url])
+  return (
+    <Route
     {...rest}
     render={(props) => {
       const currentUser = authenticationService.currentUserValue;
@@ -17,4 +32,5 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, .
       return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode}/>;
     }}
   />
-);
+  );
+}
