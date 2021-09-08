@@ -48,11 +48,13 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
 
 export function runTransformation(_ref, rawData, transformation) {
   const data = rawData;
-  const evalFunction = Function(['data', 'moment', '_', 'currentState'], transformation);
+  const evalFunction = Function(['data', 'moment', '_', 'components', 'queries', 'globals'], transformation);
   let result = [];
 
+  const currentState = _ref.state.currentState || {};
+
   try {
-    result = evalFunction(data, moment, _, _ref.state.currentState);
+    result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
   } catch (err) {
     toast.error(err.message, { hideProgressBar: true });
   }
