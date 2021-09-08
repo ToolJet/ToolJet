@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import { SeedsModule } from './modules/seeds/seeds.module';
 import { SeedsService } from '@services/seeds.service';
+import { AppConfigModule } from './modules/app_config/app_config.module'
 import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
 import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
@@ -45,6 +46,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  AppConfigModule,
   SeedsModule,
   AuthModule,
   UsersModule,

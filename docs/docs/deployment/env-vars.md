@@ -88,7 +88,7 @@ If your ToolJet installation needs access to datasources such as Google sheets, 
 
 ## ToolJet client
 
-#### Server URL ( required )
+#### Server URL ( optional )
 
 | variable | description |
 | ----------- | ----------- |
