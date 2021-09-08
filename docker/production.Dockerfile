@@ -27,4 +27,4 @@ RUN npm --prefix server run build
 
 COPY ./docker/ ./docker/
 
-RUN ["chmod", "755", "./server/entrypoint.sh"]
+ENTRYPOINT ["./server/entrypoint.sh"]

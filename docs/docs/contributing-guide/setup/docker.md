@@ -9,14 +9,14 @@ Docker compose is the easiest way to setup ToolJet server and client locally.
 
 Make sure you have the latest version of `docker` and `docker-compose` installed.
 
-[Official docker installation guide](https://docs.docker.com/desktop/)   
+[Official docker installation guide](https://docs.docker.com/desktop/)
 [Official docker-compose installation guide](https://docs.docker.com/compose/install/)
 
 We recommend:
 ```bash
 docker --version
 Docker version 19.03.12, build 48a66213fe
-  
+
 docker-compose --version
 docker-compose version 1.26.2, build eefe0d31
 ```
@@ -77,16 +77,14 @@ docker-compose version 1.26.2, build eefe0d31
     docker-compose build
    ```
 
-5. ToolJet server is built using NestJS and the data such as application definitions are persisted on a postgres database. You have to create and migrate the database if building for the first time.
-   ```bash
-   docker-compose run --rm server npm run db:create
-   docker-compose run --rm server npm run db:migrate
-   docker-compose run --rm server npm run db:seed
-   ```
-
-6. Run ToolJet
+5. Run ToolJet
    ```bash
     docker-compose up
+   ```
+
+6. ToolJet server is built using NestJS and the data such as application definitions are persisted on a postgres database. You can run the below command to seed the database.
+   ```bash
+   docker-compose run --rm server npm run db:seed
    ```
 
 7. ToolJet should now be served locally at `http://localhost:8082`. You can login using the default user created.
