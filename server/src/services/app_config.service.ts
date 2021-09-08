@@ -17,7 +17,12 @@ export class AppConfigService {
   }
 
   fetchDefaultConfig() {
-    return ['GOOGLE_MAPS_API_KEY']
+    return [
+      'GOOGLE_MAPS_API_KEY',
+      'APM_VENDOR',
+      'SENTRY_DNS',
+      'SENTRY_DEBUG',
+    ]
   }
 
   fetchAllowedConfigFromEnv() {
