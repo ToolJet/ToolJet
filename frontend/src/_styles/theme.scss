@@ -2135,3 +2135,8 @@ input[type=text] {
     }
   }
 }
+
+
+.draggable-box:focus-within {
+  z-index: 2!important;
+}
