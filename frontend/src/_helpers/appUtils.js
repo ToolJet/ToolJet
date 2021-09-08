@@ -46,7 +46,7 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
   window.open(authUrl);
 }
 
-export function runTransformation(_ref, rawData, transformation) {
+export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
   const evalFunction = Function(['data', 'moment', '_', 'components', 'queries', 'globals'], transformation);
   let result = [];
@@ -56,6 +56,7 @@ export function runTransformation(_ref, rawData, transformation) {
   try {
     result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
   } catch (err) {
+    console.log('Transformation failed for query: ', query.name ,err);
     toast.error(err.message, { hideProgressBar: true });
   }
 
@@ -290,7 +291,7 @@ export function previewQuery(_ref, query) {
       let finalData = data.data;
 
       if (query.options.enableTransformation) {
-        finalData = runTransformation(_ref, finalData, query.options.transformation);
+        finalData = runTransformation(_ref, finalData, query.options.transformation, query);
       }
 
       _ref.setState({ previewLoading: false, queryPreviewData: finalData });
@@ -406,7 +407,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         let finalData = data.data;
 
         if (dataQuery.options.enableTransformation) {
-          finalData = runTransformation(_self, rawData, dataQuery.options.transformation);
+          finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
         }
 
         if (dataQuery.options.showSuccessNotification) {
