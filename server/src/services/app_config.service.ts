@@ -9,20 +9,24 @@ export class AppConfigService {
       ? this.fetchAllowedConfigFromEnv()
       : this.fetchDefaultConfig();
 
-    const mapEntries = await Promise.all(whitelistedConfigVars.map(
-      (envVar) => [envVar, process.env[envVar]] as [string, string],
-    ));
+    const mapEntries = await Promise.all(
+      whitelistedConfigVars.map(
+        (envVar) => [envVar, process.env[envVar]] as [string, string],
+      ),
+    );
 
     return Object.fromEntries(mapEntries);
   }
 
   fetchDefaultConfig() {
     return [
+      'TOOLJET_SERVER_URL',
+      'RELEASE_VERSION',
       'GOOGLE_MAPS_API_KEY',
       'APM_VENDOR',
       'SENTRY_DNS',
       'SENTRY_DEBUG',
-    ]
+    ];
   }
 
   fetchAllowedConfigFromEnv() {
