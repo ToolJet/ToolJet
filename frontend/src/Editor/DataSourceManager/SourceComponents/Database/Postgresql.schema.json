@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/",
   "$id": "https://tooljet.io/Postgresql.schema.json",
-  "title": "Mongodb datasource",
-  "description": "A schema defining mongodb datasource",
+  "title": "Postgresql datasource",
+  "description": "A schema defining postgresql datasource",
   "type": "object",
   "properties": {
     "host": {
@@ -24,10 +24,10 @@
       "description": "Toggle for ssl_enabled"
     },
     "database": {
-      "$label": "Database",
-      "$key": "port",
+      "$label": "Database Name",
+      "$key": "database",
       "type": "text",
-      "description": "Input for port"
+      "description": "Input for database"
     },
     "username": {
       "$label": "Username",
@@ -42,5 +42,5 @@
       "description": "Input for password field"
     }
   },
-  "required": ["host", "port", "username", "password"]
+  "required": ["host", "port", "username", "database", "password"]
 }

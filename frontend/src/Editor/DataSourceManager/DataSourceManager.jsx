@@ -317,7 +317,7 @@ class DataSourceManager extends React.Component {
             </Modal.Footer>
           )}
 
-          {!dataSourceMeta.hideSave && selectedDataSource && dataSourceMeta.customTesting && (
+          {!dataSourceMeta?.hideSave && selectedDataSource && dataSourceMeta.customTesting && (
             <Modal.Footer>
               <div className="row mt-3">
                 <div className="col"></div>

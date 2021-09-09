@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Postgresql.schema.json",
-  "title": "Mongodb datasource",
-  "description": "A schema defining mongodb datasource",
+  "$id": "https://tooljet.io/Mysql.schema.json",
+  "title": "Mysql datasource",
+  "description": "A schema defining mysql datasource",
   "type": "object",
   "properties": {
     "host": {
@@ -18,10 +18,10 @@
       "description": "Input for port"
     },
     "database": {
-      "$label": "Database",
-      "$key": "port",
+      "$label": "Database Name",
+      "$key": "database",
       "type": "text",
-      "description": "Input for port"
+      "description": "Input for database"
     },
     "username": {
       "$label": "Username",

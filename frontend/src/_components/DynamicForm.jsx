@@ -52,8 +52,8 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
       case 'toggle':
         return {
           defaultChecked: options[$key],
-          onChange: () => optionchanged($key, !options[$key])
-        }
+          onChange: () => optionchanged($key, !options[$key]),
+        };
       case 'dropdown':
       case 'dropdown-component-flip':
         return {
@@ -98,33 +98,43 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
           const { $label, type } = obj[key];
 
           const Element = getElement(type);
-  
+
           return (
             <div className="col-md-12 my-2">
-              {$label && <label className="form-label">{$label}</label>}
+              {$label && (
+                <label className="form-label">
+                  {$label}
+                  {type === 'password' && (
+                    <small className="text-green mx-2">
+                      <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+                      Encrypted
+                    </small>
+                  )}
+                </label>
+              )}
               <Element {...getElementProps(obj[key])} />
             </div>
           );
         })}
       </div>
     );
-  }
+  };
 
-  const flipComponentDropdown = find(schema.properties, ['type', 'dropdown-component-flip'])
+  const flipComponentDropdown = find(schema.properties, ['type', 'dropdown-component-flip']);
 
-  if(flipComponentDropdown) {
+  if (flipComponentDropdown) {
     return (
-      <div className='row'>
+      <div className="row">
         <div className="col-md-12 my-2">
           {flipComponentDropdown.$label && <label className="form-label">{flipComponentDropdown.$label}</label>}
           <Select {...getElementProps(flipComponentDropdown)} />
-          </div>
-          {getLayout(schema.properties[options[flipComponentDropdown.$key].value])}
+        </div>
+        {getLayout(schema.properties[options[flipComponentDropdown.$key].value])}
       </div>
-    )
+    );
   }
 
-  return getLayout(schema.properties)
+  return getLayout(schema.properties);
 };
 
 export default DynamicForm;

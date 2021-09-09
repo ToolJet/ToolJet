@@ -29,10 +29,10 @@
         "description": "Input for port"
       },
       "database": {
-        "$label": "Database",
-        "$key": "port",
+        "$label": "Database Name",
+        "$key": "database",
         "type": "text",
-        "description": "Input for port"
+        "description": "Input for database"
       },
       "username": {
         "$label": "Username",
