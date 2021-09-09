@@ -1,5 +1,10 @@
-import React from 'react'
+import React from 'react';
 
-const Input = ({...props}) => <input {...props} /> 
+const Input = ({ helpText, ...props }) => (
+  <>
+    <input {...props} />
+    {helpText && <small class="text-muted" dangerouslySetInnerHTML={{ __html: helpText }} />}
+  </>
+);
 
-export default Input
+export default Input;

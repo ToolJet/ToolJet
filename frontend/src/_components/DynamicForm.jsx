@@ -36,7 +36,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
     }
   };
 
-  const getElementProps = ({ $key, $options, $rows = 5, $hasSearch, description, type }) => {
+  const getElementProps = ({ $key, $options, $rows = 5, $hasSearch, helpText, description, type }) => {
     switch (type) {
       case 'password':
       case 'text':
@@ -47,6 +47,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
           className: 'form-control',
           value: options[$key].value,
           ...(type === 'textarea' && { rows: $rows }),
+          ...(helpText && { helpText }),
           onChange: (e) => optionchanged($key, e.target.value),
         };
       case 'toggle':
@@ -106,7 +107,12 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
                   {$label}
                   {type === 'password' && (
                     <small className="text-green mx-2">
-                      <img className="mx-2 encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
+                      <img
+                        className="mx-2 encrypted-icon"
+                        src="/assets/images/icons/padlock.svg"
+                        width="12"
+                        height="12"
+                      />
                       Encrypted
                     </small>
                   )}

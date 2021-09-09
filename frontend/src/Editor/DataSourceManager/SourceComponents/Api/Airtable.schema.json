@@ -9,7 +9,8 @@
       "$label": "API key",
       "$key": "api_key",
       "type": "password",
-      "description": "Api key for airtable"
+      "description": "Api key for airtable",
+      "helpText": "For generating API key, visit: <a href='https://airtable.com/account' target='_blank' rel='noreferrer'>Airtable account page</a>"
     }
   },
   "required": ["api_key"]
