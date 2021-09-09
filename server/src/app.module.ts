@@ -34,7 +34,6 @@ import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { join } from 'path';
 import { SampleAppModule } from './modules/sample_app/sample_app.module';
-import { LoggerModule } from 'nestjs-pino';
 
 const imports = [
   ConfigModule.forRoot({
