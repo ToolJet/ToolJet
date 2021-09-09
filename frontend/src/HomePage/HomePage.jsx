@@ -34,7 +34,6 @@ class HomePage extends React.Component {
   componentDidMount() {
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
-    this.getUserRole();
   }
 
   fetchApps = (page, folder) => {
@@ -60,24 +59,6 @@ class HomePage extends React.Component {
       foldersLoading: false
     }));
   }
-
-  getUserRole = () => {
-    this.setState({
-      isLoading: true,
-    });
-    const currentUserEmailID = this.state.currentUser.email;
-    organizationService.getUsers(null).then((data) => {
-      const currentUserRole = _.find(data.users, {email: currentUserEmailID }).role ?? 'viewer';
-      this.setState({
-        currentUser: {
-          ...this.state.currentUser,
-          role: currentUserRole
-        },
-        isLoading: false,
-      })
-    }
-    );
-  };
 
   pageChanged = (page) => {
     this.setState({ currentPage: page });
@@ -236,7 +217,7 @@ class HomePage extends React.Component {
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: 'Open in app builder'})}
                                   >
-                                    <span style={{display: `${currentUser.role === 'viewer' && 'none' }`}} className="badge bg-green-lt">
+                                    <span style={{display: `${currentUser.isViewer && 'none' }`}} className="badge bg-green-lt">
                                     Edit
                                     </span>
                                   </OverlayTrigger>
