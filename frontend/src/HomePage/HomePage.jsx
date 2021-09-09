@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, folderService, authenticationService } from '@/_services';
+import { appService, folderService, authenticationService, organizationService } from '@/_services';
 import { Link } from 'react-router-dom';
 import { Pagination, Header } from '@/_components';
 import { Folders } from './Folders';
@@ -9,7 +9,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-toastify';
-import moment from 'moment'
+import moment from 'moment';
+import _ from 'lodash';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -117,8 +118,10 @@ class HomePage extends React.Component {
 
   render() {
     const {
-      apps, isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp
+      apps, currentUser ,isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp
     } = this.state;
+
+    console.log(`%c ::: currentUser || ${JSON.stringify(currentUser)}`,'color:yellow');
     return (
       <div className="wrapper home-page">
 
@@ -214,7 +217,7 @@ class HomePage extends React.Component {
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: 'Open in app builder'})}
                                   >
-                                    <span className="badge bg-green-lt">
+                                    <span style={{display: `${currentUser.isViewer && 'none' }`}} className="badge bg-green-lt">
                                     Edit
                                     </span>
                                   </OverlayTrigger>

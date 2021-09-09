@@ -53,11 +53,13 @@ export class User extends BaseEntity {
 
   public isAdmin;
   public isDeveloper;
+  public isViewer;
 
   @AfterLoad()
   computeUserRole(): void {
     this.isAdmin = this.organizationUsers[0].role === 'admin';
     this.isDeveloper = this.organizationUsers[0].role === 'developer';
+    this.isViewer = this.organizationUsers[0].role === 'viewer';
   }
 
 }
