@@ -25,6 +25,4 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
-COPY ./docker/ ./docker/
-
 ENTRYPOINT ["./server/entrypoint.sh"]
