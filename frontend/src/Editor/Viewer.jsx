@@ -5,6 +5,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import 'react-toastify/dist/ReactToastify.css';
 import { Confirm } from './Viewer/Confirm';
+import { componentTypes } from './Components/components';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -49,7 +50,7 @@ class Viewer extends React.Component {
       {
         app: data,
         isLoading: false,
-        appDefinition: data.definition || {components: {}},
+        appDefinition: data.definition || {components: {}}, 
       },
       () => {
         data.data_queries.forEach((query) => {
@@ -61,7 +62,30 @@ class Viewer extends React.Component {
     );
   };
 
-  setStateForContainer = () => {
+  computeComponentState = (components) => {
+    let componentState = {};
+    const currentComponents = this.state.currentState.components;
+    Object.keys(components).forEach((key) => {
+      const component = components[key];
+      const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
+
+      const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
+      const existingValues = currentComponents[existingComponentName];
+
+      componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+    });
+
+    this.setState({
+      currentState: {
+        ...this.state.currentState,
+        components: {
+          ...componentState,
+        },
+      },
+    });
+  };
+
+  setStateForContainer = (data) => {
     const currentUser = authenticationService.currentUserValue;
     let userVars = {};
 
@@ -72,7 +96,6 @@ class Viewer extends React.Component {
         lastName: currentUser.last_name,
       };
     }
-
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
@@ -84,17 +107,23 @@ class Viewer extends React.Component {
           urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
         },
       },
+    }, () => {
+      this.computeComponentState(data?.definition?.components)
     });
   };
 
   loadApplicationBySlug = (slug) => {
-    appService.getAppBySlug(slug).then((data) => this.setStateForApp(data));
-    this.setStateForContainer();
+    appService.getAppBySlug(slug).then((data) => { 
+      this.setStateForApp(data);
+      this.setStateForContainer(data);
+    })
   };
 
   loadApplicationByVersion = (appId, versionId) => {
-    appService.getAppByVersion(appId, versionId).then((data) => this.setStateForApp(data));
-    this.setStateForContainer();
+    appService.getAppByVersion(appId, versionId).then((data) =>  { 
+      this.setStateForApp(data);
+      this.setStateForContainer(data);
+    });
   };
 
   componentDidMount() {
