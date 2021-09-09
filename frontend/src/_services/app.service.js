@@ -2,6 +2,7 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
 export const appService = {
+  getConfig,
   getAll,
   createApp,
   deleteApp,
@@ -14,6 +15,11 @@ export const appService = {
   setVisibility,
   setSlug
 };
+
+function getConfig() {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/config`, requestOptions).then(handleResponse);
+}
 
 function getAll(page, folder) {
   const requestOptions = { method: 'GET', headers: authHeader() };
