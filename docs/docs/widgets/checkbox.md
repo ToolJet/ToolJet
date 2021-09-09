@@ -7,7 +7,7 @@ sidebar_position: 3
 Checkbox widget can be used for allowing the users to make a binary choice, e.g,. unselected or selected.
 
 :::info
-Checkbox widget consists of a single checkbox input
+The checkbox widget consists of a single checkbox input.
 :::
 
 <img class="screenshot-full" src="/img/widgets/checkbox/checkbox.gif" alt="ToolJet - Widget Reference - Checkbox" height="420"/>
@@ -23,4 +23,4 @@ On uncheck event is triggered when checkbox input is unchecked.
 
 | properties      | description |
 | ----------- | ----------- |
-| Label | The text to be used as the label of the checkbox. |
+| Label | The text is to be used as the label for the checkbox. |

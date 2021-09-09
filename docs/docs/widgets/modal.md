@@ -4,8 +4,7 @@ sidebar_position: 9
 
 # Modal
 
-Modal widget renders its title  in front of a backdrop component and it blocks interaction with the rest of the application untill closed.
-It can be used to add dialogs to your app for lightboxes, user notifications, etc.
+Modal widget renders its title in front of a backdrop component, and it blocks interaction with the rest of the application until the modal is closed. It can be used to add dialog boxes to your app for lightboxes, user notifications, etc.
 
 
 <img class="screenshot-full" src="/img/widgets/modal/modal.gif" alt="ToolJet - Widget Reference - Modal" height="420"/>

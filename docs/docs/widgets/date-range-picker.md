@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Date-range picker
 
-Date-range picker widget allows users to select a range of dates.
+The date-range picker widget allows users to select a range of dates.
 
 :::info
 Default date format is **DD/MM/YYYY** .

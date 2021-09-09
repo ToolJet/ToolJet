@@ -4,7 +4,7 @@ sidebar_position: 8
 
 # Map
 
-Map can be used to pick or select a locations on the google map with the location's coordinates.
+The map widget can be used to pick or select locations on the google map with the location's coordinates.
 
 <img class="screenshot-full" src="/img/widgets/map/map.gif" alt="ToolJet - Widget Reference - Map" height="420"/>
 
@@ -13,7 +13,7 @@ Map can be used to pick or select a locations on the google map with the locatio
 | variable      | description |
 | ----------- | ----------- |
 | bounds      | Viewport area of the map |
-| center      | It contains the locations's coordinates at the center of the bounding area |
+| center      | It contains the locations' coordinates at the center of the bounding area |
 | markers     | A marker identifies a location on the map. `markers` contains the list of markers on the map |
 | selectedMarker | Object with the marker selected by the user |
 

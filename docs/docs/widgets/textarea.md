@@ -18,4 +18,4 @@ Textarea should be preferred over [Text Input](/docs/widgets/text-input) when us
 | properties      | description |
 | ----------- | ----------- |
 | Placeholder |  It specifies a hint that describes the expected value.|
-| Default value | This property is used for setting the initial value in the textarea on intial load. `default: ""`|
+| Default value | This property is used for setting the initial value in the textarea on the initial load. `default: ""`|

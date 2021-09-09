@@ -1,16 +1,16 @@
 ---
-sidebar_position: 3
+sidebar_position: 1
 ---
 
 # Airtable
 
 
-ToolJet can connect to Airtable using Airtable API ( https://airtable.com/api ). Airtable API key is required to create Airtable datasource on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
+ToolJet can connect to Airtable using [Airtable]( https://airtable.com/api ) API . Airtable API key is required to create Airtable datasource on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
 
 <img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-intro.gif" alt="ToolJet - ToolJet - Datasource Airtable" height="420" />
 
 :::info
-Airtable API has a rate limit and at the time of writing this documentation, the limit is 5 requests per second per base. You can read more about rate limits here ( https://airtable.com/api ).
+Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here [Airtable API]( https://airtable.com/api ).
 :::
 
 :::tip

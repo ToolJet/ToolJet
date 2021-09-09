@@ -10,7 +10,7 @@ Tables can be used for both displaying and editing data.
 
 ## Displaying Data
 
-The data object should be an array of objects. Table columns can be added, removed, rearranged from the inspector. `key` property is the accessor key used to get data from a single element of table data object. For example:
+The data object should be an array of objects. Table columns can be added, removed, rearranged from the inspector. `key` property is the accessor key used to get data from a single element of a table data object. For example:
 
 If the table data is:
 

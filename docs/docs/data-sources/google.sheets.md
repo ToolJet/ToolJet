@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Google Sheets
 
-ToolJet can connect to Google Sheet using OAuth 2.0 which helps us to limit an application's access to a user's account.
+ToolJet can connect to Google Sheet using OAuth 2.0, which helps us to limit an application's access to a user's account.
 
 <img class="screenshot-full" src="/img/datasource-reference/googlesheet.gif" alt="ToolJet - ToolJet - Datasource Google Sheets" height="420" />
 

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 2
 ---
 
 # Elasticsearch
@@ -9,7 +9,7 @@ ToolJet can connect to your Elasticsearch cluster to read and write data.
 1.  Search
 
 ## Connection 
-Please make sure the host/ip of Elasticsearch cluster is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
+Please make sure the host/IP of the Elasticsearch cluster is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
 
 To add a new Elasticsearch database, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select Elasticsearch from the modal that pops up.
 
