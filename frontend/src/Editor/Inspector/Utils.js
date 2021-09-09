@@ -31,9 +31,11 @@ export function renderQuerySelector(component, dataQueries, eventOptionUpdated, 
 }
 
 export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState, components = {}, darkMode = false) {
-  const definition = component.component.definition[paramType][param];
+  const componentDefinition = component.component.definition;
+  const paramTypeDefinition = componentDefinition[paramType] || {};
+  const definition = paramTypeDefinition[param] || {};
+
   const meta = componentMeta[paramType][param];
-  console.log('definition', definition);
 
   const ElementToRender = AllElements[TypeMapping[meta.type]];
 

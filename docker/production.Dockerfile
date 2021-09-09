@@ -11,6 +11,7 @@ RUN apt update && apt install -y \
 RUN mkdir -p /app
 WORKDIR /app
 ENV NODE_ENV=production
+COPY ./package.json ./package-lock.json .
 
 # Building ToolJet client
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -25,6 +26,4 @@ COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm --prefix server run build
 
-COPY ./docker/ ./docker/
-
-RUN ["chmod", "755", "./server/entrypoint.sh"]
+ENTRYPOINT ["./server/entrypoint.sh"]

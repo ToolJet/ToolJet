@@ -257,13 +257,64 @@ export const componentTypes = [
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
+    validation: {
+      regex: { type: 'code', displayName: 'Regex' },
+      minLength: { type: 'code', displayName: 'Min length' },
+      maxLength: { type: 'code', displayName: 'Max length' },
+      customRule: { type: 'code', displayName: 'Custom validation' }
+    },
     events: {},
     styles: {
       visibility: {type: 'code', displayName: 'Visibility'},
       disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
-      value: '',
+    value: '',
+    },
+    definition: {
+      validation: {
+        regex: { value: '' },
+        minLength: { value: null },
+        maxLength: { value: null },
+        customRule: { value: null }
+      },
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        placeholder: { value: 'Placeholder text' },
+      },
+      events: [],
+      styles: {
+        visibility: {value: '{{true}}'},
+        disabledState: {value: '{{false}}'}
+      },
+    },
+  },
+  {
+    name: 'NumberInput',
+    displayName: 'Number Input',
+    description: 'Number field for forms',
+    component: 'NumberInput',
+    defaultSize: {
+      width: 200,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+    },
+    properties: {
+      placeholder: { type: 'code', displayName: 'Placeholder' },
+    },
+    events: {},
+    styles: {
+      visibility: {type: 'code', displayName: 'Visibility'},
+      disabledState: {type: 'code', displayName: 'Disable'}
+    },
+    exposedVariables: {
+      value: 0,
     },
     definition: {
       others: {
@@ -271,7 +322,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        placeholder: { value: 'Placeholder text' },
+        placeholder: { value: '0' },
       },
       events: [],
       styles: {
@@ -288,6 +339,9 @@ export const componentTypes = [
     defaultSize: {
       width: 150,
       height: 30,
+    },
+    validation: {
+      customRule: { type: 'code', displayName: 'Custom validation' }
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -311,6 +365,9 @@ export const componentTypes = [
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
       },
+      validation: {
+        customRule: { value: null }
+      },
       properties: {
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
@@ -330,7 +387,7 @@ export const componentTypes = [
     component: 'Checkbox',
     defaultSize: {
       width: 200,
-      height: 25,
+      height: 30,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -660,13 +717,16 @@ export const componentTypes = [
     displayName: 'Dropdown',
     description: 'Select one value from options',
     defaultSize: {
-      width: 200,
-      height: 37,
+      width: 210,
+      height: 30,
     },
     component: 'DropDown',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+    },
+    validation: {
+      customRule: { type: 'code', displayName: 'Custom validation' }
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
@@ -689,6 +749,9 @@ export const componentTypes = [
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
       },
+      validation: {
+        customRule: { value: null }
+      },
       properties: {
         label: { value: 'Select' },
         value: { value: '' },
@@ -708,8 +771,8 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 200,
-      height: 37,
+      width: 210,
+      height: 30,
     },
     component: 'Multiselect',
     others: {

@@ -46,14 +46,17 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
   window.open(authUrl);
 }
 
-export function runTransformation(_ref, rawData, transformation) {
+export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
-  const evalFunction = Function(['data', 'moment', '_', 'currentState'], transformation);
+  const evalFunction = Function(['data', 'moment', '_', 'components', 'queries', 'globals'], transformation);
   let result = [];
 
+  const currentState = _ref.state.currentState || {};
+
   try {
-    result = evalFunction(data, moment, _, _ref.state.currentState);
+    result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
   } catch (err) {
+    console.log('Transformation failed for query: ', query.name ,err);
     toast.error(err.message, { hideProgressBar: true });
   }
 
@@ -192,6 +195,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
   console.log('Event: ', eventName);
 
+
   if (eventName === 'onRowClicked') {
     const { component, data } = options;
     _self.setState({
@@ -232,7 +236,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
             executeAction(_self, { ...event, ...event.options } , mode);
           }
         }) )
-      } else { 
+      } else {
         console.log('No action is associated with this event');
       }
     });
@@ -248,19 +252,23 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     await executeActionsForEventId(_self, eventName, options.component, mode);
     onComponentOptionChanged(_self, options.component, 'isSavingChanges', false);
   }
+
+  if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
+    await executeActionsForEventId(_self, eventName, options, mode);
+  }
 }
 
-function getQueryVariables(options, state) { 
+function getQueryVariables(options, state) {
 
   let queryVariables = {};
 
   if( typeof options === 'string' ) {
     const dynamicVariables = getDynamicVariables(options) || [];
-    dynamicVariables.forEach((variable) => { 
+    dynamicVariables.forEach((variable) => {
       queryVariables[variable] = resolveReferences(variable, state);
     });
-  } else if(Array.isArray(options)) { 
-    options.forEach((element) => { 
+  } else if(Array.isArray(options)) {
+    options.forEach((element) => {
       _.merge(queryVariables, getQueryVariables(element, state))
     })
   } else if(typeof options ==="object") {
@@ -279,18 +287,18 @@ export function previewQuery(_ref, query) {
 
   return new Promise(function (resolve, reject) {
     dataqueryService.preview(query, options).then(data => {
-      
+
       let finalData = data.data;
 
       if (query.options.enableTransformation) {
-        finalData = runTransformation(_ref, finalData, query.options.transformation);
+        finalData = runTransformation(_ref, finalData, query.options.transformation, query);
       }
 
       _ref.setState({ previewLoading: false, queryPreviewData: finalData });
 
       if(data.status === 'failed') {
         toast.error(`${data.message}: ${data.description}`, { position: 'bottom-center', hideProgressBar: true, autoClose: 10000 });
-      } else { 
+      } else {
         if (data.status === 'needs_oauth') {
           const url = data.data.auth_url; // Backend generates and return sthe auth url
           fetchOAuthToken(url, query.data_source_id);
@@ -355,7 +363,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
   return new Promise(function (resolve, reject) {
     _self.setState({ currentState: newState }, () => {
       dataqueryService.run(queryId, options).then(data => {
-        resolve();
 
         if (data.status === 'needs_oauth') {
           const url = data.data.auth_url; // Backend generates and return sthe auth url
@@ -364,6 +371,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
         if (data.status === 'failed') {
           toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
+
           return (
             _self.setState({
               currentState: {
@@ -384,6 +392,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
                   }
                 }
               }
+            }, () => {
+              resolve();
+              onEvent(
+                _self,
+                'onDataQueryFailure',
+                { definition: { events: dataQuery.options.events } }
+              )
             })
           )
         }
@@ -392,7 +407,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         let finalData = data.data;
 
         if (dataQuery.options.enableTransformation) {
-          finalData = runTransformation(_self, rawData, dataQuery.options.transformation);
+          finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
         }
 
         if (dataQuery.options.showSuccessNotification) {
@@ -413,6 +428,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
               }
             }
           }
+        }, () => {
+          resolve();
+          onEvent(
+            _self,
+            'onDataQuerySuccess',
+            { definition: { events: dataQuery.options.events } }
+          )
         });
       }).catch(( { error } ) => {
         toast.error(error, { hideProgressBar: true, autoClose: 3000 });
@@ -426,6 +448,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
               }
             }
           }
+        }, () => {
+          resolve();
         });
       });
     });

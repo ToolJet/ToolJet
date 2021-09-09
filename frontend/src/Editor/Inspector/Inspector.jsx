@@ -49,20 +49,27 @@ export const Inspector = ({
   function paramUpdated(param, attr, value, paramType) {
     let newDefinition = { ...component.component.definition };
 
-    const paramObject = newDefinition[paramType][param.name];
+    let allParams = newDefinition[paramType] || {};
+    const paramObject = allParams[param.name];
 
     if (!paramObject) {
-      newDefinition[paramType][param.name] = {};
+      allParams[param.name] = {};
     }
 
     if(attr) {
-      newDefinition[paramType][param.name][attr] = value;
+      allParams[param.name][attr] = value;
     } else {
-      newDefinition[paramType][param.name] = value;
+      allParams[param.name] = value;
     }
 
+    newDefinition[paramType] = allParams;
+
     let newComponent = {
-      ...component
+      ...component,
+      component: {
+        ...component.component,
+        definition: newDefinition
+      }
     };
 
     setComponent(newComponent);
@@ -242,6 +249,15 @@ export const Inspector = ({
               />
             </div>
           }
+
+          {Object.keys(componentMeta.validation || {}).length > 0 && 
+            <div>
+              <div className="hr-text">Validation</div>
+              {Object.keys(componentMeta.validation).map((property) => renderElement(component, componentMeta, paramUpdated, dataQueries, property, 'validation', currentState, components, darkMode))}
+            </div>
+          }
+            
+        
         </div>
       }
 

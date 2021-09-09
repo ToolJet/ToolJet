@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const DropDown = function DropDown({
@@ -52,10 +52,25 @@ export const DropDown = function DropDown({
   const currentValueProperty = component.definition.properties.value;
   const value = currentValueProperty ? currentValueProperty.value : '';
   const [currentValue, setCurrentValue] = useState('');
+  
 
   let newValue = value;
   if (currentValueProperty && currentState) {
     newValue = resolveReferences(currentValueProperty.value, currentState, '');
+  }
+
+  const validationData = validateWidget({
+    validationObject: component.definition.validation,
+    widgetValue: currentValue,
+    currentState
+  })
+
+  const { isValid, validationError } = validationData;
+
+  const currentValidState = currentState?.components[component?.name]?.isValid;
+
+  if(currentValidState !== isValid) {
+    onComponentOptionChanged(component, 'isValid', isValid);
   }
 
   useEffect(() => {
@@ -67,9 +82,9 @@ export const DropDown = function DropDown({
   }, [currentValue]);
 
   return (
-    <div className="row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div className="dropdown-widget row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <div className="col-auto">
-        <label style={{marginRight: '1rem'}} className="form-label py-2">{label}</label>
+        <label style={{marginRight:  label !== '' ? '1rem' : '0.001rem'}} className="form-label py-1">{label}</label>
       </div>
       <div className="col px-0">
         <SelectSearch
@@ -84,6 +99,7 @@ export const DropDown = function DropDown({
           placeholder="Select.."
         />
       </div>
+      <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
     </div>
   );
 };

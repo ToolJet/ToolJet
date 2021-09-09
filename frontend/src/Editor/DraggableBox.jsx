@@ -41,13 +41,14 @@ const resizerStyles = {
   },
 };
 
-function getStyles(left, top, isDragging, component) {
-  const transform = `translate3d(${left}px, ${top}px, 0)`;
+function getStyles(left, top, isDragging, component, isSelectedComponent) {
+  // const transform = `translate3d(${left}px, ${top}px, 0)`;
   return {
     position: 'absolute',
+    height: '100%',
     // transform,
     // WebkitTransform: transform,
-    zIndex: ['DropDown', 'Datepicker', 'DaterangePicker'].includes(component.component) ? 2 : 1,
+    zIndex: isSelectedComponent ? 2 : 1,
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
@@ -184,8 +185,7 @@ export const DraggableBox = function DraggableBox({
     <div className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'}>
       {inCanvas ? (
         <div
-          style={getStyles(left, top, isDragging, component)}
-          style={{ height: '100%' }}
+          style={getStyles(left, top, isDragging, component, isSelectedComponent)}
           className="draggable-box "
           onMouseOver={() => setMouseOver(true)}
           onMouseLeave={() => setMouseOver(false)}

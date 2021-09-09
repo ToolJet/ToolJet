@@ -1,26 +1,38 @@
-import { Module, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import {
+  Module,
+  OnApplicationBootstrap,
+  OnModuleInit,
+  RequestMethod,
+  MiddlewareConsumer,
+} from '@nestjs/common';
+
+import { Connection } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import ormconfig from '../ormconfig';
+import { SeedsModule } from './modules/seeds/seeds.module';
+import { SeedsService } from '@services/seeds.service';
+
+import { LoggerModule } from 'nestjs-pino';
+import { SentryModule } from './modules/observability/sentry/sentry.module';
+import * as Sentry from '@sentry/node';
+
+import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { CaslModule } from './modules/casl/casl.module';
+import { EmailService } from '@services/email.service';
+import { MetaModule } from './modules/meta/meta.module';
 import { AppController } from './controllers/app.controller';
 import { AppService } from './services/app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
-import { SeedsModule } from './modules/seeds/seeds.module';
-import { SeedsService } from '@services/seeds.service';
+import { AppConfigModule } from './modules/app_config/app_config.module'
 import { AppsModule } from './modules/apps/apps.module';
 import { FoldersModule } from './modules/folders/folders.module';
 import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
 import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
-import { ConfigModule } from '@nestjs/config';
-import ormconfig from '../ormconfig';
-import { CaslModule } from './modules/casl/casl.module';
-import { EmailService } from '@services/email.service';
-import { MetaModule } from './modules/meta/meta.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { LoggerModule } from 'nestjs-pino';
 
 const imports = [
   ConfigModule.forRoot({
@@ -30,6 +42,9 @@ const imports = [
   LoggerModule.forRoot({
     pinoHttp: {
       level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+      autoLogging: {
+        ignorePaths: ['/api/health'],
+      },
       prettyPrint:
         process.env.NODE_ENV !== 'production'
           ? {
@@ -42,6 +57,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  AppConfigModule,
   SeedsModule,
   AuthModule,
   UsersModule,
@@ -55,12 +71,23 @@ const imports = [
   MetaModule,
 ];
 
-if (process.env.SERVE_CLIENT !== 'false')
+if (process.env.SERVE_CLIENT !== 'false') {
   imports.unshift(
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../', 'frontend/build'),
     }),
   );
+}
+
+if (process.env.APM_VENDOR == 'sentry') {
+  imports.unshift(
+    SentryModule.forRoot({
+      dsn: process.env.SENTRY_DNS,
+      tracesSampleRate: 1.0,
+      debug: !!process.env.SENTRY_DEBUG,
+    }),
+  );
+}
 
 @Module({
   imports,
@@ -69,6 +96,13 @@ if (process.env.SERVE_CLIENT !== 'false')
 })
 export class AppModule implements OnModuleInit, OnApplicationBootstrap {
   constructor(private connection: Connection) {}
+
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+  }
 
   onModuleInit() {
     console.log(`Initializing ToolJet server modules 📡 `);

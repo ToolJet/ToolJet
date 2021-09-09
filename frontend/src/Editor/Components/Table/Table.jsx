@@ -9,7 +9,7 @@ import {
   useBlockLayout,
   useResizeColumns
 } from 'react-table';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
@@ -295,25 +295,50 @@ export function Table({
           }
 
           if (column.isEditable) {
+            const validationData = validateWidget({
+              validationObject: {
+                regex: {
+                  value: column.regex
+                },
+                minLength: {
+                  value: column.minLength
+                },
+                maxLength: {
+                  value: column.maxLength
+                },
+                customRule: {
+                  value: column.customRule
+                }
+              },
+              widgetValue: cellValue,
+              currentState,
+              customResolveObjects: { cellValue }
+            })
+          
+            const { isValid, validationError } = validationData;
+
             return (
-              <input
-                type="text"
-                style={cellStyles}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+              <div>
+                <input
+                  type="text"
+                  style={cellStyles}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if(e.target.defaultValue !== e.target.value) {
+                        handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                      }
+                    }
+                  }}
+                  onBlur={(e) => {
                     if(e.target.defaultValue !== e.target.value) {
                       handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                     }
-                  }
-                }}
-                onBlur={(e) => {
-                  if(e.target.defaultValue !== e.target.value) {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-                  }
-                }}
-                className="form-control-plaintext form-control-plaintext-sm"
-                defaultValue={cellValue}
-              />
+                  }}
+                  className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                  defaultValue={cellValue}
+                />
+                <div class="invalid-feedback">{validationError}</div>
+              </div>
             );
           }
           return <span style={cellStyles}>{cellValue}</span>;
@@ -330,6 +355,20 @@ export function Table({
             >
           </textarea>;
         } if (columnType === 'dropdown') {
+
+          const validationData = validateWidget({
+            validationObject: {
+              customRule: {
+                value: column.customRule
+              }
+            },
+            widgetValue: cellValue,
+            currentState,
+            customResolveObjects: { cellValue }
+          })
+
+          const { isValid, validationError } = validationData;
+
           return (
             <div>
               <SelectSearch
@@ -342,6 +381,7 @@ export function Table({
                 filterOptions={fuzzySearch}
                 placeholder="Select.."
               />
+              <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
             </div>
           );
         } if (columnType === 'multiselect') {
@@ -541,6 +581,7 @@ export function Table({
     previousPage,
     setPageSize,
     state,
+    rows,
     prepareRow,
     setAllFilters,
     preGlobalFilteredRows,
@@ -552,7 +593,7 @@ export function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { pageIndex: 0, pageSize: -1}, // pageSize should be unset if server-side pagination is enabled
+      initialState: { pageIndex: 0, pageSize: -1},
 	  pageCount: -1,
 	  manualPagination: false,
       getExportFileBlob
@@ -577,6 +618,16 @@ export function Table({
     }
 
   },[clientSidePagination, serverSidePagination])
+
+  useEffect(() => {
+    const pageData = page.map(row => row.original);
+    const currentData = rows.map(row => row.original);;
+    onComponentOptionsChanged(component, [
+      ['currentPageData', pageData],
+      ['currentData', currentData]
+    ]);
+  }, [tableData.length, componentState.changeSet]);
+
 
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
