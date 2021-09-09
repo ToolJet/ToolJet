@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, folderService, authenticationService } from '@/_services';
+import { appService, folderService, authenticationService, organizationService } from '@/_services';
 import { Link } from 'react-router-dom';
 import { Pagination, Header } from '@/_components';
 import { Folders } from './Folders';
@@ -9,7 +9,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-toastify';
-import moment from 'moment'
+import moment from 'moment';
+import _ from 'lodash';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -33,6 +34,7 @@ class HomePage extends React.Component {
   componentDidMount() {
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
+    this.getUserRole();
   }
 
   fetchApps = (page, folder) => {
@@ -58,6 +60,24 @@ class HomePage extends React.Component {
       foldersLoading: false
     }));
   }
+
+  getUserRole = () => {
+    this.setState({
+      isLoading: true,
+    });
+    const currentUserEmailID = this.state.currentUser.email;
+    organizationService.getUsers(null).then((data) => {
+      const currentUserRole = _.find(data.users, {email: currentUserEmailID }).role ?? 'viewer';
+      this.setState({
+        currentUser: {
+          ...this.state.currentUser,
+          role: currentUserRole
+        },
+        isLoading: false,
+      })
+    }
+    );
+  };
 
   pageChanged = (page) => {
     this.setState({ currentPage: page });
@@ -117,8 +137,10 @@ class HomePage extends React.Component {
 
   render() {
     const {
-      apps, isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp
+      apps, currentUser ,isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp
     } = this.state;
+
+    console.log(`%c ::: currentUser || ${JSON.stringify(currentUser)}`,'color:yellow');
     return (
       <div className="wrapper home-page">
 
@@ -214,7 +236,7 @@ class HomePage extends React.Component {
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: 'Open in app builder'})}
                                   >
-                                    <span className="badge bg-green-lt">
+                                    <span style={{display: `${currentUser.role === 'viewer' && 'none' }`}} className="badge bg-green-lt">
                                     Edit
                                     </span>
                                   </OverlayTrigger>
