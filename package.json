@@ -24,6 +24,10 @@
     "scripts": {
         "build": "npm --prefix frontend install && NODE_ENV=production npm --prefix frontend run build && npm --prefix server install && NODE_ENV=production npm --prefix server run build",
         "start:prod": "npm --prefix server run start:prod",
+        "db:create": "npm --prefix server run db:create",
+        "db:migrate": "npm --prefix server run db:migrate",
+        "db:reset": "npm --prefix server run db:reset",
+        "db:drop": "npm --prefix server run db:drop",
         "deploy": "cp -a frontend/build/. public/",
         "heroku-postbuild": "npm run build && npm run deploy",
         "heroku-prebuild": "npm --prefix frontend install && npm --prefix server install ",

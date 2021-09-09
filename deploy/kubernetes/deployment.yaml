@@ -23,7 +23,7 @@ spec:
         - name: container
           image: tooljet/saas:latest
           imagePullPolicy: Always
-          command: ["npm", "run", '--prefix', 'server', 'start:prod']
+          args: ["npm", "run", "start:prod"]
           resources:
             limits:
               memory: "3001Mi"
