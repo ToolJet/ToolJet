@@ -42,6 +42,14 @@ spec:
             periodSeconds: 5
             failureThreshold: 6
           env:
+            - name: TOOLJET_SERVER_URL
+              value: "https://server.tooljet.io"
+            - name: RELEASE_VERSION
+              value: 0.7.1
+            - name: APM_VENDOR
+              value: "sentry"
+            - name: SENTRY_DNS
+              value: "https://bc59bffa656d4b039815cf8527ff7b82@o991527.ingest.sentry.io/5953092"
             - name: PG_HOST
               valueFrom:
                 secretKeyRef:
