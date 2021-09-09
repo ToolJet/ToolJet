@@ -83,7 +83,7 @@ if (process.env.APM_VENDOR == 'sentry') {
   imports.unshift(
     SentryModule.forRoot({
       dsn: process.env.SENTRY_DNS,
-      tracesSampleRate: 0.50,
+      tracesSampleRate: 1.0,
       debug: !!process.env.SENTRY_DEBUG,
     }),
   );
