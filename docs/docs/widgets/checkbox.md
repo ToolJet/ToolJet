@@ -23,4 +23,4 @@ On uncheck event is triggered when checkbox input is unchecked.
 
 | properties      | description |
 | ----------- | ----------- |
-| Label | The text to be used in a label of the checkbox. |
+| Label | The text to be used as the label of the checkbox. |

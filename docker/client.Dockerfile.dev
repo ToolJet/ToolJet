@@ -13,6 +13,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # install app dependencies
+RUN apk --no-cache add g++ gcc libgcc libstdc++ linux-headers make python
 COPY package.json package-lock.json  ./
 RUN npm install
 RUN npm install react-scripts@3.4.1 -g --silent

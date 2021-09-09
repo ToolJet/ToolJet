@@ -17,7 +17,7 @@ This event is triggered when an star is clicked.
 
 | properties      | description |
 | ----------- | ----------- |
-| Label | The text to be used in a label of the star rating. |
+| Label | The text to be used as the label of the star rating. |
 | Number of stars | This property is used for setting the initial count of stars in the list on intial load. `default: 5` (integer) |
 | Default no of selected stars | This property specifies the default count of stars that are selected on initial load. `default: 5` (integer)|
 |  Enable half star | Enabling this property activates a half star selection. `default: false` (bool)|

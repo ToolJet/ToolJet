@@ -26,7 +26,7 @@ This event is triggered when an option is clicked.
 
 | properties      | description |
 | ----------- | ----------- |
-| Label | The text to be used in a label of the radio button. |
+| Label | The text to be used as the label of the radio button. |
 | Default value | It is the default option that will be selected as user input unless it is changed. |
 | Option values | List of values for different items/options. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.value)}}` or populate it with sample values `{{[true, false]}}`  |
 | Option labels | List of labels for different items/options. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.label)}}` or populate it with sample values `{{["yes", "no"]}}` |

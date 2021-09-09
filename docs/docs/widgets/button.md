@@ -4,25 +4,15 @@ sidebar_position: 1
 
 # Button
 
-Button widget can be used for allowing the users to take actions with a single click.
+Button widget can be used to take actions.
 
 <img class="screenshot-full" src="/img/widgets/button/adding-button.gif" alt="ToolJet - Widget Reference - Button" height="420"/>
 
 ## Event: On click
 
-On click event is triggered when button is clicked and sets the action to run.
+This event is triggered when the button is clicked. Just like any other event on ToolJet, you can set multiple handlers for on click event.
 
 
-:::info
-List of supported actions:
-* Show Alert
-* Run Query
-* Open Webpage
-* Go to app
-* Show Modal
-* Close Modal
-* Copy to clipboard
-:::
 
 <img class="screenshot-full" src="/img/widgets/button/button-actions-list.png" alt="ToolJet - Widget Reference - Button Action List" height="420" width="746"/>
 
@@ -33,5 +23,5 @@ List of supported actions:
 
 | properties      | description |
 | ----------- | ----------- |
-| Loading state | Loading state on the button is used to show the loading status while action is being . Default value is `false` . |
+| Loading state | Loading state can be used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. Default value is `false` . |
 | Button Text | It can be used to set the label of the button. |
