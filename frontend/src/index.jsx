@@ -11,15 +11,25 @@ appService.getConfig().then((config) => {
 
   if (window.public_config.APM_VENDOR == 'sentry') {
     const history = createBrowserHistory();
+    const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
+    const tracingOrigins = ['localhost', /^\//];
+    const releaseVersion = window.public_config.RELEASE_VERSION
+      ? `tooljet-${window.public_config.RELEASE_VERSION}`
+      : 'toojet';
+
+    if (!!tooljetServerUrl) tracingOrigins.push(tooljetServerUrl);
+
     Sentry.init({
       dsn: window.public_config.SENTRY_DNS,
       debug: !!window.public_config.SENTRY_DEBUG,
+      release: releaseVersion,
       integrations: [
         new Integrations.BrowserTracing({
           routingInstrumentation: Sentry.reactRouterV5Instrumentation(history),
+          tracingOrigins: tracingOrigins,
         }),
       ],
-      tracesSampleRate: 0.25
+      tracesSampleRate: 0.25,
     });
   }
 });

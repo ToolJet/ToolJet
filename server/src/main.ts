@@ -24,7 +24,7 @@ async function bootstrap() {
       useDefaults: true,
       directives: {
         'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'blob:'],
-        'default-src': ["'self'", 'blob:'],
+        'default-src': ["https://sentry.io", "'self'", 'blob:'],
       },
     }),
   );
