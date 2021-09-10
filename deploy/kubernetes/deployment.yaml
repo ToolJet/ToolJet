@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: tooljet-deployment
 spec:
-  replicas: 1
+  replicas: 4
   strategy:
     type: RollingUpdate
     rollingUpdate:
