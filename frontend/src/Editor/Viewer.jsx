@@ -134,6 +134,12 @@ class Viewer extends React.Component {
     slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.match.params.slug && this.props.match.params.slug !== prevProps.match.params.slug) {
+      this.loadApplicationBySlug(this.props.match.params.slug)
+    }
+  }
+  
   render() {
     const { appDefinition, showQueryConfirmation, isLoading, currentLayout, deviceWindowWidth, scaleValue } =
       this.state;
