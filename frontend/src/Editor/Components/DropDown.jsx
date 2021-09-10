@@ -79,8 +79,7 @@ export const DropDown = function DropDown({
   }, [newValue]);
 
   useEffect(() => {
-    onComponentOptionChanged(component, 'value', currentValue);
-    onEvent('onSelect', { component });
+    onComponentOptionChanged(component, 'value', currentValue).then(() => onEvent('onSelect', { component }) );
   }, [currentValue]);
 
   return (
