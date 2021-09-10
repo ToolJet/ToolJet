@@ -98,7 +98,7 @@ export const LeftSidebarDebugger = ({ darkMode, components, errors }) => {
 
     return (
     <>
-      <LeftSidebarItem tip='Debugger' {...trigger} icon='debugger' className='left-sidebar-item' badge={true} count={unReadErrorCount.unread} />
+      <LeftSidebarItem tip='Debugger' {...trigger} icon='debugger' className={`left-sidebar-item ${open && 'active'}`} badge={true} count={unReadErrorCount.unread} />
       <div {...content} className={`card popover debugger-popover ${open || popoverPinned ? 'show' : 'hide'}`} style={{minWidth:'180px', minHeight:'108px', maxWidth:'480px'}} >
           <div className="row-header">
               <div className="nav-header">
