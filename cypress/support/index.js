@@ -15,7 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands'
-
+import '@4tw/cypress-drag-drop'
 ///<reference types="cypress" />
 // Alternatively you can use CommonJS syntax:
 // require('./commands')

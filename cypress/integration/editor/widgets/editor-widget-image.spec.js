@@ -1,7 +1,5 @@
-import '@4tw/cypress-drag-drop';
 describe('Editor- Test Image widget', () => {
     beforeEach(() => {
-        cy.viewport(1536, 960);
         //read login data from fixtures
         cy.fixture('login-data').then(function (testdata) {
             cy.login(testdata.email, testdata.password);
