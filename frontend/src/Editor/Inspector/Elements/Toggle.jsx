@@ -4,7 +4,7 @@ import { ToolTip } from './Components/ToolTip';
 export const Toggle = ({
   param, definition, onChange, paramType, componentMeta
 }) => {
-  const value = definition ? definition.value : false;
+  const value = definition?.value !== false ?? false;
   const paramMeta = componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
 

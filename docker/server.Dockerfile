@@ -21,4 +21,4 @@ RUN npm install --only=production
 COPY ./server/ ./
 RUN npm run build
 
-RUN ["chmod", "755", "./entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]

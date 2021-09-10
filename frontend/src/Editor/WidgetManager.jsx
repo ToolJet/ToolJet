@@ -56,12 +56,12 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     const otherSection = { title: 'others', items: [] };
 
     const commonItems = ['Table', 'Chart', 'Button', 'Text', 'Datepicker'];
-    const formItems = ['TextInput', 'Textarea', 'Dropdown', 'Multiselect', 'RichTextEditor', 'Checkbox', 'Radio-button'];
+    const formItems = ['TextInput', 'NumberInput', 'Textarea', 'Dropdown', 'Multiselect', 'RichTextEditor', 'Checkbox', 'Radio-button', 'Datepicker'];
     const integrationItems = ['Map'];
 
     filteredComponents.map((f) => {
       if (commonItems.includes(f.name)) commonSection.items.push(f);
-      else if (formItems.includes(f.name)) formSection.items.push(f);
+      if (formItems.includes(f.name)) formSection.items.push(f);
       else if (integrationItems.includes(f.name)) integrationSection.items.push(f);
       else otherSection.items.push(f);
     });
@@ -70,8 +70,8 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       <>
         {renderList(commonSection.title, commonSection.items)}
         {renderList(formSection.title, formSection.items)}
-        {renderList(integrationSection.title, integrationSection.items)}
         {renderList(otherSection.title, otherSection.items)}
+        {renderList(integrationSection.title, integrationSection.items)}
       </>
     );
   }
