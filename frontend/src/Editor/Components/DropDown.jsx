@@ -9,7 +9,8 @@ export const DropDown = function DropDown({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged
+  onComponentOptionChanged,
+  onEvent
 }) {
   console.log('currentState', currentState);
 
@@ -79,6 +80,7 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     onComponentOptionChanged(component, 'value', currentValue);
+    onEvent('onSelect', { component });
   }, [currentValue]);
 
   return (

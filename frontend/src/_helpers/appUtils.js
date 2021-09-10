@@ -242,7 +242,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     });
   }
 
-  if (['onDetect', 'onCheck', 'onUnCheck', 'onBoundsChange', 'onCreateMarker', 'onMarkerClick', 'onPageChanged', 'onSearch', 'onChange', 'onSelectionChange'].includes(eventName)) {
+  if (['onDetect', 'onCheck', 'onUnCheck', 'onBoundsChange', 'onCreateMarker', 'onMarkerClick', 'onPageChanged', 'onSearch', 'onChange', 'onSelectionChange', 'onSelect'].includes(eventName)) {
     const { component } = options;
     executeActionsForEventId(_ref, eventName, component, mode);
   }
