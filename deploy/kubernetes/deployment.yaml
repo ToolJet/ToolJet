@@ -48,6 +48,13 @@ spec:
               value: 0.7.1
             - name: APM_VENDOR
               value: "sentry"
+            - name: SERVER_IP
+              value: "3.129.198.40"
+            - name: GOOGLE_MAPS_API_KEY  
+              valueFrom:
+                secretKeyRef:
+                  name: optional
+                  key: gmapskey
             - name: SENTRY_DNS
               value: "https://bc59bffa656d4b039815cf8527ff7b82@o991527.ingest.sentry.io/5953092"
             - name: PG_HOST
