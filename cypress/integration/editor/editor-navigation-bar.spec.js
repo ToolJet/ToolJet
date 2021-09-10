@@ -24,6 +24,20 @@ describe('Editor - Navigation Bar', () => {
             .should('have.text', 'ToolJet - Dashboard');
     });
 
+    it('should hide left sidebar', () => {
+        //check left sidebar visibility
+        cy.get('.left-sidebar').should('be.visible');
+
+        //click on hide left sidebar button
+        cy.get('.editor-buttons')
+            .find('[data-tip="Hide left sidebar"] img')
+            .click()
+            .get('[data-tip="Show left sidebar"] img');
+
+        //check left sidebar should not be visible
+        cy.get('.left-sidebar').should('not.be.visible');
+    });
+
     it('should hide query editor', () => {
         //check query pane is visible
         cy.get('.query-pane').should('be.visible');
@@ -40,20 +54,26 @@ describe('Editor - Navigation Bar', () => {
 
     it('should resize canvas', () => {
         //default size should be 100%
-        cy.get('.sidebar-zoom').should('have.text', '100 %');
+        cy.get('.canvas-buttons').find('small').should('have.text', '100%');
 
-        cy.get('.sidebar-zoom').click();
+        //check maximize button
+        cy.get('.canvas-buttons')
+            .find('button:nth-child(3)')
+            .find('img[src="/assets/images/icons/zoom-in.svg"]')
+            .should('be.visible');
+
+        cy.get('.canvas-container.align-items-center').should('have.attr', 'style', 'transform: scale(1);');
 
         //check minimize button
         var scale;
         var styleString = 'transform: scale(1);';
-        for (var i = 100; i >= 60; i = i - 10) {
-            cy.get('.sidebar-zoom').click();
-            cy.get('div[class="card popover zoom-popover show"]')
-                .find('tbody tr')
-                .contains(i + '%')
+        for (var i = 100; i >= 70; i = i - 10) {
+            cy.get('.canvas-buttons')
+                .find('button:nth-child(1)')
+                .find('img[src="/assets/images/icons/zoom-out.svg"]')
+                .should('be.visible')
                 .click();
-            scale = i / 100;
+            scale = (i - 10) / 100;
             styleString = 'transform: scale(' + scale + ');';
             cy.get('.canvas-container.align-items-center').should('have.attr', 'style', styleString);
         }
@@ -79,8 +99,12 @@ describe('Editor - Navigation Bar', () => {
 
     it('should switch to dark theme', () => {
         cy.get('.main-wrapper');
-        cy.get('div:nth-child(3) > svg:nth-child(1)').should('have.attr', 'color', '#808080').click();
-        cy.get('div:nth-child(3) > svg:nth-child(1)').should('have.attr', 'color', '#fff').click();
+        cy.get('.form-check').find('img').should('have.attr', 'src', '/assets/images/icons/day.svg').and('be.visible');
+
+        cy.get('.navbar').find('.form-check-input').click();
+
+        cy.get('.theme-dark');
+        cy.get('.form-check').find('img').should('have.attr', 'src', '/assets/images/icons/night.svg').and('be.visible');
     });
 
     it('should be able to share app', () => {
