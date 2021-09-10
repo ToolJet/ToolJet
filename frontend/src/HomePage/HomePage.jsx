@@ -10,7 +10,6 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-toastify';
 import moment from 'moment';
-import _ from 'lodash';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -120,8 +119,6 @@ class HomePage extends React.Component {
     const {
       apps, currentUser ,isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp
     } = this.state;
-
-    console.log(`%c ::: currentUser || ${JSON.stringify(currentUser)}`,'color:yellow');
     return (
       <div className="wrapper home-page">
 
@@ -209,19 +206,21 @@ class HomePage extends React.Component {
                                 <small className="pt-2 app-description">created {moment(app.created_at).fromNow()} ago by {app.user?.first_name} {app.user?.last_name} </small>
                               </td>
                               <td className="text-muted col-auto pt-4">
-                                <Link
+                                {currentUser.role !== 'viewer' && (
+                                  <Link
                                   to={`/apps/${app.id}`}
                                   className="d-none d-lg-inline"
-                                >
+                                  >
                                   <OverlayTrigger
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: 'Open in app builder'})}
                                   >
-                                    <span style={{display: `${currentUser.isViewer && 'none' }`}} className="badge bg-green-lt">
-                                    Edit
+                                    <span className="badge bg-green-lt">
+                                      Edit
                                     </span>
                                   </OverlayTrigger>
                                 </Link>
+                                )}
                                 <Link
                                   to={app?.current_version_id ? `/applications/${app.slug}` : '' }
 

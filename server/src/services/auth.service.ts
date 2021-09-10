@@ -39,7 +39,7 @@ export class AuthService {
         email: user.email,
         first_name: user.firstName,
         last_name: user.lastName,
-        isViewer: user.isViewer
+        role: user.role
       };
     } else {
       throw new UnauthorizedException('Invalid credentials');
