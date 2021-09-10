@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, folderService, authenticationService, organizationService } from '@/_services';
+import { appService, folderService, authenticationService } from '@/_services';
 import { Link } from 'react-router-dom';
 import { Pagination, Header } from '@/_components';
 import { Folders } from './Folders';
