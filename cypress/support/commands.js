@@ -67,3 +67,29 @@ Cypress.Commands.add('addPostgresDataSource', fn => {
     .should('have.text', 'Save')
     .click()
 });
+Cypress.Commands.add('createAppIfEmptyDashboard', fn => {
+  cy.get('body').then(($title => {
+    //check you are not running tests on empty dashboard state
+    if ($title.text().includes('You haven\'t created any apps yet.')) {
+      cy.get('a.btn').eq(0).should('have.text', 'Create your first app')
+        .click()
+      cy.go('back')
+    }
+  }))
+});
+
+Cypress.Commands.add('deployAppWithSingleVersion', fn => {
+  cy.get('.navbar')
+    .find('.navbar-nav')
+    .find('.nav-item')
+    .find('button[class="btn btn-primary btn-sm"]')
+    .should('have.text', 'Deploy')
+    .and('be.visible')
+    .click();
+
+  cy.get('.modal-title.h4').should('have.text', 'Versions and deployments').and('be.visible');
+  cy.get('.btn.btn-primary.btn-sm.mx-2').contains('+ Version').click();
+  cy.get('input[placeholder="version name"]').type('1.0');
+  cy.get('button[class="btn btn-primary"]').should('have.text', 'Create').click();
+  cy.get('table').contains('td', 'save').click().contains('td', 'deploy').click();
+});
