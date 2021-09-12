@@ -34,7 +34,7 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources= [], dataS
 
   return (
     <>
-      <LeftSidebarItem tip='Add or edit datasources' {...trigger} icon='database' className='left-sidebar-item' />
+      <LeftSidebarItem tip='Add or edit datasources' {...trigger} icon='database' className={`left-sidebar-item ${open && 'active'}`} />
       <div {...content} className={`card popover datasources-popover ${open ? 'show' : 'hide'}`}>
         <div className="card-body">
           <div className="table-responsive">
