@@ -792,6 +792,10 @@ body {
     }
   }
 
+  .has-dropdown {
+    padding: 0;
+  }
+
   td {
     .text-container:focus-visible, .text-container:focus, .text-container:focus-within, .text-container:hover   {
       outline: none;
