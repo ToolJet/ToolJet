@@ -10,7 +10,7 @@
       "$key": "gcp_key",
       "$rows": 15,
       "type": "textarea",
-      "description": "Input for private key"
+      "description": "Enter private key"
     }
   },
   "required": ["gcp_key"]

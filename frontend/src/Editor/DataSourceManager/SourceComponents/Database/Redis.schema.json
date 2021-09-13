@@ -9,25 +9,25 @@
       "$label": "Host",
       "$key": "host",
       "type": "text",
-      "description": "Input for host"
+      "description": "Enter host"
     },
     "port": {
       "$label": "Port",
       "$key": "port",
       "type": "text",
-      "description": "Input for port"
+      "description": "Enter port"
     },
     "username": {
       "$label": "Username",
       "$key": "username",
       "type": "text",
-      "description": "Input for username field"
+      "description": "Enter username field"
     },
     "password": {
       "$label": "Password",
       "$key": "password",
       "type": "password",
-      "description": "Input for password field"
+      "description": "Enter password field"
     }
   },
   "required": ["scheme", "host", "port", "password"]

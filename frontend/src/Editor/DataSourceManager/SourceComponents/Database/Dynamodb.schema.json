@@ -42,13 +42,13 @@
       "$label": "Access key",
       "$key": "access_key",
       "type": "text",
-      "description": "Input for access key"
+      "description": "Enter access key"
     },
     "secret_key": {
       "$label": "Secret key",
       "$key": "secret_key",
       "type": "password",
-      "description": "Input for secret key"
+      "description": "Enter secret key"
     }
   },
   "required": ["region", "access_key", "secret_key"]
