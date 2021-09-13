@@ -21,8 +21,8 @@ export const NumberInput = function NumberInput({
   }
 
   useEffect(() => {
-    setNumber(newNumber);
-    onComponentOptionChanged(component, 'value', newNumber);
+    setNumber(parseInt(newNumber));
+    onComponentOptionChanged(component, 'value', parseInt(newNumber));
   }, [newNumber]);
 
   const placeholder = component.definition.properties.placeholder.value;
@@ -42,8 +42,8 @@ export const NumberInput = function NumberInput({
       disabled={parsedDisabledState}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
       onChange={(e) => {
-        setNumber(e.target.value);
-        onComponentOptionChanged(component, 'value', e.target.value);
+        setNumber(parseInt(e.target.value));
+        onComponentOptionChanged(component, 'value', parseInt(e.target.value));
       }}
       type="number"
       className="form-control"
