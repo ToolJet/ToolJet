@@ -20,7 +20,10 @@ export class DataQueriesService {
   ) { }
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
-    return await this.dataQueriesRepository.findOne(dataQueryId, { relations: ['dataSource', 'app'] });
+    return await this.dataQueriesRepository.findOne(
+      { id: dataQueryId },
+      { relations: ['dataSource', 'app'] },
+    );
   }
 
   async all(user: User, appId: string): Promise<DataQuery[]> {
@@ -49,7 +52,11 @@ export class DataQueriesService {
     return this.dataQueriesRepository.save(newDataQuery);
   }
 
-  async update(user: User,dataQueryId: string, name: string, options: object): Promise<DataQuery> {
+  async delete(dataQueryId: string) {
+    return await this.dataQueriesRepository.delete(dataQueryId);
+  }
+
+  async update(user: User, dataQueryId: string, name: string, options: object): Promise<DataQuery> {
     const dataQuery = this.dataQueriesRepository.save({
       id: dataQueryId,
       name,
@@ -114,7 +121,7 @@ export class DataQueriesService {
 
   async parseQueryOptions(object: any, options: object): Promise<object> {
     if( typeof object === 'object' ) {
-      for( const key of Object.keys(object) ) { 
+      for( const key of Object.keys(object) ) {
         object[key] = await this.parseQueryOptions(object[key], options);
       }
       return object;
@@ -140,7 +147,7 @@ export class DataQueriesService {
       }
 
     } else if (Array.isArray(object)) {
-      object.forEach(element => { 
+      object.forEach(element => {
       });
 
       for(const [index, element] of object) {
