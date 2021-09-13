@@ -21,7 +21,7 @@
       "$label": "Database Name",
       "$key": "database",
       "type": "text",
-      "description": "Enter database"
+      "description": "Name of the database"
     },
     "username": {
       "$label": "Username",
