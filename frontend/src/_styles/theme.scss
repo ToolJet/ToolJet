@@ -1714,6 +1714,12 @@ input:focus-visible {
   box-sizing: border-box;
   box-shadow: 0 0 0 1px $light-green;
   font-family: 'Source Code Pro', monospace;
+
+  .heading {
+    font-weight: 700;
+    white-space: pre;
+    text-transform: capitalize;
+  }
 }
 
 .theme-dark {

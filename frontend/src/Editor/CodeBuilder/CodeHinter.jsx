@@ -56,16 +56,28 @@ export function CodeHinter({
     setCurrentValue(editor.getValue());
   }
 
+  const getPreviewContent = (content, type) => {
+    switch (type) {
+      case 'object':
+        return JSON.stringify(content);
+      default:
+        return content;
+    }
+  };
+
   const getPreview = () => {
     const preview = resolveReferences(currentValue, realState);
     const previewType = typeof preview;
-    switch (previewType) {
-      case 'object':
-        return JSON.stringify(preview);
+    const content = getPreviewContent(preview, previewType);
 
-      default:
-        return preview;
-    }
+    return (
+      <div>
+        <div class="heading my-1">
+          <span>{previewType}</span>
+        </div>
+        {content}
+      </div>
+    );
   };
 
   return (
