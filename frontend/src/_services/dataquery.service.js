@@ -6,6 +6,7 @@ export const dataqueryService = {
   getAll,
   run,
   update,
+  del,
   preview
 };
 
@@ -34,6 +35,11 @@ function update(id, name, options) {
   };
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
+}
+
+function del(id) {
+  const requestOptions = { method: 'DELETE', headers: authHeader() };
   return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
 }
 
