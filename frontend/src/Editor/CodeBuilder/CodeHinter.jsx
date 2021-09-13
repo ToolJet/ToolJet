@@ -42,6 +42,7 @@ export function CodeHinter({
 
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
+  const [isFocused, setFocused] = useState(false);
 
   useEffect(() => {
     setRealState(currentState);
@@ -91,15 +92,17 @@ export function CodeHinter({
         realState={realState}
         scrollbarStyle={null}
         height={height}
+        onFocus={() => setFocused(true)}
         onBlur={(editor) => {
           const value = editor.getValue();
           onChange(value);
+          setFocused(false)
         }}
         onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
         onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
         options={options}
       />
-      {enablePreview && <div className="dynamic-variable-preview bg-green-lt px-1 py-1">{getPreview()}</div>}
+      {isFocused && enablePreview && <div className="dynamic-variable-preview bg-green-lt px-1 py-1">{getPreview()}</div>}
     </div>
   );
 }
