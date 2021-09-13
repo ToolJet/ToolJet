@@ -10,7 +10,6 @@ export const TextArea = function TextArea({
   currentState,
   onComponentOptionChanged
 }) {
-  console.log('currentState', currentState);
 
   const value = component.definition.properties.value ? component.definition.properties.value.value : '';
   const [text, setText] = useState(value);
@@ -23,6 +22,7 @@ export const TextArea = function TextArea({
 
   useEffect(() => {
     setText(newText);
+    onComponentOptionChanged(component, 'value', newText);
   }, [newText]);
   
   const placeholder = component.definition.properties.placeholder.value;
