@@ -29,6 +29,9 @@ export class DataQueriesService {
         where: {
           appId,
         },
+        order: {
+          name: 'ASC'
+        }
     });
   }
 

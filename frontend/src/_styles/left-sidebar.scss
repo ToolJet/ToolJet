@@ -4,7 +4,7 @@
   background: $white;
 
   .left-sidebar-item {
-    margin: 5px;
+    // margin: 5px;
     text-align: center;
     padding-top: 1vw;
     padding-bottom: 1vw;
@@ -19,6 +19,9 @@
         display: none;
       }
     }
+  }
+  .active {
+    background: #f4f6fa;
   }
   .left-sidebar-stack-bottom {
     width: 3%;
