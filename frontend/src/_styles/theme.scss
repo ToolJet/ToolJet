@@ -1,4 +1,5 @@
 @import './tabler.scss';
+@import './colors.scss';
 
 body {
   font-family: 'Roboto', sans-serif;
@@ -1701,10 +1702,17 @@ input:focus-visible {
 }
 
 .dynamic-variable-preview {
-  height: 30px;
+  min-height: 20px;
+  max-height: 500px;
+  overflow: auto;
+  line-height: 20px;
+  font-size: 12px;
   margin-top: -2px;
+  word-wrap: break-word;
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 1px $light-green;
   font-family: 'Source Code Pro', monospace;
 }
 

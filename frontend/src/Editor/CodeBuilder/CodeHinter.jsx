@@ -8,25 +8,25 @@ import 'codemirror/addon/display/placeholder';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
-import 'codemirror/theme/duotone-light.css'
+import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 
 export function CodeHinter({
-  initialValue, 
-  onChange, 
-  currentState, 
-  mode, 
-  theme, 
-  lineNumbers, 
-  className, 
-  placeholder, 
-  ignoreBraces, 
-  enablePreview, 
+  initialValue,
+  onChange,
+  currentState,
+  mode,
+  theme,
+  lineNumbers,
+  className,
+  placeholder,
+  ignoreBraces,
+  enablePreview,
   height,
   minHeight,
-  lineWrapping
+  lineWrapping,
 }) {
   const options = {
     lineNumbers: lineNumbers,
@@ -37,7 +37,7 @@ export function CodeHinter({
     theme: theme || 'default',
     readOnly: false,
     highlightSelectionMatches: true,
-    placeholder
+    placeholder,
   };
 
   const [realState, setRealState] = useState(currentState);
@@ -56,9 +56,21 @@ export function CodeHinter({
     setCurrentValue(editor.getValue());
   }
 
+  const getPreview = () => {
+    const preview = resolveReferences(currentValue, realState);
+    const previewType = typeof preview;
+    switch (previewType) {
+      case 'object':
+        return JSON.stringify(preview);
+
+      default:
+        return preview;
+    }
+  };
+
   return (
-    <div 
-      className={`code-hinter ${className || 'codehinter-default-input'}`} 
+    <div
+      className={`code-hinter ${className || 'codehinter-default-input'}`}
       key={suggestions.length}
       style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
     >
@@ -67,7 +79,7 @@ export function CodeHinter({
         realState={realState}
         scrollbarStyle={null}
         height={height}
-        onBlur={(editor) => { 
+        onBlur={(editor) => {
           const value = editor.getValue();
           onChange(value);
         }}
@@ -75,11 +87,7 @@ export function CodeHinter({
         onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
         options={options}
       />
-      {enablePreview && 
-        <div className="dynamic-variable-preview bg-green-lt px-2 py-1">
-          {resolveReferences(currentValue, realState)}
-        </div>
-      }
+      {enablePreview && <div className="dynamic-variable-preview bg-green-lt px-1 py-1">{getPreview()}</div>}
     </div>
   );
 }

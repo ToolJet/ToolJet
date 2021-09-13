@@ -4,20 +4,20 @@ import { LeftSidebarItem } from './sidebar-item';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/DataSourceTypes';
 
-export const LeftSidebarDataSources = ({ appId, darkMode, dataSources= [], dataSourcesChanged }) => {
-  const [open, trigger, content] = usePopover(false)
+export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], dataSourcesChanged }) => {
+  const [open, trigger, content] = usePopover(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
 
-  const renderDataSource = dataSource => {
+  const renderDataSource = (dataSource) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
     return (
       <tr
         role="button"
-        key={sourceMeta.kind.toLowerCase()}
+        key={sourceMeta.id}
         onClick={() => {
-          setSelectedDataSource(dataSource)
-          toggleDataSourceManagerModal(true)
+          setSelectedDataSource(dataSource);
+          toggleDataSourceManagerModal(true);
         }}
       >
         <td>
@@ -30,11 +30,16 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources= [], dataS
         </td>
       </tr>
     );
-  }
+  };
 
   return (
     <>
-      <LeftSidebarItem tip='Add or edit datasources' {...trigger} icon='database' className={`left-sidebar-item ${open && 'active'}`} />
+      <LeftSidebarItem
+        tip="Add or edit datasources"
+        {...trigger}
+        icon="database"
+        className={`left-sidebar-item ${open && 'active'}`}
+      />
       <div {...content} className={`card popover datasources-popover ${open ? 'show' : 'hide'}`}>
         <div className="card-body">
           <div className="table-responsive">
@@ -59,14 +64,13 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources= [], dataS
         showDataSourceManagerModal={showDataSourceManagerModal}
         darkMode={darkMode}
         hideModal={() => {
-            setSelectedDataSource(null)
-            toggleDataSourceManagerModal(false)
-          }
-        }
+          setSelectedDataSource(null);
+          toggleDataSourceManagerModal(false);
+        }}
         dataSourcesChanged={dataSourcesChanged}
         showDataSourceManagerModal={showDataSourceManagerModal}
         selectedDataSource={selectedDataSource}
       />
     </>
-  )
-}
+  );
+};
