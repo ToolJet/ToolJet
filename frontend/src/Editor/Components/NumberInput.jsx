@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const NumberInput = function NumberInput({
@@ -10,6 +10,20 @@ export const NumberInput = function NumberInput({
   currentState,
   onComponentOptionChanged
 }) {
+
+  const value = component.definition.properties.value ? component.definition.properties.value.value : '';
+  const [number, setNumber] = useState(value);
+
+  const numberInputProperty = component.definition.properties.value;
+  let newNumber = value;
+  if (numberInputProperty && currentState) {
+    newNumber = resolveReferences(numberInputProperty.value, currentState, '');
+  }
+
+  useEffect(() => {
+    setNumber(newNumber);
+    onComponentOptionChanged(component, 'value', newNumber);
+  }, [newNumber]);
 
   const placeholder = component.definition.properties.placeholder.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
@@ -27,11 +41,15 @@ export const NumberInput = function NumberInput({
     <input
       disabled={parsedDisabledState}
       onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
-      onChange={(e) => { onComponentOptionChanged(component, 'value', parseInt(e.target.value)) } }
+      onChange={(e) => {
+        setNumber(e.target.value);
+        onComponentOptionChanged(component, 'value', e.target.value);
+      }}
       type="number"
       className="form-control"
       placeholder={placeholder}
       style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }}
+      value={number}
     />
   );
 };
