@@ -22,6 +22,7 @@ import {
   onQueryCancel,
   runQuery,
   setStateAsync,
+  computeComponentState
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -101,6 +102,8 @@ class Editor extends React.Component {
               runQuery(this, query.id, query.name);
             }
           });
+
+          computeComponentState(this, this.state.appDefinition.components);
         }
       )
     });
@@ -200,29 +203,6 @@ class Editor extends React.Component {
     })
   }
 
-  computeComponentState = (components) => {
-    let componentState = {};
-    const currentComponents = this.state.currentState.components;
-    Object.keys(components).forEach((key) => {
-      const component = components[key];
-      const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
-
-      const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
-      const existingValues = currentComponents[existingComponentName];
-
-      componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
-    });
-
-    this.setState({
-      currentState: {
-        ...this.state.currentState,
-        components: {
-          ...componentState,
-        },
-      },
-    });
-  };
-
   dataSourcesChanged = () => {
     this.fetchDataSources();
   };
@@ -256,7 +236,7 @@ class Editor extends React.Component {
 
   appDefinitionChanged = (newDefinition) => {
     this.setState({ appDefinition: newDefinition });
-    this.computeComponentState(newDefinition.components);
+    computeComponentState(this, newDefinition.components);
   };
 
   handleInspectorView = (component) => {
@@ -496,6 +476,7 @@ class Editor extends React.Component {
       dataQueriesDefaultText,
       showQuerySearchField,
       apps,
+      defaultComponentStateComputed
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
 
@@ -649,34 +630,36 @@ class Editor extends React.Component {
                 style={{ transform: `scale(${zoomLevel})` }}
               >
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
-                  <Container
-                    appDefinition={appDefinition}
-                    appDefinitionChanged={this.appDefinitionChanged}
-                    snapToGrid={true}
-                    darkMode={this.props.darkMode}
-                    mode={'edit'}
-                    zoomLevel={zoomLevel}
-                    currentLayout={currentLayout}
-                    deviceWindowWidth={deviceWindowWidth}
-                    selectedComponent={selectedComponent || {}}
-                    scaleValue={scaleValue}
-                    appLoading={isLoading}
-                    onEvent={(eventName, options) => onEvent(this, eventName, options)}
-                    onComponentOptionChanged={(component, optionName, value) =>
-                      onComponentOptionChanged(this, component, optionName, value)
-                    }
-                    onComponentOptionsChanged={(component, options) =>
-                      onComponentOptionsChanged(this, component, options)
-                    }
-                    currentState={this.state.currentState}
-                    configHandleClicked={this.configHandleClicked}
-                    removeComponent={this.removeComponent}
-                    onComponentClick={(id, component) => {
-                      this.setState({ selectedComponent: { id, component } });
-                      this.switchSidebarTab(1);
-                      onComponentClick(this, id, component);
-                    }}
-                  />
+                  {defaultComponentStateComputed &&
+                    <Container
+                      appDefinition={appDefinition}
+                      appDefinitionChanged={this.appDefinitionChanged}
+                      snapToGrid={true}
+                      darkMode={this.props.darkMode}
+                      mode={'edit'}
+                      zoomLevel={zoomLevel}
+                      currentLayout={currentLayout}
+                      deviceWindowWidth={deviceWindowWidth}
+                      selectedComponent={selectedComponent || {}}
+                      scaleValue={scaleValue}
+                      appLoading={isLoading}
+                      onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                      onComponentOptionChanged={(component, optionName, value) =>
+                        onComponentOptionChanged(this, component, optionName, value)
+                      }
+                      onComponentOptionsChanged={(component, options) =>
+                        onComponentOptionsChanged(this, component, options)
+                      }
+                      currentState={this.state.currentState}
+                      configHandleClicked={this.configHandleClicked}
+                      removeComponent={this.removeComponent}
+                      onComponentClick={(id, component) => {
+                        this.setState({ selectedComponent: { id, component } });
+                        this.switchSidebarTab(1);
+                        onComponentClick(this, id, component);
+                      }}
+                    />
+                  }
                   <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} />
                 </div>
               </div>
