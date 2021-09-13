@@ -33,7 +33,6 @@ class Viewer extends React.Component {
       currentLayout: isMobileDevice ? 'mobile' : 'desktop',
       currentUser: authenticationService.currentUserValue,
       isLoading: true,
-      appLoading: true,
       users: null,
       appDefinition: { components: {} },
       currentState: {
@@ -95,7 +94,7 @@ class Viewer extends React.Component {
     appService.getAppBySlug(slug).then((data) => { 
       this.setStateForApp(data);
       this.setStateForContainer(data);
-      this.setState({ appLoading: false })
+      this.setState({ isLoading: false })
     })
   };
 
@@ -111,19 +110,19 @@ class Viewer extends React.Component {
     const appId = this.props.match.params.id;
     const versionId = this.props.match.params.versionId;
 
-    this.setState({ appLoading : false});
+    this.setState({ isLoading : false});
     slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.match.params.slug && this.props.match.params.slug !== prevProps.match.params.slug) {
-      this.setState({ appLoading: true });
+      this.setState({ isLoading: true });
       this.loadApplicationBySlug(this.props.match.params.slug)
     }
   }
 
   render() {
-    const { appDefinition, showQueryConfirmation, isLoading, currentLayout, deviceWindowWidth, scaleValue, defaultComponentStateComputed, appLoading } =
+    const { appDefinition, showQueryConfirmation, isLoading, currentLayout, deviceWindowWidth, scaleValue, defaultComponentStateComputed } =
       this.state;
 
     return (
@@ -164,7 +163,7 @@ class Viewer extends React.Component {
 
                 {defaultComponentStateComputed && (
                   <>
-                    {appLoading ? (
+                    {isLoading ? (
                       <div className="mx-auto mt-5 w-50 p-5">
                         <center>
                           <div className="spinner-border text-azure" role="status"></div>
