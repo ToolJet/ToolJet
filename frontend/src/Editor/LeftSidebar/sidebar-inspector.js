@@ -9,7 +9,7 @@ export const LeftSidebarInspector = ({ darkMode, globals, components, queries })
 
   return (
     <>
-      <LeftSidebarItem tip='Inspector' {...trigger} icon='inspector' className='left-sidebar-item' />
+      <LeftSidebarItem tip='Inspector' {...trigger} icon='inspector' className={`left-sidebar-item ${open && 'active'}`} />
       <div {...content} className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}>
         <SidebarPinnedButton component={'Inspector'} state={popoverPinned} updateState={updatePopoverPinnedState} />
         <div style={{marginTop:'1rem'}} className="card-body">

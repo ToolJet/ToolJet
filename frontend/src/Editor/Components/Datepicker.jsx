@@ -66,6 +66,7 @@ export const Datepicker = function Datepicker({
       <Datetime 
         onChange={onDateChange} 
         timeFormat={enableTime} 
+        closeOnSelect={true}
         dateFormat={dateFormat.value} 
       />
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
