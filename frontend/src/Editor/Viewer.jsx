@@ -32,6 +32,7 @@ class Viewer extends React.Component {
       currentLayout: isMobileDevice ? 'mobile' : 'desktop',
       currentUser: authenticationService.currentUserValue,
       isLoading: true,
+      appLoading: true,
       users: null,
       appDefinition: { components: {} },
       currentState: {
@@ -116,6 +117,7 @@ class Viewer extends React.Component {
     appService.getAppBySlug(slug).then((data) => { 
       this.setStateForApp(data);
       this.setStateForContainer(data);
+      this.setState({ appLoading: false })
     })
   };
 
@@ -131,11 +133,13 @@ class Viewer extends React.Component {
     const appId = this.props.match.params.id;
     const versionId = this.props.match.params.versionId;
 
+    this.setState({ appLoading : false});
     slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.match.params.slug && this.props.match.params.slug !== prevProps.match.params.slug) {
+      this.setState({ appLoading: true });
       this.loadApplicationBySlug(this.props.match.params.slug)
     }
   }
@@ -178,7 +182,15 @@ class Viewer extends React.Component {
                     width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px`,
                   }}
                 >
-                  <Container
+                  
+                  {this.state.appLoading ? (
+                    <div className="mx-auto mt-5 w-50 p-5">
+                      <center>
+                        <div className="spinner-border text-azure" role="status"></div>
+                      </center>
+                    </div>
+                  ): (
+                    <Container
                     appDefinition={appDefinition}
                     appDefinitionChanged={() => false} // function not relevant in viewer
                     snapToGrid={true}
@@ -198,6 +210,7 @@ class Viewer extends React.Component {
                       onComponentOptionsChanged(this, component, options)
                     }
                   />
+                  )}
                 </div>
               </div>
             </div>
