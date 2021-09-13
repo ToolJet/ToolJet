@@ -55,6 +55,50 @@ describe('apps controller', () => {
     });
   });
 
+  describe('/apps/:id/clone', () => {
+    it('should be able to clone the app if app is of same organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        role: 'admin',
+      });
+      const application = await createApplication(app, {
+        name: 'App to clone',
+        user: adminUserData.user,
+      });
+
+      const response = await request(app.getHttpServer())
+        .post(`/apps/${application.id}/clone`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+
+      expect(response.statusCode).toBe(201);
+
+      const appId = response.body.id;
+      const clonedApplication = await App.findOne({ id: appId });
+      expect(clonedApplication.name).toBe('App to clone');
+    });
+
+    it('should not be able to clone the app if app is of another organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        role: 'admin',
+      });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        role: 'admin',
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
+
+      const response = await request(app.getHttpServer())
+        .post(`/apps/${application.id}/clone`)
+        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+
+      expect(response.statusCode).toBe(403);
+    });
+  });
+
   describe('/apps/:id', () => {
     it('should be able to update name of the app if admin of same organization', async () => {
       const adminUserData = await createUser(app, {

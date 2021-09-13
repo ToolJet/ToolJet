@@ -107,6 +107,25 @@ export class AppsController {
     return response;
   }
 
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/clone')
+  async clone(@Request() req, @Param() params) {
+    const existingApp = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if (!ability.can('viewApp', existingApp)) {
+      throw new ForbiddenException(
+        'you do not have permissions to perform this action',
+      );
+    }
+
+    const result = await this.appsService.clone(existingApp, req.user)
+    let response = decamelizeKeys(result);
+
+    return response;
+  }
+
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@Request() req, @Param() params) {

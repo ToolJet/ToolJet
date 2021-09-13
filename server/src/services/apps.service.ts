@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 import { App } from 'src/entities/app.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { Folder } from 'src/entities/folder.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 
@@ -14,6 +14,8 @@ import { DataQuery } from 'src/entities/data_query.entity';
 export class AppsService {
 
   constructor(
+    private readonly entityManager: EntityManager,
+
     @InjectRepository(App)
     private appsRepository: Repository<App>,
 
@@ -74,6 +76,86 @@ export class AppsService {
     return app;
   }
 
+  async clone(existingApp: App, user: User): Promise<App> {
+    let clonedApp: App;
+
+    await this.entityManager.transaction(async (manager) => {
+      clonedApp = await this.createClonedAppForUser(manager, existingApp, user);
+      await this.buildClonedAppAssociations(manager, clonedApp, existingApp);
+    });
+
+    return clonedApp;
+  }
+
+  async createClonedAppForUser(
+    manager: EntityManager,
+    existingApp: App,
+    currentUser: User,
+  ): Promise<App> {
+    const newApp = manager.create(App, {
+      name: existingApp.name,
+      organizationId: currentUser.organizationId,
+      user: currentUser,
+    });
+    await manager.save(newApp);
+
+    const newAppUser = manager.create(AppUser, {
+      app: newApp,
+      user: currentUser,
+      role: 'admin',
+    });
+    await manager.save(newAppUser);
+    return newApp;
+  }
+
+  async buildClonedAppAssociations(manager, newApp: App, existingApp: App) {
+    const dataSourceMapping = {};
+    const newDefinition = existingApp.editingVersion?.definition;
+
+    const existingDataSources = await manager.find(DataSource, {
+      app: existingApp,
+    });
+
+    for (const source of existingDataSources) {
+      const newSource = manager.create(DataSource, {
+        app: newApp,
+        name: source.name,
+        options: source.options,
+        kind: source.kind,
+      });
+
+      await manager.save(newSource);
+      dataSourceMapping[source.id] = newSource.id;
+    }
+
+    const existingDataQueries = await manager.find(DataQuery, {
+      app: existingApp,
+    });
+
+    for (const query of existingDataQueries) {
+      const newQuery = manager.create(DataQuery, {
+        app: newApp,
+        name: query.name,
+        options: query.options,
+        kind: query.kind,
+        dataSourceId: dataSourceMapping[query.dataSourceId],
+      });
+      await manager.save(newQuery);
+      dataSourceMapping[query.id] = newQuery.id;
+    }
+
+    const version = manager.create(AppVersion, {
+      app: newApp,
+      definition: newDefinition,
+      name: 'v0',
+    });
+    await manager.save(version);
+
+    await manager.update(App, newApp, {
+      currentVersionId: version.id,
+    });
+  }
+
   async count(user: User) {
     return await this.appsRepository.count({
         where: {
@@ -98,7 +180,6 @@ export class AppsService {
   }
 
   async update(user: User, appId: string, params: any) {
-
     const currentVersionId = params['current_version_id'];
     const isPublic = params['is_public'];
     const { name, slug } = params;
