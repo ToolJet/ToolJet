@@ -17,6 +17,7 @@ export const componentTypes = [
       displaySearchBox: { type: 'toggle', displayName: 'Show search box' },
       showDownloadButton: { type: 'toggle', displayName: 'Show download button' },
       showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
+      showBulkUpdateActions: { type: 'toggle', displayName: 'Show bulk update actions' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -76,6 +77,7 @@ export const componentTypes = [
             { name: 'email', id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f' },
           ],
         },
+        showBulkUpdateActions: { value: true },
       },
       events: [],
       styles: {
