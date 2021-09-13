@@ -163,7 +163,11 @@ class Viewer extends React.Component {
                       deviceWindowWidth={deviceWindowWidth}
                       currentLayout={currentLayout}
                       currentState={this.state.currentState}
-                      onComponentClick={(id, component) => onComponentClick(this, id, component, 'view')}
+                      selectedComponent={this.state.selectedComponent}
+                      onComponentClick={(id, component) =>  { 
+                        this.setState({ selectedComponent: { id, component } });
+                        onComponentClick(this, id, component, 'view');
+                      }}
                       onComponentOptionChanged={(component, optionName, value) =>
                         onComponentOptionChanged(this, component, optionName, value)
                       }
