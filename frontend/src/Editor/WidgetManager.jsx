@@ -8,7 +8,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
 
   function filterComponents(value) {
     if (value != '') {
-      const fuse = new Fuse(filteredComponents, { keys: ['component'] });
+      const fuse = new Fuse(componentTypes, { keys: ['component'] });
       const results = fuse.search(value);
       setFilteredComponents(results.map((result) => result.item));
     } else {
@@ -56,7 +56,17 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     const otherSection = { title: 'others', items: [] };
 
     const commonItems = ['Table', 'Chart', 'Button', 'Text', 'Datepicker'];
-    const formItems = ['TextInput', 'NumberInput', 'Textarea', 'Dropdown', 'Multiselect', 'RichTextEditor', 'Checkbox', 'Radio-button', 'Datepicker'];
+    const formItems = [
+      'TextInput',
+      'NumberInput',
+      'Textarea',
+      'Dropdown',
+      'Multiselect',
+      'RichTextEditor',
+      'Checkbox',
+      'Radio-button',
+      'Datepicker',
+    ];
     const integrationItems = ['Map'];
 
     filteredComponents.map((f) => {
