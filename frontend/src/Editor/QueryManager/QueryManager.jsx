@@ -168,21 +168,6 @@ class QueryManager extends React.Component {
     }
   };
 
-  deleteDataQuery = () => {
-    this.setState({ isDeleting: true });
-    dataqueryService
-      .del(this.state.selectedQuery.id)
-      .then(() => {
-        toast.success('Query Deleted', { hideProgressBar: true, position: 'bottom-center' });
-        this.setState({ isDeleting: false });
-        this.props.dataQueriesChanged();
-      })
-      .catch(({ error }) => {
-        this.setState({ isDeleting: false });
-        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
-      });
-  };
-
   optionchanged = (option, value) => {
     this.setState({ options: { ...this.state.options, [option]: value } });
   };
@@ -237,7 +222,6 @@ class QueryManager extends React.Component {
       currentTab,
       isUpdating,
       isCreating,
-      isDeleting,
       addingQuery,
       editingQuery,
       selectedQuery,
@@ -335,15 +319,6 @@ class QueryManager extends React.Component {
                 className={`btn btn-primary m-1 float-right ${isUpdating || isCreating ? 'btn-loading' : ''}`}
               >
                 {buttonText}
-              </button>
-            )}
-            {editingQuery && (
-              <button
-                onClick={this.deleteDataQuery}
-                disabled={isDeleting}
-                className={`btn btn-danger m-1 float-right ${isDeleting? 'btn-loading' : ''}`}
-              >
-                Delete
               </button>
             )}
             {queryPaneHeight === '30%' ? (

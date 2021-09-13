@@ -78,6 +78,8 @@ class Editor extends React.Component {
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
       showQuerySearchField: false,
+      isDeleting: false,
+      showHiddenOptionsForDataQueryId: null,
     };
   }
 
@@ -344,6 +346,25 @@ class Editor extends React.Component {
     );
   };
 
+  deleteDataQuery = () => {
+    this.setState({ isDeleting: true });
+    dataqueryService
+      .del(this.state.selectedQuery.id)
+      .then(() => {
+        toast.success('Query Deleted', { hideProgressBar: true, position: 'bottom-center' });
+        this.setState({ isDeleting: false });
+        this.dataQueriesChanged();
+      })
+      .catch(({ error }) => {
+        this.setState({ isDeleting: false });
+        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+      });
+  };
+
+  setShowHiddenOptionsForDataQuery = (dataQueryId) => {
+    this.setState({ showHiddenOptionsForDataQueryId: dataQueryId });
+  }
+
   renderDataQuery = (dataQuery) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
 
@@ -362,6 +383,8 @@ class Editor extends React.Component {
         key={dataQuery.name}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
+        onMouseEnter={() => this.setShowHiddenOptionsForDataQuery(dataQuery.id)}
+        onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col">
           <img
@@ -371,8 +394,29 @@ class Editor extends React.Component {
           />
           <span className="p-3">{dataQuery.name}</span>
         </div>
+        <div className="col-auto mx-1">
+          {this.state.isDeleting? (
+            <div className="px-2">
+              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+            </div>
+          ) : (
+            <button
+              className="btn badge bg-azure-lt"
+              onClick={this.deleteDataQuery}
+              style={{ display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none' }}
+            >
+              <div>
+                <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+              </div>
+            </button>
+          )}
+        </div>
         <div className="col-auto">
-          {!(isLoading === true) && (
+          {isLoading === true ? (
+            <div className="px-2">
+              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+            </div>
+          ) : (
             <button
               className="btn badge bg-azure-lt"
               onClick={() => {
@@ -388,11 +432,6 @@ class Editor extends React.Component {
                 <img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
               </div>
             </button>
-          )}
-          {isLoading === true && (
-            <div className="px-2">
-              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
-            </div>
           )}
         </div>
       </div>
