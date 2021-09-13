@@ -257,7 +257,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      value: { type: 'code', displayName: 'Default value' },
+      placeholder: { type: 'code', displayName: 'Placeholder' }
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -285,7 +286,8 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        placeholder: { value: 'Placeholder text' },
+        value: { value: '' },
+        placeholder: { value: 'Placeholder text' }
       },
       events: [],
       styles: {
@@ -308,7 +310,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      value: { type: 'code', displayName: 'Default value' },
+      placeholder: { type: 'code', displayName: 'Placeholder' }
     },
     events: {},
     styles: {
@@ -324,7 +327,8 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        placeholder: { value: '0' },
+        value: { value: '' },
+        placeholder: { value: '0' }
       },
       events: [],
       styles: {
