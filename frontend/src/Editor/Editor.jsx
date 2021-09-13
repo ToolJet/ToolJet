@@ -78,7 +78,7 @@ class Editor extends React.Component {
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
       showQuerySearchField: false,
-      isDeleting: false,
+      isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
     };
   }
@@ -347,16 +347,24 @@ class Editor extends React.Component {
   };
 
   deleteDataQuery = () => {
-    this.setState({ isDeleting: true });
+    this.setState({ showDataQueryDeletionConfirmation: true });
+  }
+
+  cancelDeleteDataQuery = () => {
+    this.setState({ showDataQueryDeletionConfirmation: false});
+  }
+
+  executeDataQueryDeletion = () => {
+    this.setState({ showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true });
     dataqueryService
       .del(this.state.selectedQuery.id)
       .then(() => {
         toast.success('Query Deleted', { hideProgressBar: true, position: 'bottom-center' });
-        this.setState({ isDeleting: false });
+        this.setState({ isDeletingDataQuery: false });
         this.dataQueriesChanged();
       })
       .catch(({ error }) => {
-        this.setState({ isDeleting: false });
+        this.setState({ isDeletingDataQuery: false });
         toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
       });
   };
@@ -372,7 +380,7 @@ class Editor extends React.Component {
     if (this.state.selectedQuery) {
       isSeletedQuery = dataQuery.id === this.state.selectedQuery.id;
     }
-
+    const isQueryBeingDeleted = this.state.isDeletingDataQuery && isSeletedQuery
     const { currentState } = this.state;
 
     const isLoading = currentState.queries[dataQuery.name] ? currentState.queries[dataQuery.name].isLoading : false;
@@ -395,7 +403,7 @@ class Editor extends React.Component {
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto mx-1">
-          {this.state.isDeleting? (
+          { isQueryBeingDeleted ? (
             <div className="px-2">
               <div className="text-center spinner-border spinner-border-sm" role="status"></div>
             </div>
@@ -527,6 +535,8 @@ class Editor extends React.Component {
       scaleValue,
       dataQueriesDefaultText,
       showQuerySearchField,
+      showDataQueryDeletionConfirmation,
+      isDeletingDataQuery,
       apps,
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
@@ -542,6 +552,13 @@ class Editor extends React.Component {
           onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData}
+        />
+        <Confirm
+          show={showDataQueryDeletionConfirmation}
+          message={'Do you really want to delete this query?'}
+          confirmButtonLoading={isDeletingDataQuery}
+          onConfirm={() => this.executeDataQueryDeletion()}
+          onCancel={() => this.cancelDeleteDataQuery()}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="header">
