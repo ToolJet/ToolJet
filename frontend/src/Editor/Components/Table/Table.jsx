@@ -53,6 +53,9 @@ export function Table({
   const showFilterButtonProperty = component.definition.properties.showFilterButton?.value;
   const showFilterButton = resolveWidgetFieldValue(showFilterButtonProperty, currentState) ?? true; // default is true for backward compatibility
 
+  const showBulkUpdateActionsProperty = component.definition.properties.showBulkUpdateActions?.value;
+  const showBulkUpdateActions = resolveWidgetFieldValue(showBulkUpdateActionsProperty, currentState) ?? true; // default is true for backward compatibility
+
   const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
   const clientSidePagination = resolveWidgetFieldValue(clientSidePaginationProperty, currentState) ?? !serverSidePagination; // default is true for backward compatibility
 
@@ -785,7 +788,7 @@ export function Table({
               }
             </div>
 
-            {Object.keys(componentState.changeSet || {}).length > 0 && (
+            {(showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0) && (
               <div className="col">
                 <button
                   className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
