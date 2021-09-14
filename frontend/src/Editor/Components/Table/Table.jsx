@@ -790,7 +790,13 @@ export function Table({
                         }
                       }
                       return (
-                        <td className={cx({ 'has-dropdown': cell.column.columnType === 'dropdown' })} {...cellProps}>
+                        <td
+                          className={cx({
+                            'has-dropdown': cell.column.columnType === 'dropdown',
+                            'has-multiselect': cell.column.columnType === 'multiselect',
+                          })}
+                          {...cellProps}
+                        >
                           {cell.render('Cell')}
                         </td>
                       );
