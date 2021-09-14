@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/",
   "$id": "https://tooljet.io/Mssql.schema.json",
-  "title": "Mongodb datasource",
+  "title": "Mssql datasource",
   "description": "A schema defining mssql datasource",
   "type": "object",
   "properties": {
