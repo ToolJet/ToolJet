@@ -114,7 +114,7 @@ export class AppsController {
     const existingApp = await this.appsService.find(params.id);
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
-    if (!ability.can('viewApp', existingApp)) {
+    if (!ability.can('cloneApp', existingApp)) {
       throw new ForbiddenException(
         'you do not have permissions to perform this action',
       );

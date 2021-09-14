@@ -56,25 +56,54 @@ describe('apps controller', () => {
   });
 
   describe('/apps/:id/clone', () => {
-    it('should be able to clone the app if app is of same organization', async () => {
+    it('should be able to clone the app if user is admin or developer', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         role: 'admin',
       });
+
+      const developerUserData = await createUser(app, {
+        email: 'dev@tooljet.io',
+        role: 'developer',
+        organization: adminUserData.organization,
+      });
+
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        role: 'viewer',
+        organization: adminUserData.organization,
+      });
+
       const application = await createApplication(app, {
         name: 'App to clone',
         user: adminUserData.user,
       });
 
-      const response = await request(app.getHttpServer())
+      let response = await request(app.getHttpServer())
         .post(`/apps/${application.id}/clone`)
-        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toBe(201);
 
-      const appId = response.body.id;
-      const clonedApplication = await App.findOne({ id: appId });
+      let appId = response.body.id;
+      let clonedApplication = await App.findOne({ id: appId });
       expect(clonedApplication.name).toBe('App to clone');
+
+      response = await request(app.getHttpServer())
+        .post(`/apps/${application.id}/clone`)
+        .set('Authorization', authHeaderForUser(developerUserData.user));
+
+      expect(response.statusCode).toBe(201);
+
+      appId = response.body.id;
+      clonedApplication = await App.findOne({ id: appId });
+      expect(clonedApplication.name).toBe('App to clone');
+
+      response = await request(app.getHttpServer())
+        .post(`/apps/${application.id}/clone`)
+        .set('Authorization', authHeaderForUser(viewerUserData.user));
+
+      expect(response.statusCode).toBe(403);
     });
 
     it('should not be able to clone the app if app is of another organization', async () => {
