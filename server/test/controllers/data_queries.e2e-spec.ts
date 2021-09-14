@@ -21,7 +21,7 @@ describe('data queries controller', () => {
     const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
     const application = await createApplication(app, { name: 'name', user: adminUserData.user });
 
-    const dataQuery = await createDataQuery(app, { 
+    const dataQuery = await createDataQuery(app, {
       application,
       kind: 'restapi',
       options: { "method":"get","url":"https://api.github.com/repos/tooljet/tooljet/stargazers","url_params":[],"headers":[],"body":[] }
@@ -55,7 +55,82 @@ describe('data queries controller', () => {
       await dataQuery.reload();
       expect(dataQuery.options.method).toBe(oldOptions.method);
     }
+  });
 
+  it('should be able to delete queries of an app only if admin/developer of same organization', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
+    const developerUserData = await createUser(app, {
+      email: 'developer@tooljet.io',
+      role: 'developer',
+      organization: adminUserData.organization,
+    });
+    const viewerUserData = await createUser(app, {
+      email: 'viewer@tooljet.io',
+      role: 'viewer',
+      organization: adminUserData.organization,
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+
+    for (const userData of [adminUserData, developerUserData]) {
+      const dataQuery = await createDataQuery(app, {
+        application,
+        kind: 'restapi',
+        options: {
+          method: 'get',
+          url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
+          url_params: [],
+          headers: [],
+          body: [],
+        },
+      });
+      const newOptions = { method: userData.user.email };
+
+      const response = await request(app.getHttpServer())
+        .delete(`/data_queries/${dataQuery.id}`)
+        .set('Authorization', authHeaderForUser(userData.user))
+        .send({
+          options: newOptions,
+        });
+
+      expect(response.statusCode).toBe(200);
+    }
+
+    // Should not update if viewer or if user of another org
+    for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
+      const dataQuery = await createDataQuery(app, {
+        application,
+        kind: 'restapi',
+        options: {
+          method: 'get',
+          url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
+          url_params: [],
+          headers: [],
+          body: [],
+        },
+      });
+      const oldOptions = dataQuery.options;
+
+      const response = await request(app.getHttpServer())
+        .delete(`/data_queries/${dataQuery.id}`)
+        .set('Authorization', authHeaderForUser(userData.user))
+        .send({
+          options: { method: '' },
+        });
+
+      expect(response.statusCode).toBe(403);
+      await dataQuery.reload();
+      expect(dataQuery.options.method).toBe(oldOptions.method);
+    }
   });
 
   it('should be able to get queries of an app only if the user belongs to the same organization', async () => {
@@ -66,7 +141,7 @@ describe('data queries controller', () => {
     const application = await createApplication(app, { name: 'name', user: adminUserData.user });
     const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
 
-    await createDataQuery(app, { 
+    await createDataQuery(app, {
       application,
       kind: 'restapi',
       options: { "method": "get" }
@@ -161,9 +236,9 @@ describe('data queries controller', () => {
       .send(queryParams)
 
       expect(response.statusCode).toBe(403);
-    
+
   });
-  
+
   it('should be able to run queries of an app if the user belongs to the same organization', async () => {
 
     const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
@@ -171,7 +246,7 @@ describe('data queries controller', () => {
     const viewerUserData = await createUser(app, { email: 'viewer@tooljet.io', role: 'viewer', organization: adminUserData.organization });
     const application = await createApplication(app, { name: 'name', user: adminUserData.user });
 
-    const dataQuery = await createDataQuery(app, { 
+    const dataQuery = await createDataQuery(app, {
       application,
       kind: 'restapi',
       options: { "method":"get","url":"https://api.github.com/repos/tooljet/tooljet/stargazers","url_params":[],"headers":[],"body":[] }
@@ -194,7 +269,7 @@ describe('data queries controller', () => {
     const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
     const application = await createApplication(app, { name: 'name', user: adminUserData.user });
 
-    const dataQuery = await createDataQuery(app, { 
+    const dataQuery = await createDataQuery(app, {
       application,
       kind: 'restapi',
       options: { "method":"get","url":"https://api.github.com/repos/tooljet/tooljet/stargazers","url_params":[],"headers":[],"body":[] }
@@ -212,7 +287,7 @@ describe('data queries controller', () => {
 
     const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
     const application = await createApplication(app, { name: 'name', user: adminUserData.user, isPublic: true });
-    const dataQuery = await createDataQuery(app, { 
+    const dataQuery = await createDataQuery(app, {
       application,
       kind: 'restapi',
       options: { "method":"get","url":"https://api.github.com/repos/tooljet/tooljet/stargazers","url_params":[],"headers":[],"body":[] }
@@ -230,7 +305,7 @@ describe('data queries controller', () => {
 
     const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
     const application = await createApplication(app, { name: 'name', user: adminUserData.user, isPublic: false });
-    const dataQuery = await createDataQuery(app, { 
+    const dataQuery = await createDataQuery(app, {
       application,
       kind: 'restapi',
       options: { "method":"get","url":"https://api.github.com/repos/tooljet/tooljet/stargazers","url_params":[],"headers":[],"body":[] }
