@@ -1639,6 +1639,8 @@ input:focus-visible {
   position: fixed;
   bottom: 0;
   background: $white;
+  width: 100%;
+  z-index: 1;
 }
 
 .components-container {
