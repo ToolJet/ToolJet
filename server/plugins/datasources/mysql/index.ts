@@ -55,7 +55,8 @@ export default class MysqlQueryService implements QueryService {
         password : sourceOptions.password,
         database : sourceOptions.database,
         port: sourceOptions.port,
-        multipleStatements: true
+        multipleStatements: true,
+        ssl: sourceOptions.ssl_enabled ?? false // Disabling by default for backward compatibility
       }
     };
 

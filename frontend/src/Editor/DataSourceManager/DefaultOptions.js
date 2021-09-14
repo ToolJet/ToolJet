@@ -12,7 +12,8 @@ export const defaultOptions = {
     port: { value: 3306 },
     database: { value: '' },
     username: { value: '' },
-    password: { value: '' }
+    password: { value: '' },
+    ssl_enabled: { value: true },
   },
   mssql: {
     host: { value: 'localhost' },
