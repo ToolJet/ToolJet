@@ -7,6 +7,7 @@ import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { history } from '@/_helpers';
 import { serializeNestedObjectToQueryParams } from './utils';
+import { componentTypes } from '../Editor/Components/components';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -46,14 +47,17 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
   window.open(authUrl);
 }
 
-export function runTransformation(_ref, rawData, transformation) {
+export function runTransformation(_ref, rawData, transformation, query) {
   const data = rawData;
-  const evalFunction = Function(['data', 'moment', '_', 'currentState'], transformation);
+  const evalFunction = Function(['data', 'moment', '_', 'components', 'queries', 'globals'], transformation);
   let result = [];
 
+  const currentState = _ref.state.currentState || {};
+
   try {
-    result = evalFunction(data, moment, _, _ref.state.currentState);
+    result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
   } catch (err) {
+    console.log('Transformation failed for query: ', query.name ,err);
     toast.error(err.message, { hideProgressBar: true });
   }
 
@@ -61,9 +65,10 @@ export function runTransformation(_ref, rawData, transformation) {
 }
 
 export async function executeActionsForEventId(_ref, eventId, component, mode) {
-  const events = component.definition.events.filter(event => event.eventId === eventId);
+  const events = component.definition.events || [];
+  const filteredEvents = events.filter(event => event.eventId === eventId);
 
-  for(const event of events) {
+  for(const event of filteredEvents) {
     await executeAction(_ref, event, mode);
   };
 
@@ -239,7 +244,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     });
   }
 
-  if (['onDetect', 'onCheck', 'onUnCheck', 'onBoundsChange', 'onCreateMarker', 'onMarkerClick', 'onPageChanged', 'onSearch', 'onChange', 'onSelectionChange'].includes(eventName)) {
+  if (['onDetect', 'onCheck', 'onUnCheck', 'onBoundsChange', 'onCreateMarker', 'onMarkerClick', 'onPageChanged', 'onSearch', 'onChange', 'onSelectionChange', 'onSelect'].includes(eventName)) {
     const { component } = options;
     executeActionsForEventId(_ref, eventName, component, mode);
   }
@@ -288,7 +293,7 @@ export function previewQuery(_ref, query) {
       let finalData = data.data;
 
       if (query.options.enableTransformation) {
-        finalData = runTransformation(_ref, finalData, query.options.transformation);
+        finalData = runTransformation(_ref, finalData, query.options.transformation, query);
       }
 
       _ref.setState({ previewLoading: false, queryPreviewData: finalData });
@@ -360,7 +365,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
   return new Promise(function (resolve, reject) {
     _self.setState({ currentState: newState }, () => {
       dataqueryService.run(queryId, options).then(data => {
-        resolve();
 
         if (data.status === 'needs_oauth') {
           const url = data.data.auth_url; // Backend generates and return sthe auth url
@@ -369,12 +373,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
         if (data.status === 'failed') {
           toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
-
-          onEvent(
-            _self,
-            'onDataQueryFailure',
-            { definition: { events: dataQuery.options.events } }
-          )
 
           return (
             _self.setState({
@@ -396,6 +394,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
                   }
                 }
               }
+            }, () => {
+              resolve();
+              onEvent(
+                _self,
+                'onDataQueryFailure',
+                { definition: { events: dataQuery.options.events } }
+              )
             })
           )
         }
@@ -404,19 +409,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
         let finalData = data.data;
 
         if (dataQuery.options.enableTransformation) {
-          finalData = runTransformation(_self, rawData, dataQuery.options.transformation);
+          finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
         }
 
         if (dataQuery.options.showSuccessNotification) {
           const notificationDuration = dataQuery.options.notificationDuration || 5;
           toast.success(dataQuery.options.successMessage, { hideProgressBar: true, autoClose: notificationDuration * 1000 });
         }
-
-        onEvent(
-          _self,
-          'onDataQuerySuccess',
-          { definition: { events: dataQuery.options.events } }
-        )
 
         _self.setState({
           currentState: {
@@ -431,6 +430,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
               }
             }
           }
+        }, () => {
+          resolve();
+          onEvent(
+            _self,
+            'onDataQuerySuccess',
+            { definition: { events: dataQuery.options.events } }
+          )
         });
       }).catch(( { error } ) => {
         toast.error(error, { hideProgressBar: true, autoClose: 3000 });
@@ -444,6 +450,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
               }
             }
           }
+        }, () => {
+          resolve();
         });
       });
     });
@@ -455,3 +463,31 @@ export function renderTooltip({props, text}) {
     {text}
   </Tooltip>
 };
+
+export function computeComponentState(_ref, components) {
+  let componentState = {};
+  const currentComponents = _ref.state.currentState.components;
+  Object.keys(components).forEach((key) => {
+    const component = components[key];
+    const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
+
+    const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
+    const existingValues = currentComponents[existingComponentName];
+
+    componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+
+  });
+
+  _ref.setState({
+    currentState: {
+      ..._ref.state.currentState,
+      components: {
+        ...componentState,
+      },
+    },
+    defaultComponentStateComputed: true
+  }, () => {
+    console.log('Default component state computed and set')
+  });
+
+}

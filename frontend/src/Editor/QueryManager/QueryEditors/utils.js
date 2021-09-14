@@ -3,7 +3,7 @@ export function changeOption(_ref, option, value) {
   _ref.setState(
     {
       options: {
-        ..._ref.props.options,
+        ..._ref.state.options,
         [option]: value
       }
     },

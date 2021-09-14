@@ -2127,7 +2127,12 @@ input[type=text] {
     margin-bottom: 0!important;
 
     .select-search__option {
-      height: 30px;
+      height: auto;
     }
   }
+}
+
+
+.draggable-box:focus-within {
+  z-index: 2!important;
 }

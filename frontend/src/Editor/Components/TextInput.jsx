@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
 import escapeStringRegexp from 'escape-string-regexp';
 
@@ -21,6 +21,19 @@ export const TextInput = function TextInput({
   let parsedWidgetVisibility = widgetVisibility;
   const value = currentState?.components[component?.name]?.value;
   const currentValidState = currentState?.components[component?.name]?.isValid;
+  
+  const [text, setText] = useState(value);
+
+  const textProperty = component.definition.properties.value;
+  let newText = value;
+  if (textProperty && currentState) {
+    newText = resolveReferences(textProperty.value, currentState, '');
+  }
+
+  useEffect(() => {
+    setText(newText);
+    onComponentOptionChanged(component, 'value', newText);
+  }, [newText]);
 
   const validationData = validateWidget({
     validationObject: component.definition.validation,
@@ -43,11 +56,15 @@ export const TextInput = function TextInput({
       <input
         disabled={parsedDisabledState}
         onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
-        onChange={(e) => onComponentOptionChanged(component, 'value', e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value);
+          onComponentOptionChanged(component, 'value', e.target.value);
+        }}
         type="text"
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
         placeholder={placeholder}
         style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }}
+        value={text}
       />
       <div className="invalid-feedback">{validationError}</div>
     </div>
