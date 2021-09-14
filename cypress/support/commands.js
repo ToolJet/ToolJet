@@ -5,6 +5,8 @@ Cypress.Commands.add('login', (email, password) => {
   cy.get('[data-testid="loginButton"').click();
 })
 
+
+
 Cypress.Commands.add('checkToastMessage', (toastId, message) => {
   cy.get(`[id=${toastId}]`).should('contain', message);
 });
@@ -67,7 +69,6 @@ Cypress.Commands.add('addPostgresDataSource', fn => {
     .should('have.text', 'Save')
     .click()
 });
-
 Cypress.Commands.add('createAppIfEmptyDashboard', fn => {
   cy.get('body').then(($title => {
     //check you are not running tests on empty dashboard state
