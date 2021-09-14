@@ -792,8 +792,12 @@ body {
     }
   }
 
-  .has-dropdown, .has-multiselect {
+  .has-dropdown, .has-multiselect, .has-text {
     padding: 0;
+  }
+
+  .has-text {
+    margin: 0;
   }
 
   td {

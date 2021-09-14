@@ -296,6 +296,7 @@ export function Table({
       width: width,
       columnOptions,
       columnType,
+      isEditable: column.isEditable,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
@@ -792,6 +793,7 @@ export function Table({
                       return (
                         <td
                           className={cx({
+                            'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
                             'has-dropdown': cell.column.columnType === 'dropdown',
                             'has-multiselect': cell.column.columnType === 'multiselect',
                           })}
