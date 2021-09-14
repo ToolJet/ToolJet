@@ -23,6 +23,12 @@
       "type": "text",
       "description": "Name of the database"
     },
+    "ssl_enabled": {
+      "$label": "SSL",
+      "$key": "ssl_enabled",
+      "type": "toggle",
+      "description": "Toggle for ssl_enabled"
+    },
     "username": {
       "$label": "Username",
       "$key": "username",
