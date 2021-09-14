@@ -5,6 +5,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
 import 'react-toastify/dist/ReactToastify.css';
 import { Confirm } from './Viewer/Confirm';
+import { componentTypes } from './Components/components';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -13,6 +14,7 @@ import {
   onQueryCancel,
   onEvent,
   runQuery,
+  computeComponentState
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
@@ -49,7 +51,7 @@ class Viewer extends React.Component {
       {
         app: data,
         isLoading: false,
-        appDefinition: data.definition || {components: {}},
+        appDefinition: data.definition || {components: {}}, 
       },
       () => {
         data.data_queries.forEach((query) => {
@@ -61,7 +63,7 @@ class Viewer extends React.Component {
     );
   };
 
-  setStateForContainer = () => {
+  setStateForContainer = (data) => {
     const currentUser = authenticationService.currentUserValue;
     let userVars = {};
 
@@ -72,7 +74,6 @@ class Viewer extends React.Component {
         lastName: currentUser.last_name,
       };
     }
-
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
@@ -84,17 +85,23 @@ class Viewer extends React.Component {
           urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
         },
       },
+    }, () => {
+      computeComponentState(this, data?.definition?.components)
     });
   };
 
   loadApplicationBySlug = (slug) => {
-    appService.getAppBySlug(slug).then((data) => this.setStateForApp(data));
-    this.setStateForContainer();
+    appService.getAppBySlug(slug).then((data) => { 
+      this.setStateForApp(data);
+      this.setStateForContainer(data);
+    })
   };
 
   loadApplicationByVersion = (appId, versionId) => {
-    appService.getAppByVersion(appId, versionId).then((data) => this.setStateForApp(data));
-    this.setStateForContainer();
+    appService.getAppByVersion(appId, versionId).then((data) =>  { 
+      this.setStateForApp(data);
+      this.setStateForContainer(data);
+    });
   };
 
   componentDidMount() {
@@ -106,7 +113,7 @@ class Viewer extends React.Component {
   }
 
   render() {
-    const { appDefinition, showQueryConfirmation, isLoading, currentLayout, deviceWindowWidth, scaleValue } =
+    const { appDefinition, showQueryConfirmation, isLoading, currentLayout, deviceWindowWidth, scaleValue, defaultComponentStateComputed } =
       this.state;
 
     return (
@@ -143,26 +150,32 @@ class Viewer extends React.Component {
                     width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px`,
                   }}
                 >
-                  <Container
-                    appDefinition={appDefinition}
-                    appDefinitionChanged={() => false} // function not relevant in viewer
-                    snapToGrid={true}
-                    appLoading={isLoading}
-                    darkMode={this.props.darkMode}
-                    onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
-                    mode="view"
-                    scaleValue={scaleValue}
-                    deviceWindowWidth={deviceWindowWidth}
-                    currentLayout={currentLayout}
-                    currentState={this.state.currentState}
-                    onComponentClick={(id, component) => onComponentClick(this, id, component, 'view')}
-                    onComponentOptionChanged={(component, optionName, value) =>
-                      onComponentOptionChanged(this, component, optionName, value)
-                    }
-                    onComponentOptionsChanged={(component, options) =>
-                      onComponentOptionsChanged(this, component, options)
-                    }
-                  />
+                  {defaultComponentStateComputed && 
+                    <Container
+                      appDefinition={appDefinition}
+                      appDefinitionChanged={() => false} // function not relevant in viewer
+                      snapToGrid={true}
+                      appLoading={isLoading}
+                      darkMode={this.props.darkMode}
+                      onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
+                      mode="view"
+                      scaleValue={scaleValue}
+                      deviceWindowWidth={deviceWindowWidth}
+                      currentLayout={currentLayout}
+                      currentState={this.state.currentState}
+                      selectedComponent={this.state.selectedComponent}
+                      onComponentClick={(id, component) =>  { 
+                        this.setState({ selectedComponent: { id, component } });
+                        onComponentClick(this, id, component, 'view');
+                      }}
+                      onComponentOptionChanged={(component, optionName, value) =>
+                        onComponentOptionChanged(this, component, optionName, value)
+                      }
+                      onComponentOptionsChanged={(component, options) =>
+                        onComponentOptionsChanged(this, component, options)
+                      }
+                    />
+                  }
                 </div>
               </div>
             </div>

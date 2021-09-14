@@ -3,6 +3,8 @@
   "env": {
     "apiUrl": "http://localhost:3000"
   },
+  "viewportWidth": 1536,
+  "viewportHeight": 960,
   "testFiles": [
     "auth.spec.js",
     "dashboard/empty-state-dashboard.spec.js",
@@ -27,5 +29,5 @@
     "editor/widgets/editor-widget-multiselect.spec.js",
     "editor/widgets/editor-widget-map.spec.js",
     "editor/widgets/editor-widget-qr-scanner.spec.js"
-    ] 
+  ]
 }

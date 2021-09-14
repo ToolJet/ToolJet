@@ -9,7 +9,8 @@ export const DropDown = function DropDown({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged
+  onComponentOptionChanged,
+  onEvent
 }) {
   console.log('currentState', currentState);
 
@@ -78,13 +79,13 @@ export const DropDown = function DropDown({
   }, [newValue]);
 
   useEffect(() => {
-    onComponentOptionChanged(component, 'value', currentValue);
+    onComponentOptionChanged(component, 'value', currentValue).then(() => onEvent('onSelect', { component }) );
   }, [currentValue]);
 
   return (
     <div className="dropdown-widget row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <div className="col-auto">
-        <label style={{marginRight: '1rem'}} className="form-label py-1">{label}</label>
+        <label style={{marginRight:  label !== '' ? '1rem' : '0.001rem'}} className="form-label py-1">{label}</label>
       </div>
       <div className="col px-0">
         <SelectSearch

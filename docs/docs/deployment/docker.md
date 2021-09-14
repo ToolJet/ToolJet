@@ -72,17 +72,8 @@ For example, if the server is an AWS EC2 instance and the installation should re
 
 7. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
-8. Create the database:
-  ```bash
-  docker-compose run server npm run db:create
-  ```
 
-9. Run database migrations:
-  ```bash
-  docker-compose run server npm run db:migrate
-  ```
-
-10.  Seed the database:
+8.  Seed the database:
   ```bash
   docker-compose run server npm run db:seed
   ```
@@ -91,4 +82,4 @@ For example, if the server is an AWS EC2 instance and the installation should re
     password: `password`
 
 
-11.  You're all done, ToolJet client would now be served at the URL you've set in `TOOLJET_HOST`.
+9.  You're all done, ToolJet client would now be served at the URL you've set in `TOOLJET_HOST`.

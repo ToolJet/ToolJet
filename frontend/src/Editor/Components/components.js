@@ -17,6 +17,7 @@ export const componentTypes = [
       displaySearchBox: { type: 'toggle', displayName: 'Show search box' },
       showDownloadButton: { type: 'toggle', displayName: 'Show download button' },
       showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
+      showBulkUpdateActions: { type: 'toggle', displayName: 'Show bulk update actions' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -76,6 +77,7 @@ export const componentTypes = [
             { name: 'email', id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f' },
           ],
         },
+        showBulkUpdateActions: { value: true },
       },
       events: [],
       styles: {
@@ -255,7 +257,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      value: { type: 'code', displayName: 'Default value' },
+      placeholder: { type: 'code', displayName: 'Placeholder' }
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -283,7 +286,8 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        placeholder: { value: 'Placeholder text' },
+        value: { value: '' },
+        placeholder: { value: 'Placeholder text' }
       },
       events: [],
       styles: {
@@ -306,7 +310,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
-      placeholder: { type: 'code', displayName: 'Placeholder' },
+      value: { type: 'code', displayName: 'Default value' },
+      placeholder: { type: 'code', displayName: 'Placeholder' }
     },
     events: {},
     styles: {
@@ -322,7 +327,8 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        placeholder: { value: '0' },
+        value: { value: '' },
+        placeholder: { value: '0' }
       },
       events: [],
       styles: {
@@ -339,6 +345,9 @@ export const componentTypes = [
     defaultSize: {
       width: 150,
       height: 30,
+    },
+    validation: {
+      customRule: { type: 'code', displayName: 'Custom validation' }
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -361,6 +370,9 @@ export const componentTypes = [
       others: {
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
+      },
+      validation: {
+        customRule: { value: null }
       },
       properties: {
         format: { value: 'DD/MM/YYYY' },

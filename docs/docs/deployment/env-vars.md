@@ -86,14 +86,6 @@ If your ToolJet installation needs access to datasources such as Google sheets, 
 | GOOGLE_CLIENT_ID      | client id |
 | GOOGLE_CLIENT_SECRET      | client secret |
 
-## ToolJet client
-
-#### Server URL ( required )
-
-| variable | description |
-| ----------- | ----------- |
-| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.io ) |
-
 #### Google maps configuration ( optional )
 
 If your ToolJet installation requires `Maps` widget, you need to create an API key for Google Maps API.
@@ -101,3 +93,40 @@ If your ToolJet installation requires `Maps` widget, you need to create an API k
 | variable      | description |
 | ----------- | ----------- |
 | GOOGLE_MAPS_API_KEY | Google maps API key |
+
+#### APM VENDOR ( optional )
+
+Specify application monitoring vendor. Currently supported values - `sentry`.
+
+| variable      | description |
+| ----------- | ----------- |
+| APM VENDOR | Application performance monitoring vendor |
+
+#### SENTRY DNS ( optional )
+
+DSN tells a Sentry SDK where to send events so the events are associated with the correct project
+
+#### SENTRY DEBUG ( optional )
+
+Prints logs for sentry. Supported values: `true` | `false`
+Default value is `false`
+
+#### Server URL ( optional)
+This is used to set up for CSP headers and put trace info to be used with APM vendors.
+
+| variable | description |
+| ----------- | ----------- |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.io ) |
+
+
+#### RELEASE VERSION ( optional)
+Once set any APM provider that supports segregation with releases will track it.
+
+## ToolJet client
+
+#### Server URL ( optionally required )
+This is required when client is built separately.
+
+| variable | description |
+| ----------- | ----------- |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.io ) |
