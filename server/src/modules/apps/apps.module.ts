@@ -17,10 +17,31 @@ import { FoldersService } from '@services/folders.service';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { AppCloneService } from '@services/app_clone.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([App, AppVersion, AppUser, DataQuery, Folder, FolderApp, OrganizationUser, User, Organization, DataSource]), CaslModule],
-  providers: [AppsService, AppUsersService, UsersService, FoldersService],
+  imports: [
+    TypeOrmModule.forFeature([
+      App,
+      AppVersion,
+      AppUser,
+      DataQuery,
+      Folder,
+      FolderApp,
+      OrganizationUser,
+      User,
+      Organization,
+      DataSource,
+    ]),
+    CaslModule,
+  ],
+  providers: [
+    AppsService,
+    AppUsersService,
+    UsersService,
+    FoldersService,
+    AppCloneService,
+  ],
   controllers: [AppsController, AppUsersController],
 })
 export class AppsModule {}

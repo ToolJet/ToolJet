@@ -9,13 +9,11 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
+import { AppCloneService } from './app_clone.service'
 
 @Injectable()
 export class AppsService {
-
   constructor(
-    private readonly entityManager: EntityManager,
-
     @InjectRepository(App)
     private appsRepository: Repository<App>,
 
@@ -33,149 +31,80 @@ export class AppsService {
 
     @InjectRepository(FolderApp)
     private folderAppsRepository: Repository<FolderApp>,
-  ) { }
+
+    private AppCloneService: AppCloneService,
+  ) {}
 
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne(id, {
-      relations: ['dataQueries']
+      relations: ['dataQueries'],
     });
   }
 
   async findBySlug(slug: string): Promise<App> {
     return await this.appsRepository.findOne({
       where: {
-        slug
+        slug,
       },
-      relations: ['dataQueries']
+      relations: ['dataQueries'],
     });
   }
 
   async findVersion(id: string): Promise<AppVersion> {
     return this.appVersionsRepository.findOne(id, {
-      relations: ['app']
+      relations: ['app'],
     });
   }
 
   async create(user: User): Promise<App> {
-    const app = await this.appsRepository.save(this.appsRepository.create({
+    const app = await this.appsRepository.save(
+      this.appsRepository.create({
         name: 'Untitled app',
         createdAt: new Date(),
         updatedAt: new Date(),
         organizationId: user.organization.id,
-        user: user
-    }));
+        user: user,
+      }),
+    );
 
-    await this.appUsersRepository.save(this.appUsersRepository.create({
-      userId: user.id,
-      appId: app.id,
-      role: 'admin',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }));
+    await this.appUsersRepository.save(
+      this.appUsersRepository.create({
+        userId: user.id,
+        appId: app.id,
+        role: 'admin',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    );
 
     return app;
   }
 
   async clone(existingApp: App, user: User): Promise<App> {
-    let clonedApp: App;
-
-    await this.entityManager.transaction(async (manager) => {
-      clonedApp = await this.createClonedAppForUser(manager, existingApp, user);
-      await this.buildClonedAppAssociations(manager, clonedApp, existingApp);
-    });
+    const clonedApp = await this.AppCloneService.perform(existingApp, user)
 
     return clonedApp;
   }
 
-  async createClonedAppForUser(
-    manager: EntityManager,
-    existingApp: App,
-    currentUser: User,
-  ): Promise<App> {
-    const newApp = manager.create(App, {
-      name: existingApp.name,
-      organizationId: currentUser.organizationId,
-      user: currentUser,
-    });
-    await manager.save(newApp);
-
-    const newAppUser = manager.create(AppUser, {
-      app: newApp,
-      user: currentUser,
-      role: 'admin',
-    });
-    await manager.save(newAppUser);
-    return newApp;
-  }
-
-  async buildClonedAppAssociations(manager, newApp: App, existingApp: App) {
-    const dataSourceMapping = {};
-    const newDefinition = existingApp.editingVersion?.definition;
-
-    const existingDataSources = await manager.find(DataSource, {
-      app: existingApp,
-    });
-
-    for (const source of existingDataSources) {
-      const newSource = manager.create(DataSource, {
-        app: newApp,
-        name: source.name,
-        options: source.options,
-        kind: source.kind,
-      });
-
-      await manager.save(newSource);
-      dataSourceMapping[source.id] = newSource.id;
-    }
-
-    const existingDataQueries = await manager.find(DataQuery, {
-      app: existingApp,
-    });
-
-    for (const query of existingDataQueries) {
-      const newQuery = manager.create(DataQuery, {
-        app: newApp,
-        name: query.name,
-        options: query.options,
-        kind: query.kind,
-        dataSourceId: dataSourceMapping[query.dataSourceId],
-      });
-      await manager.save(newQuery);
-      dataSourceMapping[query.id] = newQuery.id;
-    }
-
-    const version = manager.create(AppVersion, {
-      app: newApp,
-      definition: newDefinition,
-      name: 'v0',
-    });
-    await manager.save(version);
-
-    await manager.update(App, newApp, {
-      currentVersionId: version.id,
-    });
-  }
-
   async count(user: User) {
     return await this.appsRepository.count({
-        where: {
-            organizationId: user.organizationId,
-        },
-     });
+      where: {
+        organizationId: user.organizationId,
+      },
+    });
   }
 
   async all(user: User, page: number): Promise<App[]> {
-
     return await this.appsRepository.find({
-        relations: ['user'],
-        where: {
-            organizationId: user.organizationId,
-        },
-        take: 10,
-        skip: 10 * (page - 1),
-        order: {
-            createdAt: 'DESC'
-        }
+      relations: ['user'],
+      where: {
+        organizationId: user.organizationId,
+      },
+      take: 10,
+      skip: 10 * (page - 1),
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 
@@ -188,47 +117,49 @@ export class AppsService {
       name,
       slug,
       isPublic,
-      currentVersionId
-    }
+      currentVersionId,
+    };
 
     // removing keys with undefined values
-    Object.keys(updateableParams).forEach(key => updateableParams[key] === undefined ? delete updateableParams[key] : {});
+    Object.keys(updateableParams).forEach((key) =>
+      updateableParams[key] === undefined ? delete updateableParams[key] : {},
+    );
 
     return await this.appsRepository.update(appId, updateableParams);
   }
 
   async delete(appId: string) {
+    await this.appsRepository.update(appId, { currentVersionId: null });
 
-    await this.appsRepository.update(appId, { currentVersionId: null } );
-
-    const repositoriesToFetchEntitiesToBeDeleted:Repository<any>[] = [
+    const repositoriesToFetchEntitiesToBeDeleted: Repository<any>[] = [
       this.appUsersRepository,
       this.folderAppsRepository,
       this.dataQueriesRepository,
       this.dataSourcesRepository,
-      this.appVersionsRepository
+      this.appVersionsRepository,
     ];
 
-    for(const repository of repositoriesToFetchEntitiesToBeDeleted) {
+    for (const repository of repositoriesToFetchEntitiesToBeDeleted) {
       const entities = await repository.find({
-        where: { appId }
-      })
-      for(const entity of entities) { await repository.delete(entity.id) };
+        where: { appId },
+      });
+      for (const entity of entities) {
+        await repository.delete(entity.id);
+      }
     }
 
     return await this.appsRepository.delete(appId);
   }
 
   async fetchUsers(user: any, appId: string): Promise<AppUser[]> {
-
     const appUsers = await this.appUsersRepository.find({
       where: { appId },
-      relations: ['user']
+      relations: ['user'],
     });
 
     // serialize
-    const serializedUsers = []
-    for(const appUser of appUsers) {
+    const serializedUsers = [];
+    for (const appUser of appUsers) {
       serializedUsers.push({
         email: appUser.user.email,
         firstName: appUser.user.firstName,
@@ -251,26 +182,30 @@ export class AppsService {
     });
   }
 
-  async createVersion(user: User, app: App, versionName: string): Promise<AppVersion> {
-   const lastVersion = await this.appVersionsRepository.findOne({
-     where: { appId: app.id },
+  async createVersion(
+    user: User,
+    app: App,
+    versionName: string,
+  ): Promise<AppVersion> {
+    const lastVersion = await this.appVersionsRepository.findOne({
+      where: { appId: app.id },
       order: {
         createdAt: 'DESC',
       },
     });
 
-    return await this.appVersionsRepository.save(this.appVersionsRepository.create({
-      name: versionName,
-      app,
-      definition: lastVersion?.definition,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }));
-
+    return await this.appVersionsRepository.save(
+      this.appVersionsRepository.create({
+        name: versionName,
+        app,
+        definition: lastVersion?.definition,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    );
   }
 
   async updateVersion(user: User, version: AppVersion, definition: any) {
     return await this.appVersionsRepository.update(version.id, { definition });
   }
-
 }
