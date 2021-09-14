@@ -61,6 +61,8 @@ export function CodeHinter({
     switch (type) {
       case 'object':
         return JSON.stringify(content);
+      case 'boolean':
+        return content.toString()
       default:
         return content;
     }
