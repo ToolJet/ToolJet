@@ -58,6 +58,9 @@ Cypress.Commands.add('addPostgresDataSource', fn => {
     .should('have.attr', 'type', 'password')
     .type(Cypress.env('TEST_PG_PASSWORD'))
 
+  cy.get('input[type="checkbox"]')
+    .uncheck()
+
   cy.get('button[class="m-2 btn btn-success"]')
     .should('have.text', 'Test Connection')
     .click()
