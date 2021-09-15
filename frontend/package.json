@@ -16,6 +16,7 @@
     "@uiw/react-codemirror": "^3.0.6",
     "array-move": "^3.0.1",
     "babel-loader": "^8.0.5",
+    "babel-plugin-console-source": "^2.0.5",
     "bootstrap": "^4.6.0",
     "dompurify": "^2.2.7",
     "draft-js": "^0.11.7",
