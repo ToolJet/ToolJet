@@ -1,4 +1,15 @@
-import { Controller, Get, Param, Post, Patch, Query, Request, UseGuards, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Delete,
+  Query,
+  Request,
+  UseGuards,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { DataQueriesService } from '../../src/services/data_queries.service';
@@ -28,7 +39,7 @@ export class DataQueriesController {
     if(!ability.can('getQueries', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
-    
+
     const queries = await this.dataQueriesService.all(req.user, query.app_id);
     const seralizedQueries = [];
 
@@ -57,7 +68,7 @@ export class DataQueriesController {
     if(!ability.can('createQuery', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
-    
+
     const dataSourceId = req.body.data_source_id;
 
     // Make sure that the data source belongs ot the app
@@ -67,7 +78,7 @@ export class DataQueriesController {
         throw new ForbiddenException('you do not have permissions to perform this action');
       }
     }
-    
+
     const dataQuery = await this.dataQueriesService.create(req.user, name, kind, options, appId, dataSourceId);
     return decamelizeKeys(dataQuery);
   }
@@ -84,13 +95,31 @@ export class DataQueriesController {
     if(!ability.can('updateQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
-    
+
     const result = await this.dataQueriesService.update(req.user, dataQueryId, name, options);
     return decamelizeKeys(result);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async delete(@Request() req, @Param() params) {
+    const dataQueryId = params.id;
+
+    const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if (!ability.can('deleteQuery', dataQuery.app)) {
+      throw new ForbiddenException(
+        'you do not have permissions to perform this action',
+      );
+    }
+
+    const result = await this.dataQueriesService.delete(params.id);
+    return decamelizeKeys(result);
+  }
+
   @UseGuards(QueryAuthGuard)
-  @Post(':id/run') 
+  @Post(':id/run')
   async runQuery(@Request() req, @Param() params) {
     const dataQueryId = params.id;
     const { options } = req.body;
@@ -132,7 +161,7 @@ export class DataQueriesController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('/preview') 
+  @Post('/preview')
   async previewQuery(@Request() req, @Param() params) {
     const { options, query } = req.body;
     const dataQueryEntity = {
@@ -170,7 +199,7 @@ export class DataQueriesController {
         }
       }
     }
-    
+
     return result;
   }
 

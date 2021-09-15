@@ -316,6 +316,19 @@ class DataSourceManager extends React.Component {
               </div>
             </Modal.Footer>
           )}
+
+          {!dataSourceMeta?.hideSave && selectedDataSource && dataSourceMeta.customTesting && (
+            <Modal.Footer>
+              <div className="row mt-3">
+                <div className="col"></div>
+                <div className="col-auto">
+                  <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                    {isSaving ? 'Saving...' : 'Save'}
+                  </Button>
+                </div>
+              </div>
+            </Modal.Footer>
+          )}
         </Modal>
       </div>
     );

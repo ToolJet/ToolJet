@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Redis.schema.json",
+  "title": "Redis datasource",
+  "description": "A schema defining redis datasource",
+  "type": "object",
+  "properties": {
+    "host": {
+      "$label": "Host",
+      "$key": "host",
+      "type": "text",
+      "description": "Enter host"
+    },
+    "port": {
+      "$label": "Port",
+      "$key": "port",
+      "type": "text",
+      "description": "Enter port"
+    },
+    "username": {
+      "$label": "Username",
+      "$key": "username",
+      "type": "text",
+      "description": "Enter username field"
+    },
+    "password": {
+      "$label": "Password",
+      "$key": "password",
+      "type": "password",
+      "description": "Enter password field"
+    }
+  },
+  "required": ["scheme", "host", "port", "password"]
+}

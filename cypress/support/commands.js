@@ -5,6 +5,8 @@ Cypress.Commands.add('login', (email, password) => {
   cy.get('[data-testid="loginButton"').click();
 })
 
+
+
 Cypress.Commands.add('checkToastMessage', (toastId, message) => {
   cy.get(`[id=${toastId}]`).should('contain', message);
 });
@@ -55,6 +57,9 @@ Cypress.Commands.add('addPostgresDataSource', fn => {
     .find('.form-control')
     .should('have.attr', 'type', 'password')
     .type(Cypress.env('TEST_PG_PASSWORD'))
+
+  cy.get('input[type="checkbox"]')
+    .uncheck()
 
   cy.get('button[class="m-2 btn btn-success"]')
     .should('have.text', 'Test Connection')
