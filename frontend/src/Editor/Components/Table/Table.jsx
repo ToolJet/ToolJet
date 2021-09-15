@@ -793,9 +793,11 @@ export function Table({
                           }
                         }
                       }
+
                       return (
                         <td
                           className={cx({
+                            'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                             'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
                             'has-dropdown': cell.column.columnType === 'dropdown',
                             'has-multiselect': cell.column.columnType === 'multiselect',
