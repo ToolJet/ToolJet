@@ -22,5 +22,5 @@ The one click deployment will create a free dyno and a free postgresql database.
 :::
 
 :::tip
-ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on Heroku, modify `package.json` accordingly. We have a [guide](http://localhost:3001/docs/deployment/client) on deploying ToolJet client using services such as Firebase.
+ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on Heroku, modify `package.json` accordingly. We have a [guide](/docs/deployment/client) on deploying ToolJet client using services such as Firebase.
 :::
