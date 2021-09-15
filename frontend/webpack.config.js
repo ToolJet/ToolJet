@@ -38,10 +38,6 @@ module.exports = {
         ],
       },
       {
-        test: /\.jsx?$/,
-        loader: 'babel-loader'
-      },
-      {
         test: /\.css$/,
         loader: 'style-loader!css-loader',
       },
@@ -66,7 +62,16 @@ module.exports = {
           extensions: ['.js', '.jsx'],
         },
         use: {
-          loader: "babel-loader"
+          loader: "babel-loader",
+          options: {
+            plugins: [
+              [
+                'import',
+                { libraryName: 'lodash', libraryDirectory: "", camel2DashComponentName: false},
+                'lodash',
+              ],
+            ],
+          },
         }
       }
     ]
