@@ -3,7 +3,20 @@
   "$id": "https://tooljet.io/Slack.schema.json",
   "title": "Slack datasource",
   "description": "A schema defining slack datasource",
-  "type": "object",
+  "type": {
+    "name": "Slack",
+    "kind": "slack",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": { "type": "string", "encrypted": true }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
   "properties": {
     "sheets": {
       "$label": "",

@@ -3,7 +3,21 @@
   "$id": "https://tooljet.io/Elasticsearch.schema.json",
   "title": "Elastic search datasource",
   "description": "A schema defining elastic search datasource",
-  "type": "object",
+  "type": {
+    "name": "Elasticsearch",
+    "kind": "elasticsearch",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": { "type": "string" },
+      "port": { "type": "string" },
+      "username": { "type": "string" },
+      "password": { "type": "string", "encrypted": true }
+    }
+  },
   "properties": {
     "host": {
       "$label": "Host",

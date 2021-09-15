@@ -33,6 +33,26 @@ const Postgresql = ({ ...rest }) => <DynamicForm schema={PostgresqlSchema} {...r
 const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
 
+export const DataBaseSources = [
+  DynamodbSchema.type,
+  ElasticsearchSchema.type,
+  RedisSchema.type,
+  FirestoreSchema.type,
+  MongodbSchema.type,
+  PostgresqlSchema.type,
+  MysqlSchema.type,
+  MssqlSchema.type,
+];
+export const ApiSources = [
+  AirtableSchema.type,
+  RestapiSchema.type,
+  GraphqlSchema.type,
+  StripeSchema.type,
+  GooglesheetSchema.type,
+  SlackSchema.type,
+];
+export const DataSourceTypes = [...DataBaseSources, ...ApiSources];
+
 export const SourceComponents = {
   Elasticsearch,
   Redis,
@@ -47,5 +67,5 @@ export const SourceComponents = {
   Airtable,
   Graphql,
   Mysql,
-  Mssql
+  Mssql,
 };

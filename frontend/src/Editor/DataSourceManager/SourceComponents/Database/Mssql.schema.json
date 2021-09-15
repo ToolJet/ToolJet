@@ -3,7 +3,22 @@
   "$id": "https://tooljet.io/Mssql.schema.json",
   "title": "Mssql datasource",
   "description": "A schema defining mssql datasource",
-  "type": "object",
+  "type": {
+    "name": "SQL Server",
+    "kind": "mssql",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": { "type": "string" },
+      "port": { "type": "string" },
+      "database": { "type": "string" },
+      "username": { "type": "string" },
+      "password": { "type": "string", "encrypted": true }
+    }
+  },
   "properties": {
     "host": {
       "$label": "Host",
@@ -39,7 +54,7 @@
       "$label": "Azure",
       "$key": "azure",
       "type": "toggle",
-      "description": "Toggle for azure" 
+      "description": "Toggle for azure"
     }
   },
   "required": ["host", "port", "username", "password"]

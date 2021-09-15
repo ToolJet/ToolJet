@@ -3,7 +3,22 @@
   "$id": "https://tooljet.io/Mysql.schema.json",
   "title": "Mysql datasource",
   "description": "A schema defining mysql datasource",
-  "type": "object",
+  "type": {
+    "name": "MySQL",
+    "kind": "mysql",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": { "type": "string" },
+      "port": { "type": "string" },
+      "database": { "type": "string" },
+      "username": { "type": "string" },
+      "password": { "type": "string", "encrypted": true }
+    }
+  },
   "properties": {
     "host": {
       "$label": "Host",

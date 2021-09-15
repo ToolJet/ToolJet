@@ -3,7 +3,22 @@
   "$id": "https://tooljet.io/Postgresql.schema.json",
   "title": "Postgresql datasource",
   "description": "A schema defining postgresql datasource",
-  "type": "object",
+  "type": {
+    "name": "PostgreSQL",
+    "kind": "postgresql",
+    "options": {
+      "host": { "type": "string" },
+      "port": { "type": "string" },
+      "database": { "type": "string" },
+      "username": { "type": "string" },
+      "password": { "type": "string", "encrypted": true }
+    },
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    }
+  },
   "properties": {
     "host": {
       "$label": "Host",

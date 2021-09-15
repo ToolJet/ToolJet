@@ -3,7 +3,23 @@
   "$id": "https://tooljet.io/Mongodb.schema.json",
   "title": "Mongodb datasource",
   "description": "A schema defining mongodb datasource",
-  "type": "object",
+  "type": {
+    "name": "MongoDB",
+    "kind": "mongodb",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": { "type": "string" },
+      "port": { "type": "string" },
+      "username": { "type": "string" },
+      "password": { "type": "string", "encrypted": true },
+      "connection_type": { "type": "options" },
+      "connection_string": { "type": "string", "encrypted": true }
+    }
+  },
   "properties": {
     "connection_type": {
       "$label": "",

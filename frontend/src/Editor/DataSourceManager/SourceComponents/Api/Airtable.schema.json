@@ -3,7 +3,19 @@
   "$id": "https://tooljet.io/Airtable.schema.json",
   "title": "Airtable datasource",
   "description": "A schema defining airtable datasource",
-  "type": "object",
+  "type": {
+    "name": "Airtable",
+    "kind": "airtable",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": { "type": "string", "encrypted": true }
+    },
+    "customTesting": true
+  },
   "properties": {
     "api_key": {
       "$label": "API key",

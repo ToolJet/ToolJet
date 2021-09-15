@@ -3,7 +3,22 @@
   "$id": "https://tooljet.io/Graphql.schema.json",
   "title": "Graphql datasource",
   "description": "A schema defining graphql datasource",
-  "type": "object",
+  "type": {
+    "name": "GraphQL",
+    "kind": "graphql",
+    "options": {
+      "url": { "type": "string" },
+      "headers": { "type": "array" },
+      "url_params": { "type": "array" },
+      "body": { "type": "array" }
+    },
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": true
+  },
   "properties": {
     "url": {
       "$label": "URL",

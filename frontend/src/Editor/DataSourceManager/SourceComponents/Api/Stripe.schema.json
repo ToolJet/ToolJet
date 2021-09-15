@@ -3,7 +3,19 @@
   "$id": "https://tooljet.io/Stripe.schema.json",
   "title": "Stripe datasource",
   "description": "A schema defining stripe datasource",
-  "type": "object",
+  "type": {
+    "name": "Stripe",
+    "kind": "stripe",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": { "type": "string", "encrypted": true }
+    },
+    "customTesting": true
+  },
   "properties": {
     "api_key": {
       "$label": "API key",
