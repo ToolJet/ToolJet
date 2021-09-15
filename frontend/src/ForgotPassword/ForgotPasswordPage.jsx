@@ -18,8 +18,7 @@ class ForgotPassword extends React.Component {
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
     if (event.target.value == '') {
-      this.setState({ isEmailFound: false });
-      this.setState({ buttonClicked: false });
+      this.setState({ isEmailFound: false, buttonClicked: false });
     }
   };
 
@@ -35,7 +34,7 @@ class ForgotPassword extends React.Component {
       body: JSON.stringify({ email: this.state.email }),
     })
       .then((res) => {
-        if (res.ok === true) {
+        if (res.ok) {
           this.setState({ isEmailFound: true });
           return res.json();
         } else {
@@ -76,11 +75,9 @@ class ForgotPassword extends React.Component {
                   placeholder="Enter email"
                   data-testid="emailField"
                 />
-                <p style={{ color: '#b72525' }}>
-                  {this.state.buttonClicked && !this.state.isEmailFound
-                    ? 'Email address is not associated with a ToolJet cloud account.'
-                    : ''}
-                </p>
+                {this.state.buttonClicked && !this.state.isEmailFound && (
+                  <p style={{ color: '#b72525' }}>Email address is not associated with a ToolJet cloud account.</p>
+                )}
               </div>
               <div className="form-footer">
                 <button
