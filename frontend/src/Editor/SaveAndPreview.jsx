@@ -3,6 +3,7 @@ import { appService, appVersionService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from 'react-loading-skeleton';
 
@@ -46,7 +47,11 @@ class SaveAndPreview extends React.Component {
 
     appVersionService.create(appId, newVersionName).then(() => {
       this.setState({ showVersionForm: false, creatingVersion: false });
-      toast.success('Version Created', { hideProgressBar: true, position: 'top-center' });
+      toast.success('Version Created', {
+        hideProgressBar: true,
+        position: 'top-center',
+        containerId: this.state.appId,
+      });
       this.fetchVersions();
       this.props.setAppDefinitionFromVersion(version)
     });
@@ -56,7 +61,11 @@ class SaveAndPreview extends React.Component {
     this.setState({ savingVersionId: versionId });
     appVersionService.save(this.props.appId, versionId, this.props.appDefinition).then(() => {
       this.setState({ showVersionForm: false, savingVersionId: null });
-      toast.success('Version Saved', { hideProgressBar: true, position: 'top-center' });
+      toast.success('Version Saved', {
+        hideProgressBar: true,
+        position: 'top-center',
+        containerId: this.state.appId,
+      });
       this.fetchVersions();
     });
   };
@@ -65,7 +74,11 @@ class SaveAndPreview extends React.Component {
     this.setState({ deployingVersionId: versionId });
     appService.saveApp(this.props.appId, { name: this.props.appName, current_version_id: versionId }).then(() => {
       this.setState({ deployingVersionId: null });
-      toast.success('Version Deployed', { hideProgressBar: true, position: 'top-center' });
+      toast.success('Version Deployed', {
+        hideProgressBar: true,
+        position: 'top-center',
+        containerId: this.state.appId,
+      });
 
       this.props.onVersionDeploy(versionId);
     });
@@ -94,6 +107,7 @@ class SaveAndPreview extends React.Component {
           onEscapeKeyDown={() => this.hideModal()}
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
         >
+          <ToastContainer containerId={appId} />
           <Modal.Header>
             <Modal.Title>Versions and deployments</Modal.Title>
             <div>
