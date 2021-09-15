@@ -94,6 +94,7 @@ class Viewer extends React.Component {
     appService.getAppBySlug(slug).then((data) => { 
       this.setStateForApp(data);
       this.setStateForContainer(data);
+      this.setState({ isLoading: false })
     })
   };
 
@@ -109,7 +110,15 @@ class Viewer extends React.Component {
     const appId = this.props.match.params.id;
     const versionId = this.props.match.params.versionId;
 
+    this.setState({ isLoading : false});
     slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.match.params.slug && this.props.match.params.slug !== prevProps.match.params.slug) {
+      this.setState({ isLoading: true });
+      this.loadApplicationBySlug(this.props.match.params.slug)
+    }
   }
 
   render() {
@@ -150,32 +159,41 @@ class Viewer extends React.Component {
                     width: currentLayout === 'desktop' ? '1292px' : `${deviceWindowWidth}px`,
                   }}
                 >
-                  {defaultComponentStateComputed && 
-                    <Container
-                      appDefinition={appDefinition}
-                      appDefinitionChanged={() => false} // function not relevant in viewer
-                      snapToGrid={true}
-                      appLoading={isLoading}
-                      darkMode={this.props.darkMode}
-                      onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
-                      mode="view"
-                      scaleValue={scaleValue}
-                      deviceWindowWidth={deviceWindowWidth}
-                      currentLayout={currentLayout}
-                      currentState={this.state.currentState}
-                      selectedComponent={this.state.selectedComponent}
-                      onComponentClick={(id, component) =>  { 
-                        this.setState({ selectedComponent: { id, component } });
-                        onComponentClick(this, id, component, 'view');
-                      }}
-                      onComponentOptionChanged={(component, optionName, value) =>
-                        onComponentOptionChanged(this, component, optionName, value)
-                      }
-                      onComponentOptionsChanged={(component, options) =>
-                        onComponentOptionsChanged(this, component, options)
-                      }
-                    />
-                  }
+
+
+                {defaultComponentStateComputed && (
+                  <>
+                    {isLoading ? (
+                      <div className="mx-auto mt-5 w-50 p-5">
+                        <center>
+                          <div className="spinner-border text-azure" role="status"></div>
+                        </center>
+                      </div>
+                    ) : (
+                      <Container
+                        appDefinition={appDefinition}
+                        appDefinitionChanged={() => false} // function not relevant in viewer
+                        snapToGrid={true}
+                        appLoading={isLoading}
+                        darkMode={this.props.darkMode}
+                        onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
+                        mode="view"
+                        scaleValue={scaleValue}
+                        deviceWindowWidth={deviceWindowWidth}
+                        currentLayout={currentLayout}
+                        currentState={this.state.currentState}
+                        onComponentClick={(id, component) => onComponentClick(this, id, component, 'view')}
+                        onComponentOptionChanged={(component, optionName, value) =>
+                          onComponentOptionChanged(this, component, optionName, value)
+                        }
+                        onComponentOptionsChanged={(component, options) =>
+                          onComponentOptionsChanged(this, component, options)
+                        }
+                     />
+                    )}
+                  </>
+                )}
+
                 </div>
               </div>
             </div>
@@ -187,3 +205,5 @@ class Viewer extends React.Component {
 }
 
 export { Viewer };
+
+
