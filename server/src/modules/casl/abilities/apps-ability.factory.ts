@@ -13,6 +13,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 type Actions =
   | 'authorizeOauthForSource'
   | 'cloneApp'
+  | 'createApp'
   | 'createDataSource'
   | 'createQuery'
   | 'createUsers'
@@ -53,6 +54,7 @@ export class AppsAbilityFactory {
 
     // Only developers and admins can create new versions
     if (user.isAdmin || user.isDeveloper) {
+      can('createApp', App);
       can('cloneApp', App, { organizationId: user.organizationId });
 
       can('createVersions', App, { organizationId: user.organizationId });
