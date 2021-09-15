@@ -19,6 +19,8 @@ class HomePage extends React.Component {
       users: null,
       isLoading: true,
       creatingApp: false,
+      isDeletingApp: false,
+      isCloningApp: false,
       currentFolder: {},
       showAppDeletionConfirmation: false,
       apps: [],
@@ -84,6 +86,22 @@ class HomePage extends React.Component {
 
   deleteApp = (app) => {
     this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
+  }
+
+  cloneApp = (app) => {
+    this.setState({ isCloningApp: true });
+    appService.cloneApp(app.id).then((data) => {
+      toast.info('App cloned successfully.', {
+        hideProgressBar: true,
+        position: 'top-center'
+      });
+      this.setState({ isCloningApp: false });
+      this.props.history.push(`/apps/${data.id}`);
+    }).catch(({ _error }) => {
+      toast.error('Could not clone the app.', { hideProgressBar: true, position: 'top-center' });
+      this.setState({ isCloningApp: false });
+    });
+    ;
   }
 
   executeAppDeletion = () => {
@@ -240,7 +258,7 @@ class HomePage extends React.Component {
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: app?.current_version_id == null ? 'App does not have a deployed version' : 'Open in app viewer'})}
                                   >
-                                    {<span className={`${app?.current_version_id == null ? 'badge mx-2 ' : 'badge bg-azure-lt mx-2'}`} 
+                                    {<span className={`${app?.current_version_id == null ? 'badge mx-2 ' : 'badge bg-azure-lt mx-2'}`}
                                     style={{
                                       filter: app?.current_version_id == null ? 'brightness(0.8)' : 'brightness(1) invert(1)'}}
                                     >launch </span>}
@@ -253,6 +271,7 @@ class HomePage extends React.Component {
                                   folders={this.state.folders}
                                   foldersChanged={this.foldersChanged}
                                   deleteApp={() => this.deleteApp(app)}
+                                  cloneApp={() => this.cloneApp(app)}
                                 />
                               </td>
                             </tr>))
