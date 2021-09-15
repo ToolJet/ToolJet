@@ -431,26 +431,14 @@ export function Table({
               </div>
             );
           }
-          case 'badge': {
-            return (
-              <div>
-                <CustomSelect
-                  options={columnOptions.selectOptions}
-                  value={cellValue}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                />
-              </div>
-            );
-          }
+          case 'badge':
           case 'badges': {
             return (
               <div>
                 <CustomSelect
                   options={columnOptions.selectOptions}
                   value={cellValue}
-                  multiple={true}
+                  multiple={columnType === 'badges'}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
