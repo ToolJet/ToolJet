@@ -25,6 +25,6 @@ On select event is triggered when an option is selected.
 | properties      | description |
 | ----------- | ----------- |
 | Label | The text is to be used as the label of the dropdown. |
-| Default value | It is the default option that will be selected as user input unless it is changed. |
-| Option values | Option values are values for different items/options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.value)}}` or populate it with sample values `{{[1,2,3]}}`  |
-| Option labels | Option labels are labels for different items/options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.label)}}` or populate it with sample values `{{["one", "two", "three"]}}` |
+| Default value | Value of the default option. |
+| Option values | Option values are values for different options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.value)}}` or populate it with sample values `{{[1,2,3]}}`  |
+| Option labels | Option labels are labels for different options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.label)}}` or populate it with sample values `{{["one", "two", "three"]}}` |

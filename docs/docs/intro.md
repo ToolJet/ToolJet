@@ -31,5 +31,7 @@ The references for datasources and widgets:
 - [Widget Reference](/docs/widgets/table)
 
 ## Help and Support
-We have extensively documented the features of ToolJet, but in case you are stuck, please feel to mail us: hello@tooljet.io. 
-If you have found a bug, please create a GitHub issue for the same. Also, feel free to join our [slack community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg).
+We have extensively documented the features of ToolJet, but in case you are stuck, please feel to mail us: hello@tooljet.io.
+If you are using ToolJet cloud, click on the chat icon at the bottom-left corner for instant help.    
+If you have found a bug, please create a GitHub issue for the same.   
+Also, feel free to join our highly active [slack community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg).

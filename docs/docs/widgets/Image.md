@@ -17,4 +17,4 @@ On click event is triggered when an image is clicked.
 
 | properties      | description |
 | ----------- | ----------- |
-| URL | Renders the image from the URL.  |
+| URL | URL of the image.  |

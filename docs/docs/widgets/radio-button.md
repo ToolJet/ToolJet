@@ -4,7 +4,7 @@ sidebar_position: 12
 
 # Radio Button
 
-Radio Buttons can be used to select one option from a group of options.
+Radio button widget can be used to select one option from a group of options.
 
 <img class="screenshot-full" src="/img/widgets/radio-button/radiobutton.gif" alt="oolJet - Widget Reference - RadioButton " height="420"/>
 
@@ -27,7 +27,7 @@ This event is triggered when an option is clicked.
 | properties      | description |
 | ----------- | ----------- |
 | Label | The text is to be used as the label for the radio button. |
-| Default value | It is the default option that will be selected as user input unless it is changed. |
+| Default value | The value of the default option. |
 | Option values | List of values for different items/options. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.value)}}` or populate it with sample values `{{[true, false]}}`  |
 | Option labels | List of labels for different items/options. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.label)}}` or populate it with sample values `{{["yes", "no"]}}` |
 

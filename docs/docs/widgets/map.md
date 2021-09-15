@@ -30,6 +30,6 @@ The map widget can be used to pick or select locations on the google map with th
 | properties      | description |
 | ----------- | ----------- |
 | Initial location | It is the default location's coordinates that the map should focus on. |
-| Default Markers | Default markers can have list of markers that can be placed on the map |
-| Add new markers | For adding new markers to the map, **add new markers** property should be enabled. |
-| Seaech for places | It can be used to show or hide Search box. |
+| Default Markers | List of markers that should be shown on the map |
+| Add new markers | This property should be enabled to add new markers to the map on click. |
+| Search for places | It can be used to show or hide auto-complete search box. |
