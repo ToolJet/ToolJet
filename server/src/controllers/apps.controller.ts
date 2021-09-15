@@ -30,6 +30,14 @@ export class AppsController {
   @Post()
   async create(@Request() req) {
     const app = await this.appsService.create(req.user);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if (!ability.can('createApp', app)) {
+      throw new ForbiddenException(
+        'you do not have permissions to perform this action',
+      );
+    }
+
     await this.appsService.update(req.user, app.id, {
       slug: app.id,
     });
