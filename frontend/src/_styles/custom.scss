@@ -1,29 +1,31 @@
-
 // overwrites the styles of datepicker [cell-type]
 .cell-type-datepicker {
-    z-index: 1;
-    
-    .rdtPicker {
-        thead {
-            display: table-header-group;
-            vertical-align: middle;
-        }
-        tbody {
-            display: table-row-group;
-        }
-        tr {
-            display: table-row;
-        }
+  z-index: 1;
+  margin-top: 2px;
+  margin-right: 5px;
+
+  .rdtPicker {
+    position: relative;
+
+    thead {
+      display: table-header-group;
+      vertical-align: middle;
     }
+    tbody {
+      display: table-row-group;
+    }
+    tr {
+      display: table-row;
+    }
+  }
 }
 
-div[data-disabled=true]
-{
+div[data-disabled='true'] {
   pointer-events: none;
   opacity: 0.6;
   filter: alpha(opacity=50);
-  zoom: 1;  
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";  
-  -moz-opacity: 0.5; 
-  -khtml-opacity: 0.5;  
+  zoom: 1;
+  -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=50)';
+  -moz-opacity: 0.5;
+  -khtml-opacity: 0.5;
 }
