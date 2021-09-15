@@ -11,24 +11,25 @@ import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 
 type Actions =
-  | 'updateParams'
-  | 'fetchUsers'
+  | 'authorizeOauthForSource'
+  | 'createApp'
+  | 'createDataSource'
+  | 'createQuery'
   | 'createUsers'
-  | 'fetchVersions'
   | 'createVersions'
-  | 'updateVersions'
-  | 'viewApp'
-  | 'runQuery'
-  | 'updateQuery'
+  | 'deleteApp'
   | 'deleteQuery'
+  | 'fetchUsers'
+  | 'fetchVersions'
+  | 'getDataSources'
   | 'getQueries'
   | 'previewQuery'
-  | 'createQuery'
-  | 'getDataSources'
+  | 'runQuery'
   | 'updateDataSource'
-  | 'createDataSource'
-  | 'authorizeOauthForSource'
-  | 'deleteApp';
+  | 'updateParams'
+  | 'updateQuery'
+  | 'updateVersions'
+  | 'viewApp';
 
 type Subjects =
   | InferSubjects<typeof AppVersion | typeof User | typeof App>
@@ -52,6 +53,8 @@ export class AppsAbilityFactory {
 
     // Only developers and admins can create new versions
     if (user.isAdmin || user.isDeveloper) {
+      can('createApp', App);
+
       can('createVersions', App, { organizationId: user.organizationId });
       can('updateVersions', App, { organizationId: user.organizationId });
 

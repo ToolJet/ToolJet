@@ -34,6 +34,47 @@ describe('apps controller', () => {
   });
 
   describe('/apps', () => {
+    describe('authorization', () => {
+      it('should be able to create app if user is either admin or developer', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          role: 'admin',
+        });
+        const organization = adminUserData.organization;
+        const developerUserData = await createUser(app, {
+          email: 'developer@tooljet.io',
+          role: 'developer',
+          organization,
+        });
+        const viewerUserData = await createUser(app, {
+          email: 'viewer@tooljet.io',
+          role: 'viewer',
+          organization,
+        });
+
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+        await createApplicationVersion(app, application);
+
+        for (const userData of [adminUserData, developerUserData]) {
+          const response = await request(app.getHttpServer())
+            .post(`/apps`)
+            .set('Authorization', authHeaderForUser(userData.user));
+
+          expect(response.statusCode).toBe(201);
+          expect(response.body.name).toBe('Untitled app');
+        }
+
+        const response = await request(app.getHttpServer())
+          .post(`/apps`)
+          .set('Authorization', authHeaderForUser(viewerUserData.user));
+
+        expect(response.statusCode).toBe(403);
+      });
+    });
+
     it('should create app with default values', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
