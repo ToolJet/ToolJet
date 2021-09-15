@@ -448,7 +448,7 @@ class QueryManager extends React.Component {
                   />
                   <span className="form-check-label">Show notification on success?</span>
                 </label>
-                
+
                 {this.state.options.showSuccessNotification &&
                   <div>
 

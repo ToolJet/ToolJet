@@ -595,6 +595,7 @@ class Table extends React.Component {
           {displaySearchBox && renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showDownloadButton', 'properties', currentState)}
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showFilterButton', 'properties', currentState)}
+          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showBulkUpdateActions', 'properties', currentState)}
 
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <div className="hr-text">Events</div>

@@ -6,7 +6,7 @@ export const Mysql = ({
   return (
     <div>
       <div className="row">
-        <div className="col-md-9">
+        <div className="col-md-7">
           <label className="form-label">Host</label>
           <input
             type="text"
@@ -23,6 +23,19 @@ export const Mysql = ({
             onChange={(e) => optionchanged('port', e.target.value)}
             value={options.port.value}
           />
+        </div>
+        <div className="col-md-2">
+          <label className="form-label">
+            SSL
+          </label>
+          <label className="form-check form-switch mt-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              defaultChecked={options.ssl_enabled.value}
+              onChange={() => optionchanged('ssl_enabled', !options.ssl_enabled.value)}
+            />
+          </label>
         </div>
       </div>
       <div className="row mt-3">

@@ -11,24 +11,25 @@ import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 
 type Actions =
-  | 'updateParams'
-  | 'fetchUsers'
-  | 'createUsers'
-  | 'fetchVersions'
-  | 'createVersions'
-  | 'updateVersions'
-  | 'viewApp'
-  | 'runQuery'
-  | 'updateQuery'
-  | 'getQueries'
-  | 'previewQuery'
-  | 'createQuery'
-  | 'getDataSources'
-  | 'updateDataSource'
-  | 'createDataSource'
   | 'authorizeOauthForSource'
   | 'cloneApp'
-  | 'deleteApp';
+  | 'createDataSource'
+  | 'createQuery'
+  | 'createUsers'
+  | 'createVersions'
+  | 'deleteApp'
+  | 'deleteQuery'
+  | 'fetchUsers'
+  | 'fetchVersions'
+  | 'getDataSources'
+  | 'getQueries'
+  | 'previewQuery'
+  | 'runQuery'
+  | 'updateDataSource'
+  | 'updateParams'
+  | 'updateQuery'
+  | 'updateVersions'
+  | 'viewApp';
 
 type Subjects =
   | InferSubjects<typeof AppVersion | typeof User | typeof App>
@@ -59,6 +60,7 @@ export class AppsAbilityFactory {
 
       can('updateQuery', App, { organizationId: user.organizationId });
       can('createQuery', App, { organizationId: user.organizationId });
+      can('deleteQuery', App, { organizationId: user.organizationId });
 
       can('updateDataSource', App, { organizationId: user.organizationId });
       can('createDataSource', App, { organizationId: user.organizationId });

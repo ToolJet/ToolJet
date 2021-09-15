@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Postgresql.schema.json",
+  "title": "Postgresql datasource",
+  "description": "A schema defining postgresql datasource",
+  "type": "object",
+  "properties": {
+    "host": {
+      "$label": "Host",
+      "$key": "host",
+      "type": "text",
+      "description": "Enter host"
+    },
+    "port": {
+      "$label": "Port",
+      "$key": "port",
+      "type": "text",
+      "description": "Enter port"
+    },
+    "ssl_enabled": {
+      "$label": "SSL",
+      "$key": "ssl_enabled",
+      "type": "toggle",
+      "description": "Toggle for ssl_enabled"
+    },
+    "database": {
+      "$label": "Database Name",
+      "$key": "database",
+      "type": "text",
+      "description": "Name of the database"
+    },
+    "username": {
+      "$label": "Username",
+      "$key": "username",
+      "type": "text",
+      "description": "Enter username field"
+    },
+    "password": {
+      "$label": "Password",
+      "$key": "password",
+      "type": "password",
+      "description": "Enter password field"
+    }
+  },
+  "required": ["host", "port", "username", "database", "password"]
+}
