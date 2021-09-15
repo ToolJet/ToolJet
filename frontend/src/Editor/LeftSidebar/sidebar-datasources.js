@@ -9,12 +9,12 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], data
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
 
-  const renderDataSource = (dataSource) => {
+  const renderDataSource = (dataSource, idx) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
     return (
       <tr
         role="button"
-        key={sourceMeta.id}
+        key={idx}
         onClick={() => {
           setSelectedDataSource(dataSource);
           toggleDataSourceManagerModal(true);
@@ -44,7 +44,7 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], data
         <div className="card-body">
           <div className="table-responsive">
             <table className="table table-vcenter table-nowrap">
-              <tbody>{dataSources?.map((source) => renderDataSource(source))}</tbody>
+              <tbody>{dataSources?.map((source, idx) => renderDataSource(source, idx))}</tbody>
             </table>
             {dataSources?.length === 0 && (
               <center className="p-2 text-muted">
