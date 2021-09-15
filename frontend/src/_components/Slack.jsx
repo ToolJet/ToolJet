@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import Button from 'react-bootstrap/Button';
 import { datasourceService } from '@/_services';
 
-export const Slack = ({
+import Button from '@/_ui/Button';
+
+const Slack = ({
   optionchanged, createDataSource, options, isSaving, selectedDataSource
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
@@ -68,7 +69,6 @@ export const Slack = ({
               <Button
                 className={`m2 ${isSaving ? ' loading' : ''}`}
                 disabled={isSaving}
-                variant="primary"
                 onClick={() => saveDataSource()}
               >
                 {isSaving ? 'Saving...' : 'Save data source'}
@@ -80,7 +80,6 @@ export const Slack = ({
             <Button
               className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
               disabled={isSaving}
-              variant="primary"
               onClick={() => authGoogle()}
             >
               Connect to Slack
@@ -91,3 +90,5 @@ export const Slack = ({
     </div>
   );
 };
+
+export default Slack
