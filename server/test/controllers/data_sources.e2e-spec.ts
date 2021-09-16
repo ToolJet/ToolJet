@@ -1,6 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createApplication, createUser, createNestAppInstance, createApplicationVersion, createDataQuery, createDataSource } from '../test.helper';
+import {
+  authHeaderForUser,
+  clearDB,
+  createApplication,
+  createUser,
+  createNestAppInstance,
+  createDataSource,
+} from '../test.helper';
+import { Credential } from 'src/entities/credential.entity';
 
 describe('data sources controller', () => {
   let app: INestApplication;
@@ -65,7 +73,6 @@ describe('data sources controller', () => {
 
       expect(response.statusCode).toBe(403);
     }
-
   });
 
   it('should be able to update data sources of an app only if admin/developer of same organization', async () => {
@@ -103,7 +110,10 @@ describe('data sources controller', () => {
     expect(await Credential.count()).toBe(1);
 
     for (const userData of [adminUserData, developerUserData]) {
-      const newOptions = [{ key: 'email', value: userData.user.email }];
+      const newOptions = [
+        { key: 'email', value: userData.user.email },
+        { key: 'foo', value: 'baz', encrypted: 'true' },
+      ];
       const response = await request(app.getHttpServer())
         .put(`/data_sources/${dataSource.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
@@ -121,11 +131,15 @@ describe('data sources controller', () => {
 
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
+      const newOptions = [
+        { key: 'email', value: userData.user.email },
+        { key: 'foo', value: 'baz', encrypted: 'true' },
+      ];
       const response = await request(app.getHttpServer())
         .put(`/data_sources/${dataSource.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
-          options: [],
+          options: newOptions,
         });
 
       expect(response.statusCode).toBe(403);
@@ -173,28 +187,41 @@ describe('data sources controller', () => {
 
     // Forbidden if user of another organization
     const response = await request(app.getHttpServer())
-        .get(`/data_sources?app_id=${application.id}`)
-        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+      .get(`/data_sources?app_id=${application.id}`)
+      .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
-      expect(response.statusCode).toBe(403);
+    expect(response.statusCode).toBe(403);
   });
 
   it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
-
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
-    const dataSource = await createDataSource(app, { name: 'name', options: [], kind: 'restapi', application: application, user: adminUserData.user });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+    const dataSource = await createDataSource(app, {
+      name: 'name',
+      options: [],
+      kind: 'restapi',
+      application: application,
+      user: adminUserData.user,
+    });
 
     // Should not update if user of another org
     const response = await request(app.getHttpServer())
       .post(`/data_sources/${dataSource.id}/authorize_oauth2`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
       .send({
-        code: 'oauth-auth-code'
-      })
+        code: 'oauth-auth-code',
+      });
 
     expect(response.statusCode).toBe(403);
   });
-
 });
