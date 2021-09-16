@@ -5,7 +5,6 @@ import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import { folderService } from '@/_services';
 import { toast } from 'react-toastify';
-import { lowerFirst } from 'lodash';
 
 export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteApp, cloneApp }) {
   const [addToFolder, setAddToFolder] = useState(false);
@@ -51,9 +50,9 @@ export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteAp
       }
       let searchKeystrokes = fuse.search(value);
 
-      let _fusionSearchArray = searchKeystrokes.map((_item) => _item.item);
+      let fusionSearchArray = searchKeystrokes.map((_item) => _item.item);
 
-      return _fusionSearchArray;
+      return fusionSearchArray;
     };
   }
 

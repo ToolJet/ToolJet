@@ -95,13 +95,13 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
   const getLayout = (obj) => {
     return (
       <div className="row">
-        {Object.keys(obj).map((key) => {
+        {Object.keys(obj).map((key, index) => {
           const { $label, type } = obj[key];
 
           const Element = getElement(type);
 
           return (
-            <div className="col-md-12 my-2">
+            <div key={index} className="col-md-12 my-2">
               {$label && (
                 <label className="form-label">
                   {$label}

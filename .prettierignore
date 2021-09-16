@@ -1,2 +1,5 @@
+server/node_modules/**
+server/package-lock.json
 frontend/node_modules/**
-# **/*.js
+frontend/package-lock.json
+package-lock.json

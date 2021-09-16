@@ -2,8 +2,7 @@ import React from 'react';
 import { appService, appVersionService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { toast } from 'react-toastify';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from 'react-loading-skeleton';
 
@@ -28,15 +27,17 @@ class SaveAndPreview extends React.Component {
   }
 
   fetchVersions = () => {
-    appVersionService.getAll(this.props.appId).then((data) => this.setState({
-      versions: data.versions,
-      isLoading: false
-    }));
+    appVersionService.getAll(this.props.appId).then((data) =>
+      this.setState({
+        versions: data.versions,
+        isLoading: false,
+      })
+    );
   };
 
   hideModal = () => {
     this.setState({
-      showModal: false
+      showModal: false,
     });
   };
 
@@ -53,7 +54,8 @@ class SaveAndPreview extends React.Component {
         containerId: this.state.appId,
       });
       this.fetchVersions();
-      this.props.setAppDefinitionFromVersion(version)
+      // eslint-disable-next-line no-undef
+      this.props.setAppDefinitionFromVersion(version); //check: version is not defined
     });
   };
 
@@ -82,13 +84,11 @@ class SaveAndPreview extends React.Component {
 
       this.props.onVersionDeploy(versionId);
     });
-
   };
 
   render() {
-    const {
-      showModal, isLoading, versions, showVersionForm, savingVersionId, deployingVersionId, creatingVersion, appId
-    } = this.state;
+    const { isLoading, versions, showVersionForm, savingVersionId, deployingVersionId, creatingVersion, appId } =
+      this.state;
 
     return (
       <div>
@@ -112,12 +112,15 @@ class SaveAndPreview extends React.Component {
             <Modal.Title>Versions and deployments</Modal.Title>
             <div>
               {!showVersionForm && (
-                <button className="btn btn-primary btn-sm mx-2" onClick={() => this.setState({ showVersionForm: true })}>
+                <button
+                  className="btn btn-primary btn-sm mx-2"
+                  onClick={() => this.setState({ showVersionForm: true })}
+                >
                   + Version
                 </button>
               )}
 
-              <Button variant={this.props.darkMode ? 'secondary' : 'light'}size="sm" onClick={() => this.hideModal()}>
+              <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
                 x
               </Button>
             </div>
@@ -155,16 +158,19 @@ class SaveAndPreview extends React.Component {
                         <td>
                           <div className="row">
                             <div className="col">
-                            {version.name}
-                            {version.id === this.props.app.current_version_id && (
-                              <small className="mx-2">(current)</small>
-                            )}
+                              {version.name}
+                              {version.id === this.props.app.current_version_id && (
+                                <small className="mx-2">(current)</small>
+                              )}
                             </div>
                             <div className="col-auto">
                               <button
                                 className="btn btn-sm text-muted"
                                 onClick={() => this.saveVersion(version.id)}
-                                disabled={savingVersionId === version.id || (this.props.editingVersionId && this.props.editingVersionId !== version.id)}
+                                disabled={
+                                  savingVersionId === version.id ||
+                                  (this.props.editingVersionId && this.props.editingVersionId !== version.id)
+                                }
                               >
                                 {savingVersionId === version.id ? 'saving...' : 'save'}
                               </button>

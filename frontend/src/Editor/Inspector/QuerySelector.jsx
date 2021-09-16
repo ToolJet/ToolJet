@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
-import Collapse from 'react-bootstrap/Collapse'
+import Collapse from 'react-bootstrap/Collapse';
 
 export const QuerySelector = ({
   param,
   definition,
-  eventUpdated,
   eventOptionUpdated,
   dataQueries,
   extraData,
   eventMeta,
-  currentState,
-  components
+  // eventUpdated,
+  // currentState,
+  // components
 }) => {
-
   const [open, setOpen] = useState(false);
 
   function onChange(value) {
@@ -34,9 +33,7 @@ export const QuerySelector = ({
     <div className="field mb-3 mt-1 px-2">
       <label className="form-label" role="button" onClick={() => setOpen(!open)}>
         <div className="row">
-          <div className="col">
-            {eventMeta.displayName}
-          </div>
+          <div className="col">{eventMeta.displayName}</div>
           <div className={`col-auto events-toggle ${open ? 'events-toggle-active' : ''}`}>
             <span className="toggle-icon"></span>
           </div>

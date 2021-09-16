@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import { toast } from 'react-toastify';
-import { ToastContainer } from 'react-toastify';
+import { toast , ToastContainer } from 'react-toastify';
 import { datasourceService } from '@/_services';
 
 export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
-var tinycolor = require("tinycolor2");
+var tinycolor = require('tinycolor2');
 
-export const Button = function Button({
-  id, width, height, component, onComponentClick, currentState
-}) {
+export const Button = function Button({ id, width, height, component, onComponentClick, currentState }) {
   console.log('currentState', currentState);
+  const x = 'hello';
 
   const [loadingState, setLoadingState] = useState(false);
 
@@ -23,12 +22,15 @@ export const Button = function Button({
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedDisabledState =
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
   let parsedWidgetVisibility = widgetVisibility;
-  
+
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) { console.log(err); }
+  } catch (err) {
+    console.log(err);
+  }
 
   const computedStyles = {
     backgroundColor,
@@ -36,7 +38,7 @@ export const Button = function Button({
     width,
     height,
     display: parsedWidgetVisibility ? '' : 'none',
-    '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString() 
+    '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
   };
 
   return (
@@ -44,7 +46,10 @@ export const Button = function Button({
       disabled={parsedDisabledState}
       className={`jet-button btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
       style={computedStyles}
-      onClick={(event) => {event.stopPropagation();  onComponentClick(id, component)}}
+      onClick={(event) => {
+        event.stopPropagation();
+        onComponentClick(id, component);
+      }}
     >
       {text}
     </button>

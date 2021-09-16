@@ -73,8 +73,8 @@ export const RadioButton = function RadioButton({
       <span className="form-check-label form-check-label col-auto py-1" style={{color: textColor}}>{label}</span>
       <div className="col py-1" onChange={(e) => onSelect(e)}>
         {selectOptions.map((option, index) => (
-          <label key={index} class="form-check form-check-inline">
-            <input class="form-check-input" defaultChecked={parsedDefaultValue === option.value} type="radio" value={option.value} name="radio-options"  /> 
+          <label key={index} className="form-check form-check-inline">
+            <input className="form-check-input" defaultChecked={parsedDefaultValue === option.value} type="radio" value={option.value} name="radio-options"  /> 
             <span className="form-check-label" style={{color: textColor}}>{option.name}</span>
           </label>
         ))}
