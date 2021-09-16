@@ -89,7 +89,12 @@ export function CodeHinter({
     <div
       className={`code-hinter ${className || 'codehinter-default-input'}`}
       key={suggestions.length}
-      style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
+      style={{
+        height: height || 'auto',
+        minHeight,
+        maxHeight: '320px',
+        overflow: 'auto',
+      }}
     >
       <CodeMirror
         value={initialValue}

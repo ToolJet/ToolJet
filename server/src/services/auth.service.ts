@@ -75,7 +75,10 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Invalid token');
     } else {
-      this.usersService.update(user.id, { password, forgotPasswordToken: null });
+      this.usersService.update(user.id, {
+        password,
+        forgotPasswordToken: null,
+      });
     }
   }
 }

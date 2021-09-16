@@ -26,11 +26,16 @@ class SignupPage extends React.Component {
     authenticationService.signup(email).then(
       () => {
         // eslint-disable-next-line no-unused-vars
-        const { from } = this.props.location.state || { from: { pathname: '/' } };
+        const { from } = this.props.location.state || {
+          from: { pathname: '/' },
+        };
         this.setState({ isLoading: false, signupSuccess: true });
       },
       () => {
-        toast.error('Invalid email', { hideProgressBar: true, position: 'top-center' });
+        toast.error('Invalid email', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({ isLoading: false });
       }
     );

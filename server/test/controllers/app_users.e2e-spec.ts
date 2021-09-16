@@ -18,13 +18,18 @@ describe('app_users controller', () => {
   });
 
   it('should be able to create a new app user if admin of same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'dev@tooljet.io',
       role: 'developer',
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, { user: adminUserData.user });
+    const application = await createApplication(app, {
+      user: adminUserData.user,
+    });
 
     const response = await request(app.getHttpServer())
       .post(`/app_users`)
@@ -39,10 +44,19 @@ describe('app_users controller', () => {
   });
 
   it('should not be able to create new app user if admin of another organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     // const developerUserData = await createUser(app, { email: 'dev@tooljet.io', role: 'developer', organization: adminUserData.organization });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
 
     const response = await request(app.getHttpServer())
       .post(`/app_users`)
@@ -57,8 +71,14 @@ describe('app_users controller', () => {
   });
 
   it('should not allow developers and viewers to create app users', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
 
     const developerUserData = await createUser(app, {
       email: 'dev@tooljet.io',

@@ -38,6 +38,7 @@ export default class PostgresqlQueryService implements QueryService {
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
     const pool = await this.getConnection(sourceOptions, {}, false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const result = await pool.query('SELECT version();');
 
     return {
@@ -46,7 +47,7 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   async buildConnection(sourceOptions: any) {
-    let poolConfig = {
+    const poolConfig = {
       user: sourceOptions.username,
       host: sourceOptions.host,
       database: sourceOptions.database,

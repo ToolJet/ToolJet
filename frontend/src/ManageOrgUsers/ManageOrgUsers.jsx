@@ -54,7 +54,10 @@ class ManageOrgUsers extends React.Component {
     organizationUserService
       .changeRole(id, role)
       .then(() => {
-        toast.success('User role has been updated', { hideProgressBar: true, position: 'top-center' });
+        toast.success('User role has been updated', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({ idChangingRole: null });
       })
       .catch(({ error }) => {
@@ -69,7 +72,10 @@ class ManageOrgUsers extends React.Component {
     organizationUserService
       .archive(id)
       .then(() => {
-        toast.success('The user has been archived', { hideProgressBar: true, position: 'top-center' });
+        toast.success('The user has been archived', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({ archivingUser: null });
         this.fetchUsers();
       })
@@ -89,13 +95,24 @@ class ManageOrgUsers extends React.Component {
     organizationUserService
       .create(firstName, lastName, email, role)
       .then(() => {
-        this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
-        toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
+        this.setState({
+          creatingUser: false,
+          showNewUserForm: false,
+          newUser: {},
+        });
+        toast.success('User has been created', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.fetchUsers();
       })
       .catch(({ error }) => {
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
-        this.setState({ creatingUser: false, showNewUserForm: true, newUser: {} });
+        this.setState({
+          creatingUser: false,
+          showNewUserForm: true,
+          newUser: {},
+        });
       });
   };
 
@@ -107,7 +124,10 @@ class ManageOrgUsers extends React.Component {
   generateInvitationURL = (user) => window.location.origin + '/invitations/' + user.invitation_token;
 
   invitationLinkCopyHandler = () => {
-    toast.info('Invitation URL copied', { hideProgressBar: true, position: 'bottom-right' });
+    toast.info('Invitation URL copied', {
+      hideProgressBar: true,
+      position: 'bottom-right',
+    });
   };
 
   render() {
@@ -187,7 +207,10 @@ class ManageOrgUsers extends React.Component {
                         <div>
                           <SelectSearch
                             options={['Admin', 'Developer', 'Viewer'].map((role) => {
-                              return { name: role, value: role.toLowerCase() };
+                              return {
+                                name: role,
+                                value: role.toLowerCase(),
+                              };
                             })}
                             value={newUser.role}
                             search={true}
@@ -202,7 +225,12 @@ class ManageOrgUsers extends React.Component {
                       <div className="form-footer">
                         <button
                           className="btn btn-light mr-2"
-                          onClick={() => this.setState({ showNewUserForm: false, newUser: {} })}
+                          onClick={() =>
+                            this.setState({
+                              showNewUserForm: false,
+                              newUser: {},
+                            })
+                          }
                           disabled={creatingUser}
                         >
                           Cancel
@@ -274,7 +302,13 @@ class ManageOrgUsers extends React.Component {
                                   {user.first_name ? user.first_name[0] : ''}
                                   {user.last_name ? user.last_name[0] : ''}
                                 </span>
-                                <span className="mx-3" style={{ display: 'inline-flex', marginBottom: '7px' }}>
+                                <span
+                                  className="mx-3"
+                                  style={{
+                                    display: 'inline-flex',
+                                    marginBottom: '7px',
+                                  }}
+                                >
                                   {user.name}
                                 </span>
                               </td>
@@ -287,7 +321,10 @@ class ManageOrgUsers extends React.Component {
                                 <center className="mx-5 select-search-role">
                                   <SelectSearch
                                     options={['Admin', 'Developer', 'Viewer'].map((role) => {
-                                      return { name: role, value: role.toLowerCase() };
+                                      return {
+                                        name: role,
+                                        value: role.toLowerCase(),
+                                      };
                                     })}
                                     value={user.role}
                                     search={false}

@@ -73,7 +73,12 @@ class Postgresql extends React.Component {
                     <label className="form-label">Operation</label>
                     <div className="gui-select-wrappper">
                       <SelectSearch
-                        options={[{ name: 'Bulk update using primary key', value: 'bulk_update_pkey' }]}
+                        options={[
+                          {
+                            name: 'Bulk update using primary key',
+                            value: 'bulk_update_pkey',
+                          },
+                        ]}
                         value={options.operation}
                         search={true}
                         onChange={(value) => {

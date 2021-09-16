@@ -21,7 +21,10 @@ describe('data sources controller', () => {
   });
 
   it('should be able to create data sources of an app only if admin/developer of same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -32,8 +35,14 @@ describe('data sources controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
 
     const dataSourceParams = {
       name: 'name',
@@ -63,7 +72,10 @@ describe('data sources controller', () => {
   });
 
   it('should be able to update data sources of an app only if admin/developer of same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -74,8 +86,14 @@ describe('data sources controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
     const dataSource = await createDataSource(app, {
       name: 'name',
       options: [],
@@ -112,7 +130,10 @@ describe('data sources controller', () => {
   });
 
   it('should be able to list (get) datasources for an app only if admin/developer of same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -123,8 +144,14 @@ describe('data sources controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
     // const dataSource = await createDataSource(app, { name: 'name', kind: 'postgres', application: application, user: adminUserData.user });
 
     for (const userData of [adminUserData, developerUserData, viewerUserData]) {
@@ -145,9 +172,18 @@ describe('data sources controller', () => {
   });
 
   it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
     const dataSource = await createDataSource(app, {
       name: 'name',
       options: [],

@@ -17,7 +17,11 @@ function create(name) {
     name,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/folders`, requestOptions).then(handleResponse);
 }
 
@@ -27,6 +31,10 @@ function addToFolder(appId, folderId) {
     folder_id: folderId,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/folder_apps`, requestOptions).then(handleResponse);
 }

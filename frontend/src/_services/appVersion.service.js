@@ -17,7 +17,11 @@ function create(appId, versionName) {
     versionName,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
 }
 
@@ -26,6 +30,10 @@ function save(appId, versionId, definition) {
     definition,
   };
 
-  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }

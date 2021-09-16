@@ -18,7 +18,10 @@ describe('organizations controller', () => {
   });
 
   it('should list organization users', async () => {
-    const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const userData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const { user, orgUser } = userData;
 
     const response = await request(app.getHttpServer())

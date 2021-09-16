@@ -8,11 +8,9 @@ const { Client } = require('@elastic/elasticsearch');
 
 @Injectable()
 export default class ElasticsearchService implements QueryService {
-
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
-
     const client = await this.getConnection(sourceOptions);
-    let result = { };
+    let result = {};
     const operation = queryOptions.operation;
 
     try {
@@ -22,13 +20,13 @@ export default class ElasticsearchService implements QueryService {
           break;
         case 'index_document':
           result = await indexDocument(client, queryOptions.index, queryOptions.body);
-          break;  
+          break;
         case 'get':
           result = await getDocument(client, queryOptions.index, queryOptions.id);
           break;
         case 'update':
           result = await updateDocument(client, queryOptions.index, queryOptions.id, queryOptions.body);
-          break; 
+          break;
       }
     } catch (err) {
       console.log(err);
@@ -36,8 +34,8 @@ export default class ElasticsearchService implements QueryService {
 
     return {
       status: 'ok',
-      data: result
-    }
+      data: result,
+    };
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
@@ -45,8 +43,8 @@ export default class ElasticsearchService implements QueryService {
     await client.info();
 
     return {
-      status: 'ok'
-    }
+      status: 'ok',
+    };
   }
 
   async getConnection(sourceOptions: any): Promise<any> {
@@ -58,7 +56,7 @@ export default class ElasticsearchService implements QueryService {
 
     let url = '';
 
-    if(username === '' || password === '') {
+    if (username === '' || password === '') {
       url = `${scheme}://${username}:${password}@${host}:${port}`;
     } else {
       url = `${scheme}://${host}:${port}`;

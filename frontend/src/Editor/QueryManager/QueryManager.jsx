@@ -143,26 +143,38 @@ class QueryManager extends React.Component {
       dataqueryService
         .update(this.state.selectedQuery.id, queryName, options)
         .then(() => {
-          toast.success('Query Updated', { hideProgressBar: true, position: 'bottom-center' });
+          toast.success('Query Updated', {
+            hideProgressBar: true,
+            position: 'bottom-center',
+          });
           this.setState({ isUpdating: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
           this.setState({ isUpdating: false });
-          toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+          toast.error(error, {
+            hideProgressBar: true,
+            position: 'bottom-center',
+          });
         });
     } else {
       this.setState({ isCreating: true });
       dataqueryService
         .create(appId, queryName, kind, options, dataSourceId)
         .then(() => {
-          toast.success('Query Added', { hideProgressBar: true, position: 'bottom-center' });
+          toast.success('Query Added', {
+            hideProgressBar: true,
+            position: 'bottom-center',
+          });
           this.setState({ isCreating: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
           this.setState({ isCreating: false });
-          toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+          toast.error(error, {
+            hideProgressBar: true,
+            position: 'bottom-center',
+          });
         });
     }
   };

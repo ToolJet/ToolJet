@@ -23,7 +23,10 @@ export class DataSourcesService {
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
-    return await this.dataSourcesRepository.findOne({ where: { id: dataSourceId }, relations: ['app'] });
+    return await this.dataSourcesRepository.findOne({
+      where: { id: dataSourceId },
+      relations: ['app'],
+    });
   }
 
   async create(
@@ -75,7 +78,10 @@ export class DataSourcesService {
 
     const updatedOptions = { ...dataSource.options, ...parsedOptions };
 
-    return await this.dataSourcesRepository.save({ id: dataSourceId, options: updatedOptions });
+    return await this.dataSourcesRepository.save({
+      id: dataSourceId,
+      options: updatedOptions,
+    });
   }
 
   async testConnection(kind: string, options: Record<string, unknown>): Promise<Record<string, unknown>> {

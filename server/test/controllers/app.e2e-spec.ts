@@ -32,7 +32,9 @@ describe('Authentication', () => {
     expect(response.statusCode).toBe(201);
 
     const id = response.body['id'];
-    const user = await userRepository.findOne(id, { relations: ['organization'] });
+    const user = await userRepository.findOne(id, {
+      relations: ['organization'],
+    });
 
     expect(user.organization.name).toBe('Untitled organization');
     const orgUser = user.organizationUsers[0];

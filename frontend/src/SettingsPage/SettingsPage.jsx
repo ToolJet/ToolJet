@@ -16,7 +16,10 @@ function SettingsPage(props) {
     setUpdateInProgress(true);
     const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
     authenticationService.updateCurrentUserDetails(updatedDetails);
-    toast.success('Details updated!', { hideProgressBar: true, autoClose: 3000 });
+    toast.success('Details updated!', {
+      hideProgressBar: true,
+      autoClose: 3000,
+    });
     setUpdateInProgress(false);
   };
 
@@ -25,7 +28,10 @@ function SettingsPage(props) {
     const response = userService.changePassword(currentpassword, newPassword);
     response
       .then(() => {
-        toast.success('Password updated successfully', { hideProgressBar: true, autoClose: 3000 });
+        toast.success('Password updated successfully', {
+          hideProgressBar: true,
+          autoClose: 3000,
+        });
         setCurrentPassword('');
         setNewPassword('');
       })

@@ -9,15 +9,30 @@ export const componentTypes = [
       data: { type: 'code', displayName: 'Table data' },
       loadingState: { type: 'code', displayName: 'Loading state' },
       columns: { type: 'array', displayName: 'Table Columns' },
-      serverSidePagination: { type: 'toggle', displayName: 'Server-side pagination' },
-      clientSidePagination: { type: 'toggle', displayName: 'Client-side pagination' },
+      serverSidePagination: {
+        type: 'toggle',
+        displayName: 'Server-side pagination',
+      },
+      clientSidePagination: {
+        type: 'toggle',
+        displayName: 'Client-side pagination',
+      },
       serverSideSearch: { type: 'toggle', displayName: 'Server-side search' },
-      actionButtonBackgroundColor: { type: 'color', displayName: 'Background color' },
+      actionButtonBackgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+      },
       actionButtonTextColor: { type: 'color', displayName: 'Text color' },
       displaySearchBox: { type: 'toggle', displayName: 'Show search box' },
-      showDownloadButton: { type: 'toggle', displayName: 'Show download button' },
+      showDownloadButton: {
+        type: 'toggle',
+        displayName: 'Show download button',
+      },
       showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
-      showBulkUpdateActions: { type: 'toggle', displayName: 'Show bulk update actions' },
+      showBulkUpdateActions: {
+        type: 'toggle',
+        displayName: 'Show bulk update actions',
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -76,9 +91,18 @@ export const componentTypes = [
         showFilterButton: { value: true },
         columns: {
           value: [
-            { name: 'id', id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737' },
-            { name: 'name', id: '5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a' },
-            { name: 'email', id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f' },
+            {
+              name: 'id',
+              id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737',
+            },
+            {
+              name: 'name',
+              id: '5d2a3744a006388aadd012fcc15cc0dbcb5f9130e0fbb64c558561c97118754a',
+            },
+            {
+              name: 'email',
+              id: 'afc9a5091750a1bd4760e38760de3b4be11a43452ae8ae07ce2eebc569fe9a7f',
+            },
           ],
         },
         showBulkUpdateActions: { value: true },
@@ -984,7 +1008,10 @@ export const componentTypes = [
     properties: {
       label: { type: 'code', displayName: 'Label' },
       maxRating: { type: 'code', displayName: 'Number of stars' },
-      defaultSelected: { type: 'code', displayName: 'Default no of selected stars' },
+      defaultSelected: {
+        type: 'code',
+        displayName: 'Default no of selected stars',
+      },
       allowHalfStar: { type: 'toggle', displayName: 'Enable half star' },
       tooltips: { type: 'code', displayName: 'Tooltips' },
     },

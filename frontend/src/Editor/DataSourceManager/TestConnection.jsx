@@ -38,7 +38,11 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
       ({ error }) => {
         setTestingStatus(false);
         setConnectionStatus('failed');
-        toast.error(error, { hideProgressBar: true, position: 'top-center', containerId: kind });
+        toast.error(error, {
+          hideProgressBar: true,
+          position: 'top-center',
+          containerId: kind,
+        });
       }
     );
   }

@@ -32,7 +32,9 @@ export class MetadataService {
   async updateMetaData(newOptions: any) {
     const metadata = await this.metadataRepository.findOne({});
 
-    return await this.metadataRepository.update(metadata.id, { data: { ...metadata.data, ...newOptions } });
+    return await this.metadataRepository.update(metadata.id, {
+      data: { ...metadata.data, ...newOptions },
+    });
   }
 
   async finishInstallation(installedVersion: string, name: string, email: string) {

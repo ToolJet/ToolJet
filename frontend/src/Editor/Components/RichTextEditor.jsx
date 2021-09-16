@@ -35,7 +35,11 @@ export const RichTextEditor = function RichTextEditor({
   return (
     <div
       data-disabled={parsedDisabledState}
-      style={{ width: `${width}px`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        display: parsedWidgetVisibility ? '' : 'none',
+      }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component);

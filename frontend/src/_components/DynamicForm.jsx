@@ -86,7 +86,13 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
-        return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
+        return {
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+        };
       default:
         return {};
     }

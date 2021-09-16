@@ -300,7 +300,10 @@ class Editor extends React.Component {
   saveApp = (id, attributes, notify = false) => {
     appService.saveApp(id, attributes).then(() => {
       if (notify) {
-        toast.success('App saved sucessfully', { hideProgressBar: true, position: 'top-center' });
+        toast.success('App saved sucessfully', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
       }
     });
   };
@@ -312,7 +315,10 @@ class Editor extends React.Component {
         role="button"
         key={dataSource.name}
         onClick={() => {
-          this.setState({ selectedDataSource: dataSource, showDataSourceManagerModal: true });
+          this.setState({
+            selectedDataSource: dataSource,
+            showDataSourceManagerModal: true,
+          });
         }}
       >
         <td>
@@ -336,17 +342,26 @@ class Editor extends React.Component {
   };
 
   executeDataQueryDeletion = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true });
+    this.setState({
+      showDataQueryDeletionConfirmation: false,
+      isDeletingDataQuery: true,
+    });
     dataqueryService
       .del(this.state.selectedQuery.id)
       .then(() => {
-        toast.success('Query Deleted', { hideProgressBar: true, position: 'bottom-center' });
+        toast.success('Query Deleted', {
+          hideProgressBar: true,
+          position: 'bottom-center',
+        });
         this.setState({ isDeletingDataQuery: false });
         this.dataQueriesChanged();
       })
       .catch(({ error }) => {
         this.setState({ isDeletingDataQuery: false });
-        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+        toast.error(error, {
+          hideProgressBar: true,
+          position: 'bottom-center',
+        });
       });
   };
 
@@ -392,7 +407,9 @@ class Editor extends React.Component {
             <button
               className="btn badge bg-azure-lt"
               onClick={this.deleteDataQuery}
-              style={{ display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none' }}
+              style={{
+                display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
+              }}
             >
               <div>
                 <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
@@ -563,7 +580,11 @@ class Editor extends React.Component {
                 {this.state.app && (
                   <input
                     type="text"
-                    style={{ width: '200px', left: '80px', position: 'absolute' }}
+                    style={{
+                      width: '200px',
+                      left: '80px',
+                      position: 'absolute',
+                    }}
                     onChange={(e) => this.onNameChanged(e.target.value)}
                     onBlur={(e) => this.saveApp(this.state.app.id, { name: e.target.value })}
                     className="form-control-plaintext form-control-plaintext-sm"
@@ -679,7 +700,12 @@ class Editor extends React.Component {
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                 style={{ transform: `scale(${zoomLevel})` }}
               >
-                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
+                <div
+                  className="canvas-area"
+                  style={{
+                    width: currentLayout === 'desktop' ? '1292px' : '450px',
+                  }}
+                >
                   {defaultComponentStateComputed && (
                     <Container
                       appDefinition={appDefinition}
@@ -782,7 +808,11 @@ class Editor extends React.Component {
                                 <button
                                   className="btn btn-sm btn-outline-azure mt-3"
                                   onClick={() =>
-                                    this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
+                                    this.setState({
+                                      selectedQuery: {},
+                                      editingQuery: false,
+                                      addingQuery: true,
+                                    })
                                   }
                                 >
                                   create query

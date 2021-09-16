@@ -34,7 +34,12 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta })
       <div className="row mx-0 form-control color-picker-input" onClick={() => setShowPicker(true)}>
         <div
           className="col-auto"
-          style={{ float: 'right', width: '20px', height: '20px', backgroundColor: definition.value }}
+          style={{
+            float: 'right',
+            width: '20px',
+            height: '20px',
+            backgroundColor: definition.value,
+          }}
         ></div>
         <div className="col">{definition.value}</div>
       </div>

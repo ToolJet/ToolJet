@@ -22,7 +22,10 @@ describe('data queries controller', () => {
   });
 
   it('should be able to update queries of an app only if admin/developer of same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -33,8 +36,14 @@ describe('data queries controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
 
     const dataQuery = await createDataQuery(app, {
       application,
@@ -155,7 +164,10 @@ describe('data queries controller', () => {
   });
 
   it('should be able to get queries of an app only if the user belongs to the same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -166,8 +178,14 @@ describe('data queries controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
 
     await createDataQuery(app, {
       application,
@@ -193,7 +211,10 @@ describe('data queries controller', () => {
   });
 
   it('should be able to create queries for an app only if the user is admin/developer and belongs to the same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -204,8 +225,14 @@ describe('data queries controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
 
     const queryParams = {
       app_id: application.id,
@@ -234,9 +261,18 @@ describe('data queries controller', () => {
   });
 
   it('should not be able to create queries if datasource belongs to another app', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
-    const anotherApplication = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+    const anotherApplication = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
     const dataSource = await createDataSource(app, {
       name: 'name',
       kind: 'postgres',
@@ -276,7 +312,10 @@ describe('data queries controller', () => {
   });
 
   it('should be able to run queries of an app if the user belongs to the same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -287,7 +326,10 @@ describe('data queries controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
 
     const dataQuery = await createDataQuery(app, {
       application,
@@ -312,9 +354,18 @@ describe('data queries controller', () => {
   });
 
   it('should not be able to run queries of an app if the user belongs to another organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
 
     const dataQuery = await createDataQuery(app, {
       application,
@@ -336,8 +387,15 @@ describe('data queries controller', () => {
   });
 
   it('should be able to run queries of an app if a public app ( even if an unauthenticated user )', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user, isPublic: true });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+      isPublic: true,
+    });
     const dataQuery = await createDataQuery(app, {
       application,
       kind: 'restapi',
@@ -357,8 +415,15 @@ describe('data queries controller', () => {
   });
 
   it('should not be able to run queries if app not not public and user is not authenticated', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user, isPublic: false });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+      isPublic: false,
+    });
     const dataQuery = await createDataQuery(app, {
       application,
       kind: 'restapi',

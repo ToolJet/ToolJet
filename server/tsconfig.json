@@ -15,7 +15,7 @@
     "paths": {
       "@services/*": ["src/services/*"],
       "@plugins/*": ["plugins/*"],
-      "@controllers/*": ["src/controllers/*"],
+      "@controllers/*": ["src/controllers/*"]
     }
   }
 }

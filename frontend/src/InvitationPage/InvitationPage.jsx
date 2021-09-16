@@ -26,10 +26,20 @@ class InvitationPage extends React.Component {
     this.setState({ isLoading: true });
 
     userService
-      .setPasswordFromToken({ token, password, organization, newSignup, firstName, lastName })
+      .setPasswordFromToken({
+        token,
+        password,
+        organization,
+        newSignup,
+        firstName,
+        lastName,
+      })
       .then(() => {
         this.setState({ isLoading: false });
-        toast.success('Password has been set successfully.', { hideProgressBar: true, position: 'top-center' });
+        toast.success('Password has been set successfully.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.props.history.push('/login');
       })
       .catch(({ error }) => {

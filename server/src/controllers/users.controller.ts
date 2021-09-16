@@ -29,6 +29,8 @@ export class UsersController {
   @Patch('change_password')
   async changePassword(@Request() req, @Body() body) {
     const { newPassword } = body;
-    return await this.usersService.update(req.user.id, { password: newPassword });
+    return await this.usersService.update(req.user.id, {
+      password: newPassword,
+    });
   }
 }

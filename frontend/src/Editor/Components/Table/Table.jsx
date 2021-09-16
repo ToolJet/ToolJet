@@ -540,10 +540,17 @@ export function Table({
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  style={{
+                    background: action.backgroundColor,
+                    color: action.textColor,
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                    onEvent('onTableActionButtonClicked', {
+                      component,
+                      data: cell.row.original,
+                      action,
+                    });
                   }}
                 >
                   {action.buttonText}
@@ -567,10 +574,17 @@ export function Table({
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  style={{
+                    background: action.backgroundColor,
+                    color: action.textColor,
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                    onEvent('onTableActionButtonClicked', {
+                      component,
+                      data: cell.row.original,
+                      action,
+                    });
                   }}
                 >
                   {action.buttonText}
@@ -663,7 +677,10 @@ export function Table({
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths });
+      paramUpdated(id, 'columnSizes', {
+        ...columnSizes,
+        ...state.columnResizing.columnWidths,
+      });
     } else {
       changeCanDrag(false);
     }
@@ -714,7 +731,11 @@ export function Table({
     <div
       data-disabled={parsedDisabledState}
       className="card jet-table"
-      style={{ width: `${width}px`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        display: parsedWidgetVisibility ? '' : 'none',
+      }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component);
@@ -773,7 +794,10 @@ export function Table({
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEvent('onRowClicked', { component, data: row.original });
+                      onEvent('onRowClicked', {
+                        component,
+                        data: row.original,
+                      });
                     }}
                   >
                     {row.cells.map((cell, index) => {

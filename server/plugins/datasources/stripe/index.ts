@@ -6,14 +6,12 @@ const got = require('got');
 
 @Injectable()
 export default class StripeQueryService implements QueryService {
-
   authHeader(token: string): object {
-    return { Authorization: `Bearer ${token}` }
+    return { Authorization: `Bearer ${token}` };
   }
 
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
-
-    let result = { };
+    let result = {};
     const operation = queryOptions.operation;
 
     const apiKey = sourceOptions['api_key'];
@@ -26,28 +24,28 @@ export default class StripeQueryService implements QueryService {
     const bodyParams = queryOptions['params']['request'];
 
     // Replace path params of url
-    for(const param of Object.keys(pathParams)) {
+    for (const param of Object.keys(pathParams)) {
       url = url.replace(`{${param}}`, pathParams[param]);
     }
 
     let response = null;
 
     try {
-      if(operation === 'get') {
-        response = await got(url, { 
-          method: operation, 
+      if (operation === 'get') {
+        response = await got(url, {
+          method: operation,
           headers: this.authHeader(apiKey),
-          searchParams: queryParams
+          searchParams: queryParams,
         });
       } else {
-        response = await got(url, { 
-          method: operation, 
+        response = await got(url, {
+          method: operation,
           headers: this.authHeader(apiKey),
           json: bodyParams,
-          searchParams: queryParams
+          searchParams: queryParams,
         });
       }
-        
+
       result = JSON.parse(response.body);
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
@@ -55,8 +53,7 @@ export default class StripeQueryService implements QueryService {
 
     return {
       status: 'ok',
-      data: result
-    }
+      data: result,
+    };
   }
-
 }

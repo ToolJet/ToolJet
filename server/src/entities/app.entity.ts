@@ -46,13 +46,20 @@ export class App extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToMany(() => AppVersion, (appVersion) => appVersion.app, { eager: false, onDelete: 'CASCADE' })
+  @OneToMany(() => AppVersion, (appVersion) => appVersion.app, {
+    eager: false,
+    onDelete: 'CASCADE',
+  })
   appVersions: AppVersion[];
 
-  @OneToMany(() => DataQuery, (dataQuery) => dataQuery.app, { onDelete: 'CASCADE' })
+  @OneToMany(() => DataQuery, (dataQuery) => dataQuery.app, {
+    onDelete: 'CASCADE',
+  })
   dataQueries: DataQuery[];
 
-  @OneToMany(() => DataSource, (dataSource) => dataSource.app, { onDelete: 'CASCADE' })
+  @OneToMany(() => DataSource, (dataSource) => dataSource.app, {
+    onDelete: 'CASCADE',
+  })
   dataSources: DataSource[];
 
   public editingVersion;

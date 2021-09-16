@@ -26,7 +26,9 @@ export async function createNestAppInstance() {
 
 export function authHeaderForUser(user: any) {
   const configService = new ConfigService();
-  const jwtService = new JwtService({ secret: configService.get<string>('SECRET_KEY_BASE') });
+  const jwtService = new JwtService({
+    secret: configService.get<string>('SECRET_KEY_BASE'),
+  });
   const authPayload = { username: user.id, sub: user.email };
   const authToken = jwtService.sign(authPayload);
   return `Bearer ${authToken}`;

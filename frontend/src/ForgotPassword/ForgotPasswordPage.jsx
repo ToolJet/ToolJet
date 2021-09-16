@@ -43,9 +43,13 @@ class ForgotPassword extends React.Component {
       })
       .then((res) => {
         if (res.error) {
-          toast.error(res.error, { toastId: 'toast-forgot-password-email-error' });
+          toast.error(res.error, {
+            toastId: 'toast-forgot-password-email-error',
+          });
         } else {
-          toast.success(res.message, { toastId: 'toast-forgot-password-confirmation-code' });
+          toast.success(res.message, {
+            toastId: 'toast-forgot-password-confirmation-code',
+          });
           this.props.history.push('/reset-password');
         }
       })

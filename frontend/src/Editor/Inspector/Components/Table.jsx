@@ -235,7 +235,9 @@ class Table extends React.Component {
                 <Color
                   param={{ name: 'Active color' }}
                   paramType="properties"
-                  componentMeta={{ properties: { color: { displayName: 'Active color' } } }}
+                  componentMeta={{
+                    properties: { color: { displayName: 'Active color' } },
+                  }}
                   definition={{ value: column.activeColor || '#3c92dc' }}
                   onChange={(name, value, color) => this.onColumnItemChange(index, 'activeColor', color)}
                 />
@@ -465,14 +467,21 @@ class Table extends React.Component {
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
-    newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4() });
+    newValue.push({
+      name: this.generateNewColumnName(columns.value),
+      id: uuidv4(),
+    });
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
   };
 
   addNewAction = () => {
     const actions = this.props.component.component.definition.properties.actions;
     const newValue = actions ? actions.value : [];
-    newValue.push({ name: computeActionName(actions), buttonText: 'Button', events: [] });
+    newValue.push({
+      name: computeActionName(actions),
+      buttonText: 'Button',
+      events: [],
+    });
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
   };
 
@@ -525,7 +534,9 @@ class Table extends React.Component {
     } = this.props;
 
     const columns = component.component.definition.properties.columns;
-    const actions = component.component.definition.properties.actions || { value: [] };
+    const actions = component.component.definition.properties.actions || {
+      value: [],
+    };
 
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');

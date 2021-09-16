@@ -24,7 +24,10 @@ export function onComponentOptionsChanged(_ref, component, options) {
   }
 
   return setStateAsync(_ref, {
-    currentState: { ..._ref.state.currentState, components: { ...components, [componentName]: componentData } },
+    currentState: {
+      ..._ref.state.currentState,
+      components: { ...components, [componentName]: componentData },
+    },
   });
 }
 
@@ -36,7 +39,10 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   componentData[option_name] = value;
 
   return setStateAsync(_ref, {
-    currentState: { ..._ref.state.currentState, components: { ...components, [componentName]: componentData } },
+    currentState: {
+      ..._ref.state.currentState,
+      components: { ...components, [componentName]: componentData },
+    },
   });
 }
 
@@ -91,7 +97,10 @@ export function onQueryCancel(_ref) {
 async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!', { hideProgressBar: true, autoClose: 3000 });
+    toast.success('Copied to clipboard!', {
+      hideProgressBar: true,
+      autoClose: 3000,
+    });
   } catch (err) {
     console.log('Failed to copy!', err);
   }
@@ -353,7 +362,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
-    toast.error('No query has been associated with the action.', { hideProgressBar: true, autoClose: 3000 });
+    toast.error('No query has been associated with the action.', {
+      hideProgressBar: true,
+      autoClose: 3000,
+    });
     return;
   }
 
@@ -398,7 +410,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
           }
 
           if (data.status === 'failed') {
-            toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
+            toast.error(data.message, {
+              hideProgressBar: true,
+              autoClose: 3000,
+            });
 
             return _self.setState(
               {
@@ -423,7 +438,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
               },
               () => {
                 resolve();
-                onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                onEvent(_self, 'onDataQueryFailure', {
+                  definition: { events: dataQuery.options.events },
+                });
               }
             );
           }
@@ -460,7 +477,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
             },
             () => {
               resolve();
-              onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } });
+              onEvent(_self, 'onDataQuerySuccess', {
+                definition: { events: dataQuery.options.events },
+              });
             }
           );
         })
@@ -505,7 +524,11 @@ export function computeComponentState(_ref, components) {
     const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
     const existingValues = currentComponents[existingComponentName];
 
-    componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+    componentState[component.component.name] = {
+      ...componentMeta.exposedVariables,
+      id: key,
+      ...existingValues,
+    };
   });
 
   _ref.setState(

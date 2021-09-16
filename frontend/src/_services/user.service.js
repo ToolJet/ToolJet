@@ -23,12 +23,20 @@ function createUser(first_name, last_name, email, role) {
     role,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/users`, requestOptions).then(handleResponse);
 }
 
 function deleteUser(id) {
-  const requestOptions = { method: 'DELETE', headers: authHeader(), body: JSON.stringify({}) };
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    body: JSON.stringify({}),
+  };
   return fetch(`${config.apiUrl}/users/${id}`, requestOptions).then(handleResponse);
 }
 
@@ -42,18 +50,30 @@ function setPasswordFromToken({ token, password, organization, newSignup, firstN
     last_name: lastName,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/users/set_password_from_token`, requestOptions).then(handleResponse);
 }
 
 function updateCurrentUser(firstName, lastName) {
   const body = { firstName, lastName };
-  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/users/update`, requestOptions).then(handleResponse);
 }
 
 function changePassword(currentPassword, newPassword) {
   const body = { currentPassword, newPassword };
-  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/users/change_password`, requestOptions).then(handleResponse);
 }

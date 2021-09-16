@@ -68,7 +68,15 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             plugins: [
-              ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
+              [
+                'import',
+                {
+                  libraryName: 'lodash',
+                  libraryDirectory: '',
+                  camel2DashComponentName: false,
+                },
+                'lodash',
+              ],
             ],
           },
         },

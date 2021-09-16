@@ -64,7 +64,10 @@ class ManageAppUsers extends React.Component {
       .createAppUser(this.state.app.id, organizationUserId, role)
       .then(() => {
         this.setState({ addingUser: false, newUser: {} });
-        toast.success('Added user successfully', { hideProgressBar: true, position: 'top-center' });
+        toast.success('Added user successfully', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.fetchAppUsers();
       })
       .catch(({ error }) => {

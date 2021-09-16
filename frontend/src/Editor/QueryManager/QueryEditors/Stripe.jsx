@@ -174,7 +174,9 @@ class Stripe extends React.Component {
                 {selectedOperation && (
                   <small
                     className="my-2"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedOperation.description) }}
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(selectedOperation.description),
+                    }}
                   />
                 )}
               </div>

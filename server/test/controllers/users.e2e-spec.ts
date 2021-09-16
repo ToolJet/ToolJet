@@ -15,7 +15,10 @@ describe('users controller', () => {
 
   describe('update user', () => {
     it('should allow users to update their firstName, lastName and password', async () => {
-      const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+      const userData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        role: 'admin',
+      });
       const { user } = userData;
 
       const [firstName, lastName] = ['Daenerys', 'Targaryen', 'drogo666'];
@@ -36,7 +39,10 @@ describe('users controller', () => {
 
   describe('change password', () => {
     it('should allow users to update their password', async () => {
-      const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+      const userData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        role: 'admin',
+      });
       const { user } = userData;
 
       const oldPassword = user.password;
@@ -54,7 +60,10 @@ describe('users controller', () => {
     });
 
     it('should not allow users to update their password if entered current password is wrong', async () => {
-      const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+      const userData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        role: 'admin',
+      });
       const { user } = userData;
 
       const oldPassword = user.password;
@@ -62,7 +71,10 @@ describe('users controller', () => {
       const response = await request(app.getHttpServer())
         .patch('/users/change_password')
         .set('Authorization', authHeaderForUser(user))
-        .send({ currentPassword: 'wrong password', newPassword: 'new password' });
+        .send({
+          currentPassword: 'wrong password',
+          newPassword: 'new password',
+        });
 
       expect(response.statusCode).toBe(403);
 

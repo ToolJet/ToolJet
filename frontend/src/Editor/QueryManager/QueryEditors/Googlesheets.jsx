@@ -61,7 +61,10 @@ class Googlesheets extends React.Component {
                   { value: 'read', name: 'Read data from a spreadsheet' },
                   { value: 'append', name: 'Append data to a spreadsheet' },
                   { value: 'info', name: 'Get spreadsheet info' },
-                  { value: 'delete_row', name: 'Delete row from a spreadsheet' },
+                  {
+                    value: 'delete_row',
+                    name: 'Delete row from a spreadsheet',
+                  },
                 ]}
                 value={this.state.options.operation}
                 search={true}

@@ -31,7 +31,11 @@ function getAll(page, folder) {
 function createApp() {
   const body = {};
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
 }
 
@@ -61,7 +65,11 @@ function getAppByVersion(appId, versionId) {
 }
 
 function saveApp(id, attributes) {
-  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify({ app: attributes }) };
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify({ app: attributes }),
+  };
   return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
 }
 
@@ -77,7 +85,11 @@ function createAppUser(app_id, org_user_id, role) {
     role,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/app_users`, requestOptions).then(handleResponse);
 }
 
@@ -91,6 +103,10 @@ function setVisibility(appId, visibility) {
 }
 
 function setSlug(appId, slug) {
-  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify({ app: { slug: slug } }) };
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify({ app: { slug: slug } }),
+  };
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }

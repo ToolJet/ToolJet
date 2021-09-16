@@ -65,13 +65,24 @@ export class UsersService {
 
     if (user) {
       // beforeUpdate hook will not trigger if using update method of repository
-      await this.usersRepository.save(Object.assign(user, { firstName, lastName, password, invitationToken: null }));
+      await this.usersRepository.save(
+        Object.assign(user, {
+          firstName,
+          lastName,
+          password,
+          invitationToken: null,
+        })
+      );
 
       const organizationUser = user.organizationUsers[0];
-      this.organizationUsersRepository.update(organizationUser.id, { status: 'active' });
+      this.organizationUsersRepository.update(organizationUser.id, {
+        status: 'active',
+      });
 
       if (newSignup) {
-        this.organizationsRepository.update(user.organizationId, { name: organization });
+        this.organizationsRepository.update(user.organizationId, {
+          name: organization,
+        });
       }
     }
   }

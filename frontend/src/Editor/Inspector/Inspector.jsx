@@ -162,7 +162,10 @@ export const Inspector = ({
     let newDefinition = { ...component.component.definition };
     let eventDefinition = newDefinition.events[event.name] || { options: {} };
 
-    newDefinition.events[event.name] = { ...eventDefinition, options: { ...eventDefinition.options, [option]: value } };
+    newDefinition.events[event.name] = {
+      ...eventDefinition,
+      options: { ...eventDefinition.options, [option]: value },
+    };
 
     let newComponent = {
       ...component,

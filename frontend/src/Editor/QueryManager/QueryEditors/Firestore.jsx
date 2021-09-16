@@ -63,7 +63,10 @@ class Firestore extends React.Component {
                   { value: 'add_document', name: 'Add Document to Collection' },
                   { value: 'update_document', name: 'Update Document' },
                   { value: 'set_document', name: 'Set Document' },
-                  { value: 'bulk_update', name: 'Bulk update using document id' },
+                  {
+                    value: 'bulk_update',
+                    name: 'Bulk update using document id',
+                  },
                   { value: 'delete_document', name: 'Delete Document' },
                 ]}
                 value={this.state.options.operation}
@@ -215,7 +218,10 @@ class Firestore extends React.Component {
                         { value: '>=', name: '>=' },
                         { value: 'array-contains', name: 'array-contains' },
                         { value: 'in', name: 'in' },
-                        { value: 'array-contains-any', name: 'array-contains-any' },
+                        {
+                          value: 'array-contains-any',
+                          name: 'array-contains-any',
+                        },
                       ]}
                       value={this.state.options.where_operation}
                       search={true}

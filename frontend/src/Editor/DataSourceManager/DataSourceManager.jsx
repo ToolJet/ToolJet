@@ -117,7 +117,10 @@ class DataSourceManager extends React.Component {
       datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
         this.setState({ isSaving: false });
         this.hideModal();
-        toast.success('Datasource Saved', { hideProgressBar: true, position: 'top-center' });
+        toast.success('Datasource Saved', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.props.dataSourcesChanged();
       });
     } else {
@@ -125,7 +128,10 @@ class DataSourceManager extends React.Component {
       datasourceService.create(appId, name, kind, parsedOptions).then(() => {
         this.setState({ isSaving: false });
         this.hideModal();
-        toast.success('Datasource Added', { hideProgressBar: true, position: 'top-center' });
+        toast.success('Datasource Added', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.props.dataSourcesChanged();
       });
     }

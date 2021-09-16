@@ -21,11 +21,23 @@
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "plugins": ["react"],
+  "plugins": ["react", "prettier"],
   "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "semi": true,
+        "trailingComma": "es5",
+        "printWidth": 120,
+        "singleQuote": true,
+        "arrowParens": "always",
+        "proseWrap": "preserve"
+      }
+    ],
     "react/prop-types": 0,
     "react/display-name": "off",
-    "no-unused-vars": [2, { "args": "after-used", "argsIgnorePattern": "reject" }]
+    "no-unused-vars": [2, { "args": "after-used", "argsIgnorePattern": "reject" }],
+    "react/no-deprecated": 0
   },
   "settings": {
     "react": {
