@@ -30,59 +30,78 @@ export function resolve(data, state) {
   }
 }
 
-export function resolveAll(data, state) {
+export function resolveReferences(object, state, defaultValue, customObjects = {}, v2 = false) {
+  const objectType = typeof object;
+  switch (objectType) {
+    case 'string': {
+      if (object.startsWith('{{') && object.endsWith('}}')) {
+        const code = object.replace('{{', '').replace('}}', '');
+        let result = '';
+        let error;
 
-}
+        try {
+          const evalFunction = Function(
+            ['components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
+            `return ${code}`
+          );
+          result = evalFunction(
+            state.components,
+            state.queries,
+            state.globals,
+            moment,
+            _,
+            ...Object.values(customObjects)
+          );
+        } catch (err) {
+          error = err;
+          console.log('eval_error', err);
+        }
 
-export function resolveReferences(object, state, defaultValue, customObjects = {}) {
-  if (typeof object === 'string') {
-    if (object.startsWith('{{') && object.endsWith('}}')) {
-      const code = object.replace('{{', '').replace('}}', '');
-      let result = '';
+        if (v2) return [result, error];
 
-      try {
-        const evalFunction = Function(['components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)], `return ${code}`);
-        result = evalFunction(state.components, state.queries, state.globals, moment, _, ...Object.values(customObjects));
-      } catch (err) {
-        console.log('eval_error', err);
+        return result;
       }
 
-      return result;
-    }
+      const dynamicVariables = getDynamicVariables(object);
 
-    const dynamicVariables = getDynamicVariables(object);
-    if (dynamicVariables) {
-      if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-        object = resolveReferences(dynamicVariables[0], state);
-      } else {
-        for (const dynamicVariable of dynamicVariables) {
-          const value = resolveReferences(dynamicVariable, state);
-          object = object.replace(dynamicVariable, value);
+      if (dynamicVariables) {
+        if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
+          object = resolveReferences(dynamicVariables[0], state);
+        } else {
+          for (const dynamicVariable of dynamicVariables) {
+            const value = resolveReferences(dynamicVariable, state);
+            object = object.replace(dynamicVariable, value);
+          }
         }
       }
+      return object;
     }
-    return object;
-  } if (Array.isArray(object)) {
-    console.log(`[Resolver] Resolving as array ${typeof object}`);
 
-    const new_array = [];
+    case 'object': {
+      if (Array.isArray(object)) {
+        console.log(`[Resolver] Resolving as array ${typeof object}`);
 
-    object.forEach((element, index) => {
-      const resolved_object = resolveReferences(element, state);
-      new_array[index] = resolved_object;
-    });
+        const new_array = [];
 
-    return new_array;
-  } if (typeof object === 'object') {
-    console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
-    Object.keys(object).forEach((key, index) => {
-      const resolved_object = resolveReferences(object[key], state);
-      object[key] = resolved_object;
-    });
+        object.forEach((element, index) => {
+          const resolved_object = resolveReferences(element, state);
+          new_array[index] = resolved_object;
+        });
 
-    return object;
+        return new_array;
+      } else {
+        console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
+        Object.keys(object).forEach((key, index) => {
+          const resolved_object = resolveReferences(object[key], state);
+          object[key] = resolved_object;
+        });
+
+        return object;
+      }
+    }
+    default:
+      return object;
   }
-  return object;
 }
 
 export function getDynamicVariables(text) {
@@ -91,14 +110,16 @@ export function getDynamicVariables(text) {
 }
 
 export function computeComponentName(componentType, currentComponents) {
-  const currentComponentsForKind = Object.values(currentComponents).filter(component => component.component.component === componentType);
+  const currentComponentsForKind = Object.values(currentComponents).filter(
+    (component) => component.component.component === componentType
+  );
   let found = false;
   let componentName = '';
   let currentNumber = currentComponentsForKind.length + 1;
 
   while (!found) {
     componentName = `${componentType.toLowerCase()}${currentNumber}`;
-    if (Object.values(currentComponents).find(component => component.name === componentName) === undefined) {
+    if (Object.values(currentComponents).find((component) => component.name === componentName) === undefined) {
       found = true;
     }
     currentNumber = currentNumber + 1;
@@ -116,7 +137,7 @@ export function computeActionName(actions) {
 
   while (!found) {
     actionName = `Action${currentNumber}`;
-    if (values.find(action => action.name === actionName) === undefined) {
+    if (values.find((action) => action.name === actionName) === undefined) {
       found = true;
     }
     currentNumber += 1;
@@ -125,40 +146,42 @@ export function computeActionName(actions) {
   return actionName;
 }
 
-export function validateQueryName(name){
-    const nameRegex = new RegExp('^[A-Za-z0-9_-]*$');
-    return nameRegex.test(name);
-};
+export function validateQueryName(name) {
+  const nameRegex = new RegExp('^[A-Za-z0-9_-]*$');
+  return nameRegex.test(name);
+}
 
+export const convertToKebabCase = (string) =>
+  string
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/\s+/g, '-')
+    .toLowerCase();
 
-export const convertToKebabCase = string => string.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\s+/g, '-').toLowerCase()
-
-export const serializeNestedObjectToQueryParams = function(obj, prefix) {
+export const serializeNestedObjectToQueryParams = function (obj, prefix) {
   var str = [],
     p;
   for (p in obj) {
     if (obj.hasOwnProperty(p)) {
-      var k = prefix ? prefix + "[" + p + "]" : p,
+      var k = prefix ? prefix + '[' + p + ']' : p,
         v = obj[p];
-      str.push((v !== null && typeof v === "object") ?
-        serialize(v, k) :
-        encodeURIComponent(k) + "=" + encodeURIComponent(v));
+      str.push(
+        v !== null && typeof v === 'object' ? serialize(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v)
+      );
     }
   }
-  return str.join("&");
-}
+  return str.join('&');
+};
 
-
-export function resolveWidgetFieldValue(prop, state, _default=[], customResolveObjects = {}) {
+export function resolveWidgetFieldValue(prop, state, _default = [], customResolveObjects = {}) {
   const widgetFieldValue = prop;
 
   try {
-    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects)
+    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
   }
 
-  return widgetFieldValue
+  return widgetFieldValue;
 }
 
 export function validateWidget({ validationObject, widgetValue, currentState, customResolveObjects }) {
@@ -173,29 +196,29 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const validationRegex = resolveWidgetFieldValue(regex, currentState, '', customResolveObjects);
   const re = new RegExp(validationRegex, 'g');
 
-  if(!re.test(widgetValue)) { 
-    return { isValid: false, validationError:'The input should match pattern' }
+  if (!re.test(widgetValue)) {
+    return { isValid: false, validationError: 'The input should match pattern' };
   }
 
   const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState, 0, customResolveObjects);
-  if((widgetValue || '').length < parseInt(resolvedMinLength)) {
-    return { isValid: false, validationError: `Minimum ${resolvedMinLength} characters is needed` }
+  if ((widgetValue || '').length < parseInt(resolvedMinLength)) {
+    return { isValid: false, validationError: `Minimum ${resolvedMinLength} characters is needed` };
   }
 
   const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState, undefined, customResolveObjects);
-  if(resolvedMaxLength !== undefined) {
-    if((widgetValue || '').length > parseInt(resolvedMaxLength)) {
-      return { isValid: false, validationError: `Maximum ${resolvedMaxLength} characters is allowed` }
+  if (resolvedMaxLength !== undefined) {
+    if ((widgetValue || '').length > parseInt(resolvedMaxLength)) {
+      return { isValid: false, validationError: `Maximum ${resolvedMaxLength} characters is allowed` };
     }
   }
 
   const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
-  if(typeof resolvedCustomRule === 'string' ) {
-    return { isValid: false, validationError: resolvedCustomRule }
+  if (typeof resolvedCustomRule === 'string') {
+    return { isValid: false, validationError: resolvedCustomRule };
   }
 
   return {
     isValid,
-    validationError
-  }
+    validationError,
+  };
 }

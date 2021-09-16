@@ -62,23 +62,39 @@ export function CodeHinter({
       case 'object':
         return JSON.stringify(content);
       case 'boolean':
-        return content.toString()
+        return content.toString();
       default:
         return content;
     }
   };
 
   const getPreview = () => {
-    const preview = resolveReferences(currentValue, realState);
+    const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
+
+    if (error) {
+      return (
+        <div className="dynamic-variable-preview bg-red-lt px-1 py-1">
+          <div>
+            <div class="heading my-1">
+              <span>Error</span>
+            </div>
+            {error.toString()}
+          </div>
+        </div>
+      );
+    }
+
     const previewType = typeof preview;
     const content = getPreviewContent(preview, previewType);
 
     return (
-      <div>
-        <div class="heading my-1">
-          <span>{previewType}</span>
+      <div className="dynamic-variable-preview bg-green-lt px-1 py-1">
+        <div>
+          <div class="heading my-1">
+            <span>{previewType}</span>
+          </div>
+          {content}
         </div>
-        {content}
       </div>
     );
   };
@@ -98,13 +114,13 @@ export function CodeHinter({
         onBlur={(editor) => {
           const value = editor.getValue();
           onChange(value);
-          setFocused(false)
+          setFocused(false);
         }}
         onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
         onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
         options={options}
       />
-      {isFocused && enablePreview && <div className="dynamic-variable-preview bg-green-lt px-1 py-1">{getPreview()}</div>}
+      {isFocused && enablePreview && getPreview()}
     </div>
   );
 }
