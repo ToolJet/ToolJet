@@ -31,72 +31,78 @@ export function resolve(data, state) {
   }
 }
 
-// export function resolveAll(data, state) {
+export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+  const objectType = typeof object;
+  switch (objectType) {
+    case 'string': {
+      if (object.startsWith('{{') && object.endsWith('}}')) {
+        const code = object.replace('{{', '').replace('}}', '');
+        let result = '';
+        let error;
 
-// }
+        try {
+          const evalFunction = Function(
+            ['components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
+            `return ${code}`
+          );
+          result = evalFunction(
+            state.components,
+            state.queries,
+            state.globals,
+            moment,
+            _,
+            ...Object.values(customObjects)
+          );
+        } catch (err) {
+          error = err;
+          console.log('eval_error', err);
+        }
 
-export function resolveReferences(object, state, defaultValue, customObjects = {}) {
-  if (typeof object === 'string') {
-    if (object.startsWith('{{') && object.endsWith('}}')) {
-      const code = object.replace('{{', '').replace('}}', '');
-      let result = '';
+        if (withError) return [result, error];
 
-      try {
-        const evalFunction = Function(
-          ['components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
-          `return ${code}`
-        );
-        result = evalFunction(
-          state.components,
-          state.queries,
-          state.globals,
-          moment,
-          _,
-          ...Object.values(customObjects)
-        );
-      } catch (err) {
-        console.log('eval_error', err);
+        return result;
       }
 
-      return result;
-    }
+      const dynamicVariables = getDynamicVariables(object);
 
-    const dynamicVariables = getDynamicVariables(object);
-    if (dynamicVariables) {
-      if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-        object = resolveReferences(dynamicVariables[0], state);
-      } else {
-        for (const dynamicVariable of dynamicVariables) {
-          const value = resolveReferences(dynamicVariable, state);
-          object = object.replace(dynamicVariable, value);
+      if (dynamicVariables) {
+        if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
+          object = resolveReferences(dynamicVariables[0], state);
+        } else {
+          for (const dynamicVariable of dynamicVariables) {
+            const value = resolveReferences(dynamicVariable, state);
+            object = object.replace(dynamicVariable, value);
+          }
         }
       }
+      return object;
     }
-    return object;
+
+    case 'object': {
+      if (Array.isArray(object)) {
+        console.log(`[Resolver] Resolving as array ${typeof object}`);
+
+        const new_array = [];
+
+        object.forEach((element, index) => {
+          const resolved_object = resolveReferences(element, state);
+          new_array[index] = resolved_object;
+        });
+
+        return new_array;
+      } else {
+        console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
+        Object.keys(object).forEach((key) => {
+          const resolved_object = resolveReferences(object[key], state);
+          object[key] = resolved_object;
+        });
+
+        return object;
+      }
+    }
+    default:
+      return object;
   }
-  if (Array.isArray(object)) {
-    console.log(`[Resolver] Resolving as array ${typeof object}`);
-
-    const new_array = [];
-
-    object.forEach((element, index) => {
-      const resolved_object = resolveReferences(element, state);
-      new_array[index] = resolved_object;
-    });
-
-    return new_array;
-  }
-  if (typeof object === 'object') {
-    console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
-    // eslint-disable-next-line no-unused-vars
-    Object.keys(object).forEach((key, index) => {
-      const resolved_object = resolveReferences(object[key], state);
-      object[key] = resolved_object;
-    });
-
-    return object;
-  }
-  return object;
 }
 
 export function getDynamicVariables(text) {
@@ -192,27 +198,18 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const re = new RegExp(validationRegex, 'g');
 
   if (!re.test(widgetValue)) {
-    return {
-      isValid: false,
-      validationError: 'The input should match pattern',
-    };
+    return { isValid: false, validationError: 'The input should match pattern' };
   }
 
   const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState, 0, customResolveObjects);
   if ((widgetValue || '').length < parseInt(resolvedMinLength)) {
-    return {
-      isValid: false,
-      validationError: `Minimum ${resolvedMinLength} characters is needed`,
-    };
+    return { isValid: false, validationError: `Minimum ${resolvedMinLength} characters is needed` };
   }
 
   const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState, undefined, customResolveObjects);
   if (resolvedMaxLength !== undefined) {
     if ((widgetValue || '').length > parseInt(resolvedMaxLength)) {
-      return {
-        isValid: false,
-        validationError: `Maximum ${resolvedMaxLength} characters is allowed`,
-      };
+      return { isValid: false, validationError: `Maximum ${resolvedMaxLength} characters is allowed` };
     }
   }
 

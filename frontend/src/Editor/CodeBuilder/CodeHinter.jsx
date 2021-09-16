@@ -71,16 +71,32 @@ export function CodeHinter({
   };
 
   const getPreview = () => {
-    const preview = resolveReferences(currentValue, realState);
+    const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
+
+    if (error) {
+      return (
+        <div className="dynamic-variable-preview bg-red-lt px-1 py-1">
+          <div>
+            <div className="heading my-1">
+              <span>Error</span>
+            </div>
+            {error.toString()}
+          </div>
+        </div>
+      );
+    }
+
     const previewType = typeof preview;
     const content = getPreviewContent(preview, previewType);
 
     return (
-      <div>
-        <div className="heading my-1">
-          <span>{previewType}</span>
+      <div className="dynamic-variable-preview bg-green-lt px-1 py-1">
+        <div>
+          <div className="heading my-1">
+            <span>{previewType}</span>
+          </div>
+          {content}
         </div>
-        {content}
       </div>
     );
   };
@@ -111,9 +127,7 @@ export function CodeHinter({
         onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
         options={options}
       />
-      {isFocused && enablePreview && (
-        <div className="dynamic-variable-preview bg-green-lt px-1 py-1">{getPreview()}</div>
-      )}
+      {isFocused && enablePreview && getPreview()}
     </div>
   );
 }

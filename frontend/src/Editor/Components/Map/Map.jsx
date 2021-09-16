@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { GoogleMap, LoadScript, Marker, Autocomplete } from '@react-google-maps/api';
+import { Autocomplete, GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
 
