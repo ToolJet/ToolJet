@@ -5,9 +5,9 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
 import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
-import bcrypt from 'bcrypt';
-import uuid from 'uuid';
 
+const bcrypt = require('bcrypt');
+const uuid = require('uuid');
 @Injectable()
 export class AuthService {
   constructor(

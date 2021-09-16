@@ -7,21 +7,24 @@ const { Pool } = require('pg');
 
 @Injectable()
 export default class PostgresqlQueryService implements QueryService {
-
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string, dataSourceUpdatedAt: string): Promise<QueryResult> {
-
+  async run(
+    sourceOptions: any,
+    queryOptions: any,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string
+  ): Promise<QueryResult> {
     const pool = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
     let result = {
-      rows: []
+      rows: [],
     };
     let query = '';
 
-    if(queryOptions.mode === 'gui') {
-      if(queryOptions.operation === 'bulk_update_pkey') { 
+    if (queryOptions.mode === 'gui') {
+      if (queryOptions.operation === 'bulk_update_pkey') {
         query = await this.buildBulkUpdateQuery(queryOptions);
       }
-    } else { 
+    } else {
       query = queryOptions.query;
     }
 
@@ -29,8 +32,8 @@ export default class PostgresqlQueryService implements QueryService {
 
     return {
       status: 'ok',
-      data: result.rows
-    }
+      data: result.rows,
+    };
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
@@ -38,8 +41,8 @@ export default class PostgresqlQueryService implements QueryService {
     const result = await pool.query('SELECT version();');
 
     return {
-      status: 'ok'
-    }
+      status: 'ok',
+    };
   }
 
   async buildConnection(sourceOptions: any) {
@@ -48,31 +51,35 @@ export default class PostgresqlQueryService implements QueryService {
       host: sourceOptions.host,
       database: sourceOptions.database,
       password: sourceOptions.password,
-      port: sourceOptions.port
+      port: sourceOptions.port,
     };
 
-    if (sourceOptions.ssl_enabled)
-      poolConfig['ssl'] = { rejectUnauthorized: false };
+    if (sourceOptions.ssl_enabled) poolConfig['ssl'] = { rejectUnauthorized: false };
 
     return new Pool(poolConfig);
   }
 
-  async getConnection(sourceOptions: any, options:any, checkCache: boolean, dataSourceId?: string, dataSourceUpdatedAt?: string): Promise<any> { 
-    if(checkCache) {
+  async getConnection(
+    sourceOptions: any,
+    options: any,
+    checkCache: boolean,
+    dataSourceId?: string,
+    dataSourceUpdatedAt?: string
+  ): Promise<any> {
+    if (checkCache) {
       let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
 
-      if(connection) {
+      if (connection) {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);
-        
+
         await cacheConnection(dataSourceId, connection);
         return connection;
-      } 
+      }
     } else {
       return await this.buildConnection(sourceOptions);
     }
-   
   }
 
   async buildBulkUpdateQuery(queryOptions: any): Promise<string> {
@@ -82,11 +89,11 @@ export default class PostgresqlQueryService implements QueryService {
     const primaryKey = queryOptions['primary_key_column'];
     const records = queryOptions['records'];
 
-    for(const record of records ) {
+    for (const record of records) {
       queryText = `${queryText} UPDATE ${tableName} SET`;
 
-      for(const key of Object.keys(record)) {
-        if(key !== primaryKey) {
+      for (const key of Object.keys(record)) {
+        if (key !== primaryKey) {
           queryText = ` ${queryText} ${key} = '${record[key]}',`;
         }
       }

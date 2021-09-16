@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import {
   Entity,
   Column,
@@ -13,7 +14,8 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { Organization } from './organization.entity';
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt';
+const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
 
 @Entity({ name: 'users' })

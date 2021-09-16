@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import { Injectable } from '@nestjs/common';
-// import crypto from 'crypto';
-// import hkdf from 'futoin-hkdf';
 const crypto = require('crypto');
 const hkdf = require('futoin-hkdf');
 
@@ -38,7 +35,7 @@ export class EncryptionService {
 
     const aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce);
     aesgcm.setAuthTag(auth_tag);
-    const plainText = `${aesgcm.update(ciphertext)} ${aesgcm.final()}`;
+    const plainText = aesgcm.update(ciphertext) + aesgcm.final();
 
     return plainText;
   }
