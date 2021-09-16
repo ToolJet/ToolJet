@@ -1,9 +1,9 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
+import { Resizable } from 're-resizable';
 import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 
@@ -52,7 +52,6 @@ function getStyles(left, top, isDragging, component, isSelectedComponent) {
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
-    // eslint-disable-next-line no-dupe-keys
     height: isDragging ? 0 : '',
   };
 }
@@ -63,8 +62,8 @@ export const DraggableBox = function DraggableBox({
   title,
   left,
   top,
-  // width,
-  // height,
+  width,
+  height,
   parent,
   component,
   index,

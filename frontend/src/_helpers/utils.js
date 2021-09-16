@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import moment from 'moment';
 import _ from 'lodash';
 
@@ -31,9 +30,9 @@ export function resolve(data, state) {
   }
 }
 
-// export function resolveAll(data, state) {
+export function resolveAll(data, state) {
 
-// }
+}
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}) {
   if (typeof object === 'string') {
@@ -76,7 +75,6 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
     return new_array;
   } if (typeof object === 'object') {
     console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
-    // eslint-disable-next-line no-unused-vars
     Object.keys(object).forEach((key, index) => {
       const resolved_object = resolveReferences(object[key], state);
       object[key] = resolved_object;
@@ -139,7 +137,7 @@ export const serializeNestedObjectToQueryParams = function(obj, prefix) {
   var str = [],
     p;
   for (p in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, p)) {
+    if (obj.hasOwnProperty(p)) {
       var k = prefix ? prefix + "[" + p + "]" : p,
         v = obj[p];
       str.push((v !== null && typeof v === "object") ?

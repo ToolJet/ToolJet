@@ -28,7 +28,7 @@ function NotificationBadge({count}) {
     <>
       {count > 0 && (
         <span 
-        className="badge bg-red rounded-circle debugger-badge p-0"
+        class="badge bg-red rounded-circle debugger-badge p-0"
         style={{fontSize: fontSize}}
         >
           {count > 999 ? `999+` : count}

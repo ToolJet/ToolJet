@@ -2,6 +2,7 @@ import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
+import Skeleton from 'react-loading-skeleton';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
@@ -239,8 +240,8 @@ class ManageOrgUsers extends React.Component {
                       </thead>
                       {isLoading ? (
                         <tbody className="w-100" style={{ minHeight: '300px' }}>
-                          {Array.from(Array(4)).map((index) => (
-                            <tr key={index}>
+                          {Array.from(Array(4)).map(() => (
+                            <tr>
                               <td className="col-2 p-3">
                                 <div className="row">
                                   <div

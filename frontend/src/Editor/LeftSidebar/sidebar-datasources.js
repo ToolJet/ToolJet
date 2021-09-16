@@ -68,6 +68,7 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], data
           toggleDataSourceManagerModal(false);
         }}
         dataSourcesChanged={dataSourcesChanged}
+        showDataSourceManagerModal={showDataSourceManagerModal}
         selectedDataSource={selectedDataSource}
       />
     </>

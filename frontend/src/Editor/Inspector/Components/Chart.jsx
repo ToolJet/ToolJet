@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderElement } from '../Utils';
-// import { Color } from '../Elements/Color';
+import { Color } from '../Elements/Color';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Chart extends React.Component {
@@ -8,14 +8,7 @@ class Chart extends React.Component {
     super(props);
 
     const {
-      dataQueries,
-      component,
-      paramUpdated,
-      componentMeta,
-      eventUpdated,
-      eventOptionUpdated,
-      components,
-      currentState,
+      dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components, currentState
     } = props;
 
     this.state = {
@@ -26,7 +19,7 @@ class Chart extends React.Component {
       eventUpdated,
       eventOptionUpdated,
       components,
-      currentState,
+      currentState
     };
   }
 
@@ -39,7 +32,7 @@ class Chart extends React.Component {
       eventUpdated,
       eventOptionUpdated,
       components,
-      currentState,
+      currentState
     } = this.props;
 
     this.setState({
@@ -50,7 +43,7 @@ class Chart extends React.Component {
       eventUpdated,
       eventOptionUpdated,
       components,
-      currentState,
+      currentState
     });
   }
 
@@ -60,66 +53,38 @@ class Chart extends React.Component {
       component,
       paramUpdated,
       componentMeta,
+      eventUpdated,
+      eventOptionUpdated,
       components,
-      currentState,
-      // eventUpdated,
-      // eventOptionUpdated,
+      currentState
     } = this.state;
 
     const data = this.state.component.component.definition.properties.data;
 
     return (
       <div className="properties-container p-2">
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'title',
-          'properties',
-          currentState,
-          components
-        )}
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'type',
-          'properties',
-          currentState,
-          components
-        )}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'title', 'properties', currentState, components)}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'type', 'properties', currentState, components)}
 
         <div className="field mb-3 chart-data-input">
           <label className="form-label">Chart data</label>
           <CodeHinter
-            currentState={this.props.currentState}
-            initialValue={data.value}
-            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-            mode="javascript"
-            lineNumbers={false}
-            className="chart-input pr-2"
-            onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
-          />
+              currentState={this.props.currentState}
+              initialValue={data.value}
+              theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+              mode= "javascript"
+              lineNumbers={false}
+              className="chart-input pr-2"
+              onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
+            />
         </div>
-        {Object.keys(componentMeta.styles).map((style) =>
-          renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components)
-        )}
+        {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'markerColor', 'properties', currentState)}
 
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'showGridLines',
-          'properties',
-          currentState
-        )}
+        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showGridLines', 'properties', currentState)}
       </div>
     );
   }

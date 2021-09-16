@@ -1,10 +1,12 @@
 import React from 'react';
 import { toast } from 'react-toastify';
-import { getDynamicVariables, resolveReferences , serializeNestedObjectToQueryParams } from '@/_helpers/utils';
+import { getDynamicVariables, resolveReferences } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
+import { history } from '@/_helpers';
+import { serializeNestedObjectToQueryParams } from './utils';
 import { componentTypes } from '../Editor/Components/components';
 
 export function setStateAsync(_ref, state) {

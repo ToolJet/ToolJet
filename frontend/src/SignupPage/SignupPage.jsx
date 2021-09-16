@@ -8,7 +8,7 @@ class SignupPage extends React.Component {
     super(props);
 
     this.state = {
-      isLoading: false,
+      isLoading: false
     };
   }
 
@@ -25,9 +25,8 @@ class SignupPage extends React.Component {
 
     authenticationService.signup(email).then(
       () => {
-        // eslint-disable-next-line no-unused-vars
         const { from } = this.props.location.state || { from: { pathname: '/' } };
-        this.setState({ isLoading: false, signupSuccess: true });
+        this.setState({ isLoading: false, signupSuccess: true  });
       },
       () => {
         toast.error('Invalid email', { hideProgressBar: true, position: 'top-center' });
@@ -48,7 +47,7 @@ class SignupPage extends React.Component {
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
-            {!signupSuccess && (
+            {!signupSuccess && 
               <div className="card-body">
                 <h2 className="card-title text-center mb-4">Create a ToolJet account</h2>
                 <div className="mb-3">
@@ -67,17 +66,19 @@ class SignupPage extends React.Component {
                   </button>
                 </div>
               </div>
-            )}
-            {signupSuccess && <div className="card-body">Please check your email for confirmation link</div>}
+            }
+            {signupSuccess && 
+              <div className="card-body">Please check your email for confirmation link</div>
+            }
           </form>
-          {!signupSuccess && (
+          {!signupSuccess && 
             <div className="text-center text-muted mt-3">
               Already have an account? &nbsp;
               <Link to={'/login'} tabIndex="-1">
                 Sign in
               </Link>
             </div>
-          )}
+          }
         </div>
       </div>
     );

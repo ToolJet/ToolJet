@@ -57,18 +57,18 @@ function SettingsPage(props) {
 
         <div className="page-body">
           <div className="container-xl">
-            <div className="card">
-              <div className="card-header">
-                <h3 className="card-title">Profile</h3>
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Profile</h3>
               </div>
-              <div className="card-body">
+              <div class="card-body">
                 <div className="row">
                   <div className="col">
-                    <div className="mb-3">
-                      <label className="form-label">First name</label>
+                    <div class="mb-3">
+                      <label class="form-label">First name</label>
                       <input
                         type="text"
-                        className="form-control"
+                        class="form-control"
                         name="first-name"
                         placeholder="Enter first name"
                         value={firstName}
@@ -77,11 +77,11 @@ function SettingsPage(props) {
                     </div>
                   </div>
                   <div className="col">
-                    <div className="mb-3">
-                      <label className="form-label">Last name</label>
+                    <div class="mb-3">
+                      <label class="form-label">Last name</label>
                       <input
                         type="text"
-                        className="form-control"
+                        class="form-control"
                         name="last-name"
                         placeholder="Enter last name"
                         value={lastName}
@@ -104,11 +104,11 @@ function SettingsPage(props) {
               </div>
             </div>
             <br />
-            <div className="card">
-              <div className="card-header">
-                <h3 className="card-title">Change password</h3>
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Change password</h3>
               </div>
-              <div className="card-body">
+              <div class="card-body">
                 <div className="row">
                     <div className="col">
                       <div className="mb-3">

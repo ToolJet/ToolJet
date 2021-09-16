@@ -1,4 +1,5 @@
 import React from 'react';
+import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
@@ -9,13 +10,13 @@ class Elasticsearch extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options,
+      options: this.props.options
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options,
+      options: this.props.options
     });
   }
 
@@ -24,8 +25,8 @@ class Elasticsearch extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation,
-        },
+          operation
+        }
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -45,9 +46,9 @@ class Elasticsearch extends React.Component {
               <SelectSearch
                 options={[
                   { value: 'search', name: 'Search' },
-                  { value: 'index_document', name: 'Index a document' },
-                  { value: 'get', name: 'Get a document' },
-                  { value: 'update', name: 'Update a document' },
+                  { value: 'index_document', name: 'Index a document'},
+                  { value: 'get', name: 'Get a document'},
+                  { value: 'update', name: 'Update a document'},
                 ]}
                 value={this.state.options.operation}
                 search={false}
@@ -154,6 +155,7 @@ class Elasticsearch extends React.Component {
                     theme={this.props.darkMode ? 'monokai' : 'default'}
                     onChange={(value) => changeOption(this, 'index', value)}
                   />
+
                 </div>
                 <div className="mb-3 mt-2">
                   <label className="form-label text-reset">Query</label>

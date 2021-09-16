@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useRef, useState, useEffect, useCallback } from 'react';
 const noop = () => {};
 const useEscapeHandler = (handler = noop, dependencies = []) => {
@@ -26,13 +25,9 @@ const useClickOutside = (handler = noop, dependencies) => {
     callbackRef.current = handler;
   });
   useEffect(() => {
-    document === null || document === void 0
-      ? void 0
-      : document.addEventListener('click', outsideClickHandler, { capture: true });
+    document === null || document === void 0 ? void 0 : document.addEventListener('click', outsideClickHandler, { capture: true });
     return () =>
-      document === null || document === void 0
-        ? void 0
-        : document.removeEventListener('click', outsideClickHandler, { capture: true });
+      document === null || document === void 0 ? void 0 : document.removeEventListener('click', outsideClickHandler, { capture: true });
   }, dependencies);
   return ref;
 };

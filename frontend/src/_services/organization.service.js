@@ -4,8 +4,8 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const organizationService = {
   getUsers
 };
-//id is removed from args
-function getUsers() {
+
+function getUsers(id) {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/organizations/users`, requestOptions).then(handleResponse);
 }

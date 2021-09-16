@@ -10,7 +10,7 @@ export const DropDown = function DropDown({
   onComponentClick,
   currentState,
   onComponentOptionChanged,
-  onEvent,
+  onEvent
 }) {
   console.log('currentState', currentState);
 
@@ -20,32 +20,25 @@ export const DropDown = function DropDown({
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedValues = values;
 
   try {
     parsedValues = resolveReferences(values, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) { console.log(err); }
 
   let parsedDisplayValues = displayValues;
 
   try {
     parsedDisplayValues = resolveReferences(displayValues, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
-
+  } catch (err) { console.log(err); }
+  
   let parsedWidgetVisibility = widgetVisibility;
-
+  
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) { console.log(err); }
 
   let selectOptions = [];
 
@@ -53,15 +46,14 @@ export const DropDown = function DropDown({
     selectOptions = [
       ...parsedValues.map((value, index) => {
         return { name: parsedDisplayValues[index], value: value };
-      }),
+      })
     ];
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) { console.log(err); }
 
   const currentValueProperty = component.definition.properties.value;
   const value = currentValueProperty ? currentValueProperty.value : '';
   const [currentValue, setCurrentValue] = useState('');
+  
 
   let newValue = value;
   if (currentValueProperty && currentState) {
@@ -71,14 +63,14 @@ export const DropDown = function DropDown({
   const validationData = validateWidget({
     validationObject: component.definition.validation,
     widgetValue: currentValue,
-    currentState,
-  });
+    currentState
+  })
 
   const { isValid, validationError } = validationData;
 
   const currentValidState = currentState?.components[component?.name]?.isValid;
 
-  if (currentValidState !== isValid) {
+  if(currentValidState !== isValid) {
     onComponentOptionChanged(component, 'isValid', isValid);
   }
 
@@ -87,23 +79,13 @@ export const DropDown = function DropDown({
   }, [newValue]);
 
   useEffect(() => {
-    onComponentOptionChanged(component, 'value', currentValue).then(() => onEvent('onSelect', { component }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    onComponentOptionChanged(component, 'value', currentValue).then(() => onEvent('onSelect', { component }) );
   }, [currentValue]);
 
   return (
-    <div
-      className="dropdown-widget row g-0"
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component);
-      }}
-    >
+    <div className="dropdown-widget row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
       <div className="col-auto">
-        <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
-          {label}
-        </label>
+        <label style={{marginRight:  label !== '' ? '1rem' : '0.001rem'}} className="form-label py-1">{label}</label>
       </div>
       <div className="col px-0">
         <SelectSearch

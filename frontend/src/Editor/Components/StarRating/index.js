@@ -32,7 +32,6 @@ export const StarRating = function StarRating({
   } catch (err) { console.log(err); }
 
   const tooltips = component.definition.properties.tooltips.value ?? [];
-  // eslint-disable-next-line no-underscore-dangle
   const _tooltips = resolveReferences(tooltips, currentState, []) ?? [];
 
   const animatedStars = useTrail(maxRating, {
@@ -55,14 +54,12 @@ export const StarRating = function StarRating({
   React.useEffect(() => {
     setRatingIndex(defaultSelected - 1);
     onComponentOptionChanged(component, 'value', defaultSelected);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultSelected]);
 
   React.useEffect(() => {
     setTimeout(() => {
       onComponentOptionChanged(component, 'value', defaultSelected);
     }, 1000)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleClick(idx) {

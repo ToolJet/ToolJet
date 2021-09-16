@@ -41,14 +41,12 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   function segregateSections() {
     if (filteredComponents.length === 0) {
       return (
-        <div className="empty">
+        <div class="empty">
           {/* <div class="empty-img">
             <img src="./static/illustrations/undraw_printing_invoices_5r4r.svg" height="128" alt="" />
           </div> */}
-          <p className="empty-title">No results found</p>
-          <p className="empty-subtitle text-muted">
-            Try adjusting your search or filter to find what you&apos;re looking for.
-          </p>
+          <p class="empty-title">No results found</p>
+          <p class="empty-subtitle text-muted">Try adjusting your search or filter to find what you're looking for.</p>
         </div>
       );
     }

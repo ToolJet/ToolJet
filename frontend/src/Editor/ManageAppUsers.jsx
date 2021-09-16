@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from 'react-loading-skeleton';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { debounce } from 'lodash';
 
 class ManageAppUsers extends React.Component {
@@ -20,7 +21,7 @@ class ManageAppUsers extends React.Component {
       isSlugVerificationInProgress: false,
       addingUser: false,
       organizationUsers: [],
-      newUser: {},
+      newUser: {}
     };
   }
 
@@ -29,33 +30,29 @@ class ManageAppUsers extends React.Component {
 
     this.fetchAppUsers();
 
-    organizationService.getUsers(null).then((data) =>
-      this.setState({
-        organizationUsers: data.users,
-      })
-    );
+    organizationService.getUsers(null).then((data) => this.setState({
+      organizationUsers: data.users
+    }));
 
     this.setState({ appId });
   }
 
   fetchAppUsers = () => {
-    appService.getAppUsers(this.props.app.id).then((data) =>
-      this.setState({
-        users: data.users,
-        isLoading: false,
-      })
-    );
+    appService.getAppUsers(this.props.app.id).then((data) => this.setState({
+      users: data.users,
+      isLoading: false
+    }));
   };
 
   hideModal = () => {
     this.setState({
-      showModal: false,
+      showModal: false
     });
   };
 
   addUser = () => {
     this.setState({
-      addingUser: true,
+      addingUser: true
     });
 
     const { organizationUserId, role } = this.state.newUser;
@@ -76,88 +73,87 @@ class ManageAppUsers extends React.Component {
   toggleAppVisibility = () => {
     const newState = !this.state.app.is_public;
     this.setState({
-      ischangingVisibility: true,
+      ischangingVisibility: true
     });
 
-    // eslint-disable-next-line no-unused-vars
-    appService.setVisibility(this.state.app.id, newState).then((data) => {
+    appService.setVisibility(this.state.app.id, newState).then(data => {
       this.setState({
         ischangingVisibility: false,
         app: {
           ...this.state.app,
-          is_public: newState,
-        },
+          is_public: newState
+        }
       });
 
       if (newState) {
         toast.success('Application is now public.', {
           hideProgressBar: true,
-          position: 'top-center',
+          position: 'top-center'
         });
       } else {
         toast.success('Application visibility set to private', {
           hideProgressBar: true,
-          position: 'top-center',
+          position: 'top-center'
         });
       }
     });
-  };
+  }
 
-  handleSetSlug = (event) => {
-    const newSlug = event.target.value || this.props.app.id;
-    this.setState({ isSlugVerificationInProgress: true });
+    handleSetSlug = (event) => {
+      const newSlug = event.target.value || this.props.app.id;
+      this.setState({ isSlugVerificationInProgress: true });
 
-    appService
-      .setSlug(this.state.app.id, newSlug)
-      .then(() => {
-        this.setState({
-          slugError: null,
-          isSlugVerificationInProgress: false,
+      appService
+        .setSlug(this.state.app.id, newSlug)
+        .then(() => {
+          this.setState({
+            slugError: null,
+            isSlugVerificationInProgress: false
+          });
+          this.props.handleSlugChange(newSlug);
+        })
+        .catch(({ error }) => {
+          this.setState({
+            slugError: error,
+            isSlugVerificationInProgress: false
+          });
         });
-        this.props.handleSlugChange(newSlug);
-      })
-      .catch(({ error }) => {
-        this.setState({
-          slugError: error,
-          isSlugVerificationInProgress: false,
-        });
-      });
-  };
+    }
 
-  delayedSlugChange = debounce((e) => {
-    this.handleSetSlug(e);
-  }, 500);
+    delayedSlugChange = debounce(e => {
+      this.handleSetSlug(e);
+    }, 500);
 
-  render() {
-    const {
-      // addingUser,
-      // users,
-      // organizationUsers,
-      // newUser,
-      isLoading,
-      app,
-      slugError,
-      isSlugVerificationInProgress,
-    } = this.state;
-    const appId = app.id;
-    const appLink = `${window.location.origin}/applications/`;
-    const shareableLink = appLink + (this.props.slug || appId);
-    const slugButtonClass = isSlugVerificationInProgress ? '' : slugError !== null ? 'is-invalid' : 'is-valid';
+    render() {
+      const {
+        addingUser, 
+        isLoading, 
+        users, 
+        organizationUsers, 
+        newUser, 
+        app, 
+        slugError, 
+        isSlugVerificationInProgress
+      } = this.state;
+      const appId = app.id;
+      const appLink = `${window.location.origin}/applications/`;
+      const shareableLink = appLink + (this.props.slug || appId);
+      const slugButtonClass = isSlugVerificationInProgress? '' : slugError !== null ? 'is-invalid' : 'is-valid';
 
-    return (
+      return (
       <div>
         <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}>
           Share
         </button>
 
-        <Modal
-          show={this.state.showModal}
-          size="lg"
-          backdrop="static"
-          centered={true}
-          keyboard={true}
+        <Modal 
+          show={this.state.showModal} 
+          size="lg" 
+          backdrop="static" 
+          centered={true} 
+          keyboard={true} 
           animation={false}
-          onEscapeKeyDown={this.hideModal}
+          onEscapeKeyDown={this.hideModal} 
           className="app-sharing-modal"
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
         >
@@ -196,30 +192,24 @@ class ManageAppUsers extends React.Component {
                   <div className="input-group">
                     <span className="input-group-text">{appLink}</span>
                     <div className="input-with-icon">
-                      <input
-                        type="text"
-                        className={`form-control form-control-sm ${slugButtonClass}`}
-                        placeholder={appId}
-                        onChange={(e) => {
-                          e.persist();
-                          this.delayedSlugChange(e);
-                        }}
-                        defaultValue={this.props.slug}
-                      />
-                      {isSlugVerificationInProgress && (
+                      <input type="text"
+                            className={`form-control form-control-sm ${slugButtonClass}`}
+                            placeholder={appId}
+                            onChange={(e) => { e.persist(); this.delayedSlugChange(e); }}
+                            defaultValue={this.props.slug} />
+                      { isSlugVerificationInProgress && (
                         <div className="icon-container">
                           <div className="spinner-border text-azure spinner-border-sm" role="status"></div>
                         </div>
-                      )}
+                      )}                            
                     </div>
                     <span className="input-group-text">
                       <CopyToClipboard
                         text={shareableLink}
-                        onCopy={() =>
-                          toast.success('Link copied to clipboard', {
-                            hideProgressBar: true,
-                            position: 'bottom-center',
-                          })
+                        onCopy={() => toast.success('Link copied to clipboard', {
+                          hideProgressBar: true,
+                          position: 'bottom-center'
+                        })
                         }
                       >
                         <button className="btn btn-secondary btn-sm">Copy</button>
@@ -312,8 +302,8 @@ class ManageAppUsers extends React.Component {
           </Modal.Footer>
         </Modal>
       </div>
-    );
-  }
+      );
+    }
 }
 
 export { ManageAppUsers };

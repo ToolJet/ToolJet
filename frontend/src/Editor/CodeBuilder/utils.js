@@ -38,7 +38,6 @@ export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false
 
 export function makeOverlay(style) {
   return {
-    // eslint-disable-next-line no-unused-vars
     token: function (stream, state) {
       var ch;
       if (stream.match("{{")) {
@@ -48,7 +47,6 @@ export function makeOverlay(style) {
             return style;
           }
       }
-      // eslint-disable-next-line no-empty
       while (stream.next() != null && !stream.match("{{", false)) { }
       return null;
     }

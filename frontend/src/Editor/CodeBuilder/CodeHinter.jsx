@@ -46,12 +46,10 @@ export function CodeHinter({
 
   useEffect(() => {
     setRealState(currentState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
 
   let suggestions = useMemo(() => {
     return getSuggestionKeys(realState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [realState.components, realState.queries]);
 
   function valueChanged(editor, onChange, suggestions, ignoreBraces) {
@@ -64,7 +62,7 @@ export function CodeHinter({
       case 'object':
         return JSON.stringify(content);
       case 'boolean':
-        return content.toString();
+        return content.toString()
       default:
         return content;
     }
@@ -77,7 +75,7 @@ export function CodeHinter({
 
     return (
       <div>
-        <div className="heading my-1">
+        <div class="heading my-1">
           <span>{previewType}</span>
         </div>
         {content}
@@ -100,15 +98,13 @@ export function CodeHinter({
         onBlur={(editor) => {
           const value = editor.getValue();
           onChange(value);
-          setFocused(false);
+          setFocused(false)
         }}
         onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
         onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
         options={options}
       />
-      {isFocused && enablePreview && (
-        <div className="dynamic-variable-preview bg-green-lt px-1 py-1">{getPreview()}</div>
-      )}
+      {isFocused && enablePreview && <div className="dynamic-variable-preview bg-green-lt px-1 py-1">{getPreview()}</div>}
     </div>
   );
 }

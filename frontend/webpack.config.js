@@ -17,10 +17,7 @@ const ASSET_PATH = {
 module.exports = {
   mode: 'development',
   resolve: {
-    extensions: ['.js', '.jsx', '.png'],
-    alias: {
-      '@': path.resolve(__dirname, 'src/'),
-    },
+    extensions: ['.js', '.jsx'],
   },
   devtool: 'inline-source-map',
   module: {
@@ -78,6 +75,12 @@ module.exports = {
         }
       }
     ]
+  },
+  resolve: {
+    extensions: ['.js', '.jsx', '.png'],
+    alias: {
+      '@': path.resolve(__dirname, 'src/'),
+    },
   },
   plugins: [
     new HtmlWebpackPlugin({

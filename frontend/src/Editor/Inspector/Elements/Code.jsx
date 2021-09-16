@@ -7,11 +7,11 @@ export const Code = ({
   definition,
   onChange,
   paramType,
+  dataQueries,
+  components,
   componentMeta,
   currentState,
   darkMode,
-  // dataQueries,
-  // components,
 }) => {
   const initialValue = definition ? definition.value : '';
   const paramMeta = componentMeta[paramType][param.name];

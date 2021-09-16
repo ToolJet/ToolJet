@@ -8,8 +8,9 @@ export const TextArea = function TextArea({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged,
+  onComponentOptionChanged
 }) {
+
   const value = component.definition.properties.value ? component.definition.properties.value.value : '';
   const [text, setText] = useState(value);
 
@@ -22,31 +23,24 @@ export const TextArea = function TextArea({
   useEffect(() => {
     setText(newText);
     onComponentOptionChanged(component, 'value', newText);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newText]);
-
+  
   const placeholder = component.definition.properties.placeholder.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
-
+  
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  } catch (err) { console.log(err); }
 
   return (
     <textarea
       disabled={parsedDisabledState}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component);
-      }}
+      onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}
       onChange={(e) => {
         setText(e.target.value);
         onComponentOptionChanged(component, 'value', e.target.value);
@@ -54,7 +48,7 @@ export const TextArea = function TextArea({
       type="text"
       className="form-control"
       placeholder={placeholder}
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }}
       value={text}
     ></textarea>
   );
