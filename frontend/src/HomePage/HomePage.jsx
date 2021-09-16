@@ -148,7 +148,6 @@ class HomePage extends React.Component {
   pageCount = () => {
     return this.state.currentFolder.id ? this.state.meta.folder_count : this.state.meta.total_count;
   };
-
   render() {
     const {
       apps,
@@ -160,6 +159,7 @@ class HomePage extends React.Component {
       showAppDeletionConfirmation,
       isDeletingApp,
     } = this.state;
+    console.log(`%c ::: currentUser | ${JSON.stringify(currentUser)} :::`, 'color:orange');
     return (
       <div className="wrapper home-page">
         <ConfirmDialog
