@@ -81,7 +81,7 @@ export async function createApplicationVersion(app, application) {
   }));
 }
 
-export async function createUser(app, { firstName, lastName, email, role, organization }: any) {
+export async function createUser(app, { firstName, lastName, email, role, organization, status }: any) {
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
   let organizationUsersRepository: Repository<OrganizationUser>;
@@ -90,27 +90,28 @@ export async function createUser(app, { firstName, lastName, email, role, organi
   organizationRepository = app.get('OrganizationRepository');
   organizationUsersRepository = app.get('OrganizationUserRepository');
 
-  organization = organization || await organizationRepository.save(organizationRepository.create({ 
-    name: 'test org', 
-    createdAt: new Date(), 
-    updatedAt: new Date() 
+  organization = organization || await organizationRepository.save(organizationRepository.create({
+    name: 'test org',
+    createdAt: new Date(),
+    updatedAt: new Date()
   }));
 
-  const user = await userRepository.save(userRepository.create({ 
-    firstName: firstName || 'test', 
-    lastName: lastName || 'test', 
-    email: email || 'dev@tooljet.io', 
-    password: 'password', 
-    organization, 
-    createdAt: new Date(), 
-    updatedAt: new Date(), 
+  const user = await userRepository.save(userRepository.create({
+    firstName: firstName || 'test',
+    lastName: lastName || 'test',
+    email: email || 'dev@tooljet.io',
+    password: 'password',
+    organization,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }));
 
-  const orgUser = await organizationUsersRepository.save(organizationUsersRepository.create({ 
-    user: user, 
-    organization, 
-    role: role || 'admin', 
-    createdAt: new Date(), 
+  const orgUser = await organizationUsersRepository.save(organizationUsersRepository.create({
+    user: user,
+    organization,
+    role: role || 'admin',
+    status: status || 'invited',
+    createdAt: new Date(),
     updatedAt: new Date()
   }));
 
