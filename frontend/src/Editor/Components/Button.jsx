@@ -4,7 +4,7 @@ var tinycolor = require('tinycolor2');
 
 export const Button = function Button({ id, width, height, component, onComponentClick, currentState }) {
   console.log('currentState', currentState);
-  const x = 'hello';
+  const x = 'hello well done';
 
   const [loadingState, setLoadingState] = useState(false);
 
