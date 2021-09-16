@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-const crypto = require('crypto');
-const hkdf = require('futoin-hkdf');
+import crypto from 'crypto';
+import hkdf from 'futoin-hkdf';
 
 @Injectable()
 export class EncryptionService {
-
   async encryptColumnValue(table: string, column: string, text: string): Promise<string> {
     const derivedKey = this.computeAttributeKey(table, column);
     return this.encrypt(text, derivedKey);
@@ -16,9 +15,8 @@ export class EncryptionService {
   }
 
   encrypt(text: string, derivedKey: string): string {
-
     const nonce = crypto.randomBytes(12);
-    const key = Buffer.from(derivedKey, 'hex')
+    const key = Buffer.from(derivedKey, 'hex');
     const cipher = crypto.createCipheriv('aes-256-gcm', key, nonce);
     const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
     const tag = cipher.getAuthTag();
@@ -29,15 +27,15 @@ export class EncryptionService {
 
   decrypt(cipherText: string, derivedKey: string): string {
     const key = Buffer.from(derivedKey, 'hex');
-    let ciphertext = Buffer.from(cipherText, 'base64') ;
+    let ciphertext = Buffer.from(cipherText, 'base64');
 
-    let nonce = ciphertext.slice(0, 12);
-    let auth_tag = ciphertext.slice(-16);
+    const nonce = ciphertext.slice(0, 12);
+    const auth_tag = ciphertext.slice(-16);
     ciphertext = ciphertext.slice(12, -16);
 
-    let aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce);
+    const aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce);
     aesgcm.setAuthTag(auth_tag);
-    let plainText = aesgcm.update(ciphertext) + aesgcm.final();
+    const plainText = `${aesgcm.update(ciphertext)} ${aesgcm.final()}`;
 
     return plainText;
   }
@@ -49,10 +47,9 @@ export class EncryptionService {
     const salt = Buffer.alloc(32, '´', 'ascii');
     const info = Buffer.concat([salt, Buffer.from(`${column}_ciphertext`)]);
 
-    const derivedKey = hkdf(key, 32, {salt: table, info, hash: 'sha384'});
+    const derivedKey = hkdf(key, 32, { salt: table, info, hash: 'sha384' });
     const finalDerivedKey = Buffer.from(derivedKey).toString('hex');
 
     return finalDerivedKey;
   }
-
 }

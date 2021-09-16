@@ -5,14 +5,12 @@ import { FoldersService } from '../services/folders.service';
 
 @Controller('folders')
 export class FoldersController {
-  constructor(
-    private foldersService: FoldersService
-  ) { }
+  constructor(private foldersService: FoldersService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async index(@Request() req, @Query() query) {
-
     const folders = await this.foldersService.all(req.user);
 
     return decamelizeKeys({ folders });
@@ -22,9 +20,8 @@ export class FoldersController {
   @Post()
   async create(@Request() req) {
     const folderName = req.body.name;
-    
+
     const folder = await this.foldersService.create(req.user, folderName);
     return decamelizeKeys(folder);
   }
-
 }

@@ -1,11 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { User } from 'src/entities/user.entity';
-import {
-  InferSubjects,
-  AbilityBuilder,
-  Ability,
-  AbilityClass,
-  ExtractSubjectType,
-} from '@casl/ability';
+import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -32,18 +27,16 @@ type Actions =
   | 'updateVersions'
   | 'viewApp';
 
-type Subjects =
-  | InferSubjects<typeof AppVersion | typeof User | typeof App>
-  | 'all';
+type Subjects = InferSubjects<typeof AppVersion | typeof User | typeof App> | 'all';
 
 export type AppsAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class AppsAbilityFactory {
   async appsActions(user: User, params: any) {
-    const { can, cannot, build } = new AbilityBuilder<
-      Ability<[Actions, Subjects]>
-    >(Ability as AbilityClass<AppsAbility>);
+    const { can, cannot, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(
+      Ability as AbilityClass<AppsAbility>
+    );
 
     // Only admins can update app params such as name, friendly url & visibility
     if (user.isAdmin) {
@@ -88,8 +81,7 @@ export class AppsAbilityFactory {
     });
 
     return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
+      detectSubjectType: (item) => item.constructor as ExtractSubjectType<Subjects>,
     });
   }
 }

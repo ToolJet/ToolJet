@@ -24,22 +24,14 @@ import { EmailService } from '@services/email.service';
         return {
           secret: config.get<string>('SECRET_KEY_BASE'),
           signOptions: {
-            expiresIn:
-              config.get<string | number>('JWT_EXPIRATION_TIME') || '30d',
+            expiresIn: config.get<string | number>('JWT_EXPIRATION_TIME') || '30d',
           },
         };
       },
       inject: [ConfigService],
     }),
   ],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    UsersService,
-    OrganizationsService,
-    OrganizationUsersService,
-    EmailService
-  ],
+  providers: [AuthService, JwtStrategy, UsersService, OrganizationsService, OrganizationUsersService, EmailService],
   exports: [AuthService],
 })
 export class AuthModule {}

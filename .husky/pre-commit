@@ -1,4 +1,5 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-node './scripts/pre-commit'
+# node './scripts/pre-commit'
+npx lint-staged

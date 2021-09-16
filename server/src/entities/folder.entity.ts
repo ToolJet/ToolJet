@@ -1,18 +1,27 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,  ManyToOne, JoinColumn, ManyToMany, OneToMany, AfterLoad, JoinTable } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToMany,
+  OneToMany,
+  AfterLoad,
+  JoinTable,
+} from 'typeorm';
 import { FolderApp } from './folder_app.entity';
 import { App } from './app.entity';
 
-@Entity({ name: "folders" })
+@Entity({ name: 'folders' })
 export class Folder {
-
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   name: string;
 
   @Column({ name: 'organization_id' })
-  organizationId: string
+  organizationId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -20,18 +29,19 @@ export class Folder {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => FolderApp, folderApp => folderApp.folder, { eager: true })
+  @OneToMany(() => FolderApp, (folderApp) => folderApp.folder, { eager: true })
   folderApps: FolderApp[];
 
-  @ManyToMany(type => App)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  @ManyToMany((type) => App)
   @JoinTable({
     name: 'folder_apps',
     joinColumn: {
-      name: 'folder_id'
+      name: 'folder_id',
     },
     inverseJoinColumn: {
-      name: 'app_id'
-    }
+      name: 'app_id',
+    },
   })
   apps: App[];
 
@@ -45,5 +55,4 @@ export class Folder {
       this.count = this.folderApps.length;
     }
   }
-
 }

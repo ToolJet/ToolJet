@@ -1,57 +1,52 @@
 import { Injectable } from '@nestjs/common';
-const nodemailer = require("nodemailer");
-const previewEmail = require('preview-email');
+import nodemailer from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import previewEmail from 'preview-email';
 
 @Injectable()
 export class EmailService {
-
   private FROM_EMAIL;
   private TOOLJET_HOST;
   private NODE_ENV;
 
-  constructor(
-  ) { 
+  constructor() {
     this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io';
     this.TOOLJET_HOST = process.env.TOOLJET_HOST;
     this.NODE_ENV = process.env.NODE_ENV || 'development';
   }
 
   async sendEmail(to: string, subject: string, html: string) {
-
-    let transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       host: process.env.SMTP_DOMAIN,
       port: process.env.SMTP_PORT || 587,
       auth: {
         user: process.env.SMTP_USERNAME,
-        pass: process.env.SMTP_PASSWORD
+        pass: process.env.SMTP_PASSWORD,
       },
-    });
+    } as SMTPTransport.Options);
 
     const message = {
       from: `"ToolJet" <${this.FROM_EMAIL}>`,
-      to, 
+      to,
       subject,
       html,
     };
 
     /* if development environment, log the content of email instead of sending actual emails */
-    if(this.NODE_ENV === 'development') {
-
+    if (this.NODE_ENV === 'development') {
       console.log('Captured email');
       console.log('to: ', to);
       console.log('Subject: ', subject);
       console.log('content: ', html);
 
       previewEmail(message).then(console.log).catch(console.error);
-
     } else {
-      let info = await transporter.sendMail(message);
-      console.log("Message sent: %s", info);
+      const info = await transporter.sendMail(message);
+      console.log('Message sent: %s', info);
     }
   }
 
   async sendWelcomeEmail(to: string, name: string, invitationtoken: string) {
-
     const subject = 'Welcome to ToolJet';
     const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}?signup=true`;
     const html = `
@@ -80,7 +75,6 @@ export class EmailService {
   }
 
   async sendOrganizationUserWelcomeEmail(to: string, name: string, sender: string, invitationtoken: string) {
-
     const subject = 'Welcome to ToolJet';
     const html = `
       <!DOCTYPE html>

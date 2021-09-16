@@ -17,8 +17,8 @@ describe('DataQueriesService', () => {
   });
 
   it('should be able to parse query options without dynamic variables', async () => {
-    const queryOptions = { 'foo': 'bar' };
-    const options = { };
+    const queryOptions = { foo: 'bar' };
+    const options = {};
 
     const parsedOptions = await service.parseQueryOptions(queryOptions, options);
 
@@ -26,7 +26,7 @@ describe('DataQueriesService', () => {
   });
 
   it('should be able to parse query options with whole value as a dynamic variable', async () => {
-    const queryOptions = { 'foo': '{{bar}}' };
+    const queryOptions = { foo: '{{bar}}' };
     const options = { '{{bar}}': 'bar' };
 
     const parsedOptions = await service.parseQueryOptions(queryOptions, options);
@@ -35,7 +35,7 @@ describe('DataQueriesService', () => {
   });
 
   it('should be able to parse query options with one dynamic variable', async () => {
-    const queryOptions = { 'foo': 'is a {{bar}}' };
+    const queryOptions = { foo: 'is a {{bar}}' };
     const options = { '{{bar}}': 'bar' };
 
     const parsedOptions = await service.parseQueryOptions(queryOptions, options);
@@ -44,7 +44,7 @@ describe('DataQueriesService', () => {
   });
 
   it('should be able to parse query options with whole value as a dynamic variable that contains js code', async () => {
-    const queryOptions = { 'foo': '{{bar * 100 + parseInt("500")}}' };
+    const queryOptions = { foo: '{{bar * 100 + parseInt("500")}}' };
     const options = { '{{bar * 100 + parseInt("500")}}': 20 };
 
     const parsedOptions = await service.parseQueryOptions(queryOptions, options);
@@ -53,10 +53,10 @@ describe('DataQueriesService', () => {
   });
 
   it('should be able to parse query options with the value containing more than one dynamic variable', async () => {
-    const queryOptions = { 'email': '{{sam}}@{{example.com}}' };
-    const options = { 
+    const queryOptions = { email: '{{sam}}@{{example.com}}' };
+    const options = {
       '{{sam}}': 'sam',
-      '{{example.com}}': 'example.com' 
+      '{{example.com}}': 'example.com',
     };
 
     const parsedOptions = await service.parseQueryOptions(queryOptions, options);
@@ -65,15 +65,15 @@ describe('DataQueriesService', () => {
   });
 
   it('should be able to parse query options that has an object', async () => {
-    const queryOptions = { 
+    const queryOptions = {
       user: {
         email: '{{email}}',
-        name: '{{name}}'
-      } 
+        name: '{{name}}',
+      },
     };
-    const options = { 
+    const options = {
       '{{email}}': 'sam@example.com',
-      '{{name}}': 'sam'
+      '{{name}}': 'sam',
     };
 
     const parsedOptions = await service.parseQueryOptions(queryOptions, options);
@@ -83,13 +83,13 @@ describe('DataQueriesService', () => {
   });
 
   it('should be able to parse query options that has an array', async () => {
-    const queryOptions = { 
-      user: ['{{email}}', '{{name}}']
+    const queryOptions = {
+      user: ['{{email}}', '{{name}}'],
     };
 
-    const options = { 
+    const options = {
       '{{email}}': 'sam@example.com',
-      '{{name}}': 'sam'
+      '{{name}}': 'sam',
     };
 
     const parsedOptions = await service.parseQueryOptions(queryOptions, options);
@@ -99,13 +99,13 @@ describe('DataQueriesService', () => {
   });
 
   it('should be able to parse query options that has an array of objects', async () => {
-    const queryOptions = { 
-      user: [ { email: '{{email}}' } , { name: '{{name}}' }]
+    const queryOptions = {
+      user: [{ email: '{{email}}' }, { name: '{{name}}' }],
     };
 
-    const options = { 
+    const options = {
       '{{email}}': 'sam@example.com',
-      '{{name}}': 'sam'
+      '{{name}}': 'sam',
     };
 
     const parsedOptions = await service.parseQueryOptions(queryOptions, options);
@@ -113,5 +113,4 @@ describe('DataQueriesService', () => {
     expect(parsedOptions['user'][1]['name']).toBe('sam');
     expect(parsedOptions['user'][0]['email']).toBe('sam@example.com');
   });
-
 });

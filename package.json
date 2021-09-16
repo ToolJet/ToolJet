@@ -1,8 +1,7 @@
 {
   "lint-staged": {
-    "./frontend/src/**/*.jsx": [
-      "npm --prefix frontend run style:all"
-    ]
+    "./frontend/src/**/*.{js,jsx,json}": "npm --prefix frontend run style:all",
+    "./server/**{src,apps,libs,test}/**/*.ts": "npm --prefix server run format"
   },
   "devDependencies": {
     "@4tw/cypress-drag-drop": "^1.8.0",

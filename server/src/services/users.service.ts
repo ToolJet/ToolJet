@@ -4,35 +4,34 @@ import { User } from '../entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
-var uuid = require('uuid');
-const bcrypt = require('bcrypt');
+import uuid from 'uuid';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     @InjectRepository(Organization)
-    private organizationsRepository: Repository<Organization>,
-  ) { }
+    private organizationsRepository: Repository<Organization>
+  ) {}
 
   async findOne(id: string): Promise<User> {
     return this.usersRepository.findOne(id);
   }
 
   async findByEmail(email: string): Promise<User> {
-    return this.usersRepository.findOne({ 
+    return this.usersRepository.findOne({
       where: { email },
-      relations: ['organization']
+      relations: ['organization'],
     });
   }
 
   async findByPasswordResetToken(token: string): Promise<User> {
-    return this.usersRepository.findOne({ 
-      where: { forgotPasswordToken: token }
+    return this.usersRepository.findOne({
+      where: { forgotPasswordToken: token },
     });
   }
 
@@ -40,18 +39,20 @@ export class UsersService {
     const password = uuid.v4();
     const invitationToken = uuid.v4();
 
-    const { email, firstName, lastName }  = userParams;
+    const { email, firstName, lastName } = userParams;
 
-    return this.usersRepository.save(this.usersRepository.create({
-      email,
-      firstName,
-      lastName,
-      password,
-      invitationToken,
-      organizationId: organization.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }));
+    return this.usersRepository.save(
+      this.usersRepository.create({
+        email,
+        firstName,
+        lastName,
+        password,
+        invitationToken,
+        organizationId: organization.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    );
   }
 
   async setupAccountFromInvitationToken(params: any) {
@@ -60,23 +61,22 @@ export class UsersService {
     const lastName = params['last_name'];
     const newSignup = params['new_signup'];
 
-    let user = await this.usersRepository.findOne({ invitationToken: token });
+    const user = await this.usersRepository.findOne({ invitationToken: token });
 
-    if(user) {
+    if (user) {
       // beforeUpdate hook will not trigger if using update method of repository
-      await this.usersRepository.save(Object.assign(user, { firstName, lastName, password, invitationToken: null } ));
+      await this.usersRepository.save(Object.assign(user, { firstName, lastName, password, invitationToken: null }));
 
       const organizationUser = user.organizationUsers[0];
       this.organizationUsersRepository.update(organizationUser.id, { status: 'active' });
 
-      if(newSignup) { 
+      if (newSignup) {
         this.organizationsRepository.update(user.organizationId, { name: organization });
       }
     }
   }
 
   async update(userId: string, params: any) {
-
     const { forgotPasswordToken, password, firstName, lastName } = params;
 
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
@@ -85,11 +85,13 @@ export class UsersService {
       forgotPasswordToken,
       firstName,
       lastName,
-      password: hashedPassword
-    }
+      password: hashedPassword,
+    };
 
     // removing keys with undefined values
-    Object.keys(updateableParams).forEach(key => updateableParams[key] === undefined ? delete updateableParams[key] : {});
+    Object.keys(updateableParams).forEach((key) =>
+      updateableParams[key] === undefined ? delete updateableParams[key] : {}
+    );
 
     return await this.usersRepository.update(userId, updateableParams);
   }

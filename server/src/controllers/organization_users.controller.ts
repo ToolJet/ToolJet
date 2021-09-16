@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
+import { Controller, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -9,14 +9,13 @@ import { User } from 'src/entities/user.entity';
 
 @Controller('organization_users')
 export class OrganizationUsersController {
-  constructor(
-    private organizationUsersService: OrganizationUsersService,
-  ) { }
+  constructor(private organizationUsersService: OrganizationUsersService) {}
 
   // Endpoint for inviting new organization users
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', User))
   @Post()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async create(@Request() req, @Param() params) {
     const result = await this.organizationUsersService.inviteNewUser(req.user, req.body);
     return decamelizeKeys({ users: result });
@@ -37,5 +36,4 @@ export class OrganizationUsersController {
     const result = await this.organizationUsersService.changeRole(req.user, params.id, req.body.role);
     return decamelizeKeys({ result });
   }
-
 }

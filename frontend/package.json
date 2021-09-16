@@ -86,7 +86,7 @@
   "scripts": {
     "start": "webpack-dev-server --open --port 8082 --host 0.0.0.0",
     "build": "webpack -p && cp -a ./assets/. ./build/assets/",
-    "style:all": "npm run style:lint && npm run style:format",
+    "style:all": "npm run style:lint && npm run format",
     "style:lint": "eslint --fix '**/*.{js,jsx}'",
     "style:prettier": "prettier --check '**/*.{js,jsx}'",
     "format": "prettier --write '**/*.{js,jsx}'",

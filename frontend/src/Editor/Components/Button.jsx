@@ -5,8 +5,6 @@ var tinycolor = require('tinycolor2');
 export const Button = function Button({ id, width, height, component, onComponentClick, currentState }) {
   console.log('currentState', currentState);
 
-  const x = 'unassigned variabled used";
-
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
@@ -15,6 +13,7 @@ export const Button = function Button({ id, width, height, component, onComponen
       const newState = resolveReferences(loadingStateProperty.value, currentState, false);
       setLoadingState(newState);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState]);
 
   const text = component.definition.properties.text.value;
