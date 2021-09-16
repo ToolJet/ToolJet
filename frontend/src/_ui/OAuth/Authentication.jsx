@@ -109,7 +109,7 @@ const Authentication = ({
               <label className="form-label pt-2">Custom Authentication Parameters</label>
             </div>
           </div>
-          <Headers getter={"custom_auth_params"} options={custom_auth_params} optionchanged={optionchanged} />
+          <Headers getter={'custom_auth_params'} options={custom_auth_params} optionchanged={optionchanged} />
           <label className="form-label text-muted mt-3">Client Authentication</label>
           <Select
             options={[

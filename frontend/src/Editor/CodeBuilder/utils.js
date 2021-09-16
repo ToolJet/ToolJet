@@ -6,16 +6,15 @@ export function getSuggestionKeys(currentState) {
   _.keys(currentState).forEach((key) => {
     _.keys(currentState[key]).forEach((key2) => {
       _.keys(currentState[key][key2]).forEach((key3) => {
-        suggestions.push(`${key}.${key2}.${key3}`)
-      })
-    })
+        suggestions.push(`${key}.${key2}.${key3}`);
+      });
+    });
   });
   return suggestions;
 }
 
 export function generateHints(word, suggestions) {
-
-  if(word === '') {
+  if (word === '') {
     return suggestions;
   }
 
@@ -41,24 +40,22 @@ export function makeOverlay(style) {
     // eslint-disable-next-line no-unused-vars
     token: function (stream, state) {
       var ch;
-      if (stream.match("{{")) {
+      if (stream.match('{{')) {
         while ((ch = stream.next()) != null)
-          if (ch == "}" && stream.next() == "}") {
-            stream.eat("}");
+          if (ch == '}' && stream.next() == '}') {
+            stream.eat('}');
             return style;
           }
       }
       // eslint-disable-next-line no-empty
-      while (stream.next() != null && !stream.match("{{", false)) { }
+      while (stream.next() != null && !stream.match('{{', false)) {}
       return null;
-    }
-  }
+    },
+  };
 }
 
 export function onBeforeChange(editor, change, ignoreBraces = false) {
-
-  if(!ignoreBraces) { 
-
+  if (!ignoreBraces) {
     const cursor = editor.getCursor();
     const line = cursor.line;
     const ch = cursor.ch;
@@ -66,33 +63,30 @@ export function onBeforeChange(editor, change, ignoreBraces = false) {
     const isLastCharacterBrace = value.slice(ch - 1, value.length) === '{';
 
     if (isLastCharacterBrace && change.origin === '+input' && change.text[0] === '{') {
-      change.text[0] = '{}}'
+      change.text[0] = '{}}';
       // editor.setCursor({ line: 0, ch: ch })
     }
-
   }
 
   return change;
 }
 
 export function canShowHint(editor, ignoreBraces = false) {
-  
-  if(!editor.hasFocus()) return false;
+  if (!editor.hasFocus()) return false;
 
   const cursor = editor.getCursor();
   const line = cursor.line;
   const ch = cursor.ch;
   const value = editor.getLine(line);
 
-  if(ignoreBraces && value.length > 0) return true;
+  if (ignoreBraces && value.length > 0) return true;
 
   return value.slice(ch, ch + 2) === '}}';
 }
 
 export function handleChange(editor, onChange, suggestions, ignoreBraces = false) {
-
   let state = editor.state.matchHighlighter;
-  editor.addOverlay(state.overlay = makeOverlay(state.options.style));
+  editor.addOverlay((state.overlay = makeOverlay(state.options.style)));
 
   const cursor = editor.getCursor();
   const currentWord = computeCurrentWord(editor, cursor.ch, ignoreBraces);
@@ -105,11 +99,11 @@ export function handleChange(editor, onChange, suggestions, ignoreBraces = false
       return {
         from: { line: cursor.line, ch: cursor.ch - currentWord.length },
         to: cursor,
-        list: hints
-      }
-    }
+        list: hints,
+      };
+    },
   };
   if (canShowHint(editor, ignoreBraces)) {
     editor.showHint(options);
   }
-};
+}

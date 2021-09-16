@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import { toast , ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { datasourceService } from '@/_services';
 
 export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
@@ -28,7 +28,7 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
     datasourceService.test(kind, options).then(
       (data) => {
         setTestingStatus(false);
-        if(data.status === 'ok') {
+        if (data.status === 'ok') {
           setConnectionStatus('success');
         } else {
           setConnectionStatus('failed');

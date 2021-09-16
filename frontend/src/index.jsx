@@ -29,7 +29,7 @@ appService.getConfig().then((config) => {
           tracingOrigins: tracingOrigins,
         }),
       ],
-      tracesSampleRate: 0.50,
+      tracesSampleRate: 0.5,
     });
   }
 });

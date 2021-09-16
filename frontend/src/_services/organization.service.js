@@ -2,7 +2,7 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
 export const organizationService = {
-  getUsers
+  getUsers,
 };
 //id is removed from args
 function getUsers() {

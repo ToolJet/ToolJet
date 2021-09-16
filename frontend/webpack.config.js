@@ -65,19 +65,15 @@ module.exports = {
           extensions: ['.js', '.jsx'],
         },
         use: {
-          loader: "babel-loader",
+          loader: 'babel-loader',
           options: {
             plugins: [
-              [
-                'import',
-                { libraryName: 'lodash', libraryDirectory: "", camel2DashComponentName: false},
-                'lodash',
-              ],
+              ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
             ],
           },
-        }
-      }
-    ]
+        },
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -97,7 +93,7 @@ module.exports = {
     config: JSON.stringify({
       apiUrl: `${API_URL[environment] || ''}/api`,
       assetPath: ASSET_PATH[environment],
-      SERVER_IP: process.env.SERVER_IP
-    })
-  }
+      SERVER_IP: process.env.SERVER_IP,
+    }),
+  },
 };

@@ -8,27 +8,27 @@ const operationColorMapping = {
   get: 'azure',
   post: 'green',
   delete: 'red',
-  put: 'yellow'
+  put: 'yellow',
 };
 
 class Stripe extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      loadingSpec: true
+      loadingSpec: true,
     };
   }
 
   componentDidMount() {
     this.setState({
-      loadingSpec: true, 
+      loadingSpec: true,
       options: {
         params: {
           path: {},
           query: {},
-          request: {}
-        }
-      }
+          request: {},
+        },
+      },
     });
 
     this.fetchOpenApiSpec();
@@ -37,20 +37,22 @@ class Stripe extends React.Component {
   fetchOpenApiSpec = () => {
     this.setState({ loadingSpec: true });
 
-    openapiService.fetchSpecFromUrl('https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json').then((response) => {
-      response.text().then(text => {
-        const data = JSON.parse(text);
-        this.setState({ specJson: data, loadingSpec: false});
+    openapiService
+      .fetchSpecFromUrl('https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json')
+      .then((response) => {
+        response.text().then((text) => {
+          const data = JSON.parse(text);
+          this.setState({ specJson: data, loadingSpec: false });
+        });
       });
-    })
-  }
+  };
 
   changeOption(option, value) {
     this.setState({
       options: {
         ...this.state.options,
-        [option]: value
-      }
+        [option]: value,
+      },
     });
   }
 
@@ -64,8 +66,8 @@ class Stripe extends React.Component {
         options: {
           ...this.state.options,
           path,
-          operation
-        }
+          operation,
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -81,13 +83,13 @@ class Stripe extends React.Component {
         ...options.params,
         [paramType]: {
           ...options.params[paramType],
-          [paramName]: value
-        }
-      }
+          [paramName]: value,
+        },
+      },
     };
 
     this.setState({
-      options: newOptions
+      options: newOptions,
     });
 
     this.props.optionsChanged(newOptions);
@@ -117,7 +119,7 @@ class Stripe extends React.Component {
         options.push({
           value: `${operation},${path}`,
           name: path,
-          operation: operation
+          operation: operation,
         });
       }
     }
@@ -145,14 +147,14 @@ class Stripe extends React.Component {
 
     return (
       <div>
-        {loadingSpec &&
+        {loadingSpec && (
           <div className="p-3">
             <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
             Please wait whle we load the OpenAPI specification for Stripe.
           </div>
-        }
+        )}
 
-        {(options && !loadingSpec) && (
+        {options && !loadingSpec && (
           <div className="mb-3 mt-2">
             <div className="row g-2">
               <div className="col-auto">
@@ -185,7 +187,12 @@ class Stripe extends React.Component {
                     <h5 className="text-muted">PATH</h5>
                     {pathParams.map((param) => (
                       <div className="input-group" key={param.name}>
-                        <input type="text" value={param.name} className="form-control form-control-sm" placeholder="key" />
+                        <input
+                          type="text"
+                          value={param.name}
+                          className="form-control form-control-sm"
+                          placeholder="key"
+                        />
                         <input
                           type="text"
                           value={this.state.options.params.path[param.name]}

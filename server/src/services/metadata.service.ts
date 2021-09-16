@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
 import { gt } from 'semver';
-import got from 'got';
+// import got from 'got';
+const got = require('got');
 @Injectable()
 export class MetadataService {
   constructor(

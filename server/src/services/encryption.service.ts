@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { Injectable } from '@nestjs/common';
-import crypto from 'crypto';
-import hkdf from 'futoin-hkdf';
+// import crypto from 'crypto';
+// import hkdf from 'futoin-hkdf';
+const crypto = require('crypto');
+const hkdf = require('futoin-hkdf');
 
 @Injectable()
 export class EncryptionService {
