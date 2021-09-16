@@ -30,7 +30,7 @@ export function resolve(data, state) {
   }
 }
 
-export function resolveReferences(object, state, defaultValue, customObjects = {}, v2 = false) {
+export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
   const objectType = typeof object;
   switch (objectType) {
     case 'string': {
@@ -57,7 +57,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
           console.log('eval_error', err);
         }
 
-        if (v2) return [result, error];
+        if (withError) return [result, error];
 
         return result;
       }
@@ -91,7 +91,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         return new_array;
       } else {
         console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
-        Object.keys(object).forEach((key, index) => {
+        Object.keys(object).forEach((key) => {
           const resolved_object = resolveReferences(object[key], state);
           object[key] = resolved_object;
         });
