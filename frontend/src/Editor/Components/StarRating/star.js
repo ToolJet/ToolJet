@@ -37,6 +37,7 @@ const Star = ({
   React.useEffect(() => {
     setIcon(isHalfStar ? halfStar : star);
     setOutlineIcon(isHalfStar ? halfStar : starOutline);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [color]);
 
   const ref = React.useRef(null);

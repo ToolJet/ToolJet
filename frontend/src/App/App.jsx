@@ -67,7 +67,7 @@ class App extends React.Component {
             <h3 className="mb-1">Update available</h3>
             <p>A new version of ToolJet has been released.</p>
             <div className="btn-list">
-              <a href="https://docs.tooljet.io/docs/setup/updating" target="_blank" className="btn btn-info">Read release notes & update</a>
+              <a href="https://docs.tooljet.io/docs/setup/updating" target="_blank" className="btn btn-info" rel="noreferrer">Read release notes & update</a>
               <a onClick={() => { tooljetService.skipVersion(); this.setState({ updateAvailable: false }); }} className="btn">Skip this version</a>
             </div>
           </div>}

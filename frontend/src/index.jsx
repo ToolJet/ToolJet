@@ -17,7 +17,7 @@ appService.getConfig().then((config) => {
       ? `tooljet-${window.public_config.RELEASE_VERSION}`
       : 'toojet';
 
-    if (!!tooljetServerUrl) tracingOrigins.push(tooljetServerUrl);
+    if (tooljetServerUrl) tracingOrigins.push(tooljetServerUrl);
 
     Sentry.init({
       dsn: window.public_config.SENTRY_DNS,
