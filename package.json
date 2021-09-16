@@ -1,7 +1,7 @@
 {
   "lint-staged": {
     "./frontend/src/**/*.jsx": [
-      "npm --prefix frontend run style:format"
+      "npm --prefix frontend run style:all"
     ]
   },
   "devDependencies": {
