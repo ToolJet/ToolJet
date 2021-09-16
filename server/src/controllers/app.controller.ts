@@ -34,4 +34,10 @@ export class AppController {
     return { works: 'yeah' };
   }
 
+  // TODO: Added to debug intermittent failures when paired with proxy
+  @Post('/health')
+  async postHealthCheck(@Request() req) {
+    return { works: 'yeah' };
+  }
+
 }
