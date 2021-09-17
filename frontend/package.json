@@ -87,5 +87,9 @@
   "browserslist": {
     "production": [],
     "development": []
+  },
+  "engines": {
+    "node": "14.17.x",
+    "npm": "7.20.x"
   }
 }
