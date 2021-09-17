@@ -32,12 +32,12 @@ export function resolve(data, state) {
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
   const objectType = typeof object;
+  let error;
   switch (objectType) {
     case 'string': {
       if (object.startsWith('{{') && object.endsWith('}}')) {
         const code = object.replace('{{', '').replace('}}', '');
         let result = '';
-        let error;
 
         try {
           const evalFunction = Function(
@@ -58,7 +58,6 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         }
 
         if (withError) return [result, error];
-
         return result;
       }
 
@@ -74,6 +73,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
           }
         }
       }
+      if (withError) return [object, error];
       return object;
     }
 
@@ -88,19 +88,22 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
           new_array[index] = resolved_object;
         });
 
+        if (withError) return [new_array, error];
         return new_array;
-      } else {
+      } else if (!_.isEmpty(object)) {
         console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
         Object.keys(object).forEach((key) => {
           const resolved_object = resolveReferences(object[key], state);
           object[key] = resolved_object;
         });
-
+        if (withError) return [object, error];
         return object;
       }
     }
-    default:
+    default: {
+      if (withError) return [object, error];
       return object;
+    }
   }
 }
 
