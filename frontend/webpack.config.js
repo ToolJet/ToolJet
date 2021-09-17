@@ -14,8 +14,6 @@ const ASSET_PATH = {
   development: '/public/',
 };
 
-console.log('environment', environment);
-
 module.exports = {
   mode: 'development',
   resolve: {
