@@ -11,7 +11,7 @@ describe('Editor- Add "PostgreSQL" datasource', () => {
         cy.get('title').should('have.text', 'ToolJet - Dashboard');
     });
 
-    it.only('should add First data source successfully', () => {
+    it('should add First data source successfully', () => {
         //test database icon
         cy.get('.left-sidebar')
             .find('.svg-icon[src="/assets/images/icons/editor/left-sidebar/database.svg"]')
