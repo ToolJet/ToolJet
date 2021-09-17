@@ -36,5 +36,9 @@
     "heroku-prebuild": "npm --prefix frontend install && npm --prefix server install ",
     "cy:run": "cypress run --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
     "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD"
+  },
+  "engines": {
+    "node": "14.17.3",
+    "npm": "7.20.x"
   }
 }
