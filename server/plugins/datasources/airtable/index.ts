@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import { Injectable } from '@nestjs/common';
 import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';

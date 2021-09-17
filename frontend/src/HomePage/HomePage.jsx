@@ -159,7 +159,7 @@ class HomePage extends React.Component {
       showAppDeletionConfirmation,
       isDeletingApp,
     } = this.state;
-    console.log(`%c ::: currentUser | ${JSON.stringify(currentUser)} :::`, 'color:orange');
+
     return (
       <div className="wrapper home-page">
         <ConfirmDialog

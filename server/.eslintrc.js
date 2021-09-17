@@ -37,12 +37,8 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    'no-empty-function': 'off',
-    '@typescript-eslint/no-empty-function': ['error', { allow: ['constructors'] }],
-    'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { vars: 'all', args: 'none' }],
     '@typescript-eslint/no-var-requires': 'off',
-    'no-case-declarations': 'off',
     '@typescript-eslint/ban-types': [
       'error',
       {
