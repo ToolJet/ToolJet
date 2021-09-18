@@ -48,7 +48,8 @@ export default class PostgresqlQueryService implements QueryService {
       host: sourceOptions.host,
       database: sourceOptions.database,
       password: sourceOptions.password,
-      port: sourceOptions.port
+      port: sourceOptions.port,
+      connectionTimeoutMillis: 1000
     };
 
     if (sourceOptions.ssl_enabled)
