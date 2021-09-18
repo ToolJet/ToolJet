@@ -49,6 +49,7 @@ export default class PostgresqlQueryService implements QueryService {
       database: sourceOptions.database,
       password: sourceOptions.password,
       port: sourceOptions.port,
+      statement_timeout: 3000,
       connectionTimeoutMillis: 3000
     };
 
