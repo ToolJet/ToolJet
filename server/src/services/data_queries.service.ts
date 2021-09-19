@@ -22,7 +22,7 @@ export class DataQueriesService {
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne(
       { id: dataQueryId },
-      { relations: ['dataSource', 'app'] },
+      { relations: ['dataSource', 'app', 'app.appVersions'] },
     );
   }
 
