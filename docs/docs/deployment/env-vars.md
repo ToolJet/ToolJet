@@ -60,13 +60,13 @@ You can set `SERVE_CLIENT` to `true` and the server will attempt to serve the cl
 
 ToolJet uses SMTP services to send emails ( Eg: invitation email when you add new users to your organization ).
 
-| variable      | description |
-| ----------- | ----------- |
-| DEFAULT_FROM_EMAIL      | from email for the emailed fired by ToolJet  |
-| SMTP_USERNAME      | username  |
-| SMTP_PASSWORD      | password  |
-| SMTP_DOMAIN      | domain   |
-| SMTP_ADDRESS      | address  |
+| variable           | description                               |
+|--------------------|-------------------------------------------|
+| DEFAULT_FROM_EMAIL | from email for the email fired by ToolJet |
+| SMTP_USERNAME      | username                                  |
+| SMTP_PASSWORD      | password                                  |
+| SMTP_DOMAIN        | domain or host                            |
+| SMTP_PORT          | port                                      |
 
 #### Slack configuration ( optional )
 
