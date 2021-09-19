@@ -32,7 +32,7 @@ describe('PostgresQueryService', () => {
 
     const builtQuery = await service.buildBulkUpdateQuery(queryOptions);
     const expectedQuery =
-      "UPDATE customers SET name = 'sam',  email = 'sam@example.com',  WHERE id = 1; UPDATE customers SET name = 'jon',  email = 'jon@example.com',  WHERE id = 2;";
+      "UPDATE customers SET name = 'sam', email = 'sam@example.com' WHERE id = 1; UPDATE customers SET name = 'jon', email = 'jon@example.com' WHERE id = 2;";
 
     expect(builtQuery).toBe(expectedQuery);
   });
