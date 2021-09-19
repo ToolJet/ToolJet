@@ -130,21 +130,28 @@ jobs:
             file_name: .env.test
 
         - name: Login to DockerHub
+          id: login-to-dockerhub
           run: docker login -u $DOCKER_USER -p $DOCKER_PASS
 
         - name: Build docker images
+          if: steps.login-to-dockerhub.outcome == 'success'
           run: docker-compose build
 
         - name: Create testDb 
+          id: create-database 
+          continue-on-error: false
           run: docker-compose run --rm -e NODE_ENV=test server npm run db:create
 
         - name: Run Migrations
+          if: steps.create-database.outcome == 'success'
           run: docker-compose run --rm -e NODE_ENV=test server npm run db:migrate
 
 
         - name: Run unit tests
+          if: ${{ steps.login-to-dockerhub.conclusion }}
           run: docker-compose run --rm server npm run test 
 
         - name: Run e2e tests
-          if: ${{ failure() || success() }}
+          if: steps.login-to-dockerhub.outcome == 'success'
+          continue-on-error: true
           run: docker-compose run --rm server npm run test:e2e
