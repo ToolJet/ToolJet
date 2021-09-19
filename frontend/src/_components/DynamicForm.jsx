@@ -101,7 +101,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
           const Element = getElement(type);
 
           return (
-            <div className="col-md-12 my-2">
+            <div className="col-md-12 my-2" key={key}>
               {$label && (
                 <label className="form-label">
                   {$label}
