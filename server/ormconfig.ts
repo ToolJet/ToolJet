@@ -25,7 +25,10 @@ function buildConnectionOptions(
     username: data.PG_USER,
     password: data.PG_PASS,
     host: data.PG_HOST,
-    connectTimeoutMS: 5000
+    connectTimeoutMS: 5000,
+    extra: {
+      connectionLimit: 15
+    }
   }
 
   const entitiesDir =
