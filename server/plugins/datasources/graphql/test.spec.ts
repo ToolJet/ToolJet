@@ -13,18 +13,16 @@ describe('GraphqlQueryService', () => {
   });
 
   it('should query graphql datasources', async () => {
-
     const sourceOptions = {
       url: 'https://api.spacex.land/graphql/',
       headers: [],
-      url_params: []
-    }
+      url_params: [],
+    };
 
-    const queryOptions = { query: '{ launchesPast(limit: 10) { mission_name } }' }
+    const queryOptions = { query: '{ launchesPast(limit: 10) { mission_name } }' };
 
     const result = await service.run(sourceOptions, queryOptions, 'no-datasource-id');
-    
+
     expect(result.data['data']['launchesPast'].length).toBe(10);
   });
-
 });

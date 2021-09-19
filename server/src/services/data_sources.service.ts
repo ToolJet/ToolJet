@@ -8,28 +8,26 @@ import { allPlugins } from 'src/modules/data_sources/plugins';
 
 @Injectable()
 export class DataSourcesService {
-
   constructor(
     private credentialsService: CredentialsService,
     @InjectRepository(DataSource)
-    private dataSourcesRepository: Repository<DataSource>,
-  ) { }
+    private dataSourcesRepository: Repository<DataSource>
+  ) {}
 
   async all(user: User, appId: string): Promise<DataSource[]> {
-
     return await this.dataSourcesRepository.find({
-        where: {
-          appId
-        },
+      where: {
+        appId,
+      },
     });
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
-    return await this.dataSourcesRepository.findOne({ where: { id: dataSourceId}, relations: ['app'] });
+    return await this.dataSourcesRepository.findOne({ where: { id: dataSourceId }, relations: ['app'] });
   }
 
-  async create(user: User, name:string, kind:string, options:Array<object>, appId:string): Promise<DataSource> {
-    const newDataSource = this.dataSourcesRepository.create({ 
+  async create(user: User, name: string, kind: string, options: Array<object>, appId: string): Promise<DataSource> {
+    const newDataSource = this.dataSourcesRepository.create({
       name,
       kind,
       options: await this.parseOptionsForSaving(options),
@@ -41,17 +39,18 @@ export class DataSourcesService {
     return dataSource;
   }
 
-  async update(user: User, dataSourceId:string, name:string, options:Array<object>): Promise<DataSource> {
-
+  async update(user: User, dataSourceId: string, name: string, options: Array<object>): Promise<DataSource> {
     const updateableParams = {
       id: dataSourceId,
       name,
       options: await this.parseOptionsForSaving(options),
-      updatedAt: new Date()
-    }
+      updatedAt: new Date(),
+    };
 
     // Remove keys with undefined values
-    Object.keys(updateableParams).forEach(key => updateableParams[key] === undefined ? delete updateableParams[key] : {});
+    Object.keys(updateableParams).forEach((key) =>
+      updateableParams[key] === undefined ? delete updateableParams[key] : {}
+    );
 
     const dataSource = this.dataSourcesRepository.save(updateableParams);
 
@@ -71,10 +70,9 @@ export class DataSourcesService {
   async testConnection(kind: string, options: object): Promise<object> {
     let result = {};
     try {
+      const sourceOptions = {};
 
-      let sourceOptions = {};
-
-      for(const key of Object.keys(options)) {
+      for (const key of Object.keys(options)) {
         sourceOptions[key] = options[key]['value'];
       }
 
@@ -82,55 +80,53 @@ export class DataSourcesService {
       const serviceClass = plugins[kind];
       const service = new serviceClass();
       result = await service.testConnection(sourceOptions);
-   
-    } catch(error) {
+    } catch (error) {
       result = {
         status: 'failed',
-        message: error.message
-      }
+        message: error.message,
+      };
     }
 
     return result;
   }
-  
-  async parseOptionsForSaving(options:Array<object>) {
 
-    let parsedOptions = {}
+  async parseOptionsForSaving(options: Array<object>) {
+    const parsedOptions = {};
 
     // Check if an Oauth2 datasource
-    if(options.find(option => option['key'] === 'oauth2')) {
-      const provider = options.find(option => option['key'] === 'provider')['value'];
-      const authCode = options.find(option => option['key'] === 'code')['value'];
+    if (options.find((option) => option['key'] === 'oauth2')) {
+      const provider = options.find((option) => option['key'] === 'provider')['value'];
+      const authCode = options.find((option) => option['key'] === 'code')['value'];
 
       const plugins = await allPlugins;
-      const queryService = new plugins[provider];
+      const queryService = new plugins[provider]();
       const accessDetails = await queryService.accessDetailsFrom(authCode);
 
-      for(const row of accessDetails) {
+      for (const row of accessDetails) {
         const option = {};
         option['key'] = row[0];
-        option['value'] = row[1]
+        option['value'] = row[1];
         option['encrypted'] = true;
 
         options.push(option);
       }
 
-      options = options.filter(option => !(['provider', 'code', 'oauth2'].includes(option['key'])) );
+      options = options.filter((option) => !['provider', 'code', 'oauth2'].includes(option['key']));
     }
 
     for (const option of options) {
-      if(option['encrypted']) {
+      if (option['encrypted']) {
         const credential = await this.credentialsService.create(option['value'] || '');
 
         parsedOptions[option['key']] = {
           credential_id: credential.id,
-          encrypted: option["encrypted"]
-        }
+          encrypted: option['encrypted'],
+        };
       } else {
         parsedOptions[option['key']] = {
           value: option['value'],
-          encrypted: false
-        }
+          encrypted: false,
+        };
       }
     }
 
@@ -139,8 +135,7 @@ export class DataSourcesService {
 
   async getAuthUrl(provider): Promise<object> {
     const plugins = await allPlugins;
-    const service = new plugins[provider];
-    return { url: service.authUrl() }
+    const service = new plugins[provider]();
+    return { url: service.authUrl() };
   }
-  
 }
