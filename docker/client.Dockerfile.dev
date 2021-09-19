@@ -12,7 +12,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 # Fix for heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
-RUN apk --no-cache add g++ gcc libgcc libstdc++ linux-headers make python
+
 # install app dependencies
 COPY package.json package-lock.json  ./
 RUN npm install
