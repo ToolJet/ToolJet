@@ -286,6 +286,7 @@ export const SubContainer = ({
           configHandleClicked={configHandleClicked}
           currentLayout={currentLayout}
           scaleValue={scaleValue}
+          selectedComponent={selectedComponent}
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent? selectedComponent.id === key : false}
           removeComponent={removeComponent}
