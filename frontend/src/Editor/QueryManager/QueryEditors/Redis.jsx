@@ -8,13 +8,13 @@ class Redis extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options
+      options: this.props.options,
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 
@@ -36,7 +36,7 @@ class Redis extends React.Component {
                   theme: this.props.darkMode ? 'monokai' : 'duotone-light',
                   mode: 'sql',
                   lineWrapping: true,
-                  scrollbarStyle: null
+                  scrollbarStyle: null,
                 }}
               />
             </div>

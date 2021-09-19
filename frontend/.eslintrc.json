@@ -37,7 +37,8 @@
       "react/prop-types": 0,
       "react/display-name": "off",
       "no-unused-vars": [2, { "args": "after-used", "argsIgnorePattern": "reject" }],
-      "react/no-deprecated": 0
+      "react/no-deprecated": 0,
+      "no-prototype-builtins": 0
     },
     "settings": {
       "react": {
