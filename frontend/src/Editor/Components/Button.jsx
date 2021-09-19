@@ -13,6 +13,7 @@ export const Button = function Button({ id, width, height, component, onComponen
       const newState = resolveReferences(loadingStateProperty.value, currentState, false);
       setLoadingState(newState);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState]);
 
   const text = component.definition.properties.text.value;
