@@ -1,0 +1,7 @@
+{
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "CoenraadS.bracket-pair-colorizer",
+      "mgmcdermott.vscode-language-babel"
+    ]
+}
