@@ -27,7 +27,7 @@ function buildConnectionOptions(
     host: data.PG_HOST,
     connectTimeoutMS: 5000,
     extra: {
-      connectionLimit: 15
+      max: 50
     }
   }
 
