@@ -561,7 +561,7 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <img onClick={() => this.removeColumn(index)} class="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12"/>
+                        <img onClick={() => this.removeColumn(index)} className="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12"/>
                       </div>
                     </div>
                   </OverlayTrigger>
@@ -595,6 +595,7 @@ class Table extends React.Component {
           {displaySearchBox && renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showDownloadButton', 'properties', currentState)}
           {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showFilterButton', 'properties', currentState)}
+          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showBulkUpdateActions', 'properties', currentState)}
 
           {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <div className="hr-text">Events</div>

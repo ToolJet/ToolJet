@@ -7,6 +7,7 @@ import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { history } from '@/_helpers';
 import { serializeNestedObjectToQueryParams } from './utils';
+import { componentTypes } from '../Editor/Components/components';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -462,3 +463,31 @@ export function renderTooltip({props, text}) {
     {text}
   </Tooltip>
 };
+
+export function computeComponentState(_ref, components) {
+  let componentState = {};
+  const currentComponents = _ref.state.currentState.components;
+  Object.keys(components).forEach((key) => {
+    const component = components[key];
+    const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
+
+    const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
+    const existingValues = currentComponents[existingComponentName];
+
+    componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+
+  });
+
+  _ref.setState({
+    currentState: {
+      ..._ref.state.currentState,
+      components: {
+        ...componentState,
+      },
+    },
+    defaultComponentStateComputed: true
+  }, () => {
+    console.log('Default component state computed and set')
+  });
+
+}

@@ -448,11 +448,8 @@ class QueryManager extends React.Component {
                   />
                   <span className="form-check-label">Show notification on success?</span>
                 </label>
-                
-                {this.state.options.showSuccessNotification &&
+                {this.state.options.showSuccessNotification && (
                   <div>
-
-
                     <div className="row mt-3">
                       <div className="col-auto">
                         <label className="form-label p-2">Success Message</label>
@@ -485,7 +482,7 @@ class QueryManager extends React.Component {
                       </div>
                     </div>
                   </div>
-                }
+                )}
 
                 <div className="hr-text hr-text-left">Events</div>
 

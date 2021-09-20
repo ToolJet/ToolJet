@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Mssql.schema.json",
+  "title": "Mssql datasource",
+  "description": "A schema defining mssql datasource",
+  "type": "object",
+  "properties": {
+    "host": {
+      "$label": "Host",
+      "$key": "host",
+      "type": "text",
+      "description": "Enter host"
+    },
+    "port": {
+      "$label": "Port",
+      "$key": "port",
+      "type": "text",
+      "description": "Enter port"
+    },
+    "database": {
+      "$label": "Database Name",
+      "$key": "database",
+      "type": "text",
+      "description": "Name of the database"
+    },
+    "username": {
+      "$label": "Username",
+      "$key": "username",
+      "type": "text",
+      "description": "Enter username field"
+    },
+    "password": {
+      "$label": "Password",
+      "$key": "password",
+      "type": "password",
+      "description": "Enter password field"
+    },
+    "azure": {
+      "$label": "Azure",
+      "$key": "azure",
+      "type": "toggle",
+      "description": "Toggle for azure" 
+    }
+  },
+  "required": ["host", "port", "username", "password"]
+}

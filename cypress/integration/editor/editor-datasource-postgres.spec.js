@@ -1,55 +1,42 @@
 describe('Editor- Add "PostgreSQL" datasource', () => {
-
     beforeEach(() => {
-
         //read login data from fixtures
         cy.fixture('login-data').then(function (testdata) {
-            cy.login(testdata.email, testdata.password)
-        })
-        cy.wait(1000)
-        cy.get('body').then(($title => {
-            //check you are not running tests on empty dashboard state
-            if ($title.text().includes('You haven\'t created any apps yet.')) {
-                cy.get('a.btn').eq(0).should('have.text', 'Create your first app')
-                    .click()
-                cy.go('back')
-            }
-            cy.wait(2000)
-            cy.get('.badge').contains('Edit').click()
-            cy.get('title').should('have.text', 'ToolJet - Dashboard')
-        }))
-    })
+            cy.login(testdata.email, testdata.password);
+        });
+        cy.wait(1000);
+        cy.createAppIfEmptyDashboard();
+        cy.wait(2000);
+        cy.get('.badge').contains('Edit').click();
+        cy.get('title').should('have.text', 'ToolJet - Dashboard');
+    });
 
-    it('should add First data source successfully', () => {
-
+    it.only('should add First data source successfully', () => {
+        //test database icon
         cy.get('.left-sidebar')
-            .find('.datasources-container.w-100.mt-3')
-            .find('.p-1.text-muted')
-            .should('have.text', 'DATASOURCES')
-            .and('be.visible')
+            .find('.svg-icon[src="/assets/images/icons/editor/left-sidebar/database.svg"]')
+            .should('be.visible')
+            .click()
 
         cy.get('.table-responsive')
             .find('.p-2')
-            .should('include.text', "You haven't added data sources yet. ")
+            .should('have.text', "You haven't added any datasources yet. ")
 
-        cy.get('center[class="p-2 text-muted"]')
-            .find('button[class="btn btn-sm btn-outline-azure mt-3"]')
-            .should('have.text', 'add datasource')
+        cy.get('div[class="table-responsive"] button[class="btn btn-sm btn-outline-azure mt-3"]')
+            .should('have.text', 'Add datasource')
+            .click();
+
+        //create database    
+        cy.addPostgresDataSource();
+
+        //verify if you can see postgres database in the list now.
+        cy.get('.left-sidebar')
+            .find('.svg-icon[src="/assets/images/icons/editor/left-sidebar/database.svg"]')
+            .should('be.visible')
             .click()
 
-        cy.addPostgresDataSource()
+        cy.get('.table-responsive')
+            .find('tr td')
+            .contains('PostgreSQL')
     });
-
-    it('should add data source from "Add new datasource button', () => {
-
-        cy.get('.left-sidebar')
-            .find('.datasources-container.w-100.mt-3')
-            .find('.p-1.text-muted')
-            .should('have.text', 'DATASOURCES')
-            .and('be.visible')
-
-        cy.get('[data-tip="Add new datasource"]').click()
-
-        cy.addPostgresDataSource()
-    });
-})
+});

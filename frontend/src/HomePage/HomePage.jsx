@@ -9,7 +9,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-toastify';
-import moment from 'moment'
+import moment from 'moment';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -19,6 +19,8 @@ class HomePage extends React.Component {
       users: null,
       isLoading: true,
       creatingApp: false,
+      isDeletingApp: false,
+      isCloningApp: false,
       currentFolder: {},
       showAppDeletionConfirmation: false,
       apps: [],
@@ -86,6 +88,22 @@ class HomePage extends React.Component {
     this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
   }
 
+  cloneApp = (app) => {
+    this.setState({ isCloningApp: true });
+    appService.cloneApp(app.id).then((data) => {
+      toast.info('App cloned successfully.', {
+        hideProgressBar: true,
+        position: 'top-center'
+      });
+      this.setState({ isCloningApp: false });
+      this.props.history.push(`/apps/${data.id}`);
+    }).catch(({ _error }) => {
+      toast.error('Could not clone the app.', { hideProgressBar: true, position: 'top-center' });
+      this.setState({ isCloningApp: false });
+    });
+    ;
+  }
+
   executeAppDeletion = () => {
     this.setState({ isDeletingApp: true });
     appService.deleteApp(this.state.appToBeDeleted.id).then((data) => {
@@ -117,7 +135,7 @@ class HomePage extends React.Component {
 
   render() {
     const {
-      apps, isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp
+      apps, currentUser ,isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp
     } = this.state;
     return (
       <div className="wrapper home-page">
@@ -206,19 +224,21 @@ class HomePage extends React.Component {
                                 <small className="pt-2 app-description">created {moment(app.created_at).fromNow()} ago by {app.user?.first_name} {app.user?.last_name} </small>
                               </td>
                               <td className="text-muted col-auto pt-4">
-                                <Link
+                                {currentUser.role !== 'viewer' && (
+                                  <Link
                                   to={`/apps/${app.id}`}
                                   className="d-none d-lg-inline"
-                                >
+                                  >
                                   <OverlayTrigger
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: 'Open in app builder'})}
                                   >
                                     <span className="badge bg-green-lt">
-                                    Edit
+                                      Edit
                                     </span>
                                   </OverlayTrigger>
                                 </Link>
+                                )}
                                 <Link
                                   to={app?.current_version_id ? `/applications/${app.slug}` : '' }
 
@@ -238,7 +258,7 @@ class HomePage extends React.Component {
                                     placement="top"
                                     overlay={(props) => renderTooltip({props, text: app?.current_version_id == null ? 'App does not have a deployed version' : 'Open in app viewer'})}
                                   >
-                                    {<span className={`${app?.current_version_id == null ? 'badge mx-2 ' : 'badge bg-azure-lt mx-2'}`} 
+                                    {<span className={`${app?.current_version_id == null ? 'badge mx-2 ' : 'badge bg-azure-lt mx-2'}`}
                                     style={{
                                       filter: app?.current_version_id == null ? 'brightness(0.8)' : 'brightness(1) invert(1)'}}
                                     >launch </span>}
@@ -251,6 +271,7 @@ class HomePage extends React.Component {
                                   folders={this.state.folders}
                                   foldersChanged={this.foldersChanged}
                                   deleteApp={() => this.deleteApp(app)}
+                                  cloneApp={() => this.cloneApp(app)}
                                 />
                               </td>
                             </tr>))

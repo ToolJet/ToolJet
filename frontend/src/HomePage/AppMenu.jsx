@@ -7,7 +7,7 @@ import { folderService } from '@/_services';
 import { toast } from 'react-toastify';
 import { lowerFirst } from 'lodash';
 
-export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteApp }) {
+export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteApp, cloneApp }) {
   const [addToFolder, setAddToFolder] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -72,6 +72,11 @@ export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteAp
                 <div className="field mb-2">
                   <span role="button" onClick={() => setAddToFolder(true)}>
                     Add to folder{' '}
+                  </span>
+                </div>
+                <div className="field mb-2">
+                  <span className="field mb-2" role="button" onClick={() => cloneApp()}>
+                    Clone app
                   </span>
                 </div>
                 <div className="field mb-2">

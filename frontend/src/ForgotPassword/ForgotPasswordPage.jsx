@@ -10,15 +10,22 @@ class ForgotPassword extends React.Component {
     this.state = {
       isLoading: false,
       email: '',
+      isEmailFound: false,
+      buttonClicked: false,
     };
   }
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
+    if (event.target.value == '') {
+      this.setState({ isEmailFound: false, buttonClicked: false });
+    }
   };
 
   handleClick = (event) => {
+    this.setState({ buttonClicked: true });
     event.preventDefault();
+
     fetch(`${config.apiUrl}/forgot_password`, {
       method: 'POST',
       headers: {
@@ -26,7 +33,14 @@ class ForgotPassword extends React.Component {
       },
       body: JSON.stringify({ email: this.state.email }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.ok) {
+          this.setState({ isEmailFound: true });
+          return res.json();
+        } else {
+          this.setState({ isEmailFound: false });
+        }
+      })
       .then((res) => {
         if (res.error) {
           toast.error(res.error, { toastId: 'toast-forgot-password-email-error' });
@@ -61,12 +75,16 @@ class ForgotPassword extends React.Component {
                   placeholder="Enter email"
                   data-testid="emailField"
                 />
+                {this.state.buttonClicked && !this.state.isEmailFound && (
+                  <p style={{ color: '#b72525' }}>Email address is not associated with a ToolJet cloud account.</p>
+                )}
               </div>
               <div className="form-footer">
                 <button
                   data-testid="submitButton"
                   className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
                   onClick={this.handleClick}
+                  disabled={!this.state.email}
                 >
                   Submit
                 </button>

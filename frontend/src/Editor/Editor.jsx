@@ -22,6 +22,7 @@ import {
   onQueryCancel,
   runQuery,
   setStateAsync,
+  computeComponentState
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -82,6 +83,8 @@ class Editor extends React.Component {
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
       showQuerySearchField: false,
+      isDeletingDataQuery: false,
+      showHiddenOptionsForDataQueryId: null,
     };
   }
 
@@ -105,6 +108,8 @@ class Editor extends React.Component {
               runQuery(this, query.id, query.name);
             }
           });
+
+          computeComponentState(this, this.state.appDefinition.components);
         }
       )
     });
@@ -160,16 +165,9 @@ class Editor extends React.Component {
               });
 
               // Select first query by default
-              let selectedQuery = this.state.selectedQuery;
-              let editingQuery = false;
-
-              if (selectedQuery) {
-                data.data_queries.find((dq) => dq.id === selectedQuery.id);
-                editingQuery = true;
-              } else if (data.data_queries.length > 0) {
-                selectedQuery = data.data_queries[0];
-                editingQuery = true;
-              }
+              let selectedQuery =
+                data.data_queries.find((dq) => dq.id === this.state.selectedQuery?.id) || data.data_queries[0];
+              let editingQuery = selectedQuery ? true : false;
 
               this.setState({
                 selectedQuery,
@@ -204,29 +202,6 @@ class Editor extends React.Component {
     })
   }
 
-  computeComponentState = (components) => {
-    let componentState = {};
-    const currentComponents = this.state.currentState.components;
-    Object.keys(components).forEach((key) => {
-      const component = components[key];
-      const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
-
-      const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
-      const existingValues = currentComponents[existingComponentName];
-
-      componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
-    });
-
-    this.setState({
-      currentState: {
-        ...this.state.currentState,
-        components: {
-          ...componentState,
-        },
-      },
-    });
-  };
-
   dataSourcesChanged = () => {
     this.fetchDataSources();
   };
@@ -260,7 +235,7 @@ class Editor extends React.Component {
 
   appDefinitionChanged = (newDefinition) => {
     this.setState({ appDefinition: newDefinition });
-    this.computeComponentState(newDefinition.components);
+    computeComponentState(this, newDefinition.components);
   };
 
   handleInspectorView = (component) => {
@@ -355,6 +330,33 @@ class Editor extends React.Component {
     );
   };
 
+  deleteDataQuery = () => {
+    this.setState({ showDataQueryDeletionConfirmation: true });
+  }
+
+  cancelDeleteDataQuery = () => {
+    this.setState({ showDataQueryDeletionConfirmation: false});
+  }
+
+  executeDataQueryDeletion = () => {
+    this.setState({ showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true });
+    dataqueryService
+      .del(this.state.selectedQuery.id)
+      .then(() => {
+        toast.success('Query Deleted', { hideProgressBar: true, position: 'bottom-center' });
+        this.setState({ isDeletingDataQuery: false });
+        this.dataQueriesChanged();
+      })
+      .catch(({ error }) => {
+        this.setState({ isDeletingDataQuery: false });
+        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+      });
+  };
+
+  setShowHiddenOptionsForDataQuery = (dataQueryId) => {
+    this.setState({ showHiddenOptionsForDataQueryId: dataQueryId });
+  }
+
   renderDataQuery = (dataQuery) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
 
@@ -362,7 +364,7 @@ class Editor extends React.Component {
     if (this.state.selectedQuery) {
       isSeletedQuery = dataQuery.id === this.state.selectedQuery.id;
     }
-
+    const isQueryBeingDeleted = this.state.isDeletingDataQuery && isSeletedQuery
     const { currentState } = this.state;
 
     const isLoading = currentState.queries[dataQuery.name] ? currentState.queries[dataQuery.name].isLoading : false;
@@ -370,9 +372,11 @@ class Editor extends React.Component {
     return (
       <div
         className={'row query-row py-2 px-3' + (isSeletedQuery ? ' query-row-selected' : '')}
-        key={dataQuery.name}
+        key={dataQuery.id}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
+        onMouseEnter={() => this.setShowHiddenOptionsForDataQuery(dataQuery.id)}
+        onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col">
           <img
@@ -382,8 +386,29 @@ class Editor extends React.Component {
           />
           <span className="p-3">{dataQuery.name}</span>
         </div>
+        <div className="col-auto mx-1">
+          { isQueryBeingDeleted ? (
+            <div className="px-2">
+              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+            </div>
+          ) : (
+            <button
+              className="btn badge bg-azure-lt"
+              onClick={this.deleteDataQuery}
+              style={{ display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none' }}
+            >
+              <div>
+                <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+              </div>
+            </button>
+          )}
+        </div>
         <div className="col-auto">
-          {!(isLoading === true) && (
+          {isLoading === true ? (
+            <div className="px-2">
+              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+            </div>
+          ) : (
             <button
               className="btn badge bg-azure-lt"
               onClick={() => {
@@ -399,11 +424,6 @@ class Editor extends React.Component {
                 <img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
               </div>
             </button>
-          )}
-          {isLoading === true && (
-            <div className="px-2">
-              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
-            </div>
           )}
         </div>
       </div>
@@ -499,7 +519,10 @@ class Editor extends React.Component {
       scaleValue,
       dataQueriesDefaultText,
       showQuerySearchField,
+      showDataQueryDeletionConfirmation,
+      isDeletingDataQuery,
       apps,
+      defaultComponentStateComputed
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
 
@@ -514,6 +537,13 @@ class Editor extends React.Component {
           onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData}
+        />
+        <Confirm
+          show={showDataQueryDeletionConfirmation}
+          message={'Do you really want to delete this query?'}
+          confirmButtonLoading={isDeletingDataQuery}
+          onConfirm={() => this.executeDataQueryDeletion()}
+          onCancel={() => this.cancelDeleteDataQuery()}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="header">
@@ -654,34 +684,36 @@ class Editor extends React.Component {
                 style={{ transform: `scale(${zoomLevel})` }}
               >
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
-                  <Container
-                    appDefinition={appDefinition}
-                    appDefinitionChanged={this.appDefinitionChanged}
-                    snapToGrid={true}
-                    darkMode={this.props.darkMode}
-                    mode={'edit'}
-                    zoomLevel={zoomLevel}
-                    currentLayout={currentLayout}
-                    deviceWindowWidth={deviceWindowWidth}
-                    selectedComponent={selectedComponent || {}}
-                    scaleValue={scaleValue}
-                    appLoading={isLoading}
-                    onEvent={(eventName, options) => onEvent(this, eventName, options)}
-                    onComponentOptionChanged={(component, optionName, value) =>
-                      onComponentOptionChanged(this, component, optionName, value)
-                    }
-                    onComponentOptionsChanged={(component, options) =>
-                      onComponentOptionsChanged(this, component, options)
-                    }
-                    currentState={this.state.currentState}
-                    configHandleClicked={this.configHandleClicked}
-                    removeComponent={this.removeComponent}
-                    onComponentClick={(id, component) => {
-                      this.setState({ selectedComponent: { id, component } });
-                      this.switchSidebarTab(1);
-                      onComponentClick(this, id, component);
-                    }}
-                  />
+                  {defaultComponentStateComputed &&
+                    <Container
+                      appDefinition={appDefinition}
+                      appDefinitionChanged={this.appDefinitionChanged}
+                      snapToGrid={true}
+                      darkMode={this.props.darkMode}
+                      mode={'edit'}
+                      zoomLevel={zoomLevel}
+                      currentLayout={currentLayout}
+                      deviceWindowWidth={deviceWindowWidth}
+                      selectedComponent={selectedComponent || {}}
+                      scaleValue={scaleValue}
+                      appLoading={isLoading}
+                      onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                      onComponentOptionChanged={(component, optionName, value) =>
+                        onComponentOptionChanged(this, component, optionName, value)
+                      }
+                      onComponentOptionsChanged={(component, options) =>
+                        onComponentOptionsChanged(this, component, options)
+                      }
+                      currentState={this.state.currentState}
+                      configHandleClicked={this.configHandleClicked}
+                      removeComponent={this.removeComponent}
+                      onComponentClick={(id, component) => {
+                        this.setState({ selectedComponent: { id, component } });
+                        this.switchSidebarTab(1);
+                        onComponentClick(this, id, component);
+                      }}
+                    />
+                  }
                   <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} />
                 </div>
               </div>

@@ -14,11 +14,29 @@ import { CaslModule } from '../casl/casl.module';
 import { DataQueriesService } from '@services/data_queries.service';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
+import { AppCloneService } from '@services/app_clone.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DataSource, DataQuery, Credential, App, AppVersion, AppUser, FolderApp]), CaslModule],
-  providers: [DataSourcesService, CredentialsService, EncryptionService, AppsService, DataQueriesService],
+  imports: [
+    TypeOrmModule.forFeature([
+      DataSource,
+      DataQuery,
+      Credential,
+      App,
+      AppVersion,
+      AppUser,
+      FolderApp,
+    ]),
+    CaslModule,
+  ],
+  providers: [
+    DataSourcesService,
+    CredentialsService,
+    EncryptionService,
+    AppsService,
+    DataQueriesService,
+    AppCloneService,
+  ],
   controllers: [DataSourcesController],
 })
-
 export class DataSourcesModule {}

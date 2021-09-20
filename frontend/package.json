@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "babel-plugin-import": "^1.13.3",
     "@babel/core": "^7.4.3",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/preset-env": "^7.4.3",
@@ -16,6 +17,7 @@
     "@uiw/react-codemirror": "^3.0.6",
     "array-move": "^3.0.1",
     "babel-loader": "^8.0.5",
+    "babel-plugin-console-source": "^2.0.5",
     "bootstrap": "^4.6.0",
     "dompurify": "^2.2.7",
     "draft-js": "^0.11.7",

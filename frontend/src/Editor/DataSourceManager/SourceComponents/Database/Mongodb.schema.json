@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Mongodb.schema.json",
+  "title": "Mongodb datasource",
+  "description": "A schema defining mongodb datasource",
+  "type": "object",
+  "properties": {
+    "connection_type": {
+      "$label": "",
+      "$key": "connection_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for connection_type",
+      "$options": [
+        { "name": "Manual connection", "value": "manual" },
+        { "name": "Connect using connection string", "value": "string" }
+      ]
+    },
+    "manual": {
+      "host": {
+        "$label": "Host",
+        "$key": "host",
+        "type": "text",
+        "description": "Enter host"
+      },
+      "port": {
+        "$label": "Port",
+        "$key": "port",
+        "type": "text",
+        "description": "Enter port"
+      },
+      "database": {
+        "$label": "Database Name",
+        "$key": "database",
+        "type": "text",
+        "description": "Name of the database"
+      },
+      "username": {
+        "$label": "Username",
+        "$key": "username",
+        "type": "text",
+        "description": "Enter username field"
+      },
+      "password": {
+        "$label": "Password",
+        "$key": "password",
+        "type": "password",
+        "description": "Enter password field"
+      }
+    },
+    "string": {
+      "connection_string": {
+        "$label": "Connection string",
+        "$key": "connection_string",
+        "type": "text",
+        "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority"
+      }
+    }
+  }
+}

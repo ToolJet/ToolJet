@@ -19,7 +19,7 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx'],
   },
-  devtool: 'inline-source-map',
+  ...(environment === 'development' && { devtool: 'inline-source-map' }),
   module: {
     rules: [
       {
@@ -36,10 +36,6 @@ module.exports = {
             },
           },
         ],
-      },
-      {
-        test: /\.jsx?$/,
-        loader: 'babel-loader'
       },
       {
         test: /\.css$/,
@@ -66,10 +62,15 @@ module.exports = {
           extensions: ['.js', '.jsx'],
         },
         use: {
-          loader: "babel-loader"
-        }
-      }
-    ]
+          loader: 'babel-loader',
+          options: {
+            plugins: [
+              ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
+            ],
+          },
+        },
+      },
+    ],
   },
   resolve: {
     extensions: ['.js', '.jsx', '.png'],
@@ -95,7 +96,7 @@ module.exports = {
     config: JSON.stringify({
       apiUrl: `${API_URL[environment] || ''}/api`,
       assetPath: ASSET_PATH[environment],
-      SERVER_IP: process.env.SERVER_IP
-    })
-  }
+      SERVER_IP: process.env.SERVER_IP,
+    }),
+  },
 };
