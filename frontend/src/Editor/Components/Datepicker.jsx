@@ -2,6 +2,7 @@ import React from 'react';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
+import { useEffect, useState } from 'react';
 
 export const Datepicker = function Datepicker({
   id,
@@ -19,15 +20,15 @@ export const Datepicker = function Datepicker({
   const enableDateProp = component.definition.properties.enableDate;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
+  const defaultValue = component.definition.properties?.defaultValue?.value ?? '';
 
   const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
-  
+
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
   } catch (err) { console.log(err); }
-
 
   const enableTime = resolveReferences(enableTimeProp.value, currentState, false);
 
@@ -35,18 +36,28 @@ export const Datepicker = function Datepicker({
   if (enableDateProp) {
     enableDate = resolveReferences(enableDateProp.value, currentState, true);
   }
-  
+
   let dateFormat = formatProp
   try {
     dateFormat = resolveReferences(formatProp, currentState);
   } catch (err) { console.log(err); }
-  
+
   function onDateChange(event) {
     const value = event._isAMomentObject? event.format(dateFormat.value) : event;
+    setDateText(value);
     onComponentOptionChanged(component, 'value', value);
   }
 
-  const value = currentState?.components[component?.name]?.value;
+  let value = defaultValue;
+  if (value && currentState)
+    value = resolveReferences(value, currentState, '');
+
+  const [dateText, setDateText] = useState(value);
+
+  useEffect(() => {
+    setDateText(value);
+    onComponentOptionChanged(component, 'value', value);
+  }, [value]);
 
   const validationData = validateWidget({
     validationObject: component.definition.validation,
@@ -68,7 +79,15 @@ export const Datepicker = function Datepicker({
         onChange={onDateChange} 
         timeFormat={enableTime} 
         closeOnSelect={true}
-        dateFormat={dateFormat.value} 
+        dateFormat={dateFormat.value}
+        value={dateText}
+        renderInput={(props) => {
+          return <input
+            {...props}
+            value={dateText}
+            className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
+          />
+        }}
       />
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
     </div>
