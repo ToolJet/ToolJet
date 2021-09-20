@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
-import { snapToGrid as doSnapToGrid } from './snapToGrid';
+import { snapToGrid as doSnapToGrid, resizeToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
@@ -34,17 +34,24 @@ export const Container = ({
   darkMode
 }) => {
 
-  const styles = {
-    width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
-    height: 2400,
-    position: 'absolute'
-  };
+  // const styles = {
+  //   width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
+  //   height: 2400,
+  //   position: 'absolute'
+  // };
 
   const components = appDefinition.components;
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+
+  const styles = {
+    width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
+    height: 2400,
+    position: 'absolute',
+    backgroundSize: `${isResizing ? '30px 10px' : '30px 30px'}`
+  };
 
   useEffect(() => {
     setBoxes(components);
@@ -210,6 +217,7 @@ export const Container = ({
     width = width + deltaWidth;
     height = height + deltaHeight;
 
+    const resized = resizeToGrid(width, height)
     let newBoxes = {
       ...boxes,
       [id]: {
@@ -218,7 +226,7 @@ export const Container = ({
           ...boxes[id]['layouts'],
           [currentLayout]: {
             ...boxes[id]['layouts'][currentLayout],
-            width, height, top, left
+            width: resized.snappedX, height: resized.snappedY, top, left
           }
         }
       }
@@ -251,7 +259,7 @@ export const Container = ({
   }
 
   return (
-    <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
+    <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? 'show-grid' : ''}`}>
       {Object.keys(boxes).map((key) => {
 
         const box = boxes[key];
