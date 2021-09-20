@@ -42,7 +42,8 @@ export const Datepicker = function Datepicker({
   } catch (err) { console.log(err); }
   
   function onDateChange(event) {
-    onComponentOptionChanged(component, 'value', event.format(dateFormat.value));
+    const value = event._isAMomentObject? event.format(dateFormat.value) : event;
+    onComponentOptionChanged(component, 'value', value);
   }
 
   const value = currentState?.components[component?.name]?.value;

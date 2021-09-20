@@ -14,23 +14,35 @@ const AllElements = {
   Text,
   Code,
   Toggle,
-  Select
+  Select,
 };
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
-  definition = definition || { };
+  definition = definition || {};
 
-  return (<QuerySelector
-    param={{ name: eventName }}
-    definition={definition}
-    eventMeta={eventMeta}
-    dataQueries={dataQueries}
-    eventOptionUpdated={eventOptionUpdated}
-  />)
+  return (
+    <QuerySelector
+      param={{ name: eventName }}
+      definition={definition}
+      eventMeta={eventMeta}
+      dataQueries={dataQueries}
+      eventOptionUpdated={eventOptionUpdated}
+    />
+  );
 }
 
-export function renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState, components = {}, darkMode = false) {
+export function renderElement(
+  component,
+  componentMeta,
+  paramUpdated,
+  dataQueries,
+  param,
+  paramType,
+  currentState,
+  components = {},
+  darkMode = false
+) {
   const componentDefinition = component.component.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
@@ -39,16 +51,17 @@ export function renderElement(component, componentMeta, paramUpdated, dataQuerie
 
   const ElementToRender = AllElements[TypeMapping[meta.type]];
 
-  return (<ElementToRender
-            param={{ name: param, ...component.component.properties[param] }}
-            definition={definition}
-            dataQueries={dataQueries}
-            onChange={paramUpdated}
-            paramType={paramType}
-            components={components}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-        />
+  return (
+    <ElementToRender
+      param={{ name: param, ...component.component.properties[param] }}
+      definition={definition}
+      dataQueries={dataQueries}
+      onChange={paramUpdated}
+      paramType={paramType}
+      components={components}
+      componentMeta={componentMeta}
+      currentState={currentState}
+      darkMode={darkMode}
+    />
   );
 }

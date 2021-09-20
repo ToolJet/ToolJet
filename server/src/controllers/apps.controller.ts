@@ -30,6 +30,14 @@ export class AppsController {
   @Post()
   async create(@Request() req) {
     const app = await this.appsService.create(req.user);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if (!ability.can('createApp', app)) {
+      throw new ForbiddenException(
+        'you do not have permissions to perform this action',
+      );
+    }
+
     await this.appsService.update(req.user, app.id, {
       slug: app.id,
     });
@@ -102,6 +110,25 @@ export class AppsController {
       params.id,
       req.body.app,
     );
+    let response = decamelizeKeys(result);
+
+    return response;
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/clone')
+  async clone(@Request() req, @Param() params) {
+    const existingApp = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if (!ability.can('cloneApp', existingApp)) {
+      throw new ForbiddenException(
+        'you do not have permissions to perform this action',
+      );
+    }
+
+    const result = await this.appsService.clone(existingApp, req.user)
     let response = decamelizeKeys(result);
 
     return response;

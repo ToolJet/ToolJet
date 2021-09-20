@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Airtable.schema.json",
+  "title": "Airtable datasource",
+  "description": "A schema defining airtable datasource",
+  "type": "object",
+  "properties": {
+    "api_key": {
+      "$label": "API key",
+      "$key": "api_key",
+      "type": "password",
+      "description": "Api key for airtable",
+      "helpText": "For generating API key, visit: <a href='https://airtable.com/account' target='_blank' rel='noreferrer'>Airtable account page</a>"
+    }
+  },
+  "required": ["api_key"]
+}
