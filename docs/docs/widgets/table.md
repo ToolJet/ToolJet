@@ -1,16 +1,16 @@
 ---
-sidebar_position: 12
+sidebar_position: 15
 ---
 
 # Table
 
 Tables can be used for both displaying and editing data.
 
-<img class="screenshot-full" src="/img/widgets/table/adding.gif" alt="ToolJet - line charts" height="420"/>
+<img class="screenshot-full" src="/img/widgets/table/adding.gif" alt="ToolJet - Widget Reference - Table" height="420"/>
 
 ## Displaying Data
 
-The data object should be an array of objects. Table columns can be added, removed, rearranged from the inspector. `key` property is the accessor key used to get data from a single element of table data object. For example:
+The data object should be an array of objects. Table columns can be added, removed, rearranged from the inspector. `key` property is the accessor key used to get data from a single element of a table data object. For example:
 
 If the table data is:
 
@@ -93,3 +93,39 @@ Along with `changeSet`, `dataUpdates` property will also be changed when the val
 ```
 
 If the data of a cell is changed, "save changes" button will be shown at the bottom of the table. This button when clicked will trigger the `Bulk update query` event. This event can be used to run a query to update the data on your datasource.
+
+#### Exposed variables
+
+| variable      | description |
+| ----------- | ----------- |
+| currentData      | Data that is currently being displayed by the table ( including edits if any ) |
+| currentPageData  | Data that is displayed on the current page if pagination is enabled ( including edits if any )      |
+| pageIndex | Index of the current page, starting from 1
+| changeSet | Object with row number as the key and object of edited fields and their values as the value |
+| dataUpdates | Just like changeSet but includes the data of the entire row |
+| selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
+| searchText | The value of the search field if server-side paginaton is enabled |
+
+#### Events
+
+| events      | description |
+| ----------- | ----------- |
+| Row clicked | Triggered when a table row is clicked. This event is triggered after `selectedRow` variable is changed. |
+| Bulk update | If any cell of the table is edited, the `save changes` button appears at the footer of the table. Bulk update event is triggered when this button is clicked. |
+| Page changed | If server-side pagination is enabled, this event is fired when the current page is changed. This event is triggered after updating the `pageIndex` variable.|
+| Search | This event is triggered when a text is entered to the search field of the table. `searchText` variable is updated before triggering this event. |
+
+#### Properties
+
+| properties      | description |
+| ----------- | ----------- |
+| Data |  Array of objects to be displayed on the table. It is commonly used to display data from query * `{{queries.restapi1.data}}`). Data expects an array of objects, example: `{{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}` |
+| Loading state | Shows a loading status if the value is `true`. This property is often used with the `isLoading` property of queries so that the table shows a spinner while the query is being run. Default value is `false` .|
+| Server-side pagination | Server-side pagination can be used to run a query whenever the page is changed. If enabled, `pageIndex` property will be exposed on the table object, this property will have the current page index. |
+| Client-side pagination | Client-side pagination is enabled by default. The number of records per page is 10 by default and can be changed to upto 50. |
+| Server-side search | If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your datasource. |
+| Background color (Action Button) | Background color of the action button. |
+| Text color (Action Button) | Color of button-text of the action button. |
+| Show search box | It can be used to show or hide Table Search box. |
+| Show download button | Show or hide download button at the Table footer. |
+| Show filter button | Show or hide filter button at the Table footer. |

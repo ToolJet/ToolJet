@@ -47,7 +47,7 @@ export class App extends BaseEntity {
   @JoinColumn({ name: "user_id" })
     user: User;
 
-  @OneToMany(() => AppVersion, appVersion => appVersion.app, { eager: false, onDelete: "CASCADE" })
+  @OneToMany(() => AppVersion, appVersion => appVersion.app, { eager: true, onDelete: "CASCADE" })
   appVersions: AppVersion[];
 
   @OneToMany(() => DataQuery, dataQuery => dataQuery.app, { onDelete: "CASCADE" })
@@ -60,17 +60,11 @@ export class App extends BaseEntity {
 
   @AfterLoad()
   async afterLoad(): Promise<void> {
-    const AppVersionRepository = getRepository(AppVersion);
 
     if (this.currentVersionId) {
-      this.editingVersion = await AppVersionRepository.findOne(
-        this.currentVersionId,
-      );
+      this.editingVersion = this.appVersions ? this.appVersions.find(version => version.id === this.currentVersionId ) : {};
     } else {
-      this.editingVersion = await AppVersionRepository.findOne({
-        where: { appId: this.id },
-        order: { createdAt: 'DESC' },
-      });
+      this.editingVersion = this.appVersions? this.appVersions[0] : {};
     }
   }
 }

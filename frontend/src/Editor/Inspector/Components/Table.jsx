@@ -561,7 +561,7 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <img onClick={() => this.removeColumn(index)} class="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12"/>
+                        <img onClick={() => this.removeColumn(index)} className="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12"/>
                       </div>
                     </div>
                   </OverlayTrigger>

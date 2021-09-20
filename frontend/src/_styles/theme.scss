@@ -1,4 +1,5 @@
 @import './tabler.scss';
+@import './colors.scss';
 
 body {
   font-family: 'Roboto', sans-serif;
@@ -1637,6 +1638,9 @@ input:focus-visible {
 .widget-documentation-link {
   position: fixed;
   bottom: 0;
+  background: $white;
+  width: 100%;
+  z-index: 1;
 }
 
 .components-container {
@@ -1701,11 +1705,23 @@ input:focus-visible {
 }
 
 .dynamic-variable-preview {
-  height: 30px;
+  min-height: 20px;
+  max-height: 500px;
+  overflow: auto;
+  line-height: 20px;
+  font-size: 12px;
   margin-top: -2px;
+  word-wrap: break-word;
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
+  box-sizing: border-box;
   font-family: 'Source Code Pro', monospace;
+
+  .heading {
+    font-weight: 700;
+    white-space: pre;
+    text-transform: capitalize;
+  }
 }
 
 .theme-dark {
