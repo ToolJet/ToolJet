@@ -48,48 +48,14 @@ jobs:
     - name: Lint
       run: npm --prefix server run lint && npm --prefix frontend run lint
 
-  setEnv:
 
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Make .env
-        uses: SpicyPizza/create-envfile@v1
-        with:
-          envkey_TOOLJET_HOST: http://localhost:8082
-          envkey_LOCKBOX_MASTER_KEY: 13c9b8364ae71f714774c82498ba328813069e48d80029bb29f49d0ada5a8e40
-          envkey_SECRET_KEY_BASE: ea85064ed42ad02cfc022e66d8bccf452e3fa1142421cbd7a13592d91a2cbb866d6001060b73a98a65be57e65524357d445efae00a218461088a706decd62dcb
-          envkey_NODE_ENV: dev
-          envkey_PG_HOST: postgres
-          envkey_PG_PORT: 5432
-          envkey_PG_USER: postgres
-          envkey_PG_PASS: postgres
-          envkey_PG_DB: tooljet_test
-          envkey_ORM_LOGGING: error
-          file_name: .env
-
-      - name: Make .env.test
-        uses: SpicyPizza/create-envfile@v1
-        with:
-          envkey_TOOLJET_HOST: http://localhost:8082
-          envkey_LOCKBOX_MASTER_KEY: 13c9b8364ae71f714774c82498ba328813069e48d80029bb29f49d0ada5a8e40
-          envkey_SECRET_KEY_BASE: ea85064ed42ad02cfc022e66d8bccf452e3fa1142421cbd7a13592d91a2cbb866d6001060b73a98a65be57e65524357d445efae00a218461088a706decd62dcb
-          envkey_NODE_ENV: test
-          envkey_PG_HOST: postgres
-          envkey_PG_PORT: 5432
-          envkey_PG_USER: postgres
-          envkey_PG_PASS: postgres
-          envkey_PG_DB: tooljet_test
-          envkey_ORM_LOGGING: error
-          file_name: .env.test
 
   
 
   test: 
 
       runs-on: ubuntu-latest
-      needs: setEnv
+      needs: build
       env:
         COMPOSE_FILE: ./docker-compose.yaml
         DOCKER_USER: ${{ secrets.DOCKER_USER }}
