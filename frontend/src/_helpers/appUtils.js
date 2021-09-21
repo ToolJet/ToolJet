@@ -5,7 +5,6 @@ import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
-import { serializeNestedObjectToQueryParams } from './utils';
 import { componentTypes } from '../Editor/Components/components';
 
 export function setStateAsync(_ref, state) {
