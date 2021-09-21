@@ -26,7 +26,7 @@ export class DataSourcesController {
     if(!ability.can('getDataSources', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
-    
+
     const dataSources = await this.dataSourcesService.all(req.user, query.app_id);
     let response = decamelizeKeys({ data_sources: dataSources });
 
@@ -45,8 +45,8 @@ export class DataSourcesController {
     if(!ability.can('createDataSource', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
-    
-    const dataSource = await this.dataSourcesService.create(req.user, name, kind, options, appId);
+
+    const dataSource = await this.dataSourcesService.create(name, kind, options, appId);
     return decamelizeKeys(dataSource);
   }
 
@@ -64,8 +64,8 @@ export class DataSourcesController {
     if(!ability.can('updateDataSource', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
-    
-    const result = await this.dataSourcesService.update(req.user, dataSourceId, name, options);
+
+    const result = await this.dataSourcesService.update(dataSourceId, name, options);
     return decamelizeKeys(result);
   }
 
