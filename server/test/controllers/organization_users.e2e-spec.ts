@@ -174,6 +174,23 @@ describe('organization users controller', () => {
     expect(developerUserData.orgUser.role).toBe('developer');
   });
 
+  it('should not allow to change role from admin when no other admins are present', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+      status: 'active',
+    });
+
+    const response = await request(app.getHttpServer())
+      .post(`/organization_users/${adminUserData.orgUser.id}/change_role`)
+      .set('Authorization', authHeaderForUser(adminUserData.user))
+      .send({ role: 'viewer' })
+      .expect(400);
+
+    await adminUserData.orgUser.reload();
+    expect(adminUserData.orgUser.role).toBe('admin');
+  });
+
   it('should allow only admin users to archive org users', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
