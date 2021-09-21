@@ -88,8 +88,13 @@ async function deleteDataFromSheet(spreadSheetId: string, sheet: string, rowInde
   return response;
 }
 
-export async function readData(spreadSheetId: string, sheet: string, authHeader: any): Promise<any[]> {
-  return await readDataFromSheet(spreadSheetId, sheet, 'A1:Z500', authHeader);
+export async function readData(
+  spreadSheetId: string,
+  spreadsheetRange: string,
+  sheet: string,
+  authHeader: any
+): Promise<any[]> {
+  return await readDataFromSheet(spreadSheetId, sheet, spreadsheetRange, authHeader);
 }
 
 export async function appendData(spreadSheetId: string, sheet: string, rows: any[], authHeader: any): Promise<any> {

@@ -56,6 +56,13 @@ export class OrganizationUsersService {
   async changeRole(user: User, id: string, role: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const organizationUser = await this.organizationUsersRepository.findOne(id);
+    if (organizationUser.role == 'admin') {
+      const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
+
+      if (lastActiveAdmin) {
+        throw new BadRequestException('Atleast one active admin is required.');
+      }
+    }
     return await this.organizationUsersRepository.update(id, { role });
   }
 
@@ -63,21 +70,30 @@ export class OrganizationUsersService {
     const organizationUser = await this.organizationUsersRepository.findOne(id);
 
     if (organizationUser.role === 'admin') {
-      // Check if this is the last admin of the org
-      const adminsCount = await this.organizationUsersRepository.count({
-        where: {
-          organizationId: organizationUser.organizationId,
-          role: 'admin',
-          status: 'active',
-        },
-      });
+      const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
 
-      if (adminsCount === 1) {
+      if (lastActiveAdmin) {
         throw new BadRequestException('You cannot archive this user as there are no other active admin users.');
       }
     }
 
     await this.organizationUsersRepository.update(id, { status: 'archived' });
     return true;
+  }
+
+  async lastActiveAdmin(organizationId: string): Promise<boolean> {
+    const adminsCount = await this.activeAdminCount(organizationId);
+
+    return adminsCount <= 1;
+  }
+
+  async activeAdminCount(organizationId: string) {
+    return await this.organizationUsersRepository.count({
+      where: {
+        organizationId: organizationId,
+        role: 'admin',
+        status: 'active',
+      },
+    });
   }
 }

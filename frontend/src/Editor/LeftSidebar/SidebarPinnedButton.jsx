@@ -7,7 +7,7 @@ export const SidebarPinnedButton = ({ state, component, updateState }) => {
   return (
     <SidebarPinnedButton.OverlayContainer tip={tooltipMsg}>
       <div
-        className={`btn btn-sm m-1 ${state ? 'btn-light' : 'btn-default'} ${
+        className={`btn btn-sm m-1 ${state ? 'btn-light' : 'btn-outline-secondary'} ${
           component === 'Inspector' && 'position-absolute end-0'
         }`}
         onClick={updateState}

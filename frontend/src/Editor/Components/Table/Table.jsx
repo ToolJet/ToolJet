@@ -459,6 +459,7 @@ export function Table({
           return (
             <div>
               <Tags
+                readOnly={!column.isEditable}
                 value={cellValue}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
@@ -625,6 +626,7 @@ export function Table({
     exportData,
   } = useTable(
     {
+      autoResetPage: false,
       columns,
       data,
       defaultColumn,

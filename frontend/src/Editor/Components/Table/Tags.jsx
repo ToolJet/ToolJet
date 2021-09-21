@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export const Tags = ({ value, onChange }) => {
+export const Tags = ({ value, onChange, readOnly }) => {
   value = value || [];
 
   const [showForm, setShowForm] = useState(false);
@@ -30,9 +30,11 @@ export const Tags = ({ value, onChange }) => {
     return (
       <span className="col-auto badge bg-blue-lt p-2 mx-1 tag mb-2">
         {text}
-        <span className="badge badge-pill bg-red-lt remove-tag-button" onClick={() => removeTag(text)}>
-          x
-        </span>
+        {!readOnly && (
+          <span className="badge badge-pill bg-red-lt remove-tag-button" onClick={() => removeTag(text)}>
+            x
+          </span>
+        )}
       </span>
     );
   }
@@ -43,7 +45,7 @@ export const Tags = ({ value, onChange }) => {
         return renderTag(item);
       })}
 
-      {!showForm && (
+      {!showForm && !readOnly && (
         <span className="col-auto badge bg-green-lt mx-1 add-tag-button" onClick={() => setShowForm(true)}>
           {'+'}
         </span>

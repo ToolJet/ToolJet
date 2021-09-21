@@ -86,6 +86,20 @@ class Googlesheets extends React.Component {
                       className="form-control"
                     />
                   </div>
+                  {['read'].includes(this.state.options.operation) && (
+                    <div className="col-auto">
+                      <label className="form-label">Range</label>
+                      <input
+                        type="text"
+                        placeholder={'A1:Z500'}
+                        value={this.state.options.spreadsheet_range}
+                        onChange={(e) => {
+                          changeOption(this, 'spreadsheet_range', e.target.value);
+                        }}
+                        className="form-control"
+                      />
+                    </div>
+                  )}
                   <div className="col-auto">
                     <label className="form-label">Sheet</label>
                     <input
