@@ -15,17 +15,17 @@ export async function queryCollection(
     ([undefined, ''].includes(where_field) === false) &&
     ([undefined, ''].includes(where_operation) === false) &&
     (where_value != undefined);
-  const orderConditionProvided = ([undefined, ''].includes(order_field) === false);
+  const orderProvided = ([undefined, ''].includes(order_field) === false);
 
   const collectionRef = db.collection(collection);
   let query: Query = collectionRef;
 
-  if (whereConditionProvided || limitProvided || orderConditionProvided) {
+  if (whereConditionProvided || limitProvided || orderProvided) {
     if (whereConditionProvided)
       query = query.where(where_field, where_operation, where_value);
     if (limitProvided)
       query = query.limit(limit);
-    if (orderConditionProvided)
+    if (orderProvided)
       query = query.orderBy(order_field, order_type);
   }
 
@@ -35,8 +35,8 @@ export async function queryCollection(
   snapshot.forEach((doc) => {
     data.push({
       document_id: doc.id,
-      data: doc.data()
-    })
+      data: doc.data(),
+    });
   });
 
   return data;
