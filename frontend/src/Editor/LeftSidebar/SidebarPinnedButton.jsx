@@ -7,8 +7,8 @@ export const SidebarPinnedButton = ({ state, component, updateState }) => {
     const tooltipMsg = state ? `Unpin ${component}` : `Pin ${component}`
     return (
         <SidebarPinnedButton.OverlayContainer tip={tooltipMsg}>
-            <div className={`btn btn-sm m-1 ${state ? 'btn-light' : 'btn-default'} ${(component === 'Inspector') && "position-absolute end-0" }`} onClick={updateState} >
-                <img src={`/assets/images/icons/editor/left-sidebar/pinned.svg`} width="16" height="16" />
+            <div className={`btn btn-sm m-1 ${state ? 'btn-light' : 'btn-outline-secondary'} ${(component === 'Inspector') && "position-absolute end-0" }`} onClick={updateState} >
+                <img className="svg-icon" src={`/assets/images/icons/editor/left-sidebar/pinned.svg`} width="16" height="16" />
             </div>            
         </SidebarPinnedButton.OverlayContainer>
     )
