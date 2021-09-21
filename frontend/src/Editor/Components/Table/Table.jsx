@@ -266,7 +266,7 @@ export function Table({
 
       if (Array.isArray(labels)) {
         columnOptions.selectOptions = labels.map((label, index) => {
-          return { name: label, value: values[index], disabled: !column.isEditable };
+          return { name: label, value: values[index]};
         });
       }
     }
