@@ -1,15 +1,8 @@
 import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import {
-  InferSubjects,
-  AbilityBuilder,
-  Ability,
-  AbilityClass,
-  ExtractSubjectType,
-} from '@casl/ability';
+import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { OrganizationUsersService } from '@services/organization_users.service';
-import { App } from 'src/entities/app.entity';
 
 type Actions = 'changeRole' | 'archiveUser' | 'inviteUser';
 
@@ -22,9 +15,7 @@ export class CaslAbilityFactory {
   constructor(private organizationUsersService: OrganizationUsersService) {}
 
   async organizationUserActions(user: User, params: any) {
-    const { can, cannot, build } = new AbilityBuilder<
-      Ability<[Actions, Subjects]>
-    >(Ability as AbilityClass<AppAbility>);
+    const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppAbility>);
 
     const currentUserBelongsToSameOrg = await this.isSameOrganisation(user, params);
 
@@ -35,16 +26,13 @@ export class CaslAbilityFactory {
     }
 
     return build({
-      detectSubjectType: (item) =>
-        item.constructor as ExtractSubjectType<Subjects>,
+      detectSubjectType: (item) => item.constructor as ExtractSubjectType<Subjects>,
     });
   }
 
   async isSameOrganisation(currentUser, params) {
     if (!params.id) return false;
-    const organizationUser = await this.organizationUsersService.findOne(
-      params.id,
-    );
+    const organizationUser = await this.organizationUsersService.findOne(params.id);
     if (!organizationUser) return false;
 
     return organizationUser.organizationId === currentUser.organizationId;

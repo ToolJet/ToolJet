@@ -10,13 +10,13 @@ const layerStyles = {
   left: 0,
   top: 0,
   width: '100%',
-  height: '100%'
+  height: '100%',
 };
 
 function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout) {
   if (!initialOffset || !currentOffset) {
     return {
-      display: 'none'
+      display: 'none',
     };
   }
   let { x, y } = currentOffset;
@@ -28,18 +28,19 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)
 
   const realCanvasDelta = realCanvasBoundingRect.x - canvasContainerBoundingRect.x;
 
-  if (id) { // Dragging within the canvas
+  if (id) {
+    // Dragging within the canvas
 
     x = Math.round(item.layouts[currentLayout].left + delta.x);
     y = Math.round(item.layouts[currentLayout].top + delta.y);
-    
-  } else { // New component being dragged  from components sidebar
+  } else {
+    // New component being dragged  from components sidebar
     const offsetFromTopOfWindow = realCanvasBoundingRect.top;
     const offsetFromLeftOfWindow = realCanvasBoundingRect.left;
     const zoomLevel = item.zoomLevel;
 
-    x = Math.round(currentOffset.x + (currentOffset.x * (1 - zoomLevel)) - offsetFromLeftOfWindow);
-    y = Math.round(currentOffset.y + (currentOffset.y * (1 - zoomLevel)) - offsetFromTopOfWindow);
+    x = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+    y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
   }
 
   [x, y] = snapToGrid(x, y);
@@ -49,24 +50,22 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)
   const transform = `translate(${x}px, ${y}px)`;
   return {
     transform,
-    WebkitTransform: transform
+    WebkitTransform: transform,
   };
 }
 export const CustomDragLayer = ({ currentLayout }) => {
-  const {
-    itemType, isDragging, item, initialOffset, currentOffset, delta
-  } = useDragLayer((monitor) => ({
+  const { itemType, isDragging, item, initialOffset, currentOffset, delta } = useDragLayer((monitor) => ({
     item: monitor.getItem(),
     itemType: monitor.getItemType(),
     initialOffset: monitor.getInitialSourceClientOffset(),
     currentOffset: monitor.getSourceClientOffset(),
     isDragging: monitor.isDragging(),
-    delta: monitor.getDifferenceFromInitialOffset()
+    delta: monitor.getDifferenceFromInitialOffset(),
   }));
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} currentLayout={currentLayout}/>;
+        return <BoxDragPreview item={item} currentLayout={currentLayout} />;
       default:
         return null;
     }
@@ -78,9 +77,7 @@ export const CustomDragLayer = ({ currentLayout }) => {
 
   return (
     <div style={layerStyles}>
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)}>
-        {renderItem()}
-      </div>
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)}>{renderItem()}</div>
     </div>
   );
 };

@@ -6,14 +6,12 @@ import { FolderApp } from '../../src/entities/folder_app.entity';
 
 @Injectable()
 export class FolderAppsService {
-
   constructor(
     @InjectRepository(FolderApp)
-    private folderAppsRepository: Repository<FolderApp>,
-  ) { }
+    private folderAppsRepository: Repository<FolderApp>
+  ) {}
 
   async create(user: User, folderId: string, appId: string): Promise<FolderApp> {
-
     const newFolderApp = this.folderAppsRepository.create({
       folderId,
       appId,

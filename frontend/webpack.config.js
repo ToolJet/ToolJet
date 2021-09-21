@@ -17,9 +17,12 @@ const ASSET_PATH = {
 module.exports = {
   mode: 'development',
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.png'],
+    alias: {
+      '@': path.resolve(__dirname, 'src/'),
+    },
   },
-  devtool: 'inline-source-map',
+  ...(environment === 'development' && { devtool: 'inline-source-map' }),
   module: {
     rules: [
       {
@@ -62,25 +65,15 @@ module.exports = {
           extensions: ['.js', '.jsx'],
         },
         use: {
-          loader: "babel-loader",
+          loader: 'babel-loader',
           options: {
             plugins: [
-              [
-                'import',
-                { libraryName: 'lodash', libraryDirectory: "", camel2DashComponentName: false},
-                'lodash',
-              ],
+              ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
             ],
           },
-        }
-      }
-    ]
-  },
-  resolve: {
-    extensions: ['.js', '.jsx', '.png'],
-    alias: {
-      '@': path.resolve(__dirname, 'src/'),
-    },
+        },
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -100,7 +93,7 @@ module.exports = {
     config: JSON.stringify({
       apiUrl: `${API_URL[environment] || ''}/api`,
       assetPath: ASSET_PATH[environment],
-      SERVER_IP: process.env.SERVER_IP
-    })
-  }
+      SERVER_IP: process.env.SERVER_IP,
+    }),
+  },
 };

@@ -9,9 +9,8 @@ class InvitationPage extends React.Component {
 
     this.state = {
       isLoading: false,
-      newSignup: queryString.parse(props.location.search).signup
+      newSignup: queryString.parse(props.location.search).signup,
     };
-
   }
 
   handleChange = (event) => {
@@ -33,7 +32,7 @@ class InvitationPage extends React.Component {
         toast.success('Password has been set successfully.', { hideProgressBar: true, position: 'top-center' });
         this.props.history.push('/login');
       })
-      .catch(( { error }) => {
+      .catch(({ error }) => {
         this.setState({ isLoading: false });
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });
@@ -53,8 +52,8 @@ class InvitationPage extends React.Component {
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
               <h2 className="card-title text-center mb-4">Set up your account</h2>
-              {newSignup === "true" && 
-                <>  
+              {newSignup === 'true' && (
+                <>
                   <div className="mb-3">
                     <label className="form-label">First name</label>
                     <div className="input-group input-group-flat">
@@ -94,9 +93,9 @@ class InvitationPage extends React.Component {
                       <span className="input-group-text"></span>
                     </div>
                   </div>
-                </>  
-              }
-              
+                </>
+              )}
+
               <div className="mb-3">
                 <label className="form-label">Password</label>
                 <div className="input-group input-group-flat">
@@ -125,7 +124,8 @@ class InvitationPage extends React.Component {
               </div>
               <div className="form-footer">
                 <p>
-                By clicking the button below, you agree to our <a href="https://tooljet.io/terms">Terms and Conditions</a>.
+                  By clicking the button below, you agree to our{' '}
+                  <a href="https://tooljet.io/terms">Terms and Conditions</a>.
                 </p>
                 <button
                   className={`btn mt-2 btn-primary w-100 ${isLoading ? ' btn-loading' : ''}`}

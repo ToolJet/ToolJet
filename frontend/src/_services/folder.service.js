@@ -4,7 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const folderService = {
   create,
   getAll,
-  addToFolder
+  addToFolder,
 };
 
 function getAll() {
@@ -14,7 +14,7 @@ function getAll() {
 
 function create(name) {
   const body = {
-    name
+    name,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
@@ -24,7 +24,7 @@ function create(name) {
 function addToFolder(appId, folderId) {
   const body = {
     app_id: appId,
-    folder_id: folderId
+    folder_id: folderId,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

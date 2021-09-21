@@ -1,6 +1,6 @@
 import React from 'react';
 import { toast } from 'react-toastify';
-import { getDynamicVariables, resolveReferences } from '@/_helpers/utils';
+import { getDynamicVariables, resolveReferences, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
