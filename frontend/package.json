@@ -32,7 +32,6 @@
     "papaparse": "^5.3.0",
     "plotly.js-basic-dist-min": "^1.58.4",
     "query-string": "^6.13.6",
-    "re-resizable": "^6.9.0",
     "react": "^16.14.0",
     "react-bootstrap": "^1.5.2",
     "react-color": "^2.19.3",
