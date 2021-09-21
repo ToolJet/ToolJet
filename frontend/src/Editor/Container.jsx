@@ -6,11 +6,12 @@ import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
-
-
+import Comments from '@/Editor/Comments';
 
 function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16));
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+  );
 }
 
 export const Container = ({
@@ -31,13 +32,12 @@ export const Container = ({
   deviceWindowWidth,
   scaleValue,
   selectedComponent,
-  darkMode
+  darkMode,
 }) => {
-
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
     height: 2400,
-    position: 'absolute'
+    position: 'absolute',
   };
 
   const components = appDefinition.components;
@@ -55,8 +55,8 @@ export const Container = ({
       setBoxes(
         update(boxes, {
           [id]: {
-            $merge: { layouts }
-          }
+            $merge: { layouts },
+          },
         })
       );
       console.log('new boxes - 1', boxes);
@@ -70,14 +70,14 @@ export const Container = ({
   }, [boxes]);
 
   const { draggingState } = useDragLayer((monitor) => {
-    if(monitor.isDragging()) {
-      if(!monitor.getItem().parent) {
-        return { draggingState: true }
+    if (monitor.isDragging()) {
+      if (!monitor.getItem().parent) {
+        return { draggingState: true };
       } else {
-        return { draggingState: false }
+        return { draggingState: false };
       }
     } else {
-      return { draggingState: false }
+      return { draggingState: false };
     }
   });
 
@@ -89,8 +89,7 @@ export const Container = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
-
-        if(item.parent) {
+        if (item.parent) {
           return;
         }
 
@@ -112,7 +111,7 @@ export const Container = ({
           let deltaX = 0;
           let deltaY = 0;
 
-          if(delta) {
+          if (delta) {
             deltaX = delta.x;
             deltaY = delta.y;
           }
@@ -135,13 +134,12 @@ export const Container = ({
                   ...boxes[id]['layouts'][item.currentLayout],
                   top: top,
                   left: left,
-                }
-              }
-            }
+                },
+              },
+            },
           };
 
           setBoxes(newBoxes);
-
         } else {
           //  This is a new component
           componentMeta = componentTypes.find((component) => component.component === item.component.component);
@@ -153,8 +151,8 @@ export const Container = ({
           const offsetFromLeftOfWindow = canvasBoundingRect.left;
           const currentOffset = monitor.getSourceClientOffset();
 
-          left = Math.round(currentOffset.x + (currentOffset.x * (1 - zoomLevel)) - offsetFromLeftOfWindow);
-          top = Math.round(currentOffset.y + (currentOffset.y * (1 - zoomLevel)) - offsetFromTopOfWindow);
+          left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
 
           id = uuidv4();
 
@@ -162,7 +160,7 @@ export const Container = ({
             [left, top] = doSnapToGrid(left, top);
           }
 
-          if(item.currentLayout === 'mobile') {
+          if (item.currentLayout === 'mobile') {
             componentData.definition.others.showOnDesktop.value = false;
             componentData.definition.others.showOnMobile.value = true;
           }
@@ -177,14 +175,14 @@ export const Container = ({
                   left: left,
                   width: componentMeta.defaultSize.width,
                   height: componentMeta.defaultSize.height,
-                }
-              }
-            }
+                },
+              },
+            },
           });
         }
 
         return undefined;
-      }
+      },
     }),
     [moveBox]
   );
@@ -199,10 +197,10 @@ export const Container = ({
       top: 100,
       left: 0,
       width: 445,
-      height: 500
+      height: 500,
     };
 
-    let  { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
+    let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
     top = y;
     left = x;
@@ -218,10 +216,13 @@ export const Container = ({
           ...boxes[id]['layouts'],
           [currentLayout]: {
             ...boxes[id]['layouts'][currentLayout],
-            width, height, top, left
-          }
-        }
-      }
+            width,
+            height,
+            top,
+            left,
+          },
+        },
+      },
     };
 
     setBoxes(newBoxes);
@@ -239,12 +240,12 @@ export const Container = ({
                   ...boxes[id].component.definition,
                   properties: {
                     ...boxes[id].component.definition.properties,
-                    [param]: value
-                  }
-                }
-              }
-            }
-          }
+                    [param]: value,
+                  },
+                },
+              },
+            },
+          },
         })
       );
     }
@@ -252,61 +253,65 @@ export const Container = ({
 
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
+      <Comments />
       {Object.keys(boxes).map((key) => {
-
         const box = boxes[key];
-        const canShowInCurrentLayout = box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+        const canShowInCurrentLayout =
+          box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
 
-        if(!box.parent && canShowInCurrentLayout) {
-          return <DraggableBox
-            onComponentClick={onComponentClick}
-            onEvent={onEvent}
-            onComponentOptionChanged={onComponentOptionChanged}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            key={key}
-            currentState={currentState}
-            onResizeStop={onResizeStop}
-            paramUpdated={paramUpdated}
-            id={key}
-            {...boxes[key]}
-            mode={mode}
-            resizingStatusChanged={(status) => setIsResizing(status)}
-            inCanvas={true}
-            zoomLevel={zoomLevel}
-            configHandleClicked={configHandleClicked}
-            removeComponent={removeComponent}
-            currentLayout={currentLayout}
-            scaleValue={scaleValue}
-            deviceWindowWidth={deviceWindowWidth}
-            isSelectedComponent={selectedComponent? selectedComponent.id === key : false}
-            darkMode={darkMode}
-            containerProps={{
-              mode,
-              snapToGrid,
-              onComponentClick,
-              onEvent,
-              appDefinition,
-              appDefinitionChanged,
-              currentState,
-              onComponentOptionChanged,
-              onComponentOptionsChanged,
-              appLoading,
-              zoomLevel,
-              configHandleClicked,
-              removeComponent,
-              currentLayout,
-              scaleValue,
-              deviceWindowWidth,
-              selectedComponent,
-              darkMode
-            }}
-          />
+        if (!box.parent && canShowInCurrentLayout) {
+          return (
+            <DraggableBox
+              onComponentClick={onComponentClick}
+              onEvent={onEvent}
+              onComponentOptionChanged={onComponentOptionChanged}
+              onComponentOptionsChanged={onComponentOptionsChanged}
+              key={key}
+              currentState={currentState}
+              onResizeStop={onResizeStop}
+              paramUpdated={paramUpdated}
+              id={key}
+              {...boxes[key]}
+              mode={mode}
+              resizingStatusChanged={(status) => setIsResizing(status)}
+              inCanvas={true}
+              zoomLevel={zoomLevel}
+              configHandleClicked={configHandleClicked}
+              removeComponent={removeComponent}
+              currentLayout={currentLayout}
+              scaleValue={scaleValue}
+              deviceWindowWidth={deviceWindowWidth}
+              isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
+              darkMode={darkMode}
+              containerProps={{
+                mode,
+                snapToGrid,
+                onComponentClick,
+                onEvent,
+                appDefinition,
+                appDefinitionChanged,
+                currentState,
+                onComponentOptionChanged,
+                onComponentOptionsChanged,
+                appLoading,
+                zoomLevel,
+                configHandleClicked,
+                removeComponent,
+                currentLayout,
+                scaleValue,
+                deviceWindowWidth,
+                selectedComponent,
+                darkMode,
+              }}
+            />
+          );
         }
-        }
-      )}
+      })}
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
-        <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '10%'}}>
-          <center className="text-muted">You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.</center>
+        <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '10%' }}>
+          <center className="text-muted">
+            You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.
+          </center>
         </div>
       )}
       {appLoading && (
