@@ -87,7 +87,8 @@
   "scripts": {
     "start": "webpack-dev-server --open --port 8082 --host 0.0.0.0",
     "build": "webpack -p && cp -a ./assets/. ./build/assets/",
-    "lint": "eslint . --fix '**/*.{js,jsx}'",
+    "lint": "eslint . '**/*.{js,jsx}'",
+    "format": "eslint . --fix '**/*.{js,jsx}'",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

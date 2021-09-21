@@ -1,5 +1,3 @@
-// const webpackPreprocessor = require('@cypress/webpack-preprocessor');
-
 module.exports = (on, config) => {
   if (config.testingType === 'component') {
     const { startDevServer } = require('@cypress/webpack-dev-server');
