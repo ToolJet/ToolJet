@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
@@ -19,6 +19,7 @@ export const Datepicker = function Datepicker({
   const enableDateProp = component.definition.properties.enableDate;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
+  const defaultValue = component.definition.properties?.defaultValue?.value ?? '';
 
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
@@ -47,10 +48,21 @@ export const Datepicker = function Datepicker({
   }
 
   function onDateChange(event) {
-    onComponentOptionChanged(component, 'value', event.format(dateFormat.value));
+    const value = event._isAMomentObject ? event.format(dateFormat.value) : event;
+    setDateText(value);
+    onComponentOptionChanged(component, 'value', value);
   }
 
-  const value = currentState?.components[component?.name]?.value;
+  let value = defaultValue;
+  if (value && currentState) value = resolveReferences(value, currentState, '');
+
+  const [dateText, setDateText] = useState(value);
+
+  useEffect(() => {
+    setDateText(value);
+    onComponentOptionChanged(component, 'value', value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   const validationData = validateWidget({
     validationObject: component.definition.validation,
@@ -75,7 +87,22 @@ export const Datepicker = function Datepicker({
         onComponentClick(id, component);
       }}
     >
-      <Datetime onChange={onDateChange} timeFormat={enableTime} closeOnSelect={true} dateFormat={dateFormat.value} />
+      <Datetime
+        onChange={onDateChange}
+        timeFormat={enableTime}
+        closeOnSelect={true}
+        dateFormat={dateFormat.value}
+        value={dateText}
+        renderInput={(props) => {
+          return (
+            <input
+              {...props}
+              value={dateText}
+              className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
+            />
+          );
+        }}
+      />
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
     </div>
   );

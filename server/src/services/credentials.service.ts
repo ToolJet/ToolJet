@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Credential } from '../../src/entities/credential.entity';
 import { Repository } from 'typeorm';
 import { EncryptionService } from './encryption.service';
-// const crypto = require('crypto');
 
 @Injectable()
 export class CredentialsService {
@@ -21,6 +20,13 @@ export class CredentialsService {
     });
     const credential = await this.credentialsRepository.save(newCredential);
     return credential;
+  }
+
+  async update(id: string, value: string) {
+    const valueCiphertext = await this.encryptionService.encryptColumnValue('credentials', 'value', value);
+    const params = { valueCiphertext, updatedAt: new Date() };
+
+    return await this.credentialsRepository.update(id, params);
   }
 
   async getValue(credentialId: string): Promise<string> {

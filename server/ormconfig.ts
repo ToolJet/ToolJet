@@ -25,7 +25,7 @@ function buildConnectionOptions(filePath: string, env: string | undefined): Type
         host: data.PG_HOST,
         connectTimeoutMS: 5000,
         extra: {
-          max: 50,
+          max: 25,
         },
       };
 

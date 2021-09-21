@@ -44,7 +44,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const dataSource = await this.dataSourcesService.create(req.user, name, kind, options, appId);
+    const dataSource = await this.dataSourcesService.create(name, kind, options, appId);
     return decamelizeKeys(dataSource);
   }
 
@@ -63,7 +63,7 @@ export class DataSourcesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const result = await this.dataSourcesService.update(req.user, dataSourceId, name, options);
+    const result = await this.dataSourcesService.update(dataSourceId, name, options);
     return decamelizeKeys(result);
   }
 

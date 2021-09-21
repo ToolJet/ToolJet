@@ -13,12 +13,15 @@ import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourcesService } from 'src/services/data_sources.service';
+import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
+    providers: [],
   }).compile();
 
   app = moduleRef.createNestApplication();
@@ -29,7 +32,9 @@ export async function createNestAppInstance() {
 
 export function authHeaderForUser(user: any) {
   const configService = new ConfigService();
-  const jwtService = new JwtService({ secret: configService.get<string>('SECRET_KEY_BASE') });
+  const jwtService = new JwtService({
+    secret: configService.get<string>('SECRET_KEY_BASE'),
+  });
   const authPayload = { username: user.id, sub: user.email };
   const authToken = jwtService.sign(authPayload);
   return `Bearer ${authToken}`;
@@ -135,10 +140,12 @@ export async function createDataSource(nestInstance, { name, application, kind, 
   let dataSourceRepository: Repository<DataSource>;
   dataSourceRepository = nestInstance.get('DataSourceRepository');
 
+  const dataSourcesService = nestInstance.select(DataSourcesModule).get(DataSourcesService);
+
   return await dataSourceRepository.save(
     dataSourceRepository.create({
       name,
-      options,
+      options: await dataSourcesService.parseOptionsForCreate(options),
       app: application,
       kind,
       createdAt: new Date(),

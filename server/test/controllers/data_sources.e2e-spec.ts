@@ -8,6 +8,7 @@ import {
   createNestAppInstance,
   createDataSource,
 } from '../test.helper';
+import { Credential } from 'src/entities/credential.entity';
 
 describe('data sources controller', () => {
   let app: INestApplication;
@@ -21,7 +22,10 @@ describe('data sources controller', () => {
   });
 
   it('should be able to create data sources of an app only if admin/developer of same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -32,12 +36,18 @@ describe('data sources controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
 
     const dataSourceParams = {
       name: 'name',
-      options: [],
+      options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
       kind: 'postgres',
       app_id: application.id,
     };
@@ -51,6 +61,9 @@ describe('data sources controller', () => {
       expect(response.statusCode).toBe(201);
     }
 
+    // encrypted data source options will create credentials
+    expect(await Credential.count()).toBe(2);
+
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
@@ -63,7 +76,10 @@ describe('data sources controller', () => {
   });
 
   it('should be able to update data sources of an app only if admin/developer of same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -74,18 +90,30 @@ describe('data sources controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
     const dataSource = await createDataSource(app, {
       name: 'name',
-      options: [],
+      options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
       kind: 'postgres',
       application: application,
       user: adminUserData.user,
     });
 
+    // encrypted data source options will create credentials
+    expect(await Credential.count()).toBe(1);
+
     for (const userData of [adminUserData, developerUserData]) {
-      const newOptions = [{ key: 'email', value: userData.user.email }];
+      const newOptions = [
+        { key: 'email', value: userData.user.email },
+        { key: 'foo', value: 'baz', encrypted: 'true' },
+      ];
       const response = await request(app.getHttpServer())
         .put(`/data_sources/${dataSource.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
@@ -98,13 +126,20 @@ describe('data sources controller', () => {
       expect(dataSource.options['email']['value']).toBe(userData.user.email);
     }
 
+    // new credentials will not be created upon data source update
+    expect(await Credential.count()).toBe(1);
+
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
+      const newOptions = [
+        { key: 'email', value: userData.user.email },
+        { key: 'foo', value: 'baz', encrypted: 'true' },
+      ];
       const response = await request(app.getHttpServer())
         .put(`/data_sources/${dataSource.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
-          options: [],
+          options: newOptions,
         });
 
       expect(response.statusCode).toBe(403);
@@ -112,7 +147,10 @@ describe('data sources controller', () => {
   });
 
   it('should be able to list (get) datasources for an app only if admin/developer of same organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       role: 'developer',
@@ -123,8 +161,14 @@ describe('data sources controller', () => {
       role: 'viewer',
       organization: adminUserData.organization,
     });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dataSource = await createDataSource(app, {
       name: 'name',
@@ -151,9 +195,18 @@ describe('data sources controller', () => {
   });
 
   it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {
-    const adminUserData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const anotherOrgAdminUserData = await createUser(app, { email: 'another@tooljet.io', role: 'admin' });
-    const application = await createApplication(app, { name: 'name', user: adminUserData.user });
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
+    const anotherOrgAdminUserData = await createUser(app, {
+      email: 'another@tooljet.io',
+      role: 'admin',
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
     const dataSource = await createDataSource(app, {
       name: 'name',
       options: [],
