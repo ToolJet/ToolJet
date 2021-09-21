@@ -95,4 +95,4 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
   );
 };
 
-export default Googlesheets
+export default Googlesheets;

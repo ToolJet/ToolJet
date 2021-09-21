@@ -7,13 +7,13 @@ export const dataBaseSources = [
       port: { type: 'string' },
       database: { type: 'string' },
       username: { type: 'string' },
-      password: { type: 'string', encrypted: true }
+      password: { type: 'string', encrypted: true },
     },
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
-    }
+      rawData: {},
+    },
   },
   {
     name: 'MySQL',
@@ -21,15 +21,15 @@ export const dataBaseSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
       host: { type: 'string' },
       port: { type: 'string' },
       database: { type: 'string' },
       username: { type: 'string' },
-      password: { type: 'string', encrypted: true }
-    }
+      password: { type: 'string', encrypted: true },
+    },
   },
   {
     name: 'SQL Server',
@@ -37,15 +37,15 @@ export const dataBaseSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
       host: { type: 'string' },
       port: { type: 'string' },
       database: { type: 'string' },
       username: { type: 'string' },
-      password: { type: 'string', encrypted: true }
-    }
+      password: { type: 'string', encrypted: true },
+    },
   },
   {
     name: 'MongoDB',
@@ -53,16 +53,16 @@ export const dataBaseSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
       host: { type: 'string' },
       port: { type: 'string' },
       username: { type: 'string' },
       password: { type: 'string', encrypted: true },
-      connection_type: { type: 'options'},
-      connection_string: { type: 'string', encrypted: true }
-    }
+      connection_type: { type: 'options' },
+      connection_string: { type: 'string', encrypted: true },
+    },
   },
   {
     name: 'Firestore',
@@ -70,11 +70,11 @@ export const dataBaseSources = [
     exposedVariables: {
       isLoading: {},
       data: [],
-      rawData: []
+      rawData: [],
     },
     options: {
-      gcp_key: { type: 'string', encrypted: true }
-    }
+      gcp_key: { type: 'string', encrypted: true },
+    },
   },
   {
     name: 'DynamoDB',
@@ -82,13 +82,13 @@ export const dataBaseSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
       region: { type: 'string' },
       access_key: { type: 'string' },
-      secret_key: { type: 'string', encrypted: true }
-    }
+      secret_key: { type: 'string', encrypted: true },
+    },
   },
   {
     name: 'Elasticsearch',
@@ -96,14 +96,14 @@ export const dataBaseSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
       host: { type: 'string' },
       port: { type: 'string' },
       username: { type: 'string' },
-      password: { type: 'string', encrypted: true }
-    }
+      password: { type: 'string', encrypted: true },
+    },
   },
   {
     name: 'Redis',
@@ -111,15 +111,15 @@ export const dataBaseSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
       host: { type: 'string' },
       port: { type: 'string' },
       username: { type: 'string' },
-      password: { type: 'string', encrypted: true }
-    }
-  }
+      password: { type: 'string', encrypted: true },
+    },
+  },
 ];
 
 export const apiSources = [
@@ -139,14 +139,14 @@ export const apiSources = [
       auth_url: { type: 'string' },
       client_auth: { type: 'string' },
       headers: { type: 'array' },
-      custom_auth_params: { type: 'array' }
+      custom_auth_params: { type: 'array' },
     },
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
-    customTesting: true
+    customTesting: true,
   },
   {
     name: 'GraphQL',
@@ -160,9 +160,9 @@ export const apiSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
-    customTesting: true
+    customTesting: true,
   },
   {
     name: 'Stripe',
@@ -170,12 +170,12 @@ export const apiSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
-      api_key: { type: 'string', encrypted: true }
+      api_key: { type: 'string', encrypted: true },
     },
-    customTesting: true
+    customTesting: true,
   },
   {
     name: 'Airtable',
@@ -183,12 +183,12 @@ export const apiSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
-      api_key: { type: 'string', encrypted: true }
+      api_key: { type: 'string', encrypted: true },
     },
-    customTesting: true
+    customTesting: true,
   },
   {
     name: 'Google Sheets',
@@ -196,13 +196,13 @@ export const apiSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
-      api_key: { type: 'string', encrypted: true }
+      api_key: { type: 'string', encrypted: true },
     },
     customTesting: true,
-    hideSave: true
+    hideSave: true,
   },
   {
     name: 'Slack',
@@ -210,17 +210,14 @@ export const apiSources = [
     exposedVariables: {
       isLoading: {},
       data: {},
-      rawData: {}
+      rawData: {},
     },
     options: {
-      api_key: { type: 'string', encrypted: true }
+      api_key: { type: 'string', encrypted: true },
     },
     customTesting: true,
-    hideSave: true
-  }
+    hideSave: true,
+  },
 ];
 
-export const DataSourceTypes = [
-  ...dataBaseSources,
-  ...apiSources
-];
+export const DataSourceTypes = [...dataBaseSources, ...apiSources];

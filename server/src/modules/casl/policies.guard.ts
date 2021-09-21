@@ -6,25 +6,16 @@ import { PolicyHandler } from './policyhandler.interface';
 
 @Injectable()
 export class PoliciesGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private caslAbilityFactory: CaslAbilityFactory,
-  ) { }
+  constructor(private reflector: Reflector, private caslAbilityFactory: CaslAbilityFactory) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const policyHandlers =
-      this.reflector.get<PolicyHandler[]>(
-        CHECK_POLICIES_KEY,
-        context.getHandler(),
-      ) || [];
+    const policyHandlers = this.reflector.get<PolicyHandler[]>(CHECK_POLICIES_KEY, context.getHandler()) || [];
 
     const { user, params } = context.switchToHttp().getRequest();
 
     const ability = await this.caslAbilityFactory.organizationUserActions(user, params);
 
-    return policyHandlers.every((handler) =>
-      this.execPolicyHandler(handler, ability),
-    );
+    return policyHandlers.every((handler) => this.execPolicyHandler(handler, ability));
   }
 
   private execPolicyHandler(handler: PolicyHandler, ability: AppAbility) {

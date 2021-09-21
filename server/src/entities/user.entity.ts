@@ -1,11 +1,23 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate, OneToMany, ManyToOne, JoinColumn, AfterLoad, BaseEntity } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  BeforeInsert,
+  BeforeUpdate,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  AfterLoad,
+  BaseEntity,
+} from 'typeorm';
 import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
 
-@Entity({ name: "users" })
+@Entity({ name: 'users' })
 export class User extends BaseEntity {
-
   @BeforeInsert()
   @BeforeUpdate()
   hashPassword() {
@@ -14,10 +26,10 @@ export class User extends BaseEntity {
     }
   }
 
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column( { name: 'first_name' } )
+  @Column({ name: 'first_name' })
   firstName: string;
 
   @Column({ name: 'last_name' })
@@ -33,22 +45,22 @@ export class User extends BaseEntity {
   forgotPasswordToken: string;
 
   @Column({ name: 'password_digest' })
-  password: string
+  password: string;
 
-  @Column({ name: 'organization_id' }) 
-  organizationId: string
+  @Column({ name: 'organization_id' })
+  organizationId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
-  
+
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => OrganizationUser, organizationUser => organizationUser.user, { eager: true })
+  @OneToMany(() => OrganizationUser, (organizationUser) => organizationUser.user, { eager: true })
   organizationUsers: OrganizationUser[];
 
-  @ManyToOne(() => Organization, organization => organization.id)
-  @JoinColumn({ name: "organization_id" })
+  @ManyToOne(() => Organization, (organization) => organization.id)
+  @JoinColumn({ name: 'organization_id' })
   organization: Organization;
 
   public isAdmin;
@@ -61,5 +73,4 @@ export class User extends BaseEntity {
     this.isDeveloper = this.organizationUsers[0].role === 'developer';
     this.role = this.organizationUsers[0].role;
   }
-
 }
