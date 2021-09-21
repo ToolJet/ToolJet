@@ -141,10 +141,11 @@ async function deleteDataFromSheet(
 
 export async function readData(
   spreadSheetId: string,
+  spreadsheetRange:string,
   sheet: string,
   authHeader: any,
 ): Promise<any[]> {
-  return await readDataFromSheet(spreadSheetId, sheet, 'A1:Z500', authHeader);
+  return await readDataFromSheet(spreadSheetId, sheet, spreadsheetRange, authHeader);
 }
 
 export async function appendData(
