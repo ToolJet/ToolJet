@@ -9,13 +9,13 @@ class Firestore extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options
+      options: this.props.options,
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 
@@ -24,8 +24,8 @@ class Firestore extends React.Component {
       {
         options: {
           ...this.state.options,
-          [option]: JSON.parse(value)
-        }
+          [option]: JSON.parse(value),
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -38,8 +38,8 @@ class Firestore extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation
-        }
+          operation,
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -60,11 +60,11 @@ class Firestore extends React.Component {
                 options={[
                   { value: 'get_document', name: 'Get Document' },
                   { value: 'query_collection', name: 'Query collection' },
-                  { value: 'add_document', name: 'Add Document to Collection'},
+                  { value: 'add_document', name: 'Add Document to Collection' },
                   { value: 'update_document', name: 'Update Document' },
                   { value: 'set_document', name: 'Set Document' },
                   { value: 'bulk_update', name: 'Bulk update using document id' },
-                  { value: 'delete_document', name: 'Delete Document'},
+                  { value: 'delete_document', name: 'Delete Document' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -75,45 +75,52 @@ class Firestore extends React.Component {
                 placeholder="Select.."
               />
             </div>
-            {(this.state.options.operation === 'get_document' || this.state.options.operation === 'delete_document')  && (
-              <div>
-                <div className="mb-3 mt-2">
-                  <label className="form-label">Path</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={this.state.options.path}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    onChange={(value) => changeOption(this, 'path', value)}
-                  />
+            {(this.state.options.operation === 'get_document' ||
+              this.state.options.operation === 'delete_document') && (
+                <div>
+                  <div className="mb-3 mt-2">
+                    <label className="form-label">Path</label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={this.state.options.path}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      onChange={(value) => changeOption(this, 'path', value)}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-            {(this.state.options.operation === 'set_document'
-              || this.state.options.operation === 'update_document' || this.state.options.operation === 'add_document') && (
-              <div>
-                <div className="mb-3 mt-2">
-                  <label className="form-label">{this.state.options.operation === 'add_document' ? 'Collection' : 'Path'}</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={this.state.options.path}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    onChange={(value) => changeOption(this, 'path', value)}
-                  />
+              )}
+            {(this.state.options.operation === 'set_document' ||
+              this.state.options.operation === 'update_document' ||
+              this.state.options.operation === 'add_document') && (
+                <div>
+                  <div className="mb-3 mt-2">
+                    <label className="form-label">
+                      {this.state.options.operation === 'add_document' ? 'Collection' : 'Path'}
+                    </label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={this.state.options.path}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      onChange={(value) => changeOption(this, 'path', value)}
+                    />
+                  </div>
+                  <div className="mb-3 mt-2">
+                    <label className="form-label">Body</label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={
+                        typeof this.state.options.body === 'string'
+                          ? this.state.options.body
+                          : JSON.stringify(this.state.options.body)
+                      }
+                      lineNumbers={true}
+                      className="query-hinter"
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      onChange={(value) => changeOption(this, 'body', value)}
+                    />
+                  </div>
                 </div>
-                <div className="mb-3 mt-2">
-                  <label className="form-label">Body</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={typeof this.state.options.body === 'string' ? this.state.options.body  : JSON.stringify(this.state.options.body )}
-                    theme="duotone-light"
-                    lineNumbers={true}
-                    className="query-hinter"
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    onChange={(value) => changeOption(this, 'body', value)}
-                  />
-                </div>
-              </div>
-            )}
+              )}
             {this.state.options.operation === 'bulk_update' && (
               <div>
                 <div className="mb-3 mt-2">
@@ -146,7 +153,7 @@ class Firestore extends React.Component {
                       theme: this.props.darkMode ? 'monokai' : 'default',
                       mode: 'javascript',
                       lineWrapping: true,
-                      scrollbarStyle: null
+                      scrollbarStyle: null,
                     }}
                   />
                 </div>
@@ -177,18 +184,18 @@ class Firestore extends React.Component {
                       />
                     </div>
                     <div className="col">
-                    <SelectSearch
-                      options={[
-                        { value: 'asc', name: 'Ascending' },
-                        { value: 'desc', name: 'Descending' },
-                      ]}
-                      value={this.state.options.order_type ?? 'desc'}
-                      search={true}
-                      onChange={(value) => {
-                        changeOption(this, 'order_type', value);
-                      }}
-                      filterOptions={fuzzySearch}
-                    />
+                      <SelectSearch
+                        options={[
+                          { value: 'asc', name: 'Ascending' },
+                          { value: 'desc', name: 'Descending' },
+                        ]}
+                        value={this.state.options.order_type ?? 'desc'}
+                        search={true}
+                        onChange={(value) => {
+                          changeOption(this, 'order_type', value);
+                        }}
+                        filterOptions={fuzzySearch}
+                      />
                     </div>
                   </div>
                 </div>
@@ -220,12 +227,12 @@ class Firestore extends React.Component {
                       options={[
                         { value: '==', name: '==' },
                         { value: '<', name: '<' },
-                        { value: '>', name: '>'},
+                        { value: '>', name: '>' },
                         { value: '<=', name: '<=' },
                         { value: '>=', name: '>=' },
                         { value: 'array-contains', name: 'array-contains' },
-                        { value: 'in', name: 'in'},
-                        { value: 'array-contains-any', name: 'array-contains-any'},
+                        { value: 'in', name: 'in' },
+                        { value: 'array-contains-any', name: 'array-contains-any' },
                         { value: '', name: 'None' },
                       ]}
                       value={this.state.options.where_operation}

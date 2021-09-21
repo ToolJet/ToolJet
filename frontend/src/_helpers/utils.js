@@ -99,6 +99,7 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         if (withError) return [object, error];
         return object;
       }
+      break;
     }
     default: {
       if (withError) return [object, error];
@@ -168,6 +169,7 @@ export const serializeNestedObjectToQueryParams = function (obj, prefix) {
       var k = prefix ? prefix + '[' + p + ']' : p,
         v = obj[p];
       str.push(
+        // eslint-disable-next-line no-undef
         v !== null && typeof v === 'object' ? serialize(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v)
       );
     }

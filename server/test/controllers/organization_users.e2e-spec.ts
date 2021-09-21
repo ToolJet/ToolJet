@@ -1,11 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import {
-  authHeaderForUser,
-  clearDB,
-  createUser,
-  createNestAppInstance,
-} from '../test.helper';
+import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -62,9 +58,7 @@ describe('organization users controller', () => {
   });
 
   it('should allow only authenticated users to archive org users', async () => {
-    await request(app.getHttpServer())
-      .post('/organization_users/random-id/archive')
-      .expect(401);
+    await request(app.getHttpServer()).post('/organization_users/random-id/archive').expect(401);
   });
 
   it('should allow only admin users to archive org users', async () => {
@@ -172,6 +166,23 @@ describe('organization users controller', () => {
 
     await developerUserData.orgUser.reload();
     expect(developerUserData.orgUser.role).toBe('developer');
+  });
+
+  it('should not allow to change role from admin when no other admins are present', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+      status: 'active',
+    });
+
+    const response = await request(app.getHttpServer())
+      .post(`/organization_users/${adminUserData.orgUser.id}/change_role`)
+      .set('Authorization', authHeaderForUser(adminUserData.user))
+      .send({ role: 'viewer' })
+      .expect(400);
+
+    await adminUserData.orgUser.reload();
+    expect(adminUserData.orgUser.role).toBe('admin');
   });
 
   it('should allow only admin users to archive org users', async () => {

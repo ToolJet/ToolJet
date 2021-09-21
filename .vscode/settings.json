@@ -1,0 +1,14 @@
+{
+    "[javascript, typescript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    },
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "eslint.format.enable": true,
+    "editor.formatOnSave": true,
+
+}

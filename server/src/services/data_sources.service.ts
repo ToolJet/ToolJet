@@ -11,7 +11,7 @@ export class DataSourcesService {
   constructor(
     private credentialsService: CredentialsService,
     @InjectRepository(DataSource)
-    private dataSourcesRepository: Repository<DataSource>,
+    private dataSourcesRepository: Repository<DataSource>
   ) {}
 
   async all(user: User, appId: string): Promise<DataSource[]> {
@@ -29,12 +29,7 @@ export class DataSourcesService {
     });
   }
 
-  async create(
-    name: string,
-    kind: string,
-    options: Array<object>,
-    appId: string,
-  ): Promise<DataSource> {
+  async create(name: string, kind: string, options: Array<object>, appId: string): Promise<DataSource> {
     const newDataSource = this.dataSourcesRepository.create({
       name,
       kind,
@@ -47,11 +42,7 @@ export class DataSourcesService {
     return dataSource;
   }
 
-  async update(
-    dataSourceId: string,
-    name: string,
-    options: Array<object>,
-  ): Promise<DataSource> {
+  async update(dataSourceId: string, name: string, options: Array<object>): Promise<DataSource> {
     const dataSource = await this.findOne(dataSourceId);
 
     const updateableParams = {
@@ -63,22 +54,16 @@ export class DataSourcesService {
 
     // Remove keys with undefined values
     Object.keys(updateableParams).forEach((key) =>
-      updateableParams[key] === undefined ? delete updateableParams[key] : {},
+      updateableParams[key] === undefined ? delete updateableParams[key] : {}
     );
 
     return this.dataSourcesRepository.save(updateableParams);
   }
 
   /* This function merges new options with the existing options */
-  async updateOptions(
-    dataSourceId: string,
-    optionsToMerge: any,
-  ): Promise<DataSource> {
+  async updateOptions(dataSourceId: string, optionsToMerge: any): Promise<DataSource> {
     const dataSource = await this.findOne(dataSourceId);
-    const parsedOptions = await this.parseOptionsForUpdate(
-      dataSource,
-      optionsToMerge,
-    );
+    const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
 
     const updatedOptions = { ...dataSource.options, ...parsedOptions };
 
@@ -91,7 +76,7 @@ export class DataSourcesService {
   async testConnection(kind: string, options: object): Promise<object> {
     let result = {};
     try {
-      let sourceOptions = {};
+      const sourceOptions = {};
 
       for (const key of Object.keys(options)) {
         sourceOptions[key] = options[key]['value'];
@@ -113,12 +98,8 @@ export class DataSourcesService {
 
   async parseOptionsForOauthDataSource(options: Array<object>) {
     if (options.find((option) => option['key'] === 'oauth2')) {
-      const provider = options.find((option) => option['key'] === 'provider')[
-        'value'
-      ];
-      const authCode = options.find((option) => option['key'] === 'code')[
-        'value'
-      ];
+      const provider = options.find((option) => option['key'] === 'provider')['value'];
+      const authCode = options.find((option) => option['key'] === 'code')['value'];
 
       const plugins = await allPlugins;
       const queryService = new plugins[provider]();
@@ -133,9 +114,7 @@ export class DataSourcesService {
         options.push(option);
       }
 
-      options = options.filter(
-        (option) => !['provider', 'code', 'oauth2'].includes(option['key']),
-      );
+      options = options.filter((option) => !['provider', 'code', 'oauth2'].includes(option['key']));
     }
 
     return options;
@@ -149,9 +128,7 @@ export class DataSourcesService {
 
     for (const option of optionsWithOauth) {
       if (option['encrypted']) {
-        const credential = await this.credentialsService.create(
-          option['value'] || '',
-        );
+        const credential = await this.credentialsService.create(option['value'] || '');
 
         parsedOptions[option['key']] = {
           credential_id: credential.id,
@@ -176,13 +153,9 @@ export class DataSourcesService {
 
     for (const option of optionsWithOauth) {
       if (option['encrypted']) {
-        const existingCredentialId =
-          dataSource.options[option['key']]['credential_id'];
+        const existingCredentialId = dataSource.options[option['key']]['credential_id'];
 
-        await this.credentialsService.update(
-          existingCredentialId,
-          option['value'] || '',
-        );
+        await this.credentialsService.update(existingCredentialId, option['value'] || '');
 
         parsedOptions[option['key']] = {
           credential_id: existingCredentialId,

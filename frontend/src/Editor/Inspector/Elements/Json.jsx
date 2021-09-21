@@ -3,9 +3,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import { ToolTip } from './Components/ToolTip';
 
-export const Json = ({
-  param, definition, onChange, paramType, componentMeta
-}) => {
+export const Json = ({ param, definition, onChange, paramType, componentMeta }) => {
   const value = definition
     ? definition.value
     : `[{
@@ -15,11 +13,11 @@ export const Json = ({
       }]`;
 
   const paramMeta = componentMeta[paramType][param.name];
-  const displayName = paramMeta.displayName || param.name;      
+  const displayName = paramMeta.displayName || param.name;
 
   return (
     <div className="field mb-2">
-      <ToolTip label={displayName} meta={paramMeta}/>
+      <ToolTip label={displayName} meta={paramMeta} />
       <CodeMirror
         height="300px"
         fontSize="2"
@@ -29,7 +27,7 @@ export const Json = ({
           theme: 'duotone-light',
           mode: 'json',
           lineWrapping: true,
-          scrollbarStyle: null
+          scrollbarStyle: null,
         }}
       />
     </div>

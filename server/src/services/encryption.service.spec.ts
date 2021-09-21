@@ -32,5 +32,4 @@ describe('EncryptionService', () => {
     const decryptedText = await service.decryptColumnValue('credentials', 'value', encryptedText);
     expect(decryptedText).toBe('Hello');
   });
-
 });

@@ -6,32 +6,32 @@ import { Organization } from 'src/entities/organization.entity';
 
 @Injectable()
 export class OrganizationsService {
-
   constructor(
     @InjectRepository(Organization)
     private organizationsRepository: Repository<Organization>,
     @InjectRepository(OrganizationUser)
-    private organizationUsersRepository: Repository<OrganizationUser>,
-  ) { }
+    private organizationUsersRepository: Repository<OrganizationUser>
+  ) {}
 
   async create(name: string): Promise<Organization> {
-    return this.organizationsRepository.save(this.organizationsRepository.create({
-      name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }));
+    return this.organizationsRepository.save(
+      this.organizationsRepository.create({
+        name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    );
   }
 
   async fetchUsers(user: any): Promise<OrganizationUser[]> {
-
     const organizationUsers = await this.organizationUsersRepository.find({
       where: { organizationId: user.organizationId },
-      relations: ['user']
+      relations: ['user'],
     });
 
-    // serialize 
-    const serializedUsers = []
-    for(const orgUser of organizationUsers) {
+    // serialize
+    const serializedUsers = [];
+    for (const orgUser of organizationUsers) {
       const serializedUser = {
         email: orgUser.user.email,
         firstName: orgUser.user.firstName,
@@ -39,10 +39,11 @@ export class OrganizationsService {
         name: `${orgUser.user.firstName} ${orgUser.user.lastName}`,
         id: orgUser.id,
         role: orgUser.role,
-        status: orgUser.status
-      }
+        status: orgUser.status,
+      };
 
-      if (user.isAdmin && orgUser.user.invitationToken) serializedUser['invitationToken'] = orgUser.user.invitationToken
+      if (user.isAdmin && orgUser.user.invitationToken)
+        serializedUser['invitationToken'] = orgUser.user.invitationToken;
 
       serializedUsers.push(serializedUser);
     }

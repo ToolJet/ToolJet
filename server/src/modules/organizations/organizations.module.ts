@@ -13,7 +13,7 @@ import { EmailService } from '@services/email.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Organization, OrganizationUser, User]), CaslModule],
-  providers: [OrganizationsService, OrganizationUsersService, UsersService, EmailService], 
+  providers: [OrganizationsService, OrganizationUsersService, UsersService, EmailService],
   controllers: [OrganizationsController, OrganizationUsersController],
 })
 export class OrganizationsModule {}

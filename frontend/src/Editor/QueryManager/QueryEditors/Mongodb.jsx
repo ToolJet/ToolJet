@@ -10,13 +10,13 @@ class Mongodb extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options
+      options: this.props.options,
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 
@@ -25,8 +25,8 @@ class Mongodb extends React.Component {
       {
         options: {
           ...this.state.options,
-          [option]: JSON.parse(value)
-        }
+          [option]: JSON.parse(value),
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -39,8 +39,8 @@ class Mongodb extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation
-        }
+          operation,
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);

@@ -51,10 +51,7 @@ function createDatabase(): void {
   });
 }
 
-const nodeEnvPath = path.resolve(
-  process.cwd(),
-  process.env.NODE_ENV === 'test' ? '../.env.test' : '../.env',
-);
+const nodeEnvPath = path.resolve(process.cwd(), process.env.NODE_ENV === 'test' ? '../.env.test' : '../.env');
 
 const fallbackPath = path.resolve(process.cwd(), '../.env');
 
@@ -63,10 +60,7 @@ if (fs.existsSync(nodeEnvPath)) {
 } else if (fs.existsSync(fallbackPath)) {
   createDatabaseFromFile(fallbackPath);
 } else {
-  console.log(
-    `${nodeEnvPath} file not found to create database\n` +
-      'Picking up config from the environment',
-  );
+  console.log(`${nodeEnvPath} file not found to create database\n` + 'Picking up config from the environment');
 
   createDatabase();
 }

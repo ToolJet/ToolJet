@@ -9,5 +9,4 @@ import { MetadataService } from '@services/metadata.service';
   imports: [TypeOrmModule.forFeature([Metadata])],
   providers: [MetadataService],
 })
-
 export class MetaModule {}

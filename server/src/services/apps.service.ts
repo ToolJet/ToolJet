@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 import { App } from 'src/entities/app.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -9,7 +8,8 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
-import { AppCloneService } from './app_clone.service'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { AppCloneService } from './app_clone.service';
 
 @Injectable()
 export class AppsService {
@@ -32,7 +32,7 @@ export class AppsService {
     @InjectRepository(FolderApp)
     private folderAppsRepository: Repository<FolderApp>,
 
-    private AppCloneService: AppCloneService,
+    private AppCloneService: AppCloneService
   ) {}
 
   async find(id: string): Promise<App> {
@@ -64,7 +64,7 @@ export class AppsService {
         updatedAt: new Date(),
         organizationId: user.organization.id,
         user: user,
-      }),
+      })
     );
 
     await this.appUsersRepository.save(
@@ -74,14 +74,14 @@ export class AppsService {
         role: 'admin',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }),
+      })
     );
 
     return app;
   }
 
   async clone(existingApp: App, user: User): Promise<App> {
-    const clonedApp = await this.AppCloneService.perform(existingApp, user)
+    const clonedApp = await this.AppCloneService.perform(existingApp, user);
 
     return clonedApp;
   }
@@ -122,7 +122,7 @@ export class AppsService {
 
     // removing keys with undefined values
     Object.keys(updateableParams).forEach((key) =>
-      updateableParams[key] === undefined ? delete updateableParams[key] : {},
+      updateableParams[key] === undefined ? delete updateableParams[key] : {}
     );
 
     return await this.appsRepository.update(appId, updateableParams);
@@ -182,11 +182,7 @@ export class AppsService {
     });
   }
 
-  async createVersion(
-    user: User,
-    app: App,
-    versionName: string,
-  ): Promise<AppVersion> {
+  async createVersion(user: User, app: App, versionName: string): Promise<AppVersion> {
     const lastVersion = await this.appVersionsRepository.findOne({
       where: { appId: app.id },
       order: {
@@ -201,7 +197,7 @@ export class AppsService {
         definition: lastVersion?.definition,
         createdAt: new Date(),
         updatedAt: new Date(),
-      }),
+      })
     );
   }
 

@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 export default ({ defaultChecked, onChange }) => {
   return (
     <label className="form-switch mt-3">
