@@ -354,6 +354,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
     properties: {
+      defaultValue: { type: 'code', displayName: 'Default value' },
       format: { type: 'code', displayName: 'Format' },
       enableTime: { type: 'code', displayName: 'Enable time selection?' },
       enableDate: { type: 'code', displayName: 'Enable date selection?' },
@@ -364,7 +365,7 @@ export const componentTypes = [
       disabledState: {type: 'code', displayName: 'Disable'}
     },
     exposedVariables: {
-      value: {},
+      value: '',
     },
     definition: {
       others: {
@@ -375,6 +376,7 @@ export const componentTypes = [
         customRule: { value: null }
       },
       properties: {
+        defaultValue: { value: '' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
