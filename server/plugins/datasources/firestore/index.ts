@@ -19,7 +19,16 @@ export default class FirestoreQueryService implements QueryService {
     try {
       switch (operation) {
         case 'query_collection':
-          result = await queryCollection(firestore, queryOptions.path);
+          result = await queryCollection(
+            firestore,
+            queryOptions.path,
+            parseInt(queryOptions.limit),
+            queryOptions.where_operation,
+            queryOptions.where_field,
+            queryOptions.where_value,
+            queryOptions.order_field,
+            queryOptions.order_type,
+          );
           break;
         case 'get_document':
           result = await getDocument(firestore, queryOptions.path);

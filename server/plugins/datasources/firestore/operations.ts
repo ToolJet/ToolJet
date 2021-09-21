@@ -1,14 +1,43 @@
+import { Firestore, Query } from "@google-cloud/firestore";
 
-export async function queryCollection(db, collection: string): Promise<object> { 
+export async function queryCollection(
+  db: Firestore,
+  collection: string,
+  limit: number,
+  where_operation: any,
+  where_field: string,
+  where_value: any,
+  order_field: string,
+  order_type: any,
+  ): Promise<object>
+{
+  const limitProvided = isNaN(limit) !== true;
+  const whereConditionProvided =
+    ([undefined, ''].includes(where_field) === false) &&
+    ([undefined, ''].includes(where_operation) === false) &&
+    (where_value != undefined);
+  const orderConditionProvided = ([undefined, ''].includes(order_field) === false);
 
-  const snapshot = await db.collection(collection).get();
+  const collectionRef = db.collection(collection);
+  let query: Query = collectionRef;
 
-  let data = [];
+  if (whereConditionProvided || limitProvided || orderConditionProvided) {
+    if (whereConditionProvided)
+      query = query.where(where_field, where_operation, where_value);
+    if (limitProvided)
+      query = query.limit(limit);
+    if (orderConditionProvided)
+      query = query.orderBy(order_field, order_type);
+  }
+
+  const snapshot = await query.get();
+
+  const data = [];
   snapshot.forEach((doc) => {
-   data.push({
-     document_id: doc.id,
-     data: doc.data()
-   })
+    data.push({
+      document_id: doc.id,
+      data: doc.data()
+    })
   });
 
   return data;
