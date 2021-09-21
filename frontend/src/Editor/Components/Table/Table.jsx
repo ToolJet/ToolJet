@@ -593,6 +593,7 @@ export function Table({
     exportData
   } = useTable(
     {
+      autoResetPage: false,
       columns,
       data,
       defaultColumn,
