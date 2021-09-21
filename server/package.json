@@ -8,7 +8,8 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "lint": "eslint . --fix '**/*.ts'",
+    "lint": "eslint .  '**/*.ts'",
+    "format": "eslint . --fix '**/*.ts'",
     "start": "nest start",
     "start:dev": "NODE_ENV=development nest start --watch",
     "start:debug": "nest start --debug --watch",

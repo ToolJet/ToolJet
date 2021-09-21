@@ -32,8 +32,6 @@ module.exports = {
         trailingComma: 'es5',
         printWidth: 120,
         singleQuote: true,
-        arrowParens: 'always',
-        proseWrap: 'preserve',
       },
     ],
     '@typescript-eslint/interface-name-prefix': 'off',
@@ -47,14 +45,7 @@ module.exports = {
       'error',
       {
         types: {
-          String: false,
-          Boolean: false,
-          Number: false,
-          Symbol: false,
-          '{}': false,
-          Object: false,
           object: false,
-          Function: false,
         },
         extendDefaults: true,
       },
