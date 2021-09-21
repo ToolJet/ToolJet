@@ -266,7 +266,7 @@ export function Table({
 
       if (Array.isArray(labels)) {
         columnOptions.selectOptions = labels.map((label, index) => {
-          return { name: label, value: values[index] };
+          return { name: label, value: values[index]};
         });
       }
     }
@@ -432,6 +432,7 @@ export function Table({
           return (
             <div>
               <Tags
+                readOnly={!column.isEditable}
                 value={cellValue}
                 onChange={(value) => {
                   handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
