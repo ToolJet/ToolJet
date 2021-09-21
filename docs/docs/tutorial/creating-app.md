@@ -8,6 +8,8 @@ sidebar_position: 1
 Apps in ToolJet binds the widgets, datasources and queries together.
 :::
 
+<img class="screenshot-full" src="/img/tutorial/create-app.gif" alt="ToolJet - tutorial for creating a new app" height="420"/>
+
 This tutorial will walk you through building a simple app to fetch customer information from a PostgreSQL database and display the data using the table widget.
 To create a new ToolJet app, click on the **'Create App'** button on the ToolJet dashboard. 
 

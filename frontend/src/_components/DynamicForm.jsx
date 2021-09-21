@@ -5,7 +5,7 @@ import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 
-import GoogleSheets from '@/_components/GoogleSheets';
+import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 
 import { find } from 'lodash';

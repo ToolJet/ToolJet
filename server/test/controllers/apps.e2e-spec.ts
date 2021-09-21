@@ -34,6 +34,47 @@ describe('apps controller', () => {
   });
 
   describe('/apps', () => {
+    describe('authorization', () => {
+      it('should be able to create app if user is either admin or developer', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          role: 'admin',
+        });
+        const organization = adminUserData.organization;
+        const developerUserData = await createUser(app, {
+          email: 'developer@tooljet.io',
+          role: 'developer',
+          organization,
+        });
+        const viewerUserData = await createUser(app, {
+          email: 'viewer@tooljet.io',
+          role: 'viewer',
+          organization,
+        });
+
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+        await createApplicationVersion(app, application);
+
+        for (const userData of [adminUserData, developerUserData]) {
+          const response = await request(app.getHttpServer())
+            .post(`/apps`)
+            .set('Authorization', authHeaderForUser(userData.user));
+
+          expect(response.statusCode).toBe(201);
+          expect(response.body.name).toBe('Untitled app');
+        }
+
+        const response = await request(app.getHttpServer())
+          .post(`/apps`)
+          .set('Authorization', authHeaderForUser(viewerUserData.user));
+
+        expect(response.statusCode).toBe(403);
+      });
+    });
+
     it('should create app with default values', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -52,6 +93,79 @@ describe('apps controller', () => {
 
       expect(application.name).toBe('Untitled app');
       expect(application.id).toBe(application.slug);
+    });
+  });
+
+  describe('/apps/:id/clone', () => {
+    it('should be able to clone the app if user is admin or developer', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        role: 'admin',
+      });
+
+      const developerUserData = await createUser(app, {
+        email: 'dev@tooljet.io',
+        role: 'developer',
+        organization: adminUserData.organization,
+      });
+
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        role: 'viewer',
+        organization: adminUserData.organization,
+      });
+
+      const application = await createApplication(app, {
+        name: 'App to clone',
+        user: adminUserData.user,
+      });
+
+      let response = await request(app.getHttpServer())
+        .post(`/apps/${application.id}/clone`)
+        .set('Authorization', authHeaderForUser(adminUserData.user));
+
+      expect(response.statusCode).toBe(201);
+
+      let appId = response.body.id;
+      let clonedApplication = await App.findOne({ id: appId });
+      expect(clonedApplication.name).toBe('App to clone');
+
+      response = await request(app.getHttpServer())
+        .post(`/apps/${application.id}/clone`)
+        .set('Authorization', authHeaderForUser(developerUserData.user));
+
+      expect(response.statusCode).toBe(201);
+
+      appId = response.body.id;
+      clonedApplication = await App.findOne({ id: appId });
+      expect(clonedApplication.name).toBe('App to clone');
+
+      response = await request(app.getHttpServer())
+        .post(`/apps/${application.id}/clone`)
+        .set('Authorization', authHeaderForUser(viewerUserData.user));
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should not be able to clone the app if app is of another organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        role: 'admin',
+      });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        role: 'admin',
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
+
+      const response = await request(app.getHttpServer())
+        .post(`/apps/${application.id}/clone`)
+        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+
+      expect(response.statusCode).toBe(403);
     });
   });
 

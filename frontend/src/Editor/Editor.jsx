@@ -368,7 +368,7 @@ class Editor extends React.Component {
     return (
       <div
         className={'row query-row py-2 px-3' + (isSeletedQuery ? ' query-row-selected' : '')}
-        key={dataQuery.name}
+        key={dataQuery.id}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
         onMouseEnter={() => this.setShowHiddenOptionsForDataQuery(dataQuery.id)}

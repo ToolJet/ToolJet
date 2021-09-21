@@ -71,6 +71,7 @@ export default class GooglesheetsQueryService implements QueryService {
     let response = null;
     const operation = queryOptions.operation;
     const spreadsheetId = queryOptions['spreadsheet_id'];
+    const spreadsheetRange = queryOptions['spreadsheet_range'] ? queryOptions['spreadsheet_range'] : 'A1:Z500' ;
     const accessToken = sourceOptions['access_token'];
 
     try {
@@ -84,8 +85,8 @@ export default class GooglesheetsQueryService implements QueryService {
           result = JSON.parse(response.body);
           break;
 
-        case 'read':
-          result = await readData(spreadsheetId, queryOptions['sheet'], this.authHeader(accessToken));
+        case 'read':          
+          result = await readData(spreadsheetId, spreadsheetRange, queryOptions['sheet'], this.authHeader(accessToken));
           break;
 
         case 'append':
