@@ -9,7 +9,8 @@ export const defaultOptions = {
   graphql: {},
   firestore: {
     path: '',
-    operation: 'get_document'
+    operation: 'get_document',
+    order_type: 'desc',
   },
   elasticsearch: {
     query: '',
