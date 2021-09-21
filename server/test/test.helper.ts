@@ -94,9 +94,10 @@ export async function createApplicationVersion(app, application) {
   );
 }
 
+
 export async function createUser(
   app,
-  { firstName, lastName, email, role, organization }: any,
+  { firstName, lastName, email, role, organization, status }: any,
 ) {
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
@@ -133,6 +134,7 @@ export async function createUser(
       user: user,
       organization,
       role: role || 'admin',
+      status: status || 'invited',
       createdAt: new Date(),
       updatedAt: new Date(),
     }),
