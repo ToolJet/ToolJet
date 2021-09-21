@@ -9,13 +9,13 @@ class Googlesheets extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options
+      options: this.props.options,
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 
@@ -24,8 +24,8 @@ class Googlesheets extends React.Component {
       {
         options: {
           ...this.state.options,
-          [option]: JSON.parse(value)
-        }
+          [option]: JSON.parse(value),
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -38,8 +38,8 @@ class Googlesheets extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation
-        }
+          operation,
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -87,19 +87,19 @@ class Googlesheets extends React.Component {
                     />
                   </div>
                   {['read'].includes(this.state.options.operation) && (
-                        <div className="col-auto">
-                        <label className="form-label">Range</label>
-                              <input
-                                type="text"
-                                placeholder={'A1:Z500'}
-                                value={this.state.options.spreadsheet_range}
-                                onChange={(e) => {
-                                  changeOption(this, 'spreadsheet_range', e.target.value);
-                                }}
-                                className="form-control"
-                              />
-                        </div>
-                  ) }
+                    <div className="col-auto">
+                      <label className="form-label">Range</label>
+                      <input
+                        type="text"
+                        placeholder={'A1:Z500'}
+                        value={this.state.options.spreadsheet_range}
+                        onChange={(e) => {
+                          changeOption(this, 'spreadsheet_range', e.target.value);
+                        }}
+                        className="form-control"
+                      />
+                    </div>
+                  )}
                   <div className="col-auto">
                     <label className="form-label">Sheet</label>
                     <input
@@ -118,41 +118,39 @@ class Googlesheets extends React.Component {
           </div>
         )}
 
-       
-
-      {this.state.options.operation === 'append' && (
+        {this.state.options.operation === 'append' && (
           <div className="mb-3 mt-2">
             <label className="form-label">Rows</label>
             <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={options.rows}
-                  theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-                  lineNumbers={true}
-                  className="query-hinter"
-                  onChange={(value) => changeOption(this, 'rows', value)}
+              currentState={this.props.currentState}
+              initialValue={options.rows}
+              theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+              lineNumbers={true}
+              className="query-hinter"
+              onChange={(value) => changeOption(this, 'rows', value)}
             />
           </div>
-      )}
+        )}
 
-      {this.state.options.operation === 'delete_row' && (
-        <div>
-          <div className="mb-3 mt-2 row">
-            <div className="col">
-              <label className="form-label">Delete row number</label>
-              <input
-                type="text"
-                value={this.state.options.row_index}
-                onChange={(e) => {
-                  changeOption(this, 'row_index', e.target.value);
-                }}
-                className="form-control"
-              />
+        {this.state.options.operation === 'delete_row' && (
+          <div>
+            <div className="mb-3 mt-2 row">
+              <div className="col">
+                <label className="form-label">Delete row number</label>
+                <input
+                  type="text"
+                  value={this.state.options.row_index}
+                  onChange={(e) => {
+                    changeOption(this, 'row_index', e.target.value);
+                  }}
+                  className="form-control"
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {this.state.options.operation === 'info' && (
+        {this.state.options.operation === 'info' && (
           <div className="mb-3 mt-2">
             <label className="form-label">Spreadsheet ID</label>
             <input
@@ -164,7 +162,7 @@ class Googlesheets extends React.Component {
               className="form-control"
             />
           </div>
-      )}
+        )}
       </div>
     );
   }

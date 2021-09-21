@@ -9,13 +9,13 @@ class Slack extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options
+      options: this.props.options,
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 
@@ -24,8 +24,8 @@ class Slack extends React.Component {
       {
         options: {
           ...this.state.options,
-          [option]: JSON.parse(value)
-        }
+          [option]: JSON.parse(value),
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -38,8 +38,8 @@ class Slack extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation
-        }
+          operation,
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -59,7 +59,7 @@ class Slack extends React.Component {
               <SelectSearch
                 options={[
                   { name: 'List members', value: 'list_users' },
-                  { name: 'Send message', value: 'send_message' }
+                  { name: 'Send message', value: 'send_message' },
                 ]}
                 value={this.state.options.operation}
                 search={false}
@@ -71,30 +71,30 @@ class Slack extends React.Component {
               />
             </div>
 
-            {this.state.options.operation === 'send_message'
-              && <div>
+            {this.state.options.operation === 'send_message' && (
+              <div>
                 <div className="mb-3 mt-2 row">
                   <div className="col">
                     <label className="form-label">Channel</label>
-                      <CodeHinter
-                        currentState={this.props.currentState}
-                        initialValue={this.state.options.channel}
-                        className="codehinter-query-editor-input"
-                        theme={this.props.darkMode ? 'monokai' : 'default'}
-                        onChange={(value) => changeOption(this, 'channel', value)}
-                      />
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={this.state.options.channel}
+                      className="codehinter-query-editor-input"
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      onChange={(value) => changeOption(this, 'channel', value)}
+                    />
                   </div>
                 </div>
                 <div className="mb-3 mt-2 row">
                   <div className="col">
                     <label className="form-label">Message</label>
-                      <CodeHinter
-                        currentState={this.props.currentState}
-                        initialValue={options.message}
-                        className="codehinter-query-editor-input"
-                        theme={this.props.darkMode ? 'monokai' : 'default'}
-                        onChange={(value) => changeOption(this, 'message', value)}
-                      />
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={options.message}
+                      className="codehinter-query-editor-input"
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      onChange={(value) => changeOption(this, 'message', value)}
+                    />
                   </div>
                 </div>
                 {/* <div className="mb-3 mt-2 mx-1 row">
@@ -109,7 +109,7 @@ class Slack extends React.Component {
                   </label>
                 </div> */}
               </div>
-            }
+            )}
           </div>
         )}
       </div>

@@ -47,5 +47,5 @@ export const SourceComponents = {
   Airtable,
   Graphql,
   Mysql,
-  Mssql
+  Mssql,
 };

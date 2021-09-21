@@ -8,52 +8,52 @@ class OnboardingModal extends React.Component {
 
     this.state = {
       showModal: true,
-      options: {
-
-      }
+      options: {},
     };
   }
 
-  componentDidMount() {
-  }
+  componentDidMount() {}
 
   hideModal = () => {
     this.setState({
-      showModal: false
+      showModal: false,
     });
   };
 
   finishOnboarding = () => {
     this.setState({
-      showModal: false
+      showModal: false,
     });
 
     tooljetService.finishOnboarding(this.state.options);
-  }
+  };
 
   skipOnboard = () => {
     tooljetService.skipOnboarding();
-    this.setState({showModal: false});
-  }
+    this.setState({ showModal: false });
+  };
 
   changeOptions = (option, value) => {
     this.setState({
       options: {
         ...this.state.options,
-        [option]: value
-      }
+        [option]: value,
+      },
     });
   };
 
-
   render() {
-
     return (
-      <Modal show={this.state.showModal} size="md" backdrop="static" centered={true} keyboard={true} onEscapeKeyDown={this.hideModal}>
+      <Modal
+        show={this.state.showModal}
+        size="md"
+        backdrop="static"
+        centered={true}
+        keyboard={true}
+        onEscapeKeyDown={this.hideModal}
+      >
         <Modal.Header>
-          <Modal.Title className="text-center">
-            Finish ToolJet installation
-          </Modal.Title>
+          <Modal.Title className="text-center">Finish ToolJet installation</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
@@ -61,7 +61,6 @@ class OnboardingModal extends React.Component {
           <small>We hate spam and we will never spam</small>
 
           <input
-            onChange={(e) => onComponentOptionChanged(component, 'value', e.target.value)}
             type="text"
             className="form-control mt-3"
             placeholder={'Your name'}
@@ -71,7 +70,6 @@ class OnboardingModal extends React.Component {
           />
 
           <input
-            onChange={(e) => onComponentOptionChanged(component, 'value', e.target.value)}
             type="text"
             className="form-control mt-3"
             placeholder={'Your email'}
@@ -79,27 +77,21 @@ class OnboardingModal extends React.Component {
               this.changeOptions('email', e.target.value);
             }}
           />
-
         </Modal.Body>
 
         <Modal.Footer>
           <div className="row w-100">
             <div className="col">
-              <button
-                className={`btn btn-primary`}
-                onClick={this.finishOnboarding}
-              >
+              <button className={`btn btn-primary`} onClick={this.finishOnboarding}>
                 Finish setup
-            </button>
+              </button>
             </div>
             <div className="col-auto">
               <a onClick={this.skipOnboard} className="mt-2">
                 Skip
-            </a>
+              </a>
             </div>
           </div>
-
-
         </Modal.Footer>
       </Modal>
     );

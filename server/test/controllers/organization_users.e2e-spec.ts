@@ -1,11 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import {
-  authHeaderForUser,
-  clearDB,
-  createUser,
-  createNestAppInstance,
-} from '../test.helper';
+import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -62,9 +58,7 @@ describe('organization users controller', () => {
   });
 
   it('should allow only authenticated users to archive org users', async () => {
-    await request(app.getHttpServer())
-      .post('/organization_users/random-id/archive')
-      .expect(401);
+    await request(app.getHttpServer()).post('/organization_users/random-id/archive').expect(401);
   });
 
   it('should allow only admin users to archive org users', async () => {

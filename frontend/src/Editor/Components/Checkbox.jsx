@@ -9,22 +9,24 @@ export const Checkbox = function Checkbox({
   onComponentClick,
   currentState,
   onComponentOptionChanged,
-  onEvent
+  onEvent,
 }) {
-
   const label = component.definition.properties.label.value;
   const textColorProperty = component.definition.styles.textColor;
   const textColor = textColorProperty ? textColorProperty.value : '#000';
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedDisabledState =
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
-  
+
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) { console.log(err); }
+  } catch (err) {
+    console.log(err);
+  }
 
   function toggleValue(e) {
     const checked = e.target.checked;
@@ -37,7 +39,15 @@ export const Checkbox = function Checkbox({
   }
 
   return (
-    <div className="row" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div
+      data-disabled={parsedDisabledState}
+      className="row"
+      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onComponentClick(id, component);
+      }}
+    >
       <label className="my-auto mx-2 form-check form-check-inline">
         <input
           className="form-check-input"
@@ -46,7 +56,9 @@ export const Checkbox = function Checkbox({
             toggleValue(e);
           }}
         />
-        <span className="form-check-label" style={{color: textColor}}>{label}</span>
+        <span className="form-check-label" style={{ color: textColor }}>
+          {label}
+        </span>
       </label>
     </div>
   );

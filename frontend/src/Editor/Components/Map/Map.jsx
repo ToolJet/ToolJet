@@ -1,8 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
-import { Marker } from '@react-google-maps/api';
+import React, { useState, useCallback } from 'react';
+import { GoogleMap, LoadScript, Marker, Autocomplete } from '@react-google-maps/api';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
-import { Autocomplete } from '@react-google-maps/api';
 import { darkModeStyles } from './styles';
 
 export const Map = function Map({
@@ -88,6 +86,7 @@ export const Map = function Map({
     ]).then(() => onEvent('onBoundsChange', { component }));
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const onLoad = useCallback(function onLoad(mapInstance) {
     setGmap(mapInstance);
     onComponentOptionsChanged(component, [['center', mapInstance.center?.toJSON()]]);
@@ -151,7 +150,7 @@ export const Map = function Map({
           {Array.isArray(markers) && (
             <>
               {markers.map((marker, index) => (
-                <Marker position={marker} label={marker.label} onClick={(e) => handleMarkerClick(index)} />
+                <Marker key={index} position={marker} label={marker.label} onClick={() => handleMarkerClick(index)} />
               ))}
             </>
           )}

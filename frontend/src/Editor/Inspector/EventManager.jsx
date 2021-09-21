@@ -16,9 +16,8 @@ export const EventManager = ({
   apps,
   excludeEvents,
   popOverCallback,
-  popoverPlacement
+  popoverPlacement,
 }) => {
-
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
 
   let actionOptions = ActionTypes.map((action) => {
@@ -28,32 +27,39 @@ export const EventManager = ({
   excludeEvents = excludeEvents || [];
 
   /* Filter events based on excludesEvents ( a list of event ids to exclude ) */
-  let possibleEvents = Object.keys(componentMeta.events).filter(eventId => !excludeEvents.includes(eventId)).map(eventId => { return {
-    name: componentMeta.events[eventId].displayName, value: eventId
-  }})
+  let possibleEvents = Object.keys(componentMeta.events)
+    .filter((eventId) => !excludeEvents.includes(eventId))
+    .map((eventId) => {
+      return {
+        name: componentMeta.events[eventId].displayName,
+        value: eventId,
+      };
+    });
 
   function getModalOptions() {
     let modalOptions = [];
     Object.keys(components || {}).forEach((key) => {
-      if(components[key].component.component === 'Modal') {
+      if (components[key].component.component === 'Modal') {
         modalOptions.push({
           name: components[key].component.name,
-          value: key
-        })
+          value: key,
+        });
       }
-    })
+    });
 
     return modalOptions;
   }
 
   function getAllApps() {
     let appsOptionsList = [];
-    apps.filter(item => item.slug != undefined).map((item) => {
-      appsOptionsList.push({
-        name: item.name,
-        value: item.slug
-      })
-    })
+    apps
+      .filter((item) => item.slug != undefined)
+      .map((item) => {
+        appsOptionsList.push({
+          name: item.name,
+          value: item.slug,
+        });
+      });
     return appsOptionsList;
   }
 
@@ -79,7 +85,7 @@ export const EventManager = ({
     newEvents.push({
       eventId: Object.keys(componentMeta.events)[0],
       actionId: 'show-alert',
-      message: 'Hello world!'
+      message: 'Hello world!',
     });
     eventsChanged(newEvents);
   }
@@ -90,9 +96,7 @@ export const EventManager = ({
         <Popover.Content>
           <div className="row">
             <div className="col-3 p-2">
-              <span>
-                Event
-              </span>
+              <span>Event</span>
             </div>
             <div className="col-9">
               <SelectSearch
@@ -107,9 +111,7 @@ export const EventManager = ({
           </div>
           <div className="row mt-3">
             <div className="col-3 p-2">
-              <span>
-                Action
-              </span>
+              <span>Action</span>
             </div>
             <div className="col-9">
               <SelectSearch
@@ -124,192 +126,179 @@ export const EventManager = ({
           </div>
 
           <div className="hr-text">Action options</div>
-            <div>
-              {event.actionId === 'show-alert' && (
-                <div className="row">
-                  <div className="col-3 p-2">
-                    Message
-                  </div>
-                  <div className="col-9">
+          <div>
+            {event.actionId === 'show-alert' && (
+              <div className="row">
+                <div className="col-3 p-2">Message</div>
+                <div className="col-9">
                   <CodeHinter
                     currentState={currentState}
                     initialValue={event.message}
                     onChange={(value) => handlerChanged(index, 'message', value)}
                   />
-                  </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {event.actionId === 'open-webpage' && (
-                <div className="p-1">
-                  <label className="form-label mt-1">URL</label>
-                  <CodeHinter
-                    currentState={currentState}
-                    initialValue={event.url}
-                    onChange={(value) => handlerChanged(index, 'url', value)}
-                  />
-                </div>
-              )}
-
-              {event.actionId === 'go-to-app' &&
-                <GotoApp
-                  event={event}
-                  handlerChanged={handlerChanged}
-                  eventIndex={index}
-                  getAllApps={getAllApps}
+            {event.actionId === 'open-webpage' && (
+              <div className="p-1">
+                <label className="form-label mt-1">URL</label>
+                <CodeHinter
                   currentState={currentState}
+                  initialValue={event.url}
+                  onChange={(value) => handlerChanged(index, 'url', value)}
                 />
-              }
+              </div>
+            )}
 
-              {event.actionId === 'show-modal' && (
-                <div className="row">
-                  <div className="col-3 p-2">
-                  Modal
-                  </div>
-                  <div className="col-9">
-                    <SelectSearch
-                      options={getModalOptions()}
-                      value={event.model}
-                      search={true}
-                      onChange={(value) => {
-                        handlerChanged(index, 'modal', value);
-                      }}
-                      filterOptions={fuzzySearch}
-                      placeholder="Select.."
-                    />
-                  </div>
-                </div>
-              )}
+            {event.actionId === 'go-to-app' && (
+              <GotoApp
+                event={event}
+                handlerChanged={handlerChanged}
+                eventIndex={index}
+                getAllApps={getAllApps}
+                currentState={currentState}
+              />
+            )}
 
-              {event.actionId === 'close-modal' && (
-                <div className="row">
-                  <div className="col-3 p-2">
-                  Modal
-                  </div>
-                  <div className="col-9">
-                    <SelectSearch
-                      options={getModalOptions()}
-                      value={event.model}
-                      search={true}
-                      onChange={(value) => {
-                        handlerChanged(index, 'modal', value);
-                      }}
-                      filterOptions={fuzzySearch}
-                      placeholder="Select.."
-                    />
-                  </div>
-                </div>
-              )}
-
-              {event.actionId === 'copy-to-clipboard' && (
-                <div className="p-1">
-                  <label className="form-label mt-1">Text</label>
-                  <CodeHinter
-                    currentState={currentState}
-                    onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
+            {event.actionId === 'show-modal' && (
+              <div className="row">
+                <div className="col-3 p-2">Modal</div>
+                <div className="col-9">
+                  <SelectSearch
+                    options={getModalOptions()}
+                    value={event.model}
+                    search={true}
+                    onChange={(value) => {
+                      handlerChanged(index, 'modal', value);
+                    }}
+                    filterOptions={fuzzySearch}
+                    placeholder="Select.."
                   />
                 </div>
-              )}
+              </div>
+            )}
 
-              {event.actionId === 'run-query' && (
-                <div className="row">
-                  <div className="col-3 p-2">
-                    Query
-                  </div>
-                  <div className="col-9">
-                    <SelectSearch
-                      options={dataQueries.map((query) => {
-                        return { name: query.name, value: query.id };
-                      })}
-                      value={event.queryId}
-                      search={true}
-                      onChange={(value) => {
-                        const query = dataQueries.find((dataquery) => dataquery.id === value);
-                        handlerChanged(index, 'queryId', query.id);
-                        handlerChanged(index, 'queryName', query.name);
-                      }}
-                      filterOptions={fuzzySearch}
-                      placeholder="Select.."
-                    />
-                  </div>
+            {event.actionId === 'close-modal' && (
+              <div className="row">
+                <div className="col-3 p-2">Modal</div>
+                <div className="col-9">
+                  <SelectSearch
+                    options={getModalOptions()}
+                    value={event.model}
+                    search={true}
+                    onChange={(value) => {
+                      handlerChanged(index, 'modal', value);
+                    }}
+                    filterOptions={fuzzySearch}
+                    placeholder="Select.."
+                  />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
+            {event.actionId === 'copy-to-clipboard' && (
+              <div className="p-1">
+                <label className="form-label mt-1">Text</label>
+                <CodeHinter
+                  currentState={currentState}
+                  onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
+                />
+              </div>
+            )}
 
+            {event.actionId === 'run-query' && (
+              <div className="row">
+                <div className="col-3 p-2">Query</div>
+                <div className="col-9">
+                  <SelectSearch
+                    options={dataQueries.map((query) => {
+                      return { name: query.name, value: query.id };
+                    })}
+                    value={event.queryId}
+                    search={true}
+                    onChange={(value) => {
+                      const query = dataQueries.find((dataquery) => dataquery.id === value);
+                      handlerChanged(index, 'queryId', query.id);
+                      handlerChanged(index, 'queryName', query.name);
+                    }}
+                    filterOptions={fuzzySearch}
+                    placeholder="Select.."
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </Popover.Content>
       </Popover>
-    )
+    );
   }
 
   function renderHandlers(events) {
-
     return events.map((event, index) => {
-
       const actionMeta = ActionTypes.find((action) => action.id === event.actionId);
       const rowClassName = `row g-0 border-bottom pb-2 pt-2 px-2 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
 
-      return <div>
-        <OverlayTrigger
-          trigger="click"
-          placement={popoverPlacement || 'left'}
-          rootClose={true}
-          overlay={eventPopover(event, index)}
-          onHide={(e) => setFocusedEventIndex(null) }
-          onToggle={ (showing) => {
-            if(showing) {
-              setFocusedEventIndex(index);
-            } else {
-              setFocusedEventIndex(null);
-            }
-            if (typeof popOverCallback === 'function')
-              popOverCallback(showing);
-          }}
-        >
-          <div className={rowClassName} role="button">
-            <div className="col">
-              {componentMeta.events[event.eventId]['displayName']}
+      return (
+        <div key={index}>
+          <OverlayTrigger
+            trigger="click"
+            placement={popoverPlacement || 'left'}
+            rootClose={true}
+            overlay={eventPopover(event, index)}
+            onHide={() => setFocusedEventIndex(null)}
+            onToggle={(showing) => {
+              if (showing) {
+                setFocusedEventIndex(index);
+              } else {
+                setFocusedEventIndex(null);
+              }
+              if (typeof popOverCallback === 'function') popOverCallback(showing);
+            }}
+          >
+            <div className={rowClassName} role="button">
+              <div className="col">{componentMeta.events[event.eventId]['displayName']}</div>
+              <div className="col">
+                <small className="text-muted">{actionMeta.name}</small>
+              </div>
+              <div className="col-auto">
+                <span
+                  className="text-danger"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeHandler(index);
+                  }}
+                >
+                  <img className="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12" />
+                </span>
+              </div>
             </div>
-            <div className="col">
-            <small className="text-muted">{actionMeta.name}</small>
-            </div>
-            <div className="col-auto">
-              <span className="text-danger" onClick={(e) => { e.stopPropagation(); removeHandler(index) }}>
-                <img className="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12" />
-              </span>
-            </div>
-          </div>
-        </OverlayTrigger>
-      </div>
-    })
+          </OverlayTrigger>
+        </div>
+      );
+    });
   }
 
   const events = component.component.definition.events || [];
 
-  if(events.length === 0) {
-    return <div>
-      <center>
-        <button
-          className="btn btn-sm btn-outline-azure"
-          onClick={addHandler}
-        >
-          Add event handler
-        </button>
-      </center>
-    </div>
+  if (events.length === 0) {
+    return (
+      <div>
+        <center>
+          <button className="btn btn-sm btn-outline-azure" onClick={addHandler}>
+            Add event handler
+          </button>
+        </center>
+      </div>
+    );
   }
 
-  return <div className="card">
-    <div className="card-body p-0">
-      {renderHandlers(events)}
-
-    </div>
-    <button
-        className="btn btn-sm btn-outline-azure"
-        onClick={addHandler}
-      >
+  return (
+    <div className="card">
+      <div className="card-body p-0">{renderHandlers(events)}</div>
+      <button className="btn btn-sm btn-outline-azure" onClick={addHandler}>
         Add handler
-    </button>
-  </div>
-
-}
+      </button>
+    </div>
+  );
+};

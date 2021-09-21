@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import { ToolTip } from './Components/ToolTip';
 
-export const Color = ({
-  param, definition, onChange, paramType, componentMeta
-}) => {
+export const Color = ({ param, definition, onChange, paramType, componentMeta }) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const coverStyles = {
@@ -12,7 +10,7 @@ export const Color = ({
     top: '0px',
     right: '0px',
     bottom: '0px',
-    left: '0px'
+    left: '0px',
   };
 
   const paramMeta = componentMeta[paramType][param.name] || {};
@@ -20,7 +18,7 @@ export const Color = ({
 
   return (
     <div className="field mb-3">
-      <ToolTip label={displayName} meta={paramMeta}/>
+      <ToolTip label={displayName} meta={paramMeta} />
 
       {showPicker && (
         <div>
@@ -34,11 +32,11 @@ export const Color = ({
       )}
 
       <div className="row mx-0 form-control color-picker-input" onClick={() => setShowPicker(true)}>
-        <div className="col-auto" style={{float: 'right', width: '20px', height: '20px', backgroundColor: definition.value}}>
-        </div>
-        <div className="col">
-          {definition.value}
-        </div>
+        <div
+          className="col-auto"
+          style={{ float: 'right', width: '20px', height: '20px', backgroundColor: definition.value }}
+        ></div>
+        <div className="col">{definition.value}</div>
       </div>
     </div>
   );

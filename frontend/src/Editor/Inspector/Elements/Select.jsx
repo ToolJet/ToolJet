@@ -2,10 +2,7 @@ import React from 'react';
 import { ToolTip } from './Components/ToolTip';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
-export const Select = ({
-  param, definition, onChange, paramType, componentMeta
-}) => {
-
+export const Select = ({ param, definition, onChange, paramType, componentMeta }) => {
   const paramMeta = componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
   const options = paramMeta.options;
@@ -13,7 +10,7 @@ export const Select = ({
 
   return (
     <div className="field mb-3">
-      <ToolTip label={displayName} meta={paramMeta}/>
+      <ToolTip label={displayName} meta={paramMeta} />
       <SelectSearch
         options={options}
         value={value}
@@ -21,7 +18,7 @@ export const Select = ({
         onChange={(newVal) => onChange(param, 'value', newVal, paramType)}
         filterOptions={fuzzySearch}
         placeholder="Select.."
-    />
+      />
     </div>
   );
 };

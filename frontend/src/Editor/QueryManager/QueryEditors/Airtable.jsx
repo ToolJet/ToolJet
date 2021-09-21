@@ -9,13 +9,13 @@ class Airtable extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options
+      options: this.props.options,
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 
@@ -24,8 +24,8 @@ class Airtable extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation
-        }
+          operation,
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);

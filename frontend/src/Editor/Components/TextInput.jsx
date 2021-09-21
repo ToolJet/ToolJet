@@ -32,6 +32,7 @@ export const TextInput = function TextInput({
   useEffect(() => {
     setText(newText);
     onComponentOptionChanged(component, 'value', newText);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newText]);
 
   const validationData = validateWidget({
