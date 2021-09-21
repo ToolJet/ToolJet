@@ -5,9 +5,7 @@ import { UsersService } from 'src/services/users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    private usersService: UsersService
-  ) { }
+  constructor(private usersService: UsersService) {}
 
   @Post('set_password_from_token')
   async create(@Request() req) {
@@ -18,19 +16,19 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch('update')
   async update(@Request() req, @Body() body) {
-    const {firstName, lastName } = body
+    const { firstName, lastName } = body;
     await this.usersService.update(req.user.id, { firstName, lastName });
-    await req.user.reload()
+    await req.user.reload();
     return {
       first_name: req.user.firstName,
-      last_name: req.user.lastName
+      last_name: req.user.lastName,
     };
   }
 
   @UseGuards(JwtAuthGuard, PasswordRevalidateGuard)
   @Patch('change_password')
   async changePassword(@Request() req, @Body() body) {
-    const { newPassword } = body
+    const { newPassword } = body;
     return await this.usersService.update(req.user.id, { password: newPassword });
   }
 }

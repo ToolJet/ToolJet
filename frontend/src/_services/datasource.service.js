@@ -7,7 +7,7 @@ export const datasourceService = {
   test,
   setOauth2Token,
   save,
-  fetchOauth2BaseUrl
+  fetchOauth2BaseUrl,
 };
 
 function getAll(appId) {
@@ -20,7 +20,7 @@ function create(app_id, name, kind, options) {
     app_id,
     name,
     kind,
-    options
+    options,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
@@ -31,7 +31,7 @@ function save(id, app_id, name, options) {
   const body = {
     app_id,
     name,
-    options
+    options,
   };
 
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };
@@ -41,7 +41,7 @@ function save(id, app_id, name, options) {
 function test(kind, options) {
   const body = {
     kind,
-    options
+    options,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

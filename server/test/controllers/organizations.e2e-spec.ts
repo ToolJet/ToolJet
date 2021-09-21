@@ -18,8 +18,8 @@ describe('organizations controller', () => {
   });
 
   it('should list organization users', async () => {
-
     const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { organization, user, orgUser } = userData;
 
     const response = await request(app.getHttpServer())
@@ -32,17 +32,16 @@ describe('organizations controller', () => {
     await orgUser.reload();
 
     expect(response.body.users[0]).toStrictEqual({
-      email: user.email, 
-      first_name: user.firstName, 
-      id: orgUser.id, 
-      last_name: user.lastName, 
-      name: `${user.firstName} ${user.lastName}`, 
-      role: orgUser.role, 
-      status: orgUser.status
-    })
+      email: user.email,
+      first_name: user.firstName,
+      id: orgUser.id,
+      last_name: user.lastName,
+      name: `${user.firstName} ${user.lastName}`,
+      role: orgUser.role,
+      status: orgUser.status,
+    });
   });
 
-  
   afterAll(async () => {
     await app.close();
   });

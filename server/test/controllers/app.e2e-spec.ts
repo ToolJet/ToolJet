@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
@@ -23,19 +24,15 @@ describe('Authentication', () => {
     userRepository = app.get('UserRepository');
     organizationRepository = app.get('OrganizationRepository');
     organizationUsersRepository = app.get('OrganizationUserRepository');
-
   });
 
   it('should create new users', async () => {
+    const response = await request(app.getHttpServer()).post('/signup').send({ email: 'test@tooljet.io' });
 
-    const response = await request(app.getHttpServer())
-      .post('/signup')
-      .send({ email: 'test@tooljet.io' })
-      
     expect(response.statusCode).toBe(201);
 
     const id = response.body['id'];
-    const user = await userRepository.findOne(id, { relations: ['organization']});
+    const user = await userRepository.findOne(id, { relations: ['organization'] });
 
     expect(user.organization.name).toBe('Untitled organization');
     const orgUser = user.organizationUsers[0];
@@ -43,19 +40,17 @@ describe('Authentication', () => {
   });
 
   it(`authenticate if valid credentials`, async () => {
-
     return request(app.getHttpServer())
       .post('/authenticate')
       .send({ email: 'admin@tooljet.io', password: 'password' })
-      .expect(201)
+      .expect(201);
   });
 
   it(`throw 401 if invalid credentials`, async () => {
-
     return request(app.getHttpServer())
       .post('/authenticate')
       .send({ email: 'adnin@tooljet.io', password: 'pwd' })
-      .expect(401)
+      .expect(401);
   });
 
   afterAll(async () => {

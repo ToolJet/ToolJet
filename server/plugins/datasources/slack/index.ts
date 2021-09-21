@@ -6,7 +6,6 @@ const got = require('got');
 
 @Injectable()
 export default class SlackQueryService implements QueryService {
-
   authUrl(): string {
     const clientId = process.env.SLACK_CLIENT_ID;
     const tooljetHost = process.env.TOOLJET_HOST;
@@ -14,7 +13,7 @@ export default class SlackQueryService implements QueryService {
   }
 
   async accessDetailsFrom(authCode: string): Promise<object> {
-    const accessTokenUrl = 'https://slack.com/api/oauth.v2.access'
+    const accessTokenUrl = 'https://slack.com/api/oauth.v2.access';
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;
     const tooljetHost = process.env.TOOLJET_HOST;
@@ -22,25 +21,25 @@ export default class SlackQueryService implements QueryService {
 
     const body = `code=${authCode}&client_id=${clientId}&client_secret=${clientSecret}&redirect_uri=${redirectUri}`;
 
-    const response = await got(accessTokenUrl, { 
+    const response = await got(accessTokenUrl, {
       method: 'post',
       body,
-      headers: {'Content-Type': 'application/x-www-form-urlencoded' }
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
-    
+
     const result = JSON.parse(response.body);
 
-    if(response.statusCode !== 200) {
+    if (response.statusCode !== 200) {
       throw Error('could not connect to Slack');
     }
 
-    let authDetails = [];
+    const authDetails = [];
 
-    if(result['access_token']) {
+    if (result['access_token']) {
       authDetails.push(['access_token', result['access_token']]);
     }
 
-    if(result['refresh_token']) {
+    if (result['refresh_token']) {
       authDetails.push(['refresh_token', result['refresh_token']]);
     }
 
@@ -48,13 +47,11 @@ export default class SlackQueryService implements QueryService {
   }
 
   authHeader(token: string): object {
-    return { Authorization: `Bearer ${token}` }
+    return { Authorization: `Bearer ${token}` };
   }
 
-
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
-
-    let result = { };
+    let result = {};
     let response = null;
     const operation = queryOptions.operation;
     const accessToken = sourceOptions['access_token'];
@@ -62,29 +59,30 @@ export default class SlackQueryService implements QueryService {
     try {
       switch (operation) {
         case 'list_users':
-          response = await got('https://slack.com/api/users.list', { 
-            method: 'get', 
-            headers: this.authHeader(accessToken)
+          response = await got('https://slack.com/api/users.list', {
+            method: 'get',
+            headers: this.authHeader(accessToken),
           });
-          
+
           result = JSON.parse(response.body);
           break;
 
-        case 'send_message':
+        case 'send_message': {
           const body = {
             channel: queryOptions['channel'],
             text: queryOptions['message'],
-            as_user: queryOptions['sendAsUser']
-          }
+            as_user: queryOptions['sendAsUser'],
+          };
 
-          response = await got('https://slack.com/api/chat.postMessage', { 
-            method: 'post', 
+          response = await got('https://slack.com/api/chat.postMessage', {
+            method: 'post',
             json: body,
-            headers: this.authHeader(accessToken)
+            headers: this.authHeader(accessToken),
           });
-          
+
           result = JSON.parse(response.body);
-          break;  
+          break;
+        }
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
@@ -92,8 +90,7 @@ export default class SlackQueryService implements QueryService {
 
     return {
       status: 'ok',
-      data: result
-    }
+      data: result,
+    };
   }
-
 }

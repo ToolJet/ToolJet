@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
-export function Confirm({
-  show, message, onConfirm, onCancel, queryConfirmationData
-}) {
+export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationData }) {
   const [showModal, setShow] = useState(show);
 
   useEffect(() => {

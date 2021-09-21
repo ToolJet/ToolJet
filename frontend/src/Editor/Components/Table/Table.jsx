@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo, useState, useEffect } from 'react';
 import {
   useTable,
@@ -387,6 +389,15 @@ export function Table({
           case 'dropdown': {
             const validationData = validateWidget({
               validationObject: {
+                regex: {
+                  value: column.regex,
+                },
+                minLength: {
+                  value: column.minLength,
+                },
+                maxLength: {
+                  value: column.maxLength,
+                },
                 customRule: {
                   value: column.customRule,
                 },
@@ -617,6 +628,7 @@ export function Table({
     exportData,
   } = useTable(
     {
+      autoResetPage: false,
       columns,
       data,
       defaultColumn,
@@ -727,10 +739,11 @@ export function Table({
       <div className="table-responsive jet-data-table">
         <table {...getTableProps()} className={`table table-vcenter table-nowrap ${tableType}`} style={computedStyles}>
           <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">
-                {headerGroup.headers.map((column) => (
+            {headerGroups.map((headerGroup, index) => (
+              <tr key={index} {...headerGroup.getHeaderGroupProps()} tabIndex="0" className="tr">
+                {headerGroup.headers.map((column, index) => (
                   <th
+                    key={index}
                     {...column.getHeaderProps(column.getSortByToggleProps())}
                     className={column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'}
                   >
@@ -755,10 +768,11 @@ export function Table({
           {!loadingState && (
             <tbody {...getTableBodyProps()}>
               {console.log('page', page)}
-              {page.map((row) => {
+              {page.map((row, index) => {
                 prepareRow(row);
                 return (
                   <tr
+                    key={index}
                     className="table-row"
                     {...row.getRowProps()}
                     onClick={(e) => {
@@ -766,7 +780,7 @@ export function Table({
                       onEvent('onRowClicked', { component, data: row.original });
                     }}
                   >
-                    {row.cells.map((cell) => {
+                    {row.cells.map((cell, index) => {
                       let cellProps = cell.getCellProps();
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {

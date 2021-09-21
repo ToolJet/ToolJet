@@ -10,11 +10,13 @@ import { computeComponentName } from '@/_helpers/utils';
 const styles = {
   width: '100%',
   height: '100%',
-  position: 'absolute'
+  position: 'absolute',
 };
 
 function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16));
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+  );
 }
 
 export const SubContainer = ({
@@ -36,20 +38,20 @@ export const SubContainer = ({
   scaleValue,
   selectedComponent,
   currentLayout,
-  removeComponent
+  removeComponent,
 }) => {
   zoomLevel = zoomLevel || 1;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const allComponents = appDefinition ? appDefinition.components : {};
 
-  let childComponents = []
+  let childComponents = [];
 
   Object.keys(allComponents).forEach((key) => {
-    if(allComponents[key].parent === parent) {
-      childComponents[key] = allComponents[key]
-      }
+    if (allComponents[key].parent === parent) {
+      childComponents[key] = allComponents[key];
     }
-  );
+  });
 
   const [boxes, setBoxes] = useState(allComponents);
   const [isDragging, setIsDragging] = useState(false);
@@ -64,8 +66,8 @@ export const SubContainer = ({
       setBoxes(
         update(boxes, {
           [id]: {
-            $merge: { left, top }
-          }
+            $merge: { left, top },
+          },
         })
       );
       console.log('new boxes - 1', boxes);
@@ -75,35 +77,41 @@ export const SubContainer = ({
 
   useEffect(() => {
     console.log('new boxes - 2', boxes);
-    if(appDefinitionChanged) {
+    if (appDefinitionChanged) {
       appDefinitionChanged({ ...appDefinition, components: boxes });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
   const { draggingState } = useDragLayer((monitor) => {
     // TODO: Need to move to a performant version of the block below
-    if(monitor.getItem()) {
-      if(monitor.getItem().id === undefined)  {
-        if(parentRef.current) {
+    if (monitor.getItem()) {
+      if (monitor.getItem().id === undefined) {
+        if (parentRef.current) {
           const currentOffset = monitor.getSourceClientOffset();
-          if(currentOffset) {
-            const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-            if(currentOffset.x > canvasBoundingRect.x && currentOffset.x < canvasBoundingRect.x + canvasBoundingRect.width) {
-              return { draggingState: true }
+          if (currentOffset) {
+            const canvasBoundingRect = parentRef.current
+              .getElementsByClassName('real-canvas')[0]
+              .getBoundingClientRect();
+            if (
+              currentOffset.x > canvasBoundingRect.x &&
+              currentOffset.x < canvasBoundingRect.x + canvasBoundingRect.width
+            ) {
+              return { draggingState: true };
             }
           }
         }
       }
     }
 
-    if(monitor.isDragging() && monitor.getItem().parent) {
-      if(monitor.getItem().parent === parent) {
-        return { draggingState: true }
-      } else { 
-        return { draggingState: false }
+    if (monitor.isDragging() && monitor.getItem().parent) {
+      if (monitor.getItem().parent === parent) {
+        return { draggingState: true };
+      } else {
+        return { draggingState: false };
       }
-    } else { 
-      return { draggingState: false }
+    } else {
+      return { draggingState: false };
     }
   });
 
@@ -138,24 +146,23 @@ export const SubContainer = ({
             [left, top] = doSnapToGrid(left, top);
           }
 
-          let newBoxes = { 
+          let newBoxes = {
             ...boxes,
             [id]: {
               ...boxes[id],
               parent: parent,
-              layouts: { 
+              layouts: {
                 ...boxes[id]['layouts'],
                 [item.currentLayout]: {
                   ...boxes[id]['layouts'][item.currentLayout],
                   top: top,
                   left: left,
-                } 
-              }
-            }
+                },
+              },
+            },
           };
 
           setBoxes(newBoxes);
-
         } else {
           //  This is a new component
           componentMeta = componentTypes.find((component) => component.component === item.component.component);
@@ -167,8 +174,8 @@ export const SubContainer = ({
           const offsetFromLeftOfWindow = canvasBoundingRect.left;
           const currentOffset = monitor.getSourceClientOffset();
 
-          left = Math.round(currentOffset.x + (currentOffset.x * (1 - zoomLevel)) - offsetFromLeftOfWindow);
-          top = Math.round(currentOffset.y + (currentOffset.y * (1 - zoomLevel)) - offsetFromTopOfWindow);
+          left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
 
           id = uuidv4();
         }
@@ -177,7 +184,7 @@ export const SubContainer = ({
           [left, top] = doSnapToGrid(left, top);
         }
 
-        if(item.currentLayout === 'mobile') { 
+        if (item.currentLayout === 'mobile') {
           componentData.definition.others.showOnDesktop.value = false;
           componentData.definition.others.showOnMobile.value = true;
         }
@@ -188,18 +195,18 @@ export const SubContainer = ({
             component: componentData,
             parent: parent,
             layouts: {
-              [item.currentLayout]: { 
+              [item.currentLayout]: {
                 top: top,
                 left: left,
                 width: componentMeta.defaultSize.width,
                 height: componentMeta.defaultSize.height,
-              }
-            }
-          }
+              },
+            },
+          },
         });
 
         return undefined;
-      }
+      },
     }),
     [moveBox]
   );
@@ -214,29 +221,32 @@ export const SubContainer = ({
       top: 100,
       left: 0,
       width: 445,
-      height: 500
+      height: 500,
     };
 
-    let  { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
-    
+    let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
+
     top = y;
     left = x;
 
     width = width + deltaWidth;
-    height = height + deltaHeight
+    height = height + deltaHeight;
 
-    let newBoxes = { 
+    let newBoxes = {
       ...boxes,
       [id]: {
         ...boxes[id],
-        layouts: { 
+        layouts: {
           ...boxes[id]['layouts'],
           [currentLayout]: {
             ...boxes[id]['layouts'][currentLayout],
-            width, height, top, left
-          } 
-        }
-      }
+            width,
+            height,
+            top,
+            left,
+          },
+        },
+      },
     };
 
     setBoxes(newBoxes);
@@ -254,12 +264,12 @@ export const SubContainer = ({
                   ...boxes[id].component.definition,
                   properties: {
                     ...boxes[id].component.definition.properties,
-                    [param]: value
-                  }
-                }
-              }
-            }
-          }
+                    [param]: value,
+                  },
+                },
+              },
+            },
+          },
         })
       );
     }
@@ -286,8 +296,9 @@ export const SubContainer = ({
           configHandleClicked={configHandleClicked}
           currentLayout={currentLayout}
           scaleValue={scaleValue}
+          selectedComponent={selectedComponent}
           deviceWindowWidth={deviceWindowWidth}
-          isSelectedComponent={selectedComponent? selectedComponent.id === key : false}
+          isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
           removeComponent={removeComponent}
         />
       ))}

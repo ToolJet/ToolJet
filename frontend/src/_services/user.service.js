@@ -20,7 +20,7 @@ function createUser(first_name, last_name, email, role) {
     first_name,
     last_name,
     email,
-    role
+    role,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
@@ -39,14 +39,14 @@ function setPasswordFromToken({ token, password, organization, newSignup, firstN
     organization,
     new_signup: newSignup,
     first_name: firstName,
-    last_name: lastName
+    last_name: lastName,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/set_password_from_token`, requestOptions).then(handleResponse);
 }
 
-function updateCurrentUser(firstName , lastName) {
+function updateCurrentUser(firstName, lastName) {
   const body = { firstName, lastName };
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/update`, requestOptions).then(handleResponse);

@@ -9,14 +9,13 @@ export class MetadataController {
   @UseGuards(JwtAuthGuard)
   @Post('finish_installation')
   async finishInstallation(@Request() req) {
-    
     const { name, email } = req.body;
     const installedVersion = globalThis.TOOLJET_VERSION;
 
     await this.metadataService.finishInstallation(installedVersion, name, email);
 
     await this.metadataService.updateMetaData({
-      'onboarded': true
+      onboarded: true,
     });
   }
 
@@ -24,27 +23,25 @@ export class MetadataController {
   @Post('skip_onboarding')
   async skipOnboarding() {
     await this.metadataService.updateMetaData({
-      'onboarded': true
+      onboarded: true,
     });
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('skip_version')
   async skipVersion() {
-
     const metadata = await this.metadataService.getMetaData();
     const data = metadata.data;
 
     await this.metadataService.updateMetaData({
-      'ignored_version': data['latest_version'],
-      'version_ignored': true
+      ignored_version: data['latest_version'],
+      version_ignored: true,
     });
   }
 
   @UseGuards(JwtAuthGuard)
   @Get()
   async getMetadata(@Request() req) {
-
     const metadata = await this.metadataService.getMetaData();
     const data = metadata.data;
 
@@ -56,11 +53,11 @@ export class MetadataController {
     const now = new Date();
 
     const updateLastCheckedAt = new Date(data['last_checked'] || null);
-    const diffTime = (now.getTime() - updateLastCheckedAt.getTime())/1000;
+    const diffTime = (now.getTime() - updateLastCheckedAt.getTime()) / 1000;
 
-    if(diffTime > 86400) {
-      const result   = await this.metadataService.checkForUpdates(installedVersion, ignoredVersion);
-      latestVersion  = result.latestVersion;
+    if (diffTime > 86400) {
+      const result = await this.metadataService.checkForUpdates(installedVersion, ignoredVersion);
+      latestVersion = result.latestVersion;
       versionIgnored = false;
     }
 
@@ -68,7 +65,7 @@ export class MetadataController {
       installed_version: installedVersion,
       latest_version: latestVersion,
       onboarded: onboarded,
-      version_ignored: versionIgnored
-    }
+      version_ignored: versionIgnored,
+    };
   }
 }
