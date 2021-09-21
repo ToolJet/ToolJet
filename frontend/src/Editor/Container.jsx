@@ -220,7 +220,7 @@ export const Container = ({
           ...boxes[id]['layouts'],
           [currentLayout]: {
             ...boxes[id]['layouts'][currentLayout],
-            width: width, height: height, top, left
+            width, height, top, left
           }
         }
       }
