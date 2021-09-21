@@ -20,14 +20,12 @@ export async function queryCollection(
   const collectionRef = db.collection(collection);
   let query: Query = collectionRef;
 
-  if (whereConditionProvided || limitProvided || orderProvided) {
-    if (whereConditionProvided)
-      query = query.where(where_field, where_operation, where_value);
-    if (limitProvided)
-      query = query.limit(limit);
-    if (orderProvided)
-      query = query.orderBy(order_field, order_type);
-  }
+  if (whereConditionProvided)
+    query = query.where(where_field, where_operation, where_value);
+  if (limitProvided)
+    query = query.limit(limit);
+  if (orderProvided)
+    query = query.orderBy(order_field, order_type);
 
   const snapshot = await query.get();
 
