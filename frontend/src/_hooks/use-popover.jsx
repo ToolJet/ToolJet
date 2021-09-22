@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { isEmpty } from 'lodash';
 
-const noop = () => {};
+const noop = () => { };
 const useEscapeHandler = (handler = noop, dependencies = []) => {
   const escapeHandler = (e) => {
     if (e.code === 'Escape') {

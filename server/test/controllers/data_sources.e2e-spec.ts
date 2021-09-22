@@ -169,6 +169,7 @@ describe('data sources controller', () => {
       email: 'another@tooljet.io',
       role: 'admin',
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const dataSource = await createDataSource(app, {
       name: 'name',
       kind: 'postgres',

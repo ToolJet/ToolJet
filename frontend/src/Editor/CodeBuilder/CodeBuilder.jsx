@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import { componentTypes } from '../Components/components';
-import { DataSourceTypes } from '../DataSourceManager/DataSourceTypes';
+import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { debounce } from 'lodash';
 import Fuse from 'fuse.js';
 
-export function CodeBuilder({
-  initialValue, onChange, components, dataQueries
-}) {
+export function CodeBuilder({ initialValue, onChange, components, dataQueries }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [currentValue, setCurrentValue] = useState(initialValue);
@@ -130,7 +128,7 @@ export function CodeBuilder({
           mode: 'javascript',
           lineWrapping: true,
           scrollbarStyle: null,
-          lineNumbers: false
+          lineNumbers: false,
         }}
       />
       {showDropdown && (

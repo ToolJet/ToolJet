@@ -14,7 +14,7 @@ class LoginPage extends React.Component {
     }
 
     this.state = {
-      isLoading: false
+      isLoading: false,
     };
   }
 
@@ -31,13 +31,17 @@ class LoginPage extends React.Component {
 
     authenticationService.login(email, password).then(
       () => {
-        const params = queryString.parse(this.props.location.search)
+        const params = queryString.parse(this.props.location.search);
         const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
         this.props.history.push(from);
         this.setState({ isLoading: false });
       },
       () => {
-        toast.error('Invalid email or password', { toastId: 'toast-login-auth-error', hideProgressBar: true, position: 'top-center' });
+        toast.error('Invalid email or password', {
+          toastId: 'toast-login-auth-error',
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({ isLoading: false });
       }
     );
@@ -73,7 +77,7 @@ class LoginPage extends React.Component {
                   Password
                   <span className="form-label-description">
                     <Link to={'/forgot-password'} tabIndex="-1">
-                    Forgot password
+                      Forgot password
                     </Link>
                   </span>
                 </label>
@@ -91,7 +95,11 @@ class LoginPage extends React.Component {
                 </div>
               </div>
               <div className="form-footer">
-                <button data-testid="loginButton" className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`} onClick={this.authUser}>
+                <button
+                  data-testid="loginButton"
+                  className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
+                  onClick={this.authUser}
+                >
                   Sign in
                 </button>
               </div>

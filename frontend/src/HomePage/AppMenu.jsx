@@ -5,7 +5,6 @@ import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import { folderService } from '@/_services';
 import { toast } from 'react-toastify';
-import { lowerFirst } from 'lodash';
 
 export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteApp, cloneApp }) {
   const [addToFolder, setAddToFolder] = useState(false);

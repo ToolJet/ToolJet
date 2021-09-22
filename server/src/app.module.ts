@@ -1,10 +1,4 @@
-import {
-  Module,
-  OnApplicationBootstrap,
-  OnModuleInit,
-  RequestMethod,
-  MiddlewareConsumer,
-} from '@nestjs/common';
+import { Module, OnApplicationBootstrap, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -77,7 +71,7 @@ if (process.env.SERVE_CLIENT !== 'false') {
   imports.unshift(
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../', 'frontend/build'),
-    }),
+    })
   );
 }
 
@@ -87,7 +81,7 @@ if (process.env.APM_VENDOR == 'sentry') {
       dsn: process.env.SENTRY_DNS,
       tracesSampleRate: 1.0,
       debug: !!process.env.SENTRY_DEBUG,
-    }),
+    })
   );
 }
 

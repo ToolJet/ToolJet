@@ -1,7 +1,6 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-toastify';
-import { isEmpty } from 'lodash';
 import 'react-toastify/dist/ReactToastify.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
@@ -60,7 +59,6 @@ class QueryManager extends React.Component {
         } else {
           this.setState({
             options: {},
-            selectedDataSource: null,
             selectedQuery: null,
             selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
           });
@@ -304,7 +302,7 @@ class QueryManager extends React.Component {
                       this.previewPanelRef.current.scrollIntoView();
                     })
                     .catch(({ error, data }) => {
-                      console.log(error);
+                      console.log(error, data);
                     });
                 }}
                 className={`btn btn-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''}`}

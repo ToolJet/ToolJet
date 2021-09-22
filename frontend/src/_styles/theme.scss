@@ -1741,6 +1741,10 @@ input:focus-visible {
     color: #fff;
   }
 
+  .left-sidebar .active {
+    background: #333c48;
+  }
+
   .left-sidebar .left-sidebar-item {
     border-bottom: 1px solid #333c48;
   }
@@ -2160,6 +2164,7 @@ input[type='text'] {
 
     .select-search__option {
       height: auto;
+      min-height: 30px;
     }
   }
 }

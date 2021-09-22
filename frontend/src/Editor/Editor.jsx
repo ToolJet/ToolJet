@@ -7,7 +7,7 @@ import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
-import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
+import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';

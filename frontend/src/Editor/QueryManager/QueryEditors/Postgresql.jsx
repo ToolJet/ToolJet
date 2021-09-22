@@ -10,13 +10,13 @@ class Postgresql extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options
+      options: this.props.options,
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 
@@ -31,7 +31,7 @@ class Postgresql extends React.Component {
               <SelectSearch
                 options={[
                   { name: 'SQL mode', value: 'sql' },
-                  { name: 'GUI mode', value: 'gui' }
+                  { name: 'GUI mode', value: 'gui' },
                 ]}
                 value={options.mode}
                 search={true}
@@ -60,14 +60,14 @@ class Postgresql extends React.Component {
             )}
             {options.mode === 'gui' && (
               <div>
-                <div className="row">  
+                <div className="row">
                   <div className="col">
                     <label className="form-label">Table</label>
                     <CodeHinter
-                        currentState={this.props.currentState}
-                        initialValue={this.state.options.table}
-                        onChange={(value) => changeOption(this, 'table', value)}
-                      />
+                      currentState={this.props.currentState}
+                      initialValue={this.state.options.table}
+                      onChange={(value) => changeOption(this, 'table', value)}
+                    />
                   </div>
                   <div className="col">
                     <label className="form-label">Operation</label>
@@ -108,7 +108,7 @@ class Postgresql extends React.Component {
                           theme: 'duotone-light',
                           mode: 'javascript',
                           lineWrapping: true,
-                          scrollbarStyle: null
+                          scrollbarStyle: null,
                         }}
                       />
                     </div>

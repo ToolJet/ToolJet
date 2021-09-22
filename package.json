@@ -1,8 +1,16 @@
 {
     "lint-staged": {
-        "./frontend/src/**/*.jsx": [
-            "eslint --fix"
+        "./frontend/src/**/*.{js,jsx,json}": [
+          "eslint --fix"
+        ],
+        "./server/{src,libs,test,plugins,scripts}/**/*.ts": [
+          "eslint --fix"
         ]
+    },
+    "husky": {
+        "hooks": {
+          "pre-commit": "lint-staged"
+        }
     },
     "devDependencies": {
         "@4tw/cypress-drag-drop": "^1.8.0",
@@ -12,6 +20,7 @@
         "@babel/preset-react": "^7.0.0",
         "babel-loader": "^8.0.5",
         "html-webpack-plugin": "^3.2.0",
+        "husky": "^7.0.2",
         "path": "^0.12.7",
         "webpack": "^4.46.0",
         "webpack-cli": "^3.3.12"
@@ -32,6 +41,7 @@
         "heroku-postbuild": "npm run build && npm run deploy",
         "heroku-prebuild": "npm --prefix frontend install && npm --prefix server install ",
         "cy:run": "cypress run --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
-        "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD"
+        "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
+        "prepare": "husky install"
     }
 }

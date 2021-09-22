@@ -27,5 +27,5 @@ export const allSources = {
   Dynamodb,
   Airtable,
   Graphql,
-  Mssql
+  Mssql,
 };

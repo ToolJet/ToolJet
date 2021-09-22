@@ -68,6 +68,7 @@ export const Container = ({
   useEffect(() => {
     console.log('new boxes - 2', boxes);
     appDefinitionChanged({ ...appDefinition, components: boxes });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
   const { draggingState } = useDragLayer((monitor) => {

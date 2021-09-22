@@ -9,13 +9,13 @@ class Dynamodb extends React.Component {
     super(props);
 
     this.state = {
-      options: this.props.options
+      options: this.props.options,
     };
   }
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 
@@ -24,8 +24,8 @@ class Dynamodb extends React.Component {
       {
         options: {
           ...this.state.options,
-          operation
-        }
+          operation,
+        },
       },
       () => {
         this.props.optionsChanged(this.state.options);
@@ -48,7 +48,7 @@ class Dynamodb extends React.Component {
                   { value: 'get_item', name: 'Get Item' },
                   { value: 'query_table', name: 'Query Table' },
                   { value: 'scan_table', name: 'Scan Table' },
-                  { value: 'delete_item', name: 'Delete Item' }
+                  { value: 'delete_item', name: 'Delete Item' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -60,13 +60,17 @@ class Dynamodb extends React.Component {
               />
             </div>
 
-            {(['query_table'].includes(this.state.options.operation)) && (
+            {['query_table'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Query condition</label>
                   <CodeHinter
                     currentState={this.props.currentState}
-                    initialValue={typeof this.state.options.query_condition === 'string' ? this.state.options.query_condition  : JSON.stringify(this.state.options.query_condition )}
+                    initialValue={
+                      typeof this.state.options.query_condition === 'string'
+                        ? this.state.options.query_condition
+                        : JSON.stringify(this.state.options.query_condition)
+                    }
                     mode="javascript"
                     lineNumbers={true}
                     theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
@@ -77,13 +81,17 @@ class Dynamodb extends React.Component {
               </div>
             )}
 
-            {(['scan_table'].includes(this.state.options.operation)) && (
+            {['scan_table'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Scan condition</label>
                   <CodeHinter
                     currentState={this.props.currentState}
-                    initialValue={typeof this.state.options.scan_condition === 'string' ? this.state.options.scan_condition  : JSON.stringify(this.state.options.scan_condition )}
+                    initialValue={
+                      typeof this.state.options.scan_condition === 'string'
+                        ? this.state.options.scan_condition
+                        : JSON.stringify(this.state.options.scan_condition)
+                    }
                     mode="javascript"
                     lineNumbers={true}
                     theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
@@ -94,7 +102,7 @@ class Dynamodb extends React.Component {
               </div>
             )}
 
-            {(['get_item', 'delete_item'].includes(this.state.options.operation)) && (
+            {['get_item', 'delete_item'].includes(this.state.options.operation) && (
               <div>
                 <div className="mb-3 mt-2">
                   <label className="form-label">Table</label>
@@ -110,7 +118,11 @@ class Dynamodb extends React.Component {
                   <label className="form-label">Key</label>
                   <CodeHinter
                     currentState={this.props.currentState}
-                    initialValue={typeof this.state.options.key === 'string' ? this.state.options.key  : JSON.stringify(this.state.options.key )}
+                    initialValue={
+                      typeof this.state.options.key === 'string'
+                        ? this.state.options.key
+                        : JSON.stringify(this.state.options.key)
+                    }
                     theme={this.props.darkMode ? 'monokai' : 'default'}
                     mode="javascript"
                     lineNumbers={true}

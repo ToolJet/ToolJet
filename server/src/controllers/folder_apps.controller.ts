@@ -5,18 +5,15 @@ import { FolderAppsService } from '../services/folder_apps.service';
 
 @Controller('folder_apps')
 export class FolderAppsController {
-  constructor(
-    private folderAppsService: FolderAppsService
-  ) { }
+  constructor(private folderAppsService: FolderAppsService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Request() req) {
     const folderId = req.body.folder_id;
-    const appId =  req.body.app_id;
+    const appId = req.body.app_id;
 
     const folder = await this.folderAppsService.create(req.user, folderId, appId);
     return decamelizeKeys(folder);
   }
-
 }

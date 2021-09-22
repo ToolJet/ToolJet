@@ -21,22 +21,20 @@ import { AppsService } from '@services/apps.service';
 
 @Controller('data_queries')
 export class DataQueriesController {
-
   constructor(
     private appsService: AppsService,
     private dataQueriesService: DataQueriesService,
     private dataSourcesService: DataSourcesService,
-    private appsAbilityFactory: AppsAbilityFactory,
-  ) { }
+    private appsAbilityFactory: AppsAbilityFactory
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
   async index(@Request() req, @Query() query) {
-
     const app = await this.appsService.find(query.app_id);
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
-    if(!ability.can('getQueries', app)) {
+    if (!ability.can('getQueries', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
@@ -44,8 +42,8 @@ export class DataQueriesController {
     const seralizedQueries = [];
 
     // serialize
-    for(const query of queries) {
-      let decamelizedQuery = decamelizeKeys(query);
+    for (const query of queries) {
+      const decamelizedQuery = decamelizeKeys(query);
 
       decamelizedQuery['options'] = query.options;
       seralizedQueries.push(decamelizedQuery);
@@ -65,16 +63,16 @@ export class DataQueriesController {
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
-    if(!ability.can('createQuery', app)) {
+    if (!ability.can('createQuery', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
     const dataSourceId = req.body.data_source_id;
 
     // Make sure that the data source belongs ot the app
-    if(dataSourceId) {
+    if (dataSourceId) {
       const dataSource = await this.dataSourcesService.findOne(dataSourceId);
-      if(dataSource.appId !== appId) {
+      if (dataSource.appId !== appId) {
         throw new ForbiddenException('you do not have permissions to perform this action');
       }
     }
@@ -92,7 +90,7 @@ export class DataQueriesController {
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
-    if(!ability.can('updateQuery', dataQuery.app)) {
+    if (!ability.can('updateQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
@@ -109,9 +107,7 @@ export class DataQueriesController {
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
     if (!ability.can('deleteQuery', dataQuery.app)) {
-      throw new ForbiddenException(
-        'you do not have permissions to perform this action',
-      );
+      throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
     const result = await this.dataQueriesService.delete(params.id);
@@ -126,10 +122,10 @@ export class DataQueriesController {
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
-    if(req.user) {
+    if (req.user) {
       const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
-      if(!ability.can('runQuery', dataQuery.app)) {
+      if (!ability.can('runQuery', dataQuery.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
       }
     }
@@ -144,16 +140,16 @@ export class DataQueriesController {
           status: 'failed',
           message: error.message,
           description: error.description,
-          data: error.data
-        }
+          data: error.data,
+        };
       } else {
         console.log(error);
         result = {
           status: 'failed',
           message: 'Internal server error',
           description: error.message,
-          data: {}
-        }
+          data: {},
+        };
       }
     }
 
@@ -166,13 +162,13 @@ export class DataQueriesController {
     const { options, query } = req.body;
     const dataQueryEntity = {
       ...query,
-      dataSource: await this.dataSourcesService.findOne(query['data_source_id'])
-    }
+      dataSource: await this.dataSourcesService.findOne(query['data_source_id']),
+    };
 
-    if(dataQueryEntity.dataSource) {
+    if (dataQueryEntity.dataSource) {
       const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
-      if(!ability.can('previewQuery', dataQueryEntity.dataSource.app)) {
+      if (!ability.can('previewQuery', dataQueryEntity.dataSource.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
       }
     }
@@ -187,20 +183,19 @@ export class DataQueriesController {
           status: 'failed',
           message: error.message,
           description: error.description,
-          data: error.data
-        }
+          data: error.data,
+        };
       } else {
         console.log(error);
         result = {
           status: 'failed',
           message: 'Internal server error',
           description: error.message,
-          data: {}
-        }
+          data: {},
+        };
       }
     }
 
     return result;
   }
-
 }
