@@ -31,15 +31,15 @@ import Fuse from 'fuse.js';
 import queryString from 'query-string';
 
 class Editor extends React.Component {
-  constructor(props) {
-    super(props);
+  constructor( props ) {
+    super( props );
 
     const appId = this.props.match.params.id;
 
     const currentUser = authenticationService.currentUserValue;
     let userVars = {};
 
-    if (currentUser) {
+    if ( currentUser ) {
       userVars = {
         email: currentUser.email,
         firstName: currentUser.first_name,
@@ -72,7 +72,7 @@ class Editor extends React.Component {
         components: {},
         globals: {
           currentUser: userVars,
-          urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
+          urlparams: JSON.parse( JSON.stringify( queryString.parse( props.location.search ) ) ),
         },
         errors: {},
       },
@@ -86,9 +86,9 @@ class Editor extends React.Component {
 
   componentDidMount() {
     const appId = this.props.match.params.id;
-    this.fetchApps(0);
+    this.fetchApps( 0 );
 
-    appService.getApp(appId).then((data) => {
+    appService.getApp( appId ).then( ( data ) => {
       const dataDefinition = data.definition || { components: {} };
       this.setState(
         {
@@ -99,24 +99,24 @@ class Editor extends React.Component {
           slug: data.slug,
         },
         () => {
-          data.data_queries.forEach((query) => {
-            if (query.options.runOnPageLoad) {
-              runQuery(this, query.id, query.name);
+          data.data_queries.forEach( ( query ) => {
+            if ( query.options.runOnPageLoad ) {
+              runQuery( this, query.id, query.name );
             }
-          });
+          } );
 
-          computeComponentState(this, this.state.appDefinition.components);
+          computeComponentState( this, this.state.appDefinition.components );
         }
       );
-    });
+    } );
 
     this.fetchDataSources();
     this.fetchDataQueries();
 
-    this.setState({
+    this.setState( {
       currentSidebarTab: 2,
       selectedComponent: null,
-    });
+    } );
   }
 
   fetchDataSources = () => {
@@ -125,11 +125,11 @@ class Editor extends React.Component {
         loadingDataSources: true,
       },
       () => {
-        datasourceService.getAll(this.state.appId).then((data) =>
-          this.setState({
+        datasourceService.getAll( this.state.appId ).then( ( data ) =>
+          this.setState( {
             dataSources: data.data_sources,
             loadingDataSources: false,
-          })
+          } )
         );
       }
     );
@@ -141,7 +141,7 @@ class Editor extends React.Component {
         loadingDataQueries: true,
       },
       () => {
-        dataqueryService.getAll(this.state.appId).then((data) => {
+        dataqueryService.getAll( this.state.appId ).then( ( data ) => {
           this.setState(
             {
               dataQueries: data.data_queries,
@@ -153,19 +153,19 @@ class Editor extends React.Component {
             },
             () => {
               let queryState = {};
-              data.data_queries.forEach((query) => {
+              data.data_queries.forEach( ( query ) => {
                 queryState[query.name] = {
-                  ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                  ...DataSourceTypes.find( ( source ) => source.kind === query.kind ).exposedVariables,
                   ...this.state.currentState.queries[query.name],
                 };
-              });
+              } );
 
               // Select first query by default
               let selectedQuery =
-                data.data_queries.find((dq) => dq.id === this.state.selectedQuery?.id) || data.data_queries[0];
+                data.data_queries.find( ( dq ) => dq.id === this.state.selectedQuery?.id ) || data.data_queries[0];
               let editingQuery = selectedQuery ? true : false;
 
-              this.setState({
+              this.setState( {
                 selectedQuery,
                 editingQuery,
                 currentState: {
@@ -174,28 +174,28 @@ class Editor extends React.Component {
                     ...queryState,
                   },
                 },
-              });
+              } );
             }
           );
-        });
+        } );
       }
     );
   };
 
-  fetchApps = (page) => {
-    appService.getAll(page).then((data) =>
-      this.setState({
+  fetchApps = ( page ) => {
+    appService.getAll( page ).then( ( data ) =>
+      this.setState( {
         apps: data.apps,
         isLoading: false,
-      })
+      } )
     );
   };
 
-  setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(version.definition || { components: {} });
-    this.setState({
+  setAppDefinitionFromVersion = ( version ) => {
+    this.appDefinitionChanged( version.definition || { components: {} } );
+    this.setState( {
       editingVersion: version,
-    });
+    } );
   };
 
   dataSourcesChanged = () => {
@@ -204,70 +204,70 @@ class Editor extends React.Component {
 
   dataQueriesChanged = () => {
     this.fetchDataQueries();
-    this.setState({ addingQuery: false });
+    this.setState( { addingQuery: false } );
   };
 
-  switchSidebarTab = (tabIndex) => {
-    if (tabIndex == 2) {
-      this.setState({ selectedComponent: null });
+  switchSidebarTab = ( tabIndex ) => {
+    if ( tabIndex == 2 ) {
+      this.setState( { selectedComponent: null } );
     }
-    this.setState({
+    this.setState( {
       currentSidebarTab: tabIndex,
-    });
+    } );
   };
 
-  filterComponents = (event) => {
+  filterComponents = ( event ) => {
     const searchText = event.currentTarget.value;
     let filteredComponents = this.state.allComponentTypes;
 
-    if (searchText !== '') {
+    if ( searchText !== '' ) {
       filteredComponents = this.state.allComponentTypes.filter(
-        (e) => e.name.toLowerCase() === searchText.toLowerCase()
+        ( e ) => e.name.toLowerCase() === searchText.toLowerCase()
       );
     }
 
-    this.setState({ componentTypes: filteredComponents });
+    this.setState( { componentTypes: filteredComponents } );
   };
 
-  appDefinitionChanged = (newDefinition) => {
-    this.setState({ appDefinition: newDefinition });
-    computeComponentState(this, newDefinition.components);
+  appDefinitionChanged = ( newDefinition ) => {
+    this.setState( { appDefinition: newDefinition } );
+    computeComponentState( this, newDefinition.components );
   };
 
-  handleInspectorView = (component) => {
-    if (this.state.selectedComponent.hasOwnProperty('component')) {
+  handleInspectorView = ( component ) => {
+    if ( this.state.selectedComponent.hasOwnProperty( 'component' ) ) {
       const { id: selectedComponentId } = this.state.selectedComponent;
-      if (selectedComponentId === component.id) {
-        this.setState({ selectedComponent: null });
-        this.switchSidebarTab(2);
+      if ( selectedComponentId === component.id ) {
+        this.setState( { selectedComponent: null } );
+        this.switchSidebarTab( 2 );
       }
     }
   };
 
-  handleSlugChange = (newSlug) => {
-    this.setState({ slug: newSlug });
+  handleSlugChange = ( newSlug ) => {
+    this.setState( { slug: newSlug } );
   };
 
-  removeComponent = (component) => {
+  removeComponent = ( component ) => {
     let newDefinition = this.state.appDefinition;
 
     // Delete child components when parent is deleted
-    const childComponents = Object.keys(newDefinition.components).filter(
-      (key) => newDefinition.components[key].parent === component.id
+    const childComponents = Object.keys( newDefinition.components ).filter(
+      ( key ) => newDefinition.components[key].parent === component.id
     );
-    childComponents.forEach((componentId) => {
+    childComponents.forEach( ( componentId ) => {
       delete newDefinition.components[componentId];
-    });
+    } );
 
     delete newDefinition.components[component.id];
-    this.appDefinitionChanged(newDefinition);
-    this.handleInspectorView(component);
+    this.appDefinitionChanged( newDefinition );
+    this.handleInspectorView( component );
   };
 
-  componentDefinitionChanged = (newDefinition) => {
+  componentDefinitionChanged = ( newDefinition ) => {
     let _self = this;
 
-    return setStateAsync(_self, {
+    return setStateAsync( _self, {
       appDefinition: {
         ...this.state.appDefinition,
         components: {
@@ -278,11 +278,11 @@ class Editor extends React.Component {
           },
         },
       },
-    });
+    } );
   };
 
-  componentChanged = (newComponent) => {
-    this.setState({
+  componentChanged = ( newComponent ) => {
+    this.setState( {
       appDefinition: {
         ...this.state.appDefinition,
         components: {
@@ -293,25 +293,25 @@ class Editor extends React.Component {
           },
         },
       },
-    });
+    } );
   };
 
-  saveApp = (id, attributes, notify = false) => {
-    appService.saveApp(id, attributes).then(() => {
-      if (notify) {
-        toast.success('App saved sucessfully', { hideProgressBar: true, position: 'top-center' });
+  saveApp = ( id, attributes, notify = false ) => {
+    appService.saveApp( id, attributes ).then( () => {
+      if ( notify ) {
+        toast.success( 'App saved sucessfully', { hideProgressBar: true, position: 'top-center' } );
       }
-    });
+    } );
   };
 
-  renderDataSource = (dataSource) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
+  renderDataSource = ( dataSource ) => {
+    const sourceMeta = DataSourceTypes.find( ( source ) => source.kind === dataSource.kind );
     return (
       <tr
         role="button"
         key={dataSource.name}
         onClick={() => {
-          this.setState({ selectedDataSource: dataSource, showDataSourceManagerModal: true });
+          this.setState( { selectedDataSource: dataSource, showDataSourceManagerModal: true } );
         }}
       >
         <td>
@@ -327,37 +327,37 @@ class Editor extends React.Component {
   };
 
   deleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: true });
+    this.setState( { showDataQueryDeletionConfirmation: true } );
   };
 
   cancelDeleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false });
+    this.setState( { showDataQueryDeletionConfirmation: false } );
   };
 
   executeDataQueryDeletion = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true });
+    this.setState( { showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true } );
     dataqueryService
-      .del(this.state.selectedQuery.id)
-      .then(() => {
-        toast.success('Query Deleted', { hideProgressBar: true, position: 'bottom-center' });
-        this.setState({ isDeletingDataQuery: false });
+      .del( this.state.selectedQuery.id )
+      .then( () => {
+        toast.success( 'Query Deleted', { hideProgressBar: true, position: 'bottom-center' } );
+        this.setState( { isDeletingDataQuery: false } );
         this.dataQueriesChanged();
-      })
-      .catch(({ error }) => {
-        this.setState({ isDeletingDataQuery: false });
-        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
-      });
+      } )
+      .catch( ( { error } ) => {
+        this.setState( { isDeletingDataQuery: false } );
+        toast.error( error, { hideProgressBar: true, position: 'bottom-center' } );
+      } );
   };
 
-  setShowHiddenOptionsForDataQuery = (dataQueryId) => {
-    this.setState({ showHiddenOptionsForDataQueryId: dataQueryId });
+  setShowHiddenOptionsForDataQuery = ( dataQueryId ) => {
+    this.setState( { showHiddenOptionsForDataQueryId: dataQueryId } );
   };
 
-  renderDataQuery = (dataQuery) => {
-    const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
+  renderDataQuery = ( dataQuery ) => {
+    const sourceMeta = DataSourceTypes.find( ( source ) => source.kind === dataQuery.kind );
 
     let isSeletedQuery = false;
-    if (this.state.selectedQuery) {
+    if ( this.state.selectedQuery ) {
       isSeletedQuery = dataQuery.id === this.state.selectedQuery.id;
     }
     const isQueryBeingDeleted = this.state.isDeletingDataQuery && isSeletedQuery;
@@ -367,15 +367,16 @@ class Editor extends React.Component {
 
     return (
       <div
-        className={'row query-row py-2 px-3' + (isSeletedQuery ? ' query-row-selected' : '')}
+        className={'row query-row py-2 px-3' + ( isSeletedQuery ? ' query-row-selected' : '' )}
         key={dataQuery.id}
-        onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
+        onClick={() => this.setState( { editingQuery: true, selectedQuery: dataQuery } )}
         role="button"
-        onMouseEnter={() => this.setShowHiddenOptionsForDataQuery(dataQuery.id)}
-        onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
+        onMouseEnter={() => this.setShowHiddenOptionsForDataQuery( dataQuery.id )}
+        onMouseLeave={() => this.setShowHiddenOptionsForDataQuery( null )}
       >
         <div className="col">
           <img
+            className="svg-icon"
             src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
             width="20"
             height="20"
@@ -408,12 +409,12 @@ class Editor extends React.Component {
             <button
               className="btn badge bg-azure-lt"
               onClick={() => {
-                runQuery(this, dataQuery.id, dataQuery.name).then(() => {
-                  toast.info(`Query (${dataQuery.name}) completed.`, {
+                runQuery( this, dataQuery.id, dataQuery.name ).then( () => {
+                  toast.info( `Query (${dataQuery.name}) completed.`, {
                     hideProgressBar: true,
                     position: 'bottom-center',
-                  });
-                });
+                  } );
+                } );
               }}
             >
               <div>
@@ -426,67 +427,67 @@ class Editor extends React.Component {
     );
   };
 
-  onNameChanged = (newName) => {
-    this.setState({
+  onNameChanged = ( newName ) => {
+    this.setState( {
       app: { ...this.state.app, name: newName },
-    });
+    } );
   };
 
   toggleQueryPaneHeight = () => {
-    this.setState({
+    this.setState( {
       queryPaneHeight: this.state.queryPaneHeight === '30%' ? '80%' : '30%',
-    });
+    } );
   };
 
   toggleQueryEditor = () => {
-    this.setState({ showQueryEditor: !this.state.showQueryEditor });
+    this.setState( { showQueryEditor: !this.state.showQueryEditor } );
     this.toolTipRefHide.current.style.display = this.state.showQueryEditor ? 'none' : 'flex';
     this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'flex' : 'none';
   };
 
   toggleLeftSidebar = () => {
-    this.setState({ showLeftSidebar: !this.state.showLeftSidebar });
+    this.setState( { showLeftSidebar: !this.state.showLeftSidebar } );
   };
 
-  configHandleClicked = (id, component) => {
-    this.switchSidebarTab(1);
-    this.setState({ selectedComponent: { id, component } });
+  configHandleClicked = ( id, component ) => {
+    this.switchSidebarTab( 1 );
+    this.setState( { selectedComponent: { id, component } } );
   };
 
-  filterQueries = (value) => {
-    if (value) {
-      const fuse = new Fuse(this.state.dataQueries, { keys: ['name'] });
-      const results = fuse.search(value);
-      this.setState({
-        dataQueries: results.map((result) => result.item),
+  filterQueries = ( value ) => {
+    if ( value ) {
+      const fuse = new Fuse( this.state.dataQueries, { keys: ['name'] } );
+      const results = fuse.search( value );
+      this.setState( {
+        dataQueries: results.map( ( result ) => result.item ),
         dataQueriesDefaultText: results.length || 'No Queries found.',
-      });
+      } );
     } else {
       this.fetchDataQueries();
     }
   };
 
   toggleQuerySearch = () => {
-    this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
+    this.setState( { showQuerySearchField: !this.state.showQuerySearchField } );
   };
 
-  onVersionDeploy = (versionId) => {
-    this.setState({
+  onVersionDeploy = ( versionId ) => {
+    this.setState( {
       app: {
         ...this.state.app,
         current_version_id: versionId,
       },
-    });
+    } );
   };
 
-  onZoomChanged = (zoom) => {
-    this.setState({
+  onZoomChanged = ( zoom ) => {
+    this.setState( {
       zoomLevel: zoom,
-    });
+    } );
   };
 
-  toolTipRefHide = createRef(null);
-  toolTipRefShow = createRef(null);
+  toolTipRefHide = createRef( null );
+  toolTipRefShow = createRef( null );
 
   render() {
     const {
@@ -530,8 +531,8 @@ class Editor extends React.Component {
         <Confirm
           show={showQueryConfirmation}
           message={'Do you want to run this query?'}
-          onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
-          onCancel={() => onQueryCancel(this)}
+          onConfirm={( queryConfirmationData ) => onQueryConfirm( this, queryConfirmationData )}
+          onCancel={() => onQueryCancel( this )}
           queryConfirmationData={this.state.queryConfirmationData}
         />
         <Confirm
@@ -563,8 +564,8 @@ class Editor extends React.Component {
                   <input
                     type="text"
                     style={{ width: '200px', left: '80px', position: 'absolute' }}
-                    onChange={(e) => this.onNameChanged(e.target.value)}
-                    onBlur={(e) => this.saveApp(this.state.app.id, { name: e.target.value })}
+                    onChange={( e ) => this.onNameChanged( e.target.value )}
+                    onBlur={( e ) => this.saveApp( this.state.app.id, { name: e.target.value } )}
                     className="form-control-plaintext form-control-plaintext-sm"
                     value={this.state.app.name}
                   />
@@ -606,7 +607,7 @@ class Editor extends React.Component {
                     <button
                       type="button"
                       className="btn btn-light"
-                      onClick={() => this.setState({ currentLayout: 'desktop' })}
+                      onClick={() => this.setState( { currentLayout: 'desktop' } )}
                       disabled={currentLayout === 'desktop'}
                     >
                       <img src="/assets/images/icons/editor/desktop.svg" width="12" height="12" />
@@ -614,7 +615,7 @@ class Editor extends React.Component {
                     <button
                       type="button"
                       className="btn btn-light"
-                      onClick={() => this.setState({ currentLayout: 'mobile' })}
+                      onClick={() => this.setState( { currentLayout: 'mobile' } )}
                       disabled={currentLayout === 'mobile'}
                     >
                       <img src="/assets/images/icons/editor/mobile.svg" width="12" height="12" />
@@ -692,20 +693,20 @@ class Editor extends React.Component {
                       selectedComponent={selectedComponent || {}}
                       scaleValue={scaleValue}
                       appLoading={isLoading}
-                      onEvent={(eventName, options) => onEvent(this, eventName, options)}
-                      onComponentOptionChanged={(component, optionName, value) =>
-                        onComponentOptionChanged(this, component, optionName, value)
+                      onEvent={( eventName, options ) => onEvent( this, eventName, options )}
+                      onComponentOptionChanged={( component, optionName, value ) =>
+                        onComponentOptionChanged( this, component, optionName, value )
                       }
-                      onComponentOptionsChanged={(component, options) =>
-                        onComponentOptionsChanged(this, component, options)
+                      onComponentOptionsChanged={( component, options ) =>
+                        onComponentOptionsChanged( this, component, options )
                       }
                       currentState={this.state.currentState}
                       configHandleClicked={this.configHandleClicked}
                       removeComponent={this.removeComponent}
-                      onComponentClick={(id, component) => {
-                        this.setState({ selectedComponent: { id, component } });
-                        this.switchSidebarTab(1);
-                        onComponentClick(this, id, component);
+                      onComponentClick={( id, component ) => {
+                        this.setState( { selectedComponent: { id, component } } );
+                        this.switchSidebarTab( 1 );
+                        onComponentClick( this, id, component );
                       }}
                     />
                   )}
@@ -737,11 +738,11 @@ class Editor extends React.Component {
                             data-class="py-1 px-2"
                             className="btn btn-sm btn-light text-muted"
                             onClick={() =>
-                              this.setState({
+                              this.setState( {
                                 selectedQuery: {},
                                 editingQuery: false,
                                 addingQuery: true,
-                              })
+                              } )
                             }
                           >
                             +
@@ -758,7 +759,7 @@ class Editor extends React.Component {
                                 className="form-control mb-2"
                                 placeholder="Search…"
                                 autoFocus
-                                onChange={(e) => this.filterQueries(e.target.value)}
+                                onChange={( e ) => this.filterQueries( e.target.value )}
                               />
                             </div>
                           </div>
@@ -773,7 +774,7 @@ class Editor extends React.Component {
                         </div>
                       ) : (
                         <div className="query-list">
-                          <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
+                          <div>{dataQueries.map( ( query ) => this.renderDataQuery( query ) )}</div>
                           {dataQueries.length === 0 && (
                             <div className="mt-5">
                               <center>
@@ -781,7 +782,7 @@ class Editor extends React.Component {
                                 <button
                                   className="btn btn-sm btn-outline-azure mt-3"
                                   onClick={() =>
-                                    this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
+                                    this.setState( { selectedQuery: {}, editingQuery: false, addingQuery: true } )
                                   }
                                 >
                                   create query
