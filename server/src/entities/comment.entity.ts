@@ -18,6 +18,12 @@ export class Comment extends BaseEntity {
   @Column()
   comment: string;
 
+  @Column({ default: false })
+  isRead: boolean;
+
+  // @Column({ default: []})
+  // mentionedUserIds: Array;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
