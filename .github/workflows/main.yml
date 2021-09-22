@@ -1,4 +1,4 @@
-name: Build and Lint check
+name: Build and Check Lint errors for ToolJet
 
 on:
   push:
@@ -8,16 +8,21 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
-    - name: Read node and npm versions from package.json
+    - name: Use node and npm versions from package.json
       uses: skjnldsv/read-package-engines-version-actions@v1
       with:
         fallbackNode: '14.17.3'
         fallbackNpm: '7.20.0'
-      id: package-engines-versions    
+      id: package-engines-versions
+    
+    - name: Show node and npm version numbers
+      run: echo "Node version is ${{steps.package-engines-versions.outputs.nodeVersion}} & NPM version is ${{steps.package-engines-versions.outputs.npmVersion}}"
+    
     - run: npm ci
     - run: npm run build
 
@@ -28,12 +33,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Read node and npm versions from package.json
+    - name: Use node and npm versions from package.json
       uses: skjnldsv/read-package-engines-version-actions@v1
       with:
         fallbackNode: '14.17.3'
         fallbackNpm: '7.20.0'
-      id: package-engines-versions    
+      id: package-engines-versions
     - run: npm ci
-    - run: npm --prefix frontend install && npm --prefix server install
+    - run: npm --prefix frontend ci && npm --prefix server ci
     - name: Lint
+      run: npm --prefix server run lint && npm --prefix frontend run lint
+
+
+

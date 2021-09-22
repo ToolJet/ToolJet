@@ -4,7 +4,6 @@
             "eslint --fix"
         ]
     },
-    "name": "ToolJet",
     "devDependencies": {
         "@4tw/cypress-drag-drop": "^1.8.0",
         "@babel/core": "^7.4.3",
