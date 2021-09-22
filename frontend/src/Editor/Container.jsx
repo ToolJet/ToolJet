@@ -43,6 +43,7 @@ export const Container = ({
   const components = appDefinition.components;
 
   const [boxes, setBoxes] = useState(components);
+  const [commentPositions, setCommentPositions] = useState([[0, 10]]);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
@@ -87,10 +88,18 @@ export const Container = ({
 
   const [, drop] = useDrop(
     () => ({
-      accept: ItemTypes.BOX,
+      accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       drop(item, monitor) {
         if (item.parent) {
           return;
+        }
+
+        if (item.name === 'comment') {
+          const { x, y } = monitor.getDifferenceFromInitialOffset();
+          console.log(x, y);
+          const [left, top] = doSnapToGrid(x, y);
+          setCommentPositions([[left, top]]);
+          return undefined;
         }
 
         let layouts = item['layouts'];
@@ -253,7 +262,7 @@ export const Container = ({
 
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
-      <Comments />
+      <Comments commentPositions={commentPositions} />
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =

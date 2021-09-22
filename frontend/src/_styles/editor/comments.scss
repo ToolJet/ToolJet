@@ -1,0 +1,24 @@
+@import '../colors.scss';
+
+.comments {
+  z-index: 2;
+  display: inline-block;
+  position: relative;
+  margin: 0.2rem;
+
+  .comment-popover {
+    top: 40px;
+    width: 30rem;
+    max-width: 30rem;
+  }
+
+  .open-left {
+    left: 0;
+    right: auto;
+  }
+
+  .open-right {
+    right: 0;
+    left: auto;
+  }
+}
