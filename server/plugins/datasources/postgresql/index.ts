@@ -53,8 +53,8 @@ export default class PostgresqlQueryService implements QueryService {
       database: sourceOptions.database,
       password: sourceOptions.password,
       port: sourceOptions.port,
-      statement_timeout: 3000,
-      connectionTimeoutMillis: 3000,
+      statement_timeout: 10000,
+      connectionTimeoutMillis: 10000,
     };
 
     if (sourceOptions.ssl_enabled) poolConfig['ssl'] = { rejectUnauthorized: false };
