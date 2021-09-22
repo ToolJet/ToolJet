@@ -1,0 +1,83 @@
+name: Tests
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+
+
+  unit-test: 
+      runs-on: ubuntu-latest
+      env:
+        TOOLJET_HOST: http://localhost:8082 
+        LOCKBOX_MASTER_KEY: 13c9b8364ae71f714774c82498ba328813069e48d80029bb29f49d0ada5a8e40 
+        SECRET_KEY_BASE: ea85064ed42ad02cfc022e66d8bccf452e3fa1142421cbd7a13592d91a2cbb866d6001060b73a98a65be57e65524357d445efae00a218461088a706decd62dcb 
+        NODE_ENV: test 
+        PG_HOST:  localhost 
+        PG_PORT: 5432 
+        PG_USER: postgres 
+        PG_PASS: postgres 
+        PG_DB: tooljet_test 
+      container: node:10.18-jessie
+      services:
+        postgres:
+          image: postgres
+          ports:
+            - 5432:5432
+      steps:
+        - uses: actions/checkout@v2
+        - uses: harmon758/postgresql-action@v1
+          with:
+            postgresql version: '13'
+        - run: npm ci
+        - run: npm --prefix server ci
+        - run: npm --prefix server run db:create
+        - run: npm --prefix server run db:migrate
+        - run: npm --prefix server run test
+
+  e2e-test: 
+      runs-on: ubuntu-latest
+      container: node:10.18-jessie
+      services:
+        postgres:
+          image: postgres
+          ports:
+            - 5432:5432
+      steps:
+        - uses: actions/checkout@v2
+        - name: Create .env.test file
+          run: |
+            touch .env.test
+            echo TOOLJET_HOST= http://localhost:8082 >> .env.test
+            echo LOCKBOX_MASTER_KEY= 13c9b8364ae71f714774c82498ba328813069e48d80029bb29f49d0ada5a8e40 >> .env.test
+            echo SECRET_KEY_BASE= ea85064ed42ad02cfc022e66d8bccf452e3fa1142421cbd7a13592d91a2cbb866d6001060b73a98a65be57e65524357d445efae00a218461088a706decd62dcb >> .env.test
+            echo NODE_ENV= test >> .env.test
+            echo PG_HOST= postgres >> .env.test
+            echo PG_PORT= 5432 >> .env.test
+            echo PG_USER= postgres >> .env.test
+            echo PG_PASS= postgres >> .env.test
+            echo PG_D= tooljet_test >> .env.test
+            echo ORM_LOGGING= error >> .env.test
+            cat .env.test
+        - name: Create .env file
+          run: |
+            touch .env
+            echo TOOLJET_HOST= http://localhost:8082 >> .env
+            echo LOCKBOX_MASTER_KEY= 13c9b8364ae71f714774c82498ba328813069e48d80029bb29f49d0ada5a8e40 >> .env
+            echo SECRET_KEY_BASE: ea85064ed42ad02cfc022e66d8bccf452e3fa1142421cbd7a13592d91a2cbb866d6001060b73a98a65be57e65524357d445efae00a218461088a706decd62dcb >> .env
+            echo NODE_ENV= dev >> .env
+            echo PG_HOST= postgres >> .env
+            echo PG_PORT= 5432 >> .env
+            echo PG_USER= postgres >> .env
+            echo PG_PASS= postgres >> .env
+            echo PG_DB= tooljet_test >> .env
+            echo ORM_LOGGING= error >> .env
+            cat .env
+        - run: npm ci
+        - run: npm --prefix server ci
+        - run: npm --prefix server run db:create
+        - run: npm --prefix server run db:migrate
+        - run: npm --prefix server run test:e2e
