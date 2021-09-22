@@ -29,8 +29,6 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    needs: build
-
     steps:
     - uses: actions/checkout@v2
     - name: Use node and npm versions from package.json
