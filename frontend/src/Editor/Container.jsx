@@ -7,6 +7,8 @@ import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
 import Comments from '@/Editor/Comments';
+import { commentsService } from '@/_services';
+
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -47,9 +49,13 @@ export const Container = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
-  useEffect(() => {
+  useEffect(async () => {
     setBoxes(components);
+    const data = await commentsService.getPositions()
+    console.log(data)
   }, [components]);
+
+
 
   const moveBox = useCallback(
     (id, layouts) => {
