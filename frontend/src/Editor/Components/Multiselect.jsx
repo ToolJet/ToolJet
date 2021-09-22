@@ -9,7 +9,7 @@ export const Multiselect = function Multiselect({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged
+  onComponentOptionChanged,
 }) {
   console.log('currentState', currentState);
 
@@ -19,7 +19,8 @@ export const Multiselect = function Multiselect({
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedDisabledState =
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   const parsedValues = JSON.parse(values);
   const parsedDisplayValues = JSON.parse(displayValues);
@@ -27,7 +28,7 @@ export const Multiselect = function Multiselect({
   const selectOptions = [
     ...parsedValues.map((value, index) => {
       return { name: parsedDisplayValues[index], value: value };
-    })
+    }),
   ];
 
   const currentValueProperty = component.definition.properties.values;
@@ -40,19 +41,30 @@ export const Multiselect = function Multiselect({
   }
 
   let parsedWidgetVisibility = widgetVisibility;
-  
+
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) { console.log(err); }
+  } catch (err) {
+    console.log(err);
+  }
 
   useEffect(() => {
     setCurrentValue(newValue);
   }, [newValue]);
 
   return (
-    <div className="multiselect-widget row g-0" style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div
+      className="multiselect-widget row g-0"
+      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onComponentClick(id, component);
+      }}
+    >
       <div className="col-auto">
-        <label style={{marginRight: '1rem'}} className="form-label py-1">{label}</label>
+        <label style={{ marginRight: '1rem' }} className="form-label py-1">
+          {label}
+        </label>
       </div>
       <div className="col px-0">
         <SelectSearch

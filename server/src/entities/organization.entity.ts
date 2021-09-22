@@ -1,12 +1,11 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity({ name: "organizations" })
+@Entity({ name: 'organizations' })
 export class Organization {
-
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column( { name: 'name' } )
+  @Column({ name: 'name' })
   name: string;
 
   @Column({ name: 'domain' })
@@ -14,8 +13,7 @@ export class Organization {
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
-  
+
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
-
 }

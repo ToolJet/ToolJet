@@ -2,10 +2,10 @@ import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
 export const organizationService = {
-  getUsers
+  getUsers,
 };
 
-function getUsers(id) {
+function getUsers() {
   const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/organizations/users`, requestOptions).then(handleResponse);
 }

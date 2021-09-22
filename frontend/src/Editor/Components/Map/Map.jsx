@@ -1,11 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import config from 'config';
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
-import { Marker } from '@react-google-maps/api';
+import React, { useState, useCallback } from 'react';
+import { GoogleMap, LoadScript, Marker, Autocomplete } from '@react-google-maps/api';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
-import { Autocomplete } from '@react-google-maps/api';
 import { darkModeStyles } from './styles';
-
 
 export const Map = function Map({
   id,
@@ -17,15 +13,17 @@ export const Map = function Map({
   currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  onEvent
+  onEvent,
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
 
-  let defaultMarkers = []
+  let defaultMarkers = [];
   try {
-    defaultMarkers = defaultMarkerValue
-  } catch (err) { console.log(err); }
+    defaultMarkers = defaultMarkerValue;
+  } catch (err) {
+    console.log(err);
+  }
 
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
   const canAddNewMarkers = addNewMarkersProp ? addNewMarkersProp.value : false;
@@ -35,13 +33,16 @@ export const Map = function Map({
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedDisabledState =
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
 
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) { console.log(err); }
+  } catch (err) {
+    console.log(err);
+  }
 
   const [gmap, setGmap] = useState(null);
   const [autoComplete, setAutoComplete] = useState(null);
@@ -50,11 +51,13 @@ export const Map = function Map({
 
   const containerStyle = {
     width,
-    height
+    height,
   };
 
   function handleMapClick(e) {
-    if(!canAddNewMarkers) { return }
+    if (!canAddNewMarkers) {
+      return;
+    }
 
     const lat = e.latLng.lat();
     const lng = e.latLng.lng();
@@ -72,30 +75,27 @@ export const Map = function Map({
     const bounds = {
       northEast: mapBounds.getNorthEast()?.toJSON(),
       southWest: mapBounds.getSouthWest()?.toJSON(),
-    }
+    };
 
     const newCenter = gmap.center?.toJSON();
     setMapCenter(newCenter);
 
     onComponentOptionsChanged(component, [
       ['bounds', bounds],
-      ['center', newCenter]
+      ['center', newCenter],
     ]).then(() => onEvent('onBoundsChange', { component }));
   }
 
-  const onLoad = useCallback(
-    function onLoad(mapInstance) {
-      setGmap(mapInstance);
-      onComponentOptionsChanged(component, [
-        ['center', mapInstance.center?.toJSON()]
-      ])
-    }
-  )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const onLoad = useCallback(function onLoad(mapInstance) {
+    setGmap(mapInstance);
+    onComponentOptionsChanged(component, [['center', mapInstance.center?.toJSON()]]);
+  });
 
   function handleMarkerClick(index) {
-    onComponentOptionChanged(component,
-      'selectedMarker', markers[index]
-    ).then(() => onEvent('onMarkerClick', { component }));
+    onComponentOptionChanged(component, 'selectedMarker', markers[index]).then(() =>
+      onEvent('onMarkerClick', { component })
+    );
   }
 
   function onPlaceChanged() {
@@ -108,29 +108,26 @@ export const Map = function Map({
     setAutoComplete(autocompleteInstance);
   }
 
-
   return (
-    <div data-disabled={parsedDisabledState} style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} className="map-widget">
+    <div
+      data-disabled={parsedDisabledState}
+      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onComponentClick(id, component);
+      }}
+      className="map-widget"
+    >
       <div
         className="map-center"
-        style={
-            {
-              right: width*0.5-18,
-              top: height*0.5-50
-            }
-        }>
-        <img
-          className="mx-2"
-          src="/assets/images/icons/marker.svg"
-          width="24"
-          height="64"
-
-        />
-      </div>
-      <LoadScript
-        googleMapsApiKey={window.public_config.GOOGLE_MAPS_API_KEY}
-        libraries={["places"]}
+        style={{
+          right: width * 0.5 - 18,
+          top: height * 0.5 - 50,
+        }}
       >
+        <img className="mx-2" src="/assets/images/icons/marker.svg" width="24" height="64" />
+      </div>
+      <LoadScript googleMapsApiKey={window.public_config.GOOGLE_MAPS_API_KEY} libraries={['places']}>
         <GoogleMap
           center={mapCenter}
           mapContainerStyle={containerStyle}
@@ -139,35 +136,24 @@ export const Map = function Map({
             styles: darkMode === true ? darkModeStyles : '',
             streetViewControl: false,
             mapTypeControl: false,
-            draggable: true
+            draggable: true,
           }}
           onLoad={onLoad}
           onClick={handleMapClick}
           onDragEnd={handleBoundsChange}
         >
-          {canSearch &&
-            <Autocomplete
-                onPlaceChanged={onPlaceChanged}
-                onLoad={onAutocompleteLoad}
-              >
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="place-search-input"
-                />
+          {canSearch && (
+            <Autocomplete onPlaceChanged={onPlaceChanged} onLoad={onAutocompleteLoad}>
+              <input type="text" placeholder="Search" className="place-search-input" />
             </Autocomplete>
-          }
-          {Array.isArray(markers) &&
+          )}
+          {Array.isArray(markers) && (
             <>
-              {markers.map((marker, index) =>
-                <Marker
-                  position={marker}
-                  label={marker.label}
-                  onClick={(e) => handleMarkerClick(index)}
-                />
-              )}
+              {markers.map((marker, index) => (
+                <Marker key={index} position={marker} label={marker.label} onClick={() => handleMarkerClick(index)} />
+              ))}
             </>
-          }
+          )}
         </GoogleMap>
       </LoadScript>
     </div>
