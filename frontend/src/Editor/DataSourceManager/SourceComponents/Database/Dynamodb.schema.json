@@ -4,6 +4,20 @@
   "title": "Dynamodb datasource",
   "description": "A schema defining dynamodb datasource",
   "type": "object",
+  "source": {
+    "name": "DynamoDB",
+    "kind": "dynamodb",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "region": { "type": "string" },
+      "access_key": { "type": "string" },
+      "secret_key": { "type": "string", "encrypted": true }
+    }
+  },
   "properties": {
     "region": {
       "$label": "Region",

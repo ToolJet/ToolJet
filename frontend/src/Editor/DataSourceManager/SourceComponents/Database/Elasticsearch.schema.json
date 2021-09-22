@@ -4,6 +4,21 @@
   "title": "Elastic search datasource",
   "description": "A schema defining elastic search datasource",
   "type": "object",
+  "source": {
+    "name": "Elasticsearch",
+    "kind": "elasticsearch",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": { "type": "string" },
+      "port": { "type": "string" },
+      "username": { "type": "string" },
+      "password": { "type": "string", "encrypted": true }
+    }
+  },
   "properties": {
     "host": {
       "$label": "Host",
@@ -21,13 +36,13 @@
       "$label": "Username",
       "$key": "username",
       "type": "text",
-      "description": "Enter username field"
+      "description": "Enter username"
     },
     "password": {
       "$label": "Password",
       "$key": "password",
       "type": "password",
-      "description": "Enter password field"
+      "description": "Enter password"
     }
   },
   "required": ["scheme", "host", "port", "password"]

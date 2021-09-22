@@ -4,6 +4,20 @@
   "title": "Slack datasource",
   "description": "A schema defining slack datasource",
   "type": "object",
+  "source": {
+    "name": "Slack",
+    "kind": "slack",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": { "type": "string", "encrypted": true }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
   "properties": {
     "sheets": {
       "$label": "",
