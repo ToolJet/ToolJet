@@ -3,7 +3,8 @@
   "$id": "https://tooljet.io/Dynamodb.schema.json",
   "title": "Dynamodb datasource",
   "description": "A schema defining dynamodb datasource",
-  "type": {
+  "type": "object",
+  "source": {
     "name": "DynamoDB",
     "kind": "dynamodb",
     "exposedVariables": {

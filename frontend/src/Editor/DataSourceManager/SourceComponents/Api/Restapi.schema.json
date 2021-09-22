@@ -3,7 +3,8 @@
   "$id": "https://tooljet.io/Restapi.schema.json",
   "title": "Restapi datasource",
   "description": "A schema defining restapi datasource",
-  "type": {
+  "type": "object",
+  "source": {
     "name": "Rest API",
     "kind": "restapi",
     "options": {

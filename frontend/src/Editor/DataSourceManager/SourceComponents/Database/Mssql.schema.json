@@ -3,7 +3,8 @@
   "$id": "https://tooljet.io/Mssql.schema.json",
   "title": "Mssql datasource",
   "description": "A schema defining mssql datasource",
-  "type": {
+  "type": "object",
+  "source": {
     "name": "SQL Server",
     "kind": "mssql",
     "exposedVariables": {
@@ -42,13 +43,13 @@
       "$label": "Username",
       "$key": "username",
       "type": "text",
-      "description": "Enter username field"
+      "description": "Enter username"
     },
     "password": {
       "$label": "Password",
       "$key": "password",
       "type": "password",
-      "description": "Enter password field"
+      "description": "Enter password"
     },
     "azure": {
       "$label": "Azure",

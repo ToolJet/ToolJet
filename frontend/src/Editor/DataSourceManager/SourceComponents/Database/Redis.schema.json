@@ -3,7 +3,8 @@
   "$id": "https://tooljet.io/Redis.schema.json",
   "title": "Redis datasource",
   "description": "A schema defining redis datasource",
-  "type": {
+  "type": "object",
+  "source": {
     "name": "Redis",
     "kind": "redis",
     "exposedVariables": {
@@ -35,13 +36,13 @@
       "$label": "Username",
       "$key": "username",
       "type": "text",
-      "description": "Enter username field"
+      "description": "Enter username"
     },
     "password": {
       "$label": "Password",
       "$key": "password",
       "type": "password",
-      "description": "Enter password field"
+      "description": "Enter password"
     }
   },
   "required": ["scheme", "host", "port", "password"]

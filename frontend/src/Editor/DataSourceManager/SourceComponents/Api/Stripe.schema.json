@@ -3,7 +3,8 @@
   "$id": "https://tooljet.io/Stripe.schema.json",
   "title": "Stripe datasource",
   "description": "A schema defining stripe datasource",
-  "type": {
+  "type": "object",
+  "source": {
     "name": "Stripe",
     "kind": "stripe",
     "exposedVariables": {
