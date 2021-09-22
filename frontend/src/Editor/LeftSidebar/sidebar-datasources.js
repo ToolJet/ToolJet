@@ -2,7 +2,7 @@ import React from 'react';
 import usePopover from '../../_hooks/use-popover';
 import { LeftSidebarItem } from './sidebar-item';
 import { DataSourceManager } from '../DataSourceManager';
-import { DataSourceTypes } from '../DataSourceManager/DataSourceTypes';
+import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 
 export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], dataSourcesChanged }) => {
   const [open, trigger, content] = usePopover(false);

@@ -4,6 +4,22 @@
   "title": "Postgresql datasource",
   "description": "A schema defining postgresql datasource",
   "type": "object",
+  "source": {
+    "name": "PostgreSQL",
+    "kind": "postgresql",
+    "options": {
+      "host": { "type": "string" },
+      "port": { "type": "string" },
+      "database": { "type": "string" },
+      "username": { "type": "string" },
+      "password": { "type": "string", "encrypted": true }
+    },
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    }
+  },
   "properties": {
     "host": {
       "$label": "Host",
@@ -33,13 +49,13 @@
       "$label": "Username",
       "$key": "username",
       "type": "text",
-      "description": "Enter username field"
+      "description": "Enter username"
     },
     "password": {
       "$label": "Password",
       "$key": "password",
       "type": "password",
-      "description": "Enter password field"
+      "description": "Enter password"
     }
   },
   "required": ["host", "port", "username", "database", "password"]
