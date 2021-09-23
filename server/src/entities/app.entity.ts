@@ -9,11 +9,14 @@ import {
   OneToMany,
   AfterLoad,
   BaseEntity,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from './user.entity';
 import { AppVersion } from './app_version.entity';
 import { DataQuery } from './data_query.entity';
 import { DataSource } from './data_source.entity';
+import { GroupPermission } from './group_permission.entity';
 
 @Entity({ name: 'apps' })
 export class App extends BaseEntity {
@@ -53,6 +56,18 @@ export class App extends BaseEntity {
 
   @OneToMany(() => DataSource, (dataSource) => dataSource.app, { onDelete: 'CASCADE' })
   dataSources: DataSource[];
+
+  @ManyToMany(() => GroupPermission)
+  @JoinTable({
+    name: 'app_group_permissions',
+    joinColumn: {
+      name: 'app_id',
+    },
+    inverseJoinColumn: {
+      name: 'group_permissions_id',
+    },
+  })
+  groupPermissions: GroupPermission[];
 
   public editingVersion;
 
