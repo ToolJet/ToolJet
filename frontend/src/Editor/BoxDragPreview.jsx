@@ -1,6 +1,6 @@
 import React, { useEffect, useState, memo } from 'react';
 
-export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout }) {
+export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout, styles }) {
   const [tickTock, setTickTock] = useState(false);
 
   useEffect(
@@ -26,7 +26,7 @@ export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout
     >
       <div
         style={{
-          background: '#438fd7',
+          background: styles?.backgroundColor,
           opacity: '0.7',
           height: '100%',
           width: '100%',
