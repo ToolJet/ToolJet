@@ -1,4 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
+import { GroupPermission } from './group_permission.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization {
@@ -16,4 +25,8 @@ export class Organization {
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
+
+  @OneToMany(() => GroupPermission, (groupPermission) => groupPermission.organization, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'organization_id' })
+  groupPermissions: GroupPermission[];
 }

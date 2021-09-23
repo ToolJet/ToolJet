@@ -11,10 +11,14 @@ import {
   JoinColumn,
   AfterLoad,
   BaseEntity,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
+import { GroupPermission } from './group_permission.entity';
 import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
+import { UserAppGroupPermission } from './user_app_group_permission.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -62,6 +66,21 @@ export class User extends BaseEntity {
   @ManyToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  @OneToMany(() => UserAppGroupPermission, (userAppGroupPermission) => userAppGroupPermission.user)
+  userAppGroupPermissions: UserAppGroupPermission[];
+
+  @ManyToMany(() => GroupPermission)
+  @JoinTable({
+    name: 'user_group_permissions',
+    joinColumn: {
+      name: 'user_id',
+    },
+    inverseJoinColumn: {
+      name: 'group_permissions_id',
+    },
+  })
+  groupPermissions: GroupPermission[];
 
   public isAdmin;
   public isDeveloper;
