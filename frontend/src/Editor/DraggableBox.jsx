@@ -191,9 +191,7 @@ export const DraggableBox = function DraggableBox({
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
-            className={`resizer ${isSelectedComponent && !mouseOver ? 'resizer-selected' : ''} ${
-              mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''
-            } `}
+            className={`resizer ${mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''} `}
             onResize={() => setResizing(true)}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
