@@ -21,8 +21,8 @@ const Comment = ({ x, y, commentId }) => {
     const { left } = trigger?.ref?.current?.getBoundingClientRect();
 
     console.log(trigger?.ref?.current?.getBoundingClientRect());
-    if (left < 50) setPlacement('left');
-    else setPlacement('right');
+    if (left < 100) setPlacement('right');
+    else setPlacement('left');
   }, [trigger]);
 
   const commentFadeStyle = useSpring({ from: { opacity: 0 }, to: { opacity: 1 } })
