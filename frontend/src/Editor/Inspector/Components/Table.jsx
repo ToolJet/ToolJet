@@ -671,18 +671,6 @@ class Table extends React.Component {
             currentState
           )}
 
-          {/* {Object.keys(componentMeta.styles).map((style) =>
-            renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              style,
-              'styles',
-              currentState,
-              components
-            )
-          )} */}
           <div className="hr-text">Events</div>
 
           <EventManager
@@ -702,9 +690,6 @@ class Table extends React.Component {
         {Object.keys(componentMeta.styles).map((style) =>
           renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components)
         )}
-        {/* {renderElement(component, componentMeta, paramUpdated, dataQueries, 'disabledState', 'styles', currentState)}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'tableType', 'styles', currentState)} */}
       </div>
     );
   }
