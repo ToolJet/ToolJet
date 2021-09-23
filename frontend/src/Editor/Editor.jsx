@@ -7,7 +7,7 @@ import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
-import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
+import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
@@ -376,6 +376,7 @@ class Editor extends React.Component {
       >
         <div className="col">
           <img
+            className="svg-icon"
             src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
             width="20"
             height="20"
@@ -728,14 +729,18 @@ class Editor extends React.Component {
                           <h5 className="py-1 px-3 text-muted">QUERIES</h5>
                         </div>
                         <div className="col-auto px-3">
-                          <button className="btn btn-sm btn-light mx-2" onClick={this.toggleQuerySearch}>
+                          <button
+                            className="btn btn-sm btn-light mx-2"
+                            data-class="py-1 px-2"
+                            data-tip="Search query"
+                            onClick={this.toggleQuerySearch}>
                             <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17" />
                           </button>
 
                           <span
                             data-tip="Add new query"
                             data-class="py-1 px-2"
-                            className="btn btn-sm btn-light text-muted"
+                            className="btn btn-sm btn-light btn-px-1 text-muted"
                             onClick={() =>
                               this.setState({
                                 selectedQuery: {},

@@ -10,6 +10,7 @@ export const defaultOptions = {
   firestore: {
     path: '',
     operation: 'get_document',
+    order_type: 'desc',
   },
   elasticsearch: {
     query: '',

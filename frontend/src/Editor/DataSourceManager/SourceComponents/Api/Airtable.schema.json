@@ -4,6 +4,19 @@
   "title": "Airtable datasource",
   "description": "A schema defining airtable datasource",
   "type": "object",
+  "source": {
+    "name": "Airtable",
+    "kind": "airtable",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": { "type": "string", "encrypted": true }
+    },
+    "customTesting": true
+  },
   "properties": {
     "api_key": {
       "$label": "API key",

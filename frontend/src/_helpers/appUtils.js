@@ -122,73 +122,77 @@ function showModal(_ref, modalId, show) {
 
 function executeAction(_ref, event, mode) {
   if (event) {
-    if (event.actionId === 'show-alert') {
-      const message = resolveReferences(event.message, _ref.state.currentState);
-      toast(message, { hideProgressBar: true });
-      return new Promise(function (resolve, reject) {
-        resolve();
-      });
-    }
-
-    if (event.actionId === 'run-query') {
-      const { queryId, queryName } = event;
-      return runQuery(_ref, queryId, queryName);
-    }
-
-    if (event.actionId === 'open-webpage') {
-      const url = resolveReferences(event.url, _ref.state.currentState);
-      window.open(url, '_blank');
-      return new Promise(function (resolve, reject) {
-        resolve();
-      });
-    }
-
-    if (event.actionId === 'go-to-app') {
-      const slug = resolveReferences(event.slug, _ref.state.currentState);
-      const queryParams = event.queryParams?.reduce(
-        (result, queryParam) => ({
-          ...result,
-          ...{
-            [resolveReferences(queryParam[0], _ref.state.currentState)]: resolveReferences(
-              queryParam[1],
-              _ref.state.currentState
-            ),
-          },
-        }),
-        {}
-      );
-
-      let url = `/applications/${slug}`;
-
-      if (queryParams) {
-        const queryPart = serializeNestedObjectToQueryParams(queryParams);
-
-        if (queryPart.length > 0) url = url + `?${queryPart}`;
+    switch (event.actionId) {
+      case 'show-alert': {
+        const message = resolveReferences(event.message, _ref.state.currentState);
+        toast(message, { hideProgressBar: true });
+        return new Promise(function (resolve, reject) {
+          resolve();
+        });
       }
 
-      if (mode === 'view') {
-        _ref.props.history.push(url);
-      } else {
-        if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-          window.open(url, '_blank');
+      case 'run-query': {
+        const { queryId, queryName } = event;
+        return runQuery(_ref, queryId, queryName);
+      }
+
+      case 'open-webpage': {
+        const url = resolveReferences(event.url, _ref.state.currentState);
+        window.open(url, '_blank');
+        return new Promise(function (resolve, reject) {
+          resolve();
+        });
+      }
+
+      case 'go-to-app': {
+        const slug = resolveReferences(event.slug, _ref.state.currentState);
+        const queryParams = event.queryParams?.reduce(
+          (result, queryParam) => ({
+            ...result,
+            ...{
+              [resolveReferences(queryParam[0], _ref.state.currentState)]: resolveReferences(
+                queryParam[1],
+                _ref.state.currentState
+              ),
+            },
+          }),
+          {}
+        );
+
+        let url = `/applications/${slug}`;
+
+        if (queryParams) {
+          const queryPart = serializeNestedObjectToQueryParams(queryParams);
+
+          if (queryPart.length > 0) url = url + `?${queryPart}`;
         }
+
+        if (mode === 'view') {
+          _ref.props.history.push(url);
+        } else {
+          if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
+            window.open(url, '_blank');
+          }
+        }
+        return new Promise(function (resolve, reject) {
+          resolve();
+        });
       }
-      return new Promise(function (resolve, reject) {
-        resolve();
-      });
-    }
 
-    if (event.actionId === 'show-modal') return showModal(_ref, event.modal, true);
+      case 'show-modal':
+        return showModal(_ref, event.modal, true);
 
-    if (event.actionId === 'close-modal') return showModal(_ref, event.modal, false);
+      case 'close-modal':
+        return showModal(_ref, event.modal, false);
 
-    if (event.actionId === 'copy-to-clipboard') {
-      const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
-      copyToClipboard(contentToCopy);
+      case 'copy-to-clipboard': {
+        const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
+        copyToClipboard(contentToCopy);
 
-      return new Promise(function (resolve, reject) {
-        resolve();
-      });
+        return new Promise(function (resolve, reject) {
+          resolve();
+        });
+      }
     }
   }
 }
@@ -281,22 +285,32 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
 
 function getQueryVariables(options, state) {
   let queryVariables = {};
+  const optionsType = typeof options;
+  switch (optionsType) {
+    case 'string': {
+      const dynamicVariables = getDynamicVariables(options) || [];
+      dynamicVariables.forEach((variable) => {
+        queryVariables[variable] = resolveReferences(variable, state);
+      });
+      break;
+    }
 
-  if (typeof options === 'string') {
-    const dynamicVariables = getDynamicVariables(options) || [];
-    dynamicVariables.forEach((variable) => {
-      queryVariables[variable] = resolveReferences(variable, state);
-    });
-  } else if (Array.isArray(options)) {
-    options.forEach((element) => {
-      _.merge(queryVariables, getQueryVariables(element, state));
-    });
-  } else if (typeof options === 'object') {
-    Object.keys(options || {}).forEach((key) => {
-      _.merge(queryVariables, getQueryVariables(options[key], state));
-    });
+    case 'object': {
+      if (Array.isArray(options)) {
+        options.forEach((element) => {
+          _.merge(queryVariables, getQueryVariables(element, state));
+        });
+      } else {
+        Object.keys(options || {}).forEach((key) => {
+          _.merge(queryVariables, getQueryVariables(options[key], state));
+        });
+      }
+      break;
+    }
+
+    default:
+      break;
   }
-
   return queryVariables;
 }
 
@@ -316,23 +330,26 @@ export function previewQuery(_ref, query) {
         }
 
         _ref.setState({ previewLoading: false, queryPreviewData: finalData });
-
-        if (data.status === 'failed') {
-          toast.error(`${data.message}: ${data.description}`, {
-            position: 'bottom-center',
-            hideProgressBar: true,
-            autoClose: 10000,
-          });
-        } else {
-          if (data.status === 'needs_oauth') {
+        switch (data.status) {
+          case 'failed': {
+            toast.error(`${data.message}: ${data.description}`, {
+              position: 'bottom-center',
+              hideProgressBar: true,
+              autoClose: 10000,
+            });
+            break;
+          }
+          case 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             fetchOAuthToken(url, query.data_source_id);
+            break;
           }
-          if (data.status === 'ok') {
+          case 'ok': {
             toast.info(`Query completed.`, {
               hideProgressBar: true,
               position: 'bottom-center',
             });
+            break;
           }
         }
 

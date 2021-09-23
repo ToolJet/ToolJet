@@ -187,9 +187,9 @@ export const componentTypes = [
         type: { value: `line` },
         data: {
           value: `[
-  { "x": 100, "y": "Jan"},
-  { "x": 80, "y": "Feb"},
-  { "x": 40, "y": "Mar"}
+  { "x": "Jan", "y": 100},
+  { "x": "Feb", "y": 80},
+  { "x": "Mar", "y": 40}
 ]`,
         },
       },

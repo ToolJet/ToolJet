@@ -29,7 +29,7 @@
   "dependencies": {
     "@casl/ability": "^5.3.1",
     "@elastic/elasticsearch": "^7.13.0",
-    "@google-cloud/firestore": "^4.13.1",
+    "@google-cloud/firestore": "^4.15.1",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.0",
     "@nestjs/core": "^8.0.0",
