@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import 'codemirror/theme/base16-light.css';
 // import { getSuggestionKeys } from '../CodeBuilder/utils';
 import 'codemirror/mode/javascript/javascript';
@@ -16,21 +16,11 @@ return data.filter(row => row.amount > 1000);`;
 
   const [value, setValue] = useState(defaultValue);
 
-  useEffect(() => {
-    setValue(defaultValue);
-  }, [defaultValue]);
-
-  /**
-   * 
-   * @unused_functions
-   * 
-   * function codeChanged(value) {
+  // let suggestions = useMemo(() => getSuggestionKeys(currentState), [currentState.components, currentState.queries]);
+  function codeChanged(value) {
+    setValue(() => value);
     changeOption('transformation', value);
   }
-
-  let suggestions = useMemo(() => getSuggestionKeys(currentState), [currentState.components, currentState.queries]);
-   * 
-   */
 
   return (
     <div className="field mb-2 transformation-editor">
@@ -66,7 +56,7 @@ return data.filter(row => row.amount > 1000);`;
             lineNumbers={true}
             className="query-hinter"
             ignoreBraces={true}
-            onChange={(value) => changeOption('transformation', value)}
+            onChange={(value) => codeChanged(value)}
           />
         </div>
       )}
