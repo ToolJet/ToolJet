@@ -99,8 +99,8 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         if (withError) return [object, error];
         return object;
       }
-      break;
     }
+    // eslint-disable-next-line no-fallthrough
     default: {
       if (withError) return [object, error];
       return object;
