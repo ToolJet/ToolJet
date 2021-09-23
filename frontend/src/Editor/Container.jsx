@@ -6,9 +6,7 @@ import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
-import Comments from '@/Editor/Comments';
-import { commentsService } from '@/_services';
-
+import Comments from './Comments';
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -45,17 +43,12 @@ export const Container = ({
   const components = appDefinition.components;
 
   const [boxes, setBoxes] = useState(components);
-  const [commentPositions, setCommentPositions] = useState([[0, 10]]);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
-  useEffect(async () => {
+  useEffect(() => {
     setBoxes(components);
-    const data = await commentsService.getPositions()
-    console.log(data)
   }, [components]);
-
-
 
   const moveBox = useCallback(
     (id, layouts) => {
@@ -101,11 +94,11 @@ export const Container = ({
           return;
         }
 
+        //TODO: add drop logic
         if (item.name === 'comment') {
           const { x, y } = monitor.getDifferenceFromInitialOffset();
           console.log(x, y);
-          const [left, top] = doSnapToGrid(x, y);
-          setCommentPositions([[left, top]]);
+          // const [left, top] = doSnapToGrid(x, y);
           return undefined;
         }
 
@@ -269,7 +262,7 @@ export const Container = ({
 
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
-      <Comments commentPositions={commentPositions} />
+      <Comments />
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =

@@ -13,7 +13,7 @@ import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 
 @Controller('comments')
 export class CommentsController {
-  constructor() {}
+  constructor() { }
   @UseGuards(JwtAuthGuard)
   @Get()
   getComments(@Req() req, @Res() res, err) {
@@ -23,7 +23,7 @@ export class CommentsController {
   // @UseGuards(JwtAuthGuard)
   @Get('/positions')
   getPositions(@Req() req, @Res() res, err) {
-    res.status(200).send([{ id1: { x: 23, y: 24 }, id2: { x: 23, y: 24 } }]);
+    res.status(200).send({ id1: { x: 23, y: 24 }, id2: { x: 23, y: 65 } });
   }
 
   @UseGuards(JwtAuthGuard)

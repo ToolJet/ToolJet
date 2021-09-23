@@ -3,7 +3,7 @@
 .comments {
   z-index: 2;
   display: inline-block;
-  position: relative;
+  position: absolute;
   margin: 0.2rem;
 
   .comment-popover {
