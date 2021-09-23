@@ -6,6 +6,10 @@
   position: absolute;
   margin: 0.2rem;
 
+  &.open {
+    z-index: 3;
+  }
+
   .comment-popover {
     top: 40px;
     width: 30rem;

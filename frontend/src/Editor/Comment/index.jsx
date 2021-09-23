@@ -1,5 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
+import { useSpring, animated } from 'react-spring'
+
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from '@/Editor/ItemTypes';
 import CommentHeader from '@/Editor/Comment/CommentHeader';
@@ -23,13 +25,16 @@ const Comment = ({ x, y, commentId }) => {
     else setPlacement('right');
   }, [trigger]);
 
+  const commentFadeStyle = useSpring({ from: { opacity: 0 }, to: { opacity: 1 } })
+  const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 })
 
   return (
-    <div
+    <animated.div
       ref={drag}
-      className="comments"
+      className={cx("comments", { 'open': open })}
       style={{
         transform: `translate(${x}px, ${y}px)`,
+        ...commentFadeStyle
       }}
     >
       <label {...trigger} className="form-selectgroup-item">
@@ -52,8 +57,9 @@ const Comment = ({ x, y, commentId }) => {
             <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path>
           </svg>
         </span>
-        <div
+        <animated.div
           {...content}
+          style={popoverFadeStyle}
           className={cx('card popover comment-popover', {
             'open-left': placement === 'left',
             'open-right': placement === 'right',
@@ -65,9 +71,9 @@ const Comment = ({ x, y, commentId }) => {
           <CommentHeader />
           <CommentBody />
           <CommentFooter />
-        </div>
+        </animated.div>
       </label>
-    </div>
+    </animated.div>
   );
 };
 
