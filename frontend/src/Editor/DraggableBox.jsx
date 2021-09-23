@@ -192,10 +192,10 @@ export const DraggableBox = function DraggableBox({
             }}
             defaultSize={{}}
             className={`resizer ${isSelectedComponent && !mouseOver ? 'resizer-selected' : ''} ${
-              isSelectedComponent ? 'resizer-active' : ''
+              mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''
             } `}
             onResize={() => setResizing(true)}
-            resizeHandleClasses={isSelectedComponent ? resizerClasses : {}}
+            resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
             disableDragging={true}
             enableResizing={mode === 'edit'}
