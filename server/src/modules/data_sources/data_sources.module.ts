@@ -18,15 +18,7 @@ import { AppCloneService } from '@services/app_clone.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      DataSource,
-      DataQuery,
-      Credential,
-      App,
-      AppVersion,
-      AppUser,
-      FolderApp,
-    ]),
+    TypeOrmModule.forFeature([DataSource, DataQuery, Credential, App, AppVersion, AppUser, FolderApp]),
     CaslModule,
   ],
   providers: [

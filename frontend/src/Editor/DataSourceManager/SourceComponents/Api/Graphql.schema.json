@@ -4,6 +4,22 @@
   "title": "Graphql datasource",
   "description": "A schema defining graphql datasource",
   "type": "object",
+  "source": {
+    "name": "GraphQL",
+    "kind": "graphql",
+    "options": {
+      "url": { "type": "string" },
+      "headers": { "type": "array" },
+      "url_params": { "type": "array" },
+      "body": { "type": "array" }
+    },
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": true
+  },
   "properties": {
     "url": {
       "$label": "URL",

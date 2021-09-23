@@ -12,7 +12,6 @@ import { CaslAbilityFactory } from './casl-ability.factory';
 @Module({
   imports: [TypeOrmModule.forFeature([User, Organization, OrganizationUser])],
   providers: [CaslAbilityFactory, OrganizationUsersService, UsersService, EmailService, AppsAbilityFactory],
-  exports: [CaslAbilityFactory, AppsAbilityFactory]
+  exports: [CaslAbilityFactory, AppsAbilityFactory],
 })
-
-export class CaslModule { }
+export class CaslModule {}

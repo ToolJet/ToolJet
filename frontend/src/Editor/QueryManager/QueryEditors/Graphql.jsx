@@ -11,7 +11,7 @@ class Graphql extends React.Component {
 
   componentDidMount() {
     this.setState({
-      options: this.props.options
+      options: this.props.options,
     });
   }
 

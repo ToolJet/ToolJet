@@ -7,44 +7,42 @@ const got = require('got');
 
 @Injectable()
 export default class GraphqlQueryService implements QueryService {
-
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
-
-    let result = { };
+    let result = {};
 
     const url = sourceOptions.url;
     const query = queryOptions.query;
-    let headers = Object.fromEntries(sourceOptions['headers']);
+    const headers = Object.fromEntries(sourceOptions['headers']);
     const searchParams = Object.fromEntries(sourceOptions['url_params']);
 
     // Remove invalid headers from the headers object
-    Object.keys(headers).forEach(key => headers[key] === '' ? delete headers[key] : {});
+    Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
 
     const json = {
-      query
-    }
+      query,
+    };
 
     try {
-      const response = await got(url, { 
+      const response = await got(url, {
         method: 'post',
         headers,
         searchParams,
-        json
+        json,
       });
       result = JSON.parse(response.body);
     } catch (error) {
       console.log(error);
-      if(error instanceof HTTPError) {
+      if (error instanceof HTTPError) {
         result = {
-          code: error.code
-        }
+          code: error.code,
+        };
       }
       throw new QueryError('Query could not be completed', error.message, result);
     }
 
     return {
       status: 'ok',
-      data: result
-    }
+      data: result,
+    };
   }
 }

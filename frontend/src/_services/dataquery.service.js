@@ -7,7 +7,7 @@ export const dataqueryService = {
   run,
   update,
   del,
-  preview
+  preview,
 };
 
 function getAll(appId) {
@@ -21,7 +21,7 @@ function create(app_id, name, kind, options, data_source_id) {
     name,
     kind,
     options,
-    data_source_id
+    data_source_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
@@ -31,7 +31,7 @@ function create(app_id, name, kind, options, data_source_id) {
 function update(id, name, options) {
   const body = {
     options,
-    name
+    name,
   };
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
@@ -45,7 +45,7 @@ function del(id) {
 
 function run(queryId, options) {
   const body = {
-    options: options
+    options: options,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
@@ -55,7 +55,7 @@ function run(queryId, options) {
 function preview(query, options) {
   const body = {
     query,
-    options: options
+    options: options,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

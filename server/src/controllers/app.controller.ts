@@ -1,5 +1,4 @@
-import { Controller, Get, Request, Post, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
+import { Controller, Get, Request, Post } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 
 @Controller()
@@ -19,14 +18,14 @@ export class AppController {
   @Post('/forgot_password')
   async forgotPassword(@Request() req) {
     await this.authService.forgotPassword(req.body.email);
-    return {}
+    return {};
   }
 
   @Post('/reset_password')
   async resetPassword(@Request() req) {
     const { token, password } = req.body;
     await this.authService.resetPassword(token, password);
-    return {}
+    return {};
   }
 
   @Get('/health')
@@ -39,5 +38,4 @@ export class AppController {
   async postHealthCheck(@Request() req) {
     return { works: 'yeah' };
   }
-
 }

@@ -3,10 +3,9 @@ import { datasourceService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
-import { dataBaseSources, apiSources, DataSourceTypes } from './DataSourceTypes';
 import { defaultOptions } from './DefaultOptions';
 import { TestConnection } from './TestConnection';
-import { SourceComponents } from './SourceComponents';
+import { DataBaseSources, ApiSources, DataSourceTypes, SourceComponents } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 
@@ -204,7 +203,7 @@ class DataSourceManager extends React.Component {
               <div>
                 <div className="row row-deck">
                   <h4 className="text-muted mb-2">DATABASES</h4>
-                  {dataBaseSources.map((dataSource) => (
+                  {DataBaseSources.map((dataSource) => (
                     <div className="col-md-2" key={dataSource.name}>
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
@@ -227,7 +226,7 @@ class DataSourceManager extends React.Component {
                 </div>
                 <div className="row row-deck mt-2">
                   <h4 className="text-muted mb-2">APIS</h4>
-                  {apiSources.map((dataSource) => (
+                  {ApiSources.map((dataSource) => (
                     <div className="col-md-2" key={dataSource.name}>
                       <div className="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
@@ -292,7 +291,11 @@ class DataSourceManager extends React.Component {
 
               <div className="col">
                 <small>
-                  <a href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`} target="_blank">
+                  <a
+                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Read documentation
                   </a>
                 </small>

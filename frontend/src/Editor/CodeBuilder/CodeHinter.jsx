@@ -57,10 +57,12 @@ export function CodeHinter({
   });
   useEffect(() => {
     setRealState(currentState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
 
   let suggestions = useMemo(() => {
     return getSuggestionKeys(realState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [realState.components, realState.queries]);
 
   function valueChanged(editor, onChange, suggestions, ignoreBraces) {
