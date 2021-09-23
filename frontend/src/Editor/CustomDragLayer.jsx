@@ -49,14 +49,8 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
-    parent: {
-      transform,
-      WebkitTransform: transform,
-    },
-    item: {
-      backgroundColor:
-        x < realCanvasDelta || x + item.layouts[currentLayout].width > realCanvasBoundingRect.right ? 'red' : '#438fd7',
-    },
+    transform,
+    WebkitTransform: transform,
   };
 }
 export const CustomDragLayer = ({ currentLayout }) => {
@@ -68,10 +62,10 @@ export const CustomDragLayer = ({ currentLayout }) => {
     isDragging: monitor.isDragging(),
     delta: monitor.getDifferenceFromInitialOffset(),
   }));
-  function renderItem(styles) {
+  function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} currentLayout={currentLayout} styles={styles} />;
+        return <BoxDragPreview item={item} currentLayout={currentLayout} />;
       default:
         return null;
     }
@@ -81,11 +75,9 @@ export const CustomDragLayer = ({ currentLayout }) => {
     return null;
   }
 
-  const boxStyles = getItemStyles(delta, item, initialOffset, currentOffset, currentLayout);
-
   return (
     <div style={layerStyles}>
-      <div style={boxStyles['parent']}>{renderItem(boxStyles['item'])}</div>
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)}>{renderItem()}</div>
     </div>
   );
 };
