@@ -208,7 +208,7 @@ export const Container = ({
     width = width + deltaWidth;
     height = height + deltaHeight;
 
-    [width, height] = doSnapToGrid(width, height)
+    // [width, height] = doSnapToGrid(width, height)
 
     let newBoxes = {
       ...boxes,
