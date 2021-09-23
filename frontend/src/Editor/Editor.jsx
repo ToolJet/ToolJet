@@ -376,6 +376,7 @@ class Editor extends React.Component {
       >
         <div className="col">
           <img
+            className="svg-icon"
             src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
             width="20"
             height="20"
