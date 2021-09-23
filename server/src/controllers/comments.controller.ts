@@ -23,7 +23,7 @@ export class CommentsController {
   // @UseGuards(JwtAuthGuard)
   @Get('/positions')
   getPositions(@Req() req, @Res() res, err) {
-    res.status(200).send({ id1: { x: 23, y: 24 }, id2: { x: 23, y: 65 } });
+    res.status(200).send({ id1: { x: 23, y: 24 }, id2: { x: 23, y: 65 }, id3: { x: 1250, y: 65 } });
   }
 
   @UseGuards(JwtAuthGuard)
