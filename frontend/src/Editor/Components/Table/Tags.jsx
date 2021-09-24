@@ -47,11 +47,7 @@ export const Tags = ({ value, onChange, readOnly }) => {
         return renderTag(item);
       })}
 
-<<<<<<< HEAD
-      {!showForm && (
-=======
       {!showForm && !readOnly && (
->>>>>>> develop
         <span className="col-auto badge bg-green-lt mx-1 add-tag-button" onClick={() => setShowForm(true)}>
           {'+'}
         </span>
