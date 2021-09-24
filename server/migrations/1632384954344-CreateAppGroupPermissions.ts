@@ -31,6 +31,30 @@ export class CreateAppGroupPermissions1632384954344
             isNullable: false,
           },
           {
+            name: "create",
+            type: "boolean",
+            default: false,
+            isNullable: false,
+          },
+          {
+            name: "view",
+            type: "boolean",
+            default: false,
+            isNullable: false,
+          },
+          {
+            name: "udpate",
+            type: "boolean",
+            default: false,
+            isNullable: false,
+          },
+          {
+            name: "delete",
+            type: "boolean",
+            default: false,
+            isNullable: false,
+          },
+          {
             name: "created_at",
             type: "timestamp",
             isNullable: false,
