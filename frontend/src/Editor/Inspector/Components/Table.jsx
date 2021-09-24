@@ -513,7 +513,7 @@ class Table extends React.Component {
   };
 
   render() {
-    const { dataQueries, component, paramUpdated, componentMeta, components, currentState } = this.props;
+    const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
 
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
@@ -533,7 +533,8 @@ class Table extends React.Component {
           'data',
           'properties',
           currentState,
-          components
+          components,
+          darkMode
         )}
 
         <div className="field mb-2 mt-3">
