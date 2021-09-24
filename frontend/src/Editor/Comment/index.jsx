@@ -8,8 +8,11 @@ import CommentHeader from '@/Editor/Comment/CommentHeader';
 import CommentBody from '@/Editor/Comment/CommentBody';
 import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
+import { commentsService } from '@/_services';
 
 const Comment = ({ x, y, commentId }) => {
+  const [loading, setLoading] = React.useState(true);
+  const [thread, setThread] = React.useState([]);
   const [placement, setPlacement] = React.useState('left');
   const [open, trigger, content, setOpen] = usePopover(false);
   const [collected, drag] = useDrag(() => ({
@@ -25,6 +28,18 @@ const Comment = ({ x, y, commentId }) => {
     else setPlacement('left');
   }, [trigger]);
 
+  React.useEffect(() => {
+    if (open) {
+      async function fetchData() {
+        const { data } = await commentsService.getComment(commentId)
+        setThread(data)
+        setLoading(false)
+        console.log(data)
+      }
+      fetchData();
+    }
+  }, [open])
+
   const commentFadeStyle = useSpring({ from: { opacity: 0 }, to: { opacity: 1 } })
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 })
 
@@ -38,24 +53,8 @@ const Comment = ({ x, y, commentId }) => {
       }}
     >
       <label {...trigger} className="form-selectgroup-item">
-        <input type="checkbox" name="name" value="sun" className="form-selectgroup-input" checked="" />
-        <span className="form-selectgroup-label">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            stroke="currentColor"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path>
-          </svg>
+        <span class="comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded">
+          GG
         </span>
         <animated.div
           {...content}
@@ -69,7 +68,7 @@ const Comment = ({ x, y, commentId }) => {
         >
           <div className="card-status-start bg-primary" />
           <CommentHeader />
-          <CommentBody />
+          <CommentBody isLoading={loading} thread={thread} />
           <CommentFooter />
         </animated.div>
       </label>

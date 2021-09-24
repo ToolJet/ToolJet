@@ -33,7 +33,7 @@ export class CommentsController {
   @Get(':id')
   async getComments(@Req() req, @Param() params) {
     // const app = await this.commentsService.find(params.id);
-    return [{ comment, created_at: '2021-09-04T10:59:38.779Z' }]
+    return [{ comment, created_at: '2021-09-04T10:59:38.779Z' }, { comment, created_at: '2021-09-04T10:59:38.779Z' }]
   }
 
   // @UseGuards(JwtAuthGuard)

@@ -1,29 +1,41 @@
 import React from 'react';
+import cx from 'classnames';
+import Spinner from '@/_ui/Spinner'
 
-const CommentBody = () => {
-  return (
-    <div className="card-body card-body-scrollable card-body-scrollable-shadow">
-      {/* <div className="card-subtitle mt-1">2 comments</div> */}
-      <div className="divide-y">
-        <div>
-          <div className="card-title">Gandharv</div>
-          <div className="card-subtitle">2 hours ago</div>
+import { isEmpty } from 'lodash';
 
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aperiam deleniti fugit incidunt, iste,
-            itaque minima neque pariatur perferendis sed suscipit velit vitae voluptatem.
-          </p>
-        </div>
-        <div>
-          <div className="card-title">Gandharv</div>
-          <div className="card-subtitle">2 hours ago</div>
+const CommentBody = ({ thread, isLoading }) => {
+  const getContent = () => {
+    if (isEmpty(thread)) return <div className='text-center'>Your message will post here</div>
 
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aperiam deleniti fugit incidunt, iste,
-            itaque minima neque pariatur perferendis sed suscipit velit vitae voluptatem.
-          </p>
-        </div>
+    return (
+      <div className="divide-y">{thread.map(({ comment, created_at }) => {
+        return (
+          <div>
+            <div className="card-title">Gandharv</div>
+            <div className="card-subtitle">2 hours ago</div>
+            <p className='cursor-auto'>
+              {comment}
+            </p>
+          </div>
+        )
+      })}</div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className='card-body text-center'>
+        <Spinner />
       </div>
+    )
+  }
+
+  return (
+    <div
+      className={cx("card-body card-body-scrollable card-body-scrollable-shadow")}
+    >
+      {getContent()}
     </div>
   )
 }
