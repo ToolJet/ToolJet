@@ -17,7 +17,6 @@ export const GlobalFilter = ({
   }, 200);
 
   const handleSearchTextChange = (text) => {
-    console.log(':::serach:::', text);
     setValue(text);
     onChange(text);
 
