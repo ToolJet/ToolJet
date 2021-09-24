@@ -3,12 +3,6 @@ import React from 'react'
 const CommentHeader = () => {
   return (
     <div className="card-header">
-      {/* <div className="avatar-list avatar-list-stacked">
-        <span className="avatar avatar-sm avatar-rounded">GG</span>
-        <span className="avatar avatar-sm avatar-rounded">2G</span>
-        <span className="avatar avatar-sm avatar-rounded">3G</span>
-        <span className="avatar avatar-sm avatar-rounded">+3</span>
-      </div> */}
       <div className="card-subtitle mt-1">5 comments</div>
       <span className="ms-auto">
         <svg

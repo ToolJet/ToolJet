@@ -3,6 +3,7 @@ import cx from 'classnames';
 import Spinner from '@/_ui/Spinner'
 
 import { isEmpty } from 'lodash';
+import moment from 'moment'
 
 const CommentBody = ({ thread, isLoading }) => {
   const getContent = () => {
@@ -13,7 +14,7 @@ const CommentBody = ({ thread, isLoading }) => {
         return (
           <div>
             <div className="card-title">Gandharv</div>
-            <div className="card-subtitle">2 hours ago</div>
+            <div className="card-subtitle">{moment(created_at).fromNow()}</div>
             <p className='cursor-auto'>
               {comment}
             </p>
