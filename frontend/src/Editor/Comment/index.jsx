@@ -31,7 +31,7 @@ const Comment = ({ x, y, commentId }) => {
   return (
     <animated.div
       ref={drag}
-      className={cx("comments", { 'open': open })}
+      className={cx("comments cursor-move", { 'open': open })}
       style={{
         transform: `translate(${x}px, ${y}px)`,
         ...commentFadeStyle
