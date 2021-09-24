@@ -253,6 +253,10 @@ export const Container = ({
     }
   }
 
+  React.useEffect(() => {
+    console.log('current component => ', selectedComponent);
+  }, [selectedComponent]);
+
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? 'show-grid' : ''}`}>
       {Object.keys(boxes).map((key) => {
