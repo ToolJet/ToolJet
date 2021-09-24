@@ -21,9 +21,8 @@ import { Tags } from './Tags';
 import { Radio } from './Radio';
 import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
-
+import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
-
 export function Table({
   id,
   width,
@@ -671,47 +670,6 @@ export function Table({
     }
   }, [state.columnResizing.isResizingColumn]);
 
-  function GlobalFilter() {
-    const count = preGlobalFilteredRows.length;
-    const [value, setValue] = React.useState(state.globalFilter);
-    const onChange = useAsyncDebounce((filterValue) => {
-      setGlobalFilter(filterValue || undefined);
-    }, 200);
-
-    const handleSearchTextChange = (text) => {
-      setValue(text);
-      onChange(text);
-
-      onComponentOptionChanged(component, 'searchText', text).then(() => {
-        if (serverSideSearch === true) {
-          onEvent('onSearch', { component, data: {} });
-        }
-      });
-    };
-
-    return (
-      <div className="ms-2 d-inline-block">
-        Search:{' '}
-        <input
-          className="global-search-field"
-          defaultValue={value || ''}
-          onBlur={(e) => {
-            handleSearchTextChange(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearchTextChange(e.target.value);
-            }
-          }}
-          placeholder={`${count} records`}
-          style={{
-            border: '0',
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -726,11 +684,18 @@ export function Table({
       {displaySearchBox && (
         <div className="card-body border-bottom py-3 jet-data-table-header">
           <div className="d-flex">
-            {displaySearchBox && (
-              <div className="ms-auto text-muted">
-                <GlobalFilter />
-              </div>
-            )}
+            <div className="ms-auto text-muted">
+              <GlobalFilter
+                preGlobalFilteredRows={preGlobalFilteredRows}
+                globalFilter={state.globalFilter}
+                useAsyncDebounce={useAsyncDebounce}
+                setGlobalFilter={setGlobalFilter}
+                onComponentOptionChanged={onComponentOptionChanged}
+                component={component}
+                serverSideSearch={serverSideSearch}
+                onEvent={onEvent}
+              />
+            </div>
           </div>
         </div>
       )}
