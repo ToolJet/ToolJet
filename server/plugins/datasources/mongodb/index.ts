@@ -22,6 +22,9 @@ export default class MongodbService implements QueryService {
         case 'insert_many':
           result = await db.collection(queryOptions.collection).insertMany(JSON.parse(queryOptions.documents));
           break;
+        case 'find_one':
+          result = await db.collection(queryOptions.collection).findOne(JSON.parse(queryOptions.documents));
+          break;
       }
     } catch (err) {
       console.log(err);

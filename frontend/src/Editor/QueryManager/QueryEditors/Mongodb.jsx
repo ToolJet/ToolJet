@@ -62,6 +62,7 @@ class Mongodb extends React.Component {
                   { name: 'List collections', value: 'list_collections' },
                   { name: 'Insert one document', value: 'insert_one' },
                   { name: 'Insert many documents', value: 'insert_many' },
+                  { name: 'Find One document', value: 'find_one' },
                 ]}
                 value={this.state.options.operation}
                 search={false}
@@ -72,6 +73,34 @@ class Mongodb extends React.Component {
                 placeholder="Select.."
               />
             </div>
+
+            {this.state.options.operation === 'find_one' && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Collection</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.collection}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => changeOption(this, 'collection', value)}
+                  />
+                </div>
+
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Query</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.document}
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                    mode="javascript"
+                    lineNumbers={true}
+                    placeholder={placeholders['mongodb']['find_one']}
+                    className="query-hinter"
+                    onChange={(value) => changeOption(this, 'document', value)}
+                  />
+                </div>
+              </div>
+            )}
 
             {this.state.options.operation === 'insert_one' && (
               <div>
@@ -100,6 +129,7 @@ class Mongodb extends React.Component {
                 </div>
               </div>
             )}
+
 
             {this.state.options.operation === 'insert_many' && (
               <div>
