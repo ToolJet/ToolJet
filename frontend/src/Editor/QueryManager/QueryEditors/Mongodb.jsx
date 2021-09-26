@@ -96,7 +96,7 @@ class Mongodb extends React.Component {
                     lineNumbers={true}
                     placeholder={placeholders['mongodb']['find_one']}
                     className="query-hinter"
-                    onChange={(value) => changeOption(this, 'document', value)}
+                    onChange={(value) => changeOption(this, 'query', value)}
                   />
                 </div>
               </div>
