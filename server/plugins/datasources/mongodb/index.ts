@@ -10,7 +10,6 @@ export default class MongodbService implements QueryService {
     const db = await this.getConnection(sourceOptions);
     let result = {};
     const operation = queryOptions.operation;
-    console.log(queryOptions)
 
     try {
       switch (operation) {
@@ -25,6 +24,10 @@ export default class MongodbService implements QueryService {
           break;
         case 'find_one':
           result = await db.collection(queryOptions.collection).findOne(JSON.parse(queryOptions['query']));
+          break;
+        case 'find':
+          result = await db.collection(queryOptions.collection).find(JSON.parse(queryOptions['query'])).toArray();
+          console.log("result", result)
           break;
       }
     } catch (err) {
