@@ -733,7 +733,8 @@ class Editor extends React.Component {
                             className="btn btn-sm btn-light mx-2"
                             data-class="py-1 px-2"
                             data-tip="Search query"
-                            onClick={this.toggleQuerySearch}>
+                            onClick={this.toggleQuerySearch}
+                          >
                             <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17" />
                           </button>
 
