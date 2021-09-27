@@ -181,6 +181,7 @@ export const DraggableBox = function DraggableBox({
         >
           <Rnd
             style={{ ...style }}
+            resizeGrid={[30, 10]}
             size={{
               width: scaleWidth(currentLayoutOptions.width, scaleValue) + 6,
               height: currentLayoutOptions.height + 6,
@@ -190,11 +191,9 @@ export const DraggableBox = function DraggableBox({
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
-            className={`resizer ${isSelectedComponent && !mouseOver ? 'resizer-selected' : ''} ${
-              mouseOver ? 'resizer-active' : ''
-            } `}
+            className={`resizer ${mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''} `}
             onResize={() => setResizing(true)}
-            resizeHandleClasses={mouseOver ? resizerClasses : {}}
+            resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
             disableDragging={true}
             enableResizing={mode === 'edit'}

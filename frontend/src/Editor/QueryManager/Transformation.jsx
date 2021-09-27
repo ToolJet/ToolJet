@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import 'codemirror/theme/base16-light.css';
 // import { getSuggestionKeys } from '../CodeBuilder/utils';
 import 'codemirror/mode/javascript/javascript';
@@ -7,7 +7,7 @@ import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 
-export const Transformation = ({ changeOption, options, currentState, darkMode }) => {
+export const Transformation = ({ changeOption, currentState, options, darkMode }) => {
   const defaultValue =
     options.transformation ||
     `// write your code here
@@ -15,22 +15,18 @@ export const Transformation = ({ changeOption, options, currentState, darkMode }
 return data.filter(row => row.amount > 1000);`;
 
   const [value, setValue] = useState(defaultValue);
+  const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
 
-  useEffect(() => {
-    setValue(defaultValue);
-  }, [defaultValue]);
-
-  /**
-   * 
-   * @unused_functions
-   * 
-   * function codeChanged(value) {
+  // let suggestions = useMemo(() => getSuggestionKeys(currentState), [currentState.components, currentState.queries]);
+  function codeChanged(value) {
+    setValue(() => value);
     changeOption('transformation', value);
   }
 
-  let suggestions = useMemo(() => getSuggestionKeys(currentState), [currentState.components, currentState.queries]);
-   * 
-   */
+  function toggleEnableTransformation() {
+    setEnableTransformation((prev) => !prev);
+    changeOption('enableTransformation', !enableTransformation);
+  }
 
   return (
     <div className="field mb-2 transformation-editor">
@@ -38,12 +34,12 @@ return data.filter(row => row.amount > 1000);`;
         <input
           className="form-check-input"
           type="checkbox"
-          onClick={() => changeOption('enableTransformation', !options.enableTransformation)}
-          checked={options.enableTransformation}
+          onClick={toggleEnableTransformation}
+          checked={enableTransformation}
         />
         <span className="form-check-label">Transformations</span>
       </label>
-      {!options.enableTransformation && (
+      {!enableTransformation && (
         <div>
           <div className="alert alert-success" role="alert">
             Transformations can be used to transform the results of queries. All the app variables are accessible from
@@ -56,7 +52,7 @@ return data.filter(row => row.amount > 1000);`;
         </div>
       )}
       <br></br>
-      {options.enableTransformation && (
+      {enableTransformation && (
         <div style={{ height: '240px' }}>
           <CodeHinter
             currentState={currentState}
@@ -66,7 +62,7 @@ return data.filter(row => row.amount > 1000);`;
             lineNumbers={true}
             className="query-hinter"
             ignoreBraces={true}
-            onChange={(value) => changeOption('transformation', value)}
+            onChange={(value) => codeChanged(value)}
           />
         </div>
       )}

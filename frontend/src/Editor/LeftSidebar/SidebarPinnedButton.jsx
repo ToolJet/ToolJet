@@ -2,12 +2,13 @@ import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 
-export const SidebarPinnedButton = ({ state, component, updateState }) => {
+export const SidebarPinnedButton = ({ state, component, updateState, darkMode }) => {
   const tooltipMsg = state ? `Unpin ${component}` : `Pin ${component}`;
+
   return (
     <SidebarPinnedButton.OverlayContainer tip={tooltipMsg}>
       <div
-        className={`btn btn-sm m-1 ${state ? 'btn-light' : 'btn-outline-secondary'} ${
+        className={`btn btn-sm m-1 ${darkMode ? 'btn-outline-secondary' : 'btn-default'} ${state && 'active'} ${
           component === 'Inspector' && 'position-absolute end-0'
         }`}
         onClick={updateState}
