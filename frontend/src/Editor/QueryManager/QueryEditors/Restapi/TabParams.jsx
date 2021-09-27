@@ -4,7 +4,7 @@ import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 export default ({ options = [], currentState, theme, removeKeyValuePair, onChange }) => {
   return (
     <div className="table-responsive table-no-divider">
-      <table className="table table-vcenter">
+      <table className="table">
         <thead>
           <tr>
             <th>Key</th>
@@ -34,6 +34,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                     theme={theme}
                     placeholder="value"
                     onChange={onChange('url_params', 1, index)}
+                    enablePreview={true}
                   />
                 </td>
                 {index > 0 && (

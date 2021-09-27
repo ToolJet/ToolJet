@@ -98,7 +98,7 @@ class Restapi extends React.Component {
                 />
               </div>
 
-              <div className="col" style={{ display: 'flex' }}>
+              <div className="col" style={{ display: 'flex', flexDirection: 'column' }}>
                 {dataSourceURL && (
                   <span
                     htmlFor=""
@@ -125,6 +125,7 @@ class Restapi extends React.Component {
                   onChange={(value) => {
                     changeOption(this, 'url', value);
                   }}
+                  enablePreview={true}
                   placeholder="Enter request URL"
                 />
               </div>

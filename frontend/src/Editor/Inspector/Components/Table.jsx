@@ -248,33 +248,34 @@ class Table extends React.Component {
             column.columnType === 'badge' ||
             column.columnType === 'badges' ||
             column.columnType === 'radio') && (
-            <div>
-              <div className="field mb-2">
-                <label className="form-label">Values</label>
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={column.values}
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  placeholder={'{{[1, 2, 3]}}'}
-                  onChange={(value) => this.onColumnItemChange(index, 'values', value)}
-                />
+              <div>
+                <div className="field mb-2">
+                  <label className="form-label">Values</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.values}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode="javascript"
+                    lineNumbers={false}
+                    placeholder={'{{[1, 2, 3]}}'}
+                    enablePreview={true}
+                    onChange={(value) => this.onColumnItemChange(index, 'values', value)}
+                  />
+                </div>
+                <div className="field mb-2">
+                  <label className="form-label">Labels</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.labels}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode="javascript"
+                    lineNumbers={false}
+                    placeholder={'{{["one", "two", "three"]}}'}
+                    onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
+                  />
+                </div>
               </div>
-              <div className="field mb-2">
-                <label className="form-label">Labels</label>
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={column.labels}
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  placeholder={'{{["one", "two", "three"]}}'}
-                  onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
-                />
-              </div>
-            </div>
-          )}
+            )}
 
           {column.columnType === 'dropdown' && (
             <>
