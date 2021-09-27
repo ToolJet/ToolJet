@@ -130,6 +130,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
                   </button>
                 )}
                 <SidebarPinnedButton
+                  darkMode={darkMode}
                   component={'Debugger'}
                   state={popoverPinned}
                   updateState={updatePopoverPinnedState}
