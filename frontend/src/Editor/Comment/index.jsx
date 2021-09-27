@@ -17,14 +17,15 @@ const Comment = ({ x, y, commentId }) => {
   const [open, trigger, content, setOpen] = usePopover(false);
   const [collected, drag] = useDrag(() => ({
     type: ItemTypes.COMMENT,
-    item: { name: 'comment' },
+    item: { commentId, name: 'comment' },
   }));
 
   React.useLayoutEffect(() => {
     const { left } = trigger?.ref?.current?.getBoundingClientRect();
 
+    console.log(left)
     console.log(trigger?.ref?.current?.getBoundingClientRect());
-    if (left < 100) setPlacement('right');
+    if (left < 430) setPlacement('right');
     else setPlacement('left');
   }, [trigger]);
 
@@ -46,6 +47,7 @@ const Comment = ({ x, y, commentId }) => {
   return (
     <animated.div
       ref={drag}
+      id={`thread-${commentId}`}
       className={cx("comments cursor-move", { 'open': open })}
       style={{
         transform: `translate(${x}px, ${y}px)`,

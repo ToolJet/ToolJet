@@ -94,11 +94,13 @@ export const Container = ({
           return;
         }
 
-        //TODO: add drop logic
         if (item.name === 'comment') {
           const { x, y } = monitor.getDifferenceFromInitialOffset();
+          const [_x, _y] = doSnapToGrid(x, y);
+          const element = document.getElementById(`thread-${item.commentId}`)
+          element.style.transform = `translate(${_x}px, ${_y}px)`
+          //TODO: add update endpoint
           console.log(x, y);
-          // const [left, top] = doSnapToGrid(x, y);
           return undefined;
         }
 
