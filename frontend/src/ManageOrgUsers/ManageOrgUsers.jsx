@@ -25,6 +25,12 @@ class ManageOrgUsers extends React.Component {
     };
   }
 
+  validateEmail(email) {
+    console.log(email);
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  } 
+
   handleValidation() {
     let fields = this.state.fields;
     let errors = {};
@@ -61,22 +67,9 @@ class ManageOrgUsers extends React.Component {
       errors['email'] = 'This field is required';
     }
 
-    if (typeof fields['email'] !== 'undefined') {
-      let lastAtPos = fields['email'].lastIndexOf('@');
-      let lastDotPos = fields['email'].lastIndexOf('.');
-
-      if (
-        !(
-          lastAtPos < lastDotPos &&
-          lastAtPos > 0 &&
-          fields['email'].indexOf('@@') == -1 &&
-          lastDotPos > 2 &&
-          fields['email'].length - lastDotPos > 2
-        )
-      ) {
+    if (!this.validateEmail(fields['email'])) {
         formIsValid = false;
         errors['email'] = 'Email is not valid';
-      }
     }
 
     if (!fields['role']) {
