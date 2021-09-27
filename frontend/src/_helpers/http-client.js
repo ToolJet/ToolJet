@@ -52,11 +52,10 @@ class HttpClient {
           authenticationService.logout();
         }
 
-        const error = (payload.data && payload.data.message) || response.statusText;
-        throw error;
+        throw payload;
       }
     } catch (err) {
-      payload.error = err;
+      payload.data = [];
     } finally {
       return payload;
     }

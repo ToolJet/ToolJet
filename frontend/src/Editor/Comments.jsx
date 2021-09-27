@@ -13,7 +13,6 @@ const Comments = () => {
     async function fetchData() {
       const { data } = await commentsService.getPositions()
       setCommentPositions(data)
-      console.log(data)
     }
     fetchData();
   }, [])
