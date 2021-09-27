@@ -11,7 +11,7 @@ const Comments = () => {
 
   React.useEffect(() => {
     async function fetchData() {
-      const { data } = await commentsService.getPositions()
+      const { data } = await commentsService.getThreads()
       setCommentPositions(data)
     }
     fetchData();

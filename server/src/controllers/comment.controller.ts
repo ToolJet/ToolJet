@@ -46,43 +46,4 @@ export class CommentController {
     const deletedComment = await this.commentService.deleteComment(commentId);
     return deletedComment;
   }
-
-  // @Post('/create')
-  // public async create(@Body() body): Promise<Comment> {
-  //   const comment = await this.commentService.create(body);
-  //   return comment;
-  // }
-
-  // // @UseGuards(JwtAuthGuard)
-  // @Get('/positions')
-  // getPositions(@Req() req, @Param() params) {
-  //   // const app = await this.commentService.find(params.id);
-  //   return { id1: { x: 23, y: 24 }, id2: { x: 23, y: 65 }, id3: { x: 1250, y: 65 } };
-  // }
-
-  // // @UseGuards(JwtAuthGuard)
-  // @Patch('/positions/:commentId')
-  // async update(@Body() body, @Param('commentId') commentId: number): Promise<Comment> {
-  //   const { x, y } = body;
-  //   const comment = await this.commentService.update(commentId, { x, y });
-  //   return comment;
-  // }
-
-  // // @UseGuards(JwtAuthGuard)
-  // @Get(':id')
-  // async getComments(@Req() req, @Param() params) {
-  //   // const app = await this.commentService.find(params.id);
-  //   return [
-  //     { comment, created_at: '2021-09-04T10:59:38.779Z' },
-  //     { comment, created_at: '2021-09-04T10:59:38.779Z' },
-  //   ];
-  // }
-
-  // // @UseGuards(JwtAuthGuard)
-  // @Patch(':id')
-  // async updateComment(@Body() body, @Param('commentId') commentId: number): Promise<Comment> {
-  //   const { comment } = body;
-  //   const updatedComment = await this.commentService.update(commentId, { comment });
-  //   return updatedComment;
-  // }
 }

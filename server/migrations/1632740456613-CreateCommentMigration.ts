@@ -14,6 +14,11 @@ export class CreateCommentMigration1632740456613 implements MigrationInterface {
             isPrimary: true,
           },
           {
+            name: 'tid',
+            type: 'uuid',
+            isNullable: false,
+          },
+          {
             name: 'is_read',
             type: 'boolean',
             default: false,

@@ -5,8 +5,8 @@ import HttpClient from '@/_helpers/http-client'
 // TODO: add authheader
 const adapter = new HttpClient()
 
-function getPositions() {
-  return adapter.get('/comments/positions');
+function getThreads() {
+  return adapter.get('/thread/all');
 }
 
 function getComment(id) {
@@ -14,6 +14,6 @@ function getComment(id) {
 }
 
 export const commentsService = {
-  getPositions,
+  getThreads,
   getComment
 };
