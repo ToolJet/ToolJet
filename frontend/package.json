@@ -42,6 +42,7 @@
     "react-dnd-html5-backend": "^14.0.0",
     "react-dom": "^16.14.0",
     "react-easy-sort": "^0.2.1",
+    "react-google-login": "^5.2.2",
     "react-json-view": "^1.21.3",
     "react-lazyload": "^3.2.0",
     "react-loading-skeleton": "^2.2.0",

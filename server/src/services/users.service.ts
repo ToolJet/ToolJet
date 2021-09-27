@@ -16,7 +16,7 @@ export class UsersService {
     private organizationUsersRepository: Repository<OrganizationUser>,
     @InjectRepository(Organization)
     private organizationsRepository: Repository<Organization>
-  ) {}
+  ) { }
 
   async findOne(id: string): Promise<User> {
     return this.usersRepository.findOne(id);
@@ -26,6 +26,12 @@ export class UsersService {
     return this.usersRepository.findOne({
       where: { email },
       relations: ['organization'],
+    });
+  }
+
+  async findBySSOId(ssoId: string): Promise<User> {
+    return this.usersRepository.findOne({
+      where: { ssoId }
     });
   }
 
@@ -39,20 +45,36 @@ export class UsersService {
     const password = uuid.v4();
     const invitationToken = uuid.v4();
 
-    const { email, firstName, lastName } = userParams;
+    const { email, firstName, lastName, ssoId } = userParams;
 
-    return this.usersRepository.save(
-      this.usersRepository.create({
-        email,
-        firstName,
-        lastName,
-        password,
-        invitationToken,
-        organizationId: organization.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-    );
+    return this.usersRepository.save(this.usersRepository.create({
+      email,
+      firstName,
+      lastName,
+      password,
+      invitationToken,
+      ssoId,
+      organizationId: organization.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+  }
+
+  async findOrCreateBySSOId(ssoId: string, userParams: any, organization: Organization): Promise<[User, boolean]> {
+    let user: User;
+    let newUserCreated = false;
+    try {
+      user = await this.findBySSOId(ssoId);
+    } catch (e) {
+      console.log(e)
+    }
+
+    if (user === undefined) {
+      user = await this.create({ ...userParams, ...{ ssoId } }, organization);
+      newUserCreated = true;
+    }
+
+    return [user, newUserCreated];
   }
 
   async setupAccountFromInvitationToken(params: any) {

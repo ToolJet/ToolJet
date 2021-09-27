@@ -16,6 +16,7 @@
       "@services/*": ["src/services/*"],
       "@plugins/*": ["plugins/*"],
       "@controllers/*": ["src/controllers/*"],
+      "@ee/*": ["ee/*"],
     }
   }
 }

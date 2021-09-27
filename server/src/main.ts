@@ -24,8 +24,23 @@ async function bootstrap() {
       useDefaults: true,
       directives: {
         'img-src': ['*', 'data:'],
-        'script-src': ['maps.googleapis.com', "'self'", "'unsafe-inline'", "'unsafe-eval'", 'blob:'],
-        'default-src': ['maps.googleapis.com', '*.sentry.io', "'self'", 'blob:'],
+        'script-src': [
+          'maps.googleapis.com',
+          'apis.google.com',
+          'accounts.google.com',
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          'blob:',
+        ],
+        'default-src': [
+          'maps.googleapis.com',
+          'apis.google.com',
+          'accounts.google.com',
+          '*.sentry.io',
+          "'self'",
+          'blob:',
+        ],
       },
     })
   );

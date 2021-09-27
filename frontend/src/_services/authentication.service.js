@@ -13,6 +13,7 @@ export const authenticationService = {
   get currentUserValue() {
     return currentUserSubject.value;
   },
+  signInViaOAuth,
 };
 
 function login(email, password) {
@@ -59,4 +60,21 @@ function logout() {
   localStorage.removeItem('currentUser');
   currentUserSubject.next(null);
   history.push(`/login?redirectTo=${window.location.pathname}`);
+}
+
+function signInViaOAuth(token) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  };
+
+  return fetch(`${config.apiUrl}/oauth/sign-in`, requestOptions)
+    .then(handleResponse)
+    .then((user) => {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      currentUserSubject.next(user);
+
+      return user;
+    });
 }

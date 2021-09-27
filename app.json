@@ -28,6 +28,10 @@
     "SECRET_KEY_BASE": {
       "description": "Used by ToolJet server as the input secret to the application's key generator.",
       "value": ""
+    },
+    "SSO_GOOGLE_OAUTH2_CLIENT_ID": {
+      "description": "Google OAuth2 client id to enable single sign-on",
+      "value": ""
     }
   },
   "formation": {

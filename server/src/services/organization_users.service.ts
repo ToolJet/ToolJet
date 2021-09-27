@@ -15,7 +15,7 @@ export class OrganizationUsersService {
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
     private emailService: EmailService
-  ) {}
+  ) { }
 
   async findOne(id: string): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.findOne({ id: id });
@@ -79,6 +79,10 @@ export class OrganizationUsersService {
 
     await this.organizationUsersRepository.update(id, { status: 'archived' });
     return true;
+  }
+
+  async activate(user: OrganizationUser) {
+    await this.organizationUsersRepository.update(user.id, { status: 'active' });
   }
 
   async lastActiveAdmin(organizationId: string): Promise<boolean> {

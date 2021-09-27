@@ -1,0 +1,58 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { User } from 'src/entities/user.entity';
+import { OrganizationsService } from '@services/organizations.service';
+import { OrganizationUsersService } from '@services/organization_users.service';
+import { UsersService } from '@services/users.service';
+import { GoogleOAuthService } from './google_oauth.service';
+
+@Injectable()
+export class OauthService {
+
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly organizationService: OrganizationsService,
+    private readonly jwtService: JwtService,
+    private readonly organizationUsersService: OrganizationUsersService,
+    private readonly googleOAuthService: GoogleOAuthService
+  ) { }
+
+  async #findOrCreateUser({ userSSOId, firstName, lastName, email }): Promise<User> {
+    const organization = await this.organizationService.findFirst();
+    const [user, newUserCreated] = await this.usersService.findOrCreateBySSOId(
+      userSSOId,
+      { firstName, lastName, email },
+      organization);
+
+    if (newUserCreated) {
+      const organizationUser = await this.organizationUsersService.create(user, organization, 'viewer');
+      this.organizationUsersService.activate(organizationUser);
+    }
+    return user;
+  }
+
+  #generateLoginResultPayload(user: User): any {
+    const JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId };
+    return {
+      auth_token: this.jwtService.sign(JWTPayload),
+      email: user.email,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      role: user.role
+    };
+  }
+
+  async signIn(token: string): Promise<any> {
+    const { userSSOId, firstName, lastName, email, domain } = await this.googleOAuthService.signIn(token);
+
+    if ([undefined, '', null].includes(userSSOId)) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (('RESTRICTED_DOMAIN' in process.env) && process.env.RESTRICTED_DOMAIN != domain)
+      throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
+
+    const user = await this.#findOrCreateUser({ userSSOId, firstName, lastName, email });
+    return this.#generateLoginResultPayload(user);
+  }
+}

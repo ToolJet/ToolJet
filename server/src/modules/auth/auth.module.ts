@@ -13,6 +13,8 @@ import { OrganizationsService } from 'src/services/organizations.service';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '@services/email.service';
+import { OauthService, GoogleOAuthService } from '@ee/services/oauth';
+import { OauthController } from '@ee/controllers/oauth.controller';
 
 @Module({
   imports: [
@@ -31,7 +33,17 @@ import { EmailService } from '@services/email.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy, UsersService, OrganizationsService, OrganizationUsersService, EmailService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    UsersService,
+    OrganizationsService,
+    OrganizationUsersService,
+    EmailService,
+    OauthService,
+    GoogleOAuthService,
+  ],
+  controllers: [OauthController],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }
