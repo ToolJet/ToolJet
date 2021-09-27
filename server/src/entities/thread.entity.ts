@@ -6,13 +6,13 @@ export class Thread extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ name: 'x' })
   x: number;
 
-  @Column()
+  @Column({ name: 'y' })
   y: number;
 
-  @Column({ default: false })
+  @Column({ default: false, name: 'is_resolved' })
   isResolved: boolean;
 
   @OneToOne(() => User, (user) => user.id)

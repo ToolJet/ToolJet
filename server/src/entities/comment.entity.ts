@@ -15,13 +15,13 @@ export class Comment extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'tid' })
   tid: string;
 
-  @Column()
+  @Column({ name: 'comment' })
   comment: string;
 
-  @Column({ default: false })
+  @Column({ default: false, name: 'is_read' })
   isRead: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })

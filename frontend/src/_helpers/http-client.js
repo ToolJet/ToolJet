@@ -12,7 +12,7 @@ const HttpVerb = {
 class HttpClient {
   constructor(args = {}) {
     this.host = args.host || config.apiUrl;
-    this.namespace = args.namespace || ''; // TODO: add versioning (/v1) to all endpoints
+    this.namespace = args.namespace || ''; // TODO: add versioning (/v1) to all endpoints (https://docs.nestjs.com/techniques/versioning#uri-versioning-type)
     this.headers = {
       'content-type': 'application/json',
       ...args.headers,
