@@ -780,14 +780,30 @@ body {
   }
 
   td {
-    min-height: 35px;
+    min-height: 55px;
     overflow-x: initial;
     margin: auto;
 
     .text-container {
-      padding: 0px;
-      margin-bottom: 3px;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      height: 100%;
+      outline: none;
     }
+  }
+
+  .has-dropdown,
+  .has-multiselect,
+  .has-text,
+  .has-datepicker,
+  .has-actions {
+    padding: 0 5px;
+  }
+
+  .has-text,
+  .has-actions {
+    margin: 0;
   }
 
   td {
