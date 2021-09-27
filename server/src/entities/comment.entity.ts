@@ -1,10 +1,11 @@
+import { integer } from 'aws-sdk/clients/cloudfront';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
+  OneToOne,
   JoinColumn,
   BaseEntity,
 } from 'typeorm';
@@ -18,11 +19,14 @@ export class Comment extends BaseEntity {
   @Column()
   comment: string;
 
+  @Column()
+  x: integer;
+
+  @Column()
+  y: integer;
+
   @Column({ default: false })
   isRead: boolean;
-
-  // @Column({ default: []})
-  // mentionedUserIds: Array;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -30,7 +34,7 @@ export class Comment extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @OneToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: User;
 }

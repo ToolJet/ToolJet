@@ -45,6 +45,7 @@
     "@types/nodemailer": "^6.4.4",
     "aws-sdk": "^2.947.0",
     "bcrypt": "^5.0.1",
+    "class-validator": "^0.13.1",
     "dotenv": "^10.0.0",
     "futoin-hkdf": "^1.4.2",
     "got": "^11.8.2",

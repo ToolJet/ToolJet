@@ -26,7 +26,7 @@ import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
 import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
-import { CommentsModule } from './modules/comments/comments.module';
+import { CommentModule } from './modules/comments/comment.module';
 import { join } from 'path';
 
 const imports = [
@@ -64,7 +64,7 @@ const imports = [
   OrganizationsModule,
   CaslModule,
   MetaModule,
-  CommentsModule,
+  CommentModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
