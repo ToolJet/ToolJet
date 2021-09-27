@@ -20,7 +20,19 @@ export class AppGroupPermission extends BaseEntity {
   appId: string;
 
   @Column({ name: 'group_permission_id' })
-  groupPermissionsId: string;
+  groupPermissionId: string;
+
+  @Column({ default: false })
+  create: boolean;
+
+  @Column({ default: false })
+  read: boolean;
+
+  @Column({ default: false })
+  update: boolean;
+
+  @Column({ default: false })
+  delete: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

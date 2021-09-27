@@ -24,13 +24,13 @@ export class UserAppGroupPermission extends BaseEntity {
   appGroupPermissionsId: string;
 
   @Column({ name: 'user_group_permission_id' })
-  userGroupPermissionsId: string;
+  userGroupPermissionId: string;
 
   @Column({ default: false })
   create: boolean;
 
   @Column({ default: false })
-  view: boolean;
+  read: boolean;
 
   @Column({ default: false })
   update: boolean;
