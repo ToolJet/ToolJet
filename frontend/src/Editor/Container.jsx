@@ -208,6 +208,8 @@ export const Container = ({
     width = width + deltaWidth;
     height = height + deltaHeight;
 
+    // [width, height] = doSnapToGrid(width, height)
+
     let newBoxes = {
       ...boxes,
       [id]: {
@@ -251,8 +253,12 @@ export const Container = ({
     }
   }
 
+  React.useEffect(() => {
+    console.log('current component => ', selectedComponent);
+  }, [selectedComponent]);
+
   return (
-    <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
+    <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? 'show-grid' : ''}`}>
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =
