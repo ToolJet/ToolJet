@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   useTable,
   useFilters,
@@ -260,6 +260,14 @@ export function Table({
 
   const changeSet = componentState ? componentState.changeSet : {};
 
+  const computeFontColor = useCallback(() => {
+    if (color !== undefined) {
+      return color;
+    } else {
+      return darkMode ? '#ffffff' : '#000000';
+    }
+  }, [color, darkMode]);
+
   const columnData = component.definition.properties.columns.value.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
     const columnType = column.columnType;
@@ -304,7 +312,7 @@ export function Table({
           const textColor = resolveReferences(column.textColor, currentState, { cellValue });
 
           const cellStyles = {
-            color: textColor === undefined ? (darkMode === true ? '#fff' : 'black') : textColor,
+            color: textColor ?? '',
           };
 
           if (column.isEditable) {
@@ -598,7 +606,6 @@ export function Table({
   const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
 
   const computedStyles = {
-    color,
     width: `${width}px`,
   };
 
@@ -729,7 +736,7 @@ export function Table({
           )}
 
           {!loadingState && (
-            <tbody {...getTableBodyProps()}>
+            <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
               {console.log('page', page)}
               {page.map((row, index) => {
                 prepareRow(row);

@@ -85,7 +85,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: undefined },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
