@@ -366,7 +366,7 @@ export function Table({
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
-                  <div class="invalid-feedback">{validationError}</div>
+                  <div className="invalid-feedback">{validationError}</div>
                 </div>
               );
             }
