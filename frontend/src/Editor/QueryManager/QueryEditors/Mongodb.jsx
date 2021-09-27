@@ -4,6 +4,7 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { placeholders } from './placeholders';
 import { changeOption } from './utils';
+import { NumberInput } from '../../Components/NumberInput';
 
 class Mongodb extends React.Component {
   constructor(props) {
@@ -63,6 +64,7 @@ class Mongodb extends React.Component {
                   { name: 'Insert one document', value: 'insert_one' },
                   { name: 'Insert many documents', value: 'insert_many' },
                   { name: 'Find One document', value: 'find_one' },
+                  { name: 'Find Many document', value: 'find' },
                 ]}
                 value={this.state.options.operation}
                 search={false}
@@ -99,6 +101,57 @@ class Mongodb extends React.Component {
                     onChange={(value) => changeOption(this, 'query', value)}
                   />
                 </div>
+              </div>
+            )}
+
+            {this.state.options.operation === 'find' && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Collection</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.collection}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => changeOption(this, 'collection', value)}
+                  />
+                </div>
+
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Query</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.document}
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                    mode="javascript"
+                    lineNumbers={true}
+                    placeholder={placeholders['mongodb']['find']}
+                    className="query-hinter"
+                    onChange={(value) => changeOption(this, 'query', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Sort</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.document}
+                    theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                    mode="javascript"
+                    lineNumbers={true}
+                    placeholder={placeholders['mongodb']['find']}
+                    className="query-hinter"
+                    onChange={(value) => changeOption(this, 'sort', value)}
+                  />
+                </div>
+                {/* <div className="mb-3 mt-2">
+                  <label className="form-label">Skip</label>
+                  <NumberInput
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Limit</label>
+                  <NumberInput
+                  />
+                </div> */}
               </div>
             )}
 

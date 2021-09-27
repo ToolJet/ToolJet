@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   useTable,
   useFilters,
@@ -21,9 +21,8 @@ import { Tags } from './Tags';
 import { Radio } from './Radio';
 import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
-
+import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
-
 export function Table({
   id,
   width,
@@ -261,6 +260,14 @@ export function Table({
 
   const changeSet = componentState ? componentState.changeSet : {};
 
+  const computeFontColor = useCallback(() => {
+    if (color !== undefined) {
+      return color;
+    } else {
+      return darkMode ? '#ffffff' : '#000000';
+    }
+  }, [color, darkMode]);
+
   const columnData = component.definition.properties.columns.value.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
     const columnType = column.columnType;
@@ -305,7 +312,7 @@ export function Table({
           const textColor = resolveReferences(column.textColor, currentState, { cellValue });
 
           const cellStyles = {
-            color: textColor === undefined ? (darkMode === true ? '#fff' : 'black') : textColor,
+            color: textColor ?? '',
           };
 
           if (column.isEditable) {
@@ -599,7 +606,6 @@ export function Table({
   const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
 
   const computedStyles = {
-    color,
     width: `${width}px`,
   };
 
@@ -671,47 +677,6 @@ export function Table({
     }
   }, [state.columnResizing.isResizingColumn]);
 
-  function GlobalFilter() {
-    const count = preGlobalFilteredRows.length;
-    const [value, setValue] = React.useState(state.globalFilter);
-    const onChange = useAsyncDebounce((filterValue) => {
-      setGlobalFilter(filterValue || undefined);
-    }, 200);
-
-    const handleSearchTextChange = (text) => {
-      setValue(text);
-      onChange(text);
-
-      onComponentOptionChanged(component, 'searchText', text).then(() => {
-        if (serverSideSearch === true) {
-          onEvent('onSearch', { component, data: {} });
-        }
-      });
-    };
-
-    return (
-      <div className="ms-2 d-inline-block">
-        Search:{' '}
-        <input
-          className="global-search-field"
-          defaultValue={value || ''}
-          onBlur={(e) => {
-            handleSearchTextChange(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearchTextChange(e.target.value);
-            }
-          }}
-          placeholder={`${count} records`}
-          style={{
-            border: '0',
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -726,11 +691,18 @@ export function Table({
       {displaySearchBox && (
         <div className="card-body border-bottom py-3 jet-data-table-header">
           <div className="d-flex">
-            {displaySearchBox && (
-              <div className="ms-auto text-muted">
-                <GlobalFilter />
-              </div>
-            )}
+            <div className="ms-auto text-muted">
+              <GlobalFilter
+                preGlobalFilteredRows={preGlobalFilteredRows}
+                globalFilter={state.globalFilter}
+                useAsyncDebounce={useAsyncDebounce}
+                setGlobalFilter={setGlobalFilter}
+                onComponentOptionChanged={onComponentOptionChanged}
+                component={component}
+                serverSideSearch={serverSideSearch}
+                onEvent={onEvent}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -764,7 +736,7 @@ export function Table({
           )}
 
           {!loadingState && (
-            <tbody {...getTableBodyProps()}>
+            <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
               {console.log('page', page)}
               {page.map((row, index) => {
                 prepareRow(row);
