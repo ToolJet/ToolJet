@@ -2173,10 +2173,10 @@ input[type='text'] {
   z-index: 2 !important;
 }
 
-.event-action__dark {
+.theme-dark .event-action {
   filter: brightness(0) invert(1);
 }
 
-.event-action__light {
+.event-action{
   filter: brightness(0) invert(0);
 }

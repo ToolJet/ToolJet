@@ -262,7 +262,7 @@ export const EventManager = ({
                 {componentMeta.events[event.eventId]['displayName']}
               </div>
               <div className="col">
-                <small className={darkMode ? 'event-action__dark' : 'event-action__light'}>{actionMeta.name}</small>
+                <small className="event-action">{actionMeta.name}</small>
               </div>
               <div className="col-auto">
                 <span
