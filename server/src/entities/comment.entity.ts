@@ -1,4 +1,3 @@
-import { integer } from 'aws-sdk/clients/cloudfront';
 import {
   Entity,
   Column,
@@ -17,13 +16,10 @@ export class Comment extends BaseEntity {
   id: string;
 
   @Column()
+  tid: string;
+
+  @Column()
   comment: string;
-
-  @Column()
-  x: integer;
-
-  @Column()
-  y: integer;
 
   @Column({ default: false })
   isRead: boolean;

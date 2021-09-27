@@ -28,6 +28,7 @@ import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { CommentModule } from './modules/comments/comment.module';
 import { join } from 'path';
+import { ThreadModule } from './modules/thread/thread.module';
 
 const imports = [
   ConfigModule.forRoot({
@@ -65,6 +66,7 @@ const imports = [
   CaslModule,
   MetaModule,
   CommentModule,
+  ThreadModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
