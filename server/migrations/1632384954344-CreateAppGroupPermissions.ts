@@ -37,13 +37,13 @@ export class CreateAppGroupPermissions1632384954344
             isNullable: false,
           },
           {
-            name: "view",
+            name: "read",
             type: "boolean",
             default: false,
             isNullable: false,
           },
           {
-            name: "udpate",
+            name: "update",
             type: "boolean",
             default: false,
             isNullable: false,
