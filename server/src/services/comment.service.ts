@@ -22,8 +22,12 @@ export class CommentService {
     return await this.commentRepository.createComment(createCommentDto);
   }
 
-  public async getComments(): Promise<Comment[]> {
-    return await this.commentRepository.find();
+  public async getComments(tid: string): Promise<Comment[]> {
+    return await this.commentRepository.find({
+      where: {
+        tid,
+      },
+    });
   }
 
   public async getComment(commentId: number): Promise<Comment> {

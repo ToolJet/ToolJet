@@ -21,8 +21,8 @@ export class CommentController {
   }
 
   @Get('all')
-  public async getComments(): Promise<Comment[]> {
-    const comments = await this.commentService.getComments();
+  public async getComments(tid: string): Promise<Comment[]> {
+    const comments = await this.commentService.getComments(tid);
     return comments;
   }
 
