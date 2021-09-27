@@ -34,7 +34,6 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                     theme={theme}
                     placeholder="value"
                     onChange={onChange('url_params', 1, index)}
-                    enablePreview={true}
                   />
                 </td>
                 {index > 0 && (

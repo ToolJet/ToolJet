@@ -258,7 +258,6 @@ class Table extends React.Component {
                     mode="javascript"
                     lineNumbers={false}
                     placeholder={'{{[1, 2, 3]}}'}
-                    enablePreview={true}
                     onChange={(value) => this.onColumnItemChange(index, 'values', value)}
                   />
                 </div>

@@ -125,7 +125,6 @@ class Restapi extends React.Component {
                   onChange={(value) => {
                     changeOption(this, 'url', value);
                   }}
-                  enablePreview={true}
                   placeholder="Enter request URL"
                 />
               </div>
