@@ -2188,3 +2188,11 @@ input[type='text'] {
 .draggable-box:focus-within {
   z-index: 2 !important;
 }
+
+.theme-dark .event-action {
+  filter: brightness(0) invert(1);
+}
+
+.event-action{
+  filter: brightness(0) invert(0);
+}
