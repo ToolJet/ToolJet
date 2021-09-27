@@ -18,7 +18,13 @@ class QueryManager extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      options: {
+        runOnPageLoad: false,
+        requestConfirmation: false,
+        showSuccessNotification: false,
+      },
+    };
 
     this.previewPanelRef = React.createRef();
   }
@@ -35,7 +41,7 @@ class QueryManager extends React.Component {
         dataSources: props.dataSources,
         dataQueries: props.dataQueries,
         mode: props.mode,
-        currentTab: 1,
+        currentTab: props.activeQueryTab,
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
         queryPaneHeight: props.queryPaneHeight,
@@ -51,7 +57,7 @@ class QueryManager extends React.Component {
             }
           }
           this.setState({
-            options: selectedQuery.options,
+            options: { ...this.state.options, ...selectedQuery.options },
             selectedDataSource: source,
             selectedQuery,
             queryName: selectedQuery.name,
@@ -87,9 +93,7 @@ class QueryManager extends React.Component {
   };
 
   switchCurrentTab = (tab) => {
-    this.setState({
-      currentTab: tab,
-    });
+    this.props.toggleQueryTabs(tab);
   };
 
   validateQueryName = () => {
@@ -176,6 +180,7 @@ class QueryManager extends React.Component {
 
   toggleOption = (option) => {
     const currentValue = this.state.options[option] ? this.state.options[option] : false;
+    this.setState({ options: { ...this.state.options, [option]: currentValue } });
     this.optionchanged(option, !currentValue);
   };
 

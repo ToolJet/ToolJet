@@ -81,6 +81,7 @@ class Editor extends React.Component {
       showQuerySearchField: false,
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
+      activeQueryTab: 1,
     };
   }
 
@@ -471,6 +472,10 @@ class Editor extends React.Component {
     this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
   };
 
+  toggleQueryTabs = (tab) => {
+    this.setState({ activeQueryTab: tab });
+  };
+
   onVersionDeploy = (versionId) => {
     this.setState({
       app: {
@@ -818,6 +823,8 @@ class Editor extends React.Component {
                             darkMode={this.props.darkMode}
                             apps={apps}
                             allComponents={appDefinition.components}
+                            activeQueryTab={this.state.activeQueryTab}
+                            toggleQueryTabs={this.toggleQueryTabs}
                           />
                         </div>
                       </div>
