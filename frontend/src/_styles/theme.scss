@@ -2172,3 +2172,11 @@ input[type='text'] {
 .draggable-box:focus-within {
   z-index: 2 !important;
 }
+
+.event-action__dark {
+  filter: brightness(0) invert(1);
+}
+
+.event-action__light {
+  filter: brightness(0) invert(0);
+}
