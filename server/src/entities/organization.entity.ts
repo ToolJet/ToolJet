@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
+import { User } from './user.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization {
@@ -29,4 +30,8 @@ export class Organization {
   @OneToMany(() => GroupPermission, (groupPermission) => groupPermission.organization, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'organization_id' })
   groupPermissions: GroupPermission[];
+
+  @OneToMany(() => User, (user) => user.organization)
+  @JoinColumn({ name: 'organization_id' })
+  users: User[];
 }

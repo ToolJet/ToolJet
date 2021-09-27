@@ -20,7 +20,7 @@ export class UserGroupPermission extends BaseEntity {
   userId: string;
 
   @Column({ name: 'group_permission_id' })
-  groupPermissionsId: string;
+  groupPermissionId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
