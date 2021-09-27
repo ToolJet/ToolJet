@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useSpring, config, animated } from 'react-spring';
+import React, { useEffect, useMemo, useState, Fragment } from 'react';
 
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/mode/handlebars/handlebars';
@@ -13,8 +12,7 @@ import 'codemirror/theme/base16-light.css';
 import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
-import { resolveReferences } from '@/_helpers/utils';
-import useHeight from '@/_hooks/use-height-transition';
+import CodePreview from './CodePreview';
 
 export function CodeHinter({
   initialValue,
@@ -26,7 +24,7 @@ export function CodeHinter({
   className,
   placeholder,
   ignoreBraces,
-  enablePreview,
+  enablePreview = true,
   height,
   minHeight,
   lineWrapping,
@@ -46,15 +44,7 @@ export function CodeHinter({
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
   const [isFocused, setFocused] = useState(false);
-  const [heightRef, currentHeight] = useHeight();
-  const slideInStyles = useSpring({
-    config: { ...config.stiff },
-    from: { opacity: 0, height: 0 },
-    to: {
-      opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
-    },
-  });
+
   useEffect(() => {
     setRealState(currentState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,54 +60,8 @@ export function CodeHinter({
     setCurrentValue(editor.getValue());
   }
 
-  const getPreviewContent = (content, type) => {
-    switch (type) {
-      case 'object':
-        return JSON.stringify(content);
-      case 'boolean':
-        return content.toString();
-      default:
-        return content;
-    }
-  };
-
-  const getPreview = () => {
-    const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
-
-    if (error) {
-      return (
-        <animated.div style={{ ...slideInStyles, overflow: 'hidden' }}>
-          <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
-            <div>
-              <div className="heading my-1">
-                <span>Error</span>
-              </div>
-              {error.toString()}
-            </div>
-          </div>
-        </animated.div>
-      );
-    }
-
-    const previewType = typeof preview;
-    const content = getPreviewContent(preview, previewType);
-
-    return (
-      <animated.div style={{ ...slideInStyles, overflow: 'hidden' }}>
-        <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
-          <div>
-            <div className="heading my-1">
-              <span>{previewType}</span>
-            </div>
-            {content}
-          </div>
-        </div>
-      </animated.div>
-    );
-  };
-
   return (
-    <>
+    <Fragment>
       <div
         className={`code-hinter ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
@@ -139,7 +83,7 @@ export function CodeHinter({
           options={options}
         />
       </div>
-      {enablePreview && getPreview()}
-    </>
+      {enablePreview && <CodePreview currentValue={currentValue} realState={realState} isFocused={isFocused} />}
+    </Fragment>
   );
 }
