@@ -81,6 +81,7 @@ class Editor extends React.Component {
       showQuerySearchField: false,
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
+      showQueryConfirmation: false
     };
   }
 
@@ -326,6 +327,29 @@ class Editor extends React.Component {
     );
   };
 
+  executeRunQuery = (_ref, dataQuery) => {
+    const confirmation = this.state.selectedQuery.options.requestConfirmation
+
+    if(confirmation) {
+      this.setState({ showQueryConfirmation: true })
+    } else {
+      runQuery(_ref, dataQuery.id, dataQuery.name).then(() => {
+        toast.info(`Query (${dataQuery.name}) completed.`, {
+          hideProgressBar: true,
+          position: 'bottom-center',
+        });
+      });
+    }
+  }
+
+  onDataQueryConfirm = () => {
+    const queryConfirmationData = {
+      queryId: this.state.selectedQuery.id,
+      queryName: this.state.selectedQuery.name
+    }
+    onQueryConfirm(this, queryConfirmationData)
+  }
+
   deleteDataQuery = () => {
     this.setState({ showDataQueryDeletionConfirmation: true });
   };
@@ -409,12 +433,7 @@ class Editor extends React.Component {
             <button
               className="btn badge bg-azure-lt"
               onClick={() => {
-                runQuery(this, dataQuery.id, dataQuery.name).then(() => {
-                  toast.info(`Query (${dataQuery.name}) completed.`, {
-                    hideProgressBar: true,
-                    position: 'bottom-center',
-                  });
-                });
+                this.executeRunQuery(this, dataQuery)
               }}
             >
               <div>
@@ -531,7 +550,7 @@ class Editor extends React.Component {
         <Confirm
           show={showQueryConfirmation}
           message={'Do you want to run this query?'}
-          onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
+          onConfirm={this.onDataQueryConfirm}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData}
         />
