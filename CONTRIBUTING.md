@@ -49,7 +49,7 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 - Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
 ## License
-By contributing, you agree that your contributions will be licensed under its Apache-2.0 License.
+By contributing, you agree that your contributions will be licensed under its AGPL v3 License.
 
 ## Questions? 
 Contact us on slack [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) or mail us at [hello@tooljet.io](hello@tooljet)
