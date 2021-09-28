@@ -94,15 +94,22 @@ export const Container = ({
 
   const [, drop] = useDrop(
     () => ({
-      accept: [ItemTypes.BOX, ItemTypes.COMMENT, ItemTypes.NEW_COMMENT],
+      accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
         if (item.parent) {
           return;
         }
 
         if (item.name === 'comment') {
-          const { x, y } = monitor.getDifferenceFromInitialOffset();
-          // const [_x, _y] = doSnapToGrid(x, y);
+          // const { x, y } = monitor.getDifferenceFromInitialOffset();
+          const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+          const offsetFromTopOfWindow = canvasBoundingRect.top;
+          const offsetFromLeftOfWindow = canvasBoundingRect.left;
+          const currentOffset = monitor.getSourceClientOffset();
+
+          const x = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          const y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+
           const element = document.getElementById(`thread-${item.threadId}`)
           element.style.transform = `translate(${x}px, ${y}px)`
           //TODO: add update endpoint
