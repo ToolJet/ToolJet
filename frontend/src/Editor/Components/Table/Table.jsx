@@ -11,6 +11,7 @@ import {
   useBlockLayout,
   useResizeColumns,
 } from 'react-table';
+import cx from 'classnames';
 import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from 'react-table-plugins';
@@ -303,19 +304,99 @@ export function Table({
       filter: customFilter,
       width: width,
       columnOptions,
-
+      columnType,
+      isEditable: column.isEditable,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
 
-        if (columnType === 'string' || columnType === undefined || columnType === 'default') {
-          const textColor = resolveReferences(column.textColor, currentState, { cellValue });
+        switch (columnType) {
+          case 'string':
+          case undefined:
+          case 'default': {
+            const textColor = resolveReferences(column.textColor, currentState, { cellValue });
 
-          const cellStyles = {
-            color: textColor ?? '',
-          };
+            const cellStyles = {
+              color: textColor === undefined ? (darkMode === true ? '#fff' : 'black') : textColor,
+            };
 
-          if (column.isEditable) {
+            if (column.isEditable) {
+              const validationData = validateWidget({
+                validationObject: {
+                  regex: {
+                    value: column.regex,
+                  },
+                  minLength: {
+                    value: column.minLength,
+                  },
+                  maxLength: {
+                    value: column.maxLength,
+                  },
+                  customRule: {
+                    value: column.customRule,
+                  },
+                },
+                widgetValue: cellValue,
+                currentState,
+                customResolveObjects: { cellValue },
+              });
+
+              const { isValid, validationError } = validationData;
+              const cellStyles = {
+                color: textColor ?? '',
+              };
+
+              return (
+                <div>
+                  <input
+                    type="text"
+                    style={cellStyles}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (e.target.defaultValue !== e.target.value) {
+                          handleCellValueChange(
+                            cell.row.index,
+                            column.key || column.name,
+                            e.target.value,
+                            cell.row.original
+                          );
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.defaultValue !== e.target.value) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          e.target.value,
+                          cell.row.original
+                        );
+                      }
+                    }}
+                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                    defaultValue={cellValue}
+                  />
+                  <div className="invalid-feedback">{validationError}</div>
+                </div>
+              );
+            }
+            return <span style={cellStyles}>{cellValue}</span>;
+          }
+          case 'text': {
+            return (
+              <textarea
+                rows="1"
+                className="form-control-plaintext text-container text-muted"
+                readOnly={!column.isEditable}
+                style={{ maxWidth: width, minWidth: width - 10 }}
+                onBlur={(e) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                }}
+                defaultValue={cellValue}
+              ></textarea>
+            );
+          }
+          case 'dropdown': {
             const validationData = validateWidget({
               validationObject: {
                 regex: {
@@ -340,183 +421,107 @@ export function Table({
 
             return (
               <div>
-                <input
-                  type="text"
-                  style={cellStyles}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      if (e.target.defaultValue !== e.target.value) {
-                        handleCellValueChange(
-                          cell.row.index,
-                          column.key || column.name,
-                          e.target.value,
-                          cell.row.original
-                        );
-                      }
-                    }
+                <SelectSearch
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  search={true}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
-                  onBlur={(e) => {
-                    if (e.target.defaultValue !== e.target.value) {
-                      handleCellValueChange(
-                        cell.row.index,
-                        column.key || column.name,
-                        e.target.value,
-                        cell.row.original
-                      );
-                    }
-                  }}
-                  className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
-                  defaultValue={cellValue}
+                  filterOptions={fuzzySearch}
+                  placeholder="Select.."
                 />
-                <div className="invalid-feedback">{validationError}</div>
+                <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
             );
           }
-          return <span style={cellStyles}>{cellValue}</span>;
-        }
-        if (columnType === 'text') {
-          return (
-            <textarea
-              rows="1"
-              className="form-control-plaintext text-container text-muted"
-              readOnly={!column.isEditable}
-              style={{ maxWidth: width, minWidth: width - 10 }}
-              onBlur={(e) => {
-                handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-              }}
-              defaultValue={cellValue}
-            ></textarea>
-          );
-        }
-        if (columnType === 'dropdown') {
-          const validationData = validateWidget({
-            validationObject: {
-              customRule: {
-                value: column.customRule,
-              },
-            },
-            widgetValue: cellValue,
-            currentState,
-            customResolveObjects: { cellValue },
-          });
-
-          const { isValid, validationError } = validationData;
-
-          return (
-            <div>
-              <SelectSearch
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                search={true}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-                filterOptions={fuzzySearch}
-                placeholder="Select.."
-              />
-              <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
-            </div>
-          );
-        }
-        if (columnType === 'multiselect') {
-          return (
-            <div>
-              <SelectSearch
-                printOptions="on-focus"
-                multiple
-                search={true}
-                placeholder="Select.."
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'badge') {
-          return (
-            <div>
-              <CustomSelect
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'badges') {
-          return (
-            <div>
-              <CustomSelect
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                multiple={true}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'tags') {
-          return (
-            <div>
-              <Tags
-                readOnly={!column.isEditable}
-                value={cellValue}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'radio') {
-          return (
-            <div>
-              <Radio
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                readOnly={!column.isEditable}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'toggle') {
-          return (
-            <div>
-              <Toggle
-                value={cellValue}
-                readOnly={!column.isEditable}
-                activeColor={column.activeColor}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'datepicker') {
-          return (
-            <div>
-              <Datepicker
-                dateFormat={column.dateFormat}
-                isTimeChecked={column.isTimeChecked}
-                value={cellValue}
-                readOnly={column.isEditable}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
+          case 'multiselect': {
+            return (
+              <div>
+                <SelectSearch
+                  printOptions="on-focus"
+                  multiple
+                  search={true}
+                  placeholder="Select.."
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'badge':
+          case 'badges': {
+            return (
+              <div>
+                <CustomSelect
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  multiple={columnType === 'badges'}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'tags': {
+            return (
+              <div>
+                <Tags
+                  value={cellValue}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'radio': {
+            return (
+              <div>
+                <Radio
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  readOnly={!column.isEditable}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'toggle': {
+            return (
+              <div>
+                <Toggle
+                  value={cellValue}
+                  readOnly={!column.isEditable}
+                  activeColor={column.activeColor}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'datepicker': {
+            return (
+              <div>
+                <Datepicker
+                  dateFormat={column.dateFormat}
+                  isTimeChecked={column.isTimeChecked}
+                  value={cellValue}
+                  readOnly={column.isEditable}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
         }
         return cellValue || '';
       },
@@ -765,8 +770,20 @@ export function Table({
                           }
                         }
                       }
+
                       return (
-                        <td key={index} {...cellProps}>
+                        // Does not require key as its already being passed by react-table via cellProps
+                        // eslint-disable-next-line react/jsx-key
+                        <td
+                          className={cx({
+                            'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+                            'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
+                            'has-dropdown': cell.column.columnType === 'dropdown',
+                            'has-multiselect': cell.column.columnType === 'multiselect',
+                            'has-datepicker': cell.column.columnType === 'datepicker',
+                          })}
+                          {...cellProps}
+                        >
                           {cell.render('Cell')}
                         </td>
                       );

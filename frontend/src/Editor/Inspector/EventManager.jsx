@@ -17,6 +17,7 @@ export const EventManager = ({
   excludeEvents,
   popOverCallback,
   popoverPlacement,
+  darkMode,
 }) => {
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
 
@@ -257,9 +258,11 @@ export const EventManager = ({
             }}
           >
             <div className={rowClassName} role="button">
-              <div className="col">{componentMeta.events[event.eventId]['displayName']}</div>
               <div className="col">
-                <small className="text-muted">{actionMeta.name}</small>
+                {componentMeta.events[event.eventId]['displayName']}
+              </div>
+              <div className="col">
+                <small className="event-action">{actionMeta.name}</small>
               </div>
               <div className="col-auto">
                 <span

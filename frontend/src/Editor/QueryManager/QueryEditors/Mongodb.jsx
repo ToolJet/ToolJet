@@ -125,7 +125,6 @@ class Mongodb extends React.Component {
                     mode="javascript"
                     lineNumbers={true}
                     placeholder={placeholders['mongodb']['find']}
-                    className="query-hinter"
                     onChange={(value) => changeOption(this, 'query', value)}
                   />
                 </div>
@@ -138,16 +137,21 @@ class Mongodb extends React.Component {
                     mode="javascript"
                     lineNumbers={true}
                     placeholder={placeholders['mongodb']['find']}
-                    className="query-hinter"
                     onChange={(value) => changeOption(this, 'sort', value)}
                   />
                 </div>
-                {/* <div className="mb-3 mt-2">
+                <div className="mb-3 mt-2">
                   <label className="form-label">Skip</label>
                   <NumberInput
+                    onComponentOptionChanged={(_ref, option_name, value) => { console.log("onComponentOptionChanged", option_name, value) }}
+                    onComponentClick={(e) => { console.log("onComponentClick", e) }}
+                    id={"mongo-skip"}
+                    width={70}
+                    height={25}
+                    component={{ "definition": { properties: { value: 1 } } }}
                   />
                 </div>
-                <div className="mb-3 mt-2">
+                {/* <div className="mb-3 mt-2">
                   <label className="form-label">Limit</label>
                   <NumberInput
                   />

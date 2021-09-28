@@ -25,7 +25,7 @@ export const NumberInput = function NumberInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newNumber]);
 
-  const placeholder = component.definition.properties.placeholder.value;
+  const placeholder = component.definition.properties?.placeholder?.value ?? 0;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
