@@ -63,6 +63,7 @@ return data.filter(row => row.amount > 1000);`;
             className="query-hinter"
             ignoreBraces={true}
             onChange={(value) => codeChanged(value)}
+            enablePreview={false}
           />
         </div>
       )}
