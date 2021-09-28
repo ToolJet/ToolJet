@@ -101,7 +101,6 @@ export const Container = ({
         }
 
         if (item.name === 'comment') {
-          // const { x, y } = monitor.getDifferenceFromInitialOffset();
           const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
           const offsetFromTopOfWindow = canvasBoundingRect.top;
           const offsetFromLeftOfWindow = canvasBoundingRect.left;
@@ -112,8 +111,7 @@ export const Container = ({
 
           const element = document.getElementById(`thread-${item.threadId}`)
           element.style.transform = `translate(${x}px, ${y}px)`
-          //TODO: add update endpoint
-          console.log(x, y);
+          commentsService.updateThread(item.threadId, { x, y });
           return undefined;
         }
 

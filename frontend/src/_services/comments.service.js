@@ -13,6 +13,10 @@ function createThread(data) {
   return adapter.post(`/thread/create`, data);
 }
 
+function updateThread(tid, data) {
+  return adapter.patch(`/thread/edit/${tid}`, data);
+}
+
 function getComments(tid) {
   return adapter.get(`/comment/${tid}/all`);
 }
@@ -24,6 +28,7 @@ function createComment(data) {
 export const commentsService = {
   getThreads,
   createThread,
+  updateThread,
   getComments,
   createComment
 };
