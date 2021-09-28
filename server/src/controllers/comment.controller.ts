@@ -20,8 +20,8 @@ export class CommentController {
     return comment;
   }
 
-  @Get('all')
-  public async getComments(tid: string): Promise<Comment[]> {
+  @Get('/:tid/all')
+  public async getComments(@Param('tid') tid: string): Promise<Comment[]> {
     const comments = await this.commentService.getComments(tid);
     return comments;
   }

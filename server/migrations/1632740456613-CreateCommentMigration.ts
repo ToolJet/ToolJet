@@ -19,6 +19,11 @@ export class CreateCommentMigration1632740456613 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'comment',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
             name: 'is_read',
             type: 'boolean',
             default: false,
