@@ -5,8 +5,8 @@ import HttpClient from '@/_helpers/http-client'
 // TODO: add authheader
 const adapter = new HttpClient()
 
-function getThreads() {
-  return adapter.get('/thread/all');
+function getThreads(appId) {
+  return adapter.get(`/thread/${appId}/all`);
 }
 
 function createThread(data) {

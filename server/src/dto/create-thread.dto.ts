@@ -1,4 +1,4 @@
-import { IsInt, IsUUID, IsString } from 'class-validator';
+import { IsInt, IsUUID } from 'class-validator';
 
 export class CreateThreadDTO {
   @IsInt()
@@ -6,6 +6,9 @@ export class CreateThreadDTO {
 
   @IsInt()
   y: number;
+
+  @IsUUID()
+  app_id: string;
 
   // @IsUUID()
   // user: string;

@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
+import cx from 'classnames'
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
@@ -6,6 +7,7 @@ import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
+import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 
@@ -48,6 +50,7 @@ export const Container = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [reload, reloadComments] = useState(false);
+  const router = useRouter()
 
   useEffect(() => {
     setBoxes(components);
@@ -93,29 +96,17 @@ export const Container = ({
     () => ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT, ItemTypes.NEW_COMMENT],
       async drop(item, monitor) {
-        console.log('here', item)
-
         if (item.parent) {
           return;
         }
 
         if (item.name === 'comment') {
           const { x, y } = monitor.getDifferenceFromInitialOffset();
-          const [_x, _y] = doSnapToGrid(x, y);
+          // const [_x, _y] = doSnapToGrid(x, y);
           const element = document.getElementById(`thread-${item.threadId}`)
-          element.style.transform = `translate(${_x}px, ${_y}px)`
+          element.style.transform = `translate(${x}px, ${y}px)`
           //TODO: add update endpoint
           console.log(x, y);
-          return undefined;
-        }
-        console.log('here', item)
-
-        if (item.name === 'new-comment') {
-          console.log('here')
-          const { x, y } = monitor.getDifferenceFromInitialOffset();
-          const [_x, _y] = doSnapToGrid(x, y);
-          await commentsService.createThread({ _x, _y })
-          reloadComments(true)
           return undefined;
         }
 
@@ -283,8 +274,30 @@ export const Container = ({
     console.log('current component => ', selectedComponent);
   }, [selectedComponent]);
 
+  const handleAddComment = async (e) => {
+    e.stopPropogation && e.stopPropogation()
+    reloadComments(false)
+    if (e.target.classList.contains('comment')) {
+      return
+    }
+    await commentsService.createThread({
+      app_id: router.query.id,
+      x: e.nativeEvent.offsetX,
+      y: e.nativeEvent.offsetY
+    })
+    reloadComments(true)
+  }
+
   return (
-    <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
+    <div
+      {...(showComments && { onClick: handleAddComment })}
+      ref={drop}
+      style={styles}
+      className={cx('real-canvas', {
+        'show-grid': isDragging || isResizing,
+        'cursor-wait': showComments
+      })}
+    >
       {showComments && <Comments reload={reload} />}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];

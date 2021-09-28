@@ -12,6 +12,9 @@ export class Thread extends BaseEntity {
   @Column({ name: 'y' })
   y: number;
 
+  @Column({ name: 'app_id' })
+  app_id: string;
+
   @Column({ default: false, name: 'is_resolved' })
   isResolved: boolean;
 

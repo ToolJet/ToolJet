@@ -24,6 +24,11 @@ export class CreateThreadMigration1632740487353 implements MigrationInterface {
             isNullable: true,
           },
           {
+            name: 'app_id',
+            type: 'uuid',
+            isNullable: false,
+          },
+          {
             name: 'user_id',
             type: 'uuid',
             isNullable: true,

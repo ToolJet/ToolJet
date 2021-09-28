@@ -6,17 +6,20 @@ import { isEmpty } from 'lodash';
 import Comment from './Comment';
 import { commentsService } from '@/_services';
 
+import useRouter from '@/_hooks/use-router';
+
 const Comments = ({ reload }) => {
   const [threads, setThreads] = React.useState([]);
+  const router = useRouter()
   async function fetchData() {
-    const { data } = await commentsService.getThreads()
+    const { data } = await commentsService.getThreads(router.query.id)
     setThreads(data)
   }
   React.useEffect(() => {
     fetchData();
   }, [])
   React.useEffect(() => {
-    fetchData();
+    reload && fetchData();
   }, [reload])
 
   if (isEmpty(threads)) return null

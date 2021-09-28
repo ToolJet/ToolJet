@@ -13,9 +13,9 @@ export class ThreadController {
     return thread;
   }
 
-  @Get('all')
-  public async getThreads(): Promise<Thread[]> {
-    const threads = await this.threadService.getThreads();
+  @Get('/:appId/all')
+  public async getThreads(@Param('appId') appId: string): Promise<Thread[]> {
+    const threads = await this.threadService.getThreads(appId);
     return threads;
   }
 

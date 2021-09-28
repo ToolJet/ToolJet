@@ -1741,6 +1741,10 @@ input:focus-visible {
     color: #fff;
   }
 
+  .card-subtitle {
+    color: #fff;
+  }
+
   .left-sidebar .active {
     background: #333c48;
   }
@@ -2178,4 +2182,8 @@ input[type='text'] {
 
 .draggable-box:focus-within {
   z-index: 2 !important;
+}
+
+.cursor-wait {
+  cursor: wait;
 }
