@@ -32,8 +32,8 @@ Pull requests are the best way to propose changes to the codebase (we use [Git-F
 5. Make sure your code lints.
 6. Issue that pull request!
 
-## Any contributions you make will be under the Apache-2.0 License
-In short, when you submit code changes, your submissions are understood to be under the same [Apache-2.0 License](https://www.apache.org/licenses/LICENSE-2.0) that covers the project.
+## Any contributions you make will be under the AGPL v3 License
+In short, when you submit code changes, your submissions are understood to be under the same [AGPL v3 License](https://www.gnu.org/licenses/agpl-3.0.en.html) that covers the project.
 
 ## Report bugs using Github's [issues](https://github.com/ToolJet/ToolJet/issues)
 We use GitHub issues to track public bugs. Report a bug by [opening a new issue](); it's that easy!
