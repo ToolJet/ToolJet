@@ -8,6 +8,49 @@ import Tabs from './Tabs';
 import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
+function getAllUrlParams(url) {
+  var queryString = url.split('?')[1];
+  var obj = {};
+  if (queryString) {
+    // queryString = queryString.split('#')[0];
+    var arr = queryString.split('&');
+
+    for (var i = 0; i < arr.length; i++) {
+      var a = arr[i].split('=');
+
+      var paramName = a[0];
+      var paramValue = typeof a[1] === 'undefined' ? true : a[1];
+      paramName = paramName.toLowerCase();
+      if (typeof paramValue === 'string') paramValue = paramValue.toLowerCase();
+
+      if (paramName.match(/\[(\d+)?\]$/)) {
+        // create key if it doesn't exist
+        var key = paramName.replace(/\[(\d+)?\]/, '');
+        if (!obj[key]) obj[key] = [];
+
+        if (paramName.match(/\[\d+\]$/)) {
+          var index = /\[(\d+)\]/.exec(paramName)[1];
+          obj[key][index] = paramValue;
+        } else {
+          // otherwise add the value to the end of the array
+          obj[key].push(paramValue);
+        }
+      } else {
+        if (!obj[paramName]) {
+          obj[paramName] = paramValue;
+        } else if (obj[paramName] && typeof obj[paramName] === 'string') {
+          obj[paramName] = [obj[paramName]];
+          obj[paramName].push(paramValue);
+        } else {
+          obj[paramName].push(paramValue);
+        }
+      }
+    }
+  }
+
+  return Object.keys(obj).map((key) => [key, obj[key]]);
+}
+
 class Restapi extends React.Component {
   constructor(props) {
     super(props);
@@ -70,9 +113,30 @@ class Restapi extends React.Component {
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
+  getParamsFromUrl = (url) => {
+    const { options } = this.state;
+    if (url.length === 0) {
+      options['url_params'] = [];
+      return this.setState({ options }, () => {
+        this.props.optionsChanged(options);
+      });
+    } else {
+      const params = getAllUrlParams(url);
+      params.map((option) => {
+        const optionArray = options['url_params'];
+        optionArray.push(option);
+      });
+
+      this.setState({ options }, () => {
+        this.props.optionsChanged(options);
+      });
+    }
+  };
+
   render() {
     const { options } = this.state;
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
+    console.log('__OPTIONS__', JSON.stringify(options));
     return (
       <div>
         <div className="mb-3 mt-2">
@@ -124,6 +188,7 @@ class Restapi extends React.Component {
                   theme={this.props.darkMode ? 'monokai' : 'default'}
                   onChange={(value) => {
                     changeOption(this, 'url', value);
+                    this.getParamsFromUrl(value);
                   }}
                   placeholder="Enter request URL"
                 />
