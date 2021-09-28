@@ -9,6 +9,7 @@ import { LeftSidebarZoom } from './sidebar-zoom';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
+import { LeftSidebarComment } from './SidebarComment';
 
 export const LeftSidebar = ({
   appId,
@@ -17,6 +18,7 @@ export const LeftSidebar = ({
   globals,
   components,
   queries,
+  toggleComments,
   onZoomChanged,
   dataSources = [],
   dataSourcesChanged,
@@ -33,6 +35,7 @@ export const LeftSidebar = ({
         dataSourcesChanged={dataSourcesChanged}
       />
       <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
+      <LeftSidebarComment toggleComments={toggleComments} />
       <LeftSidebarItem
         onClick={() => router.push('/')}
         tip="Back to home"

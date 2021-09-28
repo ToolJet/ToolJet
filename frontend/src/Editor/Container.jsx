@@ -7,6 +7,7 @@ import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
 import Comments from './Comments';
+import { commentsService } from '@/_services';
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -33,6 +34,7 @@ export const Container = ({
   scaleValue,
   selectedComponent,
   darkMode,
+  showComments,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
@@ -45,6 +47,7 @@ export const Container = ({
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [reload, reloadComments] = useState(false);
 
   useEffect(() => {
     setBoxes(components);
@@ -88,8 +91,10 @@ export const Container = ({
 
   const [, drop] = useDrop(
     () => ({
-      accept: [ItemTypes.BOX, ItemTypes.COMMENT],
-      drop(item, monitor) {
+      accept: [ItemTypes.BOX, ItemTypes.COMMENT, ItemTypes.NEW_COMMENT],
+      async drop(item, monitor) {
+        console.log('here', item)
+
         if (item.parent) {
           return;
         }
@@ -97,10 +102,20 @@ export const Container = ({
         if (item.name === 'comment') {
           const { x, y } = monitor.getDifferenceFromInitialOffset();
           const [_x, _y] = doSnapToGrid(x, y);
-          const element = document.getElementById(`thread-${item.commentId}`)
+          const element = document.getElementById(`thread-${item.threadId}`)
           element.style.transform = `translate(${_x}px, ${_y}px)`
           //TODO: add update endpoint
           console.log(x, y);
+          return undefined;
+        }
+        console.log('here', item)
+
+        if (item.name === 'new-comment') {
+          console.log('here')
+          const { x, y } = monitor.getDifferenceFromInitialOffset();
+          const [_x, _y] = doSnapToGrid(x, y);
+          await commentsService.createThread({ _x, _y })
+          reloadComments(true)
           return undefined;
         }
 
@@ -195,7 +210,7 @@ export const Container = ({
         return undefined;
       },
     }),
-    [moveBox]
+    []
   );
 
   function onResizeStop(id, e, direction, ref, d, position) {
@@ -270,7 +285,7 @@ export const Container = ({
 
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
-      <Comments />
+      {showComments && <Comments reload={reload} />}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =

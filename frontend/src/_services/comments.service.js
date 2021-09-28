@@ -9,11 +9,21 @@ function getThreads() {
   return adapter.get('/thread/all');
 }
 
-function getComment(id) {
-  return adapter.get(`/comments/${id}`);
+function createThread(data) {
+  return adapter.post(`/thread/create`, data);
+}
+
+function getComments(tid) {
+  return adapter.get(`/comment/${tid}/all`);
+}
+
+function createComment(data) {
+  return adapter.post(`/comment/create`, data);
 }
 
 export const commentsService = {
   getThreads,
-  getComment
+  createThread,
+  getComments,
+  createComment
 };

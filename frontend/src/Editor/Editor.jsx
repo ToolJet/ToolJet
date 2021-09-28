@@ -60,6 +60,7 @@ class Editor extends React.Component {
       loadingDataQueries: true,
       showQueryEditor: true,
       showLeftSidebar: true,
+      showComments: false,
       zoomLevel: 1.0,
       currentLayout: 'desktop',
       scaleValue: 1,
@@ -449,6 +450,10 @@ class Editor extends React.Component {
     this.setState({ showLeftSidebar: !this.state.showLeftSidebar });
   };
 
+  toggleComments = () => {
+    this.setState({ showComments: !this.state.showComments });
+  };
+
   configHandleClicked = (id, component) => {
     this.switchSidebarTab(1);
     this.setState({ selectedComponent: { id, component } });
@@ -520,6 +525,7 @@ class Editor extends React.Component {
       isDeletingDataQuery,
       apps,
       defaultComponentStateComputed,
+      showComments
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
 
@@ -672,6 +678,7 @@ class Editor extends React.Component {
               dataSources={this.state.dataSources}
               dataSourcesChanged={this.dataSourcesChanged}
               onZoomChanged={this.onZoomChanged}
+              toggleComments={this.toggleComments}
               switchDarkMode={this.props.switchDarkMode}
             />
             <div className="main">
@@ -683,6 +690,7 @@ class Editor extends React.Component {
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
                   {defaultComponentStateComputed && (
                     <Container
+                      showComments={showComments}
                       appDefinition={appDefinition}
                       appDefinitionChanged={this.appDefinitionChanged}
                       snapToGrid={true}

@@ -6,24 +6,26 @@ import { isEmpty } from 'lodash';
 import Comment from './Comment';
 import { commentsService } from '@/_services';
 
-const Comments = () => {
-  const [commentPositions, setCommentPositions] = React.useState([]);
-
+const Comments = ({ reload }) => {
+  const [threads, setThreads] = React.useState([]);
+  async function fetchData() {
+    const { data } = await commentsService.getThreads()
+    setThreads(data)
+  }
   React.useEffect(() => {
-    async function fetchData() {
-      const { data } = await commentsService.getThreads()
-      setCommentPositions(data)
-    }
     fetchData();
   }, [])
+  React.useEffect(() => {
+    fetchData();
+  }, [reload])
 
-  if (isEmpty(commentPositions)) return null
+  if (isEmpty(threads)) return null
 
   return (
-    Object.keys(commentPositions).map((key) => {
-      const { x, y } = commentPositions[key];
+    threads.map((thread) => {
+      const { id, x, y } = thread;
       return (
-        <Comment commentId={key} x={x} y={y} />
+        <Comment threadId={id} x={x} y={y} />
       )
     })
   )

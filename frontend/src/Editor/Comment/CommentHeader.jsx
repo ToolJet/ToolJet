@@ -1,9 +1,12 @@
 import React from 'react'
 
-const CommentHeader = () => {
+const pluralize = (count, noun, suffix = 's') =>
+  `${count} ${noun}${count !== 1 ? suffix : ''}`;
+
+const CommentHeader = ({ count = 0 }) => {
   return (
     <div className="card-header">
-      <div className="card-subtitle mt-1">5 comments</div>
+      <div className="card-subtitle mt-1">{pluralize(count, 'comment')}</div>
       <span className="ms-auto">
         <svg
           xmlns="http://www.w3.org/2000/svg"

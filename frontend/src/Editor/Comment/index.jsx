@@ -10,14 +10,14 @@ import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
 
-const Comment = ({ x, y, commentId }) => {
+const Comment = ({ x, y, threadId }) => {
   const [loading, setLoading] = React.useState(true);
   const [thread, setThread] = React.useState([]);
   const [placement, setPlacement] = React.useState('left');
   const [open, trigger, content, setOpen] = usePopover(false);
   const [collected, drag] = useDrag(() => ({
     type: ItemTypes.COMMENT,
-    item: { commentId, name: 'comment' },
+    item: { threadId, name: 'comment' },
   }));
 
   React.useLayoutEffect(() => {
@@ -25,21 +25,30 @@ const Comment = ({ x, y, commentId }) => {
 
     console.log(left)
     console.log(trigger?.ref?.current?.getBoundingClientRect());
-    if (left < 430) setPlacement('right');
+    if (left < 460) setPlacement('right');
     else setPlacement('left');
   }, [trigger]);
 
+  async function fetchData() {
+    const { data } = await commentsService.getComments(threadId)
+    setThread(data)
+    setLoading(false)
+    console.log(data)
+  }
+
   React.useEffect(() => {
     if (open) {
-      async function fetchData() {
-        const { data } = await commentsService.getComment(commentId)
-        setThread(data)
-        setLoading(false)
-        console.log(data)
-      }
       fetchData();
     }
   }, [open])
+
+  const handleSubmit = async (comment) => {
+    await commentsService.createComment({
+      tid: threadId,
+      comment
+    })
+    fetchData()
+  }
 
   const commentFadeStyle = useSpring({ from: { opacity: 0 }, to: { opacity: 1 } })
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 })
@@ -47,7 +56,7 @@ const Comment = ({ x, y, commentId }) => {
   return (
     <animated.div
       ref={drag}
-      id={`thread-${commentId}`}
+      id={`thread-${threadId}`}
       className={cx("comments cursor-move", { 'open': open })}
       style={{
         transform: `translate(${x}px, ${y}px)`,
@@ -69,9 +78,9 @@ const Comment = ({ x, y, commentId }) => {
           })}
         >
           <div className="card-status-start bg-primary" />
-          <CommentHeader />
+          <CommentHeader count={thread?.length} />
           <CommentBody isLoading={loading} thread={thread} />
-          <CommentFooter />
+          <CommentFooter handleSubmit={handleSubmit} />
         </animated.div>
       </label>
     </animated.div>
