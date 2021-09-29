@@ -18,8 +18,8 @@ export class CommentService {
     private commentRepository: CommentRepository
   ) {}
 
-  public async createComment(createCommentDto: CreateCommentDTO): Promise<Comment> {
-    return await this.commentRepository.createComment(createCommentDto);
+  public async createComment(createCommentDto: CreateCommentDTO, id: string): Promise<Comment> {
+    return await this.commentRepository.createComment(createCommentDto, id);
   }
 
   public async getComments(tid: string): Promise<Comment[]> {

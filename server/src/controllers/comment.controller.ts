@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Patch } from '@nestjs/common';
+import { Controller, Request, Get, Post, Body, Param, Delete, UseGuards, Patch } from '@nestjs/common';
 import { CommentService } from '@services/comment.service';
 import { CreateCommentDTO } from '../dto/create-comment.dto';
 import { Comment } from '../entities/comment.entity';
-// import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 
 // createComment(): This method will be used to process a POST HTTP request sent from the client-side to create a new comment and persist it in the database.
 // getComments(): This method will be responsible for fetching the entire list of comments from the database.
@@ -14,9 +14,10 @@ import { Comment } from '../entities/comment.entity';
 export class CommentController {
   constructor(private commentService: CommentService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('create')
-  public async createComment(@Body() createCommentDto: CreateCommentDTO): Promise<Comment> {
-    const comment = await this.commentService.createComment(createCommentDto);
+  public async createComment(@Request() req, @Body() createCommentDto: CreateCommentDTO): Promise<Comment> {
+    const comment = await this.commentService.createComment(createCommentDto, req.user.id);
     return comment;
   }
 

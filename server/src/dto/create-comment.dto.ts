@@ -7,6 +7,6 @@ export class CreateCommentDTO {
   @IsString()
   tid: string;
 
-  // @IsUUID()
-  // user: string;
+  @IsUUID()
+  user_id: string;
 }
