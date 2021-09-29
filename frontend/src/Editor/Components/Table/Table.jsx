@@ -767,6 +767,7 @@ export function Table({
                           ) {
                             console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
+                            cellProps.style['--tblr-table-accent-bg'] = '#ffffde';
                           }
                         }
                       }
@@ -784,7 +785,9 @@ export function Table({
                           })}
                           {...cellProps}
                         >
-                          {cell.render('Cell')}
+                          <div className="td-container">
+                            {cell.render('Cell')}
+                          </div>
                         </td>
                       );
                     })}

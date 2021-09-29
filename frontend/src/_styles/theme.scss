@@ -780,7 +780,7 @@ body {
   }
 
   td {
-    min-height: 55px;
+    min-height: 40px;
     overflow-x: initial;
     margin: auto;
 
@@ -813,6 +813,13 @@ body {
     .text-container:hover {
       outline: none;
       height: 100%;
+    }
+
+    display: flex!important;
+
+    .td-container {
+      margin-top: auto;
+      margin-bottom: auto;
     }
   }
 
