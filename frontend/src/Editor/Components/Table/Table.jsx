@@ -333,7 +333,7 @@ export function Table({
             const textColor = resolveReferences(column.textColor, currentState, { cellValue });
 
             const cellStyles = {
-              color: textColor === undefined ? (darkMode === true ? '#fff' : 'black') : textColor,
+              color: textColor ?? '',
             };
 
             if (column.isEditable) {
@@ -730,7 +730,7 @@ export function Table({
 
   React.useEffect(() => {
     if (serverSidePagination || !clientSidePagination) {
-      setPageSize(-1);
+      setPageSize(rows?.length || 10);
     }
     if (!serverSidePagination && clientSidePagination) {
       setPageSize(10);

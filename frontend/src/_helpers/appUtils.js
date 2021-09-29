@@ -414,7 +414,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
-  if (options.requestConfirmation) {
+  if (dataQuery.options.requestConfirmation) {
     if (confirmed === undefined) {
       _ref.setState({
         showQueryConfirmation: true,
@@ -495,6 +495,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
             toast.success(dataQuery.options.successMessage, {
               hideProgressBar: true,
               autoClose: notificationDuration * 1000,
+            });
+          }
+
+          if (dataQuery.options.requestConfirmation) {
+            toast.info(`Query (${dataQuery.name}) completed.`, {
+              hideProgressBar: true,
+              position: 'bottom-center',
             });
           }
 
