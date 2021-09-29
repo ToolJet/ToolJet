@@ -132,7 +132,7 @@ class Mongodb extends React.Component {
                   <label className="form-label">Sort</label>
                   <CodeHinter
                     currentState={this.props.currentState}
-                    initialValue={this.state.options.document}
+                    initialValue={this.state.options.sort}
                     theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                     mode="javascript"
                     lineNumbers={true}
@@ -141,21 +141,24 @@ class Mongodb extends React.Component {
                   />
                 </div>
                 <div className="mb-3 mt-2">
-                  <label className="form-label">Skip</label>
-                  <NumberInput
-                    onComponentOptionChanged={(_ref, option_name, value) => { console.log("onComponentOptionChanged", option_name, value) }}
-                    onComponentClick={(e) => { console.log("onComponentClick", e) }}
-                    id={"mongo-skip"}
-                    width={70}
-                    height={25}
-                    component={{ "definition": { properties: { value: 1 } } }}
+                  <label className="form-label">Limit</label>
+                  <input
+                    onChange={(e) => changeOption(this, 'limit', parseInt(e.target.value))}
+                    type="number"
+                    className="form-control"
+                    value={this.state.options?.limit}
                   />
                 </div>
-                {/* <div className="mb-3 mt-2">
-                  <label className="form-label">Limit</label>
-                  <NumberInput
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Skip</label>
+                  <input
+                    onChange={(e) => changeOption(this, 'skip', parseInt(e.target.value))}
+                    type="number"
+                    className="form-control"
+                    value={this.state.options?.skip}
                   />
-                </div> */}
+                </div>
+
               </div>
             )}
 
