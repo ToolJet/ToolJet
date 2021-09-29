@@ -630,7 +630,7 @@ export function Table({
               <input
                 type="checkbox"
                 className=""
-                // style={{ background: action.backgroundColor, color: action.textColor }}
+                // TODO: Add color for checkbox
                 checked={currentState.components[component.name]?.selectedRowIds?.includes(cell.row.id) ?? false}
                 onClick={(e) => {
                   e.stopPropagation();
