@@ -45,7 +45,7 @@
     "prepare": "husky install"
   },
   "engines": {
-    "node": ">=14.17.3",
-    "npm": "<=7.20.0"
+    "node": "14.x",
+    "npm": "6.x"
   }
 }
