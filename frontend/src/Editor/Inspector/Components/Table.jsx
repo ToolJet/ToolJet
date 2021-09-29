@@ -670,6 +670,15 @@ class Table extends React.Component {
             'properties',
             currentState
           )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showBulkSelector',
+            'properties',
+            currentState
+          )}
 
           <div className="hr-text">Events</div>
 

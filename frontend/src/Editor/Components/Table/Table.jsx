@@ -59,6 +59,9 @@ export function Table({
   const showBulkUpdateActionsProperty = component.definition.properties.showBulkUpdateActions?.value;
   const showBulkUpdateActions = resolveWidgetFieldValue(showBulkUpdateActionsProperty, currentState) ?? true; // default is true for backward compatibility
 
+  const showBulkSelectorProperty = component.definition.properties.showBulkSelector?.value;
+  const showBulkSelector = resolveWidgetFieldValue(showBulkSelectorProperty, currentState) ?? false; // default is false for backward compatibility
+
   const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
   const clientSidePagination =
     resolveWidgetFieldValue(clientSidePaginationProperty, currentState) ?? !serverSidePagination; // default is true for backward compatibility
@@ -607,61 +610,60 @@ export function Table({
         ]
       : [];
 
-  const selectorData =
-    // eslint-disable-next-line no-constant-condition
-    1 === 1
-      ? [
-          {
-            id: 'selector',
-            Header: (
+  console.log('bulkselector', showBulkSelector);
+  const selectorData = showBulkSelector
+    ? [
+        {
+          id: 'selector',
+          Header: (
+            <input
+              type="checkbox"
+              className=""
+              onClick={(e) => {
+                e.stopPropagation();
+                onEvent('onTableSelectAllClicked', {
+                  component,
+                  rowIds: rows.map((row) => row.id),
+                  checked: e.currentTarget.checked,
+                });
+              }}
+              style={{
+                width: 15,
+                height: 15,
+                marginTop: 0,
+                marginLeft: 10,
+              }}
+            />
+          ),
+          accessor: 'selector',
+          width: 1,
+          Cell: (cell) => {
+            return (
               <input
                 type="checkbox"
                 className=""
+                // style={{ background: action.backgroundColor, color: action.textColor }}
+                checked={currentState.components[component.name]?.selectedRowIds?.includes(cell.row.id) ?? false}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEvent('onTableSelectAllClicked', {
+                  onEvent('onTableSelectorChanged', {
                     component,
-                    rowIds: rows.map((row) => row.id),
-                    checked: e.currentTarget.checked,
+                    rowId: cell.row.id,
+                    value: e.currentTarget.checked,
                   });
                 }}
                 style={{
                   width: 15,
                   height: 15,
-                  marginTop: 0,
+                  marginTop: 8,
                   marginLeft: 10,
                 }}
               />
-            ),
-            accessor: 'selector',
-            width: 1,
-            Cell: (cell) => {
-              return (
-                <input
-                  type="checkbox"
-                  className=""
-                  // style={{ background: action.backgroundColor, color: action.textColor }}
-                  checked={currentState.components[component.name]?.selectedRowIds?.includes(cell.row.id) ?? false}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEvent('onTableSelectorChanged', {
-                      component,
-                      rowId: cell.row.id,
-                      value: e.currentTarget.checked,
-                    });
-                  }}
-                  style={{
-                    width: 15,
-                    height: 15,
-                    marginTop: 8,
-                    marginLeft: 10,
-                  }}
-                />
-              );
-            },
+            );
           },
-        ]
-      : [];
+        },
+      ]
+    : [];
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
 
@@ -675,6 +677,7 @@ export function Table({
       componentState.selectedRowIds,
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
+      showBulkSelector,
     ] // Hack: need to fix
   );
 
