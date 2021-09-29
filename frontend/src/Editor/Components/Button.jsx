@@ -1,21 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, getDynamicText, resolveWidgetFieldValue } from '@/_helpers/utils';
 var tinycolor = require('tinycolor2');
-
-const getButtonText = (text, currentState) => {
-  let data = text;
-  if (currentState) {
-    const matchedParams = text.match(/\{\{(.*?)\}\}/g);
-
-    if (matchedParams) {
-      for (const param of matchedParams) {
-        const resolvedParam = resolveReferences(param, currentState, '');
-        data = data.replace(param, resolvedParam);
-      }
-    }
-  }
-  return data;
-}
 
 export const Button = function Button({ id, width, height, component, onComponentClick, currentState }) {
   const [loadingState, setLoadingState] = useState(false);
@@ -64,7 +49,7 @@ export const Button = function Button({ id, width, height, component, onComponen
         onComponentClick(id, component);
       }}
     >
-      {getButtonText(text, currentState)}
+      {getDynamicText(text, currentState)}
     </button>
   );
 };
