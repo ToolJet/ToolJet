@@ -761,7 +761,7 @@ export function Table({
 
       onComponentOptionChanged(component, 'selectedRows', selectedRowsData);
     }
-  }, [componentState.selectedRowIds]);
+  }, [componentState.selectedRowIds, changeSet]);
 
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {

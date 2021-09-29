@@ -56,6 +56,7 @@ export const componentTypes = [
       dataUpdates: [],
       pageIndex: 0,
       searchText: '',
+      selectedRows: [],
     },
     definition: {
       others: {
