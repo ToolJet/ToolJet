@@ -23,7 +23,6 @@ import { Radio } from './Radio';
 import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
-import { v4 as uuidv4 } from 'uuid';
 var _ = require('lodash');
 export function Table({
   id,
