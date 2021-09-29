@@ -1,8 +1,10 @@
 import 'codemirror/theme/duotone-light.css';
+
 import React from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { isEmpty, defaults } from 'lodash';
 import Tabs from './Tabs';
+
 import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
@@ -64,14 +66,13 @@ class Restapi extends React.Component {
   };
 
   handleChange = (key, keyIndex, idx) => (value) => {
-    if (this.state.options[key].length - 1 === idx && keyIndex === 1 && value.length > 0) this.addNewKeyValuePair(key);
+    if (this.state.options[key].length - 1 === idx) this.addNewKeyValuePair(key);
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
   render() {
     const { options } = this.state;
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
-
     return (
       <div>
         <div className="mb-3 mt-2">
