@@ -657,7 +657,7 @@ export function Table({
 
   React.useEffect(() => {
     if (serverSidePagination || !clientSidePagination) {
-      setPageSize(-1);
+      setPageSize(rows?.length || 10);
     }
     if (!serverSidePagination && clientSidePagination) {
       setPageSize(10);
