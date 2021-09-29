@@ -505,4 +505,5 @@ class QueryManager extends React.Component {
   }
 }
 
+QueryManager = React.memo(QueryManager);
 export { QueryManager };
