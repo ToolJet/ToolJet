@@ -273,18 +273,6 @@ export function Table({
     }
   }, [color, darkMode]);
 
-  // const selector = () => ({
-  //   id: uuidv4(),
-  //   Header: '',
-  //   accessor: column.selected,
-  //   filter: customFilter,
-  //   width: width,
-  //   columnOptions,
-  //   columnType: 'checkbox',
-  //   isEditable: true,
-  //   Cell: cell => <input type='checkbox' />
-  // })
-
   const columnData = component.definition.properties.columns.value.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
     const columnType = column.columnType;
@@ -610,31 +598,32 @@ export function Table({
         ]
       : [];
 
-  console.log('bulkselector', showBulkSelector);
+  const selectAllCheckBox = () => (
+    <input
+      type="checkbox"
+      className=""
+      onClick={(e) => {
+        e.stopPropagation();
+        onEvent('onTableSelectAllClicked', {
+          component,
+          rowIds: rows.map((row) => row.id),
+          checked: e.currentTarget.checked,
+        });
+      }}
+      style={{
+        width: 15,
+        height: 15,
+        marginTop: 0,
+        marginLeft: 10,
+      }}
+    />
+  );
+
   const selectorData = showBulkSelector
     ? [
         {
           id: 'selector',
-          Header: (
-            <input
-              type="checkbox"
-              className=""
-              onClick={(e) => {
-                e.stopPropagation();
-                onEvent('onTableSelectAllClicked', {
-                  component,
-                  rowIds: rows.map((row) => row.id),
-                  checked: e.currentTarget.checked,
-                });
-              }}
-              style={{
-                width: 15,
-                height: 15,
-                marginTop: 0,
-                marginLeft: 10,
-              }}
-            />
-          ),
+          Header: selectAllCheckBox(),
           accessor: 'selector',
           width: 1,
           Cell: (cell) => {
