@@ -376,7 +376,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
-  if (options.requestConfirmation) {
+  if (dataQuery.options.requestConfirmation) {
     if (confirmed === undefined) {
       _ref.setState({
         showQueryConfirmation: true,

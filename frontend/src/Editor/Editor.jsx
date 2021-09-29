@@ -81,7 +81,7 @@ class Editor extends React.Component {
       showQuerySearchField: false,
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
-      showQueryConfirmation: false
+      showQueryConfirmation: false,
     };
   }
 
@@ -327,29 +327,6 @@ class Editor extends React.Component {
     );
   };
 
-  executeRunQuery = (_ref, dataQuery) => {
-    const confirmation = this.state.selectedQuery.options.requestConfirmation
-
-    if(confirmation) {
-      this.setState({ showQueryConfirmation: true })
-    } else {
-      runQuery(_ref, dataQuery.id, dataQuery.name).then(() => {
-        toast.info(`Query (${dataQuery.name}) completed.`, {
-          hideProgressBar: true,
-          position: 'bottom-center',
-        });
-      });
-    }
-  }
-
-  onDataQueryConfirm = () => {
-    const queryConfirmationData = {
-      queryId: this.state.selectedQuery.id,
-      queryName: this.state.selectedQuery.name
-    }
-    onQueryConfirm(this, queryConfirmationData)
-  }
-
   deleteDataQuery = () => {
     this.setState({ showDataQueryDeletionConfirmation: true });
   };
@@ -433,7 +410,12 @@ class Editor extends React.Component {
             <button
               className="btn badge bg-azure-lt"
               onClick={() => {
-                this.executeRunQuery(this, dataQuery)
+                runQuery(this, dataQuery.id, dataQuery.name).then(() => {
+                  toast.info(`Query (${dataQuery.name}) completed.`, {
+                    hideProgressBar: true,
+                    position: 'bottom-center',
+                  });
+                });
               }}
             >
               <div>
@@ -550,7 +532,7 @@ class Editor extends React.Component {
         <Confirm
           show={showQueryConfirmation}
           message={'Do you want to run this query?'}
-          onConfirm={this.onDataQueryConfirm}
+          onConfirm={(queryConfirmationData) => onQueryConfirm(this, queryConfirmationData)}
           onCancel={() => onQueryCancel(this)}
           queryConfirmationData={this.state.queryConfirmationData}
         />
