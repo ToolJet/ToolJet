@@ -38,44 +38,31 @@ class ManageOrgUsers extends React.Component {
 
     //Name
     if (!fields['firstName']) {
-      formIsValid = false;
       errors['firstName'] = 'This field is required';
-    }
-
-    if (typeof fields['firstName'] !== 'undefined') {
+    } else if (typeof fields['firstName'] !== 'undefined') {
       if (!fields['firstName'].match(/^[a-zA-Z]+$/)) {
-        formIsValid = false;
         errors['firstName'] = 'Only letters are allowed';
       }
     }
-
     if (!fields['lastName']) {
-      formIsValid = false;
       errors['lastName'] = 'This field is required';
-    }
-
-    if (typeof fields['lastName'] !== 'undefined') {
+    } else if (typeof fields['lastName'] !== 'undefined') {
       if (!fields['lastName'].match(/^[a-zA-Z]+$/)) {
-        formIsValid = false;
         errors['lastName'] = 'Only letters are allowed';
       }
     }
-
     //Email
     if (!fields['email']) {
-      formIsValid = false;
       errors['email'] = 'This field is required';
-    }
-
-    if (!this.validateEmail(fields['email'])) {
-        formIsValid = false;
+    } else if (!this.validateEmail(fields['email'])) {
         errors['email'] = 'Email is not valid';
     }
-
     if (!fields['role']) {
-      formIsValid = false;
       errors['role'] = 'This field is required';
     }
+    
+    this.setState({ errors: errors });
+    return Object.keys(errors).length  === 0;
 
     this.setState({ errors: errors });
     return formIsValid;
