@@ -10,28 +10,24 @@ import useRouter from '@/_hooks/use-router';
 
 const Comments = ({ reload }) => {
   const [threads, setThreads] = React.useState([]);
-  const router = useRouter()
+  const router = useRouter();
   async function fetchData() {
-    const { data } = await commentsService.getThreads(router.query.id)
-    setThreads(data)
+    const { data } = await commentsService.getThreads(router.query.id);
+    setThreads(data);
   }
   React.useEffect(() => {
     fetchData();
-  }, [])
+  }, []);
   React.useEffect(() => {
     reload && fetchData();
-  }, [reload])
+  }, [reload]);
 
-  if (isEmpty(threads)) return null
+  if (isEmpty(threads)) return null;
 
-  return (
-    threads.map((thread) => {
-      const { id, x, y } = thread;
-      return (
-        <Comment threadId={id} x={x} y={y} />
-      )
-    })
-  )
-}
+  return threads.map((thread) => {
+    const { id, x, y } = thread;
+    return <Comment key={id} threadId={id} x={x} y={y} user={thread.user} />;
+  });
+};
 
 export default Comments;

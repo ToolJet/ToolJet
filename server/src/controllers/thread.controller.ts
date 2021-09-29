@@ -1,15 +1,17 @@
-import { Controller, Post, Body, Get, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Request, Post, Body, Get, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ThreadService } from '../services/thread.service';
 import { CreateThreadDTO } from '../dto/create-thread.dto';
 import { Thread } from '../entities/thread.entity';
+import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 
 @Controller('thread')
 export class ThreadController {
   constructor(private threadService: ThreadService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('create')
-  public async createThread(@Body() createThreadDto: CreateThreadDTO): Promise<Thread> {
-    const thread = await this.threadService.createThread(createThreadDto);
+  public async createThread(@Request() req, @Body() createThreadDto: CreateThreadDTO): Promise<Thread> {
+    const thread = await this.threadService.createThread(createThreadDto, req.user.id);
     return thread;
   }
 

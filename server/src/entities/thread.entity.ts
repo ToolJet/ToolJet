@@ -15,10 +15,13 @@ export class Thread extends BaseEntity {
   @Column({ name: 'app_id' })
   app_id: string;
 
+  @Column({ name: 'user_id' })
+  user_id: string;
+
   @Column({ default: false, name: 'is_resolved' })
   isResolved: boolean;
 
-  @OneToOne(() => User, (user) => user.id)
+  @OneToOne(() => User, (user) => user.id, { eager: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
 }
