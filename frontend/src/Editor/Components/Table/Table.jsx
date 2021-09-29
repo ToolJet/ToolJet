@@ -317,7 +317,7 @@ export function Table({
             const textColor = resolveReferences(column.textColor, currentState, { cellValue });
 
             const cellStyles = {
-              color: textColor === undefined ? (darkMode === true ? '#fff' : 'black') : textColor,
+              color: textColor ?? '',
             };
 
             if (column.isEditable) {
