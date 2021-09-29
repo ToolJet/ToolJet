@@ -121,7 +121,6 @@ export const DraggableBox = function DraggableBox({
     display: 'inline-block',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '2px',
   };
 
   let refProps = {};
