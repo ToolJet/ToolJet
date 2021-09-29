@@ -16,7 +16,7 @@ export class DataQueriesService {
     private dataSourcesService: DataSourcesService,
     @InjectRepository(DataQuery)
     private dataQueriesRepository: Repository<DataQuery>
-  ) {}
+  ) { }
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({ id: dataQueryId }, { relations: ['dataSource', 'app'] });
@@ -122,7 +122,10 @@ export class DataQueriesService {
   }
 
   async parseQueryOptions(object: any, options: object): Promise<object> {
-    if (typeof object === 'object') {
+    if (!object) {
+      return object;
+    }
+    else if (typeof object === 'object') {
       for (const key of Object.keys(object)) {
         object[key] = await this.parseQueryOptions(object[key], options);
       }
@@ -143,7 +146,7 @@ export class DataQueriesService {
         return object;
       }
     } else if (Array.isArray(object)) {
-      object.forEach((element) => {});
+      object.forEach((element) => { });
 
       for (const [index, element] of object) {
         object[index] = await this.parseQueryOptions(element, options);
