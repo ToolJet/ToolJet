@@ -739,6 +739,7 @@ export function Table({
     if (selectedRows) {
       const selectedRowsData = selectedRows.map((row) => {
         const changes = changeSet ? changeSet[row.id] ?? {} : {};
+        // In the next statement, slice(1) is used to discard the cell that contains checkbox(which is the first one)
         const rowEntries = row.cells.slice(1).map((cell) => {
           const currentColumn = columnData.find((column) => column.id === cell.column.id);
           return { [currentColumn.accessor]: cell.value };
