@@ -23,6 +23,7 @@ import { Radio } from './Radio';
 import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
 import { GlobalFilter } from './GlobalFilter';
+import { v4 as uuidv4 } from 'uuid';
 var _ = require('lodash');
 export function Table({
   id,
@@ -268,6 +269,18 @@ export function Table({
       return darkMode ? '#ffffff' : '#000000';
     }
   }, [color, darkMode]);
+
+  // const selector = () => ({
+  //   id: uuidv4(),
+  //   Header: '',
+  //   accessor: column.selected,
+  //   filter: customFilter,
+  //   width: width,
+  //   columnOptions,
+  //   columnType: 'checkbox',
+  //   isEditable: true,
+  //   Cell: cell => <input type='checkbox' />
+  // })
 
   const columnData = component.definition.properties.columns.value.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
@@ -594,15 +607,72 @@ export function Table({
         ]
       : [];
 
+  const selectorData =
+    // eslint-disable-next-line no-constant-condition
+    1 === 1
+      ? [
+          {
+            id: 'selector',
+            Header: (
+              <input
+                type="checkbox"
+                className=""
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEvent('onTableSelectAllClicked', {
+                    component,
+                    rowIds: rows.map((row) => row.id),
+                    checked: e.currentTarget.checked,
+                  });
+                }}
+                style={{
+                  width: 15,
+                  height: 15,
+                  marginTop: 0,
+                  marginLeft: 10,
+                }}
+              />
+            ),
+            accessor: 'selector',
+            width: 1,
+            Cell: (cell) => {
+              return (
+                <input
+                  type="checkbox"
+                  className=""
+                  // style={{ background: action.backgroundColor, color: action.textColor }}
+                  checked={currentState.components[component.name]?.selectedRowIds?.includes(cell.row.id) ?? false}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEvent('onTableSelectorChanged', {
+                      component,
+                      rowId: cell.row.id,
+                      value: e.currentTarget.checked,
+                    });
+                  }}
+                  style={{
+                    width: 15,
+                    height: 15,
+                    marginTop: 8,
+                    marginLeft: 10,
+                  }}
+                />
+              );
+            },
+          },
+        ]
+      : [];
+
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
 
   const columns = useMemo(
-    () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
+    () => [...selectorData, ...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
       JSON.stringify(columnData),
       leftActionsCellData.length,
       rightActionsCellData.length,
       componentState.changeSet,
+      componentState.selectedRowIds,
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
     ] // Hack: need to fix
@@ -674,9 +744,26 @@ export function Table({
   }, [tableData.length, componentState.changeSet]);
 
   useEffect(() => {
+    const selectedRows = page.filter((row) => componentState.selectedRowIds?.includes(row.id));
+    if (selectedRows) {
+      const selectedRowsData = selectedRows.map((row) => {
+        const changes = changeSet ? changeSet[row.id] ?? {} : {};
+        const rowEntries = row.cells.slice(1).map((cell) => {
+          const currentColumn = columnData.find((column) => column.id === cell.column.id);
+          return { [currentColumn.accessor]: cell.value };
+        });
+        const rowData = rowEntries.reduce((result, rowEntry) => Object.assign(result, rowEntry), {});
+        return { ...rowData, ...changes };
+      });
+
+      onComponentOptionChanged(component, 'selectedRows', selectedRowsData);
+    }
+  }, [componentState.selectedRowIds]);
+
+  useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', { ...columnSizes, ...state.columnResizing.columnWidths });
+      paramUpdated(id, 'ww', { ...columnSizes, ...state.columnResizing.columnWidths });
     } else {
       changeCanDrag(false);
     }
