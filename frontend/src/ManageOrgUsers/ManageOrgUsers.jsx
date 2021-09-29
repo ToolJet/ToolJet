@@ -34,8 +34,6 @@ class ManageOrgUsers extends React.Component {
   handleValidation() {
     let fields = this.state.fields;
     let errors = {};
-    let formIsValid = true;
-
     //Name
     if (!fields['firstName']) {
       errors['firstName'] = 'This field is required';
@@ -63,9 +61,6 @@ class ManageOrgUsers extends React.Component {
     
     this.setState({ errors: errors });
     return Object.keys(errors).length  === 0;
-
-    this.setState({ errors: errors });
-    return formIsValid;
   }
 
   componentDidMount() {
@@ -129,14 +124,11 @@ class ManageOrgUsers extends React.Component {
 
     if (this.handleValidation()) {
       let fields = {};
-      fields['firstName'] = '';
-      fields['lastName'] = '';
-      fields['email'] = '';
-      fields['role'] = '';
-      this.setState({ fields: fields });
+      Object.keys(fields).map(key => { fields[key] = '' })
 
       this.setState({
         creatingUser: true,
+        fields: fields,
       });
 
       organizationUserService
@@ -182,8 +174,6 @@ class ManageOrgUsers extends React.Component {
       showNewUserForm,
       creatingUser,
       users,
-      newUser,
-      fields,
       errors,
       idChangingRole,
       archivingUser,
