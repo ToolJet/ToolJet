@@ -31,7 +31,6 @@ export const Datepicker = function Datepicker({ value, onChange, readOnly, isTim
     disabled: !readOnly,
   };
 
-
   const onDatepickerClose = () => {
     onChange(date);
   };
