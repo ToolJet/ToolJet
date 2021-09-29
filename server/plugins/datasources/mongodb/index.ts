@@ -26,7 +26,6 @@ export default class MongodbService implements QueryService {
           result = await db.collection(queryOptions.collection).findOne(JSON.parse(queryOptions['query']));
           break;
         case 'find':
-          console.log(queryOptions)
           let resultQueryBuilder = db.collection(queryOptions.collection)
           if ("query" in queryOptions && queryOptions['query'])
             resultQueryBuilder = resultQueryBuilder.find(JSON.parse(queryOptions['query']))
