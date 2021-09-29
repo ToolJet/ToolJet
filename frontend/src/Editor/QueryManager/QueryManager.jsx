@@ -14,7 +14,7 @@ const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [{ kind: 'restapi', id: 'null', name: 'REST API' }];
 
-class QueryManager extends React.Component {
+let QueryManager = class QueryManager extends React.Component {
   constructor(props) {
     super(props);
 
@@ -503,7 +503,7 @@ class QueryManager extends React.Component {
       </div>
     );
   }
-}
+};
 
 QueryManager = React.memo(QueryManager);
 export { QueryManager };
