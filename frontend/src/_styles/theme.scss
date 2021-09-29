@@ -289,7 +289,7 @@ body {
       align-items: center;
 
       .show-grid {
-        background-size: 30px 30px;
+        background-size: 30px 10px;
         background-image: linear-gradient(to right, rgba(194, 191, 191, 0.2) 1px, transparent 1px),
           linear-gradient(to bottom, rgba(194, 191, 191, 0.2) 1px, transparent 1px);
       }
@@ -780,14 +780,30 @@ body {
   }
 
   td {
-    min-height: 35px;
+    min-height: 55px;
     overflow-x: initial;
     margin: auto;
 
     .text-container {
-      padding: 0px;
-      margin-bottom: 3px;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      height: 100%;
+      outline: none;
     }
+  }
+
+  .has-dropdown,
+  .has-multiselect,
+  .has-text,
+  .has-datepicker,
+  .has-actions {
+    padding: 0 5px;
+  }
+
+  .has-text,
+  .has-actions {
+    margin: 0;
   }
 
   td {
@@ -2171,4 +2187,12 @@ input[type='text'] {
 
 .draggable-box:focus-within {
   z-index: 2 !important;
+}
+
+.theme-dark .event-action {
+  filter: brightness(0) invert(1);
+}
+
+.event-action{
+  filter: brightness(0) invert(0);
 }
