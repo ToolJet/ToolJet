@@ -121,6 +121,7 @@ export const DraggableBox = function DraggableBox({
     display: 'inline-block',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: '0px',
   };
 
   let refProps = {};
@@ -182,8 +183,8 @@ export const DraggableBox = function DraggableBox({
             style={{ ...style }}
             resizeGrid={[30, 10]}
             size={{
-              width: scaleWidth(currentLayoutOptions.width, scaleValue) + 6,
-              height: currentLayoutOptions.height + 6,
+              width: scaleWidth(currentLayoutOptions.width, scaleValue),
+              height: currentLayoutOptions.height,
             }}
             position={{
               x: currentLayoutOptions ? currentLayoutOptions.left : 0,
@@ -202,7 +203,7 @@ export const DraggableBox = function DraggableBox({
             }}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && mouseOver && (
+              {mode === 'edit' && mouseOver && !isResizing && (
                 <ConfigHandle
                   id={id}
                   removeComponent={removeComponent}
@@ -214,8 +215,8 @@ export const DraggableBox = function DraggableBox({
               <Box
                 component={component}
                 id={id}
-                width={scaleWidth(currentLayoutOptions.width, scaleValue)}
-                height={currentLayoutOptions.height}
+                width={scaleWidth(currentLayoutOptions.width, scaleValue) - 4}
+                height={currentLayoutOptions.height - 4}
                 mode={mode}
                 changeCanDrag={changeCanDrag}
                 inCanvas={inCanvas}

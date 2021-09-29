@@ -253,7 +253,7 @@ export const componentTypes = [
     description: 'Text field for forms',
     component: 'TextInput',
     defaultSize: {
-      width: 200,
+      width: 210,
       height: 30,
     },
     others: {
@@ -306,7 +306,7 @@ export const componentTypes = [
     description: 'Number field for forms',
     component: 'NumberInput',
     defaultSize: {
-      width: 200,
+      width: 210,
       height: 30,
     },
     others: {
@@ -398,7 +398,7 @@ export const componentTypes = [
     description: 'A single checkbox',
     component: 'Checkbox',
     defaultSize: {
-      width: 200,
+      width: 150,
       height: 30,
     },
     others: {
@@ -440,7 +440,7 @@ export const componentTypes = [
     description: 'Radio buttons',
     component: 'RadioButton',
     defaultSize: {
-      width: 200,
+      width: 210,
       height: 30,
     },
     others: {
@@ -488,7 +488,7 @@ export const componentTypes = [
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
-      width: 130,
+      width: 150,
       height: 30,
     },
     others: {
@@ -529,7 +529,7 @@ export const componentTypes = [
     description: 'Text area form field',
     component: 'TextArea',
     defaultSize: {
-      width: 250,
+      width: 240,
       height: 100,
     },
     others: {
@@ -571,7 +571,7 @@ export const componentTypes = [
     component: 'DaterangePicker',
     defaultSize: {
       width: 300,
-      height: 32,
+      height: 40,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -618,7 +618,7 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Show loading state' },
     },
     defaultSize: {
-      width: 200,
+      width: 120,
       height: 30,
     },
     events: [],
@@ -651,8 +651,8 @@ export const componentTypes = [
     displayName: 'Image',
     description: 'Display an Image',
     defaultSize: {
-      width: 200,
-      height: 200,
+      width: 210,
+      height: 210,
     },
     component: 'Image',
     others: {
@@ -691,7 +691,7 @@ export const componentTypes = [
     displayName: 'Container',
     description: 'Wrapper for multiple components',
     defaultSize: {
-      width: 200,
+      width: 210,
       height: 200,
     },
     component: 'Container',
@@ -728,8 +728,8 @@ export const componentTypes = [
     displayName: 'Dropdown',
     description: 'Select one value from options',
     defaultSize: {
-      width: 210,
-      height: 30,
+      width: 240,
+      height: 35,
     },
     component: 'DropDown',
     others: {
@@ -782,7 +782,7 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 210,
+      width: 270,
       height: 30,
     },
     component: 'Multiselect',
@@ -870,8 +870,8 @@ export const componentTypes = [
     description: 'Display Google Maps',
     component: 'Map',
     defaultSize: {
-      width: 400,
-      height: 400,
+      width: 420,
+      height: 420,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
@@ -976,7 +976,7 @@ export const componentTypes = [
     description: 'Star rating',
     component: 'StarRating',
     defaultSize: {
-      width: 220,
+      width: 240,
       height: 30,
     },
     others: {
