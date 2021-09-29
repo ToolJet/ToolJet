@@ -1027,4 +1027,47 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Divider',
+    displayName: 'Divider',
+    description: 'Separator between components',
+    component: 'Divider',
+    defaultSize: {
+      width: 20,
+      height: 200,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+    },
+    properties: {
+      makeHorizontal: { type: 'toggle', displayName: 'Horizontal' },
+    },
+    events: {},
+    styles: {
+      textColor: { type: 'color', displayName: 'Divider Color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        makeHorizontal: { value: false },
+        value: { value: '' },
+        placeholder: { value: 'Placeholder text' },
+      },
+      events: [],
+      styles: {
+        textColor: { value: '#535251' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
