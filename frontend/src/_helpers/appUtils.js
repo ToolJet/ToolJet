@@ -460,6 +460,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
             });
           }
 
+          if (dataQuery.options.requestConfirmation) {
+            toast.info(`Query (${dataQuery.name}) completed.`, {
+              hideProgressBar: true,
+              position: 'bottom-center',
+            });
+          }
+
           _self.setState(
             {
               currentState: {
