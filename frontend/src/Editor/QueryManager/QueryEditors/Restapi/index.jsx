@@ -24,7 +24,6 @@ function getAllUrlParams(url) {
       if (typeof paramValue === 'string') paramValue = paramValue.toLowerCase();
 
       if (paramName.match(/\[(\d+)?\]$/)) {
-        // create key if it doesn't exist
         var key = paramName.replace(/\[(\d+)?\]/, '');
         if (!obj[key]) obj[key] = [];
 
@@ -32,7 +31,6 @@ function getAllUrlParams(url) {
           var index = /\[(\d+)\]/.exec(paramName)[1];
           obj[key][index] = paramValue;
         } else {
-          // otherwise add the value to the end of the array
           obj[key].push(paramValue);
         }
       } else {
@@ -61,6 +59,7 @@ class Restapi extends React.Component {
   }
 
   componentDidMount() {
+    console.log('component mounted 👀');
     try {
       if (isEmpty(this.state.options['headers'])) {
         this.addNewKeyValuePair('headers');
@@ -108,8 +107,9 @@ class Restapi extends React.Component {
     });
   };
 
+  // console.log(`handle change  RESTAPI 🥶 || key ${key} :: keyIndex ${keyIndex} :: idx ${idx} :: value ${value} }`);
   handleChange = (key, keyIndex, idx) => (value) => {
-    if (this.state.options[key].length - 1 === idx) this.addNewKeyValuePair(key);
+    if (this.state.options[key].length - 1 === idx && keyIndex === 1 && value.length > 0) this.addNewKeyValuePair(key);
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
@@ -122,11 +122,15 @@ class Restapi extends React.Component {
       });
     } else {
       const params = getAllUrlParams(url);
+
+      if (params.length > 0) {
+        options['url_params'] = [];
+      }
       params.map((option) => {
-        const optionArray = options['url_params'];
-        optionArray.push(option);
+        options['url_params'].push(option);
       });
 
+      options['url_params'].push([]);
       this.setState({ options }, () => {
         this.props.optionsChanged(options);
       });
