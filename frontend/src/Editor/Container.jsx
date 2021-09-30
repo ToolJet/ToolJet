@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import cx from 'classnames'
+import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
@@ -49,8 +49,8 @@ export const Container = ({
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  const [reload, reloadComments] = useState(false);
-  const router = useRouter()
+  const [newThread, addNewThread] = useState({});
+  const router = useRouter();
 
   useEffect(() => {
     setBoxes(components);
@@ -109,8 +109,8 @@ export const Container = ({
           const x = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
           const y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
 
-          const element = document.getElementById(`thread-${item.threadId}`)
-          element.style.transform = `translate(${x}px, ${y}px)`
+          const element = document.getElementById(`thread-${item.threadId}`);
+          element.style.transform = `translate(${x}px, ${y}px)`;
           commentsService.updateThread(item.threadId, { x, y });
           return undefined;
         }
@@ -206,7 +206,7 @@ export const Container = ({
         return undefined;
       },
     }),
-    []
+    [moveBox]
   );
 
   function onResizeStop(id, e, direction, ref, d, position) {
@@ -280,18 +280,18 @@ export const Container = ({
   }, [selectedComponent]);
 
   const handleAddComment = async (e) => {
-    e.stopPropogation && e.stopPropogation()
-    reloadComments(false)
+    e.stopPropogation && e.stopPropogation();
     if (e.target.classList.contains('comment')) {
-      return
+      return;
     }
-    await commentsService.createThread({
+    const { data } = await commentsService.createThread({
       app_id: router.query.id,
       x: e.nativeEvent.offsetX,
-      y: e.nativeEvent.offsetY
-    })
-    reloadComments(true)
-  }
+      y: e.nativeEvent.offsetY,
+    });
+    console.log(data);
+    addNewThread(data);
+  };
 
   return (
     <div
@@ -300,10 +300,10 @@ export const Container = ({
       style={styles}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
-        'cursor-wait': showComments
+        'cursor-wait': showComments,
       })}
     >
-      {showComments && <Comments reload={reload} />}
+      {showComments && <Comments newThread={newThread} />}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =

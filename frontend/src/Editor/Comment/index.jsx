@@ -65,7 +65,7 @@ const Comment = ({ x, y, threadId, user = {} }) => {
     >
       <label {...trigger} className="form-selectgroup-item">
         <span className="comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded">
-          {`${user.firstName.charAt(0)}${user.lastName.charAt(0)}`}
+          {`${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}`}
         </span>
         <animated.div
           {...content}

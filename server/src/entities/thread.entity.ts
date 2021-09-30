@@ -1,4 +1,4 @@
-import { PrimaryGeneratedColumn, BaseEntity, Column, Entity, OneToOne, JoinColumn } from 'typeorm';
+import { PrimaryGeneratedColumn, BaseEntity, Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity({ name: 'thread' })
@@ -21,7 +21,7 @@ export class Thread extends BaseEntity {
   @Column({ default: false, name: 'is_resolved' })
   isResolved: boolean;
 
-  @OneToOne(() => User, (user) => user.id, { eager: true })
+  @ManyToOne(() => User, (user) => user.id, { eager: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
 }

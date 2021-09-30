@@ -8,7 +8,7 @@ import { commentsService } from '@/_services';
 
 import useRouter from '@/_hooks/use-router';
 
-const Comments = ({ reload }) => {
+const Comments = ({ newThread = {} }) => {
   const [threads, setThreads] = React.useState([]);
   const router = useRouter();
   async function fetchData() {
@@ -19,8 +19,8 @@ const Comments = ({ reload }) => {
     fetchData();
   }, []);
   React.useEffect(() => {
-    reload && fetchData();
-  }, [reload]);
+    !isEmpty(newThread) && setThreads([...threads, newThread]);
+  }, [newThread]);
 
   if (isEmpty(threads)) return null;
 

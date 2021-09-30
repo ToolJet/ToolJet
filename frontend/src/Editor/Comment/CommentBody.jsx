@@ -11,11 +11,11 @@ const CommentBody = ({ thread, isLoading }) => {
 
     return (
       <div className="divide-y">
-        {thread.map(({ id, comment, created_at, user = {} }) => {
+        {thread.map(({ id, comment, createdAt, user = {} }) => {
           return (
             <div key={id}>
               <div className="card-title">{`${user?.firstName} ${user?.lastName}`}</div>
-              <div className="card-subtitle">{moment(created_at).fromNow()}</div>
+              <div className="card-subtitle">{moment(createdAt).fromNow()}</div>
               <p className="cursor-auto">{comment}</p>
             </div>
           );

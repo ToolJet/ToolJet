@@ -13,8 +13,12 @@ export class ThreadRepository extends Repository<Thread> {
     thread.app_id = app_id;
     thread.user_id = id;
 
-    await thread.save();
-    return thread;
+    const response = await thread.save();
+    const _response = await Thread.findOne({
+      where: { id: response.id },
+      relations: ['user'],
+    });
+    return _response;
   }
 
   public async editThread(createThreadDto: CreateThreadDTO, editedThread: Thread): Promise<Thread> {
