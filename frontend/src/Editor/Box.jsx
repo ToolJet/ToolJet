@@ -71,6 +71,7 @@ export const Box = function Box({
 
   let styles = {
     height: '100%',
+    padding: '1px',
   };
 
   if (inCanvas) {
