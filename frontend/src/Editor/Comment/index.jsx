@@ -51,44 +51,47 @@ const Comment = ({ x, y, threadId, user = {} }) => {
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
 
   return (
-    <animated.div
-      ref={drag}
-      id={`thread-${threadId}`}
-      className={cx('comments cursor-move', { open: open })}
-      style={{
-        transform: `translate(${x}px, ${y}px)`,
-        ...commentFadeStyle,
-      }}
-    >
-      <label {...trigger} className="form-selectgroup-item">
-        <span className="comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded">
-          {`${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}`}
-        </span>
-        <animated.div
-          {...content}
-          style={popoverFadeStyle}
-          className={cx('card popover comment-popover', {
-            'open-left': placement === 'left',
-            'open-right': placement === 'right',
-            'comment-is-open': open,
-            show: open,
-            hide: !open,
-          })}
-        >
-          <div className="card-status-start bg-primary" />
-          <CommentHeader
-            count={thread?.length}
-            close={() =>
-              setTimeout(() => {
-                setOpen(false);
-              }, 0)
-            }
-          />
-          <CommentBody isLoading={loading} thread={thread} />
-          <CommentFooter handleSubmit={handleSubmit} />
-        </animated.div>
-      </label>
-    </animated.div>
+    <>
+      <animated.div
+        ref={drag}
+        id={`thread-${threadId}`}
+        className={cx('comments cursor-move', { open: open })}
+        style={{
+          transform: `translate(${x}px, ${y}px)`,
+          ...commentFadeStyle,
+        }}
+      >
+        <label {...trigger} className="form-selectgroup-item">
+          <span className="comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded">
+            {`${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}`}
+          </span>
+          <animated.div
+            {...content}
+            style={popoverFadeStyle}
+            className={cx('card popover comment-popover', {
+              'open-left': placement === 'left',
+              'open-right': placement === 'right',
+              'comment-is-open': open,
+              show: open,
+              hide: !open,
+            })}
+          >
+            <div className="card-status-start bg-primary" />
+            <CommentHeader
+              count={thread?.length}
+              close={() =>
+                setTimeout(() => {
+                  setOpen(false);
+                }, 0)
+              }
+            />
+            <CommentBody isLoading={loading} thread={thread} />
+            <CommentFooter handleSubmit={handleSubmit} />
+          </animated.div>
+        </label>
+      </animated.div>
+      {open && <div className="comment-overlay" onClick={(e) => e.stopPropagation()} />}
+    </>
   );
 };
 
