@@ -1,14 +1,18 @@
 import React from 'react';
+import cx from 'classnames';
 import { LeftSidebarItem } from './sidebar-item';
-import { ItemTypes } from '@/Editor/ItemTypes';
 
 export const LeftSidebarComment = ({ toggleComments }) => {
+  const [isActive, toggleActive] = React.useState(false);
   return (
     <LeftSidebarItem
       tip="toggle comments"
-      icon={`play`}
-      className={`left-sidebar-item sidebar-zoom`}
-      onClick={toggleComments}
+      icon={`comments`}
+      className={cx(`left-sidebar-item sidebar-zoom`, { active: isActive })}
+      onClick={() => {
+        toggleActive(!isActive);
+        toggleComments();
+      }}
     />
   );
 };

@@ -1,24 +1,29 @@
 import React from 'react';
-import Textarea from '@/_ui/Textarea'
-
-import { commentsService } from '@/_services';
+import Textarea from '@/_ui/Textarea';
+import Button from '@/_ui/Button';
 
 function CommentFooter({ handleSubmit }) {
-  const [comment, setComment] = React.useState('')
+  const [comment, setComment] = React.useState('');
   const handleClick = () => {
-    handleSubmit(comment)
-    setComment('')
-  }
+    handleSubmit(comment);
+    setComment('');
+  };
   return (
     <div className="card-footer">
       <div className="row align-items-center">
-        <div className="col-11">
-          <Textarea value={comment} onChange={e => setComment(e.target.value)} rows="1" className='w-full form-control' placeholder="Type your comment here" />
+        <div className="col-10">
+          <Textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows="1"
+            className="w-full form-control"
+            placeholder="Type your comment here"
+          />
         </div>
-        <div className="col-1">
-          <label>
-            <img onClick={handleClick} src="/assets/images/icons/editor/comments/send.png" className="form-check-input w-full h-100 position-static" />
-          </label>
+        <div className="col-2">
+          <Button className={`m2 `} onClick={handleClick}>
+            Send
+          </Button>
         </div>
       </div>
     </div>

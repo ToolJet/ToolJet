@@ -289,7 +289,6 @@ export const Container = ({
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY,
     });
-    console.log(data);
     addNewThread(data);
   };
 

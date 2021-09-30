@@ -14,7 +14,7 @@ const Comment = ({ x, y, threadId, user = {} }) => {
   const [loading, setLoading] = React.useState(true);
   const [thread, setThread] = React.useState([]);
   const [placement, setPlacement] = React.useState('left');
-  const [open, trigger, content] = usePopover(false);
+  const [open, trigger, content, setOpen] = usePopover(false);
   const [, drag] = useDrag(() => ({
     type: ItemTypes.COMMENT,
     item: { threadId, name: 'comment' },
@@ -23,8 +23,6 @@ const Comment = ({ x, y, threadId, user = {} }) => {
   React.useLayoutEffect(() => {
     const { left } = trigger?.ref?.current?.getBoundingClientRect();
 
-    console.log(left);
-    console.log(trigger?.ref?.current?.getBoundingClientRect());
     if (left < 460) setPlacement('right');
     else setPlacement('left');
   }, [trigger]);
@@ -78,7 +76,7 @@ const Comment = ({ x, y, threadId, user = {} }) => {
           })}
         >
           <div className="card-status-start bg-primary" />
-          <CommentHeader count={thread?.length} />
+          <CommentHeader count={thread?.length} setOpen={setOpen} />
           <CommentBody isLoading={loading} thread={thread} />
           <CommentFooter handleSubmit={handleSubmit} />
         </animated.div>
