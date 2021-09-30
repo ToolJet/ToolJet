@@ -1,9 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { Box } from './Box';
-import { Resizable } from 're-resizable';
 import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 
@@ -45,14 +45,13 @@ function getStyles(left, top, isDragging, component, isSelectedComponent) {
   // const transform = `translate3d(${left}px, ${top}px, 0)`;
   return {
     position: 'absolute',
-    height: '100%',
     // transform,
     // WebkitTransform: transform,
     zIndex: isSelectedComponent ? 2 : 1,
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
-    height: isDragging ? 0 : '',
+    height: isDragging ? 0 : '100%',
   };
 }
 
@@ -62,8 +61,6 @@ export const DraggableBox = function DraggableBox({
   title,
   left,
   top,
-  width,
-  height,
   parent,
   component,
   index,
@@ -124,7 +121,7 @@ export const DraggableBox = function DraggableBox({
     display: 'inline-block',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '2px',
+    padding: '0px',
   };
 
   let refProps = {};
@@ -184,20 +181,19 @@ export const DraggableBox = function DraggableBox({
         >
           <Rnd
             style={{ ...style }}
+            resizeGrid={[30, 10]}
             size={{
-              width: scaleWidth(currentLayoutOptions.width, scaleValue) + 6,
-              height: currentLayoutOptions.height + 6,
+              width: scaleWidth(currentLayoutOptions.width, scaleValue),
+              height: currentLayoutOptions.height,
             }}
             position={{
               x: currentLayoutOptions ? currentLayoutOptions.left : 0,
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
-            className={`resizer ${isSelectedComponent && !mouseOver ? 'resizer-selected' : ''} ${
-              mouseOver ? 'resizer-active' : ''
-            } `}
+            className={`resizer ${mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''} `}
             onResize={() => setResizing(true)}
-            resizeHandleClasses={mouseOver ? resizerClasses : {}}
+            resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
             disableDragging={true}
             enableResizing={mode === 'edit'}
@@ -207,7 +203,7 @@ export const DraggableBox = function DraggableBox({
             }}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && mouseOver && (
+              {mode === 'edit' && mouseOver && !isResizing && (
                 <ConfigHandle
                   id={id}
                   removeComponent={removeComponent}
@@ -219,8 +215,8 @@ export const DraggableBox = function DraggableBox({
               <Box
                 component={component}
                 id={id}
-                width={scaleWidth(currentLayoutOptions.width, scaleValue)}
-                height={currentLayoutOptions.height}
+                width={scaleWidth(currentLayoutOptions.width, scaleValue) - 4}
+                height={currentLayoutOptions.height - 4}
                 mode={mode}
                 changeCanDrag={changeCanDrag}
                 inCanvas={inCanvas}

@@ -1,5 +1,5 @@
+/* eslint-disable prefer-const */
 import { JwtService } from '@nestjs/jwt';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { getConnection, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
@@ -44,9 +44,7 @@ export async function clearDB() {
   const entities = getConnection().entityMetadatas;
   for (const entity of entities) {
     const repository = await getConnection().getRepository(entity.name);
-    await repository.query(
-      `TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`,
-    );
+    await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
   }
 }
 
@@ -66,7 +64,7 @@ export async function createApplication(app, { name, user, isPublic }: any) {
       organizationId: user.organization.id,
       createdAt: new Date(),
       updatedAt: new Date(),
-    }),
+    })
   );
 
   await appUsersRepository.save(
@@ -76,7 +74,7 @@ export async function createApplication(app, { name, user, isPublic }: any) {
       role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
-    }),
+    })
   );
 
   return newApp;
@@ -94,14 +92,11 @@ export async function createApplicationVersion(
     appVersionsRepository.create({
       app: application,
       name: 'v0',
-    }),
+    })
   );
 }
 
-export async function createUser(
-  app,
-  { firstName, lastName, email, role, organization }: any,
-) {
+export async function createUser(app, { firstName, lastName, email, role, organization, status }: any) {
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
   let organizationUsersRepository: Repository<OrganizationUser>;
@@ -117,7 +112,7 @@ export async function createUser(
         name: 'test org',
         createdAt: new Date(),
         updatedAt: new Date(),
-      }),
+      })
     ));
 
   const user = await userRepository.save(
@@ -129,7 +124,7 @@ export async function createUser(
       organization,
       createdAt: new Date(),
       updatedAt: new Date(),
-    }),
+    })
   );
 
   const orgUser = await organizationUsersRepository.save(
@@ -137,24 +132,20 @@ export async function createUser(
       user: user,
       organization,
       role: role || 'admin',
+      status: status || 'invited',
       createdAt: new Date(),
       updatedAt: new Date(),
-    }),
+    })
   );
 
   return { organization, user, orgUser };
 }
 
-export async function createDataSource(
-  nestInstance,
-  { name, application, kind, options }: any,
-) {
+export async function createDataSource(nestInstance, { name, application, kind, options }: any) {
   let dataSourceRepository: Repository<DataSource>;
   dataSourceRepository = nestInstance.get('DataSourceRepository');
 
-  const dataSourcesService = nestInstance
-    .select(DataSourcesModule)
-    .get(DataSourcesService);
+  const dataSourcesService = nestInstance.select(DataSourcesModule).get(DataSourcesService);
 
   return await dataSourceRepository.save(
     dataSourceRepository.create({
@@ -164,14 +155,11 @@ export async function createDataSource(
       kind,
       createdAt: new Date(),
       updatedAt: new Date(),
-    }),
+    })
   );
 }
 
-export async function createDataQuery(
-  nestInstance,
-  { application, kind, dataSource, options }: any,
-) {
+export async function createDataQuery(nestInstance, { application, kind, dataSource, options }: any) {
   let dataQueryRepository: Repository<DataQuery>;
   dataQueryRepository = nestInstance.get('DataQueryRepository');
 
@@ -183,6 +171,6 @@ export async function createDataQuery(
       dataSource,
       createdAt: new Date(),
       updatedAt: new Date(),
-    }),
+    })
   );
 }

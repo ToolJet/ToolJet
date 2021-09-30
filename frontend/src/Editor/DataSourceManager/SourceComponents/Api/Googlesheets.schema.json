@@ -4,6 +4,20 @@
   "title": "Google Sheets datasource",
   "description": "A schema defining google sheets datasource",
   "type": "object",
+  "source": {
+    "name": "Google Sheets",
+    "kind": "googlesheets",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": { "type": "string", "encrypted": true }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
   "properties": {
     "sheets": {
       "$label": "",

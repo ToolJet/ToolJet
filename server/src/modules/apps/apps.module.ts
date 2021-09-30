@@ -35,13 +35,7 @@ import { AppCloneService } from '@services/app_clone.service';
     ]),
     CaslModule,
   ],
-  providers: [
-    AppsService,
-    AppUsersService,
-    UsersService,
-    FoldersService,
-    AppCloneService,
-  ],
+  providers: [AppsService, AppUsersService, UsersService, FoldersService, AppCloneService],
   controllers: [AppsController, AppUsersController],
 })
 export class AppsModule {}

@@ -1,10 +1,4 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  NestInterceptor,
-  Scope,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, Scope } from '@nestjs/common';
 import { catchError, finalize, Observable, throwError } from 'rxjs';
 import { SentryService } from '../services/sentry.service';
 import * as Sentry from '@sentry/node';
@@ -23,10 +17,7 @@ export class SentryInterceptor implements NestInterceptor {
     return next.handle().pipe(
       catchError((error) => {
         // capture the error, you can filter out some errors here
-        Sentry.captureException(
-          error,
-          this.sentryService.span.getTraceContext(),
-        );
+        Sentry.captureException(error, this.sentryService.span.getTraceContext());
 
         // throw again the error
         return throwError(() => error);
@@ -34,7 +25,7 @@ export class SentryInterceptor implements NestInterceptor {
       finalize(() => {
         span.finish();
         this.sentryService.span.finish();
-      }),
+      })
     );
   }
 }

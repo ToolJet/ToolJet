@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
-export function ConfirmDialog({
-  show, message, onConfirm, onCancel, confirmButtonLoading
-}) {
+export function ConfirmDialog({ show, message, onConfirm, onCancel, confirmButtonLoading }) {
   const [showModal, setShow] = useState(show);
 
   useEffect(() => {
@@ -33,7 +31,12 @@ export function ConfirmDialog({
           <Button variant="secondary" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button variant="danger" autoFocus className={`${confirmButtonLoading ? 'btn-loading' : ''}`} onClick={handleConfirm}>
+          <Button
+            variant="danger"
+            autoFocus
+            className={`${confirmButtonLoading ? 'btn-loading' : ''}`}
+            onClick={handleConfirm}
+          >
             Yes
           </Button>
         </Modal.Footer>

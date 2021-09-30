@@ -16,7 +16,7 @@ import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import posthog from 'posthog-js';
-import {ForgotPassword} from '@/ForgotPassword'
+import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { lt } from 'semver';
 
@@ -28,7 +28,7 @@ class App extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       onboarded: true,
-      darkMode: localStorage.getItem('darkMode') === 'true'
+      darkMode: localStorage.getItem('darkMode') === 'true',
     };
   }
 
@@ -61,49 +61,64 @@ class App extends React.Component {
   logout = () => {
     authenticationService.logout();
     history.push('/login');
-  }
+  };
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
     localStorage.setItem('darkMode', newMode);
-  }
+  };
 
   render() {
     const { currentUser, fetchedMetadata, updateAvailable, onboarded, darkMode } = this.state;
 
-    if(currentUser && fetchedMetadata === false) {
+    if (currentUser && fetchedMetadata === false) {
       tooljetService.fetchMetaData().then((data) => {
         this.setState({ fetchedMetadata: true, onboarded: data.onboarded });
 
-        if(lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
+        if (lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
-      })
+      });
     }
 
     return (
       <Router history={history}>
         <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
-          {updateAvailable && <div className="alert alert-info alert-dismissible" role="alert">
-            <h3 className="mb-1">Update available</h3>
-            <p>A new version of ToolJet has been released.</p>
-            <div className="btn-list">
-              <a href="https://docs.tooljet.io/docs/setup/updating" target="_blank" className="btn btn-info">Read release notes & update</a>
-              <a onClick={() => { tooljetService.skipVersion(); this.setState({ updateAvailable: false }); }} className="btn">Skip this version</a>
+          {updateAvailable && (
+            <div className="alert alert-info alert-dismissible" role="alert">
+              <h3 className="mb-1">Update available</h3>
+              <p>A new version of ToolJet has been released.</p>
+              <div className="btn-list">
+                <a
+                  href="https://docs.tooljet.io/docs/setup/updating"
+                  target="_blank"
+                  className="btn btn-info"
+                  rel="noreferrer"
+                >
+                  Read release notes & update
+                </a>
+                <a
+                  onClick={() => {
+                    tooljetService.skipVersion();
+                    this.setState({ updateAvailable: false });
+                  }}
+                  className="btn"
+                >
+                  Skip this version
+                </a>
+              </div>
             </div>
-          </div>}
+          )}
 
-          {!onboarded &&
-            <OnboardingModal />
-          }
+          {!onboarded && <OnboardingModal />}
 
           <ToastContainer />
 
-          <PrivateRoute exact path="/" component={HomePage} switchDarkMode={this.switchDarkMode} darkMode={darkMode}/>
-          <Route path="/login" component={LoginPage}/>
+          <PrivateRoute exact path="/" component={HomePage} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+          <Route path="/login" component={LoginPage} />
           <Route path="/signup" component={SignupPage} />
-          <Route path = "/forgot-password" component ={ForgotPassword} />
-          <Route path = "/reset-password" component ={ResetPassword} />
+          <Route path="/forgot-password" component={ForgotPassword} />
+          <Route path="/reset-password" component={ResetPassword} />
           <Route path="/invitations/:token" component={InvitationPage} />
           <PrivateRoute exact path="/apps/:id" component={Editor} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
           <PrivateRoute exact path="/applications/:id/versions/:versionId" component={Viewer} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />

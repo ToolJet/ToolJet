@@ -1,24 +1,12 @@
 import got from 'got';
 
-async function makeRequestToReadValues(
-  spreadSheetId: string,
-  sheet: string,
-  range: string,
-  authHeader: any,
-) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${
-    sheet || ''
-  }!${range}`;
+async function makeRequestToReadValues(spreadSheetId: string, sheet: string, range: string, authHeader: any) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${sheet || ''}!${range}`;
 
   return await got.get(url, { headers: authHeader }).json();
 }
 
-async function makeRequestToAppendValues(
-  spreadSheetId: string,
-  sheet: string,
-  requestBody: any,
-  authHeader: any,
-) {
+async function makeRequestToAppendValues(spreadSheetId: string, sheet: string, requestBody: any, authHeader: any) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${
     sheet || ''
   }!A:Z:append?valueInputOption=USER_ENTERED`;
@@ -26,28 +14,14 @@ async function makeRequestToAppendValues(
   return await got.post(url, { headers: authHeader, json: requestBody }).json();
 }
 
-async function makeRequestToBatchUpdate(
-  spreadSheetId: string,
-  requestBody: any,
-  authHeader: any,
-) {
+async function makeRequestToBatchUpdate(spreadSheetId: string, requestBody: any, authHeader: any) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}:batchUpdate`;
 
   return await got.post(url, { headers: authHeader, json: requestBody }).json();
 }
 
-export async function readDataFromSheet(
-  spreadSheetId: string,
-  sheet: string,
-  range: string,
-  authHeader: any,
-) {
-  const data = await makeRequestToReadValues(
-    spreadSheetId,
-    sheet,
-    range,
-    authHeader,
-  );
+export async function readDataFromSheet(spreadSheetId: string, sheet: string, range: string, authHeader: any) {
+  const data = await makeRequestToReadValues(spreadSheetId, sheet, range, authHeader);
   let headers = [];
   let values = [];
   const result = [];
@@ -55,8 +29,7 @@ export async function readDataFromSheet(
 
   if (dataValues) {
     headers = dataValues[0];
-    values =
-      dataValues.length > 1 ? dataValues.slice(1, dataValues.length) : [];
+    values = dataValues.length > 1 ? dataValues.slice(1, dataValues.length) : [];
 
     for (const value of values) {
       const row = {};
@@ -70,19 +43,9 @@ export async function readDataFromSheet(
   return result;
 }
 
-async function appendDataToSheet(
-  spreadSheetId: string,
-  sheet: string,
-  rows: any,
-  authHeader: any,
-) {
+async function appendDataToSheet(spreadSheetId: string, sheet: string, rows: any, authHeader: any) {
   const parsedRows = JSON.parse(rows);
-  const sheetData = await makeRequestToReadValues(
-    spreadSheetId,
-    sheet,
-    'A1:Z1',
-    authHeader,
-  );
+  const sheetData = await makeRequestToReadValues(spreadSheetId, sheet, 'A1:Z1', authHeader);
   const fullSheetHeaders = sheetData['values'][0];
   const rowsToAppend = parsedRows.map((row) => {
     const headersForAppendingRow = Object.keys(row);
@@ -99,22 +62,12 @@ async function appendDataToSheet(
   });
 
   const requestBody = { values: rowsToAppend };
-  const response = await makeRequestToAppendValues(
-    spreadSheetId,
-    sheet,
-    requestBody,
-    authHeader,
-  );
+  const response = await makeRequestToAppendValues(spreadSheetId, sheet, requestBody, authHeader);
 
   return response;
 }
 
-async function deleteDataFromSheet(
-  spreadSheetId: string,
-  sheet: string,
-  rowIndex: any,
-  authHeader: any,
-) {
+async function deleteDataFromSheet(spreadSheetId: string, sheet: string, rowIndex: any, authHeader: any) {
   const requestBody = {
     requests: [
       {
@@ -130,29 +83,21 @@ async function deleteDataFromSheet(
     ],
   };
 
-  const response = await makeRequestToBatchUpdate(
-    spreadSheetId,
-    requestBody,
-    authHeader,
-  );
+  const response = await makeRequestToBatchUpdate(spreadSheetId, requestBody, authHeader);
 
   return response;
 }
 
 export async function readData(
   spreadSheetId: string,
+  spreadsheetRange: string,
   sheet: string,
-  authHeader: any,
+  authHeader: any
 ): Promise<any[]> {
-  return await readDataFromSheet(spreadSheetId, sheet, 'A1:Z500', authHeader);
+  return await readDataFromSheet(spreadSheetId, sheet, spreadsheetRange, authHeader);
 }
 
-export async function appendData(
-  spreadSheetId: string,
-  sheet: string,
-  rows: any[],
-  authHeader: any,
-): Promise<any> {
+export async function appendData(spreadSheetId: string, sheet: string, rows: any[], authHeader: any): Promise<any> {
   return await appendDataToSheet(spreadSheetId, sheet, rows, authHeader);
 }
 
@@ -160,7 +105,7 @@ export async function deleteData(
   spreadSheetId: string,
   sheet: string,
   rowIndex: string,
-  authHeader: any,
+  authHeader: any
 ): Promise<any> {
   return await deleteDataFromSheet(spreadSheetId, sheet, rowIndex, authHeader);
 }

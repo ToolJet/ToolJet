@@ -23,11 +23,7 @@ export class AppCloneService {
     return clonedApp;
   }
 
-  async createClonedAppForUser(
-    manager: EntityManager,
-    existingApp: App,
-    currentUser: User,
-  ): Promise<App> {
+  async createClonedAppForUser(manager: EntityManager, existingApp: App, currentUser: User): Promise<App> {
     const newApp = manager.create(App, {
       name: existingApp.name,
       organizationId: currentUser.organizationId,
@@ -53,10 +49,7 @@ export class AppCloneService {
     });
 
     for (const source of existingDataSources) {
-      const clonedOptions = await this.cloneOptionsWithNewCredentials(
-        manager,
-        source.options,
-      );
+      const clonedOptions = await this.cloneOptionsWithNewCredentials(manager, source.options);
 
       const newSource = manager.create(DataSource, {
         app: newApp,
