@@ -657,24 +657,11 @@ export function Table({
   useEffect(() => {
     const selectedRows = page.filter((row) => componentState.selectedRowIds?.includes(row.id));
     if (selectedRows) {
-      const selectedRowsData = selectedRows.map((row) => {
-        const changes = changeSet ? changeSet[row.id] ?? {} : {};
-        // In the next statement, slice(1) is used to discard the cell that contains checkbox(which is the first one)
-        const rowEntries = row.cells.slice(1).map((cell) => {
-          const currentColumn = columnData.find((column) => column.id === cell.column.id);
-          return { [currentColumn.accessor]: cell.value };
-        });
-        const rowData = rowEntries.reduce((result, rowEntry) => Object.assign(result, rowEntry), {});
-        return { ...rowData, ...changes };
-      });
-
-      const selectedRowsOriginalData = selectedRows.map((row) => row.original);
-      const combinedData = selectedRows.map((_, rowIndex) => ({
-        ...selectedRowsOriginalData[rowIndex],
-        ...selectedRowsData[rowIndex],
-      }));
-
-      onComponentOptionChanged(component, 'selectedRows', combinedData);
+      onComponentOptionChanged(
+        component,
+        'selectedRows',
+        selectedRows.map((row) => row.original)
+      );
     }
   }, [componentState.selectedRowIds]);
 
