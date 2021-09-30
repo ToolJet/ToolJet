@@ -58,7 +58,7 @@ export const DaterangePicker = function DaterangePicker({
 
   return (
     <div
-      className="px-1"
+      className="p-0"
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();

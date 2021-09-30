@@ -81,7 +81,7 @@ export const Datepicker = function Datepicker({
   return (
     <div
       data-disabled={parsedDisabledState}
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none', padding: '2px 1px' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component);

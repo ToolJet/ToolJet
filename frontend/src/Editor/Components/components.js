@@ -348,7 +348,7 @@ export const componentTypes = [
     component: 'Datepicker',
     defaultSize: {
       width: 150,
-      height: 30,
+      height: 40,
     },
     validation: {
       customRule: { type: 'code', displayName: 'Custom validation' },
@@ -731,7 +731,7 @@ export const componentTypes = [
     description: 'Select one value from options',
     defaultSize: {
       width: 240,
-      height: 35,
+      height: 40,
     },
     component: 'DropDown',
     others: {
@@ -785,7 +785,7 @@ export const componentTypes = [
     description: 'Select multiple values from options',
     defaultSize: {
       width: 270,
-      height: 30,
+      height: 40,
     },
     component: 'Multiselect',
     others: {
