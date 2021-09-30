@@ -21,7 +21,7 @@ function CommentFooter({ handleSubmit }) {
           />
         </div>
         <div className="col-2">
-          <Button className={`m2 `} onClick={handleClick}>
+          <Button disabled={!!comment} className={`m2 `} onClick={handleClick}>
             Send
           </Button>
         </div>

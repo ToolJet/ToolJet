@@ -8,6 +8,7 @@ import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
 import useRouter from '@/_hooks/use-router';
+import useMousePosition from '@/_hooks/use-mouse-position';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 
@@ -286,11 +287,13 @@ export const Container = ({
     }
     const { data } = await commentsService.createThread({
       app_id: router.query.id,
-      x: e.nativeEvent.offsetX,
-      y: e.nativeEvent.offsetY,
+      x: e.nativeEvent.clientX,
+      y: e.nativeEvent.clientY,
     });
     addNewThread(data);
   };
+
+  const { x, y } = useMousePosition();
 
   return (
     <div
@@ -299,10 +302,18 @@ export const Container = ({
       style={styles}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
-        'cursor-wait': showComments,
+        'cursor-none': showComments,
       })}
     >
       {showComments && <Comments newThread={newThread} />}
+      {showComments && (
+        <span
+          style={{ border: '2px solid #438fd7', opacity: 0.65, left: `${x}px`, top: `${y}px` }}
+          className="comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded"
+        >
+          +
+        </span>
+      )}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =

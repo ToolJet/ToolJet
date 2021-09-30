@@ -2210,6 +2210,9 @@ input[type='text'] {
 .cursor-wait {
   cursor: wait;
 }
+.cursor-none {
+  cursor: none;
+}
 .theme-dark .event-action {
   filter: brightness(0) invert(1);
 }
