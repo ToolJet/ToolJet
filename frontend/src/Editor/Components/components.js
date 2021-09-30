@@ -503,6 +503,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      toggleSwitchColor: { type: 'color', displayName: 'Toggle Switch Color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -518,6 +519,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        toggleSwitchColor: { value: '#3c92dc' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
