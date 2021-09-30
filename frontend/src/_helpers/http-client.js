@@ -9,15 +9,12 @@ const HttpVerb = {
   Delete: 'DELETE',
 };
 
-const user = JSON.parse(localStorage.getItem('currentUser')) || {};
-
 class HttpClient {
   constructor(args = {}) {
     this.host = args.host || config.apiUrl;
     this.namespace = args.namespace || ''; // TODO: add versioning (/v1) to all endpoints (https://docs.nestjs.com/techniques/versioning#uri-versioning-type)
     this.headers = {
       'content-type': 'application/json',
-      Authorization: `Bearer ${user?.auth_token}`,
       ...args.headers,
     };
   }
@@ -36,6 +33,10 @@ class HttpClient {
       method,
       headers: this.headers,
     };
+    const user = JSON.parse(localStorage.getItem('currentUser')) || {};
+    if (user?.auth_token) {
+      options.headers['Authorization'] = `Bearer ${user?.auth_token}`;
+    }
     if (data) {
       options.body = JSON.stringify(data);
     }
