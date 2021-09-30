@@ -19,6 +19,8 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<User> {
+    console.log('333');
+
     const user = await this.usersService.findByEmail(email);
 
     if (!user) return null;
@@ -29,7 +31,10 @@ export class AuthService {
   }
 
   async login(params: any) {
+    console.log('2222');
+
     const user = await this.validateUser(params.email, params.password);
+    console.log('444', user);
 
     if (user) {
       const payload = { username: user.id, sub: user.email };

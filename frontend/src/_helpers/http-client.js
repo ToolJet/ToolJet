@@ -15,7 +15,7 @@ class HttpClient {
     this.namespace = args.namespace || ''; // TODO: add versioning (/v1) to all endpoints (https://docs.nestjs.com/techniques/versioning#uri-versioning-type)
     this.headers = {
       'content-type': 'application/json',
-      Authorization: `Bearer ${authenticationService.currentUserValue.auth_token}`,
+      Authorization: `Bearer ${authenticationService?.currentUserValue?.auth_token}`,
       ...args.headers,
     };
   }

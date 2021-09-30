@@ -44,7 +44,7 @@ export class User extends BaseEntity {
   @Column({ name: 'forgot_password_token' })
   forgotPasswordToken: string;
 
-  @Column({ name: 'password_digest', select: false })
+  @Column({ name: 'password_digest' })
   password: string;
 
   @Column({ name: 'organization_id' })
