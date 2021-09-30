@@ -1,12 +1,11 @@
 import React from 'react';
+import { pluralize } from '@/_helpers/utils';
 
-const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
-
-const CommentHeader = ({ count = 0, setOpen }) => {
+const CommentHeader = ({ count = 0, close }) => {
   return (
     <div className="card-header">
       <div className="card-subtitle mt-1">{pluralize(count, 'comment')}</div>
-      <span onClick={() => setOpen(false)} className="ms-auto cursor-pointer">
+      <div onClick={close} className="ms-auto cursor-pointer">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
@@ -15,7 +14,7 @@ const CommentHeader = ({ count = 0, setOpen }) => {
             fill="black"
           />
         </svg>
-      </span>
+      </div>
     </div>
   );
 };

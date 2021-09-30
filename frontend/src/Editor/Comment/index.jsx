@@ -31,7 +31,6 @@ const Comment = ({ x, y, threadId, user = {} }) => {
     const { data } = await commentsService.getComments(threadId);
     setThread(data);
     setLoading(false);
-    console.log(data);
   }
 
   React.useEffect(() => {
@@ -71,12 +70,13 @@ const Comment = ({ x, y, threadId, user = {} }) => {
           className={cx('card popover comment-popover', {
             'open-left': placement === 'left',
             'open-right': placement === 'right',
+            'comment-is-open': open,
             show: open,
             hide: !open,
           })}
         >
           <div className="card-status-start bg-primary" />
-          <CommentHeader count={thread?.length} setOpen={setOpen} />
+          <CommentHeader count={thread?.length} close={() => setOpen(false)} />
           <CommentBody isLoading={loading} thread={thread} />
           <CommentFooter handleSubmit={handleSubmit} />
         </animated.div>
