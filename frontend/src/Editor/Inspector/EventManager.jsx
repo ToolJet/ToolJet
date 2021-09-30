@@ -259,7 +259,7 @@ export const EventManager = ({
             <div className={rowClassName} role="button">
               <div className="col">{componentMeta.events[event.eventId]['displayName']}</div>
               <div className="col">
-                <small className="text-muted">{actionMeta.name}</small>
+                <small className="event-action">{actionMeta.name}</small>
               </div>
               <div className="col-auto">
                 <span

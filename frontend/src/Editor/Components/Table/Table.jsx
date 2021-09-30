@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   useTable,
   useFilters,
@@ -11,6 +11,7 @@ import {
   useBlockLayout,
   useResizeColumns,
 } from 'react-table';
+import cx from 'classnames';
 import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from 'react-table-plugins';
@@ -21,9 +22,8 @@ import { Tags } from './Tags';
 import { Radio } from './Radio';
 import { Toggle } from './Toggle';
 import { Datepicker } from './Datepicker';
-
+import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
-
 export function Table({
   id,
   width,
@@ -261,6 +261,14 @@ export function Table({
 
   const changeSet = componentState ? componentState.changeSet : {};
 
+  const computeFontColor = useCallback(() => {
+    if (color !== undefined) {
+      return color;
+    } else {
+      return darkMode ? '#ffffff' : '#000000';
+    }
+  }, [color, darkMode]);
+
   const columnData = component.definition.properties.columns.value.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
     const columnType = column.columnType;
@@ -296,19 +304,99 @@ export function Table({
       filter: customFilter,
       width: width,
       columnOptions,
-
+      columnType,
+      isEditable: column.isEditable,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         const cellValue = rowChangeSet ? rowChangeSet[column.name] || cell.value : cell.value;
 
-        if (columnType === 'string' || columnType === undefined || columnType === 'default') {
-          const textColor = resolveReferences(column.textColor, currentState, { cellValue });
+        switch (columnType) {
+          case 'string':
+          case undefined:
+          case 'default': {
+            const textColor = resolveReferences(column.textColor, currentState, { cellValue });
 
-          const cellStyles = {
-            color: textColor === undefined ? (darkMode === true ? '#fff' : 'black') : textColor,
-          };
+            const cellStyles = {
+              color: textColor ?? '',
+            };
 
-          if (column.isEditable) {
+            if (column.isEditable) {
+              const validationData = validateWidget({
+                validationObject: {
+                  regex: {
+                    value: column.regex,
+                  },
+                  minLength: {
+                    value: column.minLength,
+                  },
+                  maxLength: {
+                    value: column.maxLength,
+                  },
+                  customRule: {
+                    value: column.customRule,
+                  },
+                },
+                widgetValue: cellValue,
+                currentState,
+                customResolveObjects: { cellValue },
+              });
+
+              const { isValid, validationError } = validationData;
+              const cellStyles = {
+                color: textColor ?? '',
+              };
+
+              return (
+                <div>
+                  <input
+                    type="text"
+                    style={cellStyles}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (e.target.defaultValue !== e.target.value) {
+                          handleCellValueChange(
+                            cell.row.index,
+                            column.key || column.name,
+                            e.target.value,
+                            cell.row.original
+                          );
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.defaultValue !== e.target.value) {
+                        handleCellValueChange(
+                          cell.row.index,
+                          column.key || column.name,
+                          e.target.value,
+                          cell.row.original
+                        );
+                      }
+                    }}
+                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                    defaultValue={cellValue}
+                  />
+                  <div className="invalid-feedback">{validationError}</div>
+                </div>
+              );
+            }
+            return <span style={cellStyles}>{cellValue}</span>;
+          }
+          case 'text': {
+            return (
+              <textarea
+                rows="1"
+                className="form-control-plaintext text-container text-muted"
+                readOnly={!column.isEditable}
+                style={{ maxWidth: width, minWidth: width - 10 }}
+                onBlur={(e) => {
+                  handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                }}
+                defaultValue={cellValue}
+              ></textarea>
+            );
+          }
+          case 'dropdown': {
             const validationData = validateWidget({
               validationObject: {
                 regex: {
@@ -333,183 +421,107 @@ export function Table({
 
             return (
               <div>
-                <input
-                  type="text"
-                  style={cellStyles}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      if (e.target.defaultValue !== e.target.value) {
-                        handleCellValueChange(
-                          cell.row.index,
-                          column.key || column.name,
-                          e.target.value,
-                          cell.row.original
-                        );
-                      }
-                    }
+                <SelectSearch
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  search={true}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
-                  onBlur={(e) => {
-                    if (e.target.defaultValue !== e.target.value) {
-                      handleCellValueChange(
-                        cell.row.index,
-                        column.key || column.name,
-                        e.target.value,
-                        cell.row.original
-                      );
-                    }
-                  }}
-                  className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
-                  defaultValue={cellValue}
+                  filterOptions={fuzzySearch}
+                  placeholder="Select.."
                 />
-                <div className="invalid-feedback">{validationError}</div>
+                <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
             );
           }
-          return <span style={cellStyles}>{cellValue}</span>;
-        }
-        if (columnType === 'text') {
-          return (
-            <textarea
-              rows="1"
-              className="form-control-plaintext text-container text-muted"
-              readOnly={!column.isEditable}
-              style={{ maxWidth: width, minWidth: width - 10 }}
-              onBlur={(e) => {
-                handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
-              }}
-              defaultValue={cellValue}
-            ></textarea>
-          );
-        }
-        if (columnType === 'dropdown') {
-          const validationData = validateWidget({
-            validationObject: {
-              customRule: {
-                value: column.customRule,
-              },
-            },
-            widgetValue: cellValue,
-            currentState,
-            customResolveObjects: { cellValue },
-          });
-
-          const { isValid, validationError } = validationData;
-
-          return (
-            <div>
-              <SelectSearch
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                search={true}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-                filterOptions={fuzzySearch}
-                placeholder="Select.."
-              />
-              <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
-            </div>
-          );
-        }
-        if (columnType === 'multiselect') {
-          return (
-            <div>
-              <SelectSearch
-                printOptions="on-focus"
-                multiple
-                search={true}
-                placeholder="Select.."
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'badge') {
-          return (
-            <div>
-              <CustomSelect
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'badges') {
-          return (
-            <div>
-              <CustomSelect
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                multiple={true}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'tags') {
-          return (
-            <div>
-              <Tags
-                readOnly={!column.isEditable}
-                value={cellValue}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'radio') {
-          return (
-            <div>
-              <Radio
-                options={columnOptions.selectOptions}
-                value={cellValue}
-                readOnly={!column.isEditable}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'toggle') {
-          return (
-            <div>
-              <Toggle
-                value={cellValue}
-                readOnly={!column.isEditable}
-                activeColor={column.activeColor}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
-        }
-        if (columnType === 'datepicker') {
-          return (
-            <div>
-              <Datepicker
-                dateFormat={column.dateFormat}
-                isTimeChecked={column.isTimeChecked}
-                value={cellValue}
-                readOnly={column.isEditable}
-                onChange={(value) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                }}
-              />
-            </div>
-          );
+          case 'multiselect': {
+            return (
+              <div>
+                <SelectSearch
+                  printOptions="on-focus"
+                  multiple
+                  search={true}
+                  placeholder="Select.."
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'badge':
+          case 'badges': {
+            return (
+              <div>
+                <CustomSelect
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  multiple={columnType === 'badges'}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'tags': {
+            return (
+              <div>
+                <Tags
+                  value={cellValue}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'radio': {
+            return (
+              <div>
+                <Radio
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  readOnly={!column.isEditable}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'toggle': {
+            return (
+              <div>
+                <Toggle
+                  value={cellValue}
+                  readOnly={!column.isEditable}
+                  activeColor={column.activeColor}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
+          case 'datepicker': {
+            return (
+              <div>
+                <Datepicker
+                  dateFormat={column.dateFormat}
+                  isTimeChecked={column.isTimeChecked}
+                  value={cellValue}
+                  readOnly={column.isEditable}
+                  onChange={(value) => {
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                  }}
+                />
+              </div>
+            );
+          }
         }
         return cellValue || '';
       },
@@ -599,7 +611,6 @@ export function Table({
   const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
 
   const computedStyles = {
-    color,
     width: `${width}px`,
   };
 
@@ -646,7 +657,7 @@ export function Table({
 
   React.useEffect(() => {
     if (serverSidePagination || !clientSidePagination) {
-      setPageSize(-1);
+      setPageSize(rows?.length || 10);
     }
     if (!serverSidePagination && clientSidePagination) {
       setPageSize(10);
@@ -671,47 +682,6 @@ export function Table({
     }
   }, [state.columnResizing.isResizingColumn]);
 
-  function GlobalFilter() {
-    const count = preGlobalFilteredRows.length;
-    const [value, setValue] = React.useState(state.globalFilter);
-    const onChange = useAsyncDebounce((filterValue) => {
-      setGlobalFilter(filterValue || undefined);
-    }, 200);
-
-    const handleSearchTextChange = (text) => {
-      setValue(text);
-      onChange(text);
-
-      onComponentOptionChanged(component, 'searchText', text).then(() => {
-        if (serverSideSearch === true) {
-          onEvent('onSearch', { component, data: {} });
-        }
-      });
-    };
-
-    return (
-      <div className="ms-2 d-inline-block">
-        Search:{' '}
-        <input
-          className="global-search-field"
-          defaultValue={value || ''}
-          onBlur={(e) => {
-            handleSearchTextChange(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearchTextChange(e.target.value);
-            }
-          }}
-          placeholder={`${count} records`}
-          style={{
-            border: '0',
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -726,11 +696,18 @@ export function Table({
       {displaySearchBox && (
         <div className="card-body border-bottom py-3 jet-data-table-header">
           <div className="d-flex">
-            {displaySearchBox && (
-              <div className="ms-auto text-muted">
-                <GlobalFilter />
-              </div>
-            )}
+            <div className="ms-auto text-muted">
+              <GlobalFilter
+                preGlobalFilteredRows={preGlobalFilteredRows}
+                globalFilter={state.globalFilter}
+                useAsyncDebounce={useAsyncDebounce}
+                setGlobalFilter={setGlobalFilter}
+                onComponentOptionChanged={onComponentOptionChanged}
+                component={component}
+                serverSideSearch={serverSideSearch}
+                onEvent={onEvent}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -764,7 +741,7 @@ export function Table({
           )}
 
           {!loadingState && (
-            <tbody {...getTableBodyProps()}>
+            <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
               {console.log('page', page)}
               {page.map((row, index) => {
                 prepareRow(row);
@@ -790,12 +767,27 @@ export function Table({
                           ) {
                             console.log('componentState.changeSet', componentState.changeSet);
                             cellProps.style.backgroundColor = '#ffffde';
+                            cellProps.style['--tblr-table-accent-bg'] = '#ffffde';
                           }
                         }
                       }
+
                       return (
-                        <td key={index} {...cellProps}>
-                          {cell.render('Cell')}
+                        // Does not require key as its already being passed by react-table via cellProps
+                        // eslint-disable-next-line react/jsx-key
+                        <td
+                          className={cx({
+                            'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+                            'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
+                            'has-dropdown': cell.column.columnType === 'dropdown',
+                            'has-multiselect': cell.column.columnType === 'multiselect',
+                            'has-datepicker': cell.column.columnType === 'datepicker',
+                          })}
+                          {...cellProps}
+                        >
+                          <div className="td-container">
+                            {cell.render('Cell')}
+                          </div>
                         </td>
                       );
                     })}
