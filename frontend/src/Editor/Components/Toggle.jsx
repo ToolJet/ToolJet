@@ -3,10 +3,12 @@ import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 class Switch extends React.Component {
   render() {
-    const { on, onClick, onChange, disabledState } = this.props;
+    const { on, onClick, onChange, disabledState, color } = this.props;
+
     return (
       <label className="form-check form-switch form-check-inline">
         <input
+          style={{backgroundColor: on ? `${color}` : 'white'}} ///on ? `'${color} !important'` : 'white !important'
           disabled={disabledState}
           className="form-check-input"
           type="checkbox"
@@ -32,6 +34,8 @@ export const ToggleSwitch = ({
   const [on, setOn] = React.useState(false);
   const label = component.definition.properties.label.value;
   const textColorProperty = component.definition.styles.textColor;
+  const toggleSwitchColorProperty = component.definition.styles.toggleSwitchColor;
+  const toggleSwitchColor = toggleSwitchColorProperty ? toggleSwitchColorProperty.value : '#3c92dc';
   const textColor = textColorProperty ? textColorProperty.value : '#000';
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -68,7 +72,7 @@ export const ToggleSwitch = ({
         {label}
       </span>
       <div className="col">
-        <Switch disabledState={parsedDisabledState} on={on} onClick={toggle} onChange={toggleValue} />
+        <Switch disabledState={parsedDisabledState} on={on} onClick={toggle} onChange={toggleValue} color={toggleSwitchColor} />
       </div>
     </div>
   );
