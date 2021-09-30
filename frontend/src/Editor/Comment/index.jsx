@@ -76,7 +76,14 @@ const Comment = ({ x, y, threadId, user = {} }) => {
           })}
         >
           <div className="card-status-start bg-primary" />
-          <CommentHeader count={thread?.length} close={() => setOpen(false)} />
+          <CommentHeader
+            count={thread?.length}
+            close={() =>
+              setTimeout(() => {
+                setOpen(false);
+              }, 0)
+            }
+          />
           <CommentBody isLoading={loading} thread={thread} />
           <CommentFooter handleSubmit={handleSubmit} />
         </animated.div>
