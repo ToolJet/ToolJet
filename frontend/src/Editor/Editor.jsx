@@ -82,6 +82,7 @@ class Editor extends React.Component {
       showQuerySearchField: false,
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
+      showQueryConfirmation: false,
     };
   }
 
