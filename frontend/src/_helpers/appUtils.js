@@ -278,7 +278,11 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
 
     const componentState = _self.state.currentState.components[component.name];
     const newSelectedRowIds = checked ? rowIds : [];
-    const newComponentState = { ...componentState, selectedRowIds: [...newSelectedRowIds] };
+    const newComponentState = {
+      ...componentState,
+      selectedRowIds: [...newSelectedRowIds],
+      selectAllCheckBoxChecked: checked,
+    };
 
     _self.setState({
       currentState: {

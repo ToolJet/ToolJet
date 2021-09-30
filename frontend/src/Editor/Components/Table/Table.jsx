@@ -601,6 +601,7 @@ export function Table({
     <input
       type="checkbox"
       className=""
+      checked={currentState.components[component.name]?.selectAllCheckBoxChecked}
       onClick={(e) => {
         e.stopPropagation();
         onEvent('onTableSelectAllClicked', {
@@ -652,6 +653,38 @@ export function Table({
         },
       ]
     : [];
+
+  useEffect(() => {
+    const selectedRows = page.filter((row) => componentState.selectedRowIds?.includes(row.id));
+    if (selectedRows) {
+      const selectedRowsData = selectedRows.map((row) => {
+        const changes = changeSet ? changeSet[row.id] ?? {} : {};
+        // In the next statement, slice(1) is used to discard the cell that contains checkbox(which is the first one)
+        const rowEntries = row.cells.slice(1).map((cell) => {
+          const currentColumn = columnData.find((column) => column.id === cell.column.id);
+          return { [currentColumn.accessor]: cell.value };
+        });
+        const rowData = rowEntries.reduce((result, rowEntry) => Object.assign(result, rowEntry), {});
+        return { ...rowData, ...changes };
+      });
+
+      const selectedRowsOriginalData = selectedRows.map((row) => row.original);
+      const combinedData = selectedRows.map((_, rowIndex) => ({
+        ...selectedRowsOriginalData[rowIndex],
+        ...selectedRowsData[rowIndex],
+      }));
+
+      onComponentOptionChanged(component, 'selectedRows', combinedData);
+    }
+  }, [componentState.selectedRowIds]);
+
+  useEffect(() => {
+    onEvent('onTableSelectAllClicked', {
+      component,
+      rowIds: [],
+      checked: false,
+    });
+  }, [showBulkSelector, componentState.currentData, componentState?.pageIndex]);
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
 
@@ -733,24 +766,6 @@ export function Table({
       ['currentData', currentData],
     ]);
   }, [tableData.length, componentState.changeSet]);
-
-  useEffect(() => {
-    const selectedRows = page.filter((row) => componentState.selectedRowIds?.includes(row.id));
-    if (selectedRows) {
-      const selectedRowsData = selectedRows.map((row) => {
-        const changes = changeSet ? changeSet[row.id] ?? {} : {};
-        // In the next statement, slice(1) is used to discard the cell that contains checkbox(which is the first one)
-        const rowEntries = row.cells.slice(1).map((cell) => {
-          const currentColumn = columnData.find((column) => column.id === cell.column.id);
-          return { [currentColumn.accessor]: cell.value };
-        });
-        const rowData = rowEntries.reduce((result, rowEntry) => Object.assign(result, rowEntry), {});
-        return { ...rowData, ...changes };
-      });
-
-      onComponentOptionChanged(component, 'selectedRows', selectedRowsData);
-    }
-  }, [componentState.selectedRowIds, changeSet]);
 
   useEffect(() => {
     if (!state.columnResizing.isResizingColumn) {
