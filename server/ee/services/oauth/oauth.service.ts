@@ -8,21 +8,21 @@ import { GoogleOAuthService } from './google_oauth.service';
 
 @Injectable()
 export class OauthService {
-
   constructor(
     private readonly usersService: UsersService,
     private readonly organizationService: OrganizationsService,
     private readonly jwtService: JwtService,
     private readonly organizationUsersService: OrganizationUsersService,
     private readonly googleOAuthService: GoogleOAuthService
-  ) { }
+  ) {}
 
   async #findOrCreateUser({ userSSOId, firstName, lastName, email }): Promise<User> {
     const organization = await this.organizationService.findFirst();
-    const [user, newUserCreated] = await this.usersService.findOrCreateBySSOId(
+    const [user, newUserCreated] = await this.usersService.findOrCreateBySSOIdOrEmail(
       userSSOId,
       { firstName, lastName, email },
-      organization);
+      organization
+    );
 
     if (newUserCreated) {
       const organizationUser = await this.organizationUsersService.create(user, organization, 'viewer');
@@ -38,7 +38,7 @@ export class OauthService {
       email: user.email,
       first_name: user.firstName,
       last_name: user.lastName,
-      role: user.role
+      role: user.role,
     };
   }
 
@@ -49,7 +49,7 @@ export class OauthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (('RESTRICTED_DOMAIN' in process.env) && process.env.RESTRICTED_DOMAIN != domain)
+    if ('RESTRICTED_DOMAIN' in process.env && process.env.RESTRICTED_DOMAIN != domain)
       throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
 
     const user = await this.#findOrCreateUser({ userSSOId, firstName, lastName, email });
