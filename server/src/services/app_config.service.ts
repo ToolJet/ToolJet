@@ -17,7 +17,15 @@ export class AppConfigService {
   }
 
   fetchDefaultConfig() {
-    return ['TOOLJET_SERVER_URL', 'RELEASE_VERSION', 'GOOGLE_MAPS_API_KEY', 'APM_VENDOR', 'SENTRY_DNS', 'SENTRY_DEBUG'];
+    return [
+      'TOOLJET_SERVER_URL',
+      'RELEASE_VERSION',
+      'GOOGLE_MAPS_API_KEY',
+      'APM_VENDOR',
+      'SENTRY_DNS',
+      'SENTRY_DEBUG',
+      'SSO_GOOGLE_OAUTH2_CLIENT_ID',
+    ];
   }
 
   fetchAllowedConfigFromEnv() {

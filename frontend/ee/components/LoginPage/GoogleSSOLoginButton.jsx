@@ -1,6 +1,5 @@
 import React from 'react';
 import GoogleLogin from 'react-google-login';
-import config from 'config';
 import { authenticationService } from '@/_services';
 
 export default function GoogleSSOLoginButton(props) {
@@ -12,7 +11,7 @@ export default function GoogleSSOLoginButton(props) {
   return (
     <div className="mt-2">
       <GoogleLogin
-        clientId={config.ssoGoogleOauth2ClientId}
+        clientId={window.public_config.SSO_GOOGLE_OAUTH2_CLIENT_ID}
         buttonText="Login"
         onSuccess={googleSSOSuccessHandler}
         onFailure={props.authFailureHandler}

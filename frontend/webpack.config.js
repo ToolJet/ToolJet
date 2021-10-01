@@ -95,7 +95,6 @@ module.exports = {
       apiUrl: `${API_URL[environment] || ''}/api`,
       assetPath: ASSET_PATH[environment],
       SERVER_IP: process.env.SERVER_IP,
-      ssoGoogleOauth2ClientId: process.env.SSO_GOOGLE_OAUTH2_CLIENT_ID ?? '',
     }),
   },
 };

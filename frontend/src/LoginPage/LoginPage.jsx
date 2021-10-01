@@ -3,7 +3,6 @@ import { authenticationService } from '@/_services';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
-import config from 'config';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 
 class LoginPage extends React.Component {
@@ -105,7 +104,7 @@ class LoginPage extends React.Component {
                 >
                   Sign in
                 </button>
-                {config.ssoGoogleOauth2ClientId && (
+                {window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID && (
                   <GoogleSSOLoginButton
                     authSuccessHandler={this.authSuccessHandler}
                     authFailureHandler={this.authFailureHandler}
