@@ -1033,16 +1033,14 @@ export const componentTypes = [
     description: 'Separator between components',
     component: 'Divider',
     defaultSize: {
-      width: 20,
-      height: 200,
+      width: 200,
+      height: 25,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
     },
-    properties: {
-      makeHorizontal: { type: 'toggle', displayName: 'Horizontal' },
-    },
+    properties: {},
     events: {},
     styles: {
       textColor: { type: 'color', displayName: 'Divider Color' },
