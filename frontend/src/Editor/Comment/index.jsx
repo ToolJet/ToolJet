@@ -60,6 +60,8 @@ const Comment = ({ x, y, threadId, user = {} }) => {
           transform: `translate(${x}px, ${y}px)`,
           ...commentFadeStyle,
         }}
+        onDragStart={() => setOpen(false)}
+        onDragEnd={() => setOpen(true)}
       >
         <label {...trigger} className="form-selectgroup-item">
           <span className="comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded">
