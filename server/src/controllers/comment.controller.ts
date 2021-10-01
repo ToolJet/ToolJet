@@ -21,18 +21,21 @@ export class CommentController {
     return comment;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/:tid/all')
   public async getComments(@Param('tid') tid: string): Promise<Comment[]> {
     const comments = await this.commentService.getComments(tid);
     return comments;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/:commentId')
   public async getComment(@Param('commentId') commentId: number) {
     const comment = await this.commentService.getComment(commentId);
     return comment;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('/edit/:commentId')
   public async editComment(
     @Body() createCommentDto: CreateCommentDTO,
@@ -42,6 +45,7 @@ export class CommentController {
     return comment;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('/delete/:commentId')
   public async deleteComment(@Param('commentId') commentId: number) {
     const deletedComment = await this.commentService.deleteComment(commentId);

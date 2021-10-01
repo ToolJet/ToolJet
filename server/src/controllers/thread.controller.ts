@@ -15,18 +15,21 @@ export class ThreadController {
     return thread;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/:appId/all')
   public async getThreads(@Param('appId') appId: string): Promise<Thread[]> {
     const threads = await this.threadService.getThreads(appId);
     return threads;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/:threadId')
   public async getThread(@Param('threadId') threadId: number) {
     const thread = await this.threadService.getThread(threadId);
     return thread;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('/edit/:threadId')
   public async editThread(
     @Body() createThreadDto: CreateThreadDTO,
@@ -36,6 +39,7 @@ export class ThreadController {
     return thread;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('/delete/:threadId')
   public async deleteThread(@Param('threadId') threadId: number) {
     const deletedThread = await this.threadService.deleteThread(threadId);
