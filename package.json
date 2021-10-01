@@ -1,4 +1,8 @@
 {
+  "engines": {
+    "node": "14.17.3",
+    "npm": "7.20"
+  },
   "lint-staged": {
     "./frontend/src/**/*.{js,jsx,json}": [
       "eslint --fix"
