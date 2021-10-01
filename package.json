@@ -1,7 +1,7 @@
 {
   "engines": {
     "node": "14.17.3",
-    "npm": "7.20"
+    "npm": "7.20.0"
   },
   "lint-staged": {
     "./frontend/src/**/*.{js,jsx,json}": [
