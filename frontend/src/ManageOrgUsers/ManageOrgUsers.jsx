@@ -2,7 +2,6 @@ import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -111,7 +110,7 @@ class ManageOrgUsers extends React.Component {
   };
 
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, newUser, idChangingRole, archivingUser } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, archivingUser } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -182,23 +181,23 @@ class ManageOrgUsers extends React.Component {
                           />
                         </div>
                       </div>
-                      <div className="form-group mb-3 ">
-                        <label className="form-label">Role</label>
-                        <div>
-                          <SelectSearch
-                            options={['Admin', 'Developer', 'Viewer'].map((role) => {
-                              return { name: role, value: role.toLowerCase() };
-                            })}
-                            value={newUser.role}
-                            search={true}
-                            onChange={(value) => {
-                              this.changeNewUserOption('role', value);
-                            }}
-                            filterOptions={fuzzySearch}
-                            placeholder="Select.."
-                          />
-                        </div>
-                      </div>
+                      {/* <div className="form-group mb-3 "> */}
+                      {/*   <label className="form-label">Role</label> */}
+                      {/*   <div> */}
+                      {/*     <SelectSearch */}
+                      {/*       options={['Admin', 'Developer', 'Viewer'].map((role) => { */}
+                      {/*         return { name: role, value: role.toLowerCase() }; */}
+                      {/*       })} */}
+                      {/*       value={newUser.role} */}
+                      {/*       search={true} */}
+                      {/*       onChange={(value) => { */}
+                      {/*         this.changeNewUserOption('role', value); */}
+                      {/*       }} */}
+                      {/*       filterOptions={fuzzySearch} */}
+                      {/*       placeholder="Select.." */}
+                      {/*     /> */}
+                      {/*   </div> */}
+                      {/* </div> */}
                       <div className="form-footer">
                         <button
                           className="btn btn-light mr-2"
@@ -230,9 +229,9 @@ class ManageOrgUsers extends React.Component {
                         <tr>
                           <th>Name</th>
                           <th>Email</th>
-                          <th>
-                            <center>Role</center>
-                          </th>
+                          {/* <th> */}
+                          {/*   <center>Role</center> */}
+                          {/* </th> */}
                           <th>Status</th>
                           <th className="w-1"></th>
                         </tr>
@@ -283,24 +282,24 @@ class ManageOrgUsers extends React.Component {
                                   {user.email}
                                 </a>
                               </td>
-                              <td className="text-muted" style={{ width: '280px' }}>
-                                <center className="mx-5 select-search-role">
-                                  <SelectSearch
-                                    options={['Admin', 'Developer', 'Viewer'].map((role) => {
-                                      return { name: role, value: role.toLowerCase() };
-                                    })}
-                                    value={user.role}
-                                    search={false}
-                                    disabled={idChangingRole === user.id}
-                                    onChange={(value) => {
-                                      this.changeNewUserRole(user.id, value);
-                                    }}
-                                    filterOptions={fuzzySearch}
-                                    placeholder="Select.."
-                                  />
-                                  {idChangingRole === user.id && <small>Updating role...</small>}
-                                </center>
-                              </td>
+                              {/* <td className="text-muted" style={{ width: '280px' }}> */}
+                              {/*   <center className="mx-5 select-search-role"> */}
+                              {/*     <SelectSearch */}
+                              {/*       options={['Admin', 'Developer', 'Viewer'].map((role) => { */}
+                              {/*         return { name: role, value: role.toLowerCase() }; */}
+                              {/*       })} */}
+                              {/*       value={user.role} */}
+                              {/*       search={false} */}
+                              {/*       disabled={idChangingRole === user.id} */}
+                              {/*       onChange={(value) => { */}
+                              {/*         this.changeNewUserRole(user.id, value); */}
+                              {/*       }} */}
+                              {/*       filterOptions={fuzzySearch} */}
+                              {/*       placeholder="Select.." */}
+                              {/*     /> */}
+                              {/*     {idChangingRole === user.id && <small>Updating role...</small>} */}
+                              {/*   </center> */}
+                              {/* </td> */}
                               <td className="text-muted">
                                 <span
                                   className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
