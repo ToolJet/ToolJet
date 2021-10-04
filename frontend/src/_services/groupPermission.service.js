@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const groupPermissionService = {
   create,
   update,
+  del,
   getGroup,
   getGroups,
   getAppsInGroup,
@@ -38,6 +39,14 @@ function update(groupPermissionId, params) {
     method: 'PUT',
     headers: authHeader(),
     body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
+}
+
+function del(groupPermissionId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
   };
   return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
 }

@@ -208,7 +208,10 @@ class ManageOrgUsers extends React.Component {
                         </button>
                         <button
                           className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
-                          onClick={this.createUser}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            this.createUser();
+                          }}
                           disabled={creatingUser}
                         >
                           Create User

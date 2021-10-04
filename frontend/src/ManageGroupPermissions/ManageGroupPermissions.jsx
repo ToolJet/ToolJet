@@ -43,16 +43,43 @@ class ManageGroupPermissions extends React.Component {
   };
 
   createGroup = () => {
+    this.setState({ creatingGroup: true });
     groupPermissionService
       .create(this.state.newGroupName)
       .then(() => {
-        this.setState({ creatingGroup: false, showNewGroupForm: false, newGroup: null });
-        toast.success('Group has been created', { hideProgressBar: true, position: 'top-center' });
+        this.setState({
+          creatingGroup: false,
+          showNewGroupForm: false,
+          newGroup: null,
+        });
+        toast.success('Group has been created', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.fetchGroups();
       })
       .catch(({ error }) => {
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
-        this.setState({ creatingGroup: false, showNewGroupForm: true, newGroup: {} });
+        this.setState({
+          creatingGroup: false,
+          showNewGroupForm: true,
+          newGroup: {},
+        });
+      });
+  };
+
+  deleteGroup = (groupPermissionId) => {
+    groupPermissionService
+      .del(groupPermissionId)
+      .then(() => {
+        toast.success('Group has been deleted', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
+        this.fetchGroups();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });
   };
 
@@ -107,14 +134,22 @@ class ManageGroupPermissions extends React.Component {
                       <div className="form-footer">
                         <button
                           className="btn btn-light mr-2"
-                          onClick={() => this.setState({ showNewGroupForm: false, newGroup: null })}
+                          onClick={() =>
+                            this.setState({
+                              showNewGroupForm: false,
+                              newGroup: null,
+                            })
+                          }
                           disabled={creatingGroup}
                         >
                           Cancel
                         </button>
                         <button
                           className={`btn mx-2 btn-primary ${creatingGroup ? 'btn-loading' : ''}`}
-                          onClick={this.createGroup}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            this.createGroup();
+                          }}
                           disabled={creatingGroup}
                         >
                           Create Group
@@ -134,6 +169,7 @@ class ManageGroupPermissions extends React.Component {
                         <tr>
                           <th>Name</th>
                           <th className="w-1"></th>
+                          <th className="w-1"></th>
                         </tr>
                       </thead>
                       {isLoading ? (
@@ -148,6 +184,9 @@ class ManageGroupPermissions extends React.Component {
                               <td className="col-auto">
                                 <div className="skeleton-line w-10"></div>
                               </td>
+                              <td className="col-auto">
+                                <div className="skeleton-line w-10"></div>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -158,6 +197,9 @@ class ManageGroupPermissions extends React.Component {
                               <td>{permissionGroup.group}</td>
                               <td>
                                 <a href={`/groups/${permissionGroup.id}`}>Edit</a>
+                              </td>
+                              <td>
+                                <a onClick={() => this.deleteGroup(permissionGroup.id)}>Delete</a>
                               </td>
                             </tr>
                           ))}
