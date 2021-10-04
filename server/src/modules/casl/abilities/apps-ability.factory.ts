@@ -40,16 +40,11 @@ export class AppsAbilityFactory {
 
     if (await this.usersService.hasGroup(user, 'admin')) {
       can('createUsers', App, { organizationId: user.organizationId });
-    }
-
-    if (await this.usersService.userCan(user, 'create', 'App')) {
       can('createApp', App);
       can('cloneApp', App, { organizationId: user.organizationId });
-
       can('updateParams', App, { organizationId: user.organizationId });
     }
 
-    console.log(await this.usersService.userCan(user, 'read', 'App'));
     if (await this.usersService.userCan(user, 'read', 'App', params.id)) {
       can('viewApp', App, { organizationId: user.organizationId });
 

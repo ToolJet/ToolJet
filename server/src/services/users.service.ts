@@ -5,7 +5,6 @@ import { Organization } from 'src/entities/organization.entity';
 import { createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { UserAppGroupPermission } from 'src/entities/user_app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
@@ -231,7 +230,7 @@ export class UsersService {
     }
   }
 
-  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | UserAppGroupPermission[]): boolean {
+  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[]): boolean {
     return permissions.some((p) => p[action.toLowerCase()]);
   }
 
@@ -253,13 +252,6 @@ export class UsersService {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, organizationId);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
     const appGroupPermissionRepository = getRepository(AppGroupPermission);
-    console.log(groupIds);
-    console.log(
-      await appGroupPermissionRepository.find({
-        groupPermissionId: In(groupIds),
-        appId: appId,
-      })
-    );
 
     return await appGroupPermissionRepository.find({
       groupPermissionId: In(groupIds),

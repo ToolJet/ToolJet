@@ -22,7 +22,7 @@ export class AppUsersController {
     const { role } = params;
 
     const app = await this.appsService.find(appId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, { id: appId });
 
     if (!ability.can('createUsers', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');

@@ -16,6 +16,7 @@ import { decamelizeKeys } from 'humps';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { FoldersService } from '@services/folders.service';
+import { App } from 'src/entities/app.entity';
 
 @Controller('apps')
 export class AppsController {
@@ -28,12 +29,12 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Request() req) {
-    const app = await this.appsService.create(req.user);
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
-    if (!ability.can('createApp', app)) {
+    if (!ability.can('createApp', App)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
+    const app = await this.appsService.create(req.user);
 
     await this.appsService.update(req.user, app.id, {
       slug: app.id,
