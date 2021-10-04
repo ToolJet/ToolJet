@@ -10,6 +10,7 @@ import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { App } from 'src/entities/app.entity';
 
 @Module({
   controllers: [GroupPermissionsController],
@@ -21,6 +22,7 @@ import { Organization } from 'src/entities/organization.entity';
       User,
       OrganizationUser,
       Organization,
+      App,
     ]),
     CaslModule,
   ],

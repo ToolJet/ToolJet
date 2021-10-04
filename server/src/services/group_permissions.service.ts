@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, createQueryBuilder, getManager } from 'typeorm';
+import { Repository, createQueryBuilder, getManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
@@ -19,6 +19,12 @@ export class GroupPermissionsService {
 
     @InjectRepository(UserGroupPermission)
     private userGroupPermissionsRepository: Repository<UserGroupPermission>,
+
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+
+    @InjectRepository(App)
+    private appRepository: Repository<App>,
 
     private usersService: UsersService
   ) {}
@@ -173,16 +179,19 @@ export class GroupPermissionsService {
   }
 
   async findAddableApps(user: User, groupPermissionId: string): Promise<App[]> {
-    return createQueryBuilder(App, 'apps')
-      .innerJoinAndSelect('apps.groupPermissions', 'group_permissions')
-      .where('group_permissions.id != :groupPermissionId', {
-        groupPermissionId,
-      })
-      .andWhere('group_permissions.organization_id = :organizationId', {
-        organizationId: user.organizationId,
-      })
-      .orderBy('apps.created_at', 'DESC')
-      .getMany();
+    const groupPermission = await this.groupPermissionsRepository.findOne({
+      id: groupPermissionId,
+      organizationId: user.organizationId,
+    });
+
+    const appsInGroup = await groupPermission.apps;
+    const appsInGroupIds = appsInGroup.map((u) => u.id);
+
+    return await this.appRepository.find({
+      where: { id: Not(In(appsInGroupIds)) },
+      loadEagerRelations: false,
+      relations: ['groupPermissions', 'appGroupPermissions'],
+    });
   }
 
   async findUsers(user: User, groupPermissionId: string): Promise<User[]> {
@@ -201,27 +210,14 @@ export class GroupPermissionsService {
   }
 
   async findAddableUsers(user: User, groupPermissionId: string): Promise<User[]> {
-    const userIdsInOrgWithoutGroup = await createQueryBuilder(UserGroupPermission, 'user_group_permissions')
-      .select(['user_group_permissions.user_id'])
-      .distinct(true)
-      .innerJoinAndSelect('user_group_permissions.groupPermission', 'group_permissions')
-      .andWhere('group_permissions.organization_id = :organizationId', {
-        organizationId: user.organizationId,
-      })
-      .getMany();
+    const groupPermission = await this.groupPermissionsRepository.findOne({
+      id: groupPermissionId,
+      organizationId: user.organizationId,
+    });
 
-    console.log(userIdsInOrgWithoutGroup);
+    const userInGroup = await groupPermission.users;
+    const usersInGroupIds = userInGroup.map((u) => u.id);
 
-    return createQueryBuilder(User, 'users')
-      .innerJoinAndSelect('users.groupPermissions', 'group_permissions')
-      .innerJoinAndSelect('users.userGroupPermissions', 'user_group_permissions')
-      .where('user_group_permissions.group_permission_id != :groupPermissionId', {
-        groupPermissionId,
-      })
-      .andWhere('group_permissions.organization_id = :organizationId', {
-        organizationId: user.organizationId,
-      })
-      .orderBy('users.created_at', 'DESC')
-      .getMany();
+    return await this.userRepository.find({ id: Not(In(usersInGroupIds)) });
   }
 }
