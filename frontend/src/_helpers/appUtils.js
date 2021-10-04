@@ -253,48 +253,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
-  if (eventName === 'onTableSelectorChanged') {
-    const { component, rowId, value } = options;
-
-    const componentState = _self.state.currentState.components[component.name];
-    const selectedRowIds = componentState.selectedRowIds ?? [];
-    const newSelectedRowIds = value ? [...selectedRowIds, rowId] : selectedRowIds.filter((id) => id != rowId);
-    const newComponentState = { ...componentState, selectedRowIds: [...newSelectedRowIds] };
-    const newState = {
-      currentState: {
-        ..._self.state.currentState,
-        components: {
-          ..._self.state.currentState.components,
-          [component.name]: newComponentState,
-        },
-      },
-    };
-
-    _self.setState(newState);
-  }
-
-  if (eventName === 'onTableSelectAllClicked') {
-    const { component, rowIds, checked } = options;
-
-    const componentState = _self.state.currentState.components[component.name];
-    const newSelectedRowIds = checked ? rowIds : [];
-    const newComponentState = {
-      ...componentState,
-      selectedRowIds: [...newSelectedRowIds],
-      selectAllCheckBoxChecked: checked,
-    };
-
-    _self.setState({
-      currentState: {
-        ..._self.state.currentState,
-        components: {
-          ..._self.state.currentState.components,
-          [component.name]: newComponentState,
-        },
-      },
-    });
-  }
-
   if (
     [
       'onDetect',

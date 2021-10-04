@@ -10,6 +10,7 @@ import {
   usePagination,
   useBlockLayout,
   useResizeColumns,
+  useRowSelect,
 } from 'react-table';
 import cx from 'classnames';
 import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
@@ -597,92 +598,40 @@ export function Table({
         ]
       : [];
 
-  const selectAllCheckBox = () => (
-    <input
-      type="checkbox"
-      className=""
-      checked={currentState.components[component.name]?.selectAllCheckBoxChecked}
-      onClick={(e) => {
-        e.stopPropagation();
-        onEvent('onTableSelectAllClicked', {
-          component,
-          rowIds: rows.map((row) => row.id),
-          checked: e.currentTarget.checked,
-        });
-      }}
-      style={{
-        width: 15,
-        height: 15,
-        marginTop: 0,
-        marginLeft: 10,
-      }}
-    />
-  );
+  const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
+    const defaultRef = React.useRef();
+    const resolvedRef = ref || defaultRef;
 
-  const selectorData = showBulkSelector
-    ? [
-        {
-          id: 'selector',
-          Header: selectAllCheckBox(),
-          accessor: 'selector',
-          width: 1,
-          Cell: (cell) => {
-            return (
-              <input
-                type="checkbox"
-                className=""
-                // TODO: Add color for checkbox
-                checked={currentState.components[component.name]?.selectedRowIds?.includes(cell.row.id) ?? false}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEvent('onTableSelectorChanged', {
-                    component,
-                    rowId: cell.row.id,
-                    value: e.currentTarget.checked,
-                  });
-                }}
-                style={{
-                  width: 15,
-                  height: 15,
-                  marginTop: 8,
-                  marginLeft: 10,
-                }}
-              />
-            );
-          },
-        },
-      ]
-    : [];
+    React.useEffect(() => {
+      resolvedRef.current.indeterminate = indeterminate;
+    }, [resolvedRef, indeterminate]);
 
-  useEffect(() => {
-    const selectedRows = page.filter((row) => componentState.selectedRowIds?.includes(row.id));
-    if (selectedRows) {
-      onComponentOptionChanged(
-        component,
-        'selectedRows',
-        selectedRows.map((row) => row.original)
-      );
-    }
-  }, [componentState.selectedRowIds]);
-
-  useEffect(() => {
-    onEvent('onTableSelectAllClicked', {
-      component,
-      rowIds: [],
-      checked: false,
-    });
-  }, [showBulkSelector, componentState.currentData, componentState?.pageIndex]);
+    return (
+      <>
+        <input
+          type="checkbox"
+          ref={resolvedRef}
+          style={{
+            width: 15,
+            height: 15,
+            marginTop: 8,
+            marginLeft: 10,
+          }}
+          {...rest}
+        />
+      </>
+    );
+  });
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
 
   const columns = useMemo(
-    () => [...selectorData, ...leftActionsCellData, ...columnData, ...rightActionsCellData],
+    () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
       JSON.stringify(columnData),
       leftActionsCellData.length,
       rightActionsCellData.length,
       componentState.changeSet,
-      componentState.selectedRowIds,
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
@@ -716,6 +665,7 @@ export function Table({
     setGlobalFilter,
     state: { pageIndex, pageSize },
     exportData,
+    selectedFlatRows,
   } = useTable(
     {
       autoResetPage: false,
@@ -733,8 +683,35 @@ export function Table({
     usePagination,
     useBlockLayout,
     useResizeColumns,
-    useExportData
+    useExportData,
+    useRowSelect,
+    (hooks) => {
+      hooks.visibleColumns.push((columns) => [
+        {
+          id: 'selection',
+          Header: ({ getToggleAllPageRowsSelectedProps }) => (
+            <div className="d-flex flex-column align-items-center">
+              <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
+            </div>
+          ),
+          Cell: ({ row }) => (
+            <div className="d-flex flex-column align-items-center">
+              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+            </div>
+          ),
+          width: 1,
+          columnType: 'selector',
+        },
+        ...columns,
+      ]);
+    }
   );
+
+  useEffect(() => {
+    const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
+    onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);
+    console.log('yepski', selectedRowsOriginalData, selectedFlatRows?.length);
+  }, [selectedFlatRows.length]);
 
   React.useEffect(() => {
     if (serverSidePagination || !clientSidePagination) {
@@ -863,12 +840,11 @@ export function Table({
                             'has-dropdown': cell.column.columnType === 'dropdown',
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
+                            'align-items-center flex-column': cell.column.columnType === 'selector',
                           })}
                           {...cellProps}
                         >
-                          <div className="td-container">
-                            {cell.render('Cell')}
-                          </div>
+                          <div className="td-container">{cell.render('Cell')}</div>
                         </td>
                       );
                     })}
