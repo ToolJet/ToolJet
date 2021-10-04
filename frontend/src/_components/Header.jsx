@@ -53,6 +53,15 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <span className="nav-link-title">Users</span>
             </Link>
           </li>
+
+          <li className={`nav-item ${pahtName === '/groups' ? 'active' : ''}`}>
+            <Link to={'/groups'} className="nav-link">
+              <span className="nav-link-icon d-md-none d-lg-inline-block">
+                <img className="svg-icon" src="/assets/images/icons/users.svg" width="15" height="15" />
+              </span>
+              <span className="nav-link-title">Groups</span>
+            </Link>
+          </li>
         </ul>
         <div className="navbar-nav flex-row order-md-last">
           <div className="p-1 m-1 d-flex align-items-center">

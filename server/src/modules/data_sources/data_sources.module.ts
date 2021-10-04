@@ -15,10 +15,22 @@ import { DataQueriesService } from '@services/data_queries.service';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { AppCloneService } from '@services/app_clone.service';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([DataSource, DataQuery, Credential, App, AppVersion, AppUser, FolderApp]),
+    TypeOrmModule.forFeature([
+      DataSource,
+      DataQuery,
+      Credential,
+      App,
+      AppVersion,
+      AppUser,
+      FolderApp,
+      GroupPermission,
+      AppGroupPermission,
+    ]),
     CaslModule,
   ],
   providers: [

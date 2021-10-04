@@ -19,6 +19,7 @@ import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
 import { UserAppGroupPermission } from './user_app_group_permission.entity';
+import { UserGroupPermission } from './user_group_permission.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -77,19 +78,22 @@ export class User extends BaseEntity {
       name: 'user_id',
     },
     inverseJoinColumn: {
-      name: 'group_permissions_id',
+      name: 'group_permission_id',
     },
   })
-  groupPermissions: GroupPermission[];
+  groupPermissions: Promise<GroupPermission[]>;
 
-  public isAdmin;
-  public isDeveloper;
+  @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
+  userGroupPermissions: UserGroupPermission[];
+
+  // public isAdmin;
+  // public isDeveloper;
   public role;
 
   @AfterLoad()
   computeUserRole(): void {
-    this.isAdmin = this.organizationUsers[0].role === 'admin';
-    this.isDeveloper = this.organizationUsers[0].role === 'developer';
-    this.role = this.organizationUsers[0].role;
+    // this.isAdmin = this.organizationUsers[0].role === 'admin';
+    // this.isDeveloper = this.organizationUsers[0].role === 'developer';
+    // this.role = this.organizationUsers[0].role;
   }
 }

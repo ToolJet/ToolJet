@@ -9,12 +9,15 @@ import {
   createApplicationVersion,
   createDataQuery,
   createDataSource,
+  createAppGroupPermission,
 } from '../test.helper';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { AppUser } from 'src/entities/app_user.entity';
+import { getRepository } from 'typeorm';
+import { GroupPermission } from 'src/entities/group_permission.entity';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -35,20 +38,20 @@ describe('apps controller', () => {
 
   describe('/apps', () => {
     describe('authorization', () => {
-      it('should be able to create app if user is either admin or developer', async () => {
+      it('should be able to create app if user has admin group or app create permission', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
+          groups: ['all_users', 'admin'],
         });
         const organization = adminUserData.organization;
         const developerUserData = await createUser(app, {
           email: 'developer@tooljet.io',
-          role: 'developer',
+          groups: ['all_users', 'developer'],
           organization,
         });
         const viewerUserData = await createUser(app, {
           email: 'viewer@tooljet.io',
-          role: 'viewer',
+          groups: ['all_users', 'viewer'],
           organization,
         });
 
@@ -57,6 +60,17 @@ describe('apps controller', () => {
           user: adminUserData.user,
         });
         await createApplicationVersion(app, application);
+
+        // setup app permissions for developer
+        const developerUserGroup = await getRepository(GroupPermission).findOne({
+          group: 'developer',
+        });
+        await createAppGroupPermission(app, application, developerUserGroup.id, {
+          create: true,
+          read: false,
+          update: false,
+          delete: false,
+        });
 
         for (const userData of [adminUserData, developerUserData]) {
           const response = await request(app.getHttpServer())
@@ -78,7 +92,7 @@ describe('apps controller', () => {
     it('should create app with default values', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
 
       const response = await request(app.getHttpServer())
@@ -97,27 +111,38 @@ describe('apps controller', () => {
   });
 
   describe('/apps/:id/clone', () => {
-    it('should be able to clone the app if user is admin or developer', async () => {
+    it('should be able to clone the app if user group is admin or has app create permission', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
 
       const developerUserData = await createUser(app, {
         email: 'dev@tooljet.io',
-        role: 'developer',
+        groups: ['all_users', 'developer'],
         organization: adminUserData.organization,
       });
 
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
-        role: 'viewer',
+        groups: ['all_users', 'viewer'],
         organization: adminUserData.organization,
       });
 
       const application = await createApplication(app, {
         name: 'App to clone',
         user: adminUserData.user,
+      });
+
+      // setup app permissions for developer
+      const developerUserGroup = await getRepository(GroupPermission).findOne({
+        group: 'developer',
+      });
+      await createAppGroupPermission(app, application, developerUserGroup.id, {
+        create: true,
+        read: false,
+        update: false,
+        delete: false,
       });
 
       let response = await request(app.getHttpServer())
@@ -150,11 +175,11 @@ describe('apps controller', () => {
     it('should not be able to clone the app if app is of another organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
       const anotherOrgAdminUserData = await createUser(app, {
         email: 'another@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
       const application = await createApplication(app, {
         name: 'name',
@@ -173,7 +198,7 @@ describe('apps controller', () => {
     it('should be able to update name of the app if admin of same organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
       const application = await createApplication(app, {
         user: adminUserData.user,
@@ -192,11 +217,11 @@ describe('apps controller', () => {
     it('should not be able to update name of the app if admin of another organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
       const anotherOrgAdminUserData = await createUser(app, {
         email: 'another@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
       const application = await createApplication(app, {
         name: 'name',
@@ -213,10 +238,10 @@ describe('apps controller', () => {
       expect(application.name).toBe('name');
     });
 
-    it('should not allow developers and viewers to change the name of apps', async () => {
+    it('should not allow custom groups without app create permission to change the name of apps', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
       const application = await createApplication(app, {
         name: 'name',
@@ -225,12 +250,12 @@ describe('apps controller', () => {
 
       const developerUserData = await createUser(app, {
         email: 'dev@tooljet.io',
-        role: 'developer',
+        groups: ['all_users', 'developer'],
         organization: adminUserData.organization,
       });
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
-        role: 'viewer',
+        groups: ['all_users', 'viewer'],
         organization: adminUserData.organization,
       });
 
@@ -254,7 +279,7 @@ describe('apps controller', () => {
       it('should be possible for the admin to delete an app, cascaded with its versions, queries and data sources', async () => {
         const admin = await createUser(app, {
           email: 'adminForDelete@tooljet.io',
-          role: 'admin',
+          groups: ['all_users', 'admin'],
         });
         const application = await createApplication(app, {
           name: 'AppTObeDeleted',
@@ -287,7 +312,7 @@ describe('apps controller', () => {
       it('should not be possible for non-admin user to delete an app, cascaded with its versions, queries and data sources', async () => {
         const developer = await createUser(app, {
           email: 'developer@tooljet.io',
-          role: 'developer',
+          groups: ['all_users', 'developer'],
         });
         const application = await createApplication(app, {
           name: 'AppTObeDeleted',
@@ -318,78 +343,82 @@ describe('apps controller', () => {
     });
   });
 
-  describe('/apps/:id/users', () => {
-    it('should not be able to fetch app users if admin of another organization', async () => {
-      const adminUserData = await createUser(app, {
-        email: 'admin@tooljet.io',
-        role: 'admin',
-      });
-      const anotherOrgAdminUserData = await createUser(app, {
-        email: 'another@tooljet.io',
-        role: 'admin',
-      });
-      const application = await createApplication(app, {
-        name: 'name',
-        user: adminUserData.user,
-      });
+  // describe("/apps/:id/users", () => {
+  //   it("should not be able to fetch app users if admin of another organization", async () => {
+  //     const adminUserData = await createUser(app, {
+  //       email: "admin@tooljet.io",
+  //       groups: ["all_users", "admin"],
+  //     });
+  //     const anotherOrgAdminUserData = await createUser(app, {
+  //       email: "another@tooljet.io",
+  //       groups: ["all_users", "admin"],
+  //     });
+  //     const application = await createApplication(app, {
+  //       name: "name",
+  //       user: adminUserData.user,
+  //     });
 
-      const response = await request(app.getHttpServer())
-        .get(`/apps/${application.id}/users`)
-        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
+  //     const response = await request(app.getHttpServer())
+  //       .get(`/apps/${application.id}/users`)
+  //       .set("Authorization", authHeaderForUser(anotherOrgAdminUserData.user));
 
-      expect(response.statusCode).toBe(403);
-    });
+  //     expect(response.statusCode).toBe(403);
+  //   });
 
-    it('should be able to fetch app users if admin/developer/viewer of same organization', async () => {
-      const adminUserData = await createUser(app, {
-        email: 'admin@tooljet.io',
-        role: 'admin',
-      });
-      const organization = adminUserData.organization;
-      const developerUserData = await createUser(app, {
-        email: 'developer@tooljet.io',
-        role: 'developer',
-        organization,
-      });
-      const viewerUserData = await createUser(app, {
-        email: 'viewer@tooljet.io',
-        role: 'viewer',
-        organization,
-      });
+  //   it("should be able to fetch app users if group is admin/developer/viewer of same organization", async () => {
+  //     const adminUserData = await createUser(app, {
+  //       email: "admin@tooljet.io",
+  //       groups: ["all_users", "admin"],
+  //     });
+  //     const organization = adminUserData.organization;
+  //     const developerUserData = await createUser(app, {
+  //       email: "developer@tooljet.io",
+  //       groups: ["all_users", "developer"],
+  //       organization,
+  //     });
+  //     const viewerUserData = await createUser(app, {
+  //       email: "viewer@tooljet.io",
+  //       groups: ["all_users", "viewer"],
+  //       organization,
+  //     });
 
-      const application = await createApplication(app, {
-        name: 'name',
-        user: adminUserData.user,
-      });
+  //     const application = await createApplication(app, {
+  //       name: "name",
+  //       user: adminUserData.user,
+  //     });
 
-      for (const userData of [adminUserData, developerUserData, viewerUserData]) {
-        const response = await request(app.getHttpServer())
-          .get(`/apps/${application.id}/users`)
-          .set('Authorization', authHeaderForUser(userData.user));
+  //     for (const userData of [
+  //       adminUserData,
+  //       developerUserData,
+  //       viewerUserData,
+  //     ]) {
+  //       const response = await request(app.getHttpServer())
+  //         .get(`/apps/${application.id}/users`)
+  //         .set("Authorization", authHeaderForUser(userData.user));
 
-        expect(response.statusCode).toBe(200);
-        expect(response.body.users.length).toBe(1);
-      }
-    });
-  });
+  //       expect(response.statusCode).toBe(200);
+  //       expect(response.body.users.length).toBe(1);
+  //     }
+  //   });
+  // });
 
   describe('/apps/:id/versions', () => {
     describe('get versions', () => {
       describe('authorization', () => {
-        it('should be able to fetch app versions if admin/developer/viewer of same organization', async () => {
+        it('should be able to fetch app versions with app read permission group', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const organization = adminUserData.organization;
           const developerUserData = await createUser(app, {
             email: 'developer@tooljet.io',
-            role: 'developer',
+            groups: ['all_users'],
             organization,
           });
           const viewerUserData = await createUser(app, {
             email: 'viewer@tooljet.io',
-            role: 'viewer',
+            groups: ['all_users'],
             organization,
           });
 
@@ -416,11 +445,11 @@ describe('apps controller', () => {
         it('should not be able to fetch app versions if user of another organization', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const anotherOrgAdminUserData = await createUser(app, {
             email: 'another@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const application = await createApplication(app, {
             name: 'name',
@@ -435,18 +464,29 @@ describe('apps controller', () => {
           expect(response.statusCode).toBe(403);
         });
 
-        it('should be able to create a new app version if admin or developer of same organization', async () => {
+        it('should be able to create a new app version if group is admin or has app update permission group in same organization', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const developerUserData = await createUser(app, {
             email: 'dev@tooljet.io',
-            role: 'developer',
+            groups: ['all_users', 'developer'],
             organization: adminUserData.organization,
           });
           const application = await createApplication(app, {
             user: adminUserData.user,
+          });
+
+          // setup app permissions for developer
+          const developerUserGroup = await getRepository(GroupPermission).findOne({
+            group: 'developer',
+          });
+          await createAppGroupPermission(app, application, developerUserGroup.id, {
+            create: false,
+            read: false,
+            update: true,
+            delete: false,
           });
 
           for (const userData of [adminUserData, developerUserData]) {
@@ -464,11 +504,11 @@ describe('apps controller', () => {
         it('should not be able to create app versions if user of another organization', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const anotherOrgAdminUserData = await createUser(app, {
             email: 'another@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const application = await createApplication(app, {
             name: 'name',
@@ -486,14 +526,14 @@ describe('apps controller', () => {
           expect(response.statusCode).toBe(403);
         });
 
-        it('should not be able to fetch app versions if user is a viewer', async () => {
+        it('should not be able to create app versions if user does not have app create permission group', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const viewerUserData = await createUser(app, {
             email: 'viewer@tooljet.io',
-            role: 'viewer',
+            groups: ['all_users'],
             organization: adminUserData.organization,
           });
           const application = await createApplication(app, {
@@ -517,7 +557,7 @@ describe('apps controller', () => {
         it('should return null when no previous versions exists', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const application = await createApplication(app, {
             user: adminUserData.user,
@@ -543,7 +583,7 @@ describe('apps controller', () => {
         it('should return previous version definition when previous versions exists', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
 
           const application = await createApplication(app, {
@@ -587,14 +627,14 @@ describe('apps controller', () => {
   describe('/apps/:id/versions/:version_id', () => {
     describe('get app version', () => {
       describe('authorization', () => {
-        it('should be able to get app version if admin or developer of same organization', async () => {
+        it('should be able to get app version by all users within same organization', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const developerUserData = await createUser(app, {
             email: 'dev@tooljet.io',
-            role: 'developer',
+            groups: ['all_users'],
             organization: adminUserData.organization,
           });
           const application = await createApplication(app, {
@@ -611,36 +651,14 @@ describe('apps controller', () => {
           }
         });
 
-        it('should be able to get app version if viewers of same organization', async () => {
-          const adminUserData = await createUser(app, {
-            email: 'admin@tooljet.io',
-            role: 'admin',
-          });
-          const viewerUserData = await createUser(app, {
-            email: 'dev@tooljet.io',
-            role: 'viewer',
-            organization: adminUserData.organization,
-          });
-          const application = await createApplication(app, {
-            user: adminUserData.user,
-          });
-          const version = await createApplicationVersion(app, application);
-
-          const response = await request(app.getHttpServer())
-            .get(`/apps/${application.id}/versions/${version.id}`)
-            .set('Authorization', authHeaderForUser(viewerUserData.user));
-
-          expect(response.statusCode).toBe(200);
-        });
-
         it('should not be able to get app versions if user of another organization', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const anotherOrgAdminUserData = await createUser(app, {
             email: 'another@tooljet.io',
-            role: 'admin',
+            groups: ['all_users', 'admin'],
           });
           const application = await createApplication(app, {
             name: 'name',
@@ -658,20 +676,29 @@ describe('apps controller', () => {
     });
 
     describe('update app version', () => {
-      it('should be able to update app version if admin or developer of same organization', async () => {
+      it('should be able to update app version if has group admin or app update permission group in same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
+          groups: ['all_users', 'admin'],
         });
         const developerUserData = await createUser(app, {
           email: 'dev@tooljet.io',
-          role: 'developer',
+          groups: ['all_users', 'developer'],
           organization: adminUserData.organization,
         });
         const application = await createApplication(app, {
           user: adminUserData.user,
         });
         const version = await createApplicationVersion(app, application);
+
+        // setup app permissions for developer
+        const developerUserGroup = await getRepository(GroupPermission).findOne({ group: 'developer' });
+        await createAppGroupPermission(app, application, developerUserGroup.id, {
+          create: false,
+          read: false,
+          update: true,
+          delete: false,
+        });
 
         for (const userData of [adminUserData, developerUserData]) {
           const response = await request(app.getHttpServer())
@@ -686,14 +713,14 @@ describe('apps controller', () => {
         }
       });
 
-      it('should not be able to update app version if viewers of same organization', async () => {
+      it('should not be able to update app version if no app create permission within same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
+          groups: ['all_users', 'admin'],
         });
         const viewerUserData = await createUser(app, {
           email: 'dev@tooljet.io',
-          role: 'viewer',
+          groups: ['all_users'],
           organization: adminUserData.organization,
         });
         const application = await createApplication(app, {
@@ -714,11 +741,11 @@ describe('apps controller', () => {
       it('should not be able to update app versions if user of another organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
-          role: 'admin',
+          groups: ['all_users', 'admin'],
         });
         const anotherOrgAdminUserData = await createUser(app, {
           email: 'another@tooljet.io',
-          role: 'admin',
+          groups: ['all_users', 'admin'],
         });
         const application = await createApplication(app, {
           name: 'name',
@@ -748,26 +775,27 @@ describe('apps controller', () => {
     it('should be able to fetch app using slug if member of an organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
       const developerUserData = await createUser(app, {
         email: 'developer@tooljet.io',
-        role: 'developer',
+        groups: ['all_users', 'developer'],
         organization: adminUserData.organization,
       });
       const viewerUserData = await createUser(app, {
         email: 'viewer@tooljet.io',
-        role: 'viewer',
+        groups: ['all_users', 'viewer'],
         organization: adminUserData.organization,
       });
-      const application = await createApplication(app, {
+      await createApplication(app, {
         name: 'name',
         user: adminUserData.user,
+        slug: 'foo',
       });
 
       for (const userData of [adminUserData, developerUserData, viewerUserData]) {
         const response = await request(app.getHttpServer())
-          .get(`/apps/slugs/${application.id}`)
+          .get('/apps/slugs/foo')
           .set('Authorization', authHeaderForUser(userData.user));
 
         expect(response.statusCode).toBe(200);
@@ -777,19 +805,20 @@ describe('apps controller', () => {
     it('should not be able to fetch app using slug if member of another organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
       const anotherOrgAdminUserData = await createUser(app, {
         email: 'another@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
-      const application = await createApplication(app, {
+      await createApplication(app, {
         name: 'name',
         user: adminUserData.user,
+        slug: 'foo',
       });
 
       const response = await request(app.getHttpServer())
-        .get(`/apps/slugs/${application.id}`)
+        .get('/apps/slugs/foo')
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -798,16 +827,17 @@ describe('apps controller', () => {
     it('should be able to fetch app using slug if a public app ( even if unauthenticated )', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
-        role: 'admin',
+        groups: ['all_users', 'admin'],
       });
 
-      const application = await createApplication(app, {
+      await createApplication(app, {
         name: 'name',
         user: adminUserData.user,
+        slug: 'foo',
         isPublic: true,
       });
 
-      const response = await request(app.getHttpServer()).get(`/apps/slugs/${application.id}`);
+      const response = await request(app.getHttpServer()).get('/apps/slugs/foo');
 
       expect(response.statusCode).toBe(200);
     });

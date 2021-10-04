@@ -4,14 +4,10 @@ import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { clearDB, createUser, createNestAppInstance } from '../test.helper';
-import { Organization } from 'src/entities/organization.entity';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
 
 describe('Authentication', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
-  let organizationRepository: Repository<Organization>;
-  let organizationUsersRepository: Repository<OrganizationUser>;
 
   beforeEach(async () => {
     await clearDB();
@@ -22,8 +18,6 @@ describe('Authentication', () => {
     app = await createNestAppInstance();
 
     userRepository = app.get('UserRepository');
-    organizationRepository = app.get('OrganizationRepository');
-    organizationUsersRepository = app.get('OrganizationUserRepository');
   });
 
   it('should create new users', async () => {
@@ -35,19 +29,22 @@ describe('Authentication', () => {
     const user = await userRepository.findOne(id, { relations: ['organization'] });
 
     expect(user.organization.name).toBe('Untitled organization');
-    const orgUser = user.organizationUsers[0];
-    expect(orgUser.role).toBe('admin');
+
+    const groupPermissions = await user.groupPermissions;
+    const groupNames = groupPermissions.map((x) => x.group);
+
+    expect(new Set(['all_users', 'admin'])).toEqual(new Set(groupNames));
   });
 
   it(`authenticate if valid credentials`, async () => {
-    return request(app.getHttpServer())
+    return await request(app.getHttpServer())
       .post('/authenticate')
       .send({ email: 'admin@tooljet.io', password: 'password' })
       .expect(201);
   });
 
   it(`throw 401 if invalid credentials`, async () => {
-    return request(app.getHttpServer())
+    return await request(app.getHttpServer())
       .post('/authenticate')
       .send({ email: 'adnin@tooljet.io', password: 'pwd' })
       .expect(401);
