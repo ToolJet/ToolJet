@@ -96,7 +96,11 @@ class ManageGroupPermissions extends React.Component {
               <div className="row align-items-center">
                 <div className="col">
                   <div className="page-pretitle"></div>
-                  <h2 className="page-title">User Groups</h2>
+                  <ol className="breadcrumb" aria-label="breadcrumbs">
+                    <li className="breadcrumb-item">
+                      <Link>User groups</Link>
+                    </li>
+                  </ol>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showNewGroupForm && (
@@ -200,7 +204,9 @@ class ManageGroupPermissions extends React.Component {
                                 <Link to={`/groups/${permissionGroup.id}`}>Edit</Link>
                               </td>
                               <td>
-                                <Link onClick={() => this.deleteGroup(permissionGroup.id)}>Delete</Link>
+                                {permissionGroup.group != 'admin' && permissionGroup.group != 'all_users' && (
+                                  <Link onClick={() => this.deleteGroup(permissionGroup.id)}>Delete</Link>
+                                )}
                               </td>
                             </tr>
                           ))}

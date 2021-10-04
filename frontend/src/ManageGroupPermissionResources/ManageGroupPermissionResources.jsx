@@ -93,7 +93,7 @@ class ManageGroupPermissionResources extends React.Component {
         !this.findAppGroupPermission(app, groupPermissionId, action)
       )
       .then(() => {
-        toast.success('App permissions udpated', {
+        toast.success('App permissions updated', {
           hideProgressBar: true,
           position: 'top-center',
         });
@@ -246,9 +246,20 @@ class ManageGroupPermissionResources extends React.Component {
                 <div className="col">
                   <div className="page-pretitle"></div>
                   {isLoadingGroup ? (
-                    <div>Loading...</div>
+                    <ol className="breadcrumb" aria-label="breadcrumbs">
+                      <li className="breadcrumb-item">
+                        <Link href="#">User groups</Link>
+                      </li>
+                    </ol>
                   ) : (
-                    <h2 className="page-title">{`User Group: ${groupPermission.group}`}</h2>
+                    <ol className="breadcrumb" aria-label="breadcrumbs">
+                      <li className="breadcrumb-item">
+                        <Link to="/groups">User groups</Link>
+                      </li>
+                      <li className="breadcrumb-item">
+                        <Link>{groupPermission.group}</Link>
+                      </li>
+                    </ol>
                   )}
                 </div>
               </div>
@@ -406,6 +417,7 @@ class ManageGroupPermissionResources extends React.Component {
                             <thead>
                               <tr>
                                 <th>Name</th>
+                                <th>Email</th>
                                 <th></th>
                               </tr>
                             </thead>
@@ -416,6 +428,7 @@ class ManageGroupPermissionResources extends React.Component {
                                 usersInGroup.map((user) => (
                                   <tr key={user.id}>
                                     <td>{`${user.first_name} ${user.last_name}`}</td>
+                                    <td>{user.email}</td>
                                     <td className="text-muted">
                                       {groupPermission.group != 'all_users' && (
                                         <Link

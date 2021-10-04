@@ -34,6 +34,14 @@ export class GroupPermissionsService {
 
   async destroy(user: User, groupPermissionId: string) {
     let result;
+
+    const groupPermission = await this.groupPermissionsRepository.findOne({
+      id: groupPermissionId,
+    });
+
+    if (groupPermission.group == 'admin' || groupPermission.group == 'all_users') {
+      throw new BadRequestException('Cannot delete default group');
+    }
     getManager().transaction(async (manager) => {
       const relationalEntitiesToBeDeleted = [AppGroupPermission, UserGroupPermission];
 
