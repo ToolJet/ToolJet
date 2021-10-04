@@ -15,6 +15,7 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from 'src/services/data_sources.service';
 import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
+import { ThreadRepository } from '@repositories/thread.repository';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -168,5 +169,19 @@ export async function createDataQuery(nestInstance, { application, kind, dataSou
       createdAt: new Date(),
       updatedAt: new Date(),
     })
+  );
+}
+
+export async function createThread(nestInstance, { app_id, x, y, user_id }: any) {
+  let threadRepository: ThreadRepository;
+  threadRepository = nestInstance.get('ThreadRepository');
+
+  return await threadRepository.createThread(
+    {
+      app_id,
+      x,
+      y,
+    },
+    user_id
   );
 }

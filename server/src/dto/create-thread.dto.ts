@@ -9,7 +9,4 @@ export class CreateThreadDTO {
 
   @IsUUID()
   app_id: string;
-
-  @IsUUID()
-  user_id: string;
 }
