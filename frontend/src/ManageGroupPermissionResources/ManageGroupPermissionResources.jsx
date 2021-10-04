@@ -4,6 +4,7 @@ import { groupPermissionService } from '../_services/groupPermission.service';
 import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 class ManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -328,6 +329,7 @@ class ManageGroupPermissionResources extends React.Component {
                                             onClick={() => {
                                               this.updateAppGroupPermission(app, groupPermission.id, 'read');
                                             }}
+                                            disabled={groupPermission.group == 'admin'}
                                             defaultChecked={this.findAppGroupPermission(
                                               app,
                                               groupPermission.id,
@@ -343,6 +345,7 @@ class ManageGroupPermissionResources extends React.Component {
                                             onClick={() => {
                                               this.updateAppGroupPermission(app, groupPermission.id, 'update');
                                             }}
+                                            disabled={groupPermission.group == 'admin'}
                                             defaultChecked={this.findAppGroupPermission(
                                               app,
                                               groupPermission.id,
@@ -354,13 +357,15 @@ class ManageGroupPermissionResources extends React.Component {
                                       </div>
                                     </td>
                                     <td>
-                                      <a
-                                        onClick={() => {
-                                          this.removeAppFromGroup(groupPermission.id, app.id);
-                                        }}
-                                      >
-                                        Delete
-                                      </a>
+                                      {groupPermission.group != 'admin' && (
+                                        <Link
+                                          onClick={() => {
+                                            this.removeAppFromGroup(groupPermission.id, app.id);
+                                          }}
+                                        >
+                                          Delete
+                                        </Link>
+                                      )}
                                     </td>
                                   </tr>
                                 ))}
@@ -412,13 +417,15 @@ class ManageGroupPermissionResources extends React.Component {
                                   <tr key={user.id}>
                                     <td>{`${user.first_name} ${user.last_name}`}</td>
                                     <td className="text-muted">
-                                      <a
-                                        onClick={() => {
-                                          this.removeUserFromGroup(groupPermission.id, user.id);
-                                        }}
-                                      >
-                                        Delete
-                                      </a>
+                                      {groupPermission.group != 'all_users' && (
+                                        <Link
+                                          onClick={() => {
+                                            this.removeUserFromGroup(groupPermission.id, user.id);
+                                          }}
+                                        >
+                                          Delete
+                                        </Link>
+                                      )}
                                     </td>
                                   </tr>
                                 ))

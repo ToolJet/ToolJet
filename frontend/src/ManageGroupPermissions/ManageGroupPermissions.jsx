@@ -4,6 +4,7 @@ import { groupPermissionService } from '../_services/groupPermission.service';
 import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 class ManageGroupPermissions extends React.Component {
   constructor(props) {
@@ -196,10 +197,10 @@ class ManageGroupPermissions extends React.Component {
                             <tr key={permissionGroup.id}>
                               <td>{permissionGroup.group}</td>
                               <td>
-                                <a href={`/groups/${permissionGroup.id}`}>Edit</a>
+                                <Link to={`/groups/${permissionGroup.id}`}>Edit</Link>
                               </td>
                               <td>
-                                <a onClick={() => this.deleteGroup(permissionGroup.id)}>Delete</a>
+                                <Link onClick={() => this.deleteGroup(permissionGroup.id)}>Delete</Link>
                               </td>
                             </tr>
                           ))}
