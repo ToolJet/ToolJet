@@ -9,7 +9,6 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
-  AfterLoad,
   BaseEntity,
   ManyToMany,
   JoinTable,
@@ -86,14 +85,6 @@ export class User extends BaseEntity {
   @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
   userGroupPermissions: UserGroupPermission[];
 
-  // public isAdmin;
-  // public isDeveloper;
+  // TODO: remove all role usages
   public role;
-
-  @AfterLoad()
-  computeUserRole(): void {
-    // this.isAdmin = this.organizationUsers[0].role === 'admin';
-    // this.isDeveloper = this.organizationUsers[0].role === 'developer';
-    // this.role = this.organizationUsers[0].role;
-  }
 }

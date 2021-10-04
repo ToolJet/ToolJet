@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { In, Repository } from 'typeorm';
+import { createQueryBuilder, In, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -12,6 +12,8 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { AppCloneService } from './app_clone.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class AppsService {
@@ -40,7 +42,8 @@ export class AppsService {
     @InjectRepository(AppGroupPermission)
     private appGroupPermissionsRepository: Repository<AppGroupPermission>,
 
-    private AppCloneService: AppCloneService
+    private AppCloneService: AppCloneService,
+    private usersService: UsersService
   ) {}
 
   async find(id: string): Promise<App> {
@@ -140,17 +143,41 @@ export class AppsService {
   }
 
   async all(user: User, page: number): Promise<App[]> {
-    return await this.appsRepository.find({
-      relations: ['user'],
-      where: {
-        organizationId: user.organizationId,
-      },
-      take: 10,
-      skip: 10 * (page - 1),
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    if (await this.usersService.hasGroup(user, 'admin')) {
+      return await this.appsRepository.find({
+        where: {
+          organizationId: user.organizationId,
+        },
+        relations: ['user'],
+        take: 10,
+        skip: 10 * (page - 1),
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    } else {
+      // TypeORM gives error when using query builder with order by
+      // https://github.com/typeorm/typeorm/issues/8213
+      // hence sorting results in memory
+      const viewableApps = await createQueryBuilder(App, 'apps')
+        .innerJoin('apps.groupPermissions', 'group_permissions')
+        .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
+        .innerJoin(
+          UserGroupPermission,
+          'user_group_permissions',
+          'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+        )
+        .where('user_group_permissions.user_id = :userId', { userId: user.id })
+        .andWhere('app_group_permissions.read = :value', { value: true })
+        .orWhere('apps.is_public = :value', { value: true })
+        .take(10)
+        .skip(10 * (page - 1))
+        // .orderBy('apps.created_at', 'DESC')
+        .printSql()
+        .getMany();
+
+      return viewableApps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
   }
 
   async update(user: User, appId: string, params: any) {

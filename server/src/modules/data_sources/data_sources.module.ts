@@ -17,6 +17,10 @@ import { FolderApp } from 'src/entities/folder_app.entity';
 import { AppCloneService } from '@services/app_clone.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { UsersService } from '@services/users.service';
+import { User } from 'src/entities/user.entity';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { Organization } from 'src/entities/organization.entity';
 
 @Module({
   imports: [
@@ -30,6 +34,9 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
       FolderApp,
       GroupPermission,
       AppGroupPermission,
+      User,
+      OrganizationUser,
+      Organization,
     ]),
     CaslModule,
   ],
@@ -40,6 +47,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
     AppsService,
     DataQueriesService,
     AppCloneService,
+    UsersService,
   ],
   controllers: [DataSourcesController],
 })
