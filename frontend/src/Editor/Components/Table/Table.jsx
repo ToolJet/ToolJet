@@ -686,31 +686,31 @@ export function Table({
     useExportData,
     useRowSelect,
     (hooks) => {
-      hooks.visibleColumns.push((columns) => [
-        {
-          id: 'selection',
-          Header: ({ getToggleAllPageRowsSelectedProps }) => (
-            <div className="d-flex flex-column align-items-center">
-              <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
-            </div>
-          ),
-          Cell: ({ row }) => (
-            <div className="d-flex flex-column align-items-center">
-              <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-            </div>
-          ),
-          width: 1,
-          columnType: 'selector',
-        },
-        ...columns,
-      ]);
+      showBulkSelector &&
+        hooks.visibleColumns.push((columns) => [
+          {
+            id: 'selection',
+            Header: ({ getToggleAllPageRowsSelectedProps }) => (
+              <div className="d-flex flex-column align-items-center">
+                <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
+              </div>
+            ),
+            Cell: ({ row }) => (
+              <div className="d-flex flex-column align-items-center">
+                <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+              </div>
+            ),
+            width: 1,
+            columnType: 'selector',
+          },
+          ...columns,
+        ]);
     }
   );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
     onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);
-    console.log('yepski', selectedRowsOriginalData, selectedFlatRows?.length);
   }, [selectedFlatRows.length]);
 
   React.useEffect(() => {
