@@ -4,6 +4,7 @@ import Spinner from '@/_ui/Spinner';
 
 import { isEmpty } from 'lodash';
 import moment from 'moment';
+import CommentActions from './CommentActions';
 
 const CommentBody = ({ thread, isLoading }) => {
   const getContent = () => {
@@ -14,7 +15,10 @@ const CommentBody = ({ thread, isLoading }) => {
         {thread.map(({ id, comment, createdAt, user = {} }) => {
           return (
             <div key={id}>
-              <div className="card-title">{`${user?.firstName} ${user?.lastName}`}</div>
+              <div className="d-flex card-title">
+                {`${user?.firstName} ${user?.lastName}`} <CommentActions />
+              </div>
+
               <div className="card-subtitle">{moment(createdAt).fromNow()}</div>
               <p className="cursor-auto">{comment}</p>
             </div>

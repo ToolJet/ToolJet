@@ -28,6 +28,14 @@
   .open-right {
     right: 0;
   }
+
+  .comment-actions-popover {
+    width: 110px;
+    height: 105px;
+    border-radius: 4px;
+    left: -100px;
+    top: 25px;
+  }
 }
 
 .comment-overlay {
