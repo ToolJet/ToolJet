@@ -90,7 +90,7 @@ async function setupUserAndAppGroupPermissions(
   for (const groupPermission of createdGroupPermissions) {
     const usersForGroup = organization.users.filter(
       (u) =>
-        u.role == groupPermission.group || groupPermission.group == "all_users"
+        u.organizationUsers[0].role == groupPermission.group || groupPermission.group == "all_users"
     );
 
     for (const user of usersForGroup) {
