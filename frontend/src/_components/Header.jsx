@@ -44,24 +44,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <span className="nav-link-title">Apps</span>
             </Link>
           </li>
-
-          <li className={`nav-item ${pahtName === '/users' ? 'active' : ''}`}>
-            <Link to={'/users'} className="nav-link">
-              <span className="nav-link-icon d-md-none d-lg-inline-block">
-                <img className="svg-icon" src="/assets/images/icons/users.svg" width="15" height="15" />
-              </span>
-              <span className="nav-link-title">Users</span>
-            </Link>
-          </li>
-
-          <li className={`nav-item ${pahtName === '/groups' ? 'active' : ''}`}>
-            <Link to={'/groups'} className="nav-link">
-              <span className="nav-link-icon d-md-none d-lg-inline-block">
-                <img className="svg-icon" src="/assets/images/icons/users.svg" width="15" height="15" />
-              </span>
-              <span className="nav-link-title">Groups</span>
-            </Link>
-          </li>
         </ul>
         <div className="navbar-nav flex-row order-md-last">
           <div className="p-1 m-1 d-flex align-items-center">
@@ -83,12 +65,18 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               </div>
             </a>
             <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <a data-testId="settingsBtn" onClick={openSettings} className="dropdown-item">
-                Settings
-              </a>
-              <a data-testId="logoutBtn" onClick={logout} className="dropdown-item">
+              <Link data-testId="settingsBtn" to="/users" className="dropdown-item">
+                Manage Users
+              </Link>
+              <Link data-testId="settingsBtn" to="/groups" className="dropdown-item">
+                Manage Groups
+              </Link>
+              <Link data-testId="settingsBtn" onClick={openSettings} className="dropdown-item">
+                Profile
+              </Link>
+              <Link data-testId="logoutBtn" onClick={logout} className="dropdown-item">
                 Logout
-              </a>
+              </Link>
             </div>
           </div>
         </div>
