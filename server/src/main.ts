@@ -23,6 +23,7 @@ async function bootstrap() {
     helmet.contentSecurityPolicy({
       useDefaults: true,
       directives: {
+        upgradeInsecureRequests: null,
         'img-src': ['*', 'data:'],
         'script-src': [
           'maps.googleapis.com',
