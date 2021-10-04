@@ -46,7 +46,7 @@ export class AppsController {
   @Get(':id')
   async show(@Request() req, @Param() params) {
     const app = await this.appsService.find(params.id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('viewApp', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -73,7 +73,7 @@ export class AppsController {
   async appFromSlug(@Request() req, @Param() params) {
     if (req.user) {
       const app = await this.appsService.findBySlug(params.slug);
-      const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+      const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
       if (!ability.can('viewApp', app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
@@ -97,7 +97,7 @@ export class AppsController {
   @Put(':id')
   async update(@Request() req, @Param() params) {
     const app = await this.appsService.find(params.id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('updateParams', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -113,7 +113,7 @@ export class AppsController {
   @Post(':id/clone')
   async clone(@Request() req, @Param() params) {
     const existingApp = await this.appsService.find(params.id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('cloneApp', existingApp)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -129,7 +129,7 @@ export class AppsController {
   @Delete(':id')
   async delete(@Request() req, @Param() params) {
     const app = await this.appsService.find(params.id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('deleteApp', app)) {
       throw new ForbiddenException('Only administrators are allowed to delete apps.');
@@ -182,7 +182,7 @@ export class AppsController {
   @Get(':id/users')
   async fetchUsers(@Request() req, @Param() params) {
     const app = await this.appsService.find(params.id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('fetchUsers', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -196,7 +196,7 @@ export class AppsController {
   @Get(':id/versions')
   async fetchVersions(@Request() req, @Param() params) {
     const app = await this.appsService.find(params.id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('fetchVersions', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -212,7 +212,7 @@ export class AppsController {
     const versionName = req.body['versionName'];
 
     const app = await this.appsService.find(params.id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('createVersions', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -226,7 +226,7 @@ export class AppsController {
   @Get(':id/versions/:versionId')
   async version(@Request() req, @Param() params) {
     const app = await this.appsService.find(params.id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('fetchVersions', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -243,7 +243,7 @@ export class AppsController {
     const definition = req.body['definition'];
 
     const version = await this.appsService.findVersion(params.versionId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
     if (!ability.can('updateVersions', version.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
