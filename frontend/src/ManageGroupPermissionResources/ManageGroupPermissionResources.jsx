@@ -343,7 +343,11 @@ class ManageGroupPermissionResources extends React.Component {
                                             onClick={() => {
                                               this.updateAppGroupPermission(app, groupPermission.id, 'update');
                                             }}
-                                            checked={this.findAppGroupPermission(app, groupPermission.id, 'update')}
+                                            defaultChecked={this.findAppGroupPermission(
+                                              app,
+                                              groupPermission.id,
+                                              'view'
+                                            )}
                                           />
                                           <span className="form-check-label">Edit</span>
                                         </label>
