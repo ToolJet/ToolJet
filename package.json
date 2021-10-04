@@ -27,7 +27,7 @@
     "husky": "^7.0.2",
     "path": "^0.12.7",
     "webpack": "^5.55.1",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^4.8.0"
   },
   "dependencies": {
     "@nestjs/cli": "^8.1.0",
