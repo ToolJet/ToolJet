@@ -188,7 +188,7 @@ export class GroupPermissionsService {
     const appsInGroupIds = appsInGroup.map((u) => u.id);
 
     return await this.appRepository.find({
-      where: { id: Not(In(appsInGroupIds)) },
+      where: { id: Not(In(appsInGroupIds)), organizationId: user.organizationId },
       loadEagerRelations: false,
       relations: ['groupPermissions', 'appGroupPermissions'],
     });
@@ -218,6 +218,9 @@ export class GroupPermissionsService {
     const userInGroup = await groupPermission.users;
     const usersInGroupIds = userInGroup.map((u) => u.id);
 
-    return await this.userRepository.find({ id: Not(In(usersInGroupIds)) });
+    return await this.userRepository.find({
+      id: Not(In(usersInGroupIds)),
+      organizationId: user.organizationId,
+    });
   }
 }
