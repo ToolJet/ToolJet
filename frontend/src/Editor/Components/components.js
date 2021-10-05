@@ -18,7 +18,7 @@ export const componentTypes = [
       showDownloadButton: { type: 'toggle', displayName: 'Show download button' },
       showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
       showBulkUpdateActions: { type: 'toggle', displayName: 'Show bulk update actions' },
-      showBulkSelector: { type: 'toggle', displayName: 'Show bulk selector' },
+      showBulkSelector: { type: 'toggle', displayName: 'Bulk selection' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
