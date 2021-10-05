@@ -20,6 +20,8 @@ export const StarRating = function StarRating({
   const allowHalfStar = component.definition.properties.allowHalfStar.value ?? false;
   const textColorProperty = component.definition.styles.textColor;
   const color = textColorProperty ? textColorProperty.value : '#ffb400';
+  const labelColorProperty = component.definition.styles.labelColor;
+  const labelColor = labelColorProperty ? labelColorProperty.value : '#333';
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
@@ -99,7 +101,7 @@ export const StarRating = function StarRating({
       style={{ display: parsedWidgetVisibility ? '' : 'none' }}
     >
       {/* TODO: Add label color defination property instead of hardcoded color*/}
-      <span className="label form-check-label form-check-label col-auto" style={{ color: '#000' }}>
+      <span className="label form-check-label form-check-label col-auto" style={{ color: labelColor }}>
         {label}
       </span>
       {animatedStars.map((props, index) => (
