@@ -53,6 +53,10 @@ Server-side pagination can be used to run a query whenever the page is changed. 
 
 To let the user select one or more rows from the current page of a table, enable 'Bulk selection' from the inspector. The values of selected rows will be exposed as `selectedRows`.
 
+## Highlight selected row
+
+Activate this option on the inspector to have the last selected(clicked on) row to be highlighted.
+
 ## Search
 Client-side search is enabled by default and server-side search can be enabled from the events section of the inspector. Whenever the search text is changed, the `searchText` property of the table component is updated. If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your datasource.
 
