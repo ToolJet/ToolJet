@@ -81,6 +81,7 @@ class Editor extends React.Component {
       showQuerySearchField: false,
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
+      showQueryConfirmation: false,
     };
   }
 
@@ -678,6 +679,7 @@ class Editor extends React.Component {
               <div
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                 style={{ transform: `scale(${zoomLevel})` }}
+                onClick={() => this.switchSidebarTab(2)}
               >
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
                   {defaultComponentStateComputed && (

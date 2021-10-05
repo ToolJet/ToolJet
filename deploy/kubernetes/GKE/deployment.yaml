@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tooljet-deployment
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      component: tooljet
+  template:
+    metadata:
+      labels:
+        component: tooljet
+    spec:
+      imagePullSecrets:
+        - name: docker-secret
+      containers:
+        - name: container
+          image: tooljet/tooljet-ce:latest
+          imagePullPolicy: Always
+          args: ["npm", "run", "start:prod"]
+          resources:
+            limits:
+              memory: "1000Mi"
+              cpu: "500m"
+            requests:
+              memory: "1000Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /api/health
+            successThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+          env:
+            - name: PG_HOST
+              value: ""
+            - name: PG_USER
+              value: "postgres"
+            - name: PG_PASS
+              value: ""
+            - name: PG_DB
+              value: ""
+            - name: LOCKBOX_MASTER_KEY
+              value: ""
+            - name: SECRET_KEY_BASE
+              value: ""
+            - name: TOOLJET_HOST
+              value: "https://tooljet.your-domain.com"

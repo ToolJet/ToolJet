@@ -4,6 +4,7 @@ import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import { isEmpty } from 'lodash';
+const urrl = require('url');
 const got = require('got');
 
 @Injectable()
@@ -83,12 +84,12 @@ export default class RestapiQueryService implements QueryService {
 
     const method = queryOptions['method'];
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
-
+    const paramsFromUrl = urrl.parse(url, true).query;
     try {
       const response = await got(url, {
         method,
         headers,
-        searchParams: this.searchParams(sourceOptions, queryOptions, hasDataSource),
+        searchParams: { ...paramsFromUrl, ...this.searchParams(sourceOptions, queryOptions, hasDataSource) },
         json,
       });
       result = JSON.parse(response.body);

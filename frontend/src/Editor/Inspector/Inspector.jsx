@@ -266,6 +266,7 @@ export const Inspector = ({
                 components={components}
                 eventsChanged={eventsChanged}
                 apps={apps}
+                darkMode={darkMode}
               />
             </div>
           )}
