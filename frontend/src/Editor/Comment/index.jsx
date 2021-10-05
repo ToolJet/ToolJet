@@ -77,40 +77,41 @@ const Comment = ({ x, y, threadId, user = {}, isResolved }) => {
           <span className="comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded">
             {`${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}`}
           </span>
-          <animated.div
-            {...content}
-            style={popoverFadeStyle}
-            className={cx('card popover comment-popover', {
-              'open-left': placement === 'left',
-              'open-right': placement === 'right',
-              'comment-is-open': open,
-              show: open,
-              hide: !open,
-            })}
-          >
-            <CommentHeader
-              count={thread?.length}
-              close={() =>
-                setTimeout(() => {
-                  setOpen(false);
-                }, 0)
-              }
-            />
-            <CommentBody
-              setEditComment={setEditComment}
-              setEditCommentId={setEditCommentId}
-              isLoading={loading}
-              isResolved={isResolved}
-              threadId={threadId}
-              thread={thread}
-            />
-            <CommentFooter
-              editComment={editComment}
-              editCommentId={editCommentId}
-              handleSubmit={editCommentId ? handleEdit : handleSubmit}
-            />
-          </animated.div>
         </label>
+        <animated.div
+          {...content}
+          style={popoverFadeStyle}
+          className={cx('card popover comment-popover', {
+            'open-left': placement === 'left',
+            'open-right': placement === 'right',
+            'comment-is-open': open,
+            show: open,
+            hide: !open,
+          })}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <CommentHeader
+            count={thread?.length}
+            close={() =>
+              setTimeout(() => {
+                setOpen(false);
+              }, 0)
+            }
+          />
+          <CommentBody
+            setEditComment={setEditComment}
+            setEditCommentId={setEditCommentId}
+            isLoading={loading}
+            isResolved={isResolved}
+            threadId={threadId}
+            thread={thread}
+          />
+          <CommentFooter
+            editComment={editComment}
+            editCommentId={editCommentId}
+            handleSubmit={editCommentId ? handleEdit : handleSubmit}
+          />
+        </animated.div>
       </animated.div>
       {open && <div className="comment-overlay" onClick={(e) => e.stopPropagation()} />}
     </>

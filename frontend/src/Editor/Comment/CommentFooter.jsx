@@ -1,5 +1,5 @@
 import React from 'react';
-import Textarea from '@/_ui/Textarea';
+import TextareaMentions from '@/_ui/Mentions';
 import Button from '@/_ui/Button';
 
 function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
@@ -12,11 +12,9 @@ function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
     <div className="card-footer">
       <div className="row align-items-center">
         <div className="col-10">
-          <Textarea
+          <TextareaMentions
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            rows="1"
-            className="w-full form-control"
             placeholder="Type your comment here"
           />
         </div>
