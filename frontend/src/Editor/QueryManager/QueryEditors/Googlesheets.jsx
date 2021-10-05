@@ -232,7 +232,7 @@ Googlesheets.Filter = function Filter({ currentState, state, updateOptions }) {
   return (
     <>
       <div className="field mb-2 row">
-        <label className="form-label">Filter By</label>
+        <label className="form-label">WHERE</label>
         <div className="col-auto">
           <input
             type="text"
@@ -242,7 +242,7 @@ Googlesheets.Filter = function Filter({ currentState, state, updateOptions }) {
             className="form-control"
           />
         </div>
-        <span className="col-auto mt-2 font-weight-bold">:</span>
+        <span className="col-auto mt-2 font-weight-bold">{'='}</span>
         <div className="col-auto">
           <input
             type="text"
