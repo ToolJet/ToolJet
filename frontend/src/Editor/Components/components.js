@@ -18,6 +18,7 @@ export const componentTypes = [
       showDownloadButton: { type: 'toggle', displayName: 'Show download button' },
       showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
       showBulkUpdateActions: { type: 'toggle', displayName: 'Show bulk update actions' },
+      showBulkSelector: { type: 'toggle', displayName: 'Bulk selection' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -55,6 +56,7 @@ export const componentTypes = [
       dataUpdates: [],
       pageIndex: 0,
       searchText: '',
+      selectedRows: [],
     },
     definition: {
       others: {
@@ -82,6 +84,7 @@ export const componentTypes = [
           ],
         },
         showBulkUpdateActions: { value: true },
+        showBulkSelector: { value: false },
       },
       events: [],
       styles: {
