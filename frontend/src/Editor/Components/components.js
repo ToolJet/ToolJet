@@ -1043,7 +1043,7 @@ export const componentTypes = [
     properties: {},
     events: {},
     styles: {
-      textColor: { type: 'color', displayName: 'Divider Color' },
+      dividerColor: { type: 'color', displayName: 'Divider Color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -1056,13 +1056,12 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        makeHorizontal: { value: false },
         value: { value: '' },
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
       styles: {
-        textColor: { value: '#535251' },
+        dividerColor: { value: '#535251' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },

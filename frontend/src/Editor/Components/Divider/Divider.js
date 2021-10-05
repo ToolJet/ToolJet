@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-
 import React from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
@@ -10,8 +9,8 @@ export const Divider = function Divider({
   currentState,
 }) {
 
-  const textColorProperty = component.definition.styles.textColor;
-  const color = textColorProperty ? textColorProperty.value : '#ffb400';
+  const dividerColorProperty = component.definition.styles.dividerColor;
+  const color = dividerColorProperty ? dividerColorProperty.value : '#ffb400';
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
@@ -37,9 +36,8 @@ export const Divider = function Divider({
       style={{ display: parsedWidgetVisibility ? '' : 'none' }}
     >
       <hr 
-        style={{color: color, opacity: 0.7}}
+        style={{color: color, opacity: 0.7, margin: '10px'}}
       />
-      
      </div>
   );
 };
