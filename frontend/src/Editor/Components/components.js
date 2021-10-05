@@ -19,6 +19,7 @@ export const componentTypes = [
       showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
       showBulkUpdateActions: { type: 'toggle', displayName: 'Show bulk update actions' },
       showBulkSelector: { type: 'toggle', displayName: 'Bulk selection' },
+      highlightSelectedRow: { type: 'toggle', displayName: 'Highlight selected row' },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
