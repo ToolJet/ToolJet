@@ -202,7 +202,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   console.log('Event: ', eventName);
 
   if (eventName === 'onRowClicked') {
-    const { component, data } = options;
+    const { component, data, rowId } = options;
     _self.setState(
       {
         currentState: {
@@ -212,6 +212,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
             [component.name]: {
               ..._self.state.currentState.components[component.name],
               selectedRow: data,
+              selectedRowId: rowId,
             },
           },
         },
@@ -223,8 +224,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 
   if (eventName === 'onTableActionButtonClicked') {
-    const { component, data, action } = options;
-
+    const { component, data, action, rowId } = options;
     _self.setState(
       {
         currentState: {
@@ -234,6 +234,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
             [component.name]: {
               ..._self.state.currentState.components[component.name],
               selectedRow: data,
+              selectedRowId: rowId,
             },
           },
         },

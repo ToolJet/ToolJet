@@ -62,6 +62,9 @@ export function Table({
   const showBulkSelectorProperty = component.definition.properties.showBulkSelector?.value;
   const showBulkSelector = resolveWidgetFieldValue(showBulkSelectorProperty, currentState) ?? false; // default is false for backward compatibility
 
+  const highlightSelectedRowProperty = component.definition.properties.highlightSelectedRow?.value;
+  const highlightSelectedRow = resolveWidgetFieldValue(highlightSelectedRowProperty, currentState) ?? false; // default is false for backward compatibility
+
   const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
   const clientSidePagination =
     resolveWidgetFieldValue(clientSidePaginationProperty, currentState) ?? !serverSidePagination; // default is true for backward compatibility
@@ -560,7 +563,12 @@ export function Table({
                   style={{ background: action.backgroundColor, color: action.textColor }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                    onEvent('onTableActionButtonClicked', {
+                      component,
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                    });
                   }}
                 >
                   {action.buttonText}
@@ -587,7 +595,12 @@ export function Table({
                   style={{ background: action.backgroundColor, color: action.textColor }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                    onEvent('onTableActionButtonClicked', {
+                      component,
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                    });
                   }}
                 >
                   {action.buttonText}
@@ -806,11 +819,13 @@ export function Table({
                 return (
                   <tr
                     key={index}
-                    className="table-row"
+                    className={`table-row ${
+                      highlightSelectedRow && row.id == componentState.selectedRowId ? 'selected' : ''
+                    }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEvent('onRowClicked', { component, data: row.original });
+                      onEvent('onRowClicked', { component, data: row.original, rowId: row.id });
                     }}
                   >
                     {row.cells.map((cell, index) => {

@@ -775,7 +775,8 @@ body {
   }
 
   .table-row:hover,
-  .table-row:focus-within {
+  .table-row:focus-within,
+  .table-row.selected {
     background: rgba(lightBlue, 0.25);
   }
 
