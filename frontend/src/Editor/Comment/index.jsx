@@ -10,8 +10,10 @@ import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
 
-const Comment = ({ x, y, threadId, user = {} }) => {
+const Comment = ({ x, y, threadId, user = {}, isResolved }) => {
   const [loading, setLoading] = React.useState(true);
+  const [editComment, setEditComment] = React.useState('');
+  const [editCommentId, setEditCommentId] = React.useState('');
   const [thread, setThread] = React.useState([]);
   const [placement, setPlacement] = React.useState('left');
   const [open, trigger, content, setOpen] = usePopover(false);
@@ -42,6 +44,14 @@ const Comment = ({ x, y, threadId, user = {} }) => {
   const handleSubmit = async (comment) => {
     await commentsService.createComment({
       tid: threadId,
+      comment,
+    });
+    fetchData();
+  };
+
+  const handleEdit = async (comment, cid) => {
+    await commentsService.updateComment({
+      cid,
       comment,
     });
     fetchData();
@@ -78,7 +88,6 @@ const Comment = ({ x, y, threadId, user = {} }) => {
               hide: !open,
             })}
           >
-            <div className="card-status-start bg-primary" />
             <CommentHeader
               count={thread?.length}
               close={() =>
@@ -87,8 +96,19 @@ const Comment = ({ x, y, threadId, user = {} }) => {
                 }, 0)
               }
             />
-            <CommentBody isLoading={loading} thread={thread} />
-            <CommentFooter handleSubmit={handleSubmit} />
+            <CommentBody
+              setEditComment={setEditComment}
+              setEditCommentId={setEditCommentId}
+              isLoading={loading}
+              isResolved={isResolved}
+              threadId={threadId}
+              thread={thread}
+            />
+            <CommentFooter
+              editComment={editComment}
+              editCommentId={editCommentId}
+              handleSubmit={editCommentId ? handleEdit : handleSubmit}
+            />
           </animated.div>
         </label>
       </animated.div>

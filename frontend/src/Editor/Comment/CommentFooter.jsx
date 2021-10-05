@@ -2,10 +2,10 @@ import React from 'react';
 import Textarea from '@/_ui/Textarea';
 import Button from '@/_ui/Button';
 
-function CommentFooter({ handleSubmit }) {
-  const [comment, setComment] = React.useState('');
+function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
+  const [comment, setComment] = React.useState(editComment);
   const handleClick = () => {
-    handleSubmit(comment);
+    handleSubmit(comment, editCommentId);
     setComment('');
   };
   return (

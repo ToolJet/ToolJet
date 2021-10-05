@@ -2,7 +2,6 @@ import HttpClient from '@/_helpers/http-client';
 
 // TODO: antipattern to initialize a new instance @ every service
 // TODO: use singleton pattern and move it to a static variable on page load
-// TODO: add authheader
 const adapter = new HttpClient();
 
 function getThreads(appId) {
@@ -25,10 +24,20 @@ function createComment(data) {
   return adapter.post(`/comment/create`, data);
 }
 
+function updateComment(cid, data) {
+  return adapter.patch(`/comment/edit/${cid}`, data);
+}
+
+function deleteComment(cid) {
+  return adapter.patch(`/comment/delete/${cid}`);
+}
+
 export const commentsService = {
   getThreads,
   createThread,
   updateThread,
   getComments,
   createComment,
+  updateComment,
+  deleteComment,
 };

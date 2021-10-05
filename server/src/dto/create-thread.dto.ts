@@ -1,4 +1,4 @@
-import { IsInt, IsUUID } from 'class-validator';
+import { IsBoolean, IsInt, IsUUID } from 'class-validator';
 
 export class CreateThreadDTO {
   @IsInt()
@@ -9,4 +9,7 @@ export class CreateThreadDTO {
 
   @IsUUID()
   app_id: string;
+
+  @IsBoolean()
+  isResolved: boolean;
 }

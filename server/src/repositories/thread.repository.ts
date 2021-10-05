@@ -22,10 +22,11 @@ export class ThreadRepository extends Repository<Thread> {
   }
 
   public async editThread(createThreadDto: CreateThreadDTO, editedThread: Thread): Promise<Thread> {
-    const { x, y } = createThreadDto;
+    const { x, y, isResolved } = createThreadDto;
 
     editedThread.x = x;
     editedThread.y = y;
+    editedThread.isResolved = isResolved;
     await editedThread.save();
 
     return editedThread;

@@ -25,8 +25,8 @@ const Comments = ({ newThread = {} }) => {
   if (isEmpty(threads)) return null;
 
   return threads.map((thread) => {
-    const { id, x, y } = thread;
-    return <Comment key={id} threadId={id} x={x} y={y} user={thread.user} />;
+    const { id } = thread;
+    return <Comment key={id} threadId={id} {...thread} />;
   });
 };
 
