@@ -71,7 +71,6 @@ export default class GooglesheetsQueryService implements QueryService {
     const spreadsheetId = queryOptions['spreadsheet_id'];
     const spreadsheetRange = queryOptions['spreadsheet_range'] ? queryOptions['spreadsheet_range'] : 'A1:Z500';
     const accessToken = sourceOptions['access_token'];
-    // console.log('✡︎ ✡︎ ✡︎ ✡︎ ✡︎', JSON.stringify(queryOptions));
 
     try {
       switch (operation) {
@@ -100,8 +99,6 @@ export default class GooglesheetsQueryService implements QueryService {
         case 'update':
           result = await batchUpdateToSheet(
             spreadsheetId,
-            spreadsheetRange,
-            queryOptions['sheet'],
             queryOptions['body'],
             queryOptions['rowData'][0] as [],
             queryOptions['filterData'],

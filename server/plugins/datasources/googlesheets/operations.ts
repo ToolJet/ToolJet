@@ -14,7 +14,7 @@ async function makeRequestToAppendValues(spreadSheetId: string, sheet: string, r
   return await got.post(url, { headers: authHeader, json: requestBody }).json();
 }
 
-async function makeRequestToBatchUpdate(spreadSheetId: string, requestBody: any, authHeader: any) {
+async function makeRequestToDeleteRows(spreadSheetId: string, requestBody: any, authHeader: any) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}:batchUpdate`;
 
   return await got.post(url, { headers: authHeader, json: requestBody }).json();
@@ -35,8 +35,6 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 
 export async function batchUpdateToSheet(
   spreadSheetId: string,
-  spreadsheetRange: string,
-  sheet: string,
   requestBody: any,
   currentRowData: any[],
   filterData: any,
@@ -49,7 +47,6 @@ export async function batchUpdateToSheet(
     if (columnValues.length === 0) return false;
 
     const rowIndex = columnValues.findIndex((values) => values === inputFilter.value);
-    // const requestBodyKeys = Object.keys(requestBody);
 
     const _values = response.map((column) => column[rowIndex]).filter((value) => value !== undefined);
     const _keys = response.map((keys) => keys[0]);
@@ -58,10 +55,6 @@ export async function batchUpdateToSheet(
       return _currentSheetData;
     }, {});
 
-    // console.log('🔨 ====>', JSON.stringify(rowIndex));
-    // console.log('====>', JSON.stringify(_currentSheetData));
-    // console.log('check====>', JSON.stringify(currentRowData));
-
     if (JSON.stringify(_currentSheetData) === JSON.stringify(currentRowData)) {
       return rowIndex;
     } else {
@@ -69,16 +62,14 @@ export async function batchUpdateToSheet(
     }
   };
 
-  const check = lookupData(filterData, lookupResponse['values']);
+  const isAllMatch = lookupData(filterData, lookupResponse['values']);
 
-  function given(rowIdx, response) {
+  function getCurrentRowValue(rowIdx, response) {
     const arr = [];
 
     const keys = Object.keys(requestBody);
     keys.map((key) =>
       response.filter((val, index) => {
-        // console.log('__COLUMN INDEX__', String.fromCharCode(65 + index), rowIdx);
-
         if (val[0] === key) {
           arr.push({ key: key, index: index, rangeIndex: `${String.fromCharCode(65 + index)}${rowIdx + 1}` });
         }
@@ -88,10 +79,10 @@ export async function batchUpdateToSheet(
     return arr;
   }
 
-  const info = !check ? null : given(check, lookupResponse['values']);
+  const currentSheetRowData = !isAllMatch ? null : getCurrentRowValue(isAllMatch, lookupResponse['values']);
   const _data =
-    info !== null &&
-    info.map((data, index) => {
+    isAllMatch !== false &&
+    currentSheetRowData.map((data, index) => {
       return {
         majorDimension: 'ROWS',
         range: data.rangeIndex,
@@ -104,10 +95,6 @@ export async function batchUpdateToSheet(
     valueInputOption: 'USER_ENTERED',
     includeValuesInResponse: true,
   };
-  console.log('🔨 #########', JSON.stringify(_reqBody));
-  // console.log('🔨 ==>', filterData);
-
-  // return true;
 
   const response = await makeRequestToBatchUpdateValues(spreadSheetId, _reqBody, authHeader);
 
@@ -176,7 +163,7 @@ async function deleteDataFromSheet(spreadSheetId: string, sheet: string, rowInde
     ],
   };
 
-  const response = await makeRequestToBatchUpdate(spreadSheetId, requestBody, authHeader);
+  const response = await makeRequestToDeleteRows(spreadSheetId, requestBody, authHeader);
 
   return response;
 }

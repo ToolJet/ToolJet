@@ -56,8 +56,6 @@ class Googlesheets extends React.Component {
   };
 
   codeChange = (optionType, value) => {
-    console.log(`check ==>`, optionType);
-    console.log(`check || value ==>`, value);
     changeOption(this, optionType, value);
   };
 
@@ -299,8 +297,6 @@ Googlesheets.PreviewData = function PreviewData({ data, currentState, heightRef,
 
     const previewType = typeof preview;
     const content = getPreviewContent(preview, previewType);
-
-    console.log('previewType =====>', previewType);
 
     return (
       <animated.div style={{ ...slideInStyles, overflow: 'hidden' }}>
