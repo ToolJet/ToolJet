@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { AppModule } from './app.module';
 import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
@@ -15,6 +16,7 @@ async function bootstrap() {
     abortOnError: false,
   });
 
+  app.useWebSocketAdapter(new WsAdapter(app));
   await app.setGlobalPrefix('api');
   await app.enableCors();
 

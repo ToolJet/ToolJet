@@ -29,6 +29,7 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
 import { CommentModule } from './modules/comments/comment.module';
 import { join } from 'path';
 import { ThreadModule } from './modules/thread/thread.module';
+import { EventsModule } from './events/events.module';
 
 const imports = [
   ConfigModule.forRoot({
@@ -67,6 +68,7 @@ const imports = [
   MetaModule,
   CommentModule,
   ThreadModule,
+  EventsModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {
