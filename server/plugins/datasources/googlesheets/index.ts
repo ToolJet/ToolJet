@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
-import { readData, appendData, deleteData } from './operations';
+import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
 const got = require('got');
 
 @Injectable()
@@ -71,6 +71,7 @@ export default class GooglesheetsQueryService implements QueryService {
     const spreadsheetId = queryOptions['spreadsheet_id'];
     const spreadsheetRange = queryOptions['spreadsheet_range'] ? queryOptions['spreadsheet_range'] : 'A1:Z500';
     const accessToken = sourceOptions['access_token'];
+    // console.log('✡︎ ✡︎ ✡︎ ✡︎ ✡︎', JSON.stringify(queryOptions));
 
     try {
       switch (operation) {
@@ -92,6 +93,18 @@ export default class GooglesheetsQueryService implements QueryService {
             spreadsheetId,
             queryOptions['sheet'],
             queryOptions['rows'],
+            this.authHeader(accessToken)
+          );
+          break;
+
+        case 'update':
+          result = await batchUpdateToSheet(
+            spreadsheetId,
+            spreadsheetRange,
+            queryOptions['sheet'],
+            queryOptions['body'],
+            queryOptions['rowData'][0] as [],
+            queryOptions['filterData'],
             this.authHeader(accessToken)
           );
           break;

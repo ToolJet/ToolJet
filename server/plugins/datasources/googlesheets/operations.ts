@@ -20,6 +20,99 @@ async function makeRequestToBatchUpdate(spreadSheetId: string, requestBody: any,
   return await got.post(url, { headers: authHeader, json: requestBody }).json();
 }
 
+//*BatchUpdate Cell values
+async function makeRequestToBatchUpdateValues(spreadSheetId: string, requestBody: any, authHeader: any) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values:batchUpdate`;
+
+  return await got.post(url, { headers: authHeader, json: requestBody }).json();
+}
+
+async function makeRequestToLookUpCellValues(spreadSheetId: string, range: string, authHeader: any) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${range}?majorDimension=COLUMNS`;
+
+  return await got.get(url, { headers: authHeader }).json();
+}
+
+export async function batchUpdateToSheet(
+  spreadSheetId: string,
+  spreadsheetRange: string,
+  sheet: string,
+  requestBody: any,
+  currentRowData: any[],
+  filterData: any,
+  authHeader: any
+) {
+  const lookupResponse = await makeRequestToLookUpCellValues(spreadSheetId, 'A1:Z100', authHeader);
+
+  const lookupData = (inputFilter, response) => {
+    const columnValues = response.filter((column) => column[0] === inputFilter.key).flat();
+    if (columnValues.length === 0) return false;
+
+    const rowIndex = columnValues.findIndex((values) => values === inputFilter.value);
+    // const requestBodyKeys = Object.keys(requestBody);
+
+    const _values = response.map((column) => column[rowIndex]).filter((value) => value !== undefined);
+    const _keys = response.map((keys) => keys[0]);
+    const _currentSheetData = _values.reduce(function (_currentSheetData, field, index) {
+      _currentSheetData[_keys[index]] = field;
+      return _currentSheetData;
+    }, {});
+
+    // console.log('🔨 ====>', JSON.stringify(rowIndex));
+    // console.log('====>', JSON.stringify(_currentSheetData));
+    // console.log('check====>', JSON.stringify(currentRowData));
+
+    if (JSON.stringify(_currentSheetData) === JSON.stringify(currentRowData)) {
+      return rowIndex;
+    } else {
+      return false;
+    }
+  };
+
+  const check = lookupData(filterData, lookupResponse['values']);
+
+  function given(rowIdx, response) {
+    const arr = [];
+
+    const keys = Object.keys(requestBody);
+    keys.map((key) =>
+      response.filter((val, index) => {
+        // console.log('__COLUMN INDEX__', String.fromCharCode(65 + index), rowIdx);
+
+        if (val[0] === key) {
+          arr.push({ key: key, index: index, rangeIndex: `${String.fromCharCode(65 + index)}${rowIdx + 1}` });
+        }
+      })
+    );
+
+    return arr;
+  }
+
+  const info = !check ? null : given(check, lookupResponse['values']);
+  const _data =
+    info !== null &&
+    info.map((data, index) => {
+      return {
+        majorDimension: 'ROWS',
+        range: data.rangeIndex,
+        values: [[Object.values(requestBody)[index]]],
+      };
+    });
+
+  const _reqBody = {
+    data: _data,
+    valueInputOption: 'USER_ENTERED',
+    includeValuesInResponse: true,
+  };
+  console.log('🔨 #########', JSON.stringify(_reqBody));
+  // console.log('🔨 ==>', filterData);
+
+  // return true;
+
+  const response = await makeRequestToBatchUpdateValues(spreadSheetId, _reqBody, authHeader);
+
+  return response;
+}
 export async function readDataFromSheet(spreadSheetId: string, sheet: string, range: string, authHeader: any) {
   const data = await makeRequestToReadValues(spreadSheetId, sheet, range, authHeader);
   let headers = [];
