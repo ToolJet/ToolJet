@@ -731,7 +731,7 @@ export const componentTypes = [
     description: 'Select one value from options',
     defaultSize: {
       width: 240,
-      height: 40,
+      height: 30,
     },
     component: 'DropDown',
     others: {
@@ -785,7 +785,7 @@ export const componentTypes = [
     description: 'Select multiple values from options',
     defaultSize: {
       width: 270,
-      height: 40,
+      height: 30,
     },
     component: 'Multiselect',
     others: {
