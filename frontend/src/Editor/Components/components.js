@@ -77,7 +77,6 @@ export const componentTypes = [
         displaySearchBox: { value: true },
         showDownloadButton: { value: true },
         showFilterButton: { value: true },
-        highlightSelectedRow: { value: false },
         columns: {
           value: [
             { name: 'id', id: 'e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737' },
@@ -87,6 +86,7 @@ export const componentTypes = [
         },
         showBulkUpdateActions: { value: true },
         showBulkSelector: { value: false },
+        highlightSelectedRow: { value: false },
       },
       events: [],
       styles: {
