@@ -56,7 +56,6 @@ export function runTransformation(_ref, rawData, transformation, query) {
     result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
-    toast.error(err.message, { hideProgressBar: true });
   }
 
   return result;
@@ -416,7 +415,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
           }
 
           if (data.status === 'failed') {
-            toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
+            console.error(data.message);
 
             return _self.setState(
               {
