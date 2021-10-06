@@ -68,7 +68,7 @@ export async function createApplication(nestApp, { name, user, isPublic, slug }:
     })
   );
 
-  await maybeCreateDefaultAppGroupPermissions(nestApp, newApp);
+  await maybeCreateAdminAppGroupPermissions(nestApp, newApp);
 
   return newApp;
 }
@@ -219,37 +219,29 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
   }
 }
 
-export async function maybeCreateDefaultAppGroupPermissions(nestApp, app) {
+export async function maybeCreateAdminAppGroupPermissions(nestApp, app) {
   const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
   const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
 
-  const defaultAppPermissions = (group) => {
-    switch (group) {
-      case 'all_users':
-        return { create: false, read: true, update: false, delete: false };
-      case 'admin':
-        return { create: true, read: true, update: true, delete: true };
-    }
+  const orgAdminGroupPermissions = await groupPermissionRepository.findOne({
+    organizationId: app.organizationId,
+    group: 'admin',
+  });
+
+  const adminGroupPermissions = {
+    create: true,
+    read: true,
+    update: true,
+    delete: true,
   };
 
-  const defaultGroups = ['all_users', 'admin'];
-
-  for (let group of defaultGroups) {
-    const orgDefaultGroupPermissions = await groupPermissionRepository.findOne({
-      where: {
-        organizationId: app.organizationId,
-        group: group,
-      },
+  if (orgAdminGroupPermissions) {
+    const appGroupPermission = appGroupPermissionRepository.create({
+      groupPermissionId: orgAdminGroupPermissions.id,
+      appId: app.id,
+      ...adminGroupPermissions,
     });
-
-    if (orgDefaultGroupPermissions) {
-      const appGroupPermission = appGroupPermissionRepository.create({
-        groupPermissionId: orgDefaultGroupPermissions.id,
-        appId: app.id,
-        ...defaultAppPermissions(group),
-      });
-      await appGroupPermissionRepository.save(appGroupPermission);
-    }
+    await appGroupPermissionRepository.save(appGroupPermission);
   }
 }
 

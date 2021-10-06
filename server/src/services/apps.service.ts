@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, In, Repository } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -88,16 +88,16 @@ export class AppsService {
       })
     );
 
-    await this.createDefaultGroupPermissions(app);
+    await this.createAdminGroupPermissions(app);
 
     return app;
   }
 
-  async createDefaultGroupPermissions(app: App) {
+  async createAdminGroupPermissions(app: App) {
     const orgDefaultGroupPermissions = await this.groupPermissionsRepository.find({
       where: {
         organizationId: app.organizationId,
-        group: In(['admin', 'all_users']),
+        group: 'admin',
       },
     });
 

@@ -160,12 +160,14 @@ describe('UsersService', () => {
 
   describe('.appGroupPermissions', () => {
     it('should return app group permissions for the user', async () => {
-      const { defaultUser } = await setupOrganization(nestApp);
-      const groupPermissionIdsFromApp = (await service.appGroupPermissions(defaultUser)).map(
+      const { defaultUser, app } = await setupOrganization(nestApp);
+      const groupPermissionIdsFromApp = (await service.appGroupPermissions(defaultUser, app.id)).map(
         (x) => x.groupPermissionId
       );
 
-      const groupPermissionIds = (await service.groupPermissions(defaultUser)).map((x) => x.id);
+      const groupPermissionIds = (await service.groupPermissions(defaultUser))
+        .filter((x) => x.group == 'admin')
+        .map((x) => x.id);
 
       expect(new Set(groupPermissionIdsFromApp)).toEqual(new Set(groupPermissionIds));
     });
@@ -197,32 +199,23 @@ describe('UsersService', () => {
   describe('.userCan', () => {
     describe('perform action on invalid entity', () => {
       it('should return false', async () => {
-        const { adminUser } = await setupOrganization(nestApp);
+        const { adminUser, app } = await setupOrganization(nestApp);
 
-        expect(await service.userCan(adminUser, 'create', 'Ice cream')).toEqual(false);
-        expect(await service.userCan(adminUser, 'read', 'Ice cream')).toEqual(false);
-        expect(await service.userCan(adminUser, 'update', 'Ice cream')).toEqual(false);
-        expect(await service.userCan(adminUser, 'delete', 'Ice cream')).toEqual(false);
+        expect(await service.userCan(adminUser, 'create', 'Ice cream', app.id)).toEqual(false);
+        expect(await service.userCan(adminUser, 'read', 'Ice cream', app.id)).toEqual(false);
+        expect(await service.userCan(adminUser, 'update', 'Ice cream', app.id)).toEqual(false);
+        expect(await service.userCan(adminUser, 'delete', 'Ice cream', app.id)).toEqual(false);
       });
     });
 
     describe("perform action on 'App' entity", () => {
-      it('should allow admin group to perform all actions', async () => {
-        const { adminUser } = await setupOrganization(nestApp);
+      it('should return boolean based on permissible actions', async () => {
+        const { adminUser, app } = await setupOrganization(nestApp);
 
-        expect(await service.userCan(adminUser, 'create', 'App')).toEqual(true);
-        expect(await service.userCan(adminUser, 'read', 'App')).toEqual(true);
-        expect(await service.userCan(adminUser, 'update', 'App')).toEqual(true);
-        expect(await service.userCan(adminUser, 'delete', 'App')).toEqual(true);
-      });
-
-      it('should allow all_users group to be able to only read', async () => {
-        const { defaultUser } = await setupOrganization(nestApp);
-
-        expect(await service.userCan(defaultUser, 'create', 'App')).toEqual(false);
-        expect(await service.userCan(defaultUser, 'read', 'App')).toEqual(true);
-        expect(await service.userCan(defaultUser, 'update', 'App')).toEqual(false);
-        expect(await service.userCan(defaultUser, 'delete', 'App')).toEqual(false);
+        expect(await service.userCan(adminUser, 'create', 'App', app.id)).toEqual(true);
+        expect(await service.userCan(adminUser, 'read', 'App', app.id)).toEqual(true);
+        expect(await service.userCan(adminUser, 'update', 'App', app.id)).toEqual(true);
+        expect(await service.userCan(adminUser, 'delete', 'App', app.id)).toEqual(true);
       });
 
       it('should allow actions with custom groups based on app permissions', async () => {
@@ -236,10 +229,10 @@ describe('UsersService', () => {
           delete: false,
         });
 
-        expect(await service.userCan(defaultUser, 'create', 'App')).toEqual(false);
-        expect(await service.userCan(defaultUser, 'read', 'App')).toEqual(true);
-        expect(await service.userCan(defaultUser, 'update', 'App')).toEqual(true);
-        expect(await service.userCan(defaultUser, 'delete', 'App')).toEqual(false);
+        expect(await service.userCan(defaultUser, 'create', 'App', app.id)).toEqual(false);
+        expect(await service.userCan(defaultUser, 'read', 'App', app.id)).toEqual(true);
+        expect(await service.userCan(defaultUser, 'update', 'App', app.id)).toEqual(true);
+        expect(await service.userCan(defaultUser, 'delete', 'App', app.id)).toEqual(false);
       });
 
       it('should opt the permissible group among multiple groups', async () => {
@@ -249,7 +242,7 @@ describe('UsersService', () => {
         const updaterUserGroup = userGroups[0];
         await createAppGroupPermission(nestApp, app, updaterUserGroup.groupPermissionId, {
           create: false,
-          read: false,
+          read: true,
           update: true,
           delete: false,
         });
@@ -262,10 +255,10 @@ describe('UsersService', () => {
           delete: true,
         });
 
-        expect(await service.userCan(defaultUser, 'create', 'App')).toEqual(false);
-        expect(await service.userCan(defaultUser, 'read', 'App')).toEqual(true);
-        expect(await service.userCan(defaultUser, 'update', 'App')).toEqual(true);
-        expect(await service.userCan(defaultUser, 'delete', 'App')).toEqual(true);
+        expect(await service.userCan(defaultUser, 'create', 'App', app.id)).toEqual(false);
+        expect(await service.userCan(defaultUser, 'read', 'App', app.id)).toEqual(true);
+        expect(await service.userCan(defaultUser, 'update', 'App', app.id)).toEqual(true);
+        expect(await service.userCan(defaultUser, 'delete', 'App', app.id)).toEqual(true);
       });
     });
   });
