@@ -78,8 +78,10 @@ class Viewer extends React.Component {
         },
       },
       () => {
-        computeComponentState(this, data?.definition?.components);
-        this.runQueries(data.data_queries);
+        computeComponentState(this, data?.definition?.components).then(() => {
+          console.log('Default component state computed and set');
+          this.runQueries(data.data_queries);
+        });
       }
     );
   };

@@ -100,8 +100,10 @@ class Editor extends React.Component {
           slug: data.slug,
         },
         () => {
-          computeComponentState(this, this.state.appDefinition.components);
-          this.runQueries(data.data_queries);
+          computeComponentState(this, this.state.appDefinition.components).then(() => {
+            console.log('Default component state computed and set');
+            this.runQueries(data.data_queries);
+          });
         }
       );
     });
