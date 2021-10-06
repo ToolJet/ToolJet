@@ -37,5 +37,5 @@ Click on the 'run' button to run the query. NOTE: Query should be saved before r
 
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
