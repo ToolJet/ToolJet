@@ -39,7 +39,7 @@ export class AuthService {
         email: user.email,
         first_name: user.firstName,
         last_name: user.lastName,
-        role: user.role,
+        admin: await this.usersService.hasGroup(user, 'admin'),
       };
     } else {
       throw new UnauthorizedException('Invalid credentials');

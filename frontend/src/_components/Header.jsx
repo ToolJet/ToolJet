@@ -21,7 +21,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
     history.push('/settings');
   }
 
-  const { first_name, last_name } = authenticationService.currentUserValue;
+  const { first_name, last_name, admin } = authenticationService.currentUserValue;
 
   return (
     <header className="navbar navbar-expand-md navbar-light d-print-none">
@@ -68,9 +68,11 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <Link data-testId="settingsBtn" to="/users" className="dropdown-item">
                 Manage Users
               </Link>
-              <Link data-testId="settingsBtn" to="/groups" className="dropdown-item">
-                Manage Groups
-              </Link>
+              {admin && (
+                <Link data-testId="settingsBtn" to="/groups" className="dropdown-item">
+                  Manage Groups
+                </Link>
+              )}
               <Link data-testId="settingsBtn" onClick={openSettings} className="dropdown-item">
                 Profile
               </Link>

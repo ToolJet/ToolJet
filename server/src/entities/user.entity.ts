@@ -84,7 +84,4 @@ export class User extends BaseEntity {
 
   @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
   userGroupPermissions: UserGroupPermission[];
-
-  // TODO: remove all role usages
-  public role;
 }
