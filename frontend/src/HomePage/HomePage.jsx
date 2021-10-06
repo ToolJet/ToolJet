@@ -81,10 +81,16 @@ class HomePage extends React.Component {
   createApp = () => {
     let _self = this;
     _self.setState({ creatingApp: true });
-    appService.createApp().then((data) => {
-      console.log(data);
-      _self.props.history.push(`/apps/${data.id}`);
-    });
+    appService
+      .createApp()
+      .then((data) => {
+        console.log(data);
+        _self.props.history.push(`/apps/${data.id}`);
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        this.setState({ isCloningApp: false });
+      });
   };
 
   deleteApp = (app) => {
