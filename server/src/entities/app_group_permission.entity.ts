@@ -23,9 +23,6 @@ export class AppGroupPermission extends BaseEntity {
   groupPermissionId: string;
 
   @Column({ default: false })
-  create: boolean;
-
-  @Column({ default: false })
   read: boolean;
 
   @Column({ default: false })

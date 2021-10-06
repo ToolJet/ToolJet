@@ -17,7 +17,6 @@ import { GroupPermission } from './group_permission.entity';
 import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
-import { UserAppGroupPermission } from './user_app_group_permission.entity';
 import { UserGroupPermission } from './user_group_permission.entity';
 
 @Entity({ name: 'users' })
@@ -66,9 +65,6 @@ export class User extends BaseEntity {
   @ManyToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
-
-  @OneToMany(() => UserAppGroupPermission, (userAppGroupPermission) => userAppGroupPermission.user)
-  userAppGroupPermissions: UserAppGroupPermission[];
 
   @ManyToMany(() => GroupPermission)
   @JoinTable({
