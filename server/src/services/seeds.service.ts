@@ -12,7 +12,7 @@ export class SeedsService {
 
   async perform(): Promise<void> {
     await this.entityManager.transaction(async (manager) => {
-      const defaultUser = manager.findOne(User, {
+      const defaultUser = await manager.findOne(User, {
         email: 'dev@tooljet.io',
       });
 
