@@ -4,7 +4,7 @@ import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 export default ({ options = [], currentState, theme, removeKeyValuePair, onChange }) => {
   return (
     <div className="table-responsive table-no-divider">
-      <table className="table">
+      <table className="table layoutfix">
         <thead>
           <tr>
             <th>Key</th>
@@ -17,14 +17,16 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
             return (
               <tr key={index}>
                 <td>
-                  <CodeHinter
-                    currentState={currentState}
-                    initialValue={option[0]}
-                    theme={theme}
-                    placeholder="key"
-                    className="form-control codehinter-query-editor-input"
-                    onChange={onChange('url_params', 0, index)}
-                  />
+                  <div>
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={option[0]}
+                      theme={theme}
+                      placeholder="key"
+                      className="form-control codehinter-query-editor-input"
+                      onChange={onChange('url_params', 0, index)}
+                    />
+                  </div>
                 </td>
                 <td>
                   <CodeHinter

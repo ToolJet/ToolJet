@@ -11,9 +11,11 @@
       display: table-header-group;
       vertical-align: middle;
     }
+
     tbody {
       display: table-row-group;
     }
+
     tr {
       display: table-row;
     }
@@ -33,4 +35,8 @@ div[data-disabled='true'] {
 .queries-container .btn-px-1 {
   padding-left: .90rem;
   padding-right: .90rem;
+}
+
+.layoutfix {
+  table-layout: fixed;
 }
