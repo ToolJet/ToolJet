@@ -10,20 +10,12 @@ import { Server } from 'ws';
 
 @WebSocketGateway()
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  clients: any[];
-
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: any): void {
-    // console.warn(`Client[${client.id}] connected]`);
-    // this.clients.push(client);
-  }
+  handleConnection(client: any): void {}
 
-  handleDisconnect(client: any): void {
-    console.warn(`Client[${client.id}] disconnected]`);
-    // this.clients = this.clients.filter((c) => c !== client);
-  }
+  handleDisconnect(client: any): void {}
 
   broadcast(data) {
     this.server.clients.forEach((client) => client.send(data));

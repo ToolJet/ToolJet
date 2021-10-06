@@ -27,7 +27,6 @@ const Comments = ({ newThread = {} }) => {
     !isEmpty(newThread) && setThreads([...threads, newThread]);
   }, [newThread]);
 
-  // TODO: move to a hook with useMemo
   // TODO: add retry policy
   React.useEffect(() => {
     const socket = new WebSocket('ws://localhost:3000');
@@ -41,11 +40,6 @@ const Comments = ({ newThread = {} }) => {
     socket.addEventListener('close', function (event) {
       console.log('connection closed', event);
     });
-
-    // Listen for messages
-    // socket.addEventListener('message', function (event) {
-    //   console.log('Message from server ', JSON.parse(event.data).data);
-    // });
 
     // Listen for possible errors
     socket.addEventListener('error', function (event) {
