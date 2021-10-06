@@ -65,9 +65,11 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               </div>
             </a>
             <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
-                Manage Users
-              </Link>
+              {admin && (
+                <Link data-testid="settingsBtn" to="/users" className="dropdown-item">
+                  Manage Users
+                </Link>
+              )}
               {admin && (
                 <Link data-tesid="settingsBtn" to="/groups" className="dropdown-item">
                   Manage Groups
