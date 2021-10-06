@@ -2207,3 +2207,27 @@ input[type='text'] {
 .DateRangePicker {
   padding: 1.25px 5px;
 }
+
+.datepicker-widget {
+  .input-field { 
+    min-height: 26px;
+    padding: 0;
+    padding-left: 2px;
+  }
+}
+
+.daterange-picker-widget {
+  .DateInput_input {
+    min-height: 24px;
+    line-height: normal;
+    border-bottom: 0px;
+    font-size: 0.85rem;
+  }
+  .DateRangePicker {
+    padding: 0;
+  }
+
+  .DateRangePickerInput_arrow_svg {
+    height: 17px;
+  }
+}

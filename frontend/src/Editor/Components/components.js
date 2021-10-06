@@ -348,7 +348,7 @@ export const componentTypes = [
     component: 'Datepicker',
     defaultSize: {
       width: 150,
-      height: 40,
+      height: 30,
     },
     validation: {
       customRule: { type: 'code', displayName: 'Custom validation' },
@@ -573,7 +573,7 @@ export const componentTypes = [
     component: 'DaterangePicker',
     defaultSize: {
       width: 300,
-      height: 40,
+      height: 30,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },

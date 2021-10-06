@@ -81,7 +81,8 @@ export const Datepicker = function Datepicker({
   return (
     <div
       data-disabled={parsedDisabledState}
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none', padding: '2px 1px' }}
+      className="datepicker-widget"
+      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component);
@@ -98,7 +99,7 @@ export const Datepicker = function Datepicker({
             <input
               {...props}
               value={dateText}
-              className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
+              className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
             />
           );
         }}
