@@ -34,7 +34,7 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 }
 
 export async function batchUpdateToSheet(spreadSheetId: string, requestBody: any, filterData: any, authHeader: any) {
-  const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, 'A1:Z100', authHeader);
+  const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, 'A1:Z500', authHeader);
 
   const getRowIndex = (inputFilter, response): number => {
     const columnValues = response.filter((column) => column[0] === inputFilter.key).flat();
