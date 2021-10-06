@@ -13,7 +13,9 @@ class ManageGroupPermissionResources extends React.Component {
     this.state = {
       isLoadingGroup: true,
       isLoadingApps: true,
+      isAddingApps: false,
       isLoadingUsers: true,
+      isAddingUsers: false,
       groupPermission: null,
       usersInGroup: [],
       appsInGroup: [],
@@ -143,13 +145,18 @@ class ManageGroupPermissionResources extends React.Component {
   };
 
   addSelectedAppsToGroup = (groupPermissionId, selectedAppIds) => {
+    this.setState({ isAddingApps: true });
     const updateParams = {
       selectedAppIds,
     };
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
-        this.setState({ selectedAppIds: [], isLoadingApps: true });
+        this.setState({
+          selectedAppIds: [],
+          isLoadingApps: true,
+          isAddingApps: false,
+        });
         this.fetchAppsNotInGroup(groupPermissionId);
         this.fetchAppsInGroup(groupPermissionId);
       })
@@ -187,13 +194,18 @@ class ManageGroupPermissionResources extends React.Component {
   };
 
   addSelectedUsersToGroup = (groupPermissionId, selectedUserIds) => {
+    this.setState({ isAddingUsers: true });
     const updateParams = {
       selectedUserIds,
     };
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
-        this.setState({ selectedUserIds: [], isLoadingUsers: true });
+        this.setState({
+          selectedUserIds: [],
+          isLoadingUsers: true,
+          isAddingUsers: false,
+        });
         this.fetchUsersNotInGroup(groupPermissionId);
         this.fetchUsersInGroup(groupPermissionId);
       })
@@ -234,7 +246,9 @@ class ManageGroupPermissionResources extends React.Component {
     const {
       isLoadingGroup,
       isLoadingApps,
+      isAddingApps,
       isLoadingUsers,
+      isAddingUsers,
       appsInGroup,
       appsNotInGroup,
       usersInGroup,
@@ -323,7 +337,7 @@ class ManageGroupPermissionResources extends React.Component {
                         </div>
                         <div className="col-auto">
                           <div
-                            className="btn btn-primary w-100"
+                            className={`btn btn-primary w-100 ${isAddingApps ? 'btn-loading' : ''}`}
                             onClick={() => this.addSelectedAppsToGroup(groupPermission.id, selectedAppIds)}
                           >
                             Add
@@ -425,7 +439,7 @@ class ManageGroupPermissionResources extends React.Component {
                         </div>
                         <div className="col-auto">
                           <div
-                            className="btn btn-primary w-100"
+                            className={`btn btn-primary w-100 ${isAddingUsers ? 'btn-loading' : ''}`}
                             onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUserIds)}
                           >
                             Add
