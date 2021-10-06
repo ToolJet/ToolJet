@@ -11,6 +11,7 @@ import useRouter from '@/_hooks/use-router';
 const Comments = ({ newThread = {} }) => {
   const [threads, setThreads] = React.useState([]);
   const [socket, setWebSocket] = React.useState(null);
+  // const [reload, setReload] = React.useState(false);
 
   const router = useRouter();
 
@@ -26,18 +27,14 @@ const Comments = ({ newThread = {} }) => {
     !isEmpty(newThread) && setThreads([...threads, newThread]);
   }, [newThread]);
 
+  // TODO: move to a hook with useMemo
+  // TODO: add retry policy
   React.useEffect(() => {
     const socket = new WebSocket('ws://localhost:3000');
 
     // Connection opened
     socket.addEventListener('open', function (event) {
       console.log('connection established', event);
-      socket.send(
-        JSON.stringify({
-          event: 'events',
-          data: 'test',
-        })
-      );
     });
 
     // Connection closed
@@ -46,8 +43,13 @@ const Comments = ({ newThread = {} }) => {
     });
 
     // Listen for messages
-    socket.addEventListener('message', function (event) {
-      console.log('Message from server ', event.data);
+    // socket.addEventListener('message', function (event) {
+    //   console.log('Message from server ', JSON.parse(event.data).data);
+    // });
+
+    // Listen for possible errors
+    socket.addEventListener('error', function (event) {
+      console.log('WebSocket error: ', event);
     });
 
     setWebSocket(socket);

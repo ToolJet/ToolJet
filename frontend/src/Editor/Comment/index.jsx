@@ -22,11 +22,14 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
     item: { threadId, name: 'comment' },
   }));
 
-  // React.useEffect(() => {
-  //   socket?.addEventListener('events', function (event) {
-  //     console.log('Message from server ', event.data);
-  //   });
-  // }, []);
+  React.useEffect(() => {
+    // Listen for messages
+    socket?.addEventListener('message', function (event) {
+      console.log(event.data);
+      const id = JSON.parse(event.data).data;
+      if (id === threadId) fetchData();
+    });
+  }, []);
 
   React.useLayoutEffect(() => {
     const { left } = trigger?.ref?.current?.getBoundingClientRect();
@@ -52,7 +55,12 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
       tid: threadId,
       comment,
     });
-    socket.send('client');
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: threadId,
+      })
+    );
     fetchData();
   };
 
