@@ -317,64 +317,61 @@ describe('apps controller', () => {
     });
   });
 
-  // describe("/apps/:id/users", () => {
-  //   it("should not be able to fetch app users if admin of another organization", async () => {
-  //     const adminUserData = await createUser(app, {
-  //       email: "admin@tooljet.io",
-  //       groups: ["all_users", "admin"],
-  //     });
-  //     const anotherOrgAdminUserData = await createUser(app, {
-  //       email: "another@tooljet.io",
-  //       groups: ["all_users", "admin"],
-  //     });
-  //     const application = await createApplication(app, {
-  //       name: "name",
-  //       user: adminUserData.user,
-  //     });
+  // TODO: Remove deprecated endpoint
+  describe('/apps/:id/users', () => {
+    xit('should not be able to fetch app users if admin of another organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
 
-  //     const response = await request(app.getHttpServer())
-  //       .get(`/apps/${application.id}/users`)
-  //       .set("Authorization", authHeaderForUser(anotherOrgAdminUserData.user));
+      const response = await request(app.getHttpServer())
+        .get(`/apps/${application.id}/users`)
+        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
-  //     expect(response.statusCode).toBe(403);
-  //   });
+      expect(response.statusCode).toBe(403);
+    });
 
-  //   it("should be able to fetch app users if group is admin/developer/viewer of same organization", async () => {
-  //     const adminUserData = await createUser(app, {
-  //       email: "admin@tooljet.io",
-  //       groups: ["all_users", "admin"],
-  //     });
-  //     const organization = adminUserData.organization;
-  //     const developerUserData = await createUser(app, {
-  //       email: "developer@tooljet.io",
-  //       groups: ["all_users", "developer"],
-  //       organization,
-  //     });
-  //     const viewerUserData = await createUser(app, {
-  //       email: "viewer@tooljet.io",
-  //       groups: ["all_users", "viewer"],
-  //       organization,
-  //     });
+    xit('should be able to fetch app users if group is admin/developer/viewer of same organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const organization = adminUserData.organization;
+      const developerUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization,
+      });
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        groups: ['all_users', 'viewer'],
+        organization,
+      });
 
-  //     const application = await createApplication(app, {
-  //       name: "name",
-  //       user: adminUserData.user,
-  //     });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
 
-  //     for (const userData of [
-  //       adminUserData,
-  //       developerUserData,
-  //       viewerUserData,
-  //     ]) {
-  //       const response = await request(app.getHttpServer())
-  //         .get(`/apps/${application.id}/users`)
-  //         .set("Authorization", authHeaderForUser(userData.user));
+      for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+        const response = await request(app.getHttpServer())
+          .get(`/apps/${application.id}/users`)
+          .set('Authorization', authHeaderForUser(userData.user));
 
-  //       expect(response.statusCode).toBe(200);
-  //       expect(response.body.users.length).toBe(1);
-  //     }
-  //   });
-  // });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.users.length).toBe(1);
+      }
+    });
+  });
 
   describe('/apps/:id/versions', () => {
     describe('get versions', () => {
