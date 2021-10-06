@@ -100,12 +100,6 @@ class Editor extends React.Component {
           slug: data.slug,
         },
         () => {
-          data.data_queries.forEach((query) => {
-            if (query.options.runOnPageLoad) {
-              runQuery(this, query.id, query.name);
-            }
-          });
-
           computeComponentState(this, this.state.appDefinition.components);
         }
       );
@@ -166,21 +160,34 @@ class Editor extends React.Component {
                 data.data_queries.find((dq) => dq.id === this.state.selectedQuery?.id) || data.data_queries[0];
               let editingQuery = selectedQuery ? true : false;
 
-              this.setState({
-                selectedQuery,
-                editingQuery,
-                currentState: {
-                  ...this.state.currentState,
-                  queries: {
-                    ...queryState,
+              this.setState(
+                {
+                  selectedQuery,
+                  editingQuery,
+                  currentState: {
+                    ...this.state.currentState,
+                    queries: {
+                      ...queryState,
+                    },
                   },
                 },
-              });
+                () => {
+                  this.runQueries(data.data_queries);
+                }
+              );
             }
           );
         });
       }
     );
+  };
+
+  runQueries = (queries) => {
+    queries.forEach((query) => {
+      if (query.options.runOnPageLoad) {
+        runQuery(this, query.id, query.name);
+      }
+    });
   };
 
   fetchApps = (page) => {
