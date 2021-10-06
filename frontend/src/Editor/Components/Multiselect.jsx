@@ -54,7 +54,7 @@ export const Multiselect = function Multiselect({
 
   return (
     <div
-      className="multiselect-widget row g-0 p-1"
+      className="multiselect-widget row g-0"
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();

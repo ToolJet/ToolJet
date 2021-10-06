@@ -93,7 +93,7 @@ export const DropDown = function DropDown({
 
   return (
     <div
-      className="dropdown-widget row g-0 p-1"
+      className="dropdown-widget row g-0"
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
