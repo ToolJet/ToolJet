@@ -24,10 +24,9 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
 
   React.useEffect(() => {
     // Listen for messages
+    // TODO: add check if user is the initiator of this event, don't fetch data
     socket?.addEventListener('message', function (event) {
-      console.log(event.data);
-      const id = JSON.parse(event.data).data;
-      if (id === threadId) fetchData();
+      if (event.data === threadId) fetchData();
     });
   }, []);
 
