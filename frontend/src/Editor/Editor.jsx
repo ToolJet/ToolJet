@@ -100,20 +100,16 @@ class Editor extends React.Component {
           slug: data.slug,
         },
         () => {
-          data.data_queries.forEach((query) => {
-            if (query.options.runOnPageLoad) {
-              runQuery(this, query.id, query.name);
-            }
+          computeComponentState(this, this.state.appDefinition.components).then(() => {
+            console.log('Default component state computed and set');
+            this.runQueries(data.data_queries);
           });
-
-          computeComponentState(this, this.state.appDefinition.components);
         }
       );
     });
 
     this.fetchDataSources();
     this.fetchDataQueries();
-
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
@@ -181,6 +177,14 @@ class Editor extends React.Component {
         });
       }
     );
+  };
+
+  runQueries = (queries) => {
+    queries.forEach((query) => {
+      if (query.options.runOnPageLoad) {
+        runQuery(this, query.id, query.name);
+      }
+    });
   };
 
   fetchApps = (page) => {
