@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "tj-static-ip"
+    networking.gke.io/managed-certificates: "tj"
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+
+spec:
+  rules:
+  - host: tooljet.your-domain.com
+    http:
+      paths:
+        - path: /*
+          backend:
+            serviceName: tj-service
+            servicePort: 8080
+            

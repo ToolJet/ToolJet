@@ -1,6 +1,7 @@
 import React from 'react';
 import { renderElement } from '../Utils';
 import { computeActionName } from '@/_helpers/utils';
+// eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -667,6 +668,24 @@ class Table extends React.Component {
             paramUpdated,
             dataQueries,
             'showBulkUpdateActions',
+            'properties',
+            currentState
+          )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showBulkSelector',
+            'properties',
+            currentState
+          )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'highlightSelectedRow',
             'properties',
             currentState
           )}

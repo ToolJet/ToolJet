@@ -779,6 +779,12 @@ body {
     background: rgba(lightBlue, 0.25);
   }
 
+  .table-row.selected {
+    --tblr-table-accent-bg: rgba(lightBlue, 0.25);
+    background: rgba(lightBlue, 0.25);
+    font-weight: 500;
+  }
+
   td {
     min-height: 40px;
     overflow-x: initial;
@@ -2122,6 +2128,7 @@ input:focus-visible {
 .theme-dark .markdown > table thead th,
 .theme-dark .table thead th {
   background: #1c252f;
+  color: #fff;
 }
 
 .sketch-picker {
