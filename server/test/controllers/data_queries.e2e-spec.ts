@@ -54,7 +54,6 @@ describe('data queries controller', () => {
       group: 'developer',
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
-      create: false,
       read: true,
       update: true,
       delete: false,
@@ -65,7 +64,6 @@ describe('data queries controller', () => {
       group: 'viewer',
     });
     await createAppGroupPermission(app, application, viewerUserGroup.id, {
-      create: false,
       read: true,
       update: false,
       delete: false,
@@ -142,7 +140,6 @@ describe('data queries controller', () => {
       group: 'developer',
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
-      create: false,
       read: true,
       update: true,
       delete: false,
@@ -200,7 +197,7 @@ describe('data queries controller', () => {
     }
   });
 
-  it('should be able to get queries of an app only if the user belongs to the same organization', async () => {
+  it('should be able to get queries only if the user has app read permission and belongs to the same organization', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
@@ -229,7 +226,6 @@ describe('data queries controller', () => {
       group: 'developer',
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
-      create: false,
       read: true,
       update: true,
       delete: false,
@@ -241,7 +237,7 @@ describe('data queries controller', () => {
       options: { method: 'get' },
     });
 
-    for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+    for (const userData of [adminUserData, developerUserData]) {
       const response = await request(app.getHttpServer())
         .get(`/data_queries?app_id=${application.id}`)
         .set('Authorization', authHeaderForUser(userData.user));
@@ -250,8 +246,14 @@ describe('data queries controller', () => {
       expect(response.body.data_queries.length).toBe(1);
     }
 
+    let response = await request(app.getHttpServer())
+      .get(`/data_queries?app_id=${application.id}`)
+      .set('Authorization', authHeaderForUser(viewerUserData.user));
+
+    expect(response.statusCode).toBe(403);
+
     // Forbidden if user of another organization
-    const response = await request(app.getHttpServer())
+    response = await request(app.getHttpServer())
       .get(`/data_queries?app_id=${application.id}`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
@@ -287,7 +289,6 @@ describe('data queries controller', () => {
       group: 'developer',
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
-      create: false,
       read: true,
       update: true,
       delete: false,
@@ -400,6 +401,26 @@ describe('data queries controller', () => {
         headers: [],
         body: [],
       },
+    });
+
+    // setup app permissions for developer
+    const developerUserGroup = await getRepository(GroupPermission).findOne({
+      group: 'developer',
+    });
+    await createAppGroupPermission(app, application, developerUserGroup.id, {
+      read: true,
+      update: true,
+      delete: false,
+    });
+
+    // setup app permissions for viewer
+    const viewerUserGroup = await getRepository(GroupPermission).findOne({
+      group: 'viewer',
+    });
+    await createAppGroupPermission(app, application, viewerUserGroup.id, {
+      read: true,
+      update: false,
+      delete: false,
     });
 
     for (const userData of [adminUserData, developerUserData, viewerUserData]) {

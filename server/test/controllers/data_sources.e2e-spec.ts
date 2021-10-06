@@ -52,7 +52,6 @@ describe('data sources controller', () => {
       group: 'developer',
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
-      create: false,
       read: false,
       update: true,
       delete: false,
@@ -115,7 +114,6 @@ describe('data sources controller', () => {
       group: 'developer',
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
-      create: false,
       read: false,
       update: true,
       delete: false,
@@ -191,12 +189,21 @@ describe('data sources controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const dataSource = await createDataSource(app, {
+    await createDataSource(app, {
       name: 'name',
       kind: 'postgres',
       application: application,
       user: adminUserData.user,
+    });
+
+    const allUserGroup = await getRepository(GroupPermission).findOne({
+      group: 'all_users',
+      organizationId: adminUserData.organization.id,
+    });
+    await createAppGroupPermission(app, application, allUserGroup.id, {
+      read: true,
+      update: true,
+      delete: false,
     });
 
     for (const userData of [adminUserData, developerUserData, viewerUserData]) {

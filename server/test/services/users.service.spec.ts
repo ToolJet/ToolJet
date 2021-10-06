@@ -223,7 +223,6 @@ describe('UsersService', () => {
         const userGroups = await createUserGroupPermissions(nestApp, defaultUser, ['developer']);
         const developerUserGroup = userGroups[0];
         await createAppGroupPermission(nestApp, app, developerUserGroup.groupPermissionId, {
-          create: false,
           read: true,
           update: true,
           delete: false,
@@ -241,7 +240,6 @@ describe('UsersService', () => {
 
         const updaterUserGroup = userGroups[0];
         await createAppGroupPermission(nestApp, app, updaterUserGroup.groupPermissionId, {
-          create: false,
           read: true,
           update: true,
           delete: false,
@@ -249,7 +247,6 @@ describe('UsersService', () => {
 
         const deleterUserGroup = userGroups[1];
         await createAppGroupPermission(nestApp, app, deleterUserGroup.groupPermissionId, {
-          create: false,
           read: false,
           update: false,
           delete: true,

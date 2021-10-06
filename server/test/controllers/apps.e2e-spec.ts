@@ -38,7 +38,7 @@ describe('apps controller', () => {
 
   describe('/apps', () => {
     describe('authorization', () => {
-      it('should be able to create app if user has admin group or app create permission', async () => {
+      it('should be able to create app if user has admin group', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
           groups: ['all_users', 'admin'],
@@ -61,31 +61,20 @@ describe('apps controller', () => {
         });
         await createApplicationVersion(app, application);
 
-        // setup app permissions for developer
-        const developerUserGroup = await getRepository(GroupPermission).findOne({
-          group: 'developer',
-        });
-        await createAppGroupPermission(app, application, developerUserGroup.id, {
-          create: true,
-          read: false,
-          update: false,
-          delete: false,
-        });
-
-        for (const userData of [adminUserData, developerUserData]) {
+        for (const userData of [viewerUserData, developerUserData]) {
           const response = await request(app.getHttpServer())
             .post(`/apps`)
             .set('Authorization', authHeaderForUser(userData.user));
 
-          expect(response.statusCode).toBe(201);
-          expect(response.body.name).toBe('Untitled app');
+          expect(response.statusCode).toBe(403);
         }
 
         const response = await request(app.getHttpServer())
           .post(`/apps`)
-          .set('Authorization', authHeaderForUser(viewerUserData.user));
+          .set('Authorization', authHeaderForUser(adminUserData.user));
 
-        expect(response.statusCode).toBe(403);
+        expect(response.statusCode).toBe(201);
+        expect(response.body.name).toBe('Untitled app');
       });
     });
 
@@ -111,7 +100,7 @@ describe('apps controller', () => {
   });
 
   describe('/apps/:id/clone', () => {
-    it('should be able to clone the app if user group is admin or has app create permission', async () => {
+    it('should be able to clone the app if user group is admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -134,36 +123,21 @@ describe('apps controller', () => {
         user: adminUserData.user,
       });
 
-      // setup app permissions for developer
-      const developerUserGroup = await getRepository(GroupPermission).findOne({
-        group: 'developer',
-      });
-      await createAppGroupPermission(app, application, developerUserGroup.id, {
-        create: true,
-        read: false,
-        update: false,
-        delete: false,
-      });
-
       let response = await request(app.getHttpServer())
         .post(`/apps/${application.id}/clone`)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toBe(201);
 
-      let appId = response.body.id;
-      let clonedApplication = await App.findOne({ id: appId });
+      const appId = response.body.id;
+      const clonedApplication = await App.findOne({ id: appId });
       expect(clonedApplication.name).toBe('App to clone');
 
       response = await request(app.getHttpServer())
         .post(`/apps/${application.id}/clone`)
         .set('Authorization', authHeaderForUser(developerUserData.user));
 
-      expect(response.statusCode).toBe(201);
-
-      appId = response.body.id;
-      clonedApplication = await App.findOne({ id: appId });
-      expect(clonedApplication.name).toBe('App to clone');
+      expect(response.statusCode).toBe(403);
 
       response = await request(app.getHttpServer())
         .post(`/apps/${application.id}/clone`)
@@ -411,13 +385,8 @@ describe('apps controller', () => {
             groups: ['all_users', 'admin'],
           });
           const organization = adminUserData.organization;
-          const developerUserData = await createUser(app, {
+          const defaultUserData = await createUser(app, {
             email: 'developer@tooljet.io',
-            groups: ['all_users'],
-            organization,
-          });
-          const viewerUserData = await createUser(app, {
-            email: 'viewer@tooljet.io',
             groups: ['all_users'],
             organization,
           });
@@ -428,7 +397,16 @@ describe('apps controller', () => {
           });
           await createApplicationVersion(app, application);
 
-          for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+          const allUserGroup = await getRepository(GroupPermission).findOne({
+            group: 'all_users',
+          });
+          await createAppGroupPermission(app, application, allUserGroup.id, {
+            read: true,
+            update: false,
+            delete: false,
+          });
+
+          for (const userData of [adminUserData, defaultUserData]) {
             const response = await request(app.getHttpServer())
               .get(`/apps/${application.id}/versions`)
               .set('Authorization', authHeaderForUser(userData.user));
@@ -483,7 +461,6 @@ describe('apps controller', () => {
             group: 'developer',
           });
           await createAppGroupPermission(app, application, developerUserGroup.id, {
-            create: false,
             read: false,
             update: true,
             delete: false,
@@ -627,7 +604,7 @@ describe('apps controller', () => {
   describe('/apps/:id/versions/:version_id', () => {
     describe('get app version', () => {
       describe('authorization', () => {
-        it('should be able to get app version by all users within same organization', async () => {
+        it('should be able to get app version by users having app read permission within same organization', async () => {
           const adminUserData = await createUser(app, {
             email: 'admin@tooljet.io',
             groups: ['all_users', 'admin'],
@@ -641,6 +618,15 @@ describe('apps controller', () => {
             user: adminUserData.user,
           });
           const version = await createApplicationVersion(app, application);
+
+          const allUserGroup = await getRepository(GroupPermission).findOne({
+            group: 'all_users',
+          });
+          await createAppGroupPermission(app, application, allUserGroup.id, {
+            read: true,
+            update: false,
+            delete: false,
+          });
 
           for (const userData of [adminUserData, developerUserData]) {
             const response = await request(app.getHttpServer())
@@ -694,7 +680,6 @@ describe('apps controller', () => {
         // setup app permissions for developer
         const developerUserGroup = await getRepository(GroupPermission).findOne({ group: 'developer' });
         await createAppGroupPermission(app, application, developerUserGroup.id, {
-          create: false,
           read: false,
           update: true,
           delete: false,
@@ -772,7 +757,7 @@ describe('apps controller', () => {
     By view app endpoint, we assume the apps/slugs/:id endpoint
   */
   describe('/apps/slugs/:slug', () => {
-    it('should be able to fetch app using slug if member of an organization', async () => {
+    it('should be able to fetch app using slug if has read permission within an organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -787,10 +772,28 @@ describe('apps controller', () => {
         groups: ['all_users', 'viewer'],
         organization: adminUserData.organization,
       });
-      await createApplication(app, {
+      const application = await createApplication(app, {
         name: 'name',
         user: adminUserData.user,
         slug: 'foo',
+      });
+      // setup app permissions for developer
+      const developerUserGroup = await getRepository(GroupPermission).findOne({
+        group: 'developer',
+      });
+      await createAppGroupPermission(app, application, developerUserGroup.id, {
+        read: true,
+        update: true,
+        delete: false,
+      });
+      // setup app permissions for viewer
+      const viewerUserGroup = await getRepository(GroupPermission).findOne({
+        group: 'viewer',
+      });
+      await createAppGroupPermission(app, application, viewerUserGroup.id, {
+        read: true,
+        update: false,
+        delete: false,
       });
 
       for (const userData of [adminUserData, developerUserData, viewerUserData]) {

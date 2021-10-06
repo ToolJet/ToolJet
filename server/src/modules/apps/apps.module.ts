@@ -21,7 +21,6 @@ import { AppCloneService } from '@services/app_clone.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { UserAppGroupPermission } from 'src/entities/user_app_group_permission.entity';
 
 @Module({
   imports: [
@@ -39,7 +38,6 @@ import { UserAppGroupPermission } from 'src/entities/user_app_group_permission.e
       GroupPermission,
       AppGroupPermission,
       UserGroupPermission,
-      UserAppGroupPermission,
     ]),
     CaslModule,
   ],

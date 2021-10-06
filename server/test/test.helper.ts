@@ -228,14 +228,13 @@ export async function maybeCreateAdminAppGroupPermissions(nestApp, app) {
     group: 'admin',
   });
 
-  const adminGroupPermissions = {
-    create: true,
-    read: true,
-    update: true,
-    delete: true,
-  };
-
   if (orgAdminGroupPermissions) {
+    const adminGroupPermissions = {
+      read: true,
+      update: true,
+      delete: true,
+    };
+
     const appGroupPermission = appGroupPermissionRepository.create({
       groupPermissionId: orgAdminGroupPermissions.id,
       appId: app.id,

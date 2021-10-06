@@ -22,7 +22,6 @@ describe('Authentication', () => {
 
   it('should create new users', async () => {
     const response = await request(app.getHttpServer()).post('/signup').send({ email: 'test@tooljet.io' });
-
     expect(response.statusCode).toBe(201);
 
     const id = response.body['id'];
@@ -36,17 +35,17 @@ describe('Authentication', () => {
     expect(new Set(['all_users', 'admin'])).toEqual(new Set(groupNames));
   });
 
-  it(`authenticate if valid credentials`, async () => {
-    return await request(app.getHttpServer())
+  it('authenticate if valid credentials', async () => {
+    await request(app.getHttpServer())
       .post('/authenticate')
       .send({ email: 'admin@tooljet.io', password: 'password' })
       .expect(201);
   });
 
-  it(`throw 401 if invalid credentials`, async () => {
-    return await request(app.getHttpServer())
+  it('throw 401 if invalid credentials', async () => {
+    await request(app.getHttpServer())
       .post('/authenticate')
-      .send({ email: 'adnin@tooljet.io', password: 'pwd' })
+      .send({ email: 'amdin@tooljet.io', password: 'pwd' })
       .expect(401);
   });
 

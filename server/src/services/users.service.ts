@@ -223,7 +223,11 @@ export class UsersService {
   async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
     switch (entityName) {
       case 'App':
-        return this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, resourceId));
+        if (action == 'create') {
+          return await this.hasGroup(user, 'admin');
+        } else {
+          return this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, resourceId));
+        }
 
       default:
         return false;

@@ -74,7 +74,7 @@ export class AppsController {
   async appFromSlug(@Request() req, @Param() params) {
     if (req.user) {
       const app = await this.appsService.findBySlug(params.slug);
-      const ability = await this.appsAbilityFactory.appsActions(req.user, params);
+      const ability = await this.appsAbilityFactory.appsActions(req.user, { id: app.id });
 
       if (!ability.can('viewApp', app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
