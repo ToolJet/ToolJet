@@ -12,11 +12,7 @@ function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
     <div className="card-footer">
       <div className="row align-items-center">
         <div className="col-10">
-          <TextareaMentions
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Type your comment here"
-          />
+          <TextareaMentions value={comment} setValue={setComment} placeholder="Type your comment here" />
         </div>
         <div className="col-2">
           <Button disabled={!comment} className={`m2 `} onClick={handleClick}>

@@ -5,9 +5,8 @@ import Textarea from '@/_ui/Textarea';
 
 import usePopover from '@/_hooks/use-popover';
 
-const Mentions = ({ placeholder }) => {
+const Mentions = ({ value, setValue, placeholder }) => {
   const [open, trigger, content, setOpen] = usePopover(false);
-  const [value, setValue] = React.useState('');
   const handleChange = (e) => {
     e.stopPropagation();
     if (e.target.value.includes('@')) {

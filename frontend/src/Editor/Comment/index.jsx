@@ -10,7 +10,7 @@ import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
 
-const Comment = ({ x, y, threadId, user = {}, isResolved }) => {
+const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
   const [loading, setLoading] = React.useState(true);
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
@@ -21,6 +21,12 @@ const Comment = ({ x, y, threadId, user = {}, isResolved }) => {
     type: ItemTypes.COMMENT,
     item: { threadId, name: 'comment' },
   }));
+
+  // React.useEffect(() => {
+  //   socket?.addEventListener('events', function (event) {
+  //     console.log('Message from server ', event.data);
+  //   });
+  // }, []);
 
   React.useLayoutEffect(() => {
     const { left } = trigger?.ref?.current?.getBoundingClientRect();
@@ -46,6 +52,7 @@ const Comment = ({ x, y, threadId, user = {}, isResolved }) => {
       tid: threadId,
       comment,
     });
+    socket.send('client');
     fetchData();
   };
 
