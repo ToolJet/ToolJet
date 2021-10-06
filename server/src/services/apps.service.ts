@@ -134,12 +134,27 @@ export class AppsService {
     return clonedApp;
   }
 
-  async count(user: User) {
-    return await this.appsRepository.count({
-      where: {
-        organizationId: user.organizationId,
-      },
-    });
+  async count(user: User): Promise<number> {
+    if (await this.usersService.hasGroup(user, 'admin')) {
+      return await this.appsRepository.count({
+        where: {
+          organizationId: user.organizationId,
+        },
+      });
+    } else {
+      return await createQueryBuilder(App, 'apps')
+        .innerJoin('apps.groupPermissions', 'group_permissions')
+        .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
+        .innerJoin(
+          UserGroupPermission,
+          'user_group_permissions',
+          'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+        )
+        .where('user_group_permissions.user_id = :userId', { userId: user.id })
+        .andWhere('app_group_permissions.read = :value', { value: true })
+        .orWhere('apps.is_public = :value', { value: true })
+        .getCount();
+    }
   }
 
   async all(user: User, page: number): Promise<App[]> {
@@ -173,7 +188,6 @@ export class AppsService {
         .take(10)
         .skip(10 * (page - 1))
         // .orderBy('apps.created_at', 'DESC')
-        .printSql()
         .getMany();
 
       return viewableApps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
