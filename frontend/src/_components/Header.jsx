@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import cx from 'classnames';
 import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
-  const [pahtName, setPathName] = useState(document.location.pathname);
+  const [pathName, setPathName] = useState(document.location.pathname);
 
   useEffect(() => {
     setPathName(document.location.pathname);
@@ -36,7 +37,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         </h1>
 
         <ul className="navbar-nav d-none d-lg-flex">
-          <li className={`nav-item mx-3 ${pahtName === '/' ? 'active' : ''}`}>
+          <li className={cx(`nav-item mx-3`, { active: pathName === '/' })}>
             <Link to={'/'} className="nav-link">
               <span className="nav-link-icon d-md-none d-lg-inline-block">
                 <img className="svg-icon" src="/assets/images/icons/apps.svg" width="15" height="15" />
@@ -45,7 +46,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
             </Link>
           </li>
 
-          <li className={`nav-item ${pahtName === '/users' ? 'active' : ''}`}>
+          <li className={cx(`nav-item`, { active: pathName === '/' })}>
             <Link to={'/users'} className="nav-link">
               <span className="nav-link-icon d-md-none d-lg-inline-block">
                 <img className="svg-icon" src="/assets/images/icons/users.svg" width="15" height="15" />
