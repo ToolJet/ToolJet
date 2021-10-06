@@ -86,6 +86,7 @@ export const componentTypes = [
         },
         showBulkUpdateActions: { value: true },
         showBulkSelector: { value: false },
+        highlightSelectedRow: { value: false },
       },
       events: [],
       styles: {
