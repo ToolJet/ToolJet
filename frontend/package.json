@@ -84,7 +84,7 @@
     "webpack-dev-server": "^3.11.2"
   },
   "scripts": {
-    "start": "webpack serve --open --port 8082 --host 0.0.0.0",
+    "start": "webpack serve --port 8082 --host 0.0.0.0",
     "build": "webpack --mode production && cp -a ./assets/. ./build/assets/",
     "lint": "eslint . '**/*.{js,jsx}'",
     "format": "eslint . --fix '**/*.{js,jsx}'",
