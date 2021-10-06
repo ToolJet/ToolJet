@@ -416,7 +416,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
           }
 
           if (data.status === 'failed') {
-            toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
+            console.error(data.message);
 
             return _self.setState(
               {
