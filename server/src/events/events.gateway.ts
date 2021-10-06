@@ -1,15 +1,35 @@
-import { SubscribeMessage, WebSocketGateway, WebSocketServer, WsResponse } from '@nestjs/websockets';
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import {
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
 import { Server } from 'ws';
 
-@WebSocketGateway(8080)
-export class EventsGateway {
+@WebSocketGateway()
+export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  clients: any[];
+
   @WebSocketServer()
   server: Server;
 
-  @SubscribeMessage('events')
-  onEvent(client: any, data: any): Observable<WsResponse<number>> {
-    return from([1, 2, 3]).pipe(map((item) => ({ event: 'events', data: item })));
+  handleConnection(client: any): void {
+    console.warn(`Client[${client.id}] connected]`);
+    this.clients.push(client);
+  }
+
+  handleDisconnect(client: any): void {
+    console.warn(`Client[${client.id}] disconnected]`);
+    this.clients = this.clients.filter((c) => c !== client);
+  }
+
+  @SubscribeMessage('client')
+  onEvent(client: any, data: any): void {
+    console.warn(`Channel[${client.id}]: ${data}`);
+    // const event = 'events';
+    // this.server.clients.forEach((client) => {
+    //   client.send(JSON.stringify({ event, data }));
+    // });
   }
 }
