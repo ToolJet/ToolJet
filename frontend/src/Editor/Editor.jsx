@@ -101,13 +101,13 @@ class Editor extends React.Component {
         },
         () => {
           computeComponentState(this, this.state.appDefinition.components);
+          this.runQueries(data.data_queries);
         }
       );
     });
 
     this.fetchDataSources();
     this.fetchDataQueries();
-
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
@@ -160,21 +160,16 @@ class Editor extends React.Component {
                 data.data_queries.find((dq) => dq.id === this.state.selectedQuery?.id) || data.data_queries[0];
               let editingQuery = selectedQuery ? true : false;
 
-              this.setState(
-                {
-                  selectedQuery,
-                  editingQuery,
-                  currentState: {
-                    ...this.state.currentState,
-                    queries: {
-                      ...queryState,
-                    },
+              this.setState({
+                selectedQuery,
+                editingQuery,
+                currentState: {
+                  ...this.state.currentState,
+                  queries: {
+                    ...queryState,
                   },
                 },
-                () => {
-                  this.runQueries(data.data_queries);
-                }
-              );
+              });
             }
           );
         });
