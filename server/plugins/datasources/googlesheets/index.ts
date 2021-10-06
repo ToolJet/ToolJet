@@ -100,7 +100,6 @@ export default class GooglesheetsQueryService implements QueryService {
           result = await batchUpdateToSheet(
             spreadsheetId,
             queryOptions['body'],
-            queryOptions['rowData'][0] as [],
             queryOptions['filterData'],
             this.authHeader(accessToken)
           );

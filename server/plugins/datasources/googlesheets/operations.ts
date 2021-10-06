@@ -33,56 +33,32 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
   return await got.get(url, { headers: authHeader }).json();
 }
 
-export async function batchUpdateToSheet(
-  spreadSheetId: string,
-  requestBody: any,
-  currentRowData: any[],
-  filterData: any,
-  authHeader: any
-) {
-  const lookupResponse = await makeRequestToLookUpCellValues(spreadSheetId, 'A1:Z100', authHeader);
+export async function batchUpdateToSheet(spreadSheetId: string, requestBody: any, filterData: any, authHeader: any) {
+  const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, 'A1:Z100', authHeader);
 
-  const lookupData = (inputFilter, response) => {
+  const getRowIndex = (inputFilter, response): number => {
     const columnValues = response.filter((column) => column[0] === inputFilter.key).flat();
-    if (columnValues.length === 0) return false;
+    if (columnValues.length === 0) return -1;
 
     const rowIndex = columnValues.findIndex((values) => values === inputFilter.value);
 
-    const _values = response.map((column) => column[rowIndex]).filter((value) => value !== undefined);
-    const _keys = response.map((keys) => keys[0]);
-    const _currentSheetData = _values.reduce(function (_currentSheetData, field, index) {
-      _currentSheetData[_keys[index]] = field;
-      return _currentSheetData;
-    }, {});
-
-    if (JSON.stringify(_currentSheetData) === JSON.stringify(currentRowData)) {
-      return rowIndex;
-    } else {
-      return false;
-    }
+    return rowIndex;
   };
 
-  const isAllMatch = lookupData(filterData, lookupResponse['values']);
-
-  function getCurrentRowValue(rowIdx, response) {
+  const rowIndex = getRowIndex(filterData, responseLookUpCellValues['values']);
+  if (rowIndex !== -1) {
     const arr = [];
 
     const keys = Object.keys(requestBody);
     keys.map((key) =>
-      response.filter((val, index) => {
+      responseLookUpCellValues['values'].filter((val, index) => {
         if (val[0] === key) {
-          arr.push({ key: key, index: index, rangeIndex: `${String.fromCharCode(65 + index)}${rowIdx + 1}` });
+          arr.push({ key: key, index: index, rangeIndex: `${String.fromCharCode(65 + index)}${rowIndex + 1}` });
         }
       })
     );
 
-    return arr;
-  }
-
-  const currentSheetRowData = !isAllMatch ? null : getCurrentRowValue(isAllMatch, lookupResponse['values']);
-  const _data =
-    isAllMatch !== false &&
-    currentSheetRowData.map((data, index) => {
+    const _data = arr.map((data, index) => {
       return {
         majorDimension: 'ROWS',
         range: data.rangeIndex,
@@ -90,16 +66,20 @@ export async function batchUpdateToSheet(
       };
     });
 
-  const _reqBody = {
-    data: _data,
-    valueInputOption: 'USER_ENTERED',
-    includeValuesInResponse: true,
-  };
+    const reqBody = {
+      data: _data,
+      valueInputOption: 'USER_ENTERED',
+      includeValuesInResponse: true,
+    };
 
-  const response = await makeRequestToBatchUpdateValues(spreadSheetId, _reqBody, authHeader);
+    const response = await makeRequestToBatchUpdateValues(spreadSheetId, reqBody, authHeader);
 
-  return response;
+    return response;
+  } else {
+    throw new Error(`${filterData.key} not found.`);
+  }
 }
+
 export async function readDataFromSheet(spreadSheetId: string, sheet: string, range: string, authHeader: any) {
   const data = await makeRequestToReadValues(spreadSheetId, sheet, range, authHeader);
   let headers = [];

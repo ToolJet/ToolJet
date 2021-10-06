@@ -8,9 +8,6 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import _ from 'lodash';
-import { useSpring, config, animated } from 'react-spring';
-import useHeight from '@/_hooks/use-height-transition';
-import { resolveReferences } from '@/_helpers/utils';
 
 class Googlesheets extends React.Component {
   constructor(props) {
@@ -178,151 +175,32 @@ class Googlesheets extends React.Component {
         )}
 
         {this.state.options.operation === 'update' && (
-          <div>
-            <Googlesheets.Filter
-              currentState={currentState?.queries[this.props.selectedQueryName]?.data}
-              state={currentState}
-              updateOptions={this.codeChange}
-            />
-
-            <Googlesheets.Code
-              currentState={this.props.currentState}
-              darkMode={this.props.darkMode}
-              changeOption={this.codeChange}
-            />
-          </div>
+          <Googlesheets.UpdateBlock
+            darkMode={this.props.darkMode}
+            currentState={currentState}
+            updateOptions={this.codeChange}
+          />
         )}
       </div>
     );
   }
 }
 
-Googlesheets.Filter = function Filter({ currentState, state, updateOptions }) {
-  const [previewData, setPreviewData] = React.useState(undefined);
+Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, updateOptions }) {
   const [filterKey, setFilterKey] = React.useState('');
   const [filterValue, setFilterValue] = React.useState('');
-  const [isFocused, setFocused] = React.useState(false);
-  const [heightRef, currentHeight] = useHeight();
-  const slideInStyles = useSpring({
-    config: { ...config.stiff },
-    from: { opacity: 0, height: 0 },
-    to: {
-      opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
-    },
-  });
 
   React.useEffect(() => {
     if (filterKey.length !== 0 && filterValue.length !== 0 && !_.isEmpty(currentState)) {
-      const preview = currentState.filter((data) => data[filterKey] === filterValue);
-      setPreviewData(() => preview);
       updateOptions('filterData', { key: filterKey, value: filterValue });
-    }
-
-    if (filterValue.length === 0) {
-      setPreviewData(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterKey, filterValue]);
 
-  React.useEffect(() => {
-    updateOptions('rowData', previewData);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewData]);
-  return (
-    <>
-      <div className="field mb-2 row">
-        <label className="form-label">WHERE</label>
-        <div className="col-auto">
-          <input
-            type="text"
-            placeholder={'id'}
-            value={filterKey}
-            onChange={(e) => setFilterKey(e.target.value)}
-            className="form-control"
-          />
-        </div>
-        <span className="col-auto mt-2 font-weight-bold">{'='}</span>
-        <div className="col-auto">
-          <input
-            type="text"
-            placeholder={'2'}
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value)}
-            className="form-control"
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-          />
-        </div>
-      </div>
-      <Googlesheets.PreviewData
-        data={previewData}
-        currentState={state}
-        heightRef={heightRef}
-        slideInStyles={slideInStyles}
-      />
-    </>
-  );
-};
-
-Googlesheets.PreviewData = function PreviewData({ data, currentState, heightRef, slideInStyles }) {
-  const getPreviewContent = (content, type) => {
-    switch (type) {
-      case 'object':
-        return JSON.stringify(content);
-      case 'boolean':
-        return content.toString();
-      default:
-        return content;
-    }
-  };
-
-  const getPreview = () => {
-    const [preview, error] = resolveReferences(JSON.stringify(data), currentState, null, {}, true);
-
-    if (error) {
-      return (
-        <animated.div style={{ ...slideInStyles, overflow: 'hidden' }}>
-          <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
-            <div>
-              <div className="heading my-1">
-                <span>Error</span>
-              </div>
-              {error.toString()}
-            </div>
-          </div>
-        </animated.div>
-      );
-    }
-
-    const previewType = typeof preview;
-    const content = getPreviewContent(preview, previewType);
-
-    return (
-      <animated.div style={{ ...slideInStyles, overflow: 'hidden' }}>
-        <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
-          <div>
-            {previewType === 'undefined' ? (
-              <div className="heading my-1">
-                <span>{previewType}</span>
-              </div>
-            ) : (
-              <>{content}</>
-            )}
-          </div>
-        </div>
-      </animated.div>
-    );
-  };
-
-  return getPreview();
-};
-
-Googlesheets.Code = function Code({ currentState, darkMode, changeOption = { changeOption } }) {
   function resolveToObject(string) {
     let data = string
-      .replace('{', '')
-      .replace('}', '')
+      .replace('{{{', '')
+      .replace('}}}', '')
       .split(',')
       .map((item) => item.replace(' ', '').split(':'));
     data = _.fromPairs(data);
@@ -333,24 +211,56 @@ Googlesheets.Code = function Code({ currentState, darkMode, changeOption = { cha
         .replace(/^\s+|\s+$/g, '')
     );
   }
-  function codeChange(value) {
-    const _value = value ? resolveToObject(value) : value;
-    changeOption('body', _value);
-  }
+
+  const onChange = (value) => {
+    if (value.length > 0) {
+      const _value = resolveToObject(value);
+      updateOptions('body', _value);
+    }
+  };
 
   return (
-    <div className="md-3 mt-2">
-      <label className="form-label">Update Value</label>
-      <CodeHinter
-        currentState={currentState}
-        mode="javascript"
-        theme={darkMode ? 'monokai' : 'base16-light'}
-        lineNumbers={true}
-        className="query-hinter"
-        ignoreBraces={true}
-        onChange={(value) => codeChange(value)}
-      />
-    </div>
+    <>
+      <div className="row align-items-center">
+        <label className="form-label">WHERE</label>
+        <div className="col-3 field">
+          <CodeHinter
+            currentState={currentState}
+            theme={darkMode ? 'monokai' : 'duotone-light'}
+            lineNumbers={false}
+            className="query-hinter"
+            height="40px"
+            onChange={(value) => setFilterKey(value)}
+            enablePreview
+          />
+        </div>
+
+        <div className="col-3 field">
+          <CodeHinter
+            currentState={currentState}
+            theme={darkMode ? 'monokai' : 'duotone-light'}
+            lineNumbers={false}
+            className="query-hinter"
+            enablePreview
+            height="40px"
+            onChange={(value) => setFilterValue(value)}
+          />
+        </div>
+      </div>
+      <div className="md-3 mt-2">
+        <label className="form-label">Update Value</label>
+        <CodeHinter
+          currentState={currentState}
+          mode="json"
+          theme={darkMode ? 'monokai' : 'duotone-light'}
+          lineNumbers={true}
+          className="query-hinter"
+          ignoreBraces={true}
+          onChange={(value) => onChange(value)}
+          enablePreview
+        />
+      </div>
+    </>
   );
 };
 

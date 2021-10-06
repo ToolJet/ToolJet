@@ -374,7 +374,6 @@ let QueryManager = class QueryManager extends React.Component {
                       currentState={currentState}
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
-                      selectedQueryName={this.state.queryName}
                     />
                     <hr></hr>
                     <div className="mb-3 mt-2">
