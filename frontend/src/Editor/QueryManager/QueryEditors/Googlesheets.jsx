@@ -221,26 +221,30 @@ Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, update
 
   return (
     <>
-      <div className="row align-items-center">
+      <div className="row">
         <label className="form-label">WHERE</label>
-        <div className="col-3 field">
+        <div className="col-3">
           <CodeHinter
             currentState={currentState}
-            theme={darkMode ? 'monokai' : 'duotone-light'}
             lineNumbers={false}
-            className="query-hinter"
+            className="form-control codehinter-query-editor-input"
+            theme={darkMode ? 'monokai' : 'default'}
             height="40px"
             onChange={(value) => setFilterKey(value)}
             enablePreview
           />
         </div>
 
+        <div className="col-1">
+          <center>=</center>
+        </div>
+
         <div className="col-3 field">
           <CodeHinter
             currentState={currentState}
-            theme={darkMode ? 'monokai' : 'duotone-light'}
+            className="form-control codehinter-query-editor-input"
+            theme={darkMode ? 'monokai' : 'default'}
             lineNumbers={false}
-            className="query-hinter"
             enablePreview
             height="40px"
             onChange={(value) => setFilterValue(value)}
@@ -251,10 +255,11 @@ Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, update
         <label className="form-label">Update Value</label>
         <CodeHinter
           currentState={currentState}
+          className="form-control codehinter-query-editor-input"
           mode="json"
           theme={darkMode ? 'monokai' : 'duotone-light'}
           lineNumbers={true}
-          className="query-hinter"
+          height="120px"
           ignoreBraces={true}
           onChange={(value) => onChange(value)}
           enablePreview
