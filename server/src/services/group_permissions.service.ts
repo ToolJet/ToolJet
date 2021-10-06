@@ -69,15 +69,7 @@ export class GroupPermissionsService {
     return result;
   }
 
-  async updateAppGroupPermission(
-    groupPermissionId: string,
-    appGroupPermissionId: string,
-    action: string,
-    value: boolean
-  ) {
-    const updateParams = {};
-    updateParams[action] = value;
-
+  async updateAppGroupPermission(groupPermissionId: string, appGroupPermissionId: string, actions: any) {
     const appGroupPermission = await this.appGroupPermissionsRepository.findOne({
       id: appGroupPermissionId,
       groupPermissionId: groupPermissionId,
@@ -90,7 +82,7 @@ export class GroupPermissionsService {
       throw new BadRequestException('Cannot update admin group');
     }
 
-    return this.appGroupPermissionsRepository.update(appGroupPermissionId, updateParams);
+    return this.appGroupPermissionsRepository.update(appGroupPermissionId, actions);
   }
 
   async update(groupPermissionId: string, body: any) {

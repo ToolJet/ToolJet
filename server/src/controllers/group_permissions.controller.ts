@@ -36,8 +36,7 @@ export class GroupPermissionsController {
     const groupPermission = await this.groupPermissionsService.updateAppGroupPermission(
       params.id,
       params.appGroupPermissionId,
-      req.body.action,
-      req.body.value
+      req.body.actions
     );
 
     return decamelizeKeys(groupPermission);
