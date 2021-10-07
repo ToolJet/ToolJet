@@ -578,7 +578,7 @@ export const componentTypes = [
     component: 'DaterangePicker',
     defaultSize: {
       width: 300,
-      height: 40,
+      height: 30,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -736,7 +736,7 @@ export const componentTypes = [
     description: 'Select one value from options',
     defaultSize: {
       width: 240,
-      height: 35,
+      height: 30,
     },
     component: 'DropDown',
     others: {
@@ -789,7 +789,7 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 270,
+      width: 240,
       height: 30,
     },
     component: 'Multiselect',

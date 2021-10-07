@@ -27,9 +27,10 @@ class ManageOrgUsers extends React.Component {
 
   validateEmail(email) {
     console.log(email);
-    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const re =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
-  } 
+  }
 
   handleValidation() {
     let fields = this.state.fields;
@@ -53,14 +54,14 @@ class ManageOrgUsers extends React.Component {
     if (!fields['email']) {
       errors['email'] = 'This field is required';
     } else if (!this.validateEmail(fields['email'])) {
-        errors['email'] = 'Email is not valid';
+      errors['email'] = 'Email is not valid';
     }
     if (!fields['role']) {
       errors['role'] = 'This field is required';
     }
-    
+
     this.setState({ errors: errors });
-    return Object.keys(errors).length  === 0;
+    return Object.keys(errors).length === 0;
   }
 
   componentDidMount() {
@@ -124,7 +125,9 @@ class ManageOrgUsers extends React.Component {
 
     if (this.handleValidation()) {
       let fields = {};
-      Object.keys(fields).map(key => { fields[key] = '' })
+      Object.keys(fields).map((key) => {
+        fields[key] = '';
+      });
 
       this.setState({
         creatingUser: true,
@@ -141,6 +144,7 @@ class ManageOrgUsers extends React.Component {
         .then(() => {
           toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
           this.fetchUsers();
+          this.setState({ creatingUser: false, showNewUserForm: false });
         })
         .catch(({ error }) => {
           toast.error(error, { hideProgressBar: true, position: 'top-center' });
@@ -168,16 +172,7 @@ class ManageOrgUsers extends React.Component {
   };
 
   render() {
-    const {
-      isLoading,
-      role,
-      showNewUserForm,
-      creatingUser,
-      users,
-      errors,
-      idChangingRole,
-      archivingUser,
-    } = this.state;
+    const { isLoading, role, showNewUserForm, creatingUser, users, errors, idChangingRole, archivingUser } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
