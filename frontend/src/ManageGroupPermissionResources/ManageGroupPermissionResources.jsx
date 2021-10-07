@@ -34,6 +34,17 @@ class ManageGroupPermissionResources extends React.Component {
     this.fetchGroupAndResources(groupPermissionId);
   }
 
+  humanizeifDefaultGroupName = (groupName) => {
+    switch (groupName) {
+      case 'all_users':
+        return 'All Users';
+      case 'admin':
+        return 'Admin';
+      default:
+        return groupName;
+    }
+  };
+
   fetchGroupAndResources = (groupPermissionId) => {
     groupPermissionService.getGroup(groupPermissionId).then((data) => {
       this.setState({
@@ -288,7 +299,7 @@ class ManageGroupPermissionResources extends React.Component {
                         <Link to="/groups">User groups</Link>
                       </li>
                       <li className="breadcrumb-item">
-                        <a href="#">{groupPermission.group}</a>
+                        <a href="#">{this.humanizeifDefaultGroupName(groupPermission.group)}</a>
                       </li>
                     </ol>
                   )}

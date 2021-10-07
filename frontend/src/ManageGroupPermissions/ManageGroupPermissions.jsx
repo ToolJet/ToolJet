@@ -43,6 +43,17 @@ class ManageGroupPermissions extends React.Component {
     });
   };
 
+  humanizeifDefaultGroupName = (groupName) => {
+    switch (groupName) {
+      case 'all_users':
+        return 'All Users';
+      case 'admin':
+        return 'Admin';
+      default:
+        return groupName;
+    }
+  };
+
   createGroup = () => {
     this.setState({ creatingGroup: true });
     groupPermissionService
@@ -200,7 +211,9 @@ class ManageGroupPermissions extends React.Component {
                           {groups.map((permissionGroup) => (
                             <tr key={permissionGroup.id}>
                               <td>
-                                <Link to={`/groups/${permissionGroup.id}`}>{permissionGroup.group}</Link>
+                                <Link to={`/groups/${permissionGroup.id}`}>
+                                  {this.humanizeifDefaultGroupName(permissionGroup.group)}
+                                </Link>
                               </td>
                               <td>
                                 {permissionGroup.group != 'admin' && permissionGroup.group != 'all_users' && (
