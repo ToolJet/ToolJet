@@ -199,9 +199,8 @@ class ManageGroupPermissions extends React.Component {
                         <tbody>
                           {groups.map((permissionGroup) => (
                             <tr key={permissionGroup.id}>
-                              <td>{permissionGroup.group}</td>
                               <td>
-                                <Link to={`/groups/${permissionGroup.id}`}>Edit</Link>
+                                <Link to={`/groups/${permissionGroup.id}`}>{permissionGroup.group}</Link>
                               </td>
                               <td>
                                 {permissionGroup.group != 'admin' && permissionGroup.group != 'all_users' && (
