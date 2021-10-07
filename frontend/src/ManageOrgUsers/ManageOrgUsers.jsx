@@ -16,9 +16,51 @@ class ManageOrgUsers extends React.Component {
       showNewUserForm: false,
       creatingUser: false,
       newUser: {},
+      role: '',
       idChangingRole: null,
       archivingUser: null,
+      fields: {},
+      errors: {},
     };
+  }
+
+  validateEmail(email) {
+    console.log(email);
+    const re =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  }
+
+  handleValidation() {
+    let fields = this.state.fields;
+    let errors = {};
+    //Name
+    if (!fields['firstName']) {
+      errors['firstName'] = 'This field is required';
+    } else if (typeof fields['firstName'] !== 'undefined') {
+      if (!fields['firstName'].match(/^[a-zA-Z]+$/)) {
+        errors['firstName'] = 'Only letters are allowed';
+      }
+    }
+    if (!fields['lastName']) {
+      errors['lastName'] = 'This field is required';
+    } else if (typeof fields['lastName'] !== 'undefined') {
+      if (!fields['lastName'].match(/^[a-zA-Z]+$/)) {
+        errors['lastName'] = 'Only letters are allowed';
+      }
+    }
+    //Email
+    if (!fields['email']) {
+      errors['email'] = 'This field is required';
+    } else if (!this.validateEmail(fields['email'])) {
+      errors['email'] = 'Email is not valid';
+    }
+    if (!fields['role']) {
+      errors['role'] = 'This field is required';
+    }
+
+    this.setState({ errors: errors });
+    return Object.keys(errors).length === 0;
   }
 
   componentDidMount() {
@@ -38,18 +80,17 @@ class ManageOrgUsers extends React.Component {
     );
   };
 
-  changeNewUserOption = (option, value) => {
+  changeNewUserOption = (name, e) => {
+    let fields = this.state.fields;
+    fields[name] = e.target.value;
+
     this.setState({
-      newUser: {
-        ...this.state.newUser,
-        [option]: value,
-      },
+      fields,
     });
   };
 
   changeNewUserRole = (id, role) => {
     this.setState({ idChangingRole: id });
-
     organizationUserService
       .changeRole(id, role)
       .then(() => {
@@ -78,24 +119,44 @@ class ManageOrgUsers extends React.Component {
       });
   };
 
-  createUser = () => {
-    this.setState({
-      creatingUser: true,
-    });
+  createUser = (event) => {
+    event.preventDefault();
 
-    const { firstName, lastName, email, role } = this.state.newUser;
-
-    organizationUserService
-      .create(firstName, lastName, email, role)
-      .then(() => {
-        this.setState({ creatingUser: false, showNewUserForm: false, newUser: {} });
-        toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
-        this.fetchUsers();
-      })
-      .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
-        this.setState({ creatingUser: false, showNewUserForm: true, newUser: {} });
+    if (this.handleValidation()) {
+      let fields = {};
+      Object.keys(fields).map((key) => {
+        fields[key] = '';
       });
+
+      this.setState({
+        creatingUser: true,
+        fields: fields,
+      });
+
+      organizationUserService
+        .create(
+          this.state.fields.firstName,
+          this.state.fields.lastName,
+          this.state.fields.email,
+          this.state.fields.role
+        )
+        .then(() => {
+          toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
+          this.fetchUsers();
+          this.setState({ creatingUser: false, showNewUserForm: false });
+        })
+        .catch(({ error }) => {
+          toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        });
+    } else {
+      this.setState({ creatingUser: false, showNewUserForm: true });
+    }
+  };
+
+  dropdownVal = (role) => {
+    this.setState({
+      fields: { ...this.state.fields, role },
+    });
   };
 
   logout = () => {
@@ -150,20 +211,22 @@ class ManageOrgUsers extends React.Component {
                               type="text"
                               className="form-control"
                               placeholder="Enter First Name"
-                              onChange={(e) => {
-                                this.changeNewUserOption('firstName', e.target.value);
-                              }}
+                              name="firstName"
+                              onChange={this.changeNewUserOption.bind(this, 'firstName')}
+                              value={this.state.fields['firstName']}
                             />
+                            <span className="text-danger">{this.state.errors['firstName']}</span>
                           </div>
                           <div className="col">
                             <input
                               type="text"
                               className="form-control"
                               placeholder="Enter Last Name"
-                              onChange={(e) => {
-                                this.changeNewUserOption('lastName', e.target.value);
-                              }}
+                              name="lastName"
+                              onChange={this.changeNewUserOption.bind(this, 'lastName')}
+                              value={this.state.fields['lastName']}
                             />
+                            <span className="text-danger">{this.state.errors['lastName']}</span>
                           </div>
                         </div>
                       </div>
@@ -175,17 +238,17 @@ class ManageOrgUsers extends React.Component {
                             className="form-control"
                             aria-describedby="emailHelp"
                             placeholder="Enter email"
-                            onChange={(e) => {
-                              this.changeNewUserOption('email', e.target.value);
-                            }}
+                            name="email"
+                            onChange={this.changeNewUserOption.bind(this, 'email')}
+                            value={this.state.fields['email']}
                           />
+                          <span className="text-danger">{this.state.errors['email']}</span>
                         </div>
                       </div>
                       <div className="form-footer">
                         <button
                           className="btn btn-light mr-2"
                           onClick={() => this.setState({ showNewUserForm: false, newUser: {} })}
-                          disabled={creatingUser}
                         >
                           Cancel
                         </button>

@@ -31,7 +31,12 @@ export class PopulateUserGroupsFromOrganizationRoles1632468258787
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
-    entityManager.createQueryBuilder().delete().from(GroupPermission).execute();
+
+    entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(GroupPermission)
+      .execute();
 
     entityManager
       .createQueryBuilder()

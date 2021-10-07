@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 
 export const Tags = ({ value, onChange, readOnly }) => {
-  value = value || [];
+  const isValid = Array.isArray(value);
+  if (!isValid) console.warn('[Tags]: value provided is not an array');
+  value = isValid ? value : [];
 
   const [showForm, setShowForm] = useState(false);
 

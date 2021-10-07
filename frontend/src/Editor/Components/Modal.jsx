@@ -6,7 +6,7 @@ import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
 import { resolveWidgetFieldValue } from '../../_helpers/utils';
 
-export const Modal = function Modal({ id, component, height, containerProps, currentState }) {
+export const Modal = function Modal({ id, component, height, containerProps, currentState, darkMode }) {
   const [show, showModal] = useState(false);
   const parentRef = useRef(null);
 
@@ -52,7 +52,7 @@ export const Modal = function Modal({ id, component, height, containerProps, cur
         <BootstrapModal.Header>
           <BootstrapModal.Title>{title}</BootstrapModal.Title>
           <div>
-            <Button variant="light" size="sm" onClick={hideModal}>
+            <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={hideModal}>
               x
             </Button>
           </div>

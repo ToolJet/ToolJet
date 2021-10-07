@@ -1,6 +1,7 @@
 import React from 'react';
 import { renderElement } from '../Utils';
 import { computeActionName } from '@/_helpers/utils';
+// eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -513,7 +514,7 @@ class Table extends React.Component {
   };
 
   render() {
-    const { dataQueries, component, paramUpdated, componentMeta, components, currentState } = this.props;
+    const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
 
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
@@ -533,7 +534,8 @@ class Table extends React.Component {
           'data',
           'properties',
           currentState,
-          components
+          components,
+          darkMode
         )}
 
         <div className="field mb-2 mt-3">
@@ -669,19 +671,25 @@ class Table extends React.Component {
             'properties',
             currentState
           )}
-
-          {Object.keys(componentMeta.styles).map((style) =>
-            renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              style,
-              'styles',
-              currentState,
-              components
-            )
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showBulkSelector',
+            'properties',
+            currentState
           )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'highlightSelectedRow',
+            'properties',
+            currentState
+          )}
+
           <div className="hr-text">Events</div>
 
           <EventManager
@@ -698,9 +706,9 @@ class Table extends React.Component {
         </div>
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'disabledState', 'styles', currentState)}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'tableType', 'styles', currentState)}
+        {Object.keys(componentMeta.styles).map((style) =>
+          renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components)
+        )}
       </div>
     );
   }

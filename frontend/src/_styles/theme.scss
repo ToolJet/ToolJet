@@ -289,7 +289,7 @@ body {
       align-items: center;
 
       .show-grid {
-        background-size: 30px 30px;
+        background-size: 30px 10px;
         background-image: linear-gradient(to right, rgba(194, 191, 191, 0.2) 1px, transparent 1px),
           linear-gradient(to bottom, rgba(194, 191, 191, 0.2) 1px, transparent 1px);
       }
@@ -779,15 +779,37 @@ body {
     background: rgba(lightBlue, 0.25);
   }
 
+  .table-row.selected {
+    --tblr-table-accent-bg: rgba(lightBlue, 0.25);
+    background: rgba(lightBlue, 0.25);
+    font-weight: 500;
+  }
+
   td {
-    min-height: 35px;
+    min-height: 40px;
     overflow-x: initial;
     margin: auto;
 
     .text-container {
-      padding: 0px;
-      margin-bottom: 3px;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      height: 100%;
+      outline: none;
     }
+  }
+
+  .has-dropdown,
+  .has-multiselect,
+  .has-text,
+  .has-datepicker,
+  .has-actions {
+    padding: 0 5px;
+  }
+
+  .has-text,
+  .has-actions {
+    margin: 0;
   }
 
   td {
@@ -797,6 +819,13 @@ body {
     .text-container:hover {
       outline: none;
       height: 100%;
+    }
+
+    display: flex!important;
+
+    .td-container {
+      margin-top: auto;
+      margin-bottom: auto;
     }
   }
 
@@ -2091,6 +2120,7 @@ input:focus-visible {
 .theme-dark .markdown > table thead th,
 .theme-dark .table thead th {
   background: #1c252f;
+  color: #fff;
 }
 
 .sketch-picker {
@@ -2171,4 +2201,12 @@ input[type='text'] {
 
 .draggable-box:focus-within {
   z-index: 2 !important;
+}
+
+.theme-dark .event-action {
+  filter: brightness(0) invert(1);
+}
+
+.event-action{
+  filter: brightness(0) invert(0);
 }

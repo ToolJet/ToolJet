@@ -40,5 +40,5 @@ Application load balancing on Amazon EKS: https://docs.aws.amazon.com/eks/latest
 GKE Ingress for HTTP(S) Load Balancing: https://cloud.google.com/kubernetes-engine/docs/concepts/ingress
 
 :::tip
-If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client deployment documentation [here](/docs/setup/client).
+If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client deployment documentation [here](/docs/deployment/client).
 :::

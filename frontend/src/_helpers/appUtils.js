@@ -202,7 +202,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   console.log('Event: ', eventName);
 
   if (eventName === 'onRowClicked') {
-    const { component, data } = options;
+    const { component, data, rowId } = options;
     _self.setState(
       {
         currentState: {
@@ -212,6 +212,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
             [component.name]: {
               ..._self.state.currentState.components[component.name],
               selectedRow: data,
+              selectedRowId: rowId,
             },
           },
         },
@@ -223,8 +224,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 
   if (eventName === 'onTableActionButtonClicked') {
-    const { component, data, action } = options;
-
+    const { component, data, action, rowId } = options;
     _self.setState(
       {
         currentState: {
@@ -234,6 +234,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
             [component.name]: {
               ..._self.state.currentState.components[component.name],
               selectedRow: data,
+              selectedRowId: rowId,
             },
           },
         },
@@ -376,7 +377,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
-  if (options.requestConfirmation) {
+  if (dataQuery.options.requestConfirmation) {
     if (confirmed === undefined) {
       _ref.setState({
         showQueryConfirmation: true,
@@ -415,7 +416,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
           }
 
           if (data.status === 'failed') {
-            toast.error(data.message, { hideProgressBar: true, autoClose: 3000 });
+            console.error(data.message);
 
             return _self.setState(
               {
@@ -457,6 +458,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
             toast.success(dataQuery.options.successMessage, {
               hideProgressBar: true,
               autoClose: notificationDuration * 1000,
+            });
+          }
+
+          if (dataQuery.options.requestConfirmation) {
+            toast.info(`Query (${dataQuery.name}) completed.`, {
+              hideProgressBar: true,
+              position: 'bottom-center',
             });
           }
 
@@ -525,18 +533,13 @@ export function computeComponentState(_ref, components) {
     componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
   });
 
-  _ref.setState(
-    {
-      currentState: {
-        ..._ref.state.currentState,
-        components: {
-          ...componentState,
-        },
+  return setStateAsync(_ref, {
+    currentState: {
+      ..._ref.state.currentState,
+      components: {
+        ...componentState,
       },
-      defaultComponentStateComputed: true,
     },
-    () => {
-      console.log('Default component state computed and set');
-    }
-  );
+    defaultComponentStateComputed: true,
+  });
 }

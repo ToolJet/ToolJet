@@ -24,7 +24,7 @@ export const Mysql = ({ optionchanged, options }) => {
         </div>
         <div className="col-md-2">
           <label className="form-label">SSL</label>
-          <label className="form-check form-switch mt-3">
+          <label className="form-check form-switch">
             <input
               className="form-check-input"
               type="checkbox"
@@ -35,8 +35,8 @@ export const Mysql = ({ optionchanged, options }) => {
         </div>
       </div>
       <div className="row mt-3">
+        <label className="form-label">Database Name</label>
         <div className="col-md-4">
-          <label className="form-label">Database Name</label>
           <input
             type="text"
             className="form-control"
