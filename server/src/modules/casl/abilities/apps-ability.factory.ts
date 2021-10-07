@@ -42,11 +42,11 @@ export class AppsAbilityFactory {
       can('createUsers', App, { organizationId: user.organizationId });
       can('createApp', App);
       can('cloneApp', App, { organizationId: user.organizationId });
-      can('updateParams', App, { organizationId: user.organizationId });
     }
 
     if (await this.usersService.userCan(user, 'read', 'App', params.id)) {
       can('viewApp', App, { organizationId: user.organizationId });
+      can('updateParams', App, { organizationId: user.organizationId });
 
       can('fetchUsers', App, { organizationId: user.organizationId });
       can('fetchVersions', App, { organizationId: user.organizationId });
