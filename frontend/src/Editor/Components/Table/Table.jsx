@@ -631,6 +631,7 @@ export function Table({
             marginLeft: 10,
           }}
           {...rest}
+          onClick={(event) => event.stopPropagation()}
         />
       </>
     );
