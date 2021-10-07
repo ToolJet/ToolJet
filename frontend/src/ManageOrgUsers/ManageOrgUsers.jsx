@@ -16,8 +16,6 @@ class ManageOrgUsers extends React.Component {
       showNewUserForm: false,
       creatingUser: false,
       newUser: {},
-      role: '',
-      idChangingRole: null,
       archivingUser: null,
       fields: {},
       errors: {},
@@ -55,9 +53,6 @@ class ManageOrgUsers extends React.Component {
     } else if (!this.validateEmail(fields['email'])) {
       errors['email'] = 'Email is not valid';
     }
-    if (!fields['role']) {
-      errors['role'] = 'This field is required';
-    }
 
     this.setState({ errors: errors });
     return Object.keys(errors).length === 0;
@@ -87,20 +82,6 @@ class ManageOrgUsers extends React.Component {
     this.setState({
       fields,
     });
-  };
-
-  changeNewUserRole = (id, role) => {
-    this.setState({ idChangingRole: id });
-    organizationUserService
-      .changeRole(id, role)
-      .then(() => {
-        toast.success('User role has been updated', { hideProgressBar: true, position: 'top-center' });
-        this.setState({ idChangingRole: null });
-      })
-      .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
-        this.setState({ idChangingRole: null });
-      });
   };
 
   archiveOrgUser = (id) => {
@@ -151,12 +132,6 @@ class ManageOrgUsers extends React.Component {
     } else {
       this.setState({ creatingUser: false, showNewUserForm: true });
     }
-  };
-
-  dropdownVal = (role) => {
-    this.setState({
-      fields: { ...this.state.fields, role },
-    });
   };
 
   logout = () => {
@@ -254,10 +229,7 @@ class ManageOrgUsers extends React.Component {
                         </button>
                         <button
                           className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            this.createUser();
-                          }}
+                          onClick={this.createUser}
                           disabled={creatingUser}
                         >
                           Create User
