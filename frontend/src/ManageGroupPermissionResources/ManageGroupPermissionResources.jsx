@@ -337,7 +337,9 @@ class ManageGroupPermissionResources extends React.Component {
                         </div>
                         <div className="col-auto">
                           <div
-                            className={`btn btn-primary w-100 ${isAddingApps ? 'btn-loading' : ''}`}
+                            className={`btn btn-primary w-100 ${isAddingApps ? 'btn-loading' : ''} ${
+                              selectedAppIds.length == 0 ? 'disabled' : ''
+                            }`}
                             onClick={() => this.addSelectedAppsToGroup(groupPermission.id, selectedAppIds)}
                           >
                             Add
@@ -439,7 +441,9 @@ class ManageGroupPermissionResources extends React.Component {
                         </div>
                         <div className="col-auto">
                           <div
-                            className={`btn btn-primary w-100 ${isAddingUsers ? 'btn-loading' : ''}`}
+                            className={`btn btn-primary w-100 ${isAddingUsers ? 'btn-loading' : ''} ${
+                              selectedUserIds.length == 0 ? 'disabled' : ''
+                            }`}
                             onClick={() => this.addSelectedUsersToGroup(groupPermission.id, selectedUserIds)}
                           >
                             Add
