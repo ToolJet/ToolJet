@@ -1,8 +1,6 @@
 import React from 'react';
 
-export const Mysql = ({
-  optionchanged, options
-}) => {
+export const Mysql = ({ optionchanged, options }) => {
   return (
     <div>
       <div className="row">
@@ -25,10 +23,8 @@ export const Mysql = ({
           />
         </div>
         <div className="col-md-2">
-          <label className="form-label">
-            SSL
-          </label>
-          <label className="form-check form-switch mt-3">
+          <label className="form-label">SSL</label>
+          <label className="form-check form-switch">
             <input
               className="form-check-input"
               type="checkbox"
@@ -39,8 +35,8 @@ export const Mysql = ({
         </div>
       </div>
       <div className="row mt-3">
+        <label className="form-label">Database Name</label>
         <div className="col-md-4">
-          <label className="form-label">Database Name</label>
           <input
             type="text"
             className="form-control"
@@ -61,8 +57,13 @@ export const Mysql = ({
           <label className="form-label">
             Password
             <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon encrypted-icon" src="/assets/images/icons/padlock.svg" width="12" height="12" />
-              <span className="pt-2">Encrypted</span> 
+              <img
+                className="mx-2 encrypted-icon encrypted-icon"
+                src="/assets/images/icons/padlock.svg"
+                width="12"
+                height="12"
+              />
+              <span className="pt-2">Encrypted</span>
             </small>
           </label>
           <input

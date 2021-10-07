@@ -12,7 +12,7 @@ export const DaterangePicker = function DaterangePicker({
   component,
   onComponentClick,
   currentState,
-  onComponentOptionChanged
+  onComponentOptionChanged,
 }) {
   console.log('currentState', currentState);
 
@@ -21,18 +21,20 @@ export const DaterangePicker = function DaterangePicker({
   const formatProp = component.definition.properties.format;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
-  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
+  const parsedDisabledState =
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   const [focusedInput, setFocusedInput] = useState(null);
   const [startDate, setStartDate] = useState(startDateProp ? startDateProp.value : null);
   const [endDate, setEndDate] = useState(endDateProp ? endDateProp.value : null);
 
   let parsedWidgetVisibility = widgetVisibility;
-  
+
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) { console.log(err); }
+  } catch (err) {
+    console.log(err);
+  }
 
   function onDateChange(dates) {
     const start = dates.startDate;
@@ -55,7 +57,14 @@ export const DaterangePicker = function DaterangePicker({
   }
 
   return (
-    <div style={{ width, height, display:parsedWidgetVisibility ? '' : 'none' }} onClick={event => {event.stopPropagation(); onComponentClick(id, component)}}>
+    <div
+      className="daterange-picker-widget p-0"
+      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onComponentClick(id, component);
+      }}
+    >
       <DateRangePicker
         disabled={parsedDisabledState}
         startDate={startDate}

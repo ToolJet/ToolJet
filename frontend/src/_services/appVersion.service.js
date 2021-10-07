@@ -4,7 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const appVersionService = {
   getAll,
   create,
-  save
+  save,
 };
 
 function getAll(appId) {
@@ -14,7 +14,7 @@ function getAll(appId) {
 
 function create(appId, versionName) {
   const body = {
-    versionName
+    versionName,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
@@ -23,7 +23,7 @@ function create(appId, versionName) {
 
 function save(appId, versionId, definition) {
   const body = {
-    definition
+    definition,
   };
 
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };

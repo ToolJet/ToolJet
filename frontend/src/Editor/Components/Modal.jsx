@@ -4,16 +4,9 @@ import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
-import { resolveWidgetFieldValue, resolveReferences } from '../../_helpers/utils';
+import { resolveWidgetFieldValue } from '../../_helpers/utils';
 
-export const Modal = function Modal({
-  id,
-  component,
-  height,
-  mode,
-  containerProps,
-  currentState
-}) {
+export const Modal = function Modal({ id, component, height, containerProps, currentState, darkMode }) {
   const [show, showModal] = useState(false);
   const parentRef = useRef(null);
 
@@ -25,12 +18,14 @@ export const Modal = function Modal({
 
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedDisabledState =
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   useEffect(() => {
     const componentState = containerProps.currentState.components[component.name];
     const canShowModel = componentState ? componentState.show : false;
     showModal(canShowModel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerProps.currentState.components[component.name]]);
 
   function hideModal() {
@@ -51,36 +46,26 @@ export const Modal = function Modal({
         animation={false}
         onEscapeKeyDown={() => showModal(false)}
       >
-        {containerProps.mode === 'edit' && 
-          <ConfigHandle 
-            id={id} 
-            component={component}
-            configHandleClicked={containerProps.onComponentClick}
-          /> 
-        }
+        {containerProps.mode === 'edit' && (
+          <ConfigHandle id={id} component={component} configHandleClicked={containerProps.onComponentClick} />
+        )}
         <BootstrapModal.Header>
-          <BootstrapModal.Title>
-            {title}
-          </BootstrapModal.Title>
+          <BootstrapModal.Title>{title}</BootstrapModal.Title>
           <div>
-            <Button variant="light" size="sm" onClick={hideModal}>
+            <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={hideModal}>
               x
             </Button>
           </div>
         </BootstrapModal.Header>
 
         <BootstrapModal.Body style={{ height }} ref={parentRef}>
-            <SubContainer
-              parent={id}
-              {...containerProps}
-              parentRef={parentRef}
-            />
-            <SubCustomDragLayer
-              snapToGrid={true}
-              parentRef={parentRef}
-              parent={id}
-              currentLayout={containerProps.currentLayout}
-            />
+          <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
+          <SubCustomDragLayer
+            snapToGrid={true}
+            parentRef={parentRef}
+            parent={id}
+            currentLayout={containerProps.currentLayout}
+          />
         </BootstrapModal.Body>
       </BootstrapModal>
     </div>

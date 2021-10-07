@@ -1,44 +1,37 @@
 export const defaultOptions = {
   postgresql: {
-    mode: 'sql'
+    mode: 'sql',
   },
   redis: {
-    query: 'PING'
+    query: 'PING',
   },
   mysql: {},
   graphql: {},
   firestore: {
     path: '',
-    operation: 'get_document'
+    operation: 'get_document',
+    order_type: 'desc',
   },
   elasticsearch: {
     query: '',
-    operation: 'search'
+    operation: 'search',
   },
   restapi: {
     method: 'get',
     url: null,
     url_params: [],
     headers: [],
-    body: []
+    body: [],
   },
   stripe: {},
   mongodb: {
-    document: '{ }'
+    document: '{ }',
   },
   googlesheets: {
-    operation: 'read'
+    operation: 'read',
   },
-  slack: {
-    
-  },
-  dynamodb: {
-    
-  },
-  airtable: {
-    
-  },
-  mssql: {
-    
-  }
+  slack: {},
+  dynamodb: {},
+  airtable: {},
+  mssql: {},
 };

@@ -5,39 +5,44 @@ import { Header } from '@/_components';
 import { toast } from 'react-toastify';
 
 function SettingsPage(props) {
-  const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name)
-  const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name)
-  const [currentpassword, setCurrentPassword] = React.useState('')
-  const [newPassword, setNewPassword] = React.useState('')
-  const [updateInProgress, setUpdateInProgress] = React.useState(false)
-  const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false)
+  const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
+  const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
+  const [currentpassword, setCurrentPassword] = React.useState('');
+  const [newPassword, setNewPassword] = React.useState('');
+  const [updateInProgress, setUpdateInProgress] = React.useState(false);
+  const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
 
   const updateDetails = async () => {
     setUpdateInProgress(true);
     const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
-    authenticationService.updateCurrentUserDetails(updatedDetails)
+    authenticationService.updateCurrentUserDetails(updatedDetails);
     toast.success('Details updated!', { hideProgressBar: true, autoClose: 3000 });
     setUpdateInProgress(false);
-  }
+  };
 
   const changePassword = async () => {
-    setPasswordChangeInProgress(true)
-    const response = userService.changePassword(currentpassword, newPassword)
-    response.then(() => {
-      toast.success('Password updated successfully', { hideProgressBar: true, autoClose: 3000 });
-      setCurrentPassword('')
-      setNewPassword('')
-    }).catch(() => {
-      toast.error('Please verify that you have entered the correct password', { hideProgressBar: true, autoClose: 3000 });
-    })
+    setPasswordChangeInProgress(true);
+    const response = userService.changePassword(currentpassword, newPassword);
+    response
+      .then(() => {
+        toast.success('Password updated successfully', { hideProgressBar: true, autoClose: 3000 });
+        setCurrentPassword('');
+        setNewPassword('');
+      })
+      .catch(() => {
+        toast.error('Please verify that you have entered the correct password', {
+          hideProgressBar: true,
+          autoClose: 3000,
+        });
+      });
     setPasswordChangeInProgress(false);
-  }
+  };
 
-  const newPasswordKeyPressHandler = async event => {
+  const newPasswordKeyPressHandler = async (event) => {
     if (event.key === 'Enter') {
-      changePassword()
+      changePassword();
     }
-  }
+  };
 
   return (
     <div className="wrapper">
@@ -57,35 +62,35 @@ function SettingsPage(props) {
 
         <div className="page-body">
           <div className="container-xl">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Profile</h3>
+            <div className="card">
+              <div className="card-header">
+                <h3 className="card-title">Profile</h3>
               </div>
-              <div class="card-body">
+              <div className="card-body">
                 <div className="row">
                   <div className="col">
-                    <div class="mb-3">
-                      <label class="form-label">First name</label>
+                    <div className="mb-3">
+                      <label className="form-label">First name</label>
                       <input
                         type="text"
-                        class="form-control"
+                        className="form-control"
                         name="first-name"
                         placeholder="Enter first name"
                         value={firstName}
-                        onChange={event => setFirstName(event.target.value)}
+                        onChange={(event) => setFirstName(event.target.value)}
                       />
                     </div>
                   </div>
                   <div className="col">
-                    <div class="mb-3">
-                      <label class="form-label">Last name</label>
+                    <div className="mb-3">
+                      <label className="form-label">Last name</label>
                       <input
                         type="text"
-                        class="form-control"
+                        className="form-control"
                         name="last-name"
                         placeholder="Enter last name"
                         value={lastName}
-                        onChange={event => setLastName(event.target.value)}
+                        onChange={(event) => setLastName(event.target.value)}
                       />
                     </div>
                   </div>
@@ -93,10 +98,10 @@ function SettingsPage(props) {
 
                 <a
                   href="#"
-                  className={"btn btn-primary" + (updateInProgress ? '  btn-loading' : '')}
+                  className={'btn btn-primary' + (updateInProgress ? '  btn-loading' : '')}
                   onClick={updateDetails}
-                  >
-                    Update
+                >
+                  Update
                 </a>
                 {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                 {/* The div below is a placeholder to prevent it from affecting the button above.  */}
@@ -104,51 +109,51 @@ function SettingsPage(props) {
               </div>
             </div>
             <br />
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Change password</h3>
+            <div className="card">
+              <div className="card-header">
+                <h3 className="card-title">Change password</h3>
               </div>
-              <div class="card-body">
+              <div className="card-body">
                 <div className="row">
-                    <div className="col">
-                      <div className="mb-3">
-                        <label className="form-label">Current password</label>
-                        <input
-                              type="password"
-                              className="form-control"
-                              name="last-name"
-                              placeholder="Enter current password"
-                              value={currentpassword}
-                              onChange={event => setCurrentPassword(event.target.value)}
-                            />
-                      </div>
-                    </div>
-                    <div className="col">
-                      <div className="mb-3">
-                        <label className="form-label">New password</label>
-                        <input
-                              type="password"
-                              className="form-control"
-                              name="last-name"
-                              placeholder="Enter new password"
-                              value={newPassword}
-                              onChange={event => setNewPassword(event.target.value)}
-                              onKeyPress={newPasswordKeyPressHandler}
-                            />
-                      </div>
+                  <div className="col">
+                    <div className="mb-3">
+                      <label className="form-label">Current password</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        name="last-name"
+                        placeholder="Enter current password"
+                        value={currentpassword}
+                        onChange={(event) => setCurrentPassword(event.target.value)}
+                      />
                     </div>
                   </div>
-                  <a
-                    href="#"
-                    className={"btn btn-primary" + (passwordChangeInProgress ? '  btn-loading' : '')}
-                    onClick={changePassword}
-                    >
-                      Change password
-                  </a>
-                  {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
-                  {/* The div below is a placeholder to prevent it from affecting the button above.  */}
-                  <div></div>
+                  <div className="col">
+                    <div className="mb-3">
+                      <label className="form-label">New password</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        name="last-name"
+                        placeholder="Enter new password"
+                        value={newPassword}
+                        onChange={(event) => setNewPassword(event.target.value)}
+                        onKeyPress={newPasswordKeyPressHandler}
+                      />
+                    </div>
+                  </div>
                 </div>
+                <a
+                  href="#"
+                  className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
+                  onClick={changePassword}
+                >
+                  Change password
+                </a>
+                {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
+                {/* The div below is a placeholder to prevent it from affecting the button above.  */}
+                <div></div>
+              </div>
             </div>
           </div>
         </div>

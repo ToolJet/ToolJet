@@ -6,10 +6,10 @@ export function authHeader() {
   if (currentUser && currentUser.auth_token) {
     return {
       Authorization: `Bearer ${currentUser.auth_token}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
   }
   return {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   };
 }

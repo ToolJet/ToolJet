@@ -4,7 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const organizationUserService = {
   archive,
   create,
-  changeRole
+  changeRole,
 };
 
 function create(first_name, last_name, email, role) {
@@ -12,7 +12,7 @@ function create(first_name, last_name, email, role) {
     first_name,
     last_name,
     email,
-    role
+    role,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
@@ -21,7 +21,7 @@ function create(first_name, last_name, email, role) {
 
 function changeRole(id, role) {
   const body = {
-    role
+    role,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

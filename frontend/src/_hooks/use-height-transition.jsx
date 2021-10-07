@@ -19,6 +19,7 @@ function useHeight(on = true) {
       ro.observe(ref.current, {});
     }
     return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on, ref.current]);
 
   return [ref, height];

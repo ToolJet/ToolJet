@@ -21,7 +21,7 @@ class Authorize extends React.Component {
 
     this.setState({
       details,
-      isLoading: true
+      isLoading: true,
     });
 
     const sourceId = localStorage.getItem('sourceWaitingForOAuth');
@@ -32,7 +32,7 @@ class Authorize extends React.Component {
         .then(() => {
           this.setState({
             isLoading: false,
-            authSucess: true
+            authSucess: true,
           });
         })
         .catch(function (error) {

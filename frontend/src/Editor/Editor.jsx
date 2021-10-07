@@ -7,7 +7,7 @@ import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
-import { DataSourceTypes } from './DataSourceManager/DataSourceTypes';
+import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
@@ -22,7 +22,7 @@ import {
   onQueryCancel,
   runQuery,
   setStateAsync,
-  computeComponentState
+  computeComponentState,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -74,13 +74,14 @@ class Editor extends React.Component {
           currentUser: userVars,
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
-        errors: {}
+        errors: {},
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
       showQuerySearchField: false,
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
+      showQueryConfirmation: false,
     };
   }
 
@@ -89,7 +90,7 @@ class Editor extends React.Component {
     this.fetchApps(0);
 
     appService.getApp(appId).then((data) => {
-      const dataDefinition = data.definition || {components: {}}
+      const dataDefinition = data.definition || { components: {} };
       this.setState(
         {
           app: data,
@@ -99,20 +100,16 @@ class Editor extends React.Component {
           slug: data.slug,
         },
         () => {
-          data.data_queries.forEach((query) => {
-            if (query.options.runOnPageLoad) {
-              runQuery(this, query.id, query.name);
-            }
+          computeComponentState(this, this.state.appDefinition.components).then(() => {
+            console.log('Default component state computed and set');
+            this.runQueries(data.data_queries);
           });
-
-          computeComponentState(this, this.state.appDefinition.components);
         }
-      )
+      );
     });
 
     this.fetchDataSources();
     this.fetchDataQueries();
-
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
@@ -182,6 +179,14 @@ class Editor extends React.Component {
     );
   };
 
+  runQueries = (queries) => {
+    queries.forEach((query) => {
+      if (query.options.runOnPageLoad) {
+        runQuery(this, query.id, query.name);
+      }
+    });
+  };
+
   fetchApps = (page) => {
     appService.getAll(page).then((data) =>
       this.setState({
@@ -192,11 +197,11 @@ class Editor extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(version.definition || {components: {}})
+    this.appDefinitionChanged(version.definition || { components: {} });
     this.setState({
-      editingVersion: version
-    })
-  }
+      editingVersion: version,
+    });
+  };
 
   dataSourcesChanged = () => {
     this.fetchDataSources();
@@ -274,7 +279,7 @@ class Editor extends React.Component {
           ...this.state.appDefinition.components,
           [newDefinition.id]: {
             ...this.state.appDefinition.components[newDefinition.id],
-            component: newDefinition.component
+            component: newDefinition.component,
           },
         },
       },
@@ -328,11 +333,11 @@ class Editor extends React.Component {
 
   deleteDataQuery = () => {
     this.setState({ showDataQueryDeletionConfirmation: true });
-  }
+  };
 
   cancelDeleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false});
-  }
+    this.setState({ showDataQueryDeletionConfirmation: false });
+  };
 
   executeDataQueryDeletion = () => {
     this.setState({ showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true });
@@ -351,7 +356,7 @@ class Editor extends React.Component {
 
   setShowHiddenOptionsForDataQuery = (dataQueryId) => {
     this.setState({ showHiddenOptionsForDataQueryId: dataQueryId });
-  }
+  };
 
   renderDataQuery = (dataQuery) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataQuery.kind);
@@ -360,7 +365,7 @@ class Editor extends React.Component {
     if (this.state.selectedQuery) {
       isSeletedQuery = dataQuery.id === this.state.selectedQuery.id;
     }
-    const isQueryBeingDeleted = this.state.isDeletingDataQuery && isSeletedQuery
+    const isQueryBeingDeleted = this.state.isDeletingDataQuery && isSeletedQuery;
     const { currentState } = this.state;
 
     const isLoading = currentState.queries[dataQuery.name] ? currentState.queries[dataQuery.name].isLoading : false;
@@ -376,6 +381,7 @@ class Editor extends React.Component {
       >
         <div className="col">
           <img
+            className="svg-icon"
             src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
             width="20"
             height="20"
@@ -383,7 +389,7 @@ class Editor extends React.Component {
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto mx-1">
-          { isQueryBeingDeleted ? (
+          {isQueryBeingDeleted ? (
             <div className="px-2">
               <div className="text-center spinner-border spinner-border-sm" role="status"></div>
             </div>
@@ -518,7 +524,7 @@ class Editor extends React.Component {
       showDataQueryDeletionConfirmation,
       isDeletingDataQuery,
       apps,
-      defaultComponentStateComputed
+      defaultComponentStateComputed,
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
 
@@ -651,7 +657,7 @@ class Editor extends React.Component {
                         app={app}
                         darkMode={this.props.darkMode}
                         onVersionDeploy={this.onVersionDeploy}
-                        editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null }
+                        editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null}
                         setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                       />
                     )}
@@ -677,9 +683,10 @@ class Editor extends React.Component {
               <div
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                 style={{ transform: `scale(${zoomLevel})` }}
+                onClick={() => this.switchSidebarTab(2)}
               >
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
-                  {defaultComponentStateComputed &&
+                  {defaultComponentStateComputed && (
                     <Container
                       appDefinition={appDefinition}
                       appDefinitionChanged={this.appDefinitionChanged}
@@ -708,7 +715,7 @@ class Editor extends React.Component {
                         onComponentClick(this, id, component);
                       }}
                     />
-                  }
+                  )}
                   <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} />
                 </div>
               </div>
@@ -728,19 +735,26 @@ class Editor extends React.Component {
                           <h5 className="py-1 px-3 text-muted">QUERIES</h5>
                         </div>
                         <div className="col-auto px-3">
-                          <button className="btn btn-sm btn-light mx-2" onClick={this.toggleQuerySearch}>
+                          <button
+                            className="btn btn-sm btn-light mx-2"
+                            data-class="py-1 px-2"
+                            data-tip="Search query"
+                            onClick={this.toggleQuerySearch}
+                          >
                             <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17" />
                           </button>
 
                           <span
                             data-tip="Add new query"
                             data-class="py-1 px-2"
-                            className="btn btn-sm btn-light text-muted"
-                            onClick={() => this.setState({
-                              selectedQuery: {},
-                              editingQuery: false,
-                              addingQuery: true
-                            })}
+                            className="btn btn-sm btn-light btn-px-1 text-muted"
+                            onClick={() =>
+                              this.setState({
+                                selectedQuery: {},
+                                editingQuery: false,
+                                addingQuery: true,
+                              })
+                            }
                           >
                             +
                           </span>

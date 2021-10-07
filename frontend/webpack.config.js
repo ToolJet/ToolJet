@@ -16,8 +16,12 @@ const ASSET_PATH = {
 
 module.exports = {
   mode: 'development',
+  target: 'web',
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.png'],
+    alias: {
+      '@': path.resolve(__dirname, 'src/'),
+    },
   },
   ...(environment === 'development' && { devtool: 'inline-source-map' }),
   module: {
@@ -39,7 +43,14 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader',
+        use: [
+          {
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader',
+          }
+        ],
       },
       {
         test: /\.scss$/,
@@ -71,12 +82,6 @@ module.exports = {
         },
       },
     ],
-  },
-  resolve: {
-    extensions: ['.js', '.jsx', '.png'],
-    alias: {
-      '@': path.resolve(__dirname, 'src/'),
-    },
   },
   plugins: [
     new HtmlWebpackPlugin({

@@ -34,5 +34,5 @@ Click on '+' button of the query manager at the bottom panel of the editor and s
 Click on the 'run' button to run the query. NOTE: Query should be saved before running.
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::

@@ -163,7 +163,7 @@ describe('apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/apps/${application.id}/clone`)
-        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
       expect(response.statusCode).toBe(403);
     });
@@ -281,9 +281,7 @@ describe('apps controller', () => {
         expect(await AppVersion.findOne(version.id)).toBeUndefined();
         expect(await DataQuery.findOne(dataQuery.id)).toBeUndefined();
         expect(await DataSource.findOne(dataSource.id)).toBeUndefined();
-        expect(
-          await AppUser.findOne({ appId: application.id }),
-        ).toBeUndefined();
+        expect(await AppUser.findOne({ appId: application.id })).toBeUndefined();
       });
 
       it('should not be possible for non-admin user to delete an app, cascaded with its versions, queries and data sources', async () => {
@@ -364,11 +362,7 @@ describe('apps controller', () => {
         user: adminUserData.user,
       });
 
-      for (const userData of [
-        adminUserData,
-        developerUserData,
-        viewerUserData,
-      ]) {
+      for (const userData of [adminUserData, developerUserData, viewerUserData]) {
         const response = await request(app.getHttpServer())
           .get(`/apps/${application.id}/users`)
           .set('Authorization', authHeaderForUser(userData.user));
@@ -405,11 +399,7 @@ describe('apps controller', () => {
           });
           await createApplicationVersion(app, application);
 
-          for (const userData of [
-            adminUserData,
-            developerUserData,
-            viewerUserData,
-          ]) {
+          for (const userData of [adminUserData, developerUserData, viewerUserData]) {
             const response = await request(app.getHttpServer())
               .get(`/apps/${application.id}/versions`)
               .set('Authorization', authHeaderForUser(userData.user));
@@ -440,10 +430,7 @@ describe('apps controller', () => {
 
           const response = await request(app.getHttpServer())
             .get(`/apps/${application.id}/versions`)
-            .set(
-              'Authorization',
-              authHeaderForUser(anotherOrgAdminUserData.user),
-            );
+            .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
           expect(response.statusCode).toBe(403);
         });
@@ -491,10 +478,7 @@ describe('apps controller', () => {
 
           const response = await request(app.getHttpServer())
             .post(`/apps/${application.id}/versions`)
-            .set(
-              'Authorization',
-              authHeaderForUser(anotherOrgAdminUserData.user),
-            )
+            .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
             .send({
               versionName: 'v0',
             });
@@ -666,10 +650,7 @@ describe('apps controller', () => {
 
           const response = await request(app.getHttpServer())
             .get(`/apps/${application.id}/versions/${version.id}`)
-            .set(
-              'Authorization',
-              authHeaderForUser(anotherOrgAdminUserData.user),
-            );
+            .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
           expect(response.statusCode).toBe(403);
         });
@@ -784,11 +765,7 @@ describe('apps controller', () => {
         user: adminUserData.user,
       });
 
-      for (const userData of [
-        adminUserData,
-        developerUserData,
-        viewerUserData,
-      ]) {
+      for (const userData of [adminUserData, developerUserData, viewerUserData]) {
         const response = await request(app.getHttpServer())
           .get(`/apps/slugs/${application.id}`)
           .set('Authorization', authHeaderForUser(userData.user));
@@ -830,9 +807,7 @@ describe('apps controller', () => {
         isPublic: true,
       });
 
-      const response = await request(app.getHttpServer()).get(
-        `/apps/slugs/${application.id}`,
-      );
+      const response = await request(app.getHttpServer()).get(`/apps/slugs/${application.id}`);
 
       expect(response.statusCode).toBe(200);
     });
