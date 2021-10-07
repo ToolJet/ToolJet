@@ -6,12 +6,15 @@ import _ from 'lodash';
 import moment from 'moment';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 
+// const updateErrorLogs = (error) => {};
+
 export const LeftSidebarDebugger = ({ darkMode, errors }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
   const [currrentTab, setCurrentTab] = React.useState(1);
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
 
+  console.log('From debugger', errors);
   const switchCurrentTab = (tab) => {
     setCurrentTab(tab);
   };
@@ -43,6 +46,11 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
         };
         switch (value.type) {
           case 'query':
+            variableNames.options = 'substitutedVariables';
+            variableNames.response = 'response';
+            break;
+
+          case 'transformations':
             variableNames.options = 'substitutedVariables';
             variableNames.response = 'response';
             break;
@@ -168,12 +176,18 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
           height="16"
         />
         [{_.capitalize(errorProps.type)} {errorProps.key}] &nbsp;
-        <span className="text-red">
-          {`Query Failed: ${errorProps.description}`} {errorProps.message}.
-        </span>
+        {errorProps.type === 'query' && (
+          <span className="text-red">
+            {`Query Failed: ${errorProps.description}`} {errorProps.message}.
+          </span>
+        )}
+        {errorProps.type === 'transformations' && (
+          <span className="text-red">{`Transformations Failed: ${errorProps.message}`} .</span>
+        )}
         <br />
         <small className="text-muted px-1">{moment(errorProps.timestamp).fromNow()}</small>
       </p>
+      {/* //Todo If variables are not required, display only with type='query' */}
       <div className={` queryData ${open ? 'open' : 'close'} py-0`}>
         <span>
           <ReactJson

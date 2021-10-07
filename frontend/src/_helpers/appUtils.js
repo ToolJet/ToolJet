@@ -56,7 +56,7 @@ export function runTransformation(_ref, rawData, transformation, query) {
     result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
-    toast.error(err.message, { hideProgressBar: true });
+    result = { message: err.stack.split('\n')[0], status: 'failed' };
   }
 
   return result;
@@ -451,6 +451,36 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
           if (dataQuery.options.enableTransformation) {
             finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
+            if (finalData.status === 'failed') {
+              const errorData = finalData.error;
+              console.log('finalData ==> check', errorData);
+              return _self.setState(
+                {
+                  currentState: {
+                    ..._self.state.currentState,
+                    queries: {
+                      ..._self.state.currentState.queries,
+                      [queryName]: {
+                        ..._self.state.currentState.queries[queryName],
+                        isLoading: false,
+                      },
+                    },
+                    errors: {
+                      ..._self.state.currentState.errors,
+                      [queryName]: {
+                        type: 'transformations',
+                        data: finalData,
+                        options: options,
+                      },
+                    },
+                  },
+                },
+                () => {
+                  resolve();
+                  onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                }
+              );
+            }
           }
 
           if (dataQuery.options.showSuccessNotification) {
