@@ -92,7 +92,7 @@ export const RadioButton = function RadioButton({
         onComponentClick(id, component);
       }}
     >
-      <span className="form-check-label form-check-label col-auto py-1" style={{ color: textColor }}>
+      <span className="form-check-label col-auto py-1" style={{ color: textColor }}>
         {label}
       </span>
       <div className="col py-1">
