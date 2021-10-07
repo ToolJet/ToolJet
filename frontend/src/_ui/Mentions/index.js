@@ -1,12 +1,7 @@
 import React from 'react';
-// import cx from 'classnames';
 import { organizationService } from '@/_services';
 
 import { MentionsInput, Mention } from 'react-mentions';
-
-// import Textarea from '@/_ui/Textarea';
-
-// import usePopover from '@/_hooks/use-popover';
 
 const Mentions = ({ value, setValue, placeholder }) => {
   const [emojis, setEmojis] = React.useState([]);
@@ -25,19 +20,11 @@ const Mentions = ({ value, setValue, placeholder }) => {
   }, []);
 
   React.useEffect(() => {
-    organizationService.getUsers(null).then((data) => setUsers(data.users));
+    organizationService.getUsers(null).then((data) => {
+      const _users = data.users.map((u) => ({ id: u.id, display: u.first_name }));
+      setUsers(_users);
+    });
   }, []);
-
-  const queryUsers = (query) => {
-    if (query.length === 0) return;
-
-    const matches = users
-      .filter((user) => {
-        return user.name.indexOf(query.toLowerCase()) > -1;
-      })
-      .slice(0, 10);
-    return matches.map(({ user }) => ({ id: user }));
-  };
 
   const queryEmojis = (query) => {
     if (query.length === 0) return;
@@ -88,15 +75,15 @@ const Mentions = ({ value, setValue, placeholder }) => {
         },
       }}
       value={value}
-      onChange={(e, value) => setValue(value)}
+      onChange={(e, newValue) => setValue(newValue)}
       placeholder={placeholder}
     >
       <Mention
         trigger="@"
         regex={/@(\S+)/}
-        displayTransform={(login) => `@${login}`}
-        markup="@__id__"
-        data={queryUsers}
+        displayTransform={(display) => `@${display}`}
+        markup="@__display__"
+        data={users}
         style={{
           backgroundColor: '#cee4e5',
         }}
