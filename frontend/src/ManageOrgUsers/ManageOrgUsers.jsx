@@ -141,6 +141,7 @@ class ManageOrgUsers extends React.Component {
         .then(() => {
           toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
           this.fetchUsers();
+          this.setState({ creatingUser: false, showNewUserForm: false });
         })
         .catch(({ error }) => {
           toast.error(error, { hideProgressBar: true, position: 'top-center' });
