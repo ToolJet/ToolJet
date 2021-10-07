@@ -27,5 +27,5 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 Select the operation that you want to perform on Firestore and click 'Save' to save the query. 
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
