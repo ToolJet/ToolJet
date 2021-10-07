@@ -247,7 +247,7 @@ class HomePage extends React.Component {
                                     </small>
                                   </td>
                                   <td className="text-muted col-auto pt-4">
-                                    {this.isAppEditable(app) && (
+                                    {!isLoading && this.isAppEditable(app) && (
                                       <Link to={`/apps/${app.id}`} className="d-none d-lg-inline">
                                         <OverlayTrigger
                                           placement="top"
