@@ -193,28 +193,6 @@ Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, update
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterKey, filterValue]);
 
-  function resolveToObject(string) {
-    let data = string
-      .replace('{{{', '')
-      .replace('}}}', '')
-      .split(',')
-      .map((item) => item.replace(' ', '').split(':'));
-    data = _.fromPairs(data);
-    return _.mapValues(data, (obj) =>
-      obj
-        .replace(`"`, '')
-        .replace(`"`, '')
-        .replace(/^\s+|\s+$/g, '')
-    );
-  }
-
-  const onChange = (value) => {
-    if (value.length > 0) {
-      const _value = resolveToObject(value);
-      updateOptions('body', _value);
-    }
-  };
-
   return (
     <>
       <div className="row">
@@ -257,7 +235,7 @@ Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, update
           lineNumbers={true}
           height="120px"
           ignoreBraces={true}
-          onChange={(value) => onChange(value)}
+          onChange={(value) => updateOptions('body', value)}
           enablePreview
         />
       </div>
