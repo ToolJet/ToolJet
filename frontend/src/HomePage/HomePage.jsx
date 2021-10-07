@@ -115,6 +115,10 @@ class HomePage extends React.Component {
       });
   };
 
+  isAppEditable = (app) => {
+    return app.app_group_permissions.some((p) => p.update);
+  };
+
   executeAppDeletion = () => {
     this.setState({ isDeletingApp: true });
     appService
@@ -149,16 +153,8 @@ class HomePage extends React.Component {
   };
 
   render() {
-    const {
-      apps,
-      currentUser,
-      isLoading,
-      creatingApp,
-      meta,
-      currentFolder,
-      showAppDeletionConfirmation,
-      isDeletingApp,
-    } = this.state;
+    const { apps, isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp } =
+      this.state;
     return (
       <div className="wrapper home-page">
         <ConfirmDialog
@@ -251,7 +247,7 @@ class HomePage extends React.Component {
                                     </small>
                                   </td>
                                   <td className="text-muted col-auto pt-4">
-                                    {currentUser.role !== 'viewer' && (
+                                    {this.isAppEditable(app) && (
                                       <Link to={`/apps/${app.id}`} className="d-none d-lg-inline">
                                         <OverlayTrigger
                                           placement="top"

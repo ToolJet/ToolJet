@@ -135,63 +135,41 @@ export class AppsService {
   }
 
   async count(user: User): Promise<number> {
-    if (await this.usersService.hasGroup(user, 'admin')) {
-      return await this.appsRepository.count({
-        where: {
-          organizationId: user.organizationId,
-        },
-      });
-    } else {
-      return await createQueryBuilder(App, 'apps')
-        .innerJoin('apps.groupPermissions', 'group_permissions')
-        .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
-        .innerJoin(
-          UserGroupPermission,
-          'user_group_permissions',
-          'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
-        )
-        .where('user_group_permissions.user_id = :userId', { userId: user.id })
-        .andWhere('app_group_permissions.read = :value', { value: true })
-        .orWhere('apps.is_public = :value', { value: true })
-        .getCount();
-    }
+    return await createQueryBuilder(App, 'apps')
+      .innerJoin('apps.groupPermissions', 'group_permissions')
+      .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
+      .innerJoin(
+        UserGroupPermission,
+        'user_group_permissions',
+        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+      )
+      .where('user_group_permissions.user_id = :userId', { userId: user.id })
+      .andWhere('app_group_permissions.read = :value', { value: true })
+      .orWhere('apps.is_public = :value', { value: true })
+      .getCount();
   }
 
   async all(user: User, page: number): Promise<App[]> {
-    if (await this.usersService.hasGroup(user, 'admin')) {
-      return await this.appsRepository.find({
-        where: {
-          organizationId: user.organizationId,
-        },
-        relations: ['user'],
-        take: 10,
-        skip: 10 * (page - 1),
-        order: {
-          createdAt: 'DESC',
-        },
-      });
-    } else {
-      // TypeORM gives error when using query builder with order by
-      // https://github.com/typeorm/typeorm/issues/8213
-      // hence sorting results in memory
-      const viewableApps = await createQueryBuilder(App, 'apps')
-        .innerJoin('apps.groupPermissions', 'group_permissions')
-        .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
-        .innerJoin(
-          UserGroupPermission,
-          'user_group_permissions',
-          'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
-        )
-        .where('user_group_permissions.user_id = :userId', { userId: user.id })
-        .andWhere('app_group_permissions.read = :value', { value: true })
-        .orWhere('apps.is_public = :value', { value: true })
-        .take(10)
-        .skip(10 * (page - 1))
-        // .orderBy('apps.created_at', 'DESC')
-        .getMany();
+    // TypeORM gives error when using query builder with order by
+    // https://github.com/typeorm/typeorm/issues/8213
+    // hence sorting results in memory
+    const viewableApps = await createQueryBuilder(App, 'apps')
+      .innerJoin('apps.groupPermissions', 'group_permissions')
+      .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
+      .innerJoin(
+        UserGroupPermission,
+        'user_group_permissions',
+        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+      )
+      .where('user_group_permissions.user_id = :userId', { userId: user.id })
+      .andWhere('app_group_permissions.read = :value', { value: true })
+      .orWhere('apps.is_public = :value', { value: true })
+      .take(10)
+      .skip(10 * (page - 1))
+      // .orderBy('apps.created_at', 'DESC')
+      .getMany();
 
-      return viewableApps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    }
+    return viewableApps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async update(user: User, appId: string, params: any) {
