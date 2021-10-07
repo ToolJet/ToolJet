@@ -60,7 +60,10 @@ const CommentActions = ({ threadId, isResolved }) => {
           hide: !open,
         })}
       >
-        Options
+        <div className="divide-y">
+          <div>Edit</div>
+          <div>Delete</div>
+        </div>
       </animated.div>
     </div>
   );
