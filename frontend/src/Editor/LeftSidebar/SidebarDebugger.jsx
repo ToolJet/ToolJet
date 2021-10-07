@@ -12,7 +12,6 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
 
-  console.log('From debugger', errors);
   const switchCurrentTab = (tab) => {
     setCurrentTab(tab);
   };
