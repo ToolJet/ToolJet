@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const RadioButton = function RadioButton({
@@ -48,6 +48,8 @@ export const RadioButton = function RadioButton({
     console.log(err);
   }
 
+  const value = currentState?.components[component?.name]?.value ?? parsedDefaultValue;
+
   let selectOptions = [];
 
   try {
@@ -68,13 +70,17 @@ export const RadioButton = function RadioButton({
     console.log(err);
   }
 
-  function onSelect(event) {
-    const selection = event.target.value;
+  function onSelect(selection) {
     onComponentOptionChanged(component, 'value', selection);
     if (selection) {
       onEvent('onSelectionChange', { component });
     }
   }
+
+  useEffect(() => {
+    onComponentOptionChanged(component, 'value', parsedDefaultValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parsedDefaultValue]);
 
   return (
     <div
@@ -86,18 +92,19 @@ export const RadioButton = function RadioButton({
         onComponentClick(id, component);
       }}
     >
-      <span className="form-check-label form-check-label col-auto py-1" style={{ color: textColor }}>
+      <span className="form-check-label col-auto py-1" style={{ color: textColor }}>
         {label}
       </span>
-      <div className="col py-1" onChange={(e) => onSelect(e)}>
+      <div className="col py-1">
         {selectOptions.map((option, index) => (
           <label key={index} className="form-check form-check-inline">
             <input
               className="form-check-input"
-              defaultChecked={parsedDefaultValue === option.value}
+              checked={value === option.value}
               type="radio"
               value={option.value}
-              name="radio-options"
+              name={`${id}-radio-options`}
+              onChange={() => onSelect(option.value)}
             />
             <span className="form-check-label" style={{ color: textColor }}>
               {option.name}

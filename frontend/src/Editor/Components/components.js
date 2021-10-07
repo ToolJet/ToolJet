@@ -18,10 +18,12 @@ export const componentTypes = [
       showDownloadButton: { type: 'toggle', displayName: 'Show download button' },
       showFilterButton: { type: 'toggle', displayName: 'Show filter button' },
       showBulkUpdateActions: { type: 'toggle', displayName: 'Show bulk update actions' },
+      showBulkSelector: { type: 'toggle', displayName: 'Bulk selection' },
+      highlightSelectedRow: { type: 'toggle', displayName: 'Highlight selected row' },
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     defaultSize: {
       width: 810,
@@ -55,6 +57,7 @@ export const componentTypes = [
       dataUpdates: [],
       pageIndex: 0,
       searchText: '',
+      selectedRows: [],
     },
     definition: {
       others: {
@@ -82,6 +85,8 @@ export const componentTypes = [
           ],
         },
         showBulkUpdateActions: { value: true },
+        showBulkSelector: { value: false },
+        highlightSelectedRow: { value: false },
       },
       events: [],
       styles: {
@@ -101,8 +106,8 @@ export const componentTypes = [
       height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       text: { type: 'code', displayName: 'Button Text' },
@@ -147,8 +152,8 @@ export const componentTypes = [
       height: 400,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       title: { type: 'string', displayName: 'Title' },
@@ -210,8 +215,8 @@ export const componentTypes = [
       height: 400,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       title: { type: 'string', displayName: 'Title' },
@@ -257,8 +262,8 @@ export const componentTypes = [
       height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       value: { type: 'code', displayName: 'Default value' },
@@ -310,8 +315,8 @@ export const componentTypes = [
       height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       value: { type: 'code', displayName: 'Default value' },
@@ -354,8 +359,8 @@ export const componentTypes = [
       customRule: { type: 'code', displayName: 'Custom validation' },
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       defaultValue: { type: 'code', displayName: 'Default value' },
@@ -402,8 +407,8 @@ export const componentTypes = [
       height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
@@ -444,8 +449,8 @@ export const componentTypes = [
       height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
@@ -492,8 +497,8 @@ export const componentTypes = [
       height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
@@ -535,8 +540,8 @@ export const componentTypes = [
       height: 100,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       value: { type: 'code', displayName: 'Default value' },
@@ -573,11 +578,11 @@ export const componentTypes = [
     component: 'DaterangePicker',
     defaultSize: {
       width: 300,
-      height: 40,
+      height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       format: { type: 'code', displayName: 'Format' },
@@ -612,8 +617,8 @@ export const componentTypes = [
     description: 'Display markdown or HTML',
     component: 'Text',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       text: { type: 'code', displayName: 'Text' },
@@ -658,8 +663,8 @@ export const componentTypes = [
     },
     component: 'Image',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       source: { type: 'code', displayName: 'URL' },
@@ -698,8 +703,8 @@ export const componentTypes = [
     },
     component: 'Container',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {},
     events: {},
@@ -731,12 +736,12 @@ export const componentTypes = [
     description: 'Select one value from options',
     defaultSize: {
       width: 240,
-      height: 35,
+      height: 30,
     },
     component: 'DropDown',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     validation: {
       customRule: { type: 'code', displayName: 'Custom validation' },
@@ -784,13 +789,13 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 270,
+      width: 240,
       height: 30,
     },
     component: 'Multiselect',
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
@@ -837,8 +842,8 @@ export const componentTypes = [
       height: 210,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' },
@@ -876,8 +881,8 @@ export const componentTypes = [
       height: 420,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       initialLocation: {
@@ -945,8 +950,8 @@ export const componentTypes = [
       height: 300,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {},
     events: {
@@ -982,8 +987,8 @@ export const componentTypes = [
       height: 30,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
@@ -997,6 +1002,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Star Color' },
+      labelColor: { type: 'color', displayName: 'Label Color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -1019,6 +1025,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#ffb400' },
+        labelColor: { value: '#333' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },

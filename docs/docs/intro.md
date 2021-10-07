@@ -27,8 +27,8 @@ These resources will help you to quickly build and deploy apps using ToolJet:
 
 The references for datasources and widgets:
 
-- [Datasource Reference](/docs/data-sources/redis)
-- [Widget Reference](/docs/widgets/table)
+- **[Datasource Reference](/docs/data-sources/redis)**
+- **[Widget Reference](/docs/widgets/table)**
 
 ## Help and Support
 We have extensively documented the features of ToolJet, but in case you are stuck, please feel to mail us: hello@tooljet.io.

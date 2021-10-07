@@ -16,6 +16,7 @@ const ASSET_PATH = {
 
 module.exports = {
   mode: 'development',
+  target: 'web',
   resolve: {
     extensions: ['.js', '.jsx', '.png'],
     alias: {
@@ -43,7 +44,14 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader',
+        use: [
+          {
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader',
+          }
+        ],
       },
       {
         test: /\.scss$/,

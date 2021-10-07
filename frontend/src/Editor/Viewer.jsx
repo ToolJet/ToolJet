@@ -46,20 +46,11 @@ class Viewer extends React.Component {
   }
 
   setStateForApp = (data) => {
-    this.setState(
-      {
-        app: data,
-        isLoading: false,
-        appDefinition: data.definition || { components: {} },
-      },
-      () => {
-        data.data_queries.forEach((query) => {
-          if (query.options.runOnPageLoad) {
-            runQuery(this, query.id, query.name);
-          }
-        });
-      }
-    );
+    this.setState({
+      app: data,
+      isLoading: false,
+      appDefinition: data.definition || { components: {} },
+    });
   };
 
   setStateForContainer = (data) => {
@@ -87,9 +78,20 @@ class Viewer extends React.Component {
         },
       },
       () => {
-        computeComponentState(this, data?.definition?.components);
+        computeComponentState(this, data?.definition?.components).then(() => {
+          console.log('Default component state computed and set');
+          this.runQueries(data.data_queries);
+        });
       }
     );
+  };
+
+  runQueries = (data_queries) => {
+    data_queries.forEach((query) => {
+      if (query.options.runOnPageLoad) {
+        runQuery(this, query.id, query.name);
+      }
+    });
   };
 
   loadApplicationBySlug = (slug) => {
