@@ -1,7 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
-import { history } from '@/_helpers';
+import { history, handleResponse } from '@/_helpers';
 import config from 'config';
-import { handleResponse } from '@/_helpers';
 
 const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
 
@@ -11,19 +10,21 @@ export const authenticationService = {
   signup,
   updateCurrentUserDetails,
   currentUser: currentUserSubject.asObservable(),
-  get currentUserValue() { return currentUserSubject.value; }
+  get currentUserValue() {
+    return currentUserSubject.value;
+  },
 };
 
 function login(email, password) {
   const requestOptions = {
     method: 'POST',
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
   };
 
   return fetch(`${config.apiUrl}/authenticate`, requestOptions)
     .then(handleResponse)
-    .then(user => {
+    .then((user) => {
       // store user details and jwt token in local storage to keep user logged in between page refreshes
       localStorage.setItem('currentUser', JSON.stringify(user));
       currentUserSubject.next(user);
@@ -34,7 +35,7 @@ function login(email, password) {
 
 function updateCurrentUserDetails(details) {
   const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
-  const updatedUserDetails = Object.assign({}, currentUserDetails, details)
+  const updatedUserDetails = Object.assign({}, currentUserDetails, details);
   localStorage.setItem('currentUser', JSON.stringify(updatedUserDetails));
   currentUserSubject.next(updatedUserDetails);
 }
@@ -42,13 +43,13 @@ function updateCurrentUserDetails(details) {
 function signup(email) {
   const requestOptions = {
     method: 'POST',
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
   };
 
   return fetch(`${config.apiUrl}/signup`, requestOptions)
     .then(handleResponse)
-    .then(user => {
+    .then((user) => {
       return user;
     });
 }

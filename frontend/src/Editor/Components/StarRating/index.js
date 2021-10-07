@@ -20,16 +20,21 @@ export const StarRating = function StarRating({
   const allowHalfStar = component.definition.properties.allowHalfStar.value ?? false;
   const textColorProperty = component.definition.styles.textColor;
   const color = textColorProperty ? textColorProperty.value : '#ffb400';
+  const labelColorProperty = component.definition.styles.labelColor;
+  const labelColor = labelColorProperty ? labelColorProperty.value : '#333';
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
-  const parsedDisabledState = typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedDisabledState =
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
-  
+
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) { console.log(err); }
+  } catch (err) {
+    console.log(err);
+  }
 
   const tooltips = component.definition.properties.tooltips.value ?? [];
   const _tooltips = resolveReferences(tooltips, currentState, []) ?? [];
@@ -54,12 +59,14 @@ export const StarRating = function StarRating({
   React.useEffect(() => {
     setRatingIndex(defaultSelected - 1);
     onComponentOptionChanged(component, 'value', defaultSelected);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultSelected]);
 
   React.useEffect(() => {
     setTimeout(() => {
       onComponentOptionChanged(component, 'value', defaultSelected);
-    }, 1000)
+    }, 1000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleClick(idx) {
@@ -84,9 +91,17 @@ export const StarRating = function StarRating({
   };
 
   return (
-    <div data-disabled={parsedDisabledState} className="star-rating" onClick={event => {event.stopPropagation(); onComponentClick(id, component)}} style={{display:parsedWidgetVisibility ? '' : 'none'}}>
+    <div
+      data-disabled={parsedDisabledState}
+      className="star-rating"
+      onClick={(event) => {
+        event.stopPropagation();
+        onComponentClick(id, component);
+      }}
+      style={{ display: parsedWidgetVisibility ? '' : 'none' }}
+    >
       {/* TODO: Add label color defination property instead of hardcoded color*/}
-      <span className="label form-check-label form-check-label col-auto" style={{ color: '#000' }}>
+      <span className="label form-check-label form-check-label col-auto" style={{ color: labelColor }}>
         {label}
       </span>
       {animatedStars.map((props, index) => (

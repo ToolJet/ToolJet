@@ -1,13 +1,14 @@
 import React from 'react';
 import { renderElement } from '../Utils';
 import { computeActionName } from '@/_helpers/utils';
+// eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { Color } from '../Elements/Color';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
-import { v4 as uuidv4 } from 'uuid'; 
+import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../EventManager';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
@@ -16,7 +17,14 @@ class Table extends React.Component {
     super(props);
 
     const {
-      dataQueries, component, paramUpdated, componentMeta, eventUpdated, eventOptionUpdated, components, currentState
+      dataQueries,
+      component,
+      paramUpdated,
+      componentMeta,
+      eventUpdated,
+      eventOptionUpdated,
+      components,
+      currentState,
     } = props;
 
     this.state = {
@@ -29,7 +37,7 @@ class Table extends React.Component {
       components,
       currentState,
       actionPopOverRootClose: true,
-      showPopOver: false
+      showPopOver: false,
     };
   }
 
@@ -42,7 +50,7 @@ class Table extends React.Component {
       eventUpdated,
       eventOptionUpdated,
       components,
-      currentState
+      currentState,
     } = this.props;
 
     this.setState({
@@ -53,7 +61,7 @@ class Table extends React.Component {
       eventUpdated,
       eventOptionUpdated,
       components,
-      currentState
+      currentState,
     });
   }
 
@@ -65,9 +73,9 @@ class Table extends React.Component {
 
   actionButtonEventsChanged = (events, index) => {
     let actions = this.props.component.component.definition.properties.actions.value;
-    actions[index]['events'] = events
+    actions[index]['events'] = events;
     this.props.paramUpdated({ name: 'actions' }, 'value', actions, 'properties');
-  }
+  };
 
   actionButtonEventUpdated = (event, value, extraData) => {
     const actions = this.props.component.component.definition.properties.actions;
@@ -75,7 +83,7 @@ class Table extends React.Component {
 
     let newValues = actions.value;
     newValues[index][event.name] = {
-      actionId: value
+      actionId: value,
     };
 
     this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties');
@@ -90,7 +98,7 @@ class Table extends React.Component {
 
     newValues[index][event.name].options = {
       ...options,
-      [option]: value
+      [option]: value,
     };
 
     this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties');
@@ -114,7 +122,7 @@ class Table extends React.Component {
                 { name: 'Radio', value: 'radio' },
                 { name: 'Multiselect', value: 'multiselect' },
                 { name: 'Toggle switch', value: 'toggle' },
-                { name: 'Date Picker', value: 'datepicker' }
+                { name: 'Date Picker', value: 'datepicker' },
               ]}
               value={column.columnType}
               search={true}
@@ -152,93 +160,95 @@ class Table extends React.Component {
             />
           </div>
 
-          {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && 
-          <div>
-            <div className="field mb-2">
-              <label className="form-label">Text color</label>
-              <CodeHinter
-                currentState={this.props.currentState}
-                initialValue={column.textColor}
-                theme={this.props.darkMode ? 'monokai' : 'default'}
-                mode= "javascript"
-                lineNumbers={false}
-                placeholder={'Text color of the cell'}
-                onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
-              />
-            </div>
-            {column.isEditable && 
-              <div>
-                <div className="hr-text">Validation</div>
-                <div className="field mb-2">
-                  <label className="form-label">Regex</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={column.regex}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    mode= "javascript"
-                    lineNumbers={false}
-                    placeholder={''}
-                    onChange={(value) => this.onColumnItemChange(index, 'regex', value)}
-                  />
-                </div>
-                <div className="field mb-2">
-                  <label className="form-label">Min length</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={column.minLength}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    mode= "javascript"
-                    lineNumbers={false}
-                    placeholder={''}
-                    onChange={(value) => this.onColumnItemChange(index, 'minLength', value)}
-                  />
-                </div>
-                <div className="field mb-2">
-                  <label className="form-label">Max length</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={column.maxLength}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    mode= "javascript"
-                    lineNumbers={false}
-                    placeholder={''}
-                    onChange={(value) => this.onColumnItemChange(index, 'maxLength', value)}
-                  />
-                </div>
-                <div className="field mb-2">
-                  <label className="form-label">Custom rule</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={column.customRule}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    mode= "javascript"
-                    lineNumbers={false}
-                    placeholder={''}
-                    onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
-                  />
-                </div>
+          {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
+            <div>
+              <div className="field mb-2">
+                <label className="form-label">Text color</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.textColor}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={'Text color of the cell'}
+                  onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
+                />
               </div>
-            }
-            
-          </div>
-            
-          }
+              {column.isEditable && (
+                <div>
+                  <div className="hr-text">Validation</div>
+                  <div className="field mb-2">
+                    <label className="form-label">Regex</label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={column.regex}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      placeholder={''}
+                      onChange={(value) => this.onColumnItemChange(index, 'regex', value)}
+                    />
+                  </div>
+                  <div className="field mb-2">
+                    <label className="form-label">Min length</label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={column.minLength}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      placeholder={''}
+                      onChange={(value) => this.onColumnItemChange(index, 'minLength', value)}
+                    />
+                  </div>
+                  <div className="field mb-2">
+                    <label className="form-label">Max length</label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={column.maxLength}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      placeholder={''}
+                      onChange={(value) => this.onColumnItemChange(index, 'maxLength', value)}
+                    />
+                  </div>
+                  <div className="field mb-2">
+                    <label className="form-label">Custom rule</label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={column.customRule}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      placeholder={''}
+                      onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
-          {column.columnType === 'toggle' && 
+          {column.columnType === 'toggle' && (
             <div>
               <div className="field mb-2">
                 <Color
                   param={{ name: 'Active color' }}
                   paramType="properties"
-                  componentMeta={{ properties: { color: { displayName: 'Active color'} } }}
+                  componentMeta={{ properties: { color: { displayName: 'Active color' } } }}
                   definition={{ value: column.activeColor || '#3c92dc' }}
                   onChange={(name, value, color) => this.onColumnItemChange(index, 'activeColor', color)}
                 />
               </div>
             </div>
-          }
+          )}
 
-          {(column.columnType === 'dropdown' || column.columnType === 'multiselect' || column.columnType === 'badge' || column.columnType === 'badges' || column.columnType === 'radio') && (
+          {(column.columnType === 'dropdown' ||
+            column.columnType === 'multiselect' ||
+            column.columnType === 'badge' ||
+            column.columnType === 'badges' ||
+            column.columnType === 'radio') && (
             <div>
               <div className="field mb-2">
                 <label className="form-label">Values</label>
@@ -246,7 +256,7 @@ class Table extends React.Component {
                   currentState={this.props.currentState}
                   initialValue={column.values}
                   theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode= "javascript"
+                  mode="javascript"
                   lineNumbers={false}
                   placeholder={'{{[1, 2, 3]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'values', value)}
@@ -258,7 +268,7 @@ class Table extends React.Component {
                   currentState={this.props.currentState}
                   initialValue={column.labels}
                   theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode= "javascript"
+                  mode="javascript"
                   lineNumbers={false}
                   placeholder={'{{["one", "two", "three"]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
@@ -267,27 +277,27 @@ class Table extends React.Component {
             </div>
           )}
 
-          {column.columnType === 'dropdown' && 
+          {column.columnType === 'dropdown' && (
             <>
-            {column.isEditable && 
-              <div>
-                <div className="hr-text">Validation</div>
-                <div className="field mb-2">
-                  <label className="form-label">Custom rule</label>
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={column.customRule}
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    mode= "javascript"
-                    lineNumbers={false}
-                    placeholder={''}
-                    onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
-                  />
+              {column.isEditable && (
+                <div>
+                  <div className="hr-text">Validation</div>
+                  <div className="field mb-2">
+                    <label className="form-label">Custom rule</label>
+                    <CodeHinter
+                      currentState={this.props.currentState}
+                      initialValue={column.customRule}
+                      theme={this.props.darkMode ? 'monokai' : 'default'}
+                      mode="javascript"
+                      lineNumbers={false}
+                      placeholder={''}
+                      onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
+                    />
+                  </div>
                 </div>
-              </div>
-            }
+              )}
             </>
-          }
+          )}
 
           {column.columnType === 'datepicker' && (
             <div>
@@ -304,22 +314,20 @@ class Table extends React.Component {
                   placeholder={'DD-MM-YYYY'}
                 />
               </div>
-              <div  className="field mb-2">
+              <div className="field mb-2">
                 <label className="form-check form-switch my-2">
                   <input
                     className="form-check-input"
                     type="checkbox"
                     onClick={() => {
-                      this.onColumnItemChange(index, 'isTimeChecked', !column.isTimeChecked)
+                      this.onColumnItemChange(index, 'isTimeChecked', !column.isTimeChecked);
                     }}
                     checked={column.isTimeChecked}
                   />
                   <span className="form-check-label">show time</span>
                 </label>
               </div>
-            
             </div>
-           
           )}
 
           <label className="form-check form-switch my-4">
@@ -340,10 +348,10 @@ class Table extends React.Component {
     const dummyComponentForActionButton = {
       component: {
         definition: {
-          events: this.props.component.component.definition.properties.actions.value[index].events || []
-        }
-      }
-    }
+          events: this.props.component.component.definition.properties.actions.value[index].events || [],
+        },
+      },
+    };
 
     return (
       <Popover id="popover-basic">
@@ -370,7 +378,7 @@ class Table extends React.Component {
               value={action.position ?? 'right'}
               search={false}
               closeOnSelect={true}
-              onChange={value => {
+              onChange={(value) => {
                 this.onActionButtonPropertyChanged(index, 'position', value);
               }}
               filterOptions={fuzzySearch}
@@ -394,15 +402,15 @@ class Table extends React.Component {
           />
           <EventManager
             component={dummyComponentForActionButton}
-            componentMeta={{events: { onClick: {displayName: 'On click' }}}}
+            componentMeta={{ events: { onClick: { displayName: 'On click' } } }}
             currentState={this.state.currentState}
             dataQueries={this.props.dataQueries}
             components={this.props.components}
-            eventsChanged={events => this.actionButtonEventsChanged(events, index)}
+            eventsChanged={(events) => this.actionButtonEventsChanged(events, index)}
             apps={this.props.apps}
             popOverCallback={(showing) => {
-              this.setState({actionPopOverRootClose: !showing})
-              this.setState({showPopOver: showing})
+              this.setState({ actionPopOverRootClose: !showing });
+              this.setState({ showPopOver: showing });
             }}
           />
           <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
@@ -420,7 +428,7 @@ class Table extends React.Component {
         placement="left"
         rootClose={this.state.actionPopOverRootClose}
         overlay={this.actionPopOver(action, index)}
-        onToggle={showing => this.setState({showPopOver: showing})}
+        onToggle={(showing) => this.setState({ showPopOver: showing })}
       >
         <div className={`card p-2 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
           <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`}>
@@ -446,14 +454,14 @@ class Table extends React.Component {
 
     while (!found) {
       columnName = `new_column${currentNumber}`;
-      if (columns.find(column => column.name === columnName) === undefined) {
+      if (columns.find((column) => column.name === columnName) === undefined) {
         found = true;
       }
       currentNumber += 1;
     }
 
     return columnName;
-  }
+  };
 
   addNewColumn = () => {
     const columns = this.props.component.component.definition.properties.columns;
@@ -506,16 +514,7 @@ class Table extends React.Component {
   };
 
   render() {
-    const {
-      dataQueries,
-      component,
-      paramUpdated,
-      componentMeta,
-      eventUpdated,
-      eventOptionUpdated,
-      components,
-      currentState
-    } = this.props;
+    const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
 
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
@@ -527,7 +526,17 @@ class Table extends React.Component {
 
     return (
       <div className="properties-container p-2 " key={this.props.component.id}>
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'data', 'properties', currentState, components)}
+        {renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'data',
+          'properties',
+          currentState,
+          components,
+          darkMode
+        )}
 
         <div className="field mb-2 mt-3">
           <div className="row g-2">
@@ -561,7 +570,13 @@ class Table extends React.Component {
                         <div className="text">{item.name}</div>
                       </div>
                       <div className="col-auto">
-                        <img onClick={() => this.removeColumn(index)} className="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12"/>
+                        <img
+                          onClick={() => this.removeColumn(index)}
+                          className="svg-icon"
+                          src="/assets/images/icons/trash.svg"
+                          width="12"
+                          height="12"
+                        />
                       </div>
                     </div>
                   </OverlayTrigger>
@@ -583,21 +598,98 @@ class Table extends React.Component {
               </div>
             </div>
             <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
-            {actions.value.length === 0 && 
-              <center><small>This table doesn't have any action buttons</small></center>
-            }
+            {actions.value.length === 0 && (
+              <center>
+                <small>This table doesn&apos;t have any action buttons</small>
+              </center>
+            )}
           </div>
           <hr></hr>
 
-          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSidePagination', 'properties', currentState)}
-          {!serverSidePagination && renderElement(component, componentMeta, paramUpdated, dataQueries, 'clientSidePagination', 'properties', currentState)}
-          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'displaySearchBox', 'properties', currentState)}
-          {displaySearchBox && renderElement(component, componentMeta, paramUpdated, dataQueries, 'serverSideSearch', 'properties', currentState)}
-          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showDownloadButton', 'properties', currentState)}
-          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showFilterButton', 'properties', currentState)}
-          {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showBulkUpdateActions', 'properties', currentState)}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'serverSidePagination',
+            'properties',
+            currentState
+          )}
+          {!serverSidePagination &&
+            renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'clientSidePagination',
+              'properties',
+              currentState
+            )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'displaySearchBox',
+            'properties',
+            currentState
+          )}
+          {displaySearchBox &&
+            renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'serverSideSearch',
+              'properties',
+              currentState
+            )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showDownloadButton',
+            'properties',
+            currentState
+          )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showFilterButton',
+            'properties',
+            currentState
+          )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showBulkUpdateActions',
+            'properties',
+            currentState
+          )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showBulkSelector',
+            'properties',
+            currentState
+          )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'highlightSelectedRow',
+            'properties',
+            currentState
+          )}
 
-          {Object.keys(componentMeta.styles).map((style) => renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components))}
           <div className="hr-text">Events</div>
 
           <EventManager
@@ -614,9 +706,9 @@ class Table extends React.Component {
         </div>
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'disabledState', 'styles', currentState)}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'textColor', 'styles', currentState)}
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'tableType', 'styles', currentState)}
+        {Object.keys(componentMeta.styles).map((style) =>
+          renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components)
+        )}
       </div>
     );
   }

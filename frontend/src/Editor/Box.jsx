@@ -17,9 +17,9 @@ import { Modal } from './Components/Modal';
 import { Chart } from './Components/Chart';
 import { Map } from './Components/Map/Map';
 import { QrScanner } from './Components/QrScanner/QrScanner';
-import { ToggleSwitch } from './Components/Toggle'
-import { RadioButton } from './Components/RadioButton'
-import { StarRating } from './Components/StarRating'
+import { ToggleSwitch } from './Components/Toggle';
+import { RadioButton } from './Components/RadioButton';
+import { StarRating } from './Components/StarRating';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -45,12 +45,11 @@ const AllComponents = {
   QrScanner,
   ToggleSwitch,
   RadioButton,
-  StarRating
+  StarRating,
 };
 
 export const Box = function Box({
   id,
-  mode,
   width,
   height,
   yellow,
@@ -66,12 +65,13 @@ export const Box = function Box({
   changeCanDrag,
   containerProps,
   darkMode,
-  removeComponent
+  removeComponent,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
   let styles = {
     height: '100%',
+    padding: '1px',
   };
 
   if (inCanvas) {
@@ -86,49 +86,49 @@ export const Box = function Box({
     <OverlayTrigger
       placement="top"
       delay={{ show: 500, hide: 0 }}
-      trigger={!inCanvas? ['hover', 'focus']: null}
-      overlay={(props) => renderTooltip({props, text: `${component.description}`})}
+      trigger={!inCanvas ? ['hover', 'focus'] : null}
+      overlay={(props) => renderTooltip({ props, text: `${component.description}` })}
     >
-    <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
-      {inCanvas ? (
-        <ComponentToRender
-          onComponentClick={onComponentClick}
-          onComponentOptionChanged={onComponentOptionChanged}
-          currentState={currentState}
-          onEvent={onEvent}
-          id={id}
-          paramUpdated={paramUpdated}
-          width={width}
-          changeCanDrag={changeCanDrag}
-          onComponentOptionsChanged={onComponentOptionsChanged}
-          height={height}
-          component={component}
-          containerProps={containerProps}
-          darkMode={darkMode}
-          removeComponent={removeComponent}
-        ></ComponentToRender>
-      ) : (
-        <div className="m-1" style={{ height: '100%' }}>
-          <div
-            className="component-image-holder p-2 d-flex flex-column justify-content-center"
-            style={{ height: '100%' }}
-          >
-            <center>
-              <div
-                style={{
-                  width: '20px',
-                  height: '20px',
-                  backgroundSize: 'contain',
-                  backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
-                  backgroundRepeat: 'no-repeat',
-                }}
-              ></div>
-            </center>
-            <span className="component-title">{component.displayName}</span>
+      <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
+        {inCanvas ? (
+          <ComponentToRender
+            onComponentClick={onComponentClick}
+            onComponentOptionChanged={onComponentOptionChanged}
+            currentState={currentState}
+            onEvent={onEvent}
+            id={id}
+            paramUpdated={paramUpdated}
+            width={width}
+            changeCanDrag={changeCanDrag}
+            onComponentOptionsChanged={onComponentOptionsChanged}
+            height={height}
+            component={component}
+            containerProps={containerProps}
+            darkMode={darkMode}
+            removeComponent={removeComponent}
+          ></ComponentToRender>
+        ) : (
+          <div className="m-1" style={{ height: '100%' }}>
+            <div
+              className="component-image-holder p-2 d-flex flex-column justify-content-center"
+              style={{ height: '100%' }}
+            >
+              <center>
+                <div
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    backgroundSize: 'contain',
+                    backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                    backgroundRepeat: 'no-repeat',
+                  }}
+                ></div>
+              </center>
+              <span className="component-title">{component.displayName}</span>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </OverlayTrigger>
   );
 };

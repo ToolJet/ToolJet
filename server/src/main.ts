@@ -25,27 +25,14 @@ async function bootstrap() {
       directives: {
         upgradeInsecureRequests: null,
         'img-src': ['*', 'data:'],
-        'script-src': [
-          'maps.googleapis.com',
-          "'self'",
-          "'unsafe-inline'",
-          "'unsafe-eval'",
-          'blob:',
-        ],
-        'default-src': [
-          'maps.googleapis.com',
-          '*.sentry.io',
-          "'self'",
-          'blob:',
-        ],
+        'script-src': ['maps.googleapis.com', "'self'", "'unsafe-inline'", "'unsafe-eval'", 'blob:'],
+        'default-src': ['maps.googleapis.com', '*.sentry.io', "'self'", 'blob:'],
       },
-    }),
+    })
   );
 
   app.use(json({ limit: '50mb' }));
-  app.use(
-    urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }),
-  );
+  app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
 
   const port = parseInt(process.env.PORT) || 3000;
 

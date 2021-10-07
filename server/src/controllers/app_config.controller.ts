@@ -1,4 +1,5 @@
-import { Controller, Get, Request } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { AppConfigService } from '@services/app_config.service';
 
 @Controller('config')

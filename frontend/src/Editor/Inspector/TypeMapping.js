@@ -5,5 +5,5 @@ export const TypeMapping = {
   json: 'Json',
   code: 'Code',
   toggle: 'Toggle',
-  select: 'Select'
+  select: 'Select',
 };

@@ -1,7 +1,7 @@
 import { authenticationService } from '@/_services';
 
 export function handleResponse(response) {
-  return response.text().then(text => {
+  return response.text().then((text) => {
     const data = text && JSON.parse(text);
     if (!response.ok) {
       if ([401].indexOf(response.status) !== -1) {
@@ -11,7 +11,7 @@ export function handleResponse(response) {
       }
 
       const error = (data && data.message) || response.statusText;
-      return Promise.reject({ error, data } );
+      return Promise.reject({ error, data });
     }
 
     return data;

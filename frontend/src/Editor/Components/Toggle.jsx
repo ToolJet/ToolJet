@@ -3,10 +3,12 @@ import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 class Switch extends React.Component {
   render() {
-    const { on, onClick, onChange, disabledState } = this.props;
+    const { on, onClick, onChange, disabledState, color } = this.props;
+
     return (
-      <label className="form-check form-switch form-check-inline">
+      <label className="form-switch form-check-inline">
         <input
+          style={{ backgroundColor: on ? `${color}` : 'white' }}
           disabled={disabledState}
           className="form-check-input"
           type="checkbox"
@@ -32,6 +34,8 @@ export const ToggleSwitch = ({
   const [on, setOn] = React.useState(false);
   const label = component.definition.properties.label.value;
   const textColorProperty = component.definition.styles.textColor;
+  const toggleSwitchColorProperty = component.definition.styles.toggleSwitchColor;
+  const toggleSwitchColor = toggleSwitchColorProperty ? toggleSwitchColorProperty.value : '#3c92dc';
   const textColor = textColorProperty ? textColorProperty.value : '#000';
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -57,18 +61,24 @@ export const ToggleSwitch = ({
 
   return (
     <div
-      className="row  py-1"
+      className="row"
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component);
       }}
     >
-      <span className="form-check-label form-check-label col-auto" style={{ color: textColor }}>
+      <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
         {label}
       </span>
-      <div className="col">
-        <Switch disabledState={parsedDisabledState} on={on} onClick={toggle} onChange={toggleValue} />
+      <div className="col px-1 py-0 my-auto">
+        <Switch
+          disabledState={parsedDisabledState}
+          on={on}
+          onClick={toggle}
+          onChange={toggleValue}
+          color={toggleSwitchColor}
+        />
       </div>
     </div>
   );

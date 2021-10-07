@@ -4,6 +4,23 @@
   "title": "Mongodb datasource",
   "description": "A schema defining mongodb datasource",
   "type": "object",
+  "source": {
+    "name": "MongoDB",
+    "kind": "mongodb",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": { "type": "string" },
+      "port": { "type": "string" },
+      "username": { "type": "string" },
+      "password": { "type": "string", "encrypted": true },
+      "connection_type": { "type": "options" },
+      "connection_string": { "type": "string", "encrypted": true }
+    }
+  },
   "properties": {
     "connection_type": {
       "$label": "",
@@ -38,13 +55,13 @@
         "$label": "Username",
         "$key": "username",
         "type": "text",
-        "description": "Enter username field"
+        "description": "Enter username"
       },
       "password": {
         "$label": "Password",
         "$key": "password",
         "type": "password",
-        "description": "Enter password field"
+        "description": "Enter password"
       }
     },
     "string": {

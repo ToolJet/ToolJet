@@ -11,7 +11,7 @@ export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout
     [tickTock]
   );
 
-  const layouts  = item.layouts;
+  const layouts = item.layouts;
   let { width, height } = layouts ? item.layouts[currentLayout] : {};
 
   if (item.id === undefined) {
@@ -20,10 +20,18 @@ export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout
   }
 
   return (
-    <div style={{ height, width, border: 'solid 1px rgb(70, 165, 253)' }}>
-      <div style={{
-        background: '#438fd7', opacity: '0.7', height: '100%', width: '100%'
-      }}></div>
+    <div
+      className="resizer-active draggable-box"
+      style={{ height, width, border: 'solid 1px rgb(70, 165, 253)', padding: '2px' }}
+    >
+      <div
+        style={{
+          background: '#438fd7',
+          opacity: '0.7',
+          height: '100%',
+          width: '100%',
+        }}
+      ></div>
     </div>
   );
 });
