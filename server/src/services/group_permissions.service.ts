@@ -113,6 +113,7 @@ export class GroupPermissionsService {
             manager.create(AppGroupPermission, {
               appId: appId,
               groupPermissionId: groupPermissionId,
+              read: true,
             })
           );
         }
