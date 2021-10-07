@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, getDynamicText, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button({ id, width, height, component, onComponentClick, currentState }) {
@@ -49,7 +49,7 @@ export const Button = function Button({ id, width, height, component, onComponen
         onComponentClick(id, component);
       }}
     >
-      {getDynamicText(text, currentState)}
+      {resolveReferences(text, currentState)}
     </button>
   );
 };

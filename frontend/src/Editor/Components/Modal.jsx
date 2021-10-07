@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
-import { resolveWidgetFieldValue, getDynamicText } from '@/_helpers/utils';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const Modal = function Modal({ id, component, height, containerProps, currentState }) {
   const [show, showModal] = useState(false);
@@ -50,7 +50,7 @@ export const Modal = function Modal({ id, component, height, containerProps, cur
           <ConfigHandle id={id} component={component} configHandleClicked={containerProps.onComponentClick} />
         )}
         <BootstrapModal.Header>
-          <BootstrapModal.Title>{getDynamicText(title, currentState)}</BootstrapModal.Title>
+          <BootstrapModal.Title>{resolveWidgetFieldValue(title, currentState)}</BootstrapModal.Title>
           <div>
             <Button variant="light" size="sm" onClick={hideModal}>
               x

@@ -227,18 +227,3 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     validationError,
   };
 }
-
-export const getDynamicText = (text, currentState) => {
-  let data = text;
-  if (currentState) {
-    const matchedParams = text.match(/\{\{(.*?)\}\}/g);
-
-    if (matchedParams) {
-      for (const param of matchedParams) {
-        const resolvedParam = resolveReferences(param, currentState, '');
-        data = data.replace(param, resolvedParam);
-      }
-    }
-  }
-  return data;
-}
