@@ -1002,6 +1002,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Star Color' },
+      labelColor: { type: 'color', displayName: 'Label Color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -1024,6 +1025,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#ffb400' },
+        labelColor: { value: '#333' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
