@@ -22,10 +22,10 @@
     "classnames": "^2.3.1",
     "dompurify": "^2.2.7",
     "draft-js": "^0.11.7",
-    "html-webpack-plugin": "^5.3.2",
     "draft-js-export-html": "^1.4.1",
     "fuse.js": "^6.4.6",
     "history": "^4.9.0",
+    "html-webpack-plugin": "^5.3.2",
     "immutability-helper": "^3.1.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
@@ -46,6 +46,7 @@
     "react-json-view": "^1.21.3",
     "react-lazyload": "^3.2.0",
     "react-loading-skeleton": "^2.2.0",
+    "react-mentions": "^4.3.0",
     "react-plotly.js": "^2.5.1",
     "react-qr-reader": "^2.2.1",
     "react-rnd": "^10.3.0",
@@ -61,9 +62,9 @@
     "semver": "^5.7.1",
     "tinycolor2": "^1.4.2",
     "uuid": "8.3.2",
-    "yup": "^0.27.0",
     "webpack": "^5.55.1",
-    "webpack-cli": "^4.8.0"
+    "webpack-cli": "^4.8.0",
+    "yup": "^0.27.0"
   },
   "devDependencies": {
     "@cypress/react": "^5.9.0",
