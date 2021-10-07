@@ -64,10 +64,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
   };
 
   const handleEdit = async (comment, cid) => {
-    await commentsService.updateComment({
-      cid,
-      comment,
-    });
+    await commentsService.updateComment(cid, { comment });
     fetchData();
   };
 
@@ -115,6 +112,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
           <CommentBody
             setEditComment={setEditComment}
             setEditCommentId={setEditCommentId}
+            fetchComments={fetchData}
             isLoading={loading}
             isResolved={isResolved}
             threadId={threadId}

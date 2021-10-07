@@ -6,7 +6,7 @@ import { isEmpty } from 'lodash';
 import moment from 'moment';
 import CommentActions from './CommentActions';
 
-const CommentBody = ({ threadId, thread, isResolved, isLoading, setEditComment, setEditCommentId }) => {
+const CommentBody = ({ threadId, thread, isResolved, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
   const getContent = () => {
     if (isEmpty(thread)) return <div className="text-center">Your message will post here</div>;
 
@@ -18,6 +18,7 @@ const CommentBody = ({ threadId, thread, isResolved, isLoading, setEditComment, 
               <div className="d-flex card-title">
                 {`${user?.firstName} ${user?.lastName}`}{' '}
                 <CommentActions
+                  fetchComments={fetchComments}
                   comment={comment}
                   threadId={threadId}
                   commentId={id}

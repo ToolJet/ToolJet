@@ -13,8 +13,15 @@ import ResolvedIcon from './icons/resolved.svg';
 
 import { commentsService } from '@/_services';
 
-// const CommentActions = ({ threadId, commentId, isResolved, comment, setEditCommentId, setEditComment }) => {
-const CommentActions = ({ threadId, isResolved }) => {
+const CommentActions = ({
+  threadId,
+  commentId,
+  isResolved,
+  comment,
+  setEditCommentId,
+  setEditComment,
+  fetchComments,
+}) => {
   const [resolved, setResolved] = React.useState(isResolved);
   // const [spinning, setSpinning] = React.useState(false);
   const [open, trigger, content] = usePopover(false);
@@ -27,14 +34,15 @@ const CommentActions = ({ threadId, isResolved }) => {
     // setSpinning(false);
   };
 
-  // const handleDelete = async () => {
-  //   await commentsService.deleteComment(commentId);
-  // };
+  const handleDelete = async () => {
+    await commentsService.deleteComment(commentId);
+    fetchComments();
+  };
 
-  // const handleEdit = async () => {
-  //   setEditComment(comment);
-  //   setEditCommentId(commentId);
-  // };
+  const handleEdit = async () => {
+    setEditComment(comment);
+    setEditCommentId(commentId);
+  };
 
   const getResolveIcon = () => {
     // if (spinning) return <Spinner />;
@@ -61,8 +69,12 @@ const CommentActions = ({ threadId, isResolved }) => {
         })}
       >
         <div className="divide-y">
-          <div>Edit</div>
-          <div>Delete</div>
+          <div className="p-3" onClick={handleEdit}>
+            Edit
+          </div>
+          <div className="p-3" onClick={handleDelete}>
+            Delete
+          </div>
         </div>
       </animated.div>
     </div>

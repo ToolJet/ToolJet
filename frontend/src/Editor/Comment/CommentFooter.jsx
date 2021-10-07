@@ -4,6 +4,11 @@ import Button from '@/_ui/Button';
 
 function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
   const [comment, setComment] = React.useState(editComment);
+
+  React.useEffect(() => {
+    setComment(editComment);
+  }, [editComment]);
+
   const handleClick = () => {
     handleSubmit(comment, editCommentId);
     setComment('');

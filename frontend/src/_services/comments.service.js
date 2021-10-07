@@ -29,7 +29,7 @@ function updateComment(cid, data) {
 }
 
 function deleteComment(cid) {
-  return adapter.patch(`/comment/delete/${cid}`);
+  return adapter.delete(`/comment/delete/${cid}`);
 }
 
 export const commentsService = {
