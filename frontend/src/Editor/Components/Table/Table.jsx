@@ -10,6 +10,7 @@ import {
   usePagination,
   useBlockLayout,
   useResizeColumns,
+  useRowSelect,
 } from 'react-table';
 import cx from 'classnames';
 import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
@@ -57,6 +58,12 @@ export function Table({
 
   const showBulkUpdateActionsProperty = component.definition.properties.showBulkUpdateActions?.value;
   const showBulkUpdateActions = resolveWidgetFieldValue(showBulkUpdateActionsProperty, currentState) ?? true; // default is true for backward compatibility
+
+  const showBulkSelectorProperty = component.definition.properties.showBulkSelector?.value;
+  const showBulkSelector = resolveWidgetFieldValue(showBulkSelectorProperty, currentState) ?? false; // default is false for backward compatibility
+
+  const highlightSelectedRowProperty = component.definition.properties.highlightSelectedRow?.value;
+  const highlightSelectedRow = resolveWidgetFieldValue(highlightSelectedRowProperty, currentState) ?? false; // default is false for backward compatibility
 
   const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
   const clientSidePagination =
@@ -556,7 +563,12 @@ export function Table({
                   style={{ background: action.backgroundColor, color: action.textColor }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                    onEvent('onTableActionButtonClicked', {
+                      component,
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                    });
                   }}
                 >
                   {action.buttonText}
@@ -583,7 +595,12 @@ export function Table({
                   style={{ background: action.backgroundColor, color: action.textColor }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', { component, data: cell.row.original, action });
+                    onEvent('onTableActionButtonClicked', {
+                      component,
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                    });
                   }}
                 >
                   {action.buttonText}
@@ -593,6 +610,31 @@ export function Table({
           },
         ]
       : [];
+
+  const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
+    const defaultRef = React.useRef();
+    const resolvedRef = ref || defaultRef;
+
+    React.useEffect(() => {
+      resolvedRef.current.indeterminate = indeterminate;
+    }, [resolvedRef, indeterminate]);
+
+    return (
+      <>
+        <input
+          type="checkbox"
+          ref={resolvedRef}
+          style={{
+            width: 15,
+            height: 15,
+            marginTop: 8,
+            marginLeft: 10,
+          }}
+          {...rest}
+        />
+      </>
+    );
+  });
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
 
@@ -605,6 +647,7 @@ export function Table({
       componentState.changeSet,
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
+      showBulkSelector,
     ] // Hack: need to fix
   );
 
@@ -635,6 +678,7 @@ export function Table({
     setGlobalFilter,
     state: { pageIndex, pageSize },
     exportData,
+    selectedFlatRows,
   } = useTable(
     {
       autoResetPage: false,
@@ -652,8 +696,35 @@ export function Table({
     usePagination,
     useBlockLayout,
     useResizeColumns,
-    useExportData
+    useExportData,
+    useRowSelect,
+    (hooks) => {
+      showBulkSelector &&
+        hooks.visibleColumns.push((columns) => [
+          {
+            id: 'selection',
+            Header: ({ getToggleAllPageRowsSelectedProps }) => (
+              <div className="d-flex flex-column align-items-center">
+                <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
+              </div>
+            ),
+            Cell: ({ row }) => (
+              <div className="d-flex flex-column align-items-center">
+                <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+              </div>
+            ),
+            width: 1,
+            columnType: 'selector',
+          },
+          ...columns,
+        ]);
+    }
   );
+
+  useEffect(() => {
+    const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
+    onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);
+  }, [selectedFlatRows.length]);
 
   React.useEffect(() => {
     if (serverSidePagination || !clientSidePagination) {
@@ -748,11 +819,13 @@ export function Table({
                 return (
                   <tr
                     key={index}
-                    className="table-row"
+                    className={`table-row ${
+                      highlightSelectedRow && row.id == componentState.selectedRowId ? 'selected' : ''
+                    }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEvent('onRowClicked', { component, data: row.original });
+                      onEvent('onRowClicked', { component, data: row.original, rowId: row.id });
                     }}
                   >
                     {row.cells.map((cell, index) => {
@@ -782,12 +855,11 @@ export function Table({
                             'has-dropdown': cell.column.columnType === 'dropdown',
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
+                            'align-items-center flex-column': cell.column.columnType === 'selector',
                           })}
                           {...cellProps}
                         >
-                          <div className="td-container">
-                            {cell.render('Cell')}
-                          </div>
+                          <div className="td-container">{cell.render('Cell')}</div>
                         </td>
                       );
                     })}
