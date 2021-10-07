@@ -46,7 +46,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
             </Link>
           </li>
 
-          <li className={cx(`nav-item`, { active: pathName === '/' })}>
+          <li className={cx(`nav-item`, { active: pathName === '/users' })}>
             <Link to={'/users'} className="nav-link">
               <span className="nav-link-icon d-md-none d-lg-inline-block">
                 <img className="svg-icon" src="/assets/images/icons/users.svg" width="15" height="15" />
