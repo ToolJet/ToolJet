@@ -181,7 +181,10 @@ export class GroupPermissionsService {
     const appsInGroupIds = appsInGroup.map((u) => u.id);
 
     return await this.appRepository.find({
-      where: { id: Not(In(appsInGroupIds)), organizationId: user.organizationId },
+      where: {
+        id: Not(In(appsInGroupIds)),
+        organizationId: user.organizationId,
+      },
       loadEagerRelations: false,
       relations: ['groupPermissions', 'appGroupPermissions'],
     });
@@ -211,8 +214,23 @@ export class GroupPermissionsService {
     const userInGroup = await groupPermission.users;
     const usersInGroupIds = userInGroup.map((u) => u.id);
 
+    const adminUsers = await createQueryBuilder(UserGroupPermission, 'user_group_permissions')
+      .select('user_group_permissions.user_id')
+      .distinctOn(['user_group_permissions.user_id'])
+      .innerJoin(
+        GroupPermission,
+        'group_permissions',
+        'group_permissions.id = user_group_permissions.group_permission_id'
+      )
+      .where('group_permissions.group = :group', { group: 'admin' })
+      .andWhere('group_permissions.organization_id = :organizationId', {
+        organizationId: user.organizationId,
+      })
+      .getMany();
+    const adminUserIds = adminUsers.map((u) => u.userId);
+
     return await this.userRepository.find({
-      id: Not(In(usersInGroupIds)),
+      id: Not(In([...usersInGroupIds, ...adminUserIds])),
       organizationId: user.organizationId,
     });
   }
