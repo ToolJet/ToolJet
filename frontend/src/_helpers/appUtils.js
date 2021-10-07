@@ -125,7 +125,7 @@ function executeAction(_ref, event, mode) {
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState);
-        toast(message, { hideProgressBar: true });
+        toast(message, { hideProgressBar: true, type: event.alertType });
         return new Promise(function (resolve, reject) {
           resolve();
         });
