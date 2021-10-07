@@ -5,31 +5,31 @@ import HttpClient from '@/_helpers/http-client';
 const adapter = new HttpClient();
 
 function getThreads(appId) {
-  return adapter.get(`/thread/${appId}/all`);
+  return adapter.get(`/threads/${appId}/all`);
 }
 
 function createThread(data) {
-  return adapter.post(`/thread/create`, data);
+  return adapter.post(`/threads/create`, data);
 }
 
 function updateThread(tid, data) {
-  return adapter.patch(`/thread/edit/${tid}`, data);
+  return adapter.patch(`/threads/edit/${tid}`, data);
 }
 
 function getComments(tid) {
-  return adapter.get(`/comment/${tid}/all`);
+  return adapter.get(`/comments/${tid}/all`);
 }
 
 function createComment(data) {
-  return adapter.post(`/comment/create`, data);
+  return adapter.post(`/comments/create`, data);
 }
 
 function updateComment(cid, data) {
-  return adapter.patch(`/comment/edit/${cid}`, data);
+  return adapter.patch(`/comments/edit/${cid}`, data);
 }
 
 function deleteComment(cid) {
-  return adapter.delete(`/comment/delete/${cid}`);
+  return adapter.delete(`/comments/delete/${cid}`);
 }
 
 export const commentsService = {

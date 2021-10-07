@@ -85,7 +85,11 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
         onDragEnd={() => setOpen(true)}
       >
         <label {...trigger} className="form-selectgroup-item">
-          <span className="comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded">
+          <span
+            className={cx('comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded', {
+              resolved: isResolved,
+            })}
+          >
             {`${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}`}
           </span>
         </label>
@@ -116,6 +120,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
             isLoading={loading}
             isResolved={isResolved}
             threadId={threadId}
+            ownerId={user.id}
             thread={thread}
           />
           <CommentFooter

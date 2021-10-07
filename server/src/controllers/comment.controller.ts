@@ -10,7 +10,7 @@ import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 // editComment(): This method is used for editing the details of a particular comment.
 // deleteComment(): This method also accepts the unique commentId to identify a particular comment and delete it from the database.
 
-@Controller('comment')
+@Controller('comments')
 export class CommentController {
   constructor(private commentService: CommentService) {}
 
@@ -26,6 +26,8 @@ export class CommentController {
   public async getComments(@Param('tid') tid: string): Promise<Comment[]> {
     const comments = await this.commentService.getComments(tid);
     return comments;
+    // const _comments = comments.sort((a, b) => b.createdAt - a.createdAt);
+    // return _comments;
   }
 
   @UseGuards(JwtAuthGuard)

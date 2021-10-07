@@ -6,13 +6,23 @@ import { isEmpty } from 'lodash';
 import moment from 'moment';
 import CommentActions from './CommentActions';
 
-const CommentBody = ({ threadId, thread, isResolved, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
+const CommentBody = ({
+  ownerId,
+  threadId,
+  thread,
+  isResolved,
+  isLoading,
+  setEditComment,
+  setEditCommentId,
+  fetchComments,
+}) => {
   const getContent = () => {
     if (isEmpty(thread)) return <div className="text-center">Your message will post here</div>;
 
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     return (
       <div className="divide-y">
-        {thread.map(({ id, comment, createdAt, user = {} }) => {
+        {thread.map(({ id, comment, createdAt, user = {} }, idx) => {
           return (
             <div key={id}>
               <div className="d-flex card-title">
@@ -22,6 +32,9 @@ const CommentBody = ({ threadId, thread, isResolved, isLoading, setEditComment, 
                   comment={comment}
                   threadId={threadId}
                   commentId={id}
+                  showResolved={idx === 0}
+                  isThreadOwner={currentUser.id === ownerId && ownerId === user.id}
+                  isCommentOwner={currentUser.id === user.id}
                   isResolved={isResolved}
                   setEditComment={setEditComment}
                   setEditCommentId={setEditCommentId}
@@ -45,7 +58,9 @@ const CommentBody = ({ threadId, thread, isResolved, isLoading, setEditComment, 
     );
   }
 
-  return <div className={cx('card-body card-body-scrollable card-body-scrollable-shadow')}>{getContent()}</div>;
+  return (
+    <div className={cx('comment-body card-body card-body-scrollable card-body-scrollable-shadow')}>{getContent()}</div>
+  );
 };
 
 export default CommentBody;

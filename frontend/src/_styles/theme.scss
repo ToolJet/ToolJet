@@ -2234,3 +2234,8 @@ input[type='text'] {
 .event-action{
   filter: brightness(0) invert(0);
 }
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}

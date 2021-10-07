@@ -1,7 +1,7 @@
 import { PrimaryGeneratedColumn, BaseEntity, Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 
-@Entity({ name: 'thread' })
+@Entity({ name: 'threads' })
 export class Thread extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

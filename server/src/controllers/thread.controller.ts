@@ -4,7 +4,7 @@ import { CreateThreadDTO } from '../dto/create-thread.dto';
 import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 
-@Controller('thread')
+@Controller('threads')
 export class ThreadController {
   constructor(private threadService: ThreadService) {}
 

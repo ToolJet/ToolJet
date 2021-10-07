@@ -21,6 +21,9 @@ const CommentActions = ({
   setEditCommentId,
   setEditComment,
   fetchComments,
+  isThreadOwner,
+  isCommentOwner,
+  showResolved,
 }) => {
   const [resolved, setResolved] = React.useState(isResolved);
   // const [spinning, setSpinning] = React.useState(false);
@@ -54,29 +57,40 @@ const CommentActions = ({
 
   return (
     <div className="ms-auto cursor-pointer position-relative">
-      <span {...trigger} className="m-2" title="comment options">
-        <OptionsIcon />
-      </span>
-      <span title="toggle resolved" onClick={handleResolved}>
-        {getResolveIcon()}
-      </span>
-      <animated.div
-        {...content}
-        style={popoverFadeStyle}
-        className={cx('card popover comment-actions-popover', {
-          show: open,
-          hide: !open,
-        })}
-      >
-        <div className="divide-y">
-          <div className="p-3" onClick={handleEdit}>
-            Edit
-          </div>
-          <div className="p-3" onClick={handleDelete}>
-            Delete
-          </div>
-        </div>
-      </animated.div>
+      {showResolved && (
+        <span
+          title={isThreadOwner ? 'toggle resolved' : 'only creator of thread can resolve'}
+          className={cx({ disabled: !isThreadOwner })}
+          onClick={handleResolved}
+        >
+          {getResolveIcon()}
+        </span>
+      )}
+      {isCommentOwner && (
+        <>
+          <span {...trigger} className="m-2" title="comment options">
+            <OptionsIcon />
+          </span>
+          <animated.div
+            {...content}
+            style={popoverFadeStyle}
+            className={cx('card popover comment-actions-popover', {
+              show: open,
+              hide: !open,
+            })}
+          >
+            <div className="divide-y">
+              <div className="p-3" onClick={handleEdit}>
+                Edit
+              </div>
+              {/* TODO: Add a popup confirmation on delete */}
+              <div className="p-3" onClick={handleDelete}>
+                Delete
+              </div>
+            </div>
+          </animated.div>
+        </>
+      )}
     </div>
   );
 };

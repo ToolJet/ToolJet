@@ -14,6 +14,14 @@
     border: 2px solid #438fd7;
   }
 
+  .comment-body {
+    max-height: 400px;
+  }
+
+  .resolved {
+    border: 2px solid #8991A0;
+  }
+
   .comment-popover {
     top: 40px;
     width: 30rem;

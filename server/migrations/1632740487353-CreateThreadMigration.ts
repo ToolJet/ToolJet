@@ -4,7 +4,7 @@ export class CreateThreadMigration1632740487353 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'thread',
+        name: 'threads',
         columns: [
           {
             name: 'id',
@@ -57,7 +57,7 @@ export class CreateThreadMigration1632740487353 implements MigrationInterface {
     );
 
     await queryRunner.createForeignKey(
-      'thread',
+      'threads',
       new TableForeignKey({
         columnNames: ['user_id'],
         referencedColumnNames: ['id'],
