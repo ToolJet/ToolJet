@@ -6,8 +6,6 @@ import _ from 'lodash';
 import moment from 'moment';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 
-// const updateErrorLogs = (error) => {};
-
 export const LeftSidebarDebugger = ({ darkMode, errors }) => {
   const [open, trigger, content, popoverPinned, updatePopoverPinnedState] = usePinnedPopover(false);
   const [currrentTab, setCurrentTab] = React.useState(1);
@@ -51,8 +49,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
             break;
 
           case 'transformations':
-            variableNames.options = 'substitutedVariables';
-            variableNames.response = 'response';
+            variableNames.response = 'data';
             break;
           default:
             'options';
@@ -187,22 +184,24 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
         <br />
         <small className="text-muted px-1">{moment(errorProps.timestamp).fromNow()}</small>
       </p>
-      {/* //Todo If variables are not required, display only with type='query' */}
+
       <div className={` queryData ${open ? 'open' : 'close'} py-0`}>
-        <span>
-          <ReactJson
-            src={errorProps.options.data}
-            theme={darkMode ? 'shapeshifter' : 'rjv-default'}
-            name={errorProps.options.name}
-            style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
-            enableClipboard={false}
-            displayDataTypes={false}
-            collapsed={true}
-            displayObjectSize={false}
-            quotesOnKeys={false}
-            sortKeys={false}
-          />
-        </span>
+        {errorProps.type === 'query' && (
+          <span>
+            <ReactJson
+              src={errorProps.options.data}
+              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
+              name={errorProps.options.name}
+              style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
+              enableClipboard={false}
+              displayDataTypes={false}
+              collapsed={true}
+              displayObjectSize={false}
+              quotesOnKeys={false}
+              sortKeys={false}
+            />
+          </span>
+        )}
         <span>
           <ReactJson
             src={errorProps.response.data}

@@ -56,7 +56,7 @@ export function runTransformation(_ref, rawData, transformation, query) {
     result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
-    result = { message: err.stack.split('\n')[0], status: 'failed' };
+    result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
   }
 
   return result;
