@@ -89,7 +89,6 @@ class HomePage extends React.Component {
       })
       .catch(({ error }) => {
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
-        this.setState({ isCloningApp: false });
       });
   };
 
