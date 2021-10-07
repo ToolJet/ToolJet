@@ -109,7 +109,10 @@ class HomePage extends React.Component {
         this.props.history.push(`/apps/${data.id}`);
       })
       .catch(({ _error }) => {
-        toast.error('Could not clone the app.', { hideProgressBar: true, position: 'top-center' });
+        toast.error('Could not clone the app.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({ isCloningApp: false });
         console.log(_error);
       });
@@ -117,6 +120,10 @@ class HomePage extends React.Component {
 
   isAppEditable = (app) => {
     return app.app_group_permissions.some((p) => p.update);
+  };
+
+  isAppDeletable = (app) => {
+    return app.app_group_permissions.some((p) => p.delete);
   };
 
   executeAppDeletion = () => {
@@ -138,7 +145,10 @@ class HomePage extends React.Component {
         this.fetchFolders();
       })
       .catch(({ error }) => {
-        toast.error('Could not delete the app.', { hideProgressBar: true, position: 'top-center' });
+        toast.error('Could not delete the app.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({
           isDeletingApp: false,
           appToBeDeleted: null,
@@ -251,7 +261,12 @@ class HomePage extends React.Component {
                                       <Link to={`/apps/${app.id}`} className="d-none d-lg-inline">
                                         <OverlayTrigger
                                           placement="top"
-                                          overlay={(props) => renderTooltip({ props, text: 'Open in app builder' })}
+                                          overlay={(props) =>
+                                            renderTooltip({
+                                              props,
+                                              text: 'Open in app builder',
+                                            })
+                                          }
                                         >
                                           <span className="badge bg-green-lt">Edit</span>
                                         </OverlayTrigger>
@@ -321,13 +336,15 @@ class HomePage extends React.Component {
                                       )}
                                     </Link>
 
-                                    <AppMenu
-                                      app={app}
-                                      folders={this.state.folders}
-                                      foldersChanged={this.foldersChanged}
-                                      deleteApp={() => this.deleteApp(app)}
-                                      cloneApp={() => this.cloneApp(app)}
-                                    />
+                                    {this.isAppDeletable(app) && (
+                                      <AppMenu
+                                        app={app}
+                                        folders={this.state.folders}
+                                        foldersChanged={this.foldersChanged}
+                                        deleteApp={() => this.deleteApp(app)}
+                                        cloneApp={() => this.cloneApp(app)}
+                                      />
+                                    )}
                                   </td>
                                 </tr>
                               ))}
