@@ -37,7 +37,7 @@ export const RichTextEditor = function RichTextEditor({
       style={{ width: `${width}px`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       <DraftEditor handleChange={handleChange} height={height} width={width} placeholder={placeholder}></DraftEditor>

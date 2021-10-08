@@ -96,7 +96,7 @@ export const StarRating = function StarRating({
       className="star-rating"
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
       style={{ display: parsedWidgetVisibility ? '' : 'none' }}
     >

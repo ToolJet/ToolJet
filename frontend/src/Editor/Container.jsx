@@ -289,6 +289,23 @@ export const Container = ({
     addNewThread(data);
   };
 
+  const handleAddCommentOnComponent = async (_, __, e) => {
+    e.stopPropogation && e.stopPropogation();
+
+    const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    const offsetFromTopOfWindow = canvasBoundingRect.top;
+    const offsetFromLeftOfWindow = canvasBoundingRect.left;
+
+    const x = Math.round(e.screenX + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
+    const y = Math.round(e.screenY + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
+    const { data } = await commentsService.createThread({
+      app_id: router.query.id,
+      x,
+      y: y - 130,
+    });
+    addNewThread(data);
+  };
+
   return (
     <div
       {...(showComments && { onClick: handleAddComment })}
@@ -308,7 +325,7 @@ export const Container = ({
         if (!box.parent && canShowInCurrentLayout) {
           return (
             <DraggableBox
-              onComponentClick={onComponentClick}
+              onComponentClick={showComments ? handleAddCommentOnComponent : onComponentClick}
               onEvent={onEvent}
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}

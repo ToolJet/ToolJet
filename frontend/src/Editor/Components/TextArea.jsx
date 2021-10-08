@@ -45,7 +45,7 @@ export const TextArea = function TextArea({
       disabled={parsedDisabledState}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
       onChange={(e) => {
         setText(e.target.value);

@@ -761,7 +761,7 @@ export function Table({
       style={{ width: `${width}px`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}

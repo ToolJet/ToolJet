@@ -45,7 +45,7 @@ export const Checkbox = function Checkbox({
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       <label className="my-auto mx-2 form-check form-check-inline">

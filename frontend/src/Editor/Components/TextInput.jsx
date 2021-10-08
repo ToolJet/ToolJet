@@ -59,7 +59,7 @@ export const TextInput = function TextInput({
         disabled={parsedDisabledState}
         onClick={(event) => {
           event.stopPropagation();
-          onComponentClick(id, component);
+          onComponentClick(id, component, event);
         }}
         onChange={(e) => {
           setText(e.target.value);

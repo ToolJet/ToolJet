@@ -48,7 +48,7 @@ export const Button = function Button({ id, width, height, component, onComponen
       style={computedStyles}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       {text}

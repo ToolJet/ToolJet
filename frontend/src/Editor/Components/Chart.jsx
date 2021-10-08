@@ -132,7 +132,7 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
       style={computedStyles}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       {loadingState === true ? (
