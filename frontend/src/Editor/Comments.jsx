@@ -2,6 +2,7 @@ import '@/_styles/editor/comments.scss';
 
 import React from 'react';
 import { isEmpty } from 'lodash';
+import config from 'config';
 
 import Comment from './Comment';
 import { commentsService } from '@/_services';
@@ -29,7 +30,7 @@ const Comments = ({ newThread = {} }) => {
 
   // TODO: add retry policy
   React.useEffect(() => {
-    const socket = new WebSocket('ws://localhost:3000');
+    const socket = new WebSocket(`ws://${config.apiUrl.replace('/api', '')}`);
 
     // Connection opened
     socket.addEventListener('open', function (event) {

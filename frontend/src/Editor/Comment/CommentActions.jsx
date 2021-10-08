@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { useSpring, animated } from 'react-spring';
 import usePopover from '@/_hooks/use-popover';
 
-// import Spinner from '@/_ui/Spinner';
+import Spinner from '@/_ui/Spinner';
 
 import OptionsIcon from './icons/options.svg';
 // import OptionsSelectedIcon from './icons/options-selected.svg';
@@ -26,15 +26,15 @@ const CommentActions = ({
   showResolved,
 }) => {
   const [resolved, setResolved] = React.useState(isResolved);
-  // const [spinning, setSpinning] = React.useState(false);
+  const [spinning, setSpinning] = React.useState(false);
   const [open, trigger, content] = usePopover(false);
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
 
   const handleResolved = async () => {
-    // setSpinning(true);
+    setSpinning(true);
     const { data } = await commentsService.updateThread(threadId, { isResolved: !resolved });
     setResolved(data.isResolved);
-    // setSpinning(false);
+    setSpinning(false);
   };
 
   const handleDelete = async () => {
@@ -48,7 +48,7 @@ const CommentActions = ({
   };
 
   const getResolveIcon = () => {
-    // if (spinning) return <Spinner />;
+    if (spinning) return <Spinner />;
 
     if (resolved) return <ResolvedIcon />;
 
@@ -79,12 +79,12 @@ const CommentActions = ({
               hide: !open,
             })}
           >
-            <div className="divide-y">
-              <div className="p-3" onClick={handleEdit}>
+            <div>
+              <div className="comment-action" onClick={handleEdit}>
                 Edit
               </div>
               {/* TODO: Add a popup confirmation on delete */}
-              <div className="p-3" onClick={handleDelete}>
+              <div className="comment-action border-top" onClick={handleDelete}>
                 Delete
               </div>
             </div>

@@ -3,21 +3,10 @@ import { organizationService } from '@/_services';
 
 import { MentionsInput, Mention } from 'react-mentions';
 
-const Mentions = ({ value, setValue, placeholder }) => {
-  const [emojis, setEmojis] = React.useState([]);
-  const [users, setUsers] = React.useState([]);
+import { emojis } from './emojis.json';
 
-  React.useEffect(() => {
-    fetch(
-      'https://gist.githubusercontent.com/oliveratgithub/0bf11a9aff0d6da7b46f1490f86a71eb/raw/d8e4b78cfe66862cf3809443c1dba017f37b61db/emojis.json'
-    )
-      .then((response) => {
-        return response.json();
-      })
-      .then((jsonData) => {
-        setEmojis(jsonData.emojis);
-      });
-  }, []);
+const Mentions = ({ value, setValue, placeholder }) => {
+  const [users, setUsers] = React.useState([]);
 
   React.useEffect(() => {
     organizationService.getUsers(null).then((data) => {
@@ -51,8 +40,8 @@ const Mentions = ({ value, setValue, placeholder }) => {
         },
 
         input: {
-          fontSize: 16,
-          lineHeight: 1.2,
+          fontSize: 14,
+          lineHeight: 1.5,
           padding: 9,
           border: '1px solid silver',
         },

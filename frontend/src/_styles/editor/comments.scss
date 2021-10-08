@@ -24,7 +24,7 @@
 
   .comment-popover {
     top: 40px;
-    width: 30rem;
+    width: 25rem;
     max-width: 30rem;
   }
 
@@ -42,6 +42,10 @@
     border-radius: 4px;
     left: -100px;
     top: 25px;
+  }
+
+  .comment-action {
+    padding: 5px !important;
   }
 }
 
