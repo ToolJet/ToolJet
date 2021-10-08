@@ -452,8 +452,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
           if (dataQuery.options.enableTransformation) {
             finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
             if (finalData.status === 'failed') {
-              const errorData = finalData.error;
-              console.log('finalData ==> check', errorData);
               return _self.setState(
                 {
                   currentState: {
