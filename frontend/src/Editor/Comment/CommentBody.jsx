@@ -7,6 +7,23 @@ import moment from 'moment';
 import CommentActions from './CommentActions';
 
 const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
+  const bottomRef = React.useRef();
+
+  const scrollToBottom = () => {
+    bottomRef?.current?.scrollIntoView({
+      behavior: 'instant',
+      block: 'center',
+    });
+  };
+
+  React.useEffect(() => {
+    scrollToBottom();
+  }, [thread]);
+
+  React.useLayoutEffect(() => {
+    scrollToBottom();
+  }, []);
+
   const getContent = () => {
     if (isEmpty(thread)) return <div className="text-center">Your message will post here</div>;
 
@@ -49,6 +66,7 @@ const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetc
     <>
       <div className={cx('comment-body card-body card-body-scrollable card-body-scrollable-shadow')}>
         {getContent()}
+        <div ref={bottomRef} className="list-bottom"></div>
       </div>
     </>
   );
