@@ -150,7 +150,7 @@ export class AppsService {
   }
 
   async all(user: User, page: number): Promise<App[]> {
-    const viewableApps = await createQueryBuilder(App, 'apps')
+    const viewableAppsQb = await createQueryBuilder(App, 'apps')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
       .innerJoin(
@@ -160,17 +160,22 @@ export class AppsService {
       )
       .where('user_group_permissions.user_id = :userId', { userId: user.id })
       .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('apps.is_public = :value', { value: true })
-      .take(10)
-      .skip(10 * (page - 1))
-      // .orderBy('apps.created_at', 'DESC')
-      .getMany();
+      .orWhere('apps.is_public = :value', { value: true });
 
     // FIXME:
     // TypeORM gives error when using query builder with order by
     // https://github.com/typeorm/typeorm/issues/8213
     // hence sorting results in memory
-    return viewableApps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    if (page) {
+      const viewableApps = await viewableAppsQb
+        .take(10)
+        .skip(10 * (page - 1))
+        .getMany();
+
+      return viewableApps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
+
+    return await viewableAppsQb.orderBy('apps.created_at', 'DESC').getMany();
   }
 
   async update(user: User, appId: string, params: any) {
