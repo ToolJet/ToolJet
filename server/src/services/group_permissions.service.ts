@@ -215,8 +215,6 @@ export class GroupPermissionsService {
     const usersInGroupIds = userInGroup.map((u) => u.id);
 
     const adminUsers = await createQueryBuilder(UserGroupPermission, 'user_group_permissions')
-      .select('user_group_permissions.user_id')
-      .distinctOn(['user_group_permissions.user_id'])
       .innerJoin(
         GroupPermission,
         'group_permissions',
