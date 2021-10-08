@@ -198,6 +198,9 @@ export class UsersService {
       .where('organization_users.user_id != :userId', { userId: user.id })
       .andWhere('organization_users.status = :status', { status: 'active' })
       .andWhere('group_permissions.group = :group', { group: 'admin' })
+      .andWhere('group_permissions.organization_id = :organizationId', {
+        organizationId: user.organizationId,
+      })
       .getCount();
 
     if (result == 0) throw new BadRequestException('Atleast one active admin is required.');
