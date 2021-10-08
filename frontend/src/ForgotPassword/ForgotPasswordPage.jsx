@@ -23,7 +23,6 @@ class ForgotPassword extends React.Component {
   };
 
   handleClick = (event) => {
-    this.setState({ buttonClicked: true });
     event.preventDefault();
 
     fetch(`${config.apiUrl}/forgot_password`, {
@@ -38,6 +37,7 @@ class ForgotPassword extends React.Component {
           this.setState({ isEmailFound: true });
           return res.json();
         } else {
+          this.setState({ buttonClicked: true });
           this.setState({ isEmailFound: false });
         }
       })
