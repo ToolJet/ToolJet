@@ -145,7 +145,10 @@ export class AppsService {
       )
       .where('user_group_permissions.user_id = :userId', { userId: user.id })
       .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('apps.is_public = :value', { value: true })
+      .orWhere('apps.is_public = :value AND apps.organization_id = :organizationId', {
+        value: true,
+        organizationId: user.organizationId,
+      })
       .getCount();
   }
 
@@ -160,7 +163,10 @@ export class AppsService {
       )
       .where('user_group_permissions.user_id = :userId', { userId: user.id })
       .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('apps.is_public = :value', { value: true });
+      .orWhere('apps.is_public = :value AND apps.organization_id = :organizationId', {
+        value: true,
+        organizationId: user.organizationId,
+      });
 
     // FIXME:
     // TypeORM gives error when using query builder with order by
