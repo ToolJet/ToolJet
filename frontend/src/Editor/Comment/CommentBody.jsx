@@ -46,7 +46,11 @@ const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetc
   }
 
   return (
-    <div className={cx('comment-body card-body card-body-scrollable card-body-scrollable-shadow')}>{getContent()}</div>
+    <>
+      <div className={cx('comment-body card-body card-body-scrollable card-body-scrollable-shadow')}>
+        {getContent()}
+      </div>
+    </>
   );
 };
 

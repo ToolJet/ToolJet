@@ -1,6 +1,7 @@
 import React from 'react';
 import TextareaMentions from '@/_ui/Mentions';
 import Button from '@/_ui/Button';
+import useShortcuts from '@/_hooks/use-shortcuts';
 
 function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
   const [comment, setComment] = React.useState(editComment);
@@ -15,6 +16,8 @@ function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
     setComment('');
     setLoading(false);
   };
+  useShortcuts(['Meta', 'Enter'], () => handleClick(), [comment]);
+
   return (
     <div className="card-footer">
       <div className="row align-items-center">
