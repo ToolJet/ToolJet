@@ -71,6 +71,8 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
   const commentFadeStyle = useSpring({ from: { opacity: 0 }, to: { opacity: 1 } });
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
 
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
   return (
     <>
       <animated.div
@@ -112,15 +114,15 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
                 setOpen(false);
               }, 0)
             }
+            threadId={threadId}
+            isThreadOwner={currentUser.id === user.id}
+            isResolved={isResolved}
           />
           <CommentBody
             setEditComment={setEditComment}
             setEditCommentId={setEditCommentId}
             fetchComments={fetchData}
             isLoading={loading}
-            isResolved={isResolved}
-            threadId={threadId}
-            ownerId={user.id}
             thread={thread}
           />
           <CommentFooter

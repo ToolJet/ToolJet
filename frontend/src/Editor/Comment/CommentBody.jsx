@@ -6,23 +6,14 @@ import { isEmpty } from 'lodash';
 import moment from 'moment';
 import CommentActions from './CommentActions';
 
-const CommentBody = ({
-  ownerId,
-  threadId,
-  thread,
-  isResolved,
-  isLoading,
-  setEditComment,
-  setEditCommentId,
-  fetchComments,
-}) => {
+const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
   const getContent = () => {
     if (isEmpty(thread)) return <div className="text-center">Your message will post here</div>;
 
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     return (
       <div className="divide-y">
-        {thread.map(({ id, comment, createdAt, user = {} }, idx) => {
+        {thread.map(({ id, comment, createdAt, user = {} }) => {
           return (
             <div key={id}>
               <div className="d-flex card-title">
@@ -30,12 +21,8 @@ const CommentBody = ({
                 <CommentActions
                   fetchComments={fetchComments}
                   comment={comment}
-                  threadId={threadId}
                   commentId={id}
-                  showResolved={idx === 0}
-                  isThreadOwner={currentUser.id === ownerId && ownerId === user.id}
                   isCommentOwner={currentUser.id === user.id}
-                  isResolved={isResolved}
                   setEditComment={setEditComment}
                   setEditCommentId={setEditCommentId}
                 />

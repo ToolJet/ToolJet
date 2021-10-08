@@ -18,10 +18,10 @@ function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
   return (
     <div className="card-footer">
       <div className="row align-items-center">
-        <div className="col-10">
+        <div className="col-9">
           <TextareaMentions value={comment} setValue={setComment} placeholder="Type your comment here" />
         </div>
-        <div className="col-2">
+        <div className="col-3">
           <Button loading={loading} disabled={!comment} className={`m2 `} onClick={handleClick}>
             Send
           </Button>
