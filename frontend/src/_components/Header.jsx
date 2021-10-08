@@ -1,18 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import cx from 'classnames';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
-  const [pathName, setPathName] = useState(document.location.pathname);
-
-  useEffect(() => {
-    setPathName(document.location.pathname);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [document.location.pathname]);
-
   function logout() {
     authenticationService.logout();
     history.push('/login');
@@ -36,16 +28,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
           </Link>
         </h1>
 
-        <ul className="navbar-nav d-none d-lg-flex">
-          <li className={cx(`nav-item mx-3`, { active: pathName === '/' })}>
-            <Link to={'/'} className="nav-link">
-              <span className="nav-link-icon d-md-none d-lg-inline-block">
-                <img className="svg-icon" src="/assets/images/icons/apps.svg" width="15" height="15" />
-              </span>
-              <span className="nav-link-title">Apps</span>
-            </Link>
-          </li>
-        </ul>
         <div className="navbar-nav flex-row order-md-last">
           <div className="p-1 m-1 d-flex align-items-center">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
