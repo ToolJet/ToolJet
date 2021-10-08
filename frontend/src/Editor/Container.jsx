@@ -312,6 +312,7 @@ export const Container = ({
         <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '10%' }}>
           <center className="text-muted">
             You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.
+            Check out our <a href="https://docs.tooljet.io/docs/tutorial/adding-widget" target="_blank">guide</a> on adding widgets.
           </center>
         </div>
       )}
