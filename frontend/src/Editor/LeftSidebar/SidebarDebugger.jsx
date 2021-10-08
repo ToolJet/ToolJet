@@ -172,14 +172,7 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
           height="16"
         />
         [{_.capitalize(errorProps.type)} {errorProps.key}] &nbsp;
-        {errorProps.type === 'query' && (
-          <span className="text-red">
-            {`Query Failed: ${errorProps.description}`} {errorProps.message}.
-          </span>
-        )}
-        {errorProps.type === 'transformations' && (
-          <span className="text-red">{`Transformations Failed: ${errorProps.message}`} .</span>
-        )}
+        <span className="text-red">{`${_.startCase(errorProps.type)} Failed: ${errorProps.message}`} .</span>
         <br />
         <small className="text-muted px-1">{moment(errorProps.timestamp).fromNow()}</small>
       </p>
