@@ -55,7 +55,7 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
 [Building a Github contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
 
 ## Documentation
-The documentation is available at [here](https://docs.tooljet.io).
+The documentation is available at https://docs.tooljet.io.
 
 - [Getting Started](https://docs.tooljet.io)<br>
 - [Deploying](https://docs.tooljet.io/docs/deployment/architecture)<br>

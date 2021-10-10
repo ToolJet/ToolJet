@@ -52,4 +52,4 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 By contributing, you agree that your contributions will be licensed under its AGPL v3 License.
 
 ## Questions? 
-Contact us on slack [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) or mail us at [hello@tooljet.io](https://mail.google.com/mail/u/0/?fs=1&tf=cm&source=mailto&to=hello@tooljet.io)
+Contact us on slack [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) or mail us at [hello@tooljet.io](mailto:hello@tooljet.io.).
