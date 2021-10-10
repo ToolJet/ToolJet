@@ -90,7 +90,7 @@ export const Folders = function Folders({
           ))}
           <hr />
           {!showForm && (
-            <a className="mx-3" style={{"fontWeight":500}} onClick={() => setShowForm(true)}>
+            <a className="mx-3 fw-500" onClick={() => setShowForm(true)}>
               + Folder
             </a>
           )}
