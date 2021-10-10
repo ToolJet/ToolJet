@@ -36,7 +36,7 @@ Pull requests are the best way to propose changes to the codebase (we use [Git-F
 In short, when you submit code changes, your submissions are understood to be under the same [AGPL v3 License](https://www.gnu.org/licenses/agpl-3.0.en.html) that covers the project.
 
 ## Report bugs using Github's [issues](https://github.com/ToolJet/ToolJet/issues)
-We use GitHub issues to track public bugs. Report a bug by [opening a new issue](); it's that easy!
+We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/ToolJet/ToolJet/issues/new/choose). It's that easy!
 
 **Great Bug Reports** tend to have:
 
@@ -52,4 +52,4 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 By contributing, you agree that your contributions will be licensed under its AGPL v3 License.
 
 ## Questions? 
-Contact us on slack [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) or mail us at [hello@tooljet.io](hello@tooljet)
+Contact us on slack [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) or mail us at [hello@tooljet.io](https://mail.google.com/mail/u/0/?fs=1&tf=cm&source=mailto&to=hello@tooljet.io)
