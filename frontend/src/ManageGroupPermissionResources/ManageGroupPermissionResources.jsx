@@ -48,7 +48,7 @@ class ManageGroupPermissionResources extends React.Component {
   fetchGroupAndResources = (groupPermissionId) => {
     groupPermissionService.getGroup(groupPermissionId).then((data) => {
       this.setState({
-        groupPermission: data.group_permission,
+        groupPermission: data,
         isLoadingGroup: false,
       });
 

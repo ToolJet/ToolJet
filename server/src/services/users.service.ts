@@ -174,6 +174,9 @@ export class UsersService {
   async removeUserGroupPermissionsIfExists(manager: EntityManager, user: User, removeGroups: string[]) {
     if (removeGroups) {
       await this.throwErrorIfRemovingLastActiveAdmin(user, removeGroups);
+      if (removeGroups.includes('all_users')) {
+        throw new BadRequestException('Cannot remove user from default group.');
+      }
 
       const groupPermissions = await manager.find(GroupPermission, {
         group: In(removeGroups),

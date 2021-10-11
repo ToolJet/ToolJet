@@ -105,7 +105,6 @@ function getUsersNotInGroup(groupPermissionId) {
 
 function updateAppGroupPermission(groupPermissionId, appGroupPermissionId, actions) {
   const body = {
-    resource: 'app',
     actions,
   };
 

@@ -69,6 +69,7 @@ export async function createApplication(nestApp, { name, user, isPublic, slug }:
   );
 
   await maybeCreateAdminAppGroupPermissions(nestApp, newApp);
+  await maybeCreateAllUsersAppGroupPermissions(nestApp, newApp);
 
   return newApp;
 }
@@ -239,6 +240,31 @@ export async function maybeCreateAdminAppGroupPermissions(nestApp, app) {
       groupPermissionId: orgAdminGroupPermissions.id,
       appId: app.id,
       ...adminGroupPermissions,
+    });
+    await appGroupPermissionRepository.save(appGroupPermission);
+  }
+}
+
+export async function maybeCreateAllUsersAppGroupPermissions(nestApp, app) {
+  const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
+  const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
+
+  const orgGroupPermissions = await groupPermissionRepository.findOne({
+    organizationId: app.organizationId,
+    group: 'all_users',
+  });
+
+  if (orgGroupPermissions) {
+    const permissions = {
+      read: true,
+      update: false,
+      delete: false,
+    };
+
+    const appGroupPermission = appGroupPermissionRepository.create({
+      groupPermissionId: orgGroupPermissions.id,
+      appId: app.id,
+      ...permissions,
     });
     await appGroupPermissionRepository.save(appGroupPermission);
   }

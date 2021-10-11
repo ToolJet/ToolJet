@@ -4,13 +4,7 @@ import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectTyp
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '@services/users.service';
 
-type Actions =
-  | 'changeRole'
-  | 'archiveUser'
-  | 'inviteUser'
-  | 'createGroupPermission'
-  | 'updateAppGroupPermission'
-  | 'updateGroupPermission';
+type Actions = 'changeRole' | 'archiveUser' | 'inviteUser' | 'accessGroupPermission';
 
 type Subjects = InferSubjects<typeof OrganizationUser | typeof User> | 'all';
 
@@ -28,9 +22,7 @@ export class CaslAbilityFactory {
       can('inviteUser', User);
       can('archiveUser', User);
       can('changeRole', User);
-      can('createGroupPermission', User);
-      can('updateAppGroupPermission', User);
-      can('updateGroupPermission', User);
+      can('accessGroupPermission', User);
     }
 
     return build({

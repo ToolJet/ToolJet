@@ -13,7 +13,7 @@ export class GroupPermissionsController {
   constructor(private groupPermissionsService: GroupPermissionsService) {}
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('createGroupPermission', User))
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Post()
   async create(@Request() req) {
     const groupPermission = await this.groupPermissionsService.create(req.user, req.body.group);
@@ -21,19 +21,21 @@ export class GroupPermissionsController {
     return decamelizeKeys(groupPermission);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Get(':id')
   async show(@Request() req, @Param() params) {
     const groupPermission = await this.groupPermissionsService.findOne(req.user, params.id);
 
-    return decamelizeKeys({ groupPermission });
+    return decamelizeKeys(groupPermission);
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('updateAppGroupPermission', User))
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Put(':id/app_group_permissions/:appGroupPermissionId')
   async updateAppGroupPermission(@Request() req, @Param() params) {
     const groupPermission = await this.groupPermissionsService.updateAppGroupPermission(
+      req.user,
       params.id,
       params.appGroupPermissionId,
       req.body.actions
@@ -43,7 +45,7 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupPermission', User))
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Put(':id')
   async update(@Request() req, @Param() params) {
     const groupPermission = await this.groupPermissionsService.update(params.id, req.body);
@@ -51,7 +53,8 @@ export class GroupPermissionsController {
     return decamelizeKeys(groupPermission);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Get()
   async index(@Request() req) {
     const groupPermissions = await this.groupPermissionsService.findAll(req.user);
@@ -60,7 +63,7 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('createGroupPermission', User))
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Delete(':id')
   async destroy(@Request() req, @Param() params) {
     const groupPermission = await this.groupPermissionsService.destroy(req.user, params.id);
@@ -68,7 +71,8 @@ export class GroupPermissionsController {
     return decamelizeKeys(groupPermission);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Get(':id/apps')
   async apps(@Request() req, @Param() params) {
     const apps = await this.groupPermissionsService.findApps(req.user, params.id);
@@ -76,7 +80,8 @@ export class GroupPermissionsController {
     return decamelizeKeys({ apps });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Get(':id/addable_apps')
   async addableApps(@Request() req, @Param() params) {
     const apps = await this.groupPermissionsService.findAddableApps(req.user, params.id);
@@ -84,7 +89,8 @@ export class GroupPermissionsController {
     return decamelizeKeys({ apps });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Get(':id/users')
   async users(@Request() req, @Param() params) {
     const users = await this.groupPermissionsService.findUsers(req.user, params.id);
@@ -92,7 +98,8 @@ export class GroupPermissionsController {
     return decamelizeKeys({ users });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Get(':id/addable_users')
   async addableUsers(@Request() req, @Param() params) {
     const users = await this.groupPermissionsService.findAddableUsers(req.user, params.id);
