@@ -23,7 +23,7 @@ import { StarRating } from '../Components/StarRating';
 import { renderTooltip } from '../../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
-import { resolveProperties } from './component-properties-resolution';
+import { resolveProperties, resolveStyles } from './component-properties-resolution';
 
 const AllComponents = {
   Button,
@@ -83,6 +83,7 @@ export const Box = function Box({
 
   const ComponentToRender = AllComponents[component.component];
   const resolvedProperties = resolveProperties(component, currentState);
+  const resolvedStyles = resolveStyles(component, currentState);
 
   return (
     <OverlayTrigger
@@ -109,6 +110,7 @@ export const Box = function Box({
             darkMode={darkMode}
             removeComponent={removeComponent}
             properties={resolvedProperties}
+            styles={resolvedStyles}
             setProperty={(property, value) => onComponentOptionChanged(component, property, value)}
           ></ComponentToRender>
         ) : (

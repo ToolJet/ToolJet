@@ -17,3 +17,19 @@ export const resolveProperties = (component, currentState) => {
     return {};
   }
 };
+
+export const resolveStyles = (component, currentState) => {
+  if (currentState && currentState.components[component.name]) {
+    const styles = currentState.components[component.name].styles;
+    return Object.entries(styles).reduce((resolvedStyles, entry) => {
+      const key = entry[0];
+      const value = resolveReferences(entry[1], currentState);
+      return {
+        ...resolvedStyles,
+        ...{ [key]: value },
+      };
+    }, {});
+  } else {
+    return {};
+  }
+};

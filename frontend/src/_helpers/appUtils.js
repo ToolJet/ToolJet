@@ -538,11 +538,20 @@ export function computeComponentState(_ref, components) {
       {}
     );
 
+    const styles = Object.entries(component.component.definition.styles).reduce(
+      (properties, entry) => ({
+        ...properties,
+        ...{ [entry[0]]: entry[1].value },
+      }),
+      {}
+    );
+
     componentState[component.component.name] = {
       ...componentMeta.exposedVariables,
       id: key,
       ...existingValues,
       ...properties,
+      styles: styles,
     };
   });
 
