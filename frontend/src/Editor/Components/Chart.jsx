@@ -8,7 +8,6 @@ const Plot = createPlotlyComponent(Plotly);
 
 export const Chart = function Chart({ id, width, height, component, onComponentClick, currentState, darkMode }) {
   const [loadingState, setLoadingState] = useState(false);
-  // const [chartData, setChartData] = useState([]);
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
