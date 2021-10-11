@@ -24,6 +24,29 @@ export const EventManager = ({
     return { name: action.name, value: action.id };
   });
 
+  let alertTypes = [
+    {
+      name: 'Info',
+      id: 'info',
+    },
+    {
+      name: 'Success',
+      id: 'success',
+    },
+    {
+      name: 'Warning',
+      id: 'warning',
+    },
+    {
+      name: 'Danger',
+      id: 'error',
+    },
+  ];
+
+  let alertOptions = alertTypes.map((alert) => {
+    return { name: alert.name, value: alert.id };
+  });
+
   excludeEvents = excludeEvents || [];
 
   /* Filter events based on excludesEvents ( a list of event ids to exclude ) */
@@ -128,16 +151,31 @@ export const EventManager = ({
           <div className="hr-text">Action options</div>
           <div>
             {event.actionId === 'show-alert' && (
-              <div className="row">
-                <div className="col-3 p-2">Message</div>
-                <div className="col-9">
-                  <CodeHinter
-                    currentState={currentState}
-                    initialValue={event.message}
-                    onChange={(value) => handlerChanged(index, 'message', value)}
-                  />
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">Message</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.message}
+                      onChange={(value) => handlerChanged(index, 'message', value)}
+                    />
+                  </div>
                 </div>
-              </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">Alert Type</div>
+                  <div className="col-9">
+                    <SelectSearch
+                      options={alertOptions}
+                      value={event.alertType}
+                      search={false}
+                      onChange={(value) => handlerChanged(index, 'alertType', value)}
+                      filterOptions={fuzzySearch}
+                      placeholder="Select.."
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             {event.actionId === 'open-webpage' && (

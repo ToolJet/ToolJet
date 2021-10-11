@@ -56,7 +56,7 @@ export function runTransformation(_ref, rawData, transformation, query) {
     result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
-    toast.error(err.message, { hideProgressBar: true });
+    result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
   }
 
   return result;
@@ -125,7 +125,7 @@ function executeAction(_ref, event, mode) {
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState);
-        toast(message, { hideProgressBar: true });
+        toast(message, { hideProgressBar: true, type: event.alertType });
         return new Promise(function (resolve, reject) {
           resolve();
         });
@@ -451,6 +451,34 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
           if (dataQuery.options.enableTransformation) {
             finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
+            if (finalData.status === 'failed') {
+              return _self.setState(
+                {
+                  currentState: {
+                    ..._self.state.currentState,
+                    queries: {
+                      ..._self.state.currentState.queries,
+                      [queryName]: {
+                        ..._self.state.currentState.queries[queryName],
+                        isLoading: false,
+                      },
+                    },
+                    errors: {
+                      ..._self.state.currentState.errors,
+                      [queryName]: {
+                        type: 'transformations',
+                        data: finalData,
+                        options: options,
+                      },
+                    },
+                  },
+                },
+                () => {
+                  resolve();
+                  onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                }
+              );
+            }
           }
 
           if (dataQuery.options.showSuccessNotification) {
