@@ -548,9 +548,9 @@ export function computeComponentState(_ref, components) {
 
     componentState[component.component.name] = {
       ...componentMeta.exposedVariables,
+      ...properties,
       id: key,
       ...existingValues,
-      ...properties,
       styles: styles,
     };
   });
