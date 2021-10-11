@@ -24,6 +24,18 @@ const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetc
     scrollToBottom();
   }, []);
 
+  const getComment = (comment) => {
+    const _comment = comment.split(' ');
+    return _comment
+      .map((c) => {
+        if (c.startsWith('@')) {
+          return `<span>${c}</span>`;
+        }
+        return c;
+      })
+      .join(' ');
+  };
+
   const getContent = () => {
     if (isEmpty(thread)) return <div className="text-center">Your message will post here</div>;
 
@@ -46,7 +58,7 @@ const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetc
               </div>
 
               <div className="card-subtitle comment-time">{moment(createdAt).fromNow()}</div>
-              <p className="cursor-auto">{comment}</p>
+              <p className="cursor-auto" dangerouslySetInnerHTML={{ __html: getComment(comment) }} />
             </div>
           );
         })}

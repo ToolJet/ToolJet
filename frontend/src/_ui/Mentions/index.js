@@ -1,4 +1,5 @@
 import React from 'react';
+import { capitalize } from 'lodash';
 import { organizationService } from '@/_services';
 
 import { MentionsInput, Mention } from 'react-mentions';
@@ -8,9 +9,13 @@ import { emojis } from './emojis.json';
 const Mentions = ({ value, setValue, placeholder }) => {
   const [users, setUsers] = React.useState([]);
 
+  // TODO: move this to context etc, this loads the users x number to imports
   React.useEffect(() => {
     organizationService.getUsers(null).then((data) => {
-      const _users = data.users.map((u) => ({ id: u.id, display: u.first_name }));
+      const _users = data.users.map((u) => ({
+        id: u.id,
+        display: `${capitalize(u.first_name)} ${capitalize(u.last_name)}`,
+      }));
       setUsers(_users);
     });
   }, []);
@@ -33,12 +38,10 @@ const Mentions = ({ value, setValue, placeholder }) => {
           lineHeight: 1.2,
           minHeight: 40,
         },
-
         highlighter: {
           padding: 9,
           border: '1px solid transparent',
         },
-
         input: {
           fontSize: 14,
           lineHeight: 1.5,
@@ -46,20 +49,17 @@ const Mentions = ({ value, setValue, placeholder }) => {
           border: 0,
           outline: 0,
         },
-
         suggestions: {
           list: {
             backgroundColor: 'white',
-            border: '1px solid rgba(0,0,0,0.15)',
-            fontSize: 16,
+            boxShadow: '0px 2px 12px rgba(41, 45, 55, 0.156863)',
+            borderRadius: '4',
           },
-
           item: {
-            padding: '5px 15px',
-            borderBottom: '1px solid rgba(0,0,0,0.15)',
+            padding: '10px 16px',
 
             '&focused': {
-              backgroundColor: '#cee4e5',
+              background: '#EEF3F9',
             },
           },
         },
@@ -74,9 +74,9 @@ const Mentions = ({ value, setValue, placeholder }) => {
         displayTransform={(display) => `@${display}`}
         markup="@__display__"
         data={users}
-        style={{
-          backgroundColor: '#cee4e5',
-        }}
+        // style={{
+        //   backgroundColor: '#218DE3',
+        // }}
         appendSpaceOnAdd
       />
       <Mention trigger=":" markup="__id__" regex={/($a)/} data={queryEmojis} appendSpaceOnAdd />
