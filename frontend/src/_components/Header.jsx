@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
+import cx from 'classnames';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
+  const [pathName, setPathName] = useState(document.location.pathname);
+
+  useEffect(() => {
+    setPathName(document.location.pathname);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [document.location.pathname]);
+
   function logout() {
     authenticationService.logout();
     history.push('/login');
@@ -43,9 +51,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               <span className="nav-link-icon d-md-none d-lg-inline-block">
                 <img className="svg-icon" src="https://www.svgrepo.com/show/39547/gallery.svg" width="15" height="15" />
               </span>
-              <span className="nav-link-title">
-                Library
-              </span>
+              <span className="nav-link-title">Library</span>
             </Link>
           </li>
         </ul>

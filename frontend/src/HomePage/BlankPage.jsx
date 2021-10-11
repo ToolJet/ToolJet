@@ -12,7 +12,10 @@ export const BlankPage = function BlankPage({ createApp }) {
               <div className="empty-img">
                 <img src="/assets/images/blank.svg" height="128" alt="" />
               </div>
-              <p className="empty-title">Welcome to ToolJet ! You can get started by creating a new application or by creating an application using a template in ToolJet Library.</p>
+              <p className="empty-title">
+                Welcome to ToolJet ! You can get started by creating a new application or by creating an application
+                using a template in ToolJet Library.
+              </p>
               <div className="empty-action">
                 <a onClick={createApp} className="btn btn-primary text-light">
                   <svg
@@ -43,8 +46,9 @@ export const BlankPage = function BlankPage({ createApp }) {
                 </a>
               </div>
             </div>
+
+            <SampleApps></SampleApps>
           </div>
-          <SampleApps></SampleApps>
         </div>
       </div>
     </div>
