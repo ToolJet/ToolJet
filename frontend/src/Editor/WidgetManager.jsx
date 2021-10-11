@@ -3,7 +3,7 @@ import { DraggableBox } from './DraggableBox';
 import Fuse from 'fuse.js';
 import { isEmpty } from 'lodash';
 
-export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout }) {
+export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
 
   function filterComponents(value) {
@@ -46,7 +46,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
             <img src="./static/illustrations/undraw_printing_invoices_5r4r.svg" height="128" alt="" />
           </div> */}
           <p className="empty-title">No results found</p>
-          <p className="empty-subtitle text-muted">
+          <p className={`empty-subtitle ${darkMode ? 'text-white-50' : 'text-secondary'}`}>
             Try adjusting your search or filter to find what you&apos;re looking for.
           </p>
         </div>

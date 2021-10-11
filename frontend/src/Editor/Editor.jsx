@@ -864,6 +864,7 @@ class Editor extends React.Component {
                   componentTypes={componentTypes}
                   zoomLevel={zoomLevel}
                   currentLayout={currentLayout}
+                  darkMode={this.props.darkMode}
                 ></WidgetManager>
               )}
             </div>
