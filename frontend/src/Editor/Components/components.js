@@ -1033,4 +1033,39 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Divider',
+    displayName: 'Divider',
+    description: 'Separator between components',
+    component: 'Divider',
+    defaultSize: {
+      width: 200,
+      height: 10,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      dividerColor: { type: 'color', displayName: 'Divider Color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        dividerColor: { value: '#E7E8EA' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
 ];
