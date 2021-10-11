@@ -119,7 +119,6 @@ export class AppCloneService {
     });
 
     const adminPermissions = {
-      create: true,
       read: true,
       update: true,
       delete: true,
