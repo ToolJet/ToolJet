@@ -98,6 +98,11 @@ async function copyToClipboard(text) {
 }
 
 function showModal(_ref, modalId, show) {
+  if (!modalId) {
+    console.log('No modal is associated with this event.');
+    return Promise.resolve();
+  }
+
   const modalMeta = _ref.state.appDefinition.components[modalId];
 
   const newState = {
@@ -115,9 +120,7 @@ function showModal(_ref, modalId, show) {
 
   _ref.setState(newState);
 
-  return new Promise(function (resolve, reject) {
-    resolve();
-  });
+  return Promise.resolve();
 }
 
 function executeAction(_ref, event, mode) {
@@ -126,9 +129,7 @@ function executeAction(_ref, event, mode) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState);
         toast(message, { hideProgressBar: true, type: event.alertType });
-        return new Promise(function (resolve, reject) {
-          resolve();
-        });
+        return Promise.resolve();
       }
 
       case 'run-query': {
@@ -139,9 +140,7 @@ function executeAction(_ref, event, mode) {
       case 'open-webpage': {
         const url = resolveReferences(event.url, _ref.state.currentState);
         window.open(url, '_blank');
-        return new Promise(function (resolve, reject) {
-          resolve();
-        });
+        return Promise.resolve();
       }
 
       case 'go-to-app': {
@@ -174,9 +173,7 @@ function executeAction(_ref, event, mode) {
             window.open(url, '_blank');
           }
         }
-        return new Promise(function (resolve, reject) {
-          resolve();
-        });
+        return Promise.resolve();
       }
 
       case 'show-modal':
@@ -189,9 +186,7 @@ function executeAction(_ref, event, mode) {
         const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
         copyToClipboard(contentToCopy);
 
-        return new Promise(function (resolve, reject) {
-          resolve();
-        });
+        return Promise.resolve();
       }
     }
   }
