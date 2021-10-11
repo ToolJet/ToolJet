@@ -2,7 +2,17 @@ import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 
-export const LeftSidebarItem = ({ tip = '', className, icon, text, onClick, badge = false, count, ...rest }) => {
+export const LeftSidebarItem = ({
+  tip = '',
+  className,
+  icon,
+  commentBadge,
+  text,
+  onClick,
+  badge = false,
+  count,
+  ...rest
+}) => {
   return (
     <OverlayTrigger
       trigger={['click', 'hover', 'focus']}
@@ -20,11 +30,27 @@ export const LeftSidebarItem = ({ tip = '', className, icon, text, onClick, badg
           />
         )}
         {badge && <LeftSidebarItem.Badge count={count} />}
+        {commentBadge && <LeftSidebarItem.CommentBadge />}
         {text && text}
       </div>
     </OverlayTrigger>
   );
 };
+
+function CommentBadge() {
+  return (
+    <svg
+      className="comment-badge"
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="5" cy="5" r="5" fill="#FF6666" />
+    </svg>
+  );
+}
 
 function NotificationBadge({ count }) {
   const fontSize = count > 999 ? '7.5px' : '8.5px';
@@ -39,4 +65,5 @@ function NotificationBadge({ count }) {
   );
 }
 
+LeftSidebarItem.CommentBadge = CommentBadge;
 LeftSidebarItem.Badge = NotificationBadge;
