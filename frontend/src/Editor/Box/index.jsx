@@ -1,28 +1,29 @@
 import React from 'react';
-import { Button } from './Components/Button';
-import { Image } from './Components/Image';
-import { Text } from './Components/Text';
-import { Table } from './Components/Table/Table';
-import { TextInput } from './Components/TextInput';
-import { NumberInput } from './Components/NumberInput';
-import { TextArea } from './Components/TextArea';
-import { Container } from './Components/Container';
-import { RichTextEditor } from './Components/RichTextEditor';
-import { DropDown } from './Components/DropDown';
-import { Checkbox } from './Components/Checkbox';
-import { Datepicker } from './Components/Datepicker';
-import { DaterangePicker } from './Components/DaterangePicker';
-import { Multiselect } from './Components/Multiselect';
-import { Modal } from './Components/Modal';
-import { Chart } from './Components/Chart';
-import { Map } from './Components/Map/Map';
-import { QrScanner } from './Components/QrScanner/QrScanner';
-import { ToggleSwitch } from './Components/Toggle';
-import { RadioButton } from './Components/RadioButton';
-import { StarRating } from './Components/StarRating';
-import { renderTooltip } from '../_helpers/appUtils';
+import { Button } from '../Components/Button';
+import { Image } from '../Components/Image';
+import { Text } from '../Components/Text';
+import { Table } from '../Components/Table/Table';
+import { TextInput } from '../Components/TextInput';
+import { NumberInput } from '../Components/NumberInput';
+import { TextArea } from '../Components/TextArea';
+import { Container } from '../Components/Container';
+import { RichTextEditor } from '../Components/RichTextEditor';
+import { DropDown } from '../Components/DropDown';
+import { Checkbox } from '../Components/Checkbox';
+import { Datepicker } from '../Components/Datepicker';
+import { DaterangePicker } from '../Components/DaterangePicker';
+import { Multiselect } from '../Components/Multiselect';
+import { Modal } from '../Components/Modal';
+import { Chart } from '../Components/Chart';
+import { Map } from '../Components/Map/Map';
+import { QrScanner } from '../Components/QrScanner/QrScanner';
+import { ToggleSwitch } from '../Components/Toggle';
+import { RadioButton } from '../Components/RadioButton';
+import { StarRating } from '../Components/StarRating';
+import { renderTooltip } from '../../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
+import { resolveProperties } from './component-properties-resolution';
 
 const AllComponents = {
   Button,
@@ -81,7 +82,8 @@ export const Box = function Box({
   }
 
   const ComponentToRender = AllComponents[component.component];
-
+  const resolvedProperties = resolveProperties(component, currentState);
+  console.log('resolved properties are', resolvedProperties, currentState);
   return (
     <OverlayTrigger
       placement="top"
@@ -106,6 +108,8 @@ export const Box = function Box({
             containerProps={containerProps}
             darkMode={darkMode}
             removeComponent={removeComponent}
+            properties={resolvedProperties}
+            setProperty={(property, value) => onComponentOptionChanged(component, property, value)}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '100%' }}>
