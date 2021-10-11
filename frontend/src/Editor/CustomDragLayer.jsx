@@ -19,7 +19,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)
       display: 'none',
     };
   }
-  var x, y;
+  let x, y;
 
   let id = item.id;
 
