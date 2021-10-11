@@ -55,7 +55,10 @@ export class FoldersService {
       )
       .where('user_group_permissions.user_id = :userId', { userId: user.id })
       .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('apps.is_public = :value', { value: true })
+      .orWhere('apps.is_public = :value and apps.organization_id = :organizationId', {
+        value: true,
+        organizationId: user.organizationId,
+      })
       .getMany();
     const allViewableAppIds = allViewableApps.map((app) => app.id);
 
