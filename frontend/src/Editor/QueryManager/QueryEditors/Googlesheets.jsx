@@ -4,6 +4,7 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { changeOption } from './utils';
 import _ from 'lodash';
+import { resolveReferences } from '../../../_helpers/utils';
 
 class Googlesheets extends React.Component {
   constructor(props) {
@@ -183,15 +184,18 @@ class Googlesheets extends React.Component {
 }
 
 Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, updateOptions }) {
-  const [filterKey, setFilterKey] = React.useState('');
-  const [filterValue, setFilterValue] = React.useState('');
+  const [filterData, setFilterData] = React.useState({});
 
+  const updateBody = (value) => {
+    const options = resolveReferences(value, currentState);
+    updateOptions('body', options);
+  };
   React.useEffect(() => {
-    if (filterKey.length !== 0 && filterValue.length !== 0 && !_.isEmpty(currentState)) {
-      updateOptions('filterData', { key: filterKey, value: filterValue });
+    if (filterData && !_.isEmpty(currentState)) {
+      updateOptions('filterData', filterData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterKey, filterValue]);
+  }, [filterData]);
 
   return (
     <>
@@ -204,7 +208,7 @@ Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, update
             className="form-control codehinter-query-editor-input"
             theme={darkMode ? 'monokai' : 'default'}
             height="40px"
-            onChange={(value) => setFilterKey(value)}
+            onChange={(value) => setFilterData((prev) => ({ ...prev, key: value }))}
             enablePreview
           />
         </div>
@@ -221,7 +225,7 @@ Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, update
             lineNumbers={false}
             enablePreview
             height="40px"
-            onChange={(value) => setFilterValue(value)}
+            onChange={(value) => setFilterData((prev) => ({ ...prev, value: value }))}
           />
         </div>
       </div>
@@ -235,7 +239,7 @@ Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, update
           lineNumbers={true}
           height="120px"
           ignoreBraces={true}
-          onChange={(value) => updateOptions('body', value)}
+          onChange={(value) => updateBody(value)}
           enablePreview
         />
       </div>
