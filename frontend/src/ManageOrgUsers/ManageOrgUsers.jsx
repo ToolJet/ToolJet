@@ -6,6 +6,8 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { OverlayTrigger } from 'react-bootstrap';
+import Tooltip from 'react-bootstrap/Tooltip';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -379,12 +381,22 @@ class ManageOrgUsers extends React.Component {
                                     text={this.generateInvitationURL(user)}
                                     onCopy={this.invitationLinkCopyHandler}
                                   >
-                                    <img
-                                      className="svg-icon"
-                                      src="/assets/images/icons/copy.svg"
-                                      width="15"
-                                      height="15"
-                                    ></img>
+                                     <OverlayTrigger
+                                        trigger={['hover']}
+                                        placement="top"
+                                        delay={{ show: 30, hide: 100 }}
+                                        overlay={<Tooltip id="button-tooltip">Copy invitation link</Tooltip>}
+                                     >
+                                        <img
+                                          className="svg-icon"
+                                          src="/assets/images/icons/copy.svg"
+                                          width="15"
+                                          height="15"
+                                          style={{
+                                            cursor:'pointer'
+                                          }}
+                                        ></img>
+                                    </OverlayTrigger>
                                   </CopyToClipboard>
                                 ) : (
                                   ''
