@@ -1,5 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
+import toast from 'react-hot-toast';
 
 import { commentsService } from '@/_services';
 
@@ -18,6 +19,11 @@ const CommentHeader = ({ count = 0, threadId, isResolved, isThreadOwner, fetchTh
     await commentsService.updateThread(threadId, { isResolved: !isResolved });
     setSpinning(false);
     fetchThreads();
+    if (!isResolved) {
+      toast.success('Thread resolved');
+    } else {
+      toast('Thread unresolved');
+    }
   };
 
   const getResolveIcon = () => {
