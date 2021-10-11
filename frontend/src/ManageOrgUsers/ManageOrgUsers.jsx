@@ -371,7 +371,7 @@ class ManageOrgUsers extends React.Component {
                               </td>
                               <td className="text-muted">
                                 <span
-                                  className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
+                                  className={`badge bg-${user.status === 'invited' ? 'warning' : user.status === 'archived' ? 'danger' : 'success'} me-1 m-1`}
                                 ></span>
                                 <small className="user-status">{user.status}</small>
                                 {user.status === 'invited' && 'invitation_token' in user ? (
