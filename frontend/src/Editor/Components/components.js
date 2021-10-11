@@ -1040,11 +1040,11 @@ export const componentTypes = [
     component: 'Divider',
     defaultSize: {
       width: 200,
-      height: 25,
+      height: 10,
     },
     others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop? ' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile?' },
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {},
     events: {},
@@ -1063,7 +1063,7 @@ export const componentTypes = [
       properties: {},
       events: [],
       styles: {
-        dividerColor: { value: '#535251' },
+        dividerColor: { value: '#E7E8EA' },
         visibility: { value: '{{true}}' },
       },
     },
