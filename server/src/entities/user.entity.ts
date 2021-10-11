@@ -9,12 +9,15 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
-  AfterLoad,
   BaseEntity,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
+import { GroupPermission } from './group_permission.entity';
 import { Organization } from './organization.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
+import { UserGroupPermission } from './user_group_permission.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -63,14 +66,18 @@ export class User extends BaseEntity {
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
 
-  public isAdmin;
-  public isDeveloper;
-  public role;
+  @ManyToMany(() => GroupPermission)
+  @JoinTable({
+    name: 'user_group_permissions',
+    joinColumn: {
+      name: 'user_id',
+    },
+    inverseJoinColumn: {
+      name: 'group_permission_id',
+    },
+  })
+  groupPermissions: Promise<GroupPermission[]>;
 
-  @AfterLoad()
-  computeUserRole(): void {
-    this.isAdmin = this.organizationUsers[0].role === 'admin';
-    this.isDeveloper = this.organizationUsers[0].role === 'developer';
-    this.role = this.organizationUsers[0].role;
-  }
+  @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
+  userGroupPermissions: UserGroupPermission[];
 }

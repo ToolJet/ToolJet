@@ -54,7 +54,7 @@ function SettingsPage(props) {
             <div className="row align-items-center">
               <div className="col">
                 <div className="page-pretitle"></div>
-                <h2 className="page-title">Settings</h2>
+                <h2 className="page-title">Profile Settings</h2>
               </div>
             </div>
           </div>
