@@ -1,24 +1,26 @@
-import React from 'react';
-import { Router, Route } from 'react-router-dom';
-import { history } from '@/_helpers';
-import { authenticationService, tooljetService } from '@/_services';
-import { PrivateRoute } from '@/_components';
-import { HomePage, Library } from '@/HomePage';
-import { LoginPage } from '@/LoginPage';
-import { SignupPage } from '@/SignupPage';
-import { InvitationPage } from '@/InvitationPage';
-import { Authorize } from '@/Oauth2';
-import { Editor, Viewer } from '@/Editor';
-import '@/_styles/theme.scss';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { ManageOrgUsers } from '@/ManageOrgUsers';
-import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { OnboardingModal } from '@/Onboarding/OnboardingModal';
-import posthog from 'posthog-js';
-import { ForgotPassword } from '@/ForgotPassword';
-import { ResetPassword } from '@/ResetPassword';
-import { lt } from 'semver';
+import React from "react";
+import { Router, Route } from "react-router-dom";
+import { history } from "@/_helpers";
+import { authenticationService, tooljetService } from "@/_services";
+import { PrivateRoute } from "@/_components";
+import { HomePage, Library } from "@/HomePage";
+import { LoginPage } from "@/LoginPage";
+import { SignupPage } from "@/SignupPage";
+import { InvitationPage } from "@/InvitationPage";
+import { Authorize } from "@/Oauth2";
+import { Editor, Viewer } from "@/Editor";
+import "@/_styles/theme.scss";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ManageGroupPermissions } from "@/ManageGroupPermissions";
+import { ManageOrgUsers } from "@/ManageOrgUsers";
+import { ManageGroupPermissionResources } from "@/ManageGroupPermissionResources";
+import { SettingsPage } from "../SettingsPage/SettingsPage";
+import { OnboardingModal } from "@/Onboarding/OnboardingModal";
+import posthog from "posthog-js";
+import { ForgotPassword } from "@/ForgotPassword";
+import { ResetPassword } from "@/ResetPassword";
+import { lt } from "semver";
 
 class App extends React.Component {
   constructor(props) {
@@ -28,14 +30,14 @@ class App extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       onboarded: true,
-      darkMode: localStorage.getItem('darkMode') === 'true',
+      darkMode: localStorage.getItem("darkMode") === "true",
     };
   }
 
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x });
-      window.addEventListener('chatwoot:ready', function () {
+      window.addEventListener("chatwoot:ready", function () {
         try {
           window.$chatwoot.setUser(x.email, {
             email: x.email,
@@ -46,36 +48,47 @@ class App extends React.Component {
         }
       });
 
-      posthog.init('1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw', { api_host: 'https://app.posthog.com' });
+      posthog.init("1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw", {
+        api_host: "https://app.posthog.com",
+      });
       posthog.identify(
         x.email, // distinct_id, required
-        { name: `${x.first_name} ${x.last_name}` },
+        { name: `${x.first_name} ${x.last_name}` }
       );
     });
 
     window.chatwootSettings = {
       hideMessageBubble: true,
-    }
+    };
   }
 
   logout = () => {
     authenticationService.logout();
-    history.push('/login');
+    history.push("/login");
   };
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
-    localStorage.setItem('darkMode', newMode);
+    localStorage.setItem("darkMode", newMode);
   };
 
   render() {
-    const { currentUser, fetchedMetadata, updateAvailable, onboarded, darkMode } = this.state;
+    const {
+      currentUser,
+      fetchedMetadata,
+      updateAvailable,
+      onboarded,
+      darkMode,
+    } = this.state;
 
     if (currentUser && fetchedMetadata === false) {
       tooljetService.fetchMetaData().then((data) => {
         this.setState({ fetchedMetadata: true, onboarded: data.onboarded });
 
-        if (lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
+        if (
+          lt(data.installed_version, data.latest_version) &&
+          data.version_ignored === false
+        ) {
           this.setState({ updateAvailable: true });
         }
       });
@@ -83,7 +96,7 @@ class App extends React.Component {
 
     return (
       <Router history={history}>
-        <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
+        <div className={`main-wrapper ${darkMode ? "theme-dark" : ""}`}>
           {updateAvailable && (
             <div className="alert alert-info alert-dismissible" role="alert">
               <h3 className="mb-1">Update available</h3>
@@ -114,19 +127,81 @@ class App extends React.Component {
 
           <ToastContainer />
 
-          <PrivateRoute exact path="/" component={HomePage} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+          <PrivateRoute
+            exact
+            path="/"
+            component={HomePage}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
           <Route path="/login" component={LoginPage} />
           <Route path="/signup" component={SignupPage} />
           <Route path="/forgot-password" component={ForgotPassword} />
           <Route path="/reset-password" component={ResetPassword} />
           <Route path="/invitations/:token" component={InvitationPage} />
-          <PrivateRoute exact path="/apps/:id" component={Editor} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-          <PrivateRoute exact path="/applications/:id/versions/:versionId" component={Viewer} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-          <PrivateRoute exact path="/applications/:slug" component={Viewer} switchDarkMode={this.switchDarkMode} darkMode={darkMode}/>
-          <PrivateRoute exact path="/oauth2/authorize" component={Authorize} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-          <PrivateRoute exact path="/users" component={ManageOrgUsers} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-          <PrivateRoute exact path="/library" component={Library} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-          <PrivateRoute exact path="/settings" component={SettingsPage} switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+          <PrivateRoute
+            exact
+            path="/apps/:id"
+            component={Editor}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
+          <PrivateRoute
+            exact
+            path="/applications/:id/versions/:versionId"
+            component={Viewer}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
+          <PrivateRoute
+            exact
+            path="/applications/:slug"
+            component={Viewer}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
+          <PrivateRoute
+            exact
+            path="/oauth2/authorize"
+            component={Authorize}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
+          <PrivateRoute
+            exact
+            path="/users"
+            component={ManageOrgUsers}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
+          <PrivateRoute
+            exact
+            path="/groups"
+            component={ManageGroupPermissions}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
+          <PrivateRoute
+            exact
+            path="/groups/:id"
+            component={ManageGroupPermissionResources}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
+          <PrivateRoute
+            exact
+            path="/library"
+            component={Library}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
+          <PrivateRoute
+            exact
+            path="/settings"
+            component={SettingsPage}
+            switchDarkMode={this.switchDarkMode}
+            darkMode={darkMode}
+          />
         </div>
       </Router>
     );

@@ -579,7 +579,7 @@ class Editor extends React.Component {
                     value={this.state.app.name}
                   />
                 )}
-                <small>{this.state.editingVersion && `Editing version: ${this.state.editingVersion.name}`}</small>
+                <small>{this.state.editingVersion && `App version: ${this.state.editingVersion.name}`}</small>
                 <div className="editor-buttons">
                   <span
                     className={`btn btn-light mx-2`}
@@ -869,6 +869,7 @@ class Editor extends React.Component {
                   componentTypes={componentTypes}
                   zoomLevel={zoomLevel}
                   currentLayout={currentLayout}
+                  darkMode={this.props.darkMode}
                 ></WidgetManager>
               )}
             </div>
