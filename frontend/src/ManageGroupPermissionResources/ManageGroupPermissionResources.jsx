@@ -34,7 +34,7 @@ class ManageGroupPermissionResources extends React.Component {
     this.fetchGroupAndResources(groupPermissionId);
   }
 
-  humanizeifDefaultGroupName = (groupName) => {
+  humanizeIfDefaultGroupName = (groupName) => {
     switch (groupName) {
       case 'all_users':
         return 'All Users';
@@ -99,9 +99,7 @@ class ManageGroupPermissionResources extends React.Component {
       (permission) => permission.group_permission_id == groupPermissionId
     );
 
-    let actionParams = {};
-    if (action == 'edit') actionParams = { read: true, update: true };
-    if (action == 'view') actionParams = { read: true, update: false };
+    let actionParams = { read: true, update: action == 'edit' };
 
     groupPermissionService
       .updateAppGroupPermission(groupPermissionId, appGroupPermission.id, actionParams)
@@ -297,7 +295,7 @@ class ManageGroupPermissionResources extends React.Component {
                         <Link to="/groups">User groups</Link>
                       </li>
                       <li className="breadcrumb-item">
-                        <a href="#">{this.humanizeifDefaultGroupName(groupPermission.group)}</a>
+                        <a href="#">{this.humanizeIfDefaultGroupName(groupPermission.group)}</a>
                       </li>
                     </ol>
                   )}
