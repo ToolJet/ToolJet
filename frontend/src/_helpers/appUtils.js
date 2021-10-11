@@ -530,7 +530,6 @@ export function computeComponentState(_ref, components) {
     const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
     const existingValues = currentComponents[existingComponentName];
 
-    console.log('lavan', component);
     const properties = Object.entries(component.component.definition.properties).reduce(
       (properties, entry) => ({
         ...properties,
@@ -538,9 +537,6 @@ export function computeComponentState(_ref, components) {
       }),
       {}
     );
-
-    console.log('kowalski', properties);
-    console.log('rico', existingValues);
 
     componentState[component.component.name] = {
       ...componentMeta.exposedVariables,

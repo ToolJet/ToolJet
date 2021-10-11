@@ -83,7 +83,7 @@ export const Box = function Box({
 
   const ComponentToRender = AllComponents[component.component];
   const resolvedProperties = resolveProperties(component, currentState);
-  console.log('resolved properties are', resolvedProperties, currentState);
+
   return (
     <OverlayTrigger
       placement="top"

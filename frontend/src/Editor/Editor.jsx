@@ -236,7 +236,6 @@ class Editor extends React.Component {
 
   appDefinitionChanged = (newDefinition) => {
     this.setState({ appDefinition: newDefinition });
-    console.log('app definition changed');
     computeComponentState(this, newDefinition.components);
   };
 
