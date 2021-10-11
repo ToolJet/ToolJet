@@ -87,7 +87,7 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
 
   const data = resolveReferences(dataString, currentState, []);
 
-  const updateData = (data, dataString) => {
+  const computeChartData = (data, dataString) => {
     let rawData = data;
     if (typeof rawData === 'string') {
       try {
@@ -122,18 +122,11 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
       ];
     }
 
-    // setChartData(newData);
     return newData;
   };
 
-  const memoizedFunction = useMemo(() => updateData(data, dataString), [data, dataString]);
-
-  // useEffect(() => {
-  //   console.log('memoizedFunction', JSON.stringify(memoizedFunction));
-
-  //   setChartData(() => memoizedFunction);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [chartType]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoizedChartData = useMemo(() => computeChartData(data, dataString), [data, dataString]);
 
   return (
     <div
@@ -152,7 +145,7 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
         </div>
       ) : (
         <Plot
-          data={memoizedFunction}
+          data={memoizedChartData}
           layout={layout}
           config={{
             displayModeBar: false,
