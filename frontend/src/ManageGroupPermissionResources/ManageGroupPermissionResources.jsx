@@ -123,12 +123,10 @@ class ManageGroupPermissionResources extends React.Component {
     switch (action) {
       case 'edit':
         appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
-        console.log(action, appGroupPermission, appGroupPermission['read'] && appGroupPermission['update']);
         return appGroupPermission['read'] && appGroupPermission['update'];
       case 'view':
         appGroupPermission = this.findAppGroupPermission(app, groupPermissionId);
 
-        console.log(action, appGroupPermission, appGroupPermission['read'] && !appGroupPermission['update']);
         return appGroupPermission['read'] && !appGroupPermission['update'];
       default:
         return false;
