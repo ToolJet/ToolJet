@@ -4,7 +4,7 @@ sidebar_position: 8
 
 # Mobile layout
 
-Mobile layout is activated when the width of window is less than 600px.
+Mobile layout is activated when the width of the window is less than 600px.
 
 :::tip
 Widgets can be shown on desktop, mobile, or both.

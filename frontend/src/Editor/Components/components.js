@@ -419,6 +419,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -434,6 +435,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        checkboxColor: { value: '#3c92dc' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -578,7 +580,7 @@ export const componentTypes = [
     component: 'DaterangePicker',
     defaultSize: {
       width: 300,
-      height: 40,
+      height: 30,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -736,7 +738,7 @@ export const componentTypes = [
     description: 'Select one value from options',
     defaultSize: {
       width: 240,
-      height: 35,
+      height: 30,
     },
     component: 'DropDown',
     others: {
@@ -789,7 +791,7 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 270,
+      width: 240,
       height: 30,
     },
     component: 'Multiselect',

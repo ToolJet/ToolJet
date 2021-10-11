@@ -775,7 +775,7 @@ body {
   }
 
   .table-row:hover,
-  .table-row:focus-within {
+  .table-row:focus {
     background: rgba(lightBlue, 0.25);
   }
 
@@ -2186,7 +2186,7 @@ input[type='text'] {
 .dropdown-widget,
 .multiselect-widget {
   .select-search__input {
-    padding: 0.2375rem 0.75rem;
+    padding: 0.1375rem 0.75rem;
   }
 
   .select-search__options {
@@ -2209,4 +2209,36 @@ input[type='text'] {
 
 .event-action{
   filter: brightness(0) invert(0);
+}
+
+.DateRangePicker {
+  padding: 1.25px 5px;
+}
+
+.datepicker-widget {
+  .input-field { 
+    min-height: 26px;
+    padding: 0;
+    padding-left: 2px;
+  }
+}
+
+.daterange-picker-widget {
+  .DateInput_input {
+    min-height: 24px;
+    line-height: normal;
+    border-bottom: 0px;
+    font-size: 0.85rem;
+  }
+  .DateRangePicker {
+    padding: 0;
+  }
+
+  .DateRangePickerInput_arrow_svg {
+    height: 17px;
+  }
+}
+
+.fw-500 {
+  font-weight: 500;
 }
