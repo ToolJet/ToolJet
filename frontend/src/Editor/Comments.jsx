@@ -30,8 +30,7 @@ const Comments = ({ newThread = {} }) => {
 
   // TODO: add retry policy
   React.useEffect(() => {
-    const socket = new WebSocket('ws://localhost:3000');
-    // const socket = new WebSocket(`ws://http://localhost:3000`);
+    const socket = new WebSocket(`ws://${config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '')}`);
 
     // Connection opened
     socket.addEventListener('open', function (event) {
