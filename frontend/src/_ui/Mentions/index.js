@@ -43,7 +43,8 @@ const Mentions = ({ value, setValue, placeholder }) => {
           fontSize: 14,
           lineHeight: 1.5,
           padding: 9,
-          border: '1px solid silver',
+          border: 0,
+          outline: 0,
         },
 
         suggestions: {

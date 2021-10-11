@@ -11,7 +11,7 @@
   }
 
   .comment {
-    border: 2px solid #438fd7;
+    border: 2.5px solid #FCAA0D;
   }
 
   .comment-body {
@@ -40,12 +40,19 @@
   .comment-actions-popover {
     width: 110px;
     border-radius: 4px;
-    left: -100px;
-    top: 25px;
+    left: -85px;
+    top: 20px;
   }
 
   .comment-action {
     padding: 5px !important;
+  }
+
+  .comment-author {
+    font-size: 14px;
+  }
+  .comment-time {
+    font-size: 12px;
   }
 }
 

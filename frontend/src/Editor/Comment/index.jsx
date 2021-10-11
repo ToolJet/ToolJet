@@ -10,7 +10,7 @@ import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
 
-const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
+const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads }) => {
   const [loading, setLoading] = React.useState(true);
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
@@ -115,6 +115,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved }) => {
               }, 0)
             }
             threadId={threadId}
+            fetchThreads={fetchThreads}
             isThreadOwner={currentUser.id === user.id}
             isResolved={isResolved}
           />

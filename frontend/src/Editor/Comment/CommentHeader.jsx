@@ -10,21 +10,20 @@ import Spinner from '@/_ui/Spinner';
 import UnResolvedIcon from './icons/unresolved.svg';
 import ResolvedIcon from './icons/resolved.svg';
 
-const CommentHeader = ({ count = 0, threadId, isResolved, isThreadOwner, close }) => {
-  const [resolved, setResolved] = React.useState(isResolved);
+const CommentHeader = ({ count = 0, threadId, isResolved, isThreadOwner, fetchThreads, close }) => {
   const [spinning, setSpinning] = React.useState(false);
 
   const handleResolved = async () => {
     setSpinning(true);
-    const { data } = await commentsService.updateThread(threadId, { isResolved: !resolved });
-    setResolved(data.isResolved);
+    await commentsService.updateThread(threadId, { isResolved: !isResolved });
     setSpinning(false);
+    fetchThreads();
   };
 
   const getResolveIcon = () => {
     if (spinning) return <Spinner />;
 
-    if (resolved) return <ResolvedIcon />;
+    if (isResolved) return <ResolvedIcon />;
 
     return <UnResolvedIcon />;
   };

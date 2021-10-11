@@ -33,7 +33,7 @@ const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetc
         {thread.map(({ id, comment, createdAt, user = {} }) => {
           return (
             <div key={id}>
-              <div className="d-flex card-title">
+              <div className="d-flex card-title comment-author">
                 {`${user?.firstName} ${user?.lastName}`}{' '}
                 <CommentActions
                   fetchComments={fetchComments}
@@ -45,7 +45,7 @@ const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetc
                 />
               </div>
 
-              <div className="card-subtitle">{moment(createdAt).fromNow()}</div>
+              <div className="card-subtitle comment-time">{moment(createdAt).fromNow()}</div>
               <p className="cursor-auto">{comment}</p>
             </div>
           );

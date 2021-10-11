@@ -56,7 +56,7 @@ const Comments = ({ newThread = {} }) => {
 
   return threads.map((thread) => {
     const { id } = thread;
-    return <Comment key={id} socket={socket} threadId={id} {...thread} />;
+    return <Comment key={id} fetchThreads={fetchData} socket={socket} threadId={id} {...thread} />;
   });
 };
 
