@@ -141,8 +141,6 @@ export class FoldersService {
         .getMany();
     }
 
-    console.log(viewableApps);
-
     // FIXME:
     // TypeORM gives error when using query builder with order by
     // https://github.com/typeorm/typeorm/issues/8213
