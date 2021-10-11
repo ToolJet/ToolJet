@@ -297,7 +297,7 @@ class ManageAppUsers extends React.Component {
           </Modal.Body>
 
           <Modal.Footer>
-            <a href="/users" target="_blank">
+            <a href="/users" target="_blank" className="btn btn-outline-azure mt-3">
               Manage Organization Users
             </a>
           </Modal.Footer>

@@ -419,6 +419,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -434,6 +435,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        checkboxColor: { value: '#3c92dc' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -1028,6 +1030,41 @@ export const componentTypes = [
         labelColor: { value: '#333' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Divider',
+    displayName: 'Divider',
+    description: 'Separator between components',
+    component: 'Divider',
+    defaultSize: {
+      width: 200,
+      height: 10,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      dividerColor: { type: 'color', displayName: 'Divider Color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        dividerColor: { value: '#E7E8EA' },
+        visibility: { value: '{{true}}' },
       },
     },
   },

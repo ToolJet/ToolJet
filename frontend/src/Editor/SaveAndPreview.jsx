@@ -151,6 +151,11 @@ class SaveAndPreview extends React.Component {
               </div>
             ) : (
               <div className="table-responsive">
+                {!versions?.length && !showVersionForm && !isLoading && (
+                  <div>
+                    No versions yet.
+                  </div>
+                )}
                 <table className="table table-vcenter">
                   <tbody>
                     {versions.map((version) => (

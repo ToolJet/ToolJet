@@ -7,7 +7,7 @@ Scan QR codes using device camera and hold the data they carry.
 <img class="screenshot-full" src="/img/widgets/qr-scanner/qr-scanner.jpeg" alt="ToolJet - QR Scanner" height="420"/>
 
 #### Known issue:
-In IOS, you might have to stick to the Safari browser as camera access had been restricted for third party browsers.
+You might have to stick to the Safari browser in IOS as camera access is restricted for third-party browsers.
 
 ## Exposed variables
 #### lastDetectedValue

@@ -309,7 +309,7 @@ class HomePage extends React.Component {
                                               style={{
                                                 filter:
                                                   app?.current_version_id == null
-                                                    ? 'brightness(0.8)'
+                                                    ? 'brightness(0.3)'
                                                     : 'brightness(1) invert(1)',
                                               }}
                                             >
