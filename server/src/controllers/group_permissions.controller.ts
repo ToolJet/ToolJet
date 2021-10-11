@@ -48,7 +48,7 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Put(':id')
   async update(@Request() req, @Param() params) {
-    const groupPermission = await this.groupPermissionsService.update(params.id, req.body);
+    const groupPermission = await this.groupPermissionsService.update(req.user, params.id, req.body);
 
     return decamelizeKeys(groupPermission);
   }

@@ -88,9 +88,10 @@ export class GroupPermissionsService {
     return this.appGroupPermissionsRepository.update(appGroupPermissionId, actions);
   }
 
-  async update(groupPermissionId: string, body: any) {
+  async update(user: User, groupPermissionId: string, body: any) {
     const groupPermission = await this.groupPermissionsRepository.findOne({
       id: groupPermissionId,
+      organizationId: user.organizationId,
     });
 
     await this.appGroupPermissionsRepository.manager.transaction(async (manager) => {
