@@ -25,7 +25,7 @@ export class CommentController {
   @Get('/:tid/all')
   public async getComments(@Param('tid') tid: string): Promise<Comment[]> {
     const comments = await this.commentService.getComments(tid);
-    return comments.reverse();
+    return comments;
     // const _comments = comments.sort((a, b) => b.createdAt - a.createdAt);
     // return _comments;
   }
