@@ -31,12 +31,6 @@ export class CreateAppGroupPermissions1632384954344
             isNullable: false,
           },
           {
-            name: "create",
-            type: "boolean",
-            default: false,
-            isNullable: false,
-          },
-          {
             name: "read",
             type: "boolean",
             default: false,

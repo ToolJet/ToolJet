@@ -31,6 +31,7 @@ export class PopulateUserGroupsFromOrganizationRoles1632468258787
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
+
     entityManager
       .createQueryBuilder()
       .delete()
@@ -93,7 +94,8 @@ async function setupUserAndAppGroupPermissions(
 
   for (const groupPermission of createdGroupPermissions) {
     const usersForGroup = organization.users.filter(
-      (u) => u.role == groupPermission.group
+      (u) =>
+        u.organizationUsers[0].role == groupPermission.group || groupPermission.group == "all_users"
     );
 
     for (const user of usersForGroup) {
@@ -118,19 +120,18 @@ async function setupUserAndAppGroupPermissions(
 }
 
 function determinePermissionsForGroup(group: string): {
-  create: boolean;
   read: boolean;
   update: boolean;
   delete: boolean;
 } {
   switch (group) {
     case "all_users":
-      return { create: false, read: true, update: false, delete: false };
+      return { read: true, update: false, delete: false };
     case "admin":
-      return { create: true, read: true, update: true, delete: true };
+      return { read: true, update: true, delete: true };
     case "developer":
-      return { create: false, read: true, update: true, delete: false };
+      return { read: true, update: true, delete: true };
     case "viewer":
-      return { create: false, read: true, update: false, delete: false };
+      return { read: true, update: false, delete: false };
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { Repository } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -10,6 +10,10 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { AppCloneService } from './app_clone.service';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class AppsService {
@@ -32,7 +36,14 @@ export class AppsService {
     @InjectRepository(FolderApp)
     private folderAppsRepository: Repository<FolderApp>,
 
-    private AppCloneService: AppCloneService
+    @InjectRepository(GroupPermission)
+    private groupPermissionsRepository: Repository<GroupPermission>,
+
+    @InjectRepository(AppGroupPermission)
+    private appGroupPermissionsRepository: Repository<AppGroupPermission>,
+
+    private AppCloneService: AppCloneService,
+    private usersService: UsersService
   ) {}
 
   async find(id: string): Promise<App> {
@@ -77,7 +88,44 @@ export class AppsService {
       })
     );
 
+    await this.createAdminGroupPermissions(app);
+
     return app;
+  }
+
+  async createAdminGroupPermissions(app: App) {
+    const orgDefaultGroupPermissions = await this.groupPermissionsRepository.find({
+      where: {
+        organizationId: app.organizationId,
+        group: 'admin',
+      },
+    });
+
+    for (const groupPermission of orgDefaultGroupPermissions) {
+      const appGroupPermission = this.appGroupPermissionsRepository.create({
+        groupPermissionId: groupPermission.id,
+        appId: app.id,
+        ...this.determineDefaultAppGroupPermissions(groupPermission.group),
+      });
+
+      await this.appGroupPermissionsRepository.save(appGroupPermission);
+    }
+  }
+
+  determineDefaultAppGroupPermissions(group: string): {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  } {
+    switch (group) {
+      case 'all_users':
+        return { create: false, read: true, update: false, delete: false };
+      case 'admin':
+        return { create: true, read: true, update: true, delete: true };
+      default:
+        throw `${group} is not a default group`;
+    }
   }
 
   async clone(existingApp: App, user: User): Promise<App> {
@@ -86,26 +134,54 @@ export class AppsService {
     return clonedApp;
   }
 
-  async count(user: User) {
-    return await this.appsRepository.count({
-      where: {
+  async count(user: User): Promise<number> {
+    return await createQueryBuilder(App, 'apps')
+      .innerJoin('apps.groupPermissions', 'group_permissions')
+      .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
+      .innerJoin(
+        UserGroupPermission,
+        'user_group_permissions',
+        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+      )
+      .where('user_group_permissions.user_id = :userId', { userId: user.id })
+      .andWhere('app_group_permissions.read = :value', { value: true })
+      .orWhere('apps.is_public = :value AND apps.organization_id = :organizationId', {
+        value: true,
         organizationId: user.organizationId,
-      },
-    });
+      })
+      .getCount();
   }
 
   async all(user: User, page: number): Promise<App[]> {
-    return await this.appsRepository.find({
-      relations: ['user'],
-      where: {
+    const viewableAppsQb = await createQueryBuilder(App, 'apps')
+      .innerJoin('apps.groupPermissions', 'group_permissions')
+      .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
+      .innerJoin(
+        UserGroupPermission,
+        'user_group_permissions',
+        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+      )
+      .where('user_group_permissions.user_id = :userId', { userId: user.id })
+      .andWhere('app_group_permissions.read = :value', { value: true })
+      .orWhere('apps.is_public = :value AND apps.organization_id = :organizationId', {
+        value: true,
         organizationId: user.organizationId,
-      },
-      take: 10,
-      skip: 10 * (page - 1),
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+      });
+
+    // FIXME:
+    // TypeORM gives error when using query builder with order by
+    // https://github.com/typeorm/typeorm/issues/8213
+    // hence sorting results in memory
+    if (page) {
+      const viewableApps = await viewableAppsQb
+        .take(10)
+        .skip(10 * (page - 1))
+        .getMany();
+
+      return viewableApps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
+
+    return await viewableAppsQb.orderBy('apps.created_at', 'DESC').getMany();
   }
 
   async update(user: User, appId: string, params: any) {
