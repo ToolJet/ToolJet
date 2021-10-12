@@ -103,7 +103,7 @@ export class UsersService {
 
     if (user === undefined) {
       const groups = ['all_users'];
-      user = await this.create({ ...userParams, ...{ ssoId, groups } }, organization);
+      user = await this.create({ ...userParams, ...{ ssoId } }, organization, groups);
       newUserCreated = true;
     }
 
