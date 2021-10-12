@@ -31,7 +31,7 @@ export class OauthService {
     return user;
   }
 
-  async #generateLoginResultPayload(user: User): any {
+  async #generateLoginResultPayload(user: User): Promise<any> {
     const JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId };
     return {
       auth_token: this.jwtService.sign(JWTPayload),
