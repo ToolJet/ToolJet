@@ -51,7 +51,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads }
 
   const handleSubmit = async (comment) => {
     await commentsService.createComment({
-      tid: threadId,
+      threadId,
       comment,
     });
     socket.send(

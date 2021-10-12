@@ -1,5 +1,6 @@
 import { PrimaryGeneratedColumn, BaseEntity, Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
+import { App } from './app.entity';
 
 @Entity({ name: 'threads' })
 export class Thread extends BaseEntity {
@@ -13,10 +14,10 @@ export class Thread extends BaseEntity {
   y: number;
 
   @Column({ name: 'app_id' })
-  app_id: string;
+  appId: string;
 
   @Column({ name: 'user_id' })
-  user_id: string;
+  userId: string;
 
   @Column({ default: false, name: 'is_resolved' })
   isResolved: boolean;
@@ -24,4 +25,8 @@ export class Thread extends BaseEntity {
   @ManyToOne(() => User, (user) => user.id, { eager: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => User, (app) => app.id)
+  @JoinColumn({ name: 'app_id' })
+  app: App;
 }

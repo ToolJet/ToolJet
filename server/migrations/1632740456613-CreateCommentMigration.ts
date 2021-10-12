@@ -14,7 +14,7 @@ export class CreateCommentMigration1632740456613 implements MigrationInterface {
             isPrimary: true,
           },
           {
-            name: 'tid',
+            name: 'thread_id',
             type: 'uuid',
             isNullable: false,
           },
@@ -60,7 +60,17 @@ export class CreateCommentMigration1632740456613 implements MigrationInterface {
         onDelete: 'CASCADE',
       })
     );
+
+    await queryRunner.createForeignKey(
+      'comments',
+      new TableForeignKey({
+        columnNames: ['thread_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'threads',
+        onDelete: 'CASCADE',
+      })
+    );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {}
 }

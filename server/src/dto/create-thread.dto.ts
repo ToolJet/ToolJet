@@ -8,7 +8,7 @@ export class CreateThreadDTO {
   y: number;
 
   @IsUUID()
-  app_id: string;
+  appId: string;
 
   @IsBoolean()
   isResolved: boolean;

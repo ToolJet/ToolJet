@@ -1,3 +1,5 @@
+import '@/_styles/editor/comment-notifications.scss';
+
 import React from 'react';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
@@ -6,10 +8,14 @@ import { commentsService } from '@/_services';
 
 import TabContent from './Content';
 
+import useRouter from '@/_hooks/use-router';
+
 const CommentNotifications = () => {
   const [notifications, setNotifications] = React.useState([]);
+  const router = useRouter();
+
   async function fetchData() {
-    const { data } = await commentsService.getNotifications();
+    const { data } = await commentsService.getNotifications(router.query.id);
     setNotifications(data);
   }
   React.useEffect(() => {

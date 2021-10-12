@@ -12,28 +12,28 @@ function createThread(data) {
   return adapter.post(`/threads/create`, data);
 }
 
-function updateThread(tid, data) {
-  return adapter.patch(`/threads/edit/${tid}`, data);
+function updateThread(threadId, data) {
+  return adapter.patch(`/threads/edit/${threadId}`, data);
 }
 
-function getComments(tid) {
-  return adapter.get(`/comments/${tid}/all`);
+function getComments(threadId) {
+  return adapter.get(`/comments/${threadId}/all`);
 }
 
 function createComment(data) {
   return adapter.post(`/comments/create`, data);
 }
 
-function updateComment(cid, data) {
-  return adapter.patch(`/comments/edit/${cid}`, data);
+function updateComment(commentId, data) {
+  return adapter.patch(`/comments/edit/${commentId}`, data);
 }
 
-function deleteComment(cid) {
-  return adapter.delete(`/comments/delete/${cid}`);
+function deleteComment(commentId) {
+  return adapter.delete(`/comments/delete/${commentId}`);
 }
 
-function getNotifications() {
-  return adapter.get(`/comments/notifications`);
+function getNotifications(appId) {
+  return adapter.get(`/comments/${appId}/notifications`);
 }
 
 export const commentsService = {

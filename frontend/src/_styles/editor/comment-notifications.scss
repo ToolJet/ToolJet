@@ -1,0 +1,32 @@
+@import '../colors.scss';
+
+.comment-notification-user {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 17px;
+  letter-spacing: 0em;
+  text-align: left;
+  text-transform: capitalize;
+}
+
+.comment-notification-count {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 15px;
+  letter-spacing: 0em;
+  text-align: left;
+  color: #656D77;
+}
+.comment-notification-message {
+  margin-top: 8px;
+}
+
+.comment-notification {
+  padding: 1rem 1rem;
+}
+
+.comment-notification-selected {
+  background: #DEEAFF;
+}

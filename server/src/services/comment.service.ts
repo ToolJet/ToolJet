@@ -25,10 +25,10 @@ export class CommentService {
     return await this.commentRepository.createComment(createCommentDto, id);
   }
 
-  public async getComments(tid: string): Promise<Comment[]> {
+  public async getComments(threadId: string): Promise<Comment[]> {
     return await this.commentRepository.find({
       where: {
-        tid,
+        threadId,
       },
       order: {
         createdAt: 'ASC',
@@ -36,9 +36,13 @@ export class CommentService {
     });
   }
 
-  public async getNotifications(id: string): Promise<Comment[]> {
+  public async getNotifications(appId: string, userId: string): Promise<Comment[]> {
     return await this.commentRepository.find({
-      user_id: Not(id),
+      where: {
+        userId: Not(userId),
+        thread: { appId },
+      },
+      relations: ['thread'],
     });
   }
 

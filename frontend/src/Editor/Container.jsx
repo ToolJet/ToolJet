@@ -282,7 +282,7 @@ export const Container = ({
   const handleAddComment = async (e) => {
     e.stopPropogation && e.stopPropogation();
     const { data } = await commentsService.createThread({
-      app_id: router.query.id,
+      appId: router.query.id,
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY,
     });
@@ -299,7 +299,7 @@ export const Container = ({
     const x = Math.round(e.screenX + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
     const y = Math.round(e.screenY + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
     const { data } = await commentsService.createThread({
-      app_id: router.query.id,
+      appId: router.query.id,
       x,
       y: y - 130,
     });
@@ -373,8 +373,12 @@ export const Container = ({
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '10%' }}>
           <center className="text-muted">
-            You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.
-            Check out our <a href="https://docs.tooljet.io/docs/tutorial/adding-widget" target="_blank">guide</a> on adding widgets.
+            You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
+            our{' '}
+            <a href="https://docs.tooljet.io/docs/tutorial/adding-widget" target="_blank" rel="noreferrer">
+              guide
+            </a>{' '}
+            on adding widgets.
           </center>
         </div>
       )}

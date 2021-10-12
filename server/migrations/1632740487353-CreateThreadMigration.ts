@@ -65,7 +65,17 @@ export class CreateThreadMigration1632740487353 implements MigrationInterface {
         onDelete: 'CASCADE',
       })
     );
+
+    await queryRunner.createForeignKey(
+      'threads',
+      new TableForeignKey({
+        columnNames: ['app_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'apps',
+        onDelete: 'CASCADE',
+      })
+    );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {}
 }

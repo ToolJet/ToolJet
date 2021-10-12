@@ -22,16 +22,16 @@ export class CommentController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/:tid/all')
-  public async getComments(@Param('tid') tid: string): Promise<Comment[]> {
-    const comments = await this.commentService.getComments(tid);
+  @Get('/:threadId/all')
+  public async getComments(@Param('threadId') threadId: string): Promise<Comment[]> {
+    const comments = await this.commentService.getComments(threadId);
     return comments;
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/notifications')
-  public async getNotifications(@Request() req): Promise<Comment[]> {
-    const comments = await this.commentService.getNotifications(req.user.id);
+  @Get('/:appId/notifications')
+  public async getNotifications(@Request() req, @Param('appId') appId: string): Promise<Comment[]> {
+    const comments = await this.commentService.getNotifications(appId, req.user.id);
     return comments;
   }
 

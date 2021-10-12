@@ -4,14 +4,14 @@ import { CreateThreadDTO } from '../dto/create-thread.dto';
 
 @EntityRepository(Thread)
 export class ThreadRepository extends Repository<Thread> {
-  public async createThread(createThreadDto: CreateThreadDTO, id: string): Promise<Thread> {
-    const { x, y, app_id } = createThreadDto;
+  public async createThread(createThreadDto: CreateThreadDTO, userId: string): Promise<Thread> {
+    const { x, y, appId } = createThreadDto;
 
     const thread = new Thread();
     thread.x = x;
     thread.y = y;
-    thread.app_id = app_id;
-    thread.user_id = id;
+    thread.appId = appId;
+    thread.userId = userId;
 
     const response = await thread.save();
     const _response = await Thread.findOne({

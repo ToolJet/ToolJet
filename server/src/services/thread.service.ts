@@ -11,14 +11,14 @@ export class ThreadService {
     private threadRepository: ThreadRepository
   ) {}
 
-  public async createThread(createThreadDto: CreateThreadDTO, id: string): Promise<Thread> {
-    return await this.threadRepository.createThread(createThreadDto, id);
+  public async createThread(createThreadDto: CreateThreadDTO, userId: string): Promise<Thread> {
+    return await this.threadRepository.createThread(createThreadDto, userId);
   }
 
   public async getThreads(appId: string): Promise<Thread[]> {
     return await this.threadRepository.find({
       where: {
-        app_id: appId,
+        appId,
       },
     });
   }

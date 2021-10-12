@@ -5,8 +5,8 @@ export class CreateCommentDTO {
   comment: string;
 
   @IsString()
-  tid: string;
+  threadId: string;
 
   @IsUUID()
-  user_id: string;
+  userId: string;
 }

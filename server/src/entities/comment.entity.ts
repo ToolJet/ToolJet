@@ -9,14 +9,15 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Thread } from './thread.entity';
 
 @Entity({ name: 'comments' })
 export class Comment extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'tid' })
-  tid: string;
+  @Column({ name: 'thread_id' })
+  threadId: string;
 
   @Column({ name: 'comment' })
   comment: string;
@@ -25,7 +26,7 @@ export class Comment extends BaseEntity {
   isRead: boolean;
 
   @Column({ name: 'user_id' })
-  user_id: string;
+  userId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -36,4 +37,8 @@ export class Comment extends BaseEntity {
   @OneToOne(() => User, (user) => user.id, { eager: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @OneToOne(() => Thread, (thread) => thread.id)
+  @JoinColumn({ name: 'thread_id' })
+  thread: Thread;
 }

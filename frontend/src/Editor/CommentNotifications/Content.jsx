@@ -4,10 +4,38 @@ import { pluralize } from '@/_helpers/utils';
 import moment from 'moment';
 
 const Content = ({ notifications }) => {
+  const getContent = () => {
+    if (isEmpty(notifications))
+      return (
+        <div className="empty">
+          <p className="empty-title">No messages to show</p>
+        </div>
+      );
+
+    return (
+      <div className="divide-y">
+        {notifications.map((notification) => {
+          return (
+            <div className="comment-notification comment-notification-selected" key={notification.id}>
+              <div className="d-flex justify-content-between">
+                <span className="comment-notification-user">
+                  {`${notification.user?.firstName} ${notification.user?.lastName}`}{' '}
+                </span>
+                <div className="comment-notification-count ms-auto">{moment(notification.createdAt).fromNow()}</div>
+              </div>
+              <div className="comment-notification-message">{notification.comment}</div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
   return (
     <div className="card">
       <div className="card-header">
-        <sub className="fw-400 light-gray">Total {pluralize(notifications.length, 'comment')}</sub>
+        <sub className="fw-400 comment-notification-count light-gray">
+          Total {pluralize(notifications.length, 'comment')}
+        </sub>
         <div className="ms-auto">
           <svg width="15" height="14" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -19,21 +47,7 @@ const Content = ({ notifications }) => {
           </svg>
         </div>
       </div>
-      <div className="card-body">
-        <div className="divide-y">
-          {notifications.map((notification) => {
-            return (
-              <div key={notification.id}>
-                <div className="d-flex justify-content-between">
-                  <h3>{`${notification.user?.firstName} ${notification.user?.lastName}`} </h3>
-                  <div className="ms-auto">{moment(notification.createdAt).fromNow()}</div>
-                </div>
-                <div>{notification.comment}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <div>{getContent()}</div>
     </div>
   );
 };
