@@ -258,7 +258,7 @@ class ManageOrgUsers extends React.Component {
                       </thead>
                       {isLoading ? (
                         <tbody className="w-100" style={{ minHeight: '300px' }}>
-                          {Array.from(Array(4)).map((index) => (
+                          {Array.from(Array(4)).map((_item, index) => (
                             <tr key={index}>
                               <td className="col-2 p-3">
                                 <div className="row">
