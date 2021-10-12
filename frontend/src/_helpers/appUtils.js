@@ -98,7 +98,7 @@ async function copyToClipboard(text) {
 }
 
 function showModal(_ref, modalId, show) {
-  if (!modalId) {
+  if (_.isEmpty(modalId)) {
     console.log('No modal is associated with this event.');
     return Promise.resolve();
   }
