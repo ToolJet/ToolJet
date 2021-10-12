@@ -9,11 +9,17 @@ import {
   OneToMany,
   AfterLoad,
   BaseEntity,
+  ManyToMany,
+  JoinTable,
+  AfterInsert,
+  getRepository,
 } from 'typeorm';
 import { User } from './user.entity';
 import { AppVersion } from './app_version.entity';
 import { DataQuery } from './data_query.entity';
 import { DataSource } from './data_source.entity';
+import { GroupPermission } from './group_permission.entity';
+import { AppGroupPermission } from './app_group_permission.entity';
 
 @Entity({ name: 'apps' })
 export class App extends BaseEntity {
@@ -45,16 +51,46 @@ export class App extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToMany(() => AppVersion, (appVersion) => appVersion.app, { eager: true, onDelete: 'CASCADE' })
+  @OneToMany(() => AppVersion, (appVersion) => appVersion.app, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   appVersions: AppVersion[];
 
-  @OneToMany(() => DataQuery, (dataQuery) => dataQuery.app, { onDelete: 'CASCADE' })
+  @OneToMany(() => DataQuery, (dataQuery) => dataQuery.app, {
+    onDelete: 'CASCADE',
+  })
   dataQueries: DataQuery[];
 
-  @OneToMany(() => DataSource, (dataSource) => dataSource.app, { onDelete: 'CASCADE' })
+  @OneToMany(() => DataSource, (dataSource) => dataSource.app, {
+    onDelete: 'CASCADE',
+  })
   dataSources: DataSource[];
 
+  @ManyToMany(() => GroupPermission)
+  @JoinTable({
+    name: 'app_group_permissions',
+    joinColumn: {
+      name: 'app_id',
+    },
+    inverseJoinColumn: {
+      name: 'group_permission_id',
+    },
+  })
+  groupPermissions: GroupPermission[];
+
+  @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
+  appGroupPermissions: AppGroupPermission[];
+
   public editingVersion;
+
+  @AfterInsert()
+  updateSlug() {
+    if (!this.slug) {
+      const appRepository = getRepository(App);
+      appRepository.update(this.id, { slug: this.id });
+    }
+  }
 
   @AfterLoad()
   async afterLoad(): Promise<void> {

@@ -20,6 +20,7 @@ import { QrScanner } from './Components/QrScanner/QrScanner';
 import { ToggleSwitch } from './Components/Toggle';
 import { RadioButton } from './Components/RadioButton';
 import { StarRating } from './Components/StarRating';
+import { Divider } from './Components/Divider';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -46,6 +47,7 @@ const AllComponents = {
   ToggleSwitch,
   RadioButton,
   StarRating,
+  Divider,
 };
 
 export const Box = function Box({

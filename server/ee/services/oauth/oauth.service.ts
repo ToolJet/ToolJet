@@ -25,20 +25,20 @@ export class OauthService {
     );
 
     if (newUserCreated) {
-      const organizationUser = await this.organizationUsersService.create(user, organization, 'viewer');
+      const organizationUser = await this.organizationUsersService.create(user, organization);
       this.organizationUsersService.activate(organizationUser);
     }
     return user;
   }
 
-  #generateLoginResultPayload(user: User): any {
+  async #generateLoginResultPayload(user: User): any {
     const JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId };
     return {
       auth_token: this.jwtService.sign(JWTPayload),
       email: user.email,
       first_name: user.firstName,
       last_name: user.lastName,
-      role: user.role,
+      admin: await this.usersService.hasGroup(user, 'admin'),
     };
   }
 
@@ -53,6 +53,6 @@ export class OauthService {
       throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
 
     const user = await this.#findOrCreateUser({ userSSOId, firstName, lastName, email });
-    return this.#generateLoginResultPayload(user);
+    return await this.#generateLoginResultPayload(user);
   }
 }
