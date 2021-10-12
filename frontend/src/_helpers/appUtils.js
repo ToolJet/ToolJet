@@ -530,28 +530,10 @@ export function computeComponentState(_ref, components) {
     const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
     const existingValues = currentComponents[existingComponentName];
 
-    const properties = Object.entries(component.component.definition.properties).reduce(
-      (properties, entry) => ({
-        ...properties,
-        ...{ [entry[0]]: entry[1].value },
-      }),
-      {}
-    );
-
-    const styles = Object.entries(component.component.definition.styles).reduce(
-      (properties, entry) => ({
-        ...properties,
-        ...{ [entry[0]]: entry[1].value },
-      }),
-      {}
-    );
-
     componentState[component.component.name] = {
       ...componentMeta.exposedVariables,
-      ...properties,
       id: key,
       ...existingValues,
-      styles: styles,
     };
   });
 
