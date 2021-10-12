@@ -5,6 +5,7 @@ import { Header } from '@/_components';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import ReactTooltip from 'react-tooltip';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -150,6 +151,7 @@ class ManageOrgUsers extends React.Component {
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+        <ReactTooltip type="dark" effect="solid"  delayShow={250} />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -310,12 +312,16 @@ class ManageOrgUsers extends React.Component {
                                     text={this.generateInvitationURL(user)}
                                     onCopy={this.invitationLinkCopyHandler}
                                   >
-                                    <img
-                                      className="svg-icon"
-                                      src="/assets/images/icons/copy.svg"
-                                      width="15"
-                                      height="15"
-                                    ></img>
+                                        <img
+                                          data-tip="Copy invitation link"
+                                          className="svg-icon"
+                                          src="/assets/images/icons/copy.svg"
+                                          width="15"
+                                          height="15"
+                                          style={{
+                                            cursor:'pointer'
+                                          }}
+                                        ></img>
                                   </CopyToClipboard>
                                 ) : (
                                   ''
