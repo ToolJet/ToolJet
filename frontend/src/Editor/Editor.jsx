@@ -26,11 +26,10 @@ import {
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
+import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import queryString from 'query-string';
-import Tabs from 'react-bootstrap/Tabs';
-import Tab from 'react-bootstrap/Tab';
 
 class Editor extends React.Component {
   constructor(props) {
@@ -878,56 +877,7 @@ class Editor extends React.Component {
                 ></WidgetManager>
               )}
             </div>
-            {showComments && (
-              <div className="editor-sidebar">
-                <div className="card-header">
-                  <span>Comments</span>
-                  <div className="ms-auto">
-                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M6.64628 7.62107L11.6712 12.6474L12.647 11.673L7.62067 6.64669L12.647 1.62176L11.6726 0.645996L6.64628 5.6723L1.62136 0.645996L0.646973 1.62176L5.6719 6.64669L0.646973 11.6716L1.62136 12.6474L6.64628 7.62107Z"
-                        fill="black"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <span className="border-bottom" />
-                <Tabs activeKey={'active'} className="dflex justify-content-center mb-3">
-                  <Tab eventKey="active" title="Active">
-                    <div className="card-header">
-                      <sub className="fw-400 light-gray">Total 1 comment</sub>
-                      <div className="ms-auto">
-                        <svg width="15" height="14" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path
-                            d="M14.3333 1H1L6.33333 7.30667V11.6667L9 13V7.30667L14.3333 1Z"
-                            stroke="#5E5E5E"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </Tab>
-                  <Tab eventKey="resolved" title="Resolved">
-                    <div className="card-header">
-                      <sub className="fw-400 light-gray">Total 1 comment</sub>
-                      <div className="ms-auto">
-                        <svg width="15" height="14" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path
-                            d="M14.3333 1H1L6.33333 7.30667V11.6667L9 13V7.30667L14.3333 1Z"
-                            stroke="#5E5E5E"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </Tab>
-                </Tabs>
-              </div>
-            )}
+            {showComments && <CommentNotifications />}
           </div>
         </DndProvider>
       </div>

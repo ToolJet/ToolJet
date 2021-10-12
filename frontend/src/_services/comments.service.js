@@ -32,6 +32,10 @@ function deleteComment(cid) {
   return adapter.delete(`/comments/delete/${cid}`);
 }
 
+function getNotifications() {
+  return adapter.get(`/comments/notifications`);
+}
+
 export const commentsService = {
   getThreads,
   createThread,
@@ -40,4 +44,5 @@ export const commentsService = {
   createComment,
   updateComment,
   deleteComment,
+  getNotifications,
 };

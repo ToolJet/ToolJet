@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Not } from 'typeorm';
+
 import { Comment } from '../entities/comment.entity';
 import { CommentRepository } from '../repositories/comment.repository';
 import { CreateCommentDTO } from '../dto/create-comment.dto';
+
 // import { UsersService } from 'src/services/users.service';
 // import { User } from '../entities/user.entity';
 
@@ -27,6 +30,15 @@ export class CommentService {
       where: {
         tid,
       },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+  }
+
+  public async getNotifications(id: string): Promise<Comment[]> {
+    return await this.commentRepository.find({
+      user_id: Not(id),
     });
   }
 

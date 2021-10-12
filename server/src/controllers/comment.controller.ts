@@ -26,8 +26,13 @@ export class CommentController {
   public async getComments(@Param('tid') tid: string): Promise<Comment[]> {
     const comments = await this.commentService.getComments(tid);
     return comments;
-    // const _comments = comments.sort((a, b) => b.createdAt - a.createdAt);
-    // return _comments;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/notifications')
+  public async getNotifications(@Request() req): Promise<Comment[]> {
+    const comments = await this.commentService.getNotifications(req.user.id);
+    return comments;
   }
 
   @UseGuards(JwtAuthGuard)
