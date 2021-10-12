@@ -17,6 +17,7 @@ class ManageGroupPermissions extends React.Component {
       creatingGroup: false,
       showNewGroupForm: false,
       newGroupName: null,
+      toastId: null,
     };
   }
 
@@ -81,9 +82,17 @@ class ManageGroupPermissions extends React.Component {
   };
 
   deleteGroup = (groupPermissionId) => {
+    this.setState({
+      toastId: toast.info('Deleting group...', {
+        hideProgressBar: true,
+        position: 'top-center',
+        closeButton: false,
+      })
+    });
     groupPermissionService
       .del(groupPermissionId)
       .then(() => {
+        toast.dismiss(this.state.toastId);
         toast.success('Group has been deleted', {
           hideProgressBar: true,
           position: 'top-center',
@@ -91,6 +100,7 @@ class ManageGroupPermissions extends React.Component {
         this.fetchGroups();
       })
       .catch(({ error }) => {
+        toast.dismiss(this.state.toastId);
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });
   };
@@ -217,7 +227,14 @@ class ManageGroupPermissions extends React.Component {
                               </td>
                               <td>
                                 {permissionGroup.group != 'admin' && permissionGroup.group != 'all_users' && (
-                                  <Link onClick={() => this.deleteGroup(permissionGroup.id)}>Delete</Link>
+                                  <Link onClick={() => this.deleteGroup(permissionGroup.id)}>
+                                    <img
+                                        className="mx-2 trash-icon"
+                                        src="/assets/images/icons/trash.svg"
+                                        width="12"
+                                        height="12"
+                                    />
+                                  </Link>
                                 )}
                               </td>
                             </tr>
