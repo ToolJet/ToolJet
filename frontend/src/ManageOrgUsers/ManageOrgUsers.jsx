@@ -6,8 +6,7 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { OverlayTrigger } from 'react-bootstrap';
-import Tooltip from 'react-bootstrap/Tooltip';
+import ReactTooltip from 'react-tooltip';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -184,6 +183,7 @@ class ManageOrgUsers extends React.Component {
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+        <ReactTooltip type="dark" effect="solid"  delayShow={250} />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -381,13 +381,8 @@ class ManageOrgUsers extends React.Component {
                                     text={this.generateInvitationURL(user)}
                                     onCopy={this.invitationLinkCopyHandler}
                                   >
-                                     <OverlayTrigger
-                                        trigger={['hover']}
-                                        placement="top"
-                                        delay={{ show: 30, hide: 100 }}
-                                        overlay={<Tooltip id="button-tooltip">Copy invitation link</Tooltip>}
-                                     >
                                         <img
+                                          data-tip="Copy invitation link"
                                           className="svg-icon"
                                           src="/assets/images/icons/copy.svg"
                                           width="15"
@@ -396,7 +391,6 @@ class ManageOrgUsers extends React.Component {
                                             cursor:'pointer'
                                           }}
                                         ></img>
-                                    </OverlayTrigger>
                                   </CopyToClipboard>
                                 ) : (
                                   ''
