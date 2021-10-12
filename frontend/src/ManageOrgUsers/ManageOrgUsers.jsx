@@ -106,13 +106,12 @@ class ManageOrgUsers extends React.Component {
 
     if (this.handleValidation()) {
       let fields = {};
-      Object.keys(fields).map((key) => {
+      Object.keys(this.state.fields).map((key) => {
         fields[key] = '';
       });
 
       this.setState({
         creatingUser: true,
-        fields: fields,
       });
 
       organizationUserService
@@ -125,10 +124,11 @@ class ManageOrgUsers extends React.Component {
         .then(() => {
           toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
           this.fetchUsers();
-          this.setState({ creatingUser: false, showNewUserForm: false });
+          this.setState({ creatingUser: false, showNewUserForm: false, fields: fields });
         })
         .catch(({ error }) => {
           toast.error(error, { hideProgressBar: true, position: 'top-center' });
+          this.setState({ creatingUser: false });
         });
     } else {
       this.setState({ creatingUser: false, showNewUserForm: true });
@@ -151,7 +151,7 @@ class ManageOrgUsers extends React.Component {
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-        <ReactTooltip type="dark" effect="solid"  delayShow={250} />
+        <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -312,16 +312,16 @@ class ManageOrgUsers extends React.Component {
                                     text={this.generateInvitationURL(user)}
                                     onCopy={this.invitationLinkCopyHandler}
                                   >
-                                        <img
-                                          data-tip="Copy invitation link"
-                                          className="svg-icon"
-                                          src="/assets/images/icons/copy.svg"
-                                          width="15"
-                                          height="15"
-                                          style={{
-                                            cursor:'pointer'
-                                          }}
-                                        ></img>
+                                    <img
+                                      data-tip="Copy invitation link"
+                                      className="svg-icon"
+                                      src="/assets/images/icons/copy.svg"
+                                      width="15"
+                                      height="15"
+                                      style={{
+                                        cursor: 'pointer'
+                                      }}
+                                    ></img>
                                   </CopyToClipboard>
                                 ) : (
                                   ''

@@ -15,7 +15,7 @@ export class OrganizationUsersService {
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
     private emailService: EmailService
-  ) {}
+  ) { }
 
   async findOne(id: string): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.findOne({ id: id });
@@ -28,6 +28,10 @@ export class OrganizationUsersService {
       email: params['email'],
     };
 
+    var existingUser = await this.usersService.findByEmail(userParams.email);
+    if (existingUser) {
+      throw new BadRequestException('User with such email already exists.');
+    }
     const user = await this.usersService.create(userParams, currentUser.organization, ['all_users']);
     const organizationUser = await this.create(user, currentUser.organization);
 
