@@ -151,7 +151,7 @@ class ManageOrgUsers extends React.Component {
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-        <ReactTooltip type="dark" effect="solid"  delayShow={250} />
+        <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -180,7 +180,7 @@ class ManageOrgUsers extends React.Component {
                     <h3 className="card-title">Add new user</h3>
                   </div>
                   <div className="card-body">
-                    <form>
+                    <form onSubmit={this.createUser} noValidate>
                       <div className="form-group mb-3 ">
                         <div className="row">
                           <div className="col">
@@ -211,7 +211,7 @@ class ManageOrgUsers extends React.Component {
                         <label className="form-label">Email address</label>
                         <div>
                           <input
-                            type="email"
+                            type="text"
                             className="form-control"
                             aria-describedby="emailHelp"
                             placeholder="Enter email"
@@ -224,14 +224,15 @@ class ManageOrgUsers extends React.Component {
                       </div>
                       <div className="form-footer">
                         <button
+                          type="button"
                           className="btn btn-light mr-2"
                           onClick={() => this.setState({ showNewUserForm: false, newUser: {} })}
                         >
                           Cancel
                         </button>
                         <button
+                          type="submit"
                           className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
-                          onClick={this.createUser}
                           disabled={creatingUser}
                         >
                           Create User
@@ -312,16 +313,16 @@ class ManageOrgUsers extends React.Component {
                                     text={this.generateInvitationURL(user)}
                                     onCopy={this.invitationLinkCopyHandler}
                                   >
-                                        <img
-                                          data-tip="Copy invitation link"
-                                          className="svg-icon"
-                                          src="/assets/images/icons/copy.svg"
-                                          width="15"
-                                          height="15"
-                                          style={{
-                                            cursor:'pointer'
-                                          }}
-                                        ></img>
+                                    <img
+                                      data-tip="Copy invitation link"
+                                      className="svg-icon"
+                                      src="/assets/images/icons/copy.svg"
+                                      width="15"
+                                      height="15"
+                                      style={{
+                                        cursor: 'pointer'
+                                      }}
+                                    ></img>
                                   </CopyToClipboard>
                                 ) : (
                                   ''
