@@ -1,21 +1,14 @@
 import { history, handleResponse } from '@/_helpers';
 import config from 'config';
 
-let currentUser
-try{
-  currentUser = JSON.parse(localStorage.getItem('currentUser'))
-}catch(err){
-  console.log(err)
-}
-
 export const authenticationService = {
   login,
   logout,
   signup,
   updateCurrentUserDetails,
-  currentUser,
+  currentUser: JSON.parse(localStorage.getItem('currentUser')),
   get currentUserValue() {
-    return currentUser;
+    return this.currentUser;
   },
 };
 
@@ -36,7 +29,7 @@ function login(email, password) {
 }
 
 function updateCurrentUserDetails(details) {
-  const currentUserDetails = currentUser;
+  const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
   const updatedUserDetails = Object.assign({}, currentUserDetails, details);
   localStorage.setItem('currentUser', JSON.stringify(updatedUserDetails));
 }
