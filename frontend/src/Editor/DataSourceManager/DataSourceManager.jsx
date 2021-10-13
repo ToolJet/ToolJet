@@ -41,7 +41,7 @@ class DataSourceManager extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.selectedDataSource != this.props.selectedDataSource) {
+    if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
