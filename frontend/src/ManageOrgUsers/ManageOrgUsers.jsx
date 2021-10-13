@@ -88,10 +88,9 @@ class ManageOrgUsers extends React.Component {
 
   archiveOrgUser = (id) => {
     this.setState({
-      archivingUser: id
-    });
-    this.setState({
-        toastId: toast.info('Archiving user...', {
+      archivingUser: id,
+      isLoading: true,
+      toastId: toast.info('Archiving user...', {
           hideProgressBar: true,
           position: 'top-center',
           closeButton: false,
@@ -102,13 +101,13 @@ class ManageOrgUsers extends React.Component {
       .then(() => {
         toast.dismiss(this.state.toastId);
         toast.success('The user has been archived', { hideProgressBar: true, position: 'top-center' });
-        this.setState({ archivingUser: null });
+        this.setState({ archivingUser: null, isLoading: false });
         this.fetchUsers();
       })
       .catch(({ error }) => {
         toast.dismiss(this.state.toastId);
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
-        this.setState({ archivingUser: null });
+        this.setState({ archivingUser: null, isLoading: false });
       });
   };
 
