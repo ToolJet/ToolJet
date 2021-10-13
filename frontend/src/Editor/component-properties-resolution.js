@@ -14,13 +14,15 @@ export const resolveProperties = (component, currentState) => {
 
 export const resolveVariables = (component, currentState) => {
   if (currentState && currentState.components[component.name]) {
-    return Object.entries(currentState.components[component.name]).reduce(
+    const variables = Object.entries(currentState.components[component.name]).reduce(
       (properties, entry) => ({
         ...properties,
         ...{ [entry[0]]: resolveReferences(entry[1], currentState) },
       }),
       {}
     );
+    delete variables.id;
+    return variables;
   } else return {};
 };
 
