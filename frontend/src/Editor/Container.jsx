@@ -254,7 +254,7 @@ export const Container = ({
 
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? 'show-grid' : ''}`}>
-      {Object.keys(boxes).map((key) => {
+      {Object.keys(boxes).forEach((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;

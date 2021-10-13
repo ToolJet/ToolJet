@@ -106,7 +106,7 @@ class ManageOrgUsers extends React.Component {
 
     if (this.handleValidation()) {
       let fields = {};
-      Object.keys(fields).map((key) => {
+      Object.keys(fields).forEach((key) => {
         fields[key] = '';
       });
 
