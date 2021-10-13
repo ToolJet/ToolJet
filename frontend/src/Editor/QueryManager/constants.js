@@ -34,4 +34,5 @@ export const defaultOptions = {
   dynamodb: {},
   airtable: {},
   mssql: {},
+  snowflake: {},
 };
