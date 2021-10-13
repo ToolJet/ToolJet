@@ -119,7 +119,7 @@ export const Box = function Box({
             darkMode={darkMode}
             removeComponent={removeComponent}
             properties={resolvedProperties}
-            variables={resolvedVariables}
+            exposedVariables={resolvedVariables}
             styles={resolvedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
             fireEvent={fireEvent}

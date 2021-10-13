@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export const TextArea = function TextArea({ width, height, properties, variables, styles, setExposedVariable }) {
+export const TextArea = function TextArea({ width, height, properties, exposedVariables, styles, setExposedVariable }) {
   useEffect(() => {
     setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -16,7 +16,7 @@ export const TextArea = function TextArea({ width, height, properties, variables
       className="form-control"
       placeholder={properties.placeholder}
       style={{ width, height, display: styles.visibility ? '' : 'none' }}
-      value={variables.value}
+      value={exposedVariables.value}
     ></textarea>
   );
 };
