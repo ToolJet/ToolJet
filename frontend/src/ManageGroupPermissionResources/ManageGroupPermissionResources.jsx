@@ -25,7 +25,6 @@ class ManageGroupPermissionResources extends React.Component {
       selectedUserIds: [],
       removeAppIds: [],
       currentTab: 'apps',
-      toastId: null,
     };
   }
 
@@ -183,14 +182,6 @@ class ManageGroupPermissionResources extends React.Component {
     const updateParams = {
       removeAppIds: [appId],
     };
-    this.setState({
-      toastId: toast.info('Removing app...', {
-        hideProgressBar: true,
-        position: 'top-center',
-        closeButton: false,
-      })
-    });
-    
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
@@ -199,14 +190,12 @@ class ManageGroupPermissionResources extends React.Component {
         this.fetchAppsInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.dismiss(this.state.toastId);
         toast.success('Apps removed from the group', {
           hideProgressBar: true,
           position: 'top-center',
         });
       })
       .catch(({ error }) => {
-        toast.dismiss(this.state.toastId);
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });
   };
@@ -242,13 +231,6 @@ class ManageGroupPermissionResources extends React.Component {
     const updateParams = {
       removeUserIds: [userId],
     };
-    this.setState({
-      toastId: toast.info('Removing user...', {
-        hideProgressBar: true,
-        position: 'top-center',
-        closeButton: false,
-      })
-    });
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
@@ -257,14 +239,12 @@ class ManageGroupPermissionResources extends React.Component {
         this.fetchUsersInGroup(groupPermissionId);
       })
       .then(() => {
-        toast.dismiss(this.state.toastId);
         toast.success('Users removed from the group', {
           hideProgressBar: true,
           position: 'top-center',
         });
       })
       .catch(({ error }) => {
-        toast.dismiss(this.state.toastId);
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });
   };
@@ -439,12 +419,7 @@ class ManageGroupPermissionResources extends React.Component {
                                             this.removeAppFromGroup(groupPermission.id, app.id);
                                           }}
                                         >
-                                          <img
-                                            className="mx-2 trash-icon"
-                                            src="/assets/images/icons/trash.svg"
-                                            width="12"
-                                            height="12"
-                                         />
+                                          Delete
                                         </Link>
                                       )}
                                     </td>
@@ -521,12 +496,7 @@ class ManageGroupPermissionResources extends React.Component {
                                             this.removeUserFromGroup(groupPermission.id, user.id);
                                           }}
                                         >
-                                          <img
-                                            className="mx-2 trash-icon"
-                                            src="/assets/images/icons/trash.svg"
-                                            width="12"
-                                            height="12"
-                                         />
+                                          Delete
                                         </Link>
                                       )}
                                     </td>

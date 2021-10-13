@@ -20,6 +20,7 @@ class ManageOrgUsers extends React.Component {
       archivingUser: null,
       fields: {},
       errors: {},
+      toastId: null,
     };
   }
 
@@ -86,16 +87,26 @@ class ManageOrgUsers extends React.Component {
   };
 
   archiveOrgUser = (id) => {
-    this.setState({ archivingUser: id });
-
+    this.setState({
+      archivingUser: id
+    });
+    this.setState({
+        toastId: toast.info('Archiving user...', {
+          hideProgressBar: true,
+          position: 'top-center',
+          closeButton: false,
+        })
+    });
     organizationUserService
       .archive(id)
       .then(() => {
+        toast.dismiss(this.state.toastId);
         toast.success('The user has been archived', { hideProgressBar: true, position: 'top-center' });
         this.setState({ archivingUser: null });
         this.fetchUsers();
       })
       .catch(({ error }) => {
+        toast.dismiss(this.state.toastId);
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
         this.setState({ archivingUser: null });
       });
@@ -328,16 +339,20 @@ class ManageOrgUsers extends React.Component {
                                 )}
                               </td>
                               <td>
-                                {archivingUser === null && (
+                                {archivingUser === null && user.status !== 'archived' && (
                                   <a
                                     onClick={() => {
                                       this.archiveOrgUser(user.id);
                                     }}
                                   >
-                                    Archive
+                                    <img
+                                        className="mx-2 trash-icon"
+                                        src="/assets/images/icons/trash.svg"
+                                        width="12"
+                                        height="12"
+                                    />
                                   </a>
                                 )}
-                                {archivingUser === user.id && <small>Archiving user...</small>}
                               </td>
                             </tr>
                           ))}
