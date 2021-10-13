@@ -24,6 +24,7 @@ import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveVariables, resolveStyles } from './component-properties-resolution';
+import { validateWidget } from '@/_helpers/utils';
 
 const AllComponents = {
   Button,
@@ -87,6 +88,11 @@ export const Box = function Box({
   const resolvedStyles = resolveStyles(component, currentState);
 
   const fireEvent = (eventName, options) => onEvent(eventName, { ...options, ...{ component } });
+  const validate = (value) =>
+    validateWidget({
+      ...{ widgetValue: value },
+      ...{ validationObject: component.definition.validation, currentState },
+    });
 
   return (
     <OverlayTrigger
@@ -117,6 +123,7 @@ export const Box = function Box({
             styles={resolvedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
             fireEvent={fireEvent}
+            validate={validate}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '100%' }}>
