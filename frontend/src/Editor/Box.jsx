@@ -86,6 +86,8 @@ export const Box = function Box({
   const resolvedVariables = resolveVariables(component, currentState);
   const resolvedStyles = resolveStyles(component, currentState);
 
+  const fireEvent = (eventName, options) => onEvent(eventName, { ...options, ...{ component } });
+
   return (
     <OverlayTrigger
       placement="top"
@@ -113,7 +115,8 @@ export const Box = function Box({
             properties={resolvedProperties}
             variables={resolvedVariables}
             styles={resolvedStyles}
-            setVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+            fireEvent={fireEvent}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '100%' }}>
