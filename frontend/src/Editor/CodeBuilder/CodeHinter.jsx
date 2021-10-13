@@ -115,7 +115,7 @@ export function CodeHinter({
       </animated.div>
     );
   };
-
+  enablePreview = enablePreview ?? true;
   return (
     <>
       <div
