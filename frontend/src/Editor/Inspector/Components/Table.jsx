@@ -1,7 +1,6 @@
 import React from 'react';
 import { renderElement } from '../Utils';
 import { computeActionName } from '@/_helpers/utils';
-// eslint-disable-next-line import/no-unresolved
 import SortableList, { SortableItem } from 'react-easy-sort';
 import arrayMove from 'array-move';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -148,15 +147,14 @@ class Table extends React.Component {
           </div>
           <div className="field mb-2">
             <label className="form-label">key</label>
-            <input
-              type="text"
-              className="form-control text-field"
-              onBlur={(e) => {
-                e.stopPropagation();
-                this.onColumnItemChange(index, 'key', e.target.value);
-              }}
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={column.key}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
               placeholder={column.name}
-              defaultValue={column.key}
+              onChange={(value) => this.onColumnItemChange(index, 'key', value)}
             />
           </div>
 
@@ -303,15 +301,14 @@ class Table extends React.Component {
             <div>
               <label className="form-label">Date Format</label>
               <div className="field mb-2">
-                <input
-                  type="text"
-                  className="form-control text-field"
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    this.onColumnItemChange(index, 'dateFormat', e.target.value);
-                  }}
-                  defaultValue={column.dateFormat}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.dateFormat}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
                   placeholder={'DD-MM-YYYY'}
+                  onChange={(value) => this.onColumnItemChange(index, 'dateFormat', value)}
                 />
               </div>
               <div className="field mb-2">
