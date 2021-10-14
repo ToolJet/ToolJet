@@ -10,12 +10,15 @@ import TabContent from './Content';
 
 import useRouter from '@/_hooks/use-router';
 
-const CommentNotifications = () => {
+const CommentNotifications = ({ toggleComments }) => {
   const [notifications, setNotifications] = React.useState([]);
+  const [key, setKey] = React.useState('active');
+
   const router = useRouter();
 
-  async function fetchData() {
-    const { data } = await commentsService.getNotifications(router.query.id);
+  async function fetchData(k) {
+    const isResolved = k === 'resolved';
+    const { data } = await commentsService.getNotifications(router.query.id, isResolved);
     setNotifications(data);
   }
   React.useEffect(() => {
@@ -25,9 +28,17 @@ const CommentNotifications = () => {
   return (
     <div className="editor-sidebar">
       <div className="card-header">
-        <span>Comments</span>
+        <span className="comment-notification-header">Comments</span>
         <div className="ms-auto">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            className="cursor-pointer"
+            onClick={toggleComments}
+            width="13"
+            height="13"
+            viewBox="0 0 13 13"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               fillRule="evenodd"
               clipRule="evenodd"
@@ -38,11 +49,18 @@ const CommentNotifications = () => {
         </div>
       </div>
       <span className="border-bottom" />
-      <Tabs activeKey={'active'} className="dflex justify-content-center mb-3">
-        <Tab eventKey="active" title="Active">
+      <Tabs
+        activeKey={key}
+        onSelect={(k) => {
+          setKey(k);
+          fetchData(k);
+        }}
+        className="dflex justify-content-center"
+      >
+        <Tab className="comment-notification-nav-item" eventKey="active" title="Active">
           <TabContent notifications={notifications} />
         </Tab>
-        <Tab eventKey="resolved" title="Resolved">
+        <Tab className="comment-notification-nav-item" eventKey="resolved" title="Resolved">
           <TabContent notifications={notifications} />
         </Tab>
       </Tabs>

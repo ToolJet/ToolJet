@@ -1,4 +1,4 @@
-import { Controller, Request, Get, Post, Body, Param, Delete, UseGuards, Patch } from '@nestjs/common';
+import { Controller, Request, Get, Post, Body, Param, Delete, UseGuards, Patch, Query } from '@nestjs/common';
 import { CommentService } from '@services/comment.service';
 import { CreateCommentDTO } from '../dto/create-comment.dto';
 import { Comment } from '../entities/comment.entity';
@@ -30,8 +30,8 @@ export class CommentController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:appId/notifications')
-  public async getNotifications(@Request() req, @Param('appId') appId: string): Promise<Comment[]> {
-    const comments = await this.commentService.getNotifications(appId, req.user.id);
+  public async getNotifications(@Request() req, @Param('appId') appId: string, @Query() query): Promise<Comment[]> {
+    const comments = await this.commentService.getNotifications(appId, req.user.id, query.isResolved);
     return comments;
   }
 

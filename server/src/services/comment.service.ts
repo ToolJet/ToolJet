@@ -36,11 +36,11 @@ export class CommentService {
     });
   }
 
-  public async getNotifications(appId: string, userId: string): Promise<Comment[]> {
+  public async getNotifications(appId: string, userId: string, isResolved = false): Promise<Comment[]> {
     return await this.commentRepository.find({
       where: {
         userId: Not(userId),
-        thread: { appId },
+        thread: { appId, isResolved },
       },
       relations: ['thread'],
     });

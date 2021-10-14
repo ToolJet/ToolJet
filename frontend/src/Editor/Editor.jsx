@@ -877,7 +877,7 @@ class Editor extends React.Component {
                 ></WidgetManager>
               )}
             </div>
-            {showComments && <CommentNotifications />}
+            {showComments && <CommentNotifications toggleComments={this.toggleComments} />}
           </div>
         </DndProvider>
       </div>

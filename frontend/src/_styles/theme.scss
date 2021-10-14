@@ -2278,3 +2278,32 @@ input[type='text'] {
 .ligh-gray {
   color: #656D77;
 }
+
+.nav-item {
+  background: #fff !important;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  text-align: left;
+}
+
+.nav-link {
+  min-width: 100px;
+  justify-content: center;
+}
+
+.nav-tabs .nav-link.active {
+  font-weight: 600 !important;
+  color: #0565FE !important;
+}
+
+.empty-title {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 15px;
+  letter-spacing: -0.01em;
+  text-align: left;
+}

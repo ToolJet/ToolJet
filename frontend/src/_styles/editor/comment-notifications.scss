@@ -30,3 +30,27 @@
 .comment-notification-selected {
   background: #DEEAFF;
 }
+
+.comment-notification-header {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 19px;
+  letter-spacing: 0em;
+  text-align: left;
+}
+
+.comment-notification-nav-item {
+  background-color: #fff !important;
+}
+
+.comment-notification-filter-popover {
+  width: 160px;
+  height: 78px;
+  border: 0.5px solid #E1E1E1 !important;
+  border-radius: 4px !important;
+  top: 25px !important;
+  right: -30px;
+  left: -150px !important;
+  padding: 12px;
+}
