@@ -8,6 +8,7 @@ import { TestConnection } from './TestConnection';
 import { DataBaseSources, ApiSources, DataSourceTypes, SourceComponents } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
+import _ from 'lodash';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -41,7 +42,7 @@ class DataSourceManager extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
+    if (!_.isEqual(prevProps.selectedDataSource, this.props.selectedDataSource)) {
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
