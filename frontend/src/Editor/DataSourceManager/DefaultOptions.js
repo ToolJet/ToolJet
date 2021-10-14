@@ -22,15 +22,6 @@ export const defaultOptions = {
     username: { value: '' },
     password: { value: '' },
   },
-  snowflake: {
-    username: { value: '' },
-    account: { value: '' },
-    database: { value: '' },
-    warehouse: { value: '' },
-    schema: { value: '' },
-    role: { value: '' },
-    password: { value: '' },
-  },
   redis: {
     host: { value: 'localhost' },
     port: { value: 6379 },
