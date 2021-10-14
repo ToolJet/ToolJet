@@ -86,7 +86,7 @@ class ForgotPassword extends React.Component {
                   onClick={this.handleClick}
                   disabled={!this.state.email}
                 >
-                  Submit
+                  Reset Password
                 </button>
               </div>
             </div>
