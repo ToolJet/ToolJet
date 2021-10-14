@@ -17,7 +17,7 @@ class ForgotPassword extends React.Component {
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
-    if (event.target.value == '') {
+    if (event.target.value === '') {
       this.setState({ isEmailFound: false, buttonClicked: false });
     }
   };
