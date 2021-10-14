@@ -216,7 +216,7 @@ class ManageGroupPermissions extends React.Component {
                                 </Link>
                               </td>
                               <td>
-                                {permissionGroup.group != 'admin' && permissionGroup.group != 'all_users' && (
+                                {permissionGroup.group !== 'admin' && permissionGroup.group !== 'all_users' && (
                                   <Link onClick={() => this.deleteGroup(permissionGroup.id)}>Delete</Link>
                                 )}
                               </td>

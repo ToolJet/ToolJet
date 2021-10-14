@@ -214,7 +214,7 @@ class HomePage extends React.Component {
 
                     <div
                       className={
-                        currentFolder.count == 0
+                        currentFolder.count === 0
                           ? 'table-responsive w-100 apps-table mt-3 d-flex align-items-center'
                           : 'table-responsive w-100 apps-table mt-3'
                       }
@@ -283,7 +283,7 @@ class HomePage extends React.Component {
                                             renderTooltip({
                                               props,
                                               text:
-                                                app?.current_version_id == null
+                                                app?.current_version_id === null
                                                   ? 'App does not have a deployed version'
                                                   : 'Open in app viewer',
                                             })
@@ -309,7 +309,7 @@ class HomePage extends React.Component {
                                             renderTooltip({
                                               props,
                                               text:
-                                                app?.current_version_id == null
+                                                app?.current_version_id === null
                                                   ? 'App does not have a deployed version'
                                                   : 'Open in app viewer',
                                             })
@@ -318,13 +318,13 @@ class HomePage extends React.Component {
                                           {
                                             <span
                                               className={`${
-                                                app?.current_version_id == null
+                                                app?.current_version_id === null
                                                   ? 'badge mx-2 '
                                                   : 'badge bg-azure-lt mx-2'
                                               }`}
                                               style={{
                                                 filter:
-                                                  app?.current_version_id == null
+                                                  app?.current_version_id === null
                                                     ? 'brightness(0.3)'
                                                     : 'brightness(1) invert(1)',
                                               }}
@@ -350,7 +350,7 @@ class HomePage extends React.Component {
                               ))}
                             </>
                           )}
-                          {currentFolder.count == 0 && (
+                          {currentFolder.count === 0 && (
                             <div>
                               <img
                                 className="mx-auto d-block"
