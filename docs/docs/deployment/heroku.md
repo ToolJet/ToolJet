@@ -16,7 +16,7 @@ Follow the steps below to deploy ToolJet on Heroku:
    Read [environment variables reference](/docs/deployment/env-vars)
 
 4. Open the app.
-5. The default username of the admin is dev@tooljet.io and password is `password`.
+5. The default username of the admin is `dev@tooljet.io` and the password is `password`.
 
 :::tip
 The one click deployment will create a free dyno and a free postgresql database.
