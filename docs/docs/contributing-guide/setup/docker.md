@@ -23,7 +23,7 @@ docker-compose version 1.26.2, build eefe0d31
 
 ## Setting up
 
-1. Close the repository
+1. Clone the repository
    ```bash
     git clone https://github.com/tooljet/tooljet.git
    ```
