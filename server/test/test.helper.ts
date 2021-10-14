@@ -32,7 +32,7 @@ export async function createNestAppInstance() {
   return app;
 }
 
-export function authHeaderForUser(user: any) {
+export function authHeaderForUser(user: any): string {
   const configService = new ConfigService();
   const jwtService = new JwtService({
     secret: configService.get<string>('SECRET_KEY_BASE'),
