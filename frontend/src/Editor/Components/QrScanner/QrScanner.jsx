@@ -10,7 +10,7 @@ export const QrScanner = function QrScanner({ component, onEvent, onComponentOpt
   };
 
   const handleScan = async (data) => {
-    if (data != null) {
+    if (data !== null) {
       onEvent('onDetect', { component, data: data });
       onComponentOptionChanged(component, 'lastDetectedValue', data);
     }

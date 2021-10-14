@@ -2,10 +2,10 @@ import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import ReactTooltip from 'react-tooltip';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -17,8 +17,6 @@ class ManageOrgUsers extends React.Component {
       showNewUserForm: false,
       creatingUser: false,
       newUser: {},
-      role: '',
-      idChangingRole: null,
       archivingUser: null,
       fields: {},
       errors: {},
@@ -39,14 +37,14 @@ class ManageOrgUsers extends React.Component {
     if (!fields['firstName']) {
       errors['firstName'] = 'This field is required';
     } else if (typeof fields['firstName'] !== 'undefined') {
-      if (!fields['firstName'].match(/^[a-zA-Z]+$/)) {
+      if (!/^[a-zA-Z]+$/.test(fields['firstName'])) {
         errors['firstName'] = 'Only letters are allowed';
       }
     }
     if (!fields['lastName']) {
       errors['lastName'] = 'This field is required';
     } else if (typeof fields['lastName'] !== 'undefined') {
-      if (!fields['lastName'].match(/^[a-zA-Z]+$/)) {
+      if (!/^[a-zA-Z]+$/.test(fields['lastName'])) {
         errors['lastName'] = 'Only letters are allowed';
       }
     }
@@ -55,9 +53,6 @@ class ManageOrgUsers extends React.Component {
       errors['email'] = 'This field is required';
     } else if (!this.validateEmail(fields['email'])) {
       errors['email'] = 'Email is not valid';
-    }
-    if (!fields['role']) {
-      errors['role'] = 'This field is required';
     }
 
     this.setState({ errors: errors });
@@ -90,20 +85,6 @@ class ManageOrgUsers extends React.Component {
     });
   };
 
-  changeNewUserRole = (id, role) => {
-    this.setState({ idChangingRole: id });
-    organizationUserService
-      .changeRole(id, role)
-      .then(() => {
-        toast.success('User role has been updated', { hideProgressBar: true, position: 'top-center' });
-        this.setState({ idChangingRole: null });
-      })
-      .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
-        this.setState({ idChangingRole: null });
-      });
-  };
-
   archiveOrgUser = (id) => {
     this.setState({ archivingUser: id });
 
@@ -125,7 +106,7 @@ class ManageOrgUsers extends React.Component {
 
     if (this.handleValidation()) {
       let fields = {};
-      Object.keys(fields).map((key) => {
+      Object.keys(fields).forEach((key) => {
         fields[key] = '';
       });
 
@@ -154,12 +135,6 @@ class ManageOrgUsers extends React.Component {
     }
   };
 
-  dropdownVal = (role) => {
-    this.setState({
-      fields: { ...this.state.fields, role },
-    });
-  };
-
   logout = () => {
     authenticationService.logout();
     history.push('/login');
@@ -172,10 +147,11 @@ class ManageOrgUsers extends React.Component {
   };
 
   render() {
-    const { isLoading, role, showNewUserForm, creatingUser, users, errors, idChangingRole, archivingUser } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, archivingUser } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+        <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -204,7 +180,7 @@ class ManageOrgUsers extends React.Component {
                     <h3 className="card-title">Add new user</h3>
                   </div>
                   <div className="card-body">
-                    <form>
+                    <form onSubmit={this.createUser} noValidate>
                       <div className="form-group mb-3 ">
                         <div className="row">
                           <div className="col">
@@ -235,7 +211,7 @@ class ManageOrgUsers extends React.Component {
                         <label className="form-label">Email address</label>
                         <div>
                           <input
-                            type="email"
+                            type="text"
                             className="form-control"
                             aria-describedby="emailHelp"
                             placeholder="Enter email"
@@ -246,33 +222,18 @@ class ManageOrgUsers extends React.Component {
                           <span className="text-danger">{this.state.errors['email']}</span>
                         </div>
                       </div>
-                      <div className="form-group mb-3 ">
-                        <label className="form-label">Role</label>
-                        <div>
-                          <SelectSearch
-                            options={['Admin', 'Developer', 'Viewer'].map((role) => {
-                              return { name: role, value: role.toLowerCase() };
-                            })}
-                            search={true}
-                            value={role}
-                            name="role"
-                            onChange={this.dropdownVal}
-                            filterOptions={fuzzySearch}
-                            placeholder="Select.."
-                          />
-                          <span className="text-danger">{errors.role}</span>
-                        </div>
-                      </div>
                       <div className="form-footer">
                         <button
+                          type="button"
                           className="btn btn-light mr-2"
                           onClick={() => this.setState({ showNewUserForm: false, newUser: {} })}
                         >
                           Cancel
                         </button>
                         <button
+                          type="submit"
                           className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
-                          onClick={(e) => this.createUser(e)}
+                          disabled={creatingUser}
                         >
                           Create User
                         </button>
@@ -292,9 +253,6 @@ class ManageOrgUsers extends React.Component {
                         <tr>
                           <th>Name</th>
                           <th>Email</th>
-                          <th>
-                            <center>Role</center>
-                          </th>
                           <th>Status</th>
                           <th className="w-1"></th>
                         </tr>
@@ -345,27 +303,15 @@ class ManageOrgUsers extends React.Component {
                                   {user.email}
                                 </a>
                               </td>
-                              <td className="text-muted" style={{ width: '280px' }}>
-                                <center className="mx-5 select-search-role">
-                                  <SelectSearch
-                                    options={['Admin', 'Developer', 'Viewer'].map((role) => {
-                                      return { name: role, value: role.toLowerCase() };
-                                    })}
-                                    value={user.role}
-                                    search={false}
-                                    disabled={idChangingRole === user.id}
-                                    onChange={(value) => {
-                                      this.changeNewUserRole(user.id, value);
-                                    }}
-                                    filterOptions={fuzzySearch}
-                                    placeholder="Select.."
-                                  />
-                                  {idChangingRole === user.id && <small>Updating role...</small>}
-                                </center>
-                              </td>
                               <td className="text-muted">
                                 <span
-                                  className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
+                                  className={`badge bg-${
+                                    user.status === 'invited'
+                                      ? 'warning'
+                                      : user.status === 'archived'
+                                      ? 'danger'
+                                      : 'success'
+                                  } me-1 m-1`}
                                 ></span>
                                 <small className="user-status">{user.status}</small>
                                 {user.status === 'invited' && 'invitation_token' in user ? (
@@ -374,10 +320,14 @@ class ManageOrgUsers extends React.Component {
                                     onCopy={this.invitationLinkCopyHandler}
                                   >
                                     <img
+                                      data-tip="Copy invitation link"
                                       className="svg-icon"
                                       src="/assets/images/icons/copy.svg"
                                       width="15"
                                       height="15"
+                                      style={{
+                                        cursor: 'pointer',
+                                      }}
                                     ></img>
                                   </CopyToClipboard>
                                 ) : (

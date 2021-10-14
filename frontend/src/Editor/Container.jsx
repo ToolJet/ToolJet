@@ -138,7 +138,6 @@ export const Container = ({
             deltaY = delta.y;
           }
 
-          componentData = item.component;
           left = Math.round(currentLayoutOptions.left + deltaX);
           top = Math.round(currentLayoutOptions.top + deltaY);
 

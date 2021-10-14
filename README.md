@@ -55,19 +55,18 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
 [Building a Github contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
 
 ## Documentation
-The documentation is available at https://docs.tooljet.io 
+The documentation is available at https://docs.tooljet.io.
 
-[Getting Started](https://docs.tooljet.io)<br>
-[Deploying](https://docs.tooljet.io)<br>
-[Datasource Reference](https://docs.tooljet.io)<br>
-[Widget Reference](https://docs.tooljet.io)
+- [Getting Started](https://docs.tooljet.io)<br>
+- [Deploying](https://docs.tooljet.io/docs/deployment/architecture)<br>
+- [Datasource Reference](https://docs.tooljet.io/docs/data-sources/airtable/)<br>
+- [Widget Reference](https://docs.tooljet.io/docs/widgets/button)
 
 ## Branching model
 We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
 
 ## Contributing
-Read our contributing guide (CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to ToolJet. <br>
-[Contributing Guide](https://docs.tooljet.io/docs/contributing-guide/setup/docker)
+Read our [Contributing Guide](CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to ToolJet. <br>
 
 ## Contributors
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">

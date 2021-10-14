@@ -1,6 +1,6 @@
 import '@/_styles/left-sidebar.scss';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { LeftSidebarItem } from './sidebar-item';
 import { LeftSidebarInspector } from './sidebar-inspector';
@@ -10,6 +10,7 @@ import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
+import { ConfirmDialog } from '@/_components';
 
 export const LeftSidebar = ({
   appId,
@@ -25,6 +26,7 @@ export const LeftSidebar = ({
   errorLogs,
 }) => {
   const router = useRouter();
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   return (
     <div className="left-sidebar">
       <LeftSidebarInspector darkMode={darkMode} globals={globals} components={components} queries={queries} />
@@ -37,10 +39,16 @@ export const LeftSidebar = ({
       <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
       <LeftSidebarComment toggleComments={toggleComments} />
       <LeftSidebarItem
-        onClick={() => router.push('/')}
+        onClick={() => setShowLeaveDialog(true)}
         tip="Back to home"
         icon="back"
         className="left-sidebar-item no-border"
+      />
+      <ConfirmDialog
+        show={showLeaveDialog}
+        message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
+        onConfirm={() => router.push('/')}
+        onCancel={() => setShowLeaveDialog(false)}
       />
       <div className="left-sidebar-stack-bottom">
         <LeftSidebarZoom onZoomChanged={onZoomChanged} />

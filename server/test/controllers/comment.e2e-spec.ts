@@ -31,10 +31,10 @@ describe('comment controller', () => {
       user: userData.user,
     });
     const thread = await createThread(app, {
-      app_id: application.id,
+      appId: application.id,
       x: 100,
       y: 200,
-      user_id: userData.user.id,
+      userId: userData.user.id,
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { user } = userData;

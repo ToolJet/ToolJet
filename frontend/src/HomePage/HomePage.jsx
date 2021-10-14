@@ -81,10 +81,15 @@ class HomePage extends React.Component {
   createApp = () => {
     let _self = this;
     _self.setState({ creatingApp: true });
-    appService.createApp().then((data) => {
-      console.log(data);
-      _self.props.history.push(`/apps/${data.id}`);
-    });
+    appService
+      .createApp()
+      .then((data) => {
+        console.log(data);
+        _self.props.history.push(`/apps/${data.id}`);
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+      });
   };
 
   deleteApp = (app) => {
@@ -104,10 +109,21 @@ class HomePage extends React.Component {
         this.props.history.push(`/apps/${data.id}`);
       })
       .catch(({ _error }) => {
-        toast.error('Could not clone the app.', { hideProgressBar: true, position: 'top-center' });
+        toast.error('Could not clone the app.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({ isCloningApp: false });
         console.log(_error);
       });
+  };
+
+  isAppEditable = (app) => {
+    return app.app_group_permissions.some((p) => p.update);
+  };
+
+  isAppDeletable = (app) => {
+    return app.app_group_permissions.some((p) => p.delete);
   };
 
   executeAppDeletion = () => {
@@ -129,7 +145,10 @@ class HomePage extends React.Component {
         this.fetchFolders();
       })
       .catch(({ error }) => {
-        toast.error('Could not delete the app.', { hideProgressBar: true, position: 'top-center' });
+        toast.error('Could not delete the app.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({
           isDeletingApp: false,
           appToBeDeleted: null,
@@ -144,16 +163,8 @@ class HomePage extends React.Component {
   };
 
   render() {
-    const {
-      apps,
-      currentUser,
-      isLoading,
-      creatingApp,
-      meta,
-      currentFolder,
-      showAppDeletionConfirmation,
-      isDeletingApp,
-    } = this.state;
+    const { apps, isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp } =
+      this.state;
     return (
       <div className="wrapper home-page">
         <ConfirmDialog
@@ -203,7 +214,7 @@ class HomePage extends React.Component {
 
                     <div
                       className={
-                        currentFolder.count == 0
+                        currentFolder.count === 0
                           ? 'table-responsive w-100 apps-table mt-3 d-flex align-items-center'
                           : 'table-responsive w-100 apps-table mt-3'
                       }
@@ -246,11 +257,16 @@ class HomePage extends React.Component {
                                     </small>
                                   </td>
                                   <td className="text-muted col-auto pt-4">
-                                    {currentUser.role !== 'viewer' && (
+                                    {!isLoading && this.isAppEditable(app) && (
                                       <Link to={`/apps/${app.id}`} className="d-none d-lg-inline">
                                         <OverlayTrigger
                                           placement="top"
-                                          overlay={(props) => renderTooltip({ props, text: 'Open in app builder' })}
+                                          overlay={(props) =>
+                                            renderTooltip({
+                                              props,
+                                              text: 'Open in app builder',
+                                            })
+                                          }
                                         >
                                           <span className="badge bg-green-lt">Edit</span>
                                         </OverlayTrigger>
@@ -267,7 +283,7 @@ class HomePage extends React.Component {
                                             renderTooltip({
                                               props,
                                               text:
-                                                app?.current_version_id == null
+                                                app?.current_version_id === null
                                                   ? 'App does not have a deployed version'
                                                   : 'Open in app viewer',
                                             })
@@ -293,7 +309,7 @@ class HomePage extends React.Component {
                                             renderTooltip({
                                               props,
                                               text:
-                                                app?.current_version_id == null
+                                                app?.current_version_id === null
                                                   ? 'App does not have a deployed version'
                                                   : 'Open in app viewer',
                                             })
@@ -302,13 +318,13 @@ class HomePage extends React.Component {
                                           {
                                             <span
                                               className={`${
-                                                app?.current_version_id == null
+                                                app?.current_version_id === null
                                                   ? 'badge mx-2 '
                                                   : 'badge bg-azure-lt mx-2'
                                               }`}
                                               style={{
                                                 filter:
-                                                  app?.current_version_id == null
+                                                  app?.current_version_id === null
                                                     ? 'brightness(0.3)'
                                                     : 'brightness(1) invert(1)',
                                               }}
@@ -320,19 +336,21 @@ class HomePage extends React.Component {
                                       )}
                                     </Link>
 
-                                    <AppMenu
-                                      app={app}
-                                      folders={this.state.folders}
-                                      foldersChanged={this.foldersChanged}
-                                      deleteApp={() => this.deleteApp(app)}
-                                      cloneApp={() => this.cloneApp(app)}
-                                    />
+                                    {this.isAppDeletable(app) && (
+                                      <AppMenu
+                                        app={app}
+                                        folders={this.state.folders}
+                                        foldersChanged={this.foldersChanged}
+                                        deleteApp={() => this.deleteApp(app)}
+                                        cloneApp={() => this.cloneApp(app)}
+                                      />
+                                    )}
                                   </td>
                                 </tr>
                               ))}
                             </>
                           )}
-                          {currentFolder.count == 0 && (
+                          {currentFolder.count === 0 && (
                             <div>
                               <img
                                 className="mx-auto d-block"

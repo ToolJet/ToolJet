@@ -12,7 +12,9 @@ import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
@@ -139,6 +141,20 @@ class App extends React.Component {
               exact
               path="/users"
               component={ManageOrgUsers}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/groups"
+              component={ManageGroupPermissions}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/groups/:id"
+              component={ManageGroupPermissionResources}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
