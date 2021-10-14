@@ -5,9 +5,9 @@ sidebar_label: Docker
 
 # Deploying ToolJet using docker-compose
 
-:::info
+```info
 You should setup a PostgreSQL database manually to be used by the ToolJet server.
-:::
+```
 
 Follow the steps below to deploy ToolJet on a server using docker-compose. This setup will deploy both ToolJet server and ToolJet client.
 
@@ -43,18 +43,18 @@ For example, if the server is an AWS EC2 instance and the installation should re
 
   `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
 
-  :::info
+  ```info
   We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
-  :::
+  ```
 
   Examples:
   `TOOLJET_HOST=http://12.34.56.78` or
   `TOOLJET_HOST=https://yourdomain.com` or
   `TOOLJET_HOST=https://tooljet.yourdomain.com`
 
-  :::info
+  ```info
    Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
-  :::
+  ```
 
 6. Once you've populated the `.env` file, run
 
@@ -63,12 +63,12 @@ For example, if the server is an AWS EC2 instance and the installation should re
   ```
   to start all the required services.
 
-  :::info
+  ```info
     If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
     `sudo docker-compose up -d`
     OR
     Setup docker to run without root privilages by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
-  :::
+  ```
 
 7. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
