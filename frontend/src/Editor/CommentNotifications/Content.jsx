@@ -5,10 +5,18 @@ import { pluralize } from '@/_helpers/utils';
 import moment from 'moment';
 import usePopover from '@/_hooks/use-popover';
 import { useSpring, animated } from 'react-spring';
+import useRouter from '@/_hooks/use-router';
 
 const Content = ({ notifications }) => {
+  const router = useRouter();
+  const [selectedCommentId, setSelectedCommentId] = React.useState(router.query.commentId);
   const [open, trigger, content] = usePopover(false);
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
+
+  React.useEffect(() => {
+    if (router.query?.commentId) setSelectedCommentId(router.query?.commentId);
+    else setSelectedCommentId('');
+  }, [router]);
 
   const getContent = () => {
     if (isEmpty(notifications))
@@ -22,7 +30,18 @@ const Content = ({ notifications }) => {
       <div className="divide-y cursor-pointer">
         {notifications.map((notification) => {
           return (
-            <div className="comment-notification comment-notification-selected" key={notification.id}>
+            <div
+              className={cx('comment-notification', {
+                'comment-notification-selected': selectedCommentId === notification.id,
+              })}
+              onClick={() => {
+                router.push({
+                  pathname: window.location.pathname,
+                  search: `?threadId=${notification.thread.id}&commentId=${notification.id}`,
+                });
+              }}
+              key={notification.id}
+            >
               <div className="d-flex justify-content-between">
                 <span className="comment-notification-user">
                   {`${notification.user?.firstName} ${notification.user?.lastName}`}{' '}
@@ -76,7 +95,7 @@ const Content = ({ notifications }) => {
                   </svg>
                 </div>
               </div>
-              <div className="d-flex">
+              {/* <div className="d-flex">
                 <span>Only mention of you</span>
                 <div className="ms-auto">
                   <svg width="12" height="9" viewBox="0 0 12 9" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -88,7 +107,7 @@ const Content = ({ notifications }) => {
                     />
                   </svg>
                 </div>
-              </div>
+              </div> */}
             </div>
           </animated.div>
         </div>

@@ -9,6 +9,7 @@ import CommentBody from '@/Editor/Comment/CommentBody';
 import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
+import useRouter from '@/_hooks/use-router';
 
 const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads }) => {
   const [loading, setLoading] = React.useState(true);
@@ -21,6 +22,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads }
     type: ItemTypes.COMMENT,
     item: { threadId, name: 'comment' },
   }));
+  const router = useRouter();
 
   React.useEffect(() => {
     // Listen for messages
@@ -46,8 +48,19 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads }
   React.useEffect(() => {
     if (open) {
       fetchData();
+    } else {
+      // resetting the query param
+      router.push(window.location.pathname);
     }
   }, [open]);
+
+  React.useEffect(() => {
+    if (router.query.threadId === threadId) {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  }, [router]);
 
   const handleSubmit = async (comment) => {
     await commentsService.createComment({
