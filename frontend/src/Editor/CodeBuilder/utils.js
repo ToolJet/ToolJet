@@ -41,14 +41,14 @@ export function makeOverlay(style) {
     token: function (stream, state) {
       var ch;
       if (stream.match('{{')) {
-        while ((ch = stream.next()) !== null)
+        while ((ch = stream.next()) != null)
           if (ch === '}' && stream.next() === '}') {
             stream.eat('}');
             return style;
           }
       }
       // eslint-disable-next-line no-empty
-      while (stream.next() !== null && !stream.match('{{', false)) {}
+      while (stream.next() != null && !stream.match('{{', false)) {}
       return null;
     },
   };
