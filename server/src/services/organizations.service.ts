@@ -67,7 +67,7 @@ export class OrganizationsService {
         status: orgUser.status,
       };
 
-      if (this.usersService.hasGroup(user, 'admin') && orgUser.user.invitationToken)
+      if (await this.usersService.hasGroup(user, 'admin') && orgUser.user.invitationToken)
         serializedUser['invitationToken'] = orgUser.user.invitationToken;
 
       serializedUsers.push(serializedUser);
