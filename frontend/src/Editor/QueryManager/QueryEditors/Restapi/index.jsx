@@ -136,6 +136,7 @@ class Restapi extends React.Component {
             currentState={this.props.currentState}
             onChange={this.handleChange}
             removeKeyValuePair={this.removeKeyValuePair}
+            darkMode={this.props.darkMode}
           />
         </div>
       </div>

@@ -117,7 +117,7 @@ export function CodeHinter({
   };
   enablePreview = enablePreview ?? true;
   return (
-    <>
+    <div style={{ width: '100%' }}>
       <div
         className={`code-hinter ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
@@ -140,6 +140,6 @@ export function CodeHinter({
         />
       </div>
       {enablePreview && getPreview()}
-    </>
+    </div>
   );
 }
