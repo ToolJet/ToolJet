@@ -23,7 +23,7 @@ import { StarRating } from './Components/StarRating';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
-import { resolveProperties, resolveVariables, resolveStyles } from './component-properties-resolution';
+import { resolveProperties, resolveStyles } from './component-properties-resolution';
 import { validateWidget } from '@/_helpers/utils';
 
 const AllComponents = {
@@ -84,10 +84,10 @@ export const Box = function Box({
 
   const ComponentToRender = AllComponents[component.component];
   const resolvedProperties = resolveProperties(component, currentState);
-  const resolvedVariables = resolveVariables(component, currentState);
   const resolvedStyles = resolveStyles(component, currentState);
+  const exposedVariables = currentState?.components[component.name] ?? {};
 
-  const fireEvent = (eventName, options) => onEvent(eventName, { ...options, ...{ component } });
+  const fireEvent = (eventName, options) => onEvent(eventName, { ...options, component });
   const validate = (value) =>
     validateWidget({
       ...{ widgetValue: value },
@@ -119,7 +119,7 @@ export const Box = function Box({
             darkMode={darkMode}
             removeComponent={removeComponent}
             properties={resolvedProperties}
-            exposedVariables={resolvedVariables}
+            exposedVariables={exposedVariables}
             styles={resolvedStyles}
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
             fireEvent={fireEvent}

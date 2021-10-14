@@ -12,20 +12,6 @@ export const resolveProperties = (component, currentState) => {
   } else return {};
 };
 
-export const resolveVariables = (component, currentState) => {
-  if (currentState && currentState.components[component.name]) {
-    const variables = Object.entries(currentState.components[component.name]).reduce(
-      (properties, entry) => ({
-        ...properties,
-        ...{ [entry[0]]: resolveReferences(entry[1], currentState) },
-      }),
-      {}
-    );
-    delete variables.id;
-    return variables;
-  } else return {};
-};
-
 export const resolveStyles = (component, currentState) => {
   if (currentState && currentState.components[component.name]) {
     const styles = component.definition.styles;
