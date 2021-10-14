@@ -21,7 +21,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
         {options.map((option, index) => {
           return (
             <div className="row input-group my-1" key={index}>
-              <div className="col-4">
+              <div className="col-4 field">
                 <CodeHinter
                   currentState={currentState}
                   initialValue={option[0]}
@@ -31,7 +31,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                   onChange={onChange('headers', 0, index)}
                 />
               </div>
-              <div className="col-6">
+              <div className="col-6 field">
                 <CodeHinter
                   currentState={currentState}
                   className="form-control codehinter-query-editor-input"

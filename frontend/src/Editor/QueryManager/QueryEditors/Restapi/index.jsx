@@ -98,7 +98,7 @@ class Restapi extends React.Component {
                 />
               </div>
 
-              <div className="col" style={{ display: 'flex' }}>
+              <div className="col field" style={{ display: 'flex' }}>
                 {dataSourceURL && (
                   <span
                     htmlFor=""
