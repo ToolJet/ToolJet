@@ -23,7 +23,7 @@ docker-compose version 1.26.2, build eefe0d31
 
 ## Setting up
 
-1. Close the repository
+1. Clone the repository
    ```bash
     git clone https://github.com/tooljet/tooljet.git
    ```
@@ -107,7 +107,7 @@ Caveat:
 
 1. If the changes include database migrations or new npm package additions in the package.json, you would need to restart the ToolJet server container by running `docker-compose restart server`.
 
-2. If you need to add a new binary or system libary to the container itself, you would need to add those dependencies in `docker/server.Dockerfile.dev` and then rebuild the ToolJet server image. You can do that by running `docker-compose build server`. Once that completes you can start everything normally with `docker-compose up`.
+2. If you need to add a new binary or system library to the container itself, you would need to add those dependencies in `docker/server.Dockerfile.dev` and then rebuild the ToolJet server image. You can do that by running `docker-compose build server`. Once that completes you can start everything normally with `docker-compose up`.
 
 Example:
 Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:
