@@ -95,10 +95,11 @@ export const RadioButton = function RadioButton({
       <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
         {label}
       </span>
-      <div className="col px-1 py-0 my-auto">
+      <div className="col px-1 py-0 mt-0">
         {selectOptions.map((option, index) => (
           <label key={index} className="form-check form-check-inline">
             <input
+              style={{ marginTop: '1px' }}
               className="form-check-input"
               checked={value === option.value}
               type="radio"
