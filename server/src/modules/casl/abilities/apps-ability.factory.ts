@@ -46,7 +46,6 @@ export class AppsAbilityFactory {
 
     if (await this.usersService.userCan(user, 'read', 'App', params.id)) {
       can('viewApp', App, { organizationId: user.organizationId });
-      can('updateParams', App, { organizationId: user.organizationId });
 
       can('fetchUsers', App, { organizationId: user.organizationId });
       can('fetchVersions', App, { organizationId: user.organizationId });
@@ -63,6 +62,7 @@ export class AppsAbilityFactory {
     }
 
     if (await this.usersService.userCan(user, 'update', 'App', params.id)) {
+      can('updateParams', App, { organizationId: user.organizationId });
       can('createVersions', App, { organizationId: user.organizationId });
       can('updateVersions', App, { organizationId: user.organizationId });
 

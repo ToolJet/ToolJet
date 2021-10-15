@@ -22,7 +22,7 @@ describe('users controller', () => {
       const [firstName, lastName] = ['Daenerys', 'Targaryen', 'drogo666'];
 
       const response = await request(app.getHttpServer())
-        .patch('/users/update')
+        .patch('/api/users/update')
         .set('Authorization', authHeaderForUser(user))
         .send({ firstName, lastName });
 
@@ -43,7 +43,7 @@ describe('users controller', () => {
       const oldPassword = user.password;
 
       const response = await request(app.getHttpServer())
-        .patch('/users/change_password')
+        .patch('/api/users/change_password')
         .set('Authorization', authHeaderForUser(user))
         .send({ currentPassword: 'password', newPassword: 'new password' });
 
@@ -61,7 +61,7 @@ describe('users controller', () => {
       const oldPassword = user.password;
 
       const response = await request(app.getHttpServer())
-        .patch('/users/change_password')
+        .patch('/api/users/change_password')
         .set('Authorization', authHeaderForUser(user))
         .send({ currentPassword: 'wrong password', newPassword: 'new password' });
 
