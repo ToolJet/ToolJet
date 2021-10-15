@@ -5,7 +5,7 @@
   "repository": "https://github.com/tooljet/tooljet",
   "logo": "https://app.tooljet.io/assets/images/logo.svg",
   "success_url": "/",
-  "scripts":{
+  "scripts": {
     "predeploy": "npm install --prefix server && npm run build --prefix server"
   },
   "env": {
@@ -32,6 +32,10 @@
     "SSO_GOOGLE_OAUTH2_CLIENT_ID": {
       "description": "Google OAuth2 client id to enable single sign-on",
       "value": ""
+    },
+    "SSO_DISABLE_SIGNUP": {
+      "description": "Disable sign-up via SSO",
+      "value": ""
     }
   },
   "formation": {
@@ -40,7 +44,9 @@
     }
   },
   "image": "heroku/nodejs",
-  "addons": ["heroku-postgresql"],
+  "addons": [
+    "heroku-postgresql"
+  ],
   "buildpacks": [
     {
       "url": "heroku/nodejs"

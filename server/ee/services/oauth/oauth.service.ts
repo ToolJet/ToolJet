@@ -31,6 +31,14 @@ export class OauthService {
     return user;
   }
 
+  async #findAndActivateUser(email): Promise<User> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) throw new UnauthorizedException('Invalid credentials');
+    const organizationUser = user.organizationUsers[0];
+    if (organizationUser.status != 'active') await this.organizationUsersService.activate(organizationUser);
+    return user;
+  }
+
   async #generateLoginResultPayload(user: User): Promise<any> {
     const JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId };
     return {
@@ -52,7 +60,10 @@ export class OauthService {
     if ('RESTRICTED_DOMAIN' in process.env && process.env.RESTRICTED_DOMAIN != domain)
       throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
 
-    const user = await this.#findOrCreateUser({ userSSOId, firstName, lastName, email });
+    let user: User;
+    if (process.env.SSO_DISABLE_SIGNUP === 'true') user = await this.#findAndActivateUser(email);
+    else user = await this.#findOrCreateUser({ userSSOId, firstName, lastName, email });
+
     return await this.#generateLoginResultPayload(user);
   }
 }
