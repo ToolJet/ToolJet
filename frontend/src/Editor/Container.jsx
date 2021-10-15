@@ -71,14 +71,13 @@ export const Container = ({
 
   const { draggingState } = useDragLayer((monitor) => {
     if (monitor.isDragging()) {
-      if (!monitor.getItem().parent) {
-        return { draggingState: true };
-      } else {
-        return { draggingState: false };
-      }
-    } else {
-      return { draggingState: false };
-    }
+        (!monitor.getItem().parent) ?
+        (return { draggingState: true }) 
+      
+        :(return { draggingState: false })
+      
+    } 
+    else { return { draggingState: false }; }
   });
 
   useEffect(() => {
