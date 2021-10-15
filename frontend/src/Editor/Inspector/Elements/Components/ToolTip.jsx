@@ -16,15 +16,15 @@ export const ToolTip = ({ label, meta, labelClass }) => {
     );
   }
 
-  if (meta.tip) {
-    return (
+  (meta.tip) ?  
+   ( return (
       <OverlayTrigger placement="left" delay={{ show: 250, hide: 400 }} overlay={renderTooltip}>
         <label style={tooltipStyle} className={labelClass || 'form-label'}>
           {label}
         </label>
       </OverlayTrigger>
-    );
-  } else {
-    return <label className={labelClass || 'form-label'}>{label}</label>;
-  }
+    ))
+  
+   :( return <label className={labelClass || 'form-label'}>{label}</label>)
+  
 };
