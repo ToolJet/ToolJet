@@ -71,7 +71,7 @@ export const ToggleSwitch = ({
       <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
         {label}
       </span>
-      <div className="col">
+      <div className="col px-1 py-0 my-auto">
         <Switch
           disabledState={parsedDisabledState}
           on={on}
