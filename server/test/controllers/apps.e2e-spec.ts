@@ -28,15 +28,17 @@ describe('apps controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
+    app.setGlobalPrefix('/api');
+    await app.init();
   });
 
-  describe('/apps/uuid', () => {
+  describe('/api/apps/uuid', () => {
     it('should allow only authenticated users to update app params', async () => {
-      await request(app.getHttpServer()).put('/apps/uuid').expect(401);
+      await request(app.getHttpServer()).put('/api/apps/uuid').expect(401);
     });
   });
 
-  describe('/apps', () => {
+  describe('/api/apps', () => {
     describe('authorization', () => {
       it('should be able to create app if user has admin group', async () => {
         const adminUserData = await createUser(app, {
@@ -63,14 +65,14 @@ describe('apps controller', () => {
 
         for (const userData of [viewerUserData, developerUserData]) {
           const response = await request(app.getHttpServer())
-            .post(`/apps`)
+            .post(`/api/apps`)
             .set('Authorization', authHeaderForUser(userData.user));
 
           expect(response.statusCode).toBe(403);
         }
 
         const response = await request(app.getHttpServer())
-          .post(`/apps`)
+          .post(`/api/apps`)
           .set('Authorization', authHeaderForUser(adminUserData.user));
 
         expect(response.statusCode).toBe(201);
@@ -85,7 +87,7 @@ describe('apps controller', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .post(`/apps`)
+        .post(`/api/apps`)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toBe(201);
@@ -99,7 +101,7 @@ describe('apps controller', () => {
     });
   });
 
-  describe('/apps/:id/clone', () => {
+  describe('/api/apps/:id/clone', () => {
     it('should be able to clone the app if user group is admin', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -124,7 +126,7 @@ describe('apps controller', () => {
       });
 
       let response = await request(app.getHttpServer())
-        .post(`/apps/${application.id}/clone`)
+        .post(`/api/apps/${application.id}/clone`)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toBe(201);
@@ -134,13 +136,13 @@ describe('apps controller', () => {
       expect(clonedApplication.name).toBe('App to clone');
 
       response = await request(app.getHttpServer())
-        .post(`/apps/${application.id}/clone`)
+        .post(`/api/apps/${application.id}/clone`)
         .set('Authorization', authHeaderForUser(developerUserData.user));
 
       expect(response.statusCode).toBe(403);
 
       response = await request(app.getHttpServer())
-        .post(`/apps/${application.id}/clone`)
+        .post(`/api/apps/${application.id}/clone`)
         .set('Authorization', authHeaderForUser(viewerUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -161,14 +163,14 @@ describe('apps controller', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .post(`/apps/${application.id}/clone`)
+        .post(`/api/apps/${application.id}/clone`)
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
       expect(response.statusCode).toBe(403);
     });
   });
 
-  describe('/apps/:id', () => {
+  describe('/api/apps/:id', () => {
     it('should be able to update name of the app if admin of same organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -179,7 +181,7 @@ describe('apps controller', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .put(`/apps/${application.id}`)
+        .put(`/api/apps/${application.id}`)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({ app: { name: 'new name' } });
 
@@ -203,7 +205,7 @@ describe('apps controller', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .put(`/apps/${application.id}`)
+        .put(`/api/apps/${application.id}`)
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
         .send({ app: { name: 'new name' } });
 
@@ -234,13 +236,13 @@ describe('apps controller', () => {
       });
 
       let response = await request(app.getHttpServer())
-        .put(`/apps/${application.id}`)
+        .put(`/api/apps/${application.id}`)
         .set('Authorization', authHeaderForUser(developerUserData.user))
         .send({ app: { name: 'new name' } });
       expect(response.statusCode).toBe(403);
 
       response = await request(app.getHttpServer())
-        .put(`/apps/${application.id}`)
+        .put(`/api/apps/${application.id}`)
         .set('Authorization', authHeaderForUser(viewerUserData.user))
         .send({ app: { name: 'new name' } });
       expect(response.statusCode).toBe(403);
@@ -271,7 +273,7 @@ describe('apps controller', () => {
         });
 
         const response = await request(app.getHttpServer())
-          .delete(`/apps/${application.id}`)
+          .delete(`/api/apps/${application.id}`)
           .set('Authorization', authHeaderForUser(admin.user));
 
         expect(response.statusCode).toBe(200);
@@ -301,7 +303,7 @@ describe('apps controller', () => {
         });
 
         const response = await request(app.getHttpServer())
-          .delete(`/apps/${application.id}`)
+          .delete(`/api/apps/${application.id}`)
           .set('Authorization', authHeaderForUser(developer.user));
 
         expect(response.statusCode).toBe(403);
@@ -311,14 +313,14 @@ describe('apps controller', () => {
     });
   });
 
-  describe('/apps/uuid/users', () => {
+  describe('/api/apps/uuid/users', () => {
     it('should allow only authenticated users to access app users endpoint', async () => {
-      await request(app.getHttpServer()).get('/apps/uuid/users').expect(401);
+      await request(app.getHttpServer()).get('/api/apps/uuid/users').expect(401);
     });
   });
 
   // TODO: Remove deprecated endpoint
-  describe('/apps/:id/users', () => {
+  describe('/api/apps/:id/users', () => {
     xit('should not be able to fetch app users if admin of another organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -334,7 +336,7 @@ describe('apps controller', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .get(`/apps/${application.id}/users`)
+        .get(`/api/apps/${application.id}/users`)
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -364,7 +366,7 @@ describe('apps controller', () => {
 
       for (const userData of [adminUserData, developerUserData, viewerUserData]) {
         const response = await request(app.getHttpServer())
-          .get(`/apps/${application.id}/users`)
+          .get(`/api/apps/${application.id}/users`)
           .set('Authorization', authHeaderForUser(userData.user));
 
         expect(response.statusCode).toBe(200);
@@ -373,7 +375,7 @@ describe('apps controller', () => {
     });
   });
 
-  describe('/apps/:id/versions', () => {
+  describe('/api/apps/:id/versions', () => {
     describe('get versions', () => {
       describe('authorization', () => {
         it('should be able to fetch app versions with app read permission group', async () => {
@@ -405,7 +407,7 @@ describe('apps controller', () => {
 
           for (const userData of [adminUserData, defaultUserData]) {
             const response = await request(app.getHttpServer())
-              .get(`/apps/${application.id}/versions`)
+              .get(`/api/apps/${application.id}/versions`)
               .set('Authorization', authHeaderForUser(userData.user));
 
             expect(response.statusCode).toBe(200);
@@ -433,7 +435,7 @@ describe('apps controller', () => {
           await createApplicationVersion(app, application);
 
           const response = await request(app.getHttpServer())
-            .get(`/apps/${application.id}/versions`)
+            .get(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
           expect(response.statusCode).toBe(403);
@@ -465,7 +467,7 @@ describe('apps controller', () => {
 
           for (const userData of [adminUserData, developerUserData]) {
             const response = await request(app.getHttpServer())
-              .post(`/apps/${application.id}/versions`)
+              .post(`/api/apps/${application.id}/versions`)
               .set('Authorization', authHeaderForUser(userData.user))
               .send({
                 versionName: 'v0',
@@ -491,7 +493,7 @@ describe('apps controller', () => {
           await createApplicationVersion(app, application);
 
           const response = await request(app.getHttpServer())
-            .post(`/apps/${application.id}/versions`)
+            .post(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
             .send({
               versionName: 'v0',
@@ -517,7 +519,7 @@ describe('apps controller', () => {
           await createApplicationVersion(app, application);
 
           const response = await request(app.getHttpServer())
-            .post(`/apps/${application.id}/versions`)
+            .post(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(viewerUserData.user))
             .send({
               versionName: 'v0',
@@ -538,7 +540,7 @@ describe('apps controller', () => {
           });
 
           let response = await request(app.getHttpServer())
-            .post(`/apps/${application.id}/versions`)
+            .post(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v0',
@@ -547,7 +549,7 @@ describe('apps controller', () => {
           expect(response.statusCode).toBe(201);
 
           response = await request(app.getHttpServer())
-            .get(`/apps/${application.id}/versions`)
+            .get(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(adminUserData.user));
 
           expect(response.statusCode).toBe(200);
@@ -567,7 +569,7 @@ describe('apps controller', () => {
           const version = await createApplicationVersion(app, application);
 
           let response = await request(app.getHttpServer())
-            .put(`/apps/${application.id}/versions/${version.id}`)
+            .put(`/api/apps/${application.id}/versions/${version.id}`)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               definition: { foo: 'bar' },
@@ -576,7 +578,7 @@ describe('apps controller', () => {
           expect(response.statusCode).toBe(200);
 
           response = await request(app.getHttpServer())
-            .post(`/apps/${application.id}/versions`)
+            .post(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v1',
@@ -585,7 +587,7 @@ describe('apps controller', () => {
           expect(response.statusCode).toBe(201);
 
           response = await request(app.getHttpServer())
-            .get(`/apps/${application.id}/versions`)
+            .get(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(adminUserData.user));
 
           expect(response.statusCode).toBe(200);
@@ -598,7 +600,7 @@ describe('apps controller', () => {
     });
   });
 
-  describe('/apps/:id/versions/:version_id', () => {
+  describe('/api/apps/:id/versions/:version_id', () => {
     describe('get app version', () => {
       describe('authorization', () => {
         it('should be able to get app version by users having app read permission within same organization', async () => {
@@ -627,7 +629,7 @@ describe('apps controller', () => {
 
           for (const userData of [adminUserData, developerUserData]) {
             const response = await request(app.getHttpServer())
-              .get(`/apps/${application.id}/versions/${version.id}`)
+              .get(`/api/apps/${application.id}/versions/${version.id}`)
               .set('Authorization', authHeaderForUser(userData.user));
 
             expect(response.statusCode).toBe(200);
@@ -650,7 +652,7 @@ describe('apps controller', () => {
           const version = await createApplicationVersion(app, application);
 
           const response = await request(app.getHttpServer())
-            .get(`/apps/${application.id}/versions/${version.id}`)
+            .get(`/api/apps/${application.id}/versions/${version.id}`)
             .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
           expect(response.statusCode).toBe(403);
@@ -684,7 +686,7 @@ describe('apps controller', () => {
 
         for (const userData of [adminUserData, developerUserData]) {
           const response = await request(app.getHttpServer())
-            .put(`/apps/${application.id}/versions/${version.id}`)
+            .put(`/api/apps/${application.id}/versions/${version.id}`)
             .set('Authorization', authHeaderForUser(userData.user))
             .send({
               definition: { components: {} },
@@ -711,7 +713,7 @@ describe('apps controller', () => {
         const version = await createApplicationVersion(app, application);
 
         const response = await request(app.getHttpServer())
-          .put(`/apps/${application.id}/versions/${version.id}`)
+          .put(`/api/apps/${application.id}/versions/${version.id}`)
           .set('Authorization', authHeaderForUser(viewerUserData.user))
           .send({
             definition: { components: {} },
@@ -736,7 +738,7 @@ describe('apps controller', () => {
         const version = await createApplicationVersion(app, application);
 
         const response = await request(app.getHttpServer())
-          .put(`/apps/${application.id}/versions/${version.id}`)
+          .put(`/api/apps/${application.id}/versions/${version.id}`)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
           .send({
             definition: { components: {} },
@@ -753,7 +755,7 @@ describe('apps controller', () => {
     Public apps can be launched by anyone ( even unauthenticated users )
     By view app endpoint, we assume the apps/slugs/:id endpoint
   */
-  describe('/apps/slugs/:slug', () => {
+  describe('/api/apps/slugs/:slug', () => {
     it('should be able to fetch app using slug if has read permission within an organization', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -795,7 +797,7 @@ describe('apps controller', () => {
 
       for (const userData of [adminUserData, developerUserData, viewerUserData]) {
         const response = await request(app.getHttpServer())
-          .get('/apps/slugs/foo')
+          .get('/api/apps/slugs/foo')
           .set('Authorization', authHeaderForUser(userData.user));
 
         expect(response.statusCode).toBe(200);
@@ -818,7 +820,7 @@ describe('apps controller', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .get('/apps/slugs/foo')
+        .get('/api/apps/slugs/foo')
         .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
       expect(response.statusCode).toBe(403);
@@ -837,7 +839,7 @@ describe('apps controller', () => {
         isPublic: true,
       });
 
-      const response = await request(app.getHttpServer()).get('/apps/slugs/foo');
+      const response = await request(app.getHttpServer()).get('/api/apps/slugs/foo');
 
       expect(response.statusCode).toBe(200);
     });

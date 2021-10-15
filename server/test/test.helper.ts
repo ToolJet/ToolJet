@@ -27,6 +27,7 @@ export async function createNestAppInstance() {
   }).compile();
 
   app = moduleRef.createNestApplication();
+  app.setGlobalPrefix('api');
   await app.init();
 
   return app;

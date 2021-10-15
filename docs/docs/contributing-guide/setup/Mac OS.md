@@ -90,21 +90,21 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
 
 10. ## Running tests
 
-Test config requires the presence of `.env.test` file at the root of the project.
+    Test config requires the presence of `.env.test` file at the root of the project.
 
-To run the unit tests
+    To run the unit tests
 
-```bash
-$ npm run --prefix server test
-```
+    ```bash
+    $ npm run --prefix server test
+    ```
 
-To run e2e tests
+    To run e2e tests
 
-```bash
-npm run --prefix server test:e2e
-```
+    ```bash
+    npm run --prefix server test:e2e
+    ```
 
-To run a specific unit test
-```bash
-npm run --prefix server test <path-to-file>
-```
+    To run a specific unit test
+    ```bash
+    npm run --prefix server test <path-to-file>
+    ```
