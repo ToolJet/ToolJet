@@ -63,7 +63,7 @@ Documentation is available at https://docs.tooljet.io.
 - [Widget Reference](https://docs.tooljet.io/docs/widgets/button)
 
 ## Branching model
-We use git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use our main branch or tags labeled as v1.x.x.
+We use git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
 
 ## Contributing
 Kindly read our [Contributing Guide](CONTRIBUTING.md) to learn and understand about our development process, how to propose bugfixes and improvements, and how to build and test your changes to ToolJet. <br>
