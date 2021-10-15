@@ -52,19 +52,21 @@ export const Checkbox = function Checkbox({
         onComponentClick(id, component);
       }}
     >
-      <label className="my-auto mx-2 form-check form-check-inline">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          onClick={(e) => {
-            toggleValue(e);
-          }}
-          style={{ backgroundColor: checked ? `${checkboxColor}` : 'white' }}
-        />
-        <span className="form-check-label" style={{ color: textColor }}>
-          {label}
-        </span>
-      </label>
+      <div className="col px-1 py-0 my-auto">
+        <label className="mx-1 form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            onClick={(e) => {
+              toggleValue(e);
+            }}
+            style={{ backgroundColor: checked ? `${checkboxColor}` : 'white' }}
+          />
+          <span className="form-check-label" style={{ color: textColor }}>
+            {label}
+          </span>
+        </label>
+      </div>
     </div>
   );
 };

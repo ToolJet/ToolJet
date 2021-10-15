@@ -85,17 +85,17 @@ export const RadioButton = function RadioButton({
   return (
     <div
       data-disabled={parsedDisabledState}
-      className="row"
+      className="row py-1"
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component);
       }}
     >
-      <span className="form-check-label col-auto py-1" style={{ color: textColor }}>
+      <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
         {label}
       </span>
-      <div className="col py-1">
+      <div className="col px-1 py-0 my-auto">
         {selectOptions.map((option, index) => (
           <label key={index} className="form-check form-check-inline">
             <input

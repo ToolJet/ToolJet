@@ -61,7 +61,7 @@ export const ToggleSwitch = ({
 
   return (
     <div
-      className="row"
+      className="row py-1"
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
