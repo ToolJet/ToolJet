@@ -14,7 +14,7 @@ describe('app_users controller', () => {
   });
 
   it('should allow only authenticated users to create new app users', async () => {
-    await request(app.getHttpServer()).post('/app_users').expect(401);
+    await request(app.getHttpServer()).post('/api/app_users').expect(401);
   });
 
   xit('should be able to create a new app user if admin of same organization', async () => {
@@ -32,7 +32,7 @@ describe('app_users controller', () => {
     });
 
     const response = await request(app.getHttpServer())
-      .post(`/app_users`)
+      .post(`/api/app_users`)
       .set('Authorization', authHeaderForUser(adminUserData.user))
       .send({
         app_id: application.id,
@@ -64,7 +64,7 @@ describe('app_users controller', () => {
     });
 
     const response = await request(app.getHttpServer())
-      .post(`/app_users`)
+      .post(`/api/app_users`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
       .send({
         app_id: application.id,
@@ -97,7 +97,7 @@ describe('app_users controller', () => {
     });
 
     let response = await request(app.getHttpServer())
-      .post(`/app_users/`)
+      .post(`/api/app_users/`)
       .set('Authorization', authHeaderForUser(developerUserData.user))
       .send({
         app_id: application.id,
@@ -107,7 +107,7 @@ describe('app_users controller', () => {
     expect(response.statusCode).toBe(403);
 
     response = response = await request(app.getHttpServer())
-      .post(`/app_users/`)
+      .post(`/api/app_users/`)
       .set('Authorization', authHeaderForUser(viewerUserData.user))
       .send({
         app_id: application.id,
