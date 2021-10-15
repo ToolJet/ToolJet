@@ -43,18 +43,18 @@ For example, if the server is an AWS EC2 instance and the installation should re
 
   `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
 
-  :::info
-  We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
-  :::
+:::info
+We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
+:::
 
   Examples:
   `TOOLJET_HOST=http://12.34.56.78` or
   `TOOLJET_HOST=https://yourdomain.com` or
   `TOOLJET_HOST=https://tooljet.yourdomain.com`
 
-  :::info
-   Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
-  :::
+:::info
+  Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
+:::
 
 6. Once you've populated the `.env` file, run
 
