@@ -27,18 +27,18 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 
 ## Features
 
--> Visual app builder with widgets such as tables, charts, modals, buttons, dropdowns, and more.
--> Mobile 📱 & desktop layouts 🖥
--> Dark mode 🌛
--> Connect to databases, APIs, and external services.
--> Deploy on-premise (supports docker, kubernetes, heroku, and more)
--> Granular access control on organization-level and app-level.
--> Write JS code almost anywhere in the builder.
--> Query editors for all supported data sources.
--> Transform query results using JS code. 
--> All the credentials are securely encrypted using `aes-256-gcm`.
--> ToolJet acts only as a proxy and doesn't store any data.
--> Support for OAuth.
+- Visual app builder with widgets such as tables, charts, modals, buttons, dropdowns, and more.
+- Mobile 📱 & desktop layouts 🖥
+- Dark mode 🌛
+- Connect to databases, APIs, and external services.
+- Deploy on-premise (supports docker, kubernetes, heroku, and more)
+- Granular access control on organization-level and app-level.
+- Write JS code almost anywhere in the builder.
+- Query editors for all supported data sources.
+- Transform query results using JS code. 
+- All the credentials are securely encrypted using `aes-256-gcm`.
+- ToolJet acts only as a proxy and doesn't store any data.
+- Support for OAuth.
 
 <hr>
 
