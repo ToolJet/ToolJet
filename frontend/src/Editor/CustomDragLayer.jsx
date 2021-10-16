@@ -44,9 +44,10 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
   }
 
   [x, y] = snapToGrid(canvasWidth, x, y);
-  x = (x * 100) / canvasWidth;
 
   x += realCanvasDelta;
+
+  x = (x * 100) / canvasWidth;
 
   const transform = `translate(${x}%, ${y}px)`;
   return {

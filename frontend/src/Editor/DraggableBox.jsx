@@ -99,13 +99,14 @@ export const DraggableBox = function DraggableBox({
         zoomLevel,
         parent,
         layouts,
+        canvasWidth,
         currentLayout,
       },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [id, title, component, index, zoomLevel, parent, layouts, currentLayout]
+    [id, title, component, index, zoomLevel, parent, layouts, currentLayout, canvasWidth]
   );
 
   useEffect(() => {
@@ -189,7 +190,7 @@ export const DraggableBox = function DraggableBox({
         >
           <Rnd
             style={{ ...style }}
-            resizeGrid={[30, 10]}
+            resizeGrid={[canvasWidth / 43, 10]}
             size={{
               width: computeWidth(),
               height: currentLayoutOptions.height,

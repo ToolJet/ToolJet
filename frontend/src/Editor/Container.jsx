@@ -121,9 +121,15 @@ export const Container = ({
           left = Math.round(currentLayoutOptions.left + deltaX);
           top = Math.round(currentLayoutOptions.top + deltaY);
 
+          const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+          const canvasWidth = bundingRect?.width;
+
           if (snapToGrid) {
             [left, top] = doSnapToGrid(canvasWidth, left, top);
           }
+
+
+          left = (left * 100) / canvasWidth;
 
           let newBoxes = {
             ...boxes,
@@ -157,12 +163,15 @@ export const Container = ({
 
           id = uuidv4();
 
+          console.log('brrru', 'dropped', item);
+
+          const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+          const canvasWidth = bundingRect?.width;
+
           if (snapToGrid) {
             [left, top] = doSnapToGrid(canvasWidth, left, top);
           }
 
-          const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-          const canvasWidth = bundingRect?.width;
 
           left = (left * 100) / canvasWidth;
 
@@ -220,8 +229,6 @@ export const Container = ({
     const canvasWidth = bundingRect?.width;
 
     width = (width * 100) / canvasWidth;
-
-    // [width, height] = doSnapToGrid(width, height)
 
     let newBoxes = {
       ...boxes,
