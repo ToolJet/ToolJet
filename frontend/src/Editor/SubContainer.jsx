@@ -105,11 +105,7 @@ export const SubContainer = ({
     }
 
     if (monitor.isDragging() && monitor.getItem().parent) {
-      if (monitor.getItem().parent === parent) {
-        return { draggingState: true };
-      } else {
-        return { draggingState: false };
-      }
+      return monitor.getItem().parent === parent ? { draggingState: true } : { draggingState: false };
     } else {
       return { draggingState: false };
     }

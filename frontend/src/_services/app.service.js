@@ -24,8 +24,9 @@ function getConfig() {
 
 function getAll(page, folder) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
-  else return fetch(`${config.apiUrl}/apps?page=${page}&folder=${folder || ''}`, requestOptions).then(handleResponse);
+  return page === 0 ? fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse) : fetch(`${config.apiUrl}/apps?page=${page}&folder=${folder || ''}`, requestOptions).then(handleResponse);
+
+  
 }
 
 function createApp() {

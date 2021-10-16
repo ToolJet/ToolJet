@@ -10,11 +10,7 @@ export function findProp(obj, prop, defval) {
     if (prop[i].endsWith(']')) {
       const actual_prop = prop[i].split('[')[0];
       const index = prop[i].split('[')[1].split(']')[0];
-      if (obj[actual_prop]) {
-        obj = obj[actual_prop][index];
-      } else {
-        obj = undefined;
-      }
+      obj = obj[actual_prop] ? obj[actual_prop][index] : undefined;
     } else if (obj !== undefined) {
       if (typeof obj[prop[i]] === 'undefined') return defval;
       obj = obj[prop[i]];
