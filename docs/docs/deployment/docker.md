@@ -67,7 +67,7 @@ We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to crea
     If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
     `sudo docker-compose up -d`
     OR
-    Setup docker to run without root privilages by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
+    Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
   :::
 
 7. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
