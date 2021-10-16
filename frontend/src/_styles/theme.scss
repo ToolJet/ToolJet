@@ -140,7 +140,6 @@ body {
 
   .editor-sidebar {
     height: 100%;
-    width: 18%;
     position: fixed;
     z-index: 1;
     right: 0;
@@ -278,9 +277,10 @@ body {
 
     .canvas-container {
       height: 100%;
-      width: 79%;
       top: 48px;
       position: fixed;
+      right: 300px;
+      left: 3%;
       overflow-y: auto;
       overflow-x: scroll;
       -webkit-box-pack: center;
@@ -289,7 +289,6 @@ body {
       align-items: center;
 
       .show-grid {
-        background-size: 30px 10px;
         background-image: linear-gradient(to right, rgba(194, 191, 191, 0.2) 1px, transparent 1px),
           linear-gradient(to bottom, rgba(194, 191, 191, 0.2) 1px, transparent 1px);
       }
@@ -316,10 +315,9 @@ body {
 
     .query-pane {
       height: 350px;
-      width: 79%;
       position: fixed;
-      // z-index: 1;
       left: 3%;
+      right: 300px;
       bottom: 0;
       overflow-x: hidden;
       flex: 1 1 auto;
@@ -473,7 +471,6 @@ body {
 
     .canvas-container {
       height: 100%;
-      width: 100%;
       position: fixed;
       left: 0;
       overflow-y: auto;
@@ -1703,6 +1700,7 @@ input:focus-visible {
 }
 
 .editor-sidebar {
+  max-width: 300px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }

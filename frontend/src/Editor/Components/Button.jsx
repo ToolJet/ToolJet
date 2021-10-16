@@ -33,7 +33,7 @@ export const Button = function Button({ id, width, height, component, onComponen
   const computedStyles = {
     backgroundColor,
     color,
-    width,
+    width: '100%',
     height,
     display: parsedWidgetVisibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),

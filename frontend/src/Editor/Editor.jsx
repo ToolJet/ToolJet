@@ -494,6 +494,11 @@ class Editor extends React.Component {
   toolTipRefHide = createRef(null);
   toolTipRefShow = createRef(null);
 
+  getCanvasWidth = () => {
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    return canvasBoundingRect?.width;
+  }
+
   render() {
     const {
       currentSidebarTab,
@@ -685,38 +690,42 @@ class Editor extends React.Component {
                 style={{ transform: `scale(${zoomLevel})` }}
                 onClick={() => this.switchSidebarTab(2)}
               >
-                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
+                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '100%' : '450px' }}>
                   {defaultComponentStateComputed && (
-                    <Container
-                      appDefinition={appDefinition}
-                      appDefinitionChanged={this.appDefinitionChanged}
-                      snapToGrid={true}
-                      darkMode={this.props.darkMode}
-                      mode={'edit'}
-                      zoomLevel={zoomLevel}
-                      currentLayout={currentLayout}
-                      deviceWindowWidth={deviceWindowWidth}
-                      selectedComponent={selectedComponent || {}}
-                      scaleValue={scaleValue}
-                      appLoading={isLoading}
-                      onEvent={(eventName, options) => onEvent(this, eventName, options)}
-                      onComponentOptionChanged={(component, optionName, value) =>
-                        onComponentOptionChanged(this, component, optionName, value)
-                      }
-                      onComponentOptionsChanged={(component, options) =>
-                        onComponentOptionsChanged(this, component, options)
-                      }
-                      currentState={this.state.currentState}
-                      configHandleClicked={this.configHandleClicked}
-                      removeComponent={this.removeComponent}
-                      onComponentClick={(id, component) => {
-                        this.setState({ selectedComponent: { id, component } });
-                        this.switchSidebarTab(1);
-                        onComponentClick(this, id, component);
-                      }}
-                    />
+                    <div>
+                      <Container
+                        canvasWidth={this.getCanvasWidth()}
+                        appDefinition={appDefinition}
+                        appDefinitionChanged={this.appDefinitionChanged}
+                        snapToGrid={true}
+                        darkMode={this.props.darkMode}
+                        mode={'edit'}
+                        zoomLevel={zoomLevel}
+                        currentLayout={currentLayout}
+                        deviceWindowWidth={deviceWindowWidth}
+                        selectedComponent={selectedComponent || {}}
+                        scaleValue={scaleValue}
+                        appLoading={isLoading}
+                        onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                        onComponentOptionChanged={(component, optionName, value) =>
+                          onComponentOptionChanged(this, component, optionName, value)
+                        }
+                        onComponentOptionsChanged={(component, options) =>
+                          onComponentOptionsChanged(this, component, options)
+                        }
+                        currentState={this.state.currentState}
+                        configHandleClicked={this.configHandleClicked}
+                        removeComponent={this.removeComponent}
+                        onComponentClick={(id, component) => {
+                          this.setState({ selectedComponent: { id, component } });
+                          this.switchSidebarTab(1);
+                          onComponentClick(this, id, component);
+                        }}
+                      />
+                      <CustomDragLayer canvasWidth={this.getCanvasWidth()} snapToGrid={true} currentLayout={currentLayout} />
+                    </div>
                   )}
-                  <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} />
+
                 </div>
               </div>
               <div

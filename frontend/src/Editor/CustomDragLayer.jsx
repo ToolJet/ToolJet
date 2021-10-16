@@ -13,7 +13,7 @@ const layerStyles = {
   height: '100%',
 };
 
-function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout) {
+function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout, canvasWidth) {
   if (!initialOffset || !currentOffset) {
     return {
       display: 'none',
@@ -43,17 +43,18 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)
     y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
   }
 
-  [x, y] = snapToGrid(x, y);
+  [x, y] = snapToGrid(canvasWidth, x, y);
+  x = (x * 100) / canvasWidth;
 
   x += realCanvasDelta;
 
-  const transform = `translate(${x}px, ${y}px)`;
+  const transform = `translate(${x}%, ${y}px)`;
   return {
     transform,
     WebkitTransform: transform,
   };
 }
-export const CustomDragLayer = ({ currentLayout }) => {
+export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
   const { itemType, isDragging, item, initialOffset, currentOffset, delta } = useDragLayer((monitor) => ({
     item: monitor.getItem(),
     itemType: monitor.getItemType(),
@@ -77,7 +78,7 @@ export const CustomDragLayer = ({ currentLayout }) => {
 
   return (
     <div style={layerStyles}>
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)}>{renderItem()}</div>
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout, canvasWidth)}>{renderItem()}</div>
     </div>
   );
 };

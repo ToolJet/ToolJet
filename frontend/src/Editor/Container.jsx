@@ -14,6 +14,7 @@ function uuidv4() {
 }
 
 export const Container = ({
+  canvasWidth,
   mode,
   snapToGrid,
   onComponentClick,
@@ -34,9 +35,10 @@ export const Container = ({
   darkMode,
 }) => {
   const styles = {
-    width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
+    width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     height: 2400,
     position: 'absolute',
+    backgroundSize: `${canvasWidth / 43}px 10px`
   };
 
   const components = appDefinition.components;
@@ -120,7 +122,7 @@ export const Container = ({
           top = Math.round(currentLayoutOptions.top + deltaY);
 
           if (snapToGrid) {
-            [left, top] = doSnapToGrid(left, top);
+            [left, top] = doSnapToGrid(canvasWidth, left, top);
           }
 
           let newBoxes = {
@@ -156,13 +158,20 @@ export const Container = ({
           id = uuidv4();
 
           if (snapToGrid) {
-            [left, top] = doSnapToGrid(left, top);
+            [left, top] = doSnapToGrid(canvasWidth, left, top);
           }
+
+          const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+          const canvasWidth = bundingRect?.width;
+
+          left = (left * 100) / canvasWidth;
 
           if (item.currentLayout === 'mobile') {
             componentData.definition.others.showOnDesktop.value = false;
             componentData.definition.others.showOnMobile.value = true;
           }
+
+          const width = (componentMeta.defaultSize.width * 100) / canvasWidth;
 
           setBoxes({
             ...boxes,
@@ -170,9 +179,9 @@ export const Container = ({
               component: componentData,
               layouts: {
                 [item.currentLayout]: {
-                  top: top,
-                  left: left,
-                  width: componentMeta.defaultSize.width,
+                  top,
+                  left,
+                  width,
                   height: componentMeta.defaultSize.height,
                 },
               },
@@ -206,6 +215,11 @@ export const Container = ({
 
     width = width + deltaWidth;
     height = height + deltaHeight;
+
+    const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    const canvasWidth = bundingRect?.width;
+
+    width = (width * 100) / canvasWidth;
 
     // [width, height] = doSnapToGrid(width, height)
 
@@ -262,6 +276,7 @@ export const Container = ({
         if (!box.parent && canShowInCurrentLayout) {
           return (
             <DraggableBox
+              canvasWidth={canvasWidth}
               onComponentClick={onComponentClick}
               onEvent={onEvent}
               onComponentOptionChanged={onComponentOptionChanged}

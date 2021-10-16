@@ -83,6 +83,7 @@ export const DraggableBox = function DraggableBox({
   deviceWindowWidth,
   isSelectedComponent,
   darkMode,
+  canvasWidth
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -170,24 +171,31 @@ export const DraggableBox = function DraggableBox({
     return newWidth;
   }
 
+  function computeWidth() {
+    // scaleWidth(currentLayoutOptions.width, scaleValue) - 4
+    const gridXWidth = canvasWidth / 43;
+    return `${currentLayoutOptions.width}%`;
+  }
+
   return (
-    <div className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'}>
+    <div className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'} style={!inCanvas ? {} : { width: computeWidth() }}>
       {inCanvas ? (
         <div
           style={getStyles(left, top, isDragging, component, isSelectedComponent)}
           className="draggable-box "
           onMouseOver={() => setMouseOver(true)}
           onMouseLeave={() => setMouseOver(false)}
+          style={{ width: computeWidth() }}
         >
           <Rnd
             style={{ ...style }}
             resizeGrid={[30, 10]}
             size={{
-              width: scaleWidth(currentLayoutOptions.width, scaleValue),
+              width: computeWidth(),
               height: currentLayoutOptions.height,
             }}
             position={{
-              x: currentLayoutOptions ? currentLayoutOptions.left : 0,
+              x: currentLayoutOptions ? (currentLayoutOptions.left * canvasWidth / 100) : 0,
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
