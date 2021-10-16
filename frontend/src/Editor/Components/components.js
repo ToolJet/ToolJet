@@ -336,7 +336,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: '' },
+        value: { value: '99' },
         placeholder: { value: '0' },
       },
       events: [],
