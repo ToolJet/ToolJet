@@ -645,7 +645,7 @@ export const componentTypes = [
       properties: {
         text: { value: 'Text goes here !' },
         visible: { value: true },
-        loadingState: { value: false },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
