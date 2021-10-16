@@ -295,7 +295,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: 'Hello 👋🏻' },
+        value: { value: 'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀 ' }
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
