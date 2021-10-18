@@ -105,6 +105,7 @@ export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteAp
                     onChange={(newVal) => {
                       addAppToFolder(app.id, newVal);
                     }}
+                    emptyMessage={folders.length === 0 ? 'No folders present' : 'Not found'}
                     filterOptions={customFuzzySearch}
                     placeholder="Select folder"
                   />
