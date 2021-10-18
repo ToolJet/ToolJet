@@ -31,7 +31,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
   if (id) {
     // Dragging within the canvas
 
-    x = Math.round(item.layouts[currentLayout].left + delta.x);
+    x = Math.round((item.layouts[currentLayout].left * canvasWidth / 100) + delta.x);
     y = Math.round(item.layouts[currentLayout].top + delta.y);
   } else {
     // New component being dragged  from components sidebar
@@ -47,9 +47,11 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
 
   x += realCanvasDelta;
 
-  x = (x * 100) / canvasWidth;
+  console.log('cvv', canvasWidth, x)
 
-  const transform = `translate(${x}%, ${y}px)`;
+  // x = (x * canvasWidth) / 100;
+
+  const transform = `translate(${x}px, ${y}px)`;
   return {
     transform,
     WebkitTransform: transform,
