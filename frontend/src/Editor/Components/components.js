@@ -385,7 +385,7 @@ export const componentTypes = [
         customRule: { value: null },
       },
       properties: {
-        defaultValue: { value: '' },
+        defaultValue: { value: '01/04/2021' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
