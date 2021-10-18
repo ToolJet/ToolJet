@@ -22,6 +22,13 @@ export const Folders = function Folders({
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
 
   function saveFolder() {
+    if (!newFolderName || !newFolderName.trim()) {
+      toast.warn("folder name can't be empty.", {
+        hideProgressBar: true,
+        position: 'top-left',
+      });
+      return;
+    }
     setCreationStatus(true);
     folderService.create(newFolderName).then(() => {
       toast.info('folder created.', {

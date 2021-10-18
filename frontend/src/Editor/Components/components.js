@@ -385,7 +385,7 @@ export const componentTypes = [
         customRule: { value: null },
       },
       properties: {
-        defaultValue: { value: '' },
+        defaultValue: { value: '01/04/2021' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
@@ -563,7 +563,10 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: '' },
+        value: {
+          value:
+            'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
+        },
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
