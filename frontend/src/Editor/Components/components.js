@@ -295,7 +295,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: 'Hello 👋🏻' },
+        value: { value: '' },
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
@@ -804,8 +804,8 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
-      value: { type: 'code', displayName: 'Default value' },
-      values: { type: 'code', displayName: 'Option values' },
+      default_value: { type: 'code', displayName: 'Default value' },
+      option_values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
     },
     events: {
@@ -825,9 +825,9 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        values: { value: '[]' },
-        option_values: { value: '[1,2,3]' },
-        display_values: { value: '["one", "two", "three"]' },
+        default_value: { value: '{{2}}' },
+        option_values: { value: '{{[1,2,3]}}' },
+        display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true },
       },
       events: [],

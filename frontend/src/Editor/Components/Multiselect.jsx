@@ -22,8 +22,8 @@ export const Multiselect = function Multiselect({
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
-  const parsedValues = JSON.parse(values);
-  const parsedDisplayValues = JSON.parse(displayValues);
+  const parsedValues = resolveWidgetFieldValue(values, currentState);
+  const parsedDisplayValues = resolveWidgetFieldValue(displayValues, currentState);
 
   const selectOptions = [
     ...parsedValues.map((value, index) => {
