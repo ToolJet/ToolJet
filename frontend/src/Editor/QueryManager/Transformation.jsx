@@ -53,7 +53,7 @@ return data.filter(row => row.amount > 1000);`;
       )}
       <br></br>
       {enableTransformation && (
-        <div style={{ height: '240px' }}>
+        <div>
           <CodeHinter
             currentState={currentState}
             initialValue={value}
