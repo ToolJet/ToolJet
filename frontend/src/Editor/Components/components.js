@@ -825,7 +825,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        default_value: { value: '{{2}}' },
+        default_value: { value: '' },
         option_values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true },
