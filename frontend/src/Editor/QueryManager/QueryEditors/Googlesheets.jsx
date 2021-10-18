@@ -3,7 +3,7 @@ import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { changeOption } from './utils';
-import { resolveReferences } from '../../../_helpers/utils';
+// import { resolveReferences } from '../../../_helpers/utils';
 
 class Googlesheets extends React.Component {
   constructor(props) {
@@ -53,7 +53,7 @@ class Googlesheets extends React.Component {
   };
 
   render() {
-    const { options, currentState } = this.props;
+    const { options } = this.props;
 
     return (
       <div>
@@ -171,71 +171,55 @@ class Googlesheets extends React.Component {
         )}
 
         {this.state.options.operation === 'update' && (
-          <Googlesheets.UpdateBlock
-            darkMode={this.props.darkMode}
-            currentState={currentState}
-            updateOptions={this.codeChange}
-          />
+          <>
+            <div className="row">
+              <label className="form-label">WHERE</label>
+              <div className="col-3">
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  lineNumbers={false}
+                  className="form-control codehinter-query-editor-input"
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  height="40px"
+                  onChange={(value) => changeOption(this, 'filterOption', value)}
+                  enablePreview
+                />
+              </div>
+              <div className="col-1">
+                <center>=</center>
+              </div>
+              <div className="col-3">
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  lineNumbers={false}
+                  className="form-control codehinter-query-editor-input"
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  height="40px"
+                  onChange={(value) => changeOption(this, 'filterData', value)}
+                  enablePreview
+                />
+              </div>
+            </div>
+            <div className="md-3 mt-2">
+              <label className="form-label">Update Value</label>
+              <CodeHinter
+                currentState={this.props.currentState}
+                lineNumbers={true}
+                className="query-hinter"
+                theme={this.props.darkMode ? 'monokai' : 'default'}
+                onChange={(value) => {
+                  // const val = resolveReferences(value, currentState);
+                  console.log('val ====>', value);
+                  changeOption(this, 'body', value);
+                }}
+                enablePreview={true}
+              />
+            </div>
+          </>
         )}
       </div>
     );
   }
 }
-
-Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, updateOptions }) {
-  const updateBody = (value) => {
-    const options = resolveReferences(value, currentState);
-    updateOptions('body', options);
-  };
-
-  return (
-    <>
-      <div className="row">
-        <label className="form-label">WHERE</label>
-        <div className="col-3">
-          <CodeHinter
-            currentState={currentState}
-            lineNumbers={false}
-            className="form-control codehinter-query-editor-input"
-            theme={darkMode ? 'monokai' : 'default'}
-            height="40px"
-            onChange={(value) => updateOptions('filterOption', value)}
-            enablePreview
-          />
-        </div>
-
-        <div className="col-1">
-          <center>=</center>
-        </div>
-
-        <div className="col-3 field">
-          <CodeHinter
-            currentState={currentState}
-            className="form-control codehinter-query-editor-input"
-            theme={darkMode ? 'monokai' : 'default'}
-            lineNumbers={false}
-            enablePreview
-            height="40px"
-            onChange={(value) => updateOptions('filterData', value)}
-          />
-        </div>
-      </div>
-      <div className="md-3 mt-2">
-        <label className="form-label">Update Value</label>
-        <CodeHinter
-          currentState={currentState}
-          className="form-control codehinter-query-editor-input"
-          mode="json"
-          theme={darkMode ? 'monokai' : 'duotone-light'}
-          lineNumbers={true}
-          height="120px"
-          ignoreBraces={true}
-          onChange={(value) => updateBody(value)}
-          enablePreview
-        />
-      </div>
-    </>
-  );
-};
 
 export { Googlesheets };
