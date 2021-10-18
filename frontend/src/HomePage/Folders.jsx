@@ -98,8 +98,6 @@ export const Folders = function Folders({
             <div className="p-2 row">
               <div className="col">
                 <input
-                  // eslint-disable-next-line no-undef
-                  onClick={() => onComponentClick(id, component)} //onComponentClick, id and compoenent is not defined
                   type="text"
                   onChange={(e) => setNewFolderName(e.target.value)}
                   className="form-control"

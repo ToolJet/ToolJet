@@ -14,7 +14,7 @@ describe('organizations controller', () => {
   });
 
   it('should allow only authenticated users to list org users', async () => {
-    await request(app.getHttpServer()).get('/organizations/users').expect(401);
+    await request(app.getHttpServer()).get('/api/organizations/users').expect(401);
   });
 
   it('should list organization users', async () => {
@@ -23,7 +23,7 @@ describe('organizations controller', () => {
     const { organization, user, orgUser } = userData;
 
     const response = await request(app.getHttpServer())
-      .get('/organizations/users')
+      .get('/api/organizations/users')
       .set('Authorization', authHeaderForUser(user));
 
     expect(response.statusCode).toBe(200);

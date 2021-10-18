@@ -76,8 +76,8 @@ export const EventManager = ({
   function getAllApps() {
     let appsOptionsList = [];
     apps
-      .filter((item) => item.slug != undefined)
-      .map((item) => {
+      .filter((item) => item.slug !== undefined)
+      .forEach((item) => {
         appsOptionsList.push({
           name: item.name,
           value: item.slug,

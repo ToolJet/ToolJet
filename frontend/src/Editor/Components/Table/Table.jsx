@@ -821,7 +821,7 @@ export function Table({
                   <tr
                     key={index}
                     className={`table-row ${
-                      highlightSelectedRow && row.id == componentState.selectedRowId ? 'selected' : ''
+                      highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
                     }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
