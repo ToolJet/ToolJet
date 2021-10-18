@@ -3,7 +3,6 @@ import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { changeOption } from './utils';
-import _ from 'lodash';
 import { resolveReferences } from '../../../_helpers/utils';
 
 class Googlesheets extends React.Component {
@@ -184,18 +183,10 @@ class Googlesheets extends React.Component {
 }
 
 Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, updateOptions }) {
-  const [filterData, setFilterData] = React.useState({});
-
   const updateBody = (value) => {
     const options = resolveReferences(value, currentState);
     updateOptions('body', options);
   };
-  React.useEffect(() => {
-    if (filterData && !_.isEmpty(currentState)) {
-      updateOptions('filterData', filterData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterData]);
 
   return (
     <>
@@ -208,7 +199,7 @@ Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, update
             className="form-control codehinter-query-editor-input"
             theme={darkMode ? 'monokai' : 'default'}
             height="40px"
-            onChange={(value) => setFilterData((prev) => ({ ...prev, key: value }))}
+            onChange={(value) => updateOptions('filterOption', value)}
             enablePreview
           />
         </div>
@@ -225,7 +216,7 @@ Googlesheets.UpdateBlock = function UpdateBlock({ currentState, darkMode, update
             lineNumbers={false}
             enablePreview
             height="40px"
-            onChange={(value) => setFilterData((prev) => ({ ...prev, value: value }))}
+            onChange={(value) => updateOptions('filterData', value)}
           />
         </div>
       </div>
