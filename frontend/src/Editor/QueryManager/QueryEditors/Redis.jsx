@@ -1,7 +1,7 @@
 import React from 'react';
-import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/theme/duotone-light.css';
 import { changeOption } from './utils';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 class Redis extends React.Component {
   constructor(props) {
@@ -26,18 +26,16 @@ class Redis extends React.Component {
         {options && (
           <div>
             <div className="mb-3 mt-2">
-              <CodeMirror
+              <CodeHinter
                 height="auto"
-                fontSize="2"
-                value={options.query}
-                onChange={(instance) => changeOption(this, 'query', instance.getValue())}
-                placeholder="PING"
-                options={{
-                  theme: this.props.darkMode ? 'monokai' : 'duotone-light',
-                  mode: 'sql',
-                  lineWrapping: true,
-                  scrollbarStyle: null,
-                }}
+                currentState={this.props.currentState}
+                initialValue={options.query}
+                mode="sql"
+                placeholder={'PING'}
+                theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                lineNumbers={true}
+                className="query-hinter"
+                onChange={(value) => changeOption(this, 'query', value)}
               />
             </div>
           </div>
