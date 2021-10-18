@@ -156,7 +156,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'string', displayName: 'Title' },
+      title: { type: 'code', displayName: 'Title' },
       data: { type: 'json', displayName: 'Data' },
       loadingState: { type: 'code', displayName: 'Loading State' },
       markerColor: { type: 'color', displayName: 'Marker color' },
@@ -219,7 +219,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'string', displayName: 'Title' },
+      title: { type: 'code', displayName: 'Title' },
       size: {
         type: 'select',
         displayName: 'Modal size',
