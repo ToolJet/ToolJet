@@ -34,7 +34,7 @@ export const Button = function Button({ id, width, height, component, onComponen
   const computedStyles = {
     backgroundColor,
     color,
-    borderRadius,
+    borderRadius: ${borderRadius}px,
     width,
     height,
     display: parsedWidgetVisibility ? '' : 'none',
