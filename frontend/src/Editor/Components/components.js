@@ -295,7 +295,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: 'Hello 👋🏻' },
+        value: { value: 'Setting default for text input' },
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
