@@ -17,13 +17,12 @@ class ForgotPassword extends React.Component {
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
-    if (event.target.value == '') {
+    if (event.target.value === '') {
       this.setState({ isEmailFound: false, buttonClicked: false });
     }
   };
 
   handleClick = (event) => {
-    this.setState({ buttonClicked: true });
     event.preventDefault();
 
     fetch(`${config.apiUrl}/forgot_password`, {
@@ -38,6 +37,7 @@ class ForgotPassword extends React.Component {
           this.setState({ isEmailFound: true });
           return res.json();
         } else {
+          this.setState({ buttonClicked: true });
           this.setState({ isEmailFound: false });
         }
       })
@@ -58,7 +58,7 @@ class ForgotPassword extends React.Component {
       <div className="page page-center">
         <div className="container-tight py-2">
           <div className="text-center mb-4">
-            <a href=".">
+            <a href="." className="navbar-brand-autodark">
               <img src="/assets/images/logo-text.svg" height="30" alt="" />
             </a>
           </div>
@@ -86,7 +86,7 @@ class ForgotPassword extends React.Component {
                   onClick={this.handleClick}
                   disabled={!this.state.email}
                 >
-                  Submit
+                  Reset Password
                 </button>
               </div>
             </div>

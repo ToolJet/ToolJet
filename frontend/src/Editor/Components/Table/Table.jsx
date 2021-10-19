@@ -630,6 +630,7 @@ export function Table({
             marginTop: 8,
             marginLeft: 10,
           }}
+          onClick={(event) => event.stopPropagation()}
           {...rest}
         />
       </>
@@ -820,7 +821,7 @@ export function Table({
                   <tr
                     key={index}
                     className={`table-row ${
-                      highlightSelectedRow && row.id == componentState.selectedRowId ? 'selected' : ''
+                      highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
                     }`}
                     {...row.getRowProps()}
                     onClick={(e) => {

@@ -13,6 +13,7 @@ class HomePage extends React.Component {
   constructor(props) {
     super(props);
 
+    this.fileInput = React.createRef();
     this.state = {
       currentUser: authenticationService.currentUserValue,
       users: null,
@@ -20,7 +21,10 @@ class HomePage extends React.Component {
       creatingApp: false,
       isDeletingApp: false,
       isCloningApp: false,
+      isExportingApp: false,
+      isImportingApp: false,
       currentFolder: {},
+      currentPage: 1,
       showAppDeletionConfirmation: false,
       apps: [],
       folders: [],
@@ -81,10 +85,15 @@ class HomePage extends React.Component {
   createApp = () => {
     let _self = this;
     _self.setState({ creatingApp: true });
-    appService.createApp().then((data) => {
-      console.log(data);
-      _self.props.history.push(`/apps/${data.id}`);
-    });
+    appService
+      .createApp()
+      .then((data) => {
+        console.log(data);
+        _self.props.history.push(`/apps/${data.id}`);
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+      });
   };
 
   deleteApp = (app) => {
@@ -104,10 +113,93 @@ class HomePage extends React.Component {
         this.props.history.push(`/apps/${data.id}`);
       })
       .catch(({ _error }) => {
-        toast.error('Could not clone the app.', { hideProgressBar: true, position: 'top-center' });
+        toast.error('Could not clone the app.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({ isCloningApp: false });
         console.log(_error);
       });
+  };
+
+  exportApp = (app) => {
+    this.setState({ isExportingApp: true });
+    appService
+      .exportApp(app.id)
+      .then((data) => {
+        const appName = app.name.replace(/\s+/g, '-').toLowerCase();
+        const fileName = `${appName}-export-${new Date().getTime()}`;
+        // simulate link click download
+        const json = JSON.stringify(data);
+        const blob = new Blob([json], { type: 'application/json' });
+        const href = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = fileName + '.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.fileInput.value = '';
+        this.setState({ isExportingApp: false });
+      })
+      .catch(({ _error }) => {
+        toast.error('Could not export the app.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
+        this.fileInput.value = '';
+        this.setState({ isExportingApp: false });
+        console.log(_error);
+      });
+  };
+
+  handleImportApp = (event) => {
+    const fileReader = new FileReader();
+    fileReader.readAsText(event.target.files[0], 'UTF-8');
+    fileReader.onload = (event) => {
+      const fileContent = event.target.result;
+      this.setState({ isImportingApp: true });
+      try {
+        const requestBody = JSON.parse(fileContent);
+        appService
+          .importApp(requestBody)
+          .then(() => {
+            toast.info('App imported successfully.', {
+              hideProgressBar: true,
+              position: 'top-center',
+            });
+            this.setState({
+              isImportingApp: false,
+            });
+            this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
+          })
+          .catch(({ error }) => {
+            toast.error(`Could not import the app: ${error}`, {
+              hideProgressBar: true,
+              position: 'top-center',
+            });
+            this.setState({
+              isImportingApp: false,
+            });
+          });
+      } catch (error) {
+        toast.error(`Could not import the app: ${error}`, {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
+        this.setState({
+          isImportingApp: false,
+        });
+      }
+    };
+  };
+
+  isAppEditable = (app) => {
+    return app.app_group_permissions.some((p) => p.update);
+  };
+
+  isAppDeletable = (app) => {
+    return app.app_group_permissions.some((p) => p.delete);
   };
 
   executeAppDeletion = () => {
@@ -129,7 +221,10 @@ class HomePage extends React.Component {
         this.fetchFolders();
       })
       .catch(({ error }) => {
-        toast.error('Could not delete the app.', { hideProgressBar: true, position: 'top-center' });
+        toast.error('Could not delete the app.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({
           isDeletingApp: false,
           appToBeDeleted: null,
@@ -146,13 +241,13 @@ class HomePage extends React.Component {
   render() {
     const {
       apps,
-      currentUser,
       isLoading,
       creatingApp,
       meta,
       currentFolder,
       showAppDeletionConfirmation,
       isDeletingApp,
+      isImportingApp,
     } = this.state;
     return (
       <div className="wrapper home-page">
@@ -192,18 +287,34 @@ class HomePage extends React.Component {
                         </h2>
                       </div>
                       <div className="col-auto ms-auto d-print-none">
-                        <button
-                          className={`btn btn-primary d-none d-lg-inline ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={this.createApp}
-                        >
-                          Create new application
-                        </button>
+                        <div className="w-100 ">
+                          <button
+                            className={`btn btn-default d-none d-lg-inline mb-3 ${isImportingApp ? 'btn-loading' : ''}`}
+                            onChange={this.handleImportApp}
+                          >
+                            <label>
+                              Import
+                              <input type="file" ref={this.fileInput} style={{ display: 'none' }} />
+                            </label>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="col-auto ms-auto d-print-none">
+                        <div className="w-100 ">
+                          <button
+                            className={`btn btn-primary d-none d-lg-inline mb-3 ${creatingApp ? 'btn-loading' : ''}`}
+                            onClick={this.createApp}
+                          >
+                            Create new application
+                          </button>
+                        </div>
                       </div>
                     </div>
 
                     <div
                       className={
-                        currentFolder.count == 0
+                        currentFolder.count === 0
                           ? 'table-responsive w-100 apps-table mt-3 d-flex align-items-center'
                           : 'table-responsive w-100 apps-table mt-3'
                       }
@@ -241,16 +352,21 @@ class HomePage extends React.Component {
                                   <td className="col p-3">
                                     <span className="app-title mb-3">{app.name}</span> <br />
                                     <small className="pt-2 app-description">
-                                      created {moment(app.created_at).fromNow()} ago by {app.user?.first_name}{' '}
+                                      created {moment(app.created_at).fromNow(true)} ago by {app.user?.first_name}{' '}
                                       {app.user?.last_name}{' '}
                                     </small>
                                   </td>
                                   <td className="text-muted col-auto pt-4">
-                                    {currentUser.role !== 'viewer' && (
+                                    {!isLoading && this.isAppEditable(app) && (
                                       <Link to={`/apps/${app.id}`} className="d-none d-lg-inline">
                                         <OverlayTrigger
                                           placement="top"
-                                          overlay={(props) => renderTooltip({ props, text: 'Open in app builder' })}
+                                          overlay={(props) =>
+                                            renderTooltip({
+                                              props,
+                                              text: 'Open in app builder',
+                                            })
+                                          }
                                         >
                                           <span className="badge bg-green-lt">Edit</span>
                                         </OverlayTrigger>
@@ -267,7 +383,7 @@ class HomePage extends React.Component {
                                             renderTooltip({
                                               props,
                                               text:
-                                                app?.current_version_id == null
+                                                app?.current_version_id === null
                                                   ? 'App does not have a deployed version'
                                                   : 'Open in app viewer',
                                             })
@@ -293,7 +409,7 @@ class HomePage extends React.Component {
                                             renderTooltip({
                                               props,
                                               text:
-                                                app?.current_version_id == null
+                                                app?.current_version_id === null
                                                   ? 'App does not have a deployed version'
                                                   : 'Open in app viewer',
                                             })
@@ -302,14 +418,14 @@ class HomePage extends React.Component {
                                           {
                                             <span
                                               className={`${
-                                                app?.current_version_id == null
+                                                app?.current_version_id === null
                                                   ? 'badge mx-2 '
                                                   : 'badge bg-azure-lt mx-2'
                                               }`}
                                               style={{
                                                 filter:
-                                                  app?.current_version_id == null
-                                                    ? 'brightness(0.8)'
+                                                  app?.current_version_id === null
+                                                    ? 'brightness(0.3)'
                                                     : 'brightness(1) invert(1)',
                                               }}
                                             >
@@ -320,19 +436,22 @@ class HomePage extends React.Component {
                                       )}
                                     </Link>
 
-                                    <AppMenu
-                                      app={app}
-                                      folders={this.state.folders}
-                                      foldersChanged={this.foldersChanged}
-                                      deleteApp={() => this.deleteApp(app)}
-                                      cloneApp={() => this.cloneApp(app)}
-                                    />
+                                    {this.isAppDeletable(app) && (
+                                      <AppMenu
+                                        app={app}
+                                        folders={this.state.folders}
+                                        foldersChanged={this.foldersChanged}
+                                        deleteApp={() => this.deleteApp(app)}
+                                        cloneApp={() => this.cloneApp(app)}
+                                        exportApp={() => this.exportApp(app)}
+                                      />
+                                    )}
                                   </td>
                                 </tr>
                               ))}
                             </>
                           )}
-                          {currentFolder.count == 0 && (
+                          {currentFolder.count === 0 && (
                             <div>
                               <img
                                 className="mx-auto d-block"

@@ -8,7 +8,7 @@ class Switch extends React.Component {
     return (
       <label className="form-switch form-check-inline">
         <input
-          style={{ backgroundColor: on ? `${color}` : 'white' }}
+          style={{ backgroundColor: on ? `${color}` : 'white', marginTop: '0px' }}
           disabled={disabledState}
           className="form-check-input"
           type="checkbox"
@@ -61,7 +61,7 @@ export const ToggleSwitch = ({
 
   return (
     <div
-      className="row"
+      className="row py-1"
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
@@ -71,7 +71,7 @@ export const ToggleSwitch = ({
       <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
         {label}
       </span>
-      <div className="col px-1 py-0 my-auto">
+      <div className="col px-1 py-0 mt-0">
         <Switch
           disabledState={parsedDisabledState}
           on={on}
