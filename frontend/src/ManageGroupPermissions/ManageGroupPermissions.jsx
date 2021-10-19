@@ -107,11 +107,7 @@ class ManageGroupPermissions extends React.Component {
               <div className="row align-items-center">
                 <div className="col">
                   <div className="page-pretitle"></div>
-                  <ol className="breadcrumb" aria-label="breadcrumbs">
-                    <li className="breadcrumb-item">
-                      <Link>User groups</Link>
-                    </li>
-                  </ol>
+                  <h2 className="page-title">User Groups</h2>
                 </div>
                 <div className="col-auto ms-auto d-print-none">
                   {!showNewGroupForm && (

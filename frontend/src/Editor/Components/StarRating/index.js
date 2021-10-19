@@ -104,25 +104,27 @@ export const StarRating = function StarRating({
       <span className="label form-check-label form-check-label col-auto" style={{ color: labelColor }}>
         {label}
       </span>
-      {animatedStars.map((props, index) => (
-        <Star
-          tooltip={getTooltip(index)}
-          active={getActive(index)}
-          isHalfStar={isHalfStar(index)}
-          maxRating={maxRating}
-          onClick={(e, idx) => {
-            e.stopPropagation();
-            setRatingIndex(idx);
-            handleClick(idx);
-          }}
-          allowHalfStar={allowHalfStar}
-          key={index}
-          index={index}
-          color={color}
-          style={{ ...props }}
-          setHoverIndex={setHoverIndex}
-        />
-      ))}
+      <div className="col px-1 py-0 mt-0">
+        {animatedStars.map((props, index) => (
+          <Star
+            tooltip={getTooltip(index)}
+            active={getActive(index)}
+            isHalfStar={isHalfStar(index)}
+            maxRating={maxRating}
+            onClick={(e, idx) => {
+              e.stopPropagation();
+              setRatingIndex(idx);
+              handleClick(idx);
+            }}
+            allowHalfStar={allowHalfStar}
+            key={index}
+            index={index}
+            color={color}
+            style={{ ...props }}
+            setHoverIndex={setHoverIndex}
+          />
+        ))}
+      </div>
     </div>
   );
 };

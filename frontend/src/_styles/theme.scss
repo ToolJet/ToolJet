@@ -1803,6 +1803,9 @@ input:focus-visible {
   .card {
     background-color: #324156 !important;
   }
+  .card .table tbody td a{
+    color: inherit;
+  }
 
   .DateInput {
     background: #1f2936;
@@ -2019,6 +2022,9 @@ input:focus-visible {
   .editor .editor-sidebar .inspector .header {
     border: solid rgba(255, 255, 255, 0.09) !important;
     border-width: 0px 0px 1px 0px !important;
+    .input-icon .input-icon-addon img {
+        filter: invert(1);
+    }
   }
   .editor .editor-sidebar .inspector .hr-text {
     color: #fff !important;

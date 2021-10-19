@@ -14,7 +14,7 @@ const useEscapeHandler = (handler = noop, dependencies = []) => {
     return () => (isEmpty(document) ? undefined : document.removeEventListener('keyup', escapeHandler));
   }, dependencies);
 };
-const useClickOutside = (handler = noop, dependencies) => {
+const useClickOutside = (dependencies, handler = noop) => {
   const callbackRef = useRef(handler);
   const ref = useRef(null);
   const outsideClickHandler = (e) => {
@@ -43,7 +43,7 @@ const usePopover = (defaultOpen = false) => {
   }, []);
   const close = useCallback(() => setOpen(false), []);
   useEscapeHandler(close, []);
-  const contentRef = useClickOutside(open ? close : undefined, []);
+  const contentRef = useClickOutside([], open ? close : undefined);
   const trigger = {
     ref: triggerRef,
     onClick: toggle,
