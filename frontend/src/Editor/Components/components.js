@@ -139,7 +139,7 @@ export const componentTypes = [
         backgroundColor: { value: '#3c92dc' },
         textColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
-        borderRadius: { value: '0' },
+        borderRadius: { value: '{{0}}' },
         disabledState: { value: '{{false}}' },
       },
     },
