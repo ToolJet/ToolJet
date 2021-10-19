@@ -295,7 +295,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: 'Hello 👋🏻' },
+        value: { value: '' },
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
