@@ -1,4 +1,4 @@
-import { Controller, Request, Get, Post, Body, Param, Delete, UseGuards, Patch, Query } from '@nestjs/common';
+import { Controller, Request, Get, Post, Body, Param, Delete, UseGuards, Patch, Query, Req } from '@nestjs/common';
 import { CommentService } from '@services/comment.service';
 import { CreateCommentDTO } from '../dto/create-comment.dto';
 import { Comment } from '../entities/comment.entity';
@@ -17,15 +17,22 @@ export class CommentController {
   @UseGuards(JwtAuthGuard)
   @Post('create')
   public async createComment(@Request() req, @Body() createCommentDto: CreateCommentDTO): Promise<Comment> {
-    const comment = await this.commentService.createComment(createCommentDto, req.user.id);
+    const comment = await this.commentService.createComment(createCommentDto, req.user.id, req.user.organization.id);
     return comment;
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/:threadId/all')
-  public async getComments(@Param('threadId') threadId: string): Promise<Comment[]> {
-    const comments = await this.commentService.getComments(threadId);
+  @Get('/:commentId/all')
+  public async getComments(@Param('commentId') commentId: string): Promise<Comment[]> {
+    const comments = await this.commentService.getComments(commentId);
     return comments;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:orgId/all')
+  public async getOrganizationThreads(@Param('orgId') orgId: string, @Req() req: Request): Promise<Comment[]> {
+    const threads = await this.commentService.getOrganizationComments(orgId);
+    return threads;
   }
 
   @UseGuards(JwtAuthGuard)

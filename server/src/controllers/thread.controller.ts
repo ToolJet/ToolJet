@@ -11,14 +11,21 @@ export class ThreadController {
   @UseGuards(JwtAuthGuard)
   @Post('create')
   public async createThread(@Request() req, @Body() createThreadDto: CreateThreadDTO): Promise<Thread> {
-    const thread = await this.threadService.createThread(createThreadDto, req.user.id);
+    const thread = await this.threadService.createThread(createThreadDto, req.user.id, req.user.organization.id);
     return thread;
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/:appId/all')
-  public async getThreads(@Param('appId') appId: string, @Req() req: Request): Promise<Thread[]> {
-    const threads = await this.threadService.getThreads(appId);
+  public async getThreads(@Request() req, @Param('appId') appId: string): Promise<Thread[]> {
+    const threads = await this.threadService.getThreads(appId, req.user.organization.id);
+    return threads;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:orgId/all')
+  public async getOrganizationThreads(@Param('orgId') orgId: string, @Req() req: Request): Promise<Thread[]> {
+    const threads = await this.threadService.getOrganizationThreads(orgId);
     return threads;
   }
 

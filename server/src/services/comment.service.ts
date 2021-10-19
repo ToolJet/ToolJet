@@ -21,14 +21,25 @@ export class CommentService {
     private commentRepository: CommentRepository
   ) {}
 
-  public async createComment(createCommentDto: CreateCommentDTO, id: string): Promise<Comment> {
-    return await this.commentRepository.createComment(createCommentDto, id);
+  public async createComment(createCommentDto: CreateCommentDTO, id: string, organizationId: string): Promise<Comment> {
+    return await this.commentRepository.createComment(createCommentDto, id, organizationId);
   }
 
   public async getComments(threadId: string): Promise<Comment[]> {
     return await this.commentRepository.find({
       where: {
         threadId,
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+  }
+
+  public async getOrganizationComments(organizationId: string): Promise<Comment[]> {
+    return await this.commentRepository.find({
+      where: {
+        organizationId,
       },
       order: {
         createdAt: 'ASC',

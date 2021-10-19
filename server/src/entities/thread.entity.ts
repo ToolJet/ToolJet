@@ -1,6 +1,7 @@
 import { PrimaryGeneratedColumn, BaseEntity, Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 import { App } from './app.entity';
+import { Organization } from './organization.entity';
 
 @Entity({ name: 'threads' })
 export class Thread extends BaseEntity {
@@ -19,6 +20,9 @@ export class Thread extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: string;
 
+  @Column({ name: 'organization_id' })
+  organizationId: string;
+
   @Column({ default: false, name: 'is_resolved' })
   isResolved: boolean;
 
@@ -26,7 +30,11 @@ export class Thread extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => User, (app) => app.id)
+  @ManyToOne(() => App, (app) => app.id)
   @JoinColumn({ name: 'app_id' })
   app: App;
+
+  @ManyToOne(() => Organization, (app) => app.id)
+  @JoinColumn({ name: 'organization_id' })
+  organization: Organization;
 }

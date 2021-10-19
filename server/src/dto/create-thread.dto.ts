@@ -10,6 +10,9 @@ export class CreateThreadDTO {
   @IsUUID()
   appId: string;
 
+  @IsUUID()
+  organizationId: string;
+
   @IsBoolean()
   isResolved: boolean;
 }

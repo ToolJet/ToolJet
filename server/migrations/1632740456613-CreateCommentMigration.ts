@@ -19,6 +19,11 @@ export class CreateCommentMigration1632740456613 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'organization_id',
+            type: 'uuid',
+            isNullable: false,
+          },
+          {
             name: 'comment',
             type: 'varchar',
             isNullable: false,
@@ -67,6 +72,16 @@ export class CreateCommentMigration1632740456613 implements MigrationInterface {
         columnNames: ['thread_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'threads',
+        onDelete: 'CASCADE',
+      })
+    );
+
+    await queryRunner.createForeignKey(
+      'comments',
+      new TableForeignKey({
+        columnNames: ['organization_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'organizations',
         onDelete: 'CASCADE',
       })
     );

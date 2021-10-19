@@ -7,9 +7,11 @@ import {
   OneToOne,
   JoinColumn,
   BaseEntity,
+  ManyToOne,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Thread } from './thread.entity';
+import { Organization } from './organization.entity';
 
 @Entity({ name: 'comments' })
 export class Comment extends BaseEntity {
@@ -28,6 +30,9 @@ export class Comment extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: string;
 
+  @Column({ name: 'organization_id' })
+  organizationId: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
@@ -41,4 +46,8 @@ export class Comment extends BaseEntity {
   @OneToOne(() => Thread, (thread) => thread.id)
   @JoinColumn({ name: 'thread_id' })
   thread: Thread;
+
+  @ManyToOne(() => User, (app) => app.id)
+  @JoinColumn({ name: 'organization_id' })
+  organization: Organization;
 }

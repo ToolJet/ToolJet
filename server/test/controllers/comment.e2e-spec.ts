@@ -46,6 +46,17 @@ describe('comment controller', () => {
     expect(response.statusCode).toBe(200);
   });
 
+  it('should list all comments in an organization', async () => {
+    const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const { user } = userData;
+
+    const response = await request(app.getHttpServer())
+      .get(`/comment/${user.organization.id}/all`)
+      .set('Authorization', authHeaderForUser(user));
+
+    expect(response.statusCode).toBe(200);
+  });
+
   afterAll(async () => {
     await app.close();
   });

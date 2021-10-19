@@ -23,11 +23,21 @@ describe('thread controller', () => {
       name: 'App to clone',
       user: userData.user,
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { user } = userData;
 
     const response = await request(app.getHttpServer())
       .get(`/thread/${application.id}/all`)
+      .set('Authorization', authHeaderForUser(user));
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  it('should list all threads in an organization', async () => {
+    const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const { user } = userData;
+
+    const response = await request(app.getHttpServer())
+      .get(`/thread/${user.organization.id}/all`)
       .set('Authorization', authHeaderForUser(user));
 
     expect(response.statusCode).toBe(200);

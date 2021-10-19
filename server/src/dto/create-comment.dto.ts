@@ -9,4 +9,7 @@ export class CreateCommentDTO {
 
   @IsUUID()
   userId: string;
+
+  @IsUUID()
+  organizationId: string;
 }
