@@ -47,6 +47,7 @@ export class AppImportExportService {
       name: appParams.name,
       organizationId: user.organizationId,
       user: user,
+      slug: null, // Prevent db unique constraint error. App entity afterload callback will set this as id.
       isPublic: true,
     });
     await manager.save(importedApp);
@@ -108,11 +109,14 @@ export class AppImportExportService {
         const existingCredential = await manager.findOne(Credential, {
           id: options[key]['credential_id'],
         });
-        const newCredential = manager.create(Credential, {
-          valueCiphertext: existingCredential.valueCiphertext,
-        });
-        await manager.save(newCredential);
-        options[key]['credential_id'] = newCredential.id;
+
+        if (existingCredential) {
+          const newCredential = manager.create(Credential, {
+            valueCiphertext: existingCredential.valueCiphertext,
+          });
+          await manager.save(newCredential);
+          options[key]['credential_id'] = newCredential.id;
+        }
       }
     }
 
