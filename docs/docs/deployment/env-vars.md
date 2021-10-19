@@ -129,3 +129,13 @@ This is required when client is built separately.
 | variable           | description                                                 |
 | ------------------ | ----------------------------------------------------------- |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.io ) |
+
+
+#### Asset path ( optionally required )
+
+This is required when the assets for the client are to be loaded from elsewhere (eg: CDN).
+This can be an absolute path, or relative to main HTML file.
+
+| variable           | description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.io/) |
