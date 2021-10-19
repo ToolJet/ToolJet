@@ -129,7 +129,6 @@ class HomePage extends React.Component {
       .then((data) => {
         const appName = app.name.replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
-
         // simulate link click download
         const json = JSON.stringify(data);
         const blob = new Blob([json], { type: 'application/json' });
@@ -140,7 +139,7 @@ class HomePage extends React.Component {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
+        this.fileInput.value = '';
         this.setState({ isExportingApp: false });
       })
       .catch(({ _error }) => {
@@ -148,6 +147,7 @@ class HomePage extends React.Component {
           hideProgressBar: true,
           position: 'top-center',
         });
+        this.fileInput.value = '';
         this.setState({ isExportingApp: false });
         console.log(_error);
       });
