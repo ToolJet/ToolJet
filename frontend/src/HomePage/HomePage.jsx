@@ -289,11 +289,11 @@ class HomePage extends React.Component {
                       <div className="col-auto ms-auto d-print-none">
                         <div className="w-100 ">
                           <button
-                            className={`btn btn-primary d-none d-lg-inline mb-3 ${isImportingApp ? 'btn-loading' : ''}`}
+                            className={`btn btn-default d-none d-lg-inline mb-3 ${isImportingApp ? 'btn-loading' : ''}`}
                             onChange={this.handleImportApp}
                           >
                             <label>
-                              Import new application
+                              Import
                               <input type="file" ref={this.fileInput} style={{ display: 'none' }} />
                             </label>
                           </button>
