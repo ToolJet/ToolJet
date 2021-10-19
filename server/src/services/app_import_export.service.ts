@@ -39,6 +39,12 @@ export class AppImportExportService {
       await this.createAdminGroupPermissions(manager, importedApp);
     });
 
+    // FIXME: App slug updation callback doesnt work while wrapped in transaction
+    // hence updating slug explicitly
+    await importedApp.reload();
+    importedApp.slug = importedApp.id;
+    await this.entityManager.save(importedApp);
+
     return importedApp;
   }
 
