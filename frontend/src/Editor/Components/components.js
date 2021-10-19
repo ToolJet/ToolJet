@@ -852,6 +852,7 @@ export const componentTypes = [
     },
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' },
+      defaultValue: { type: 'code', displayName: 'Default Value' },
     },
     events: {},
     styles: {
@@ -859,7 +860,7 @@ export const componentTypes = [
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      value: {},
+      value: '',
     },
     definition: {
       others: {
@@ -868,6 +869,7 @@ export const componentTypes = [
       },
       properties: {
         placeholder: { value: 'Placeholder text' },
+        defaultValue: { value: '' },
       },
       events: [],
       styles: {
