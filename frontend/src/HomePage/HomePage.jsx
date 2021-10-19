@@ -25,7 +25,6 @@ class HomePage extends React.Component {
       isImportingApp: false,
       currentFolder: {},
       currentPage: 1,
-      showButtonGroupDropdown: false,
       showAppDeletionConfirmation: false,
       apps: [],
       folders: [],
@@ -155,13 +154,11 @@ class HomePage extends React.Component {
   };
 
   handleImportApp = (event) => {
-    this.setState({ isImportingApp: true });
-
     const fileReader = new FileReader();
     fileReader.readAsText(event.target.files[0], 'UTF-8');
     fileReader.onload = (event) => {
       const fileContent = event.target.result;
-
+      this.setState({ isImportingApp: true });
       try {
         const requestBody = JSON.parse(fileContent);
         appService
@@ -241,12 +238,6 @@ class HomePage extends React.Component {
     return this.state.currentFolder.id ? this.state.meta.folder_count : this.state.meta.total_count;
   };
 
-  setShowButtonGroupDropdown = (boolean) => {
-    this.setState({
-      showButtonGroupDropdown: boolean,
-    });
-  };
-
   render() {
     const {
       apps,
@@ -256,7 +247,6 @@ class HomePage extends React.Component {
       currentFolder,
       showAppDeletionConfirmation,
       isDeletingApp,
-      showButtonGroupDropdown,
       isImportingApp,
     } = this.state;
     return (
@@ -297,52 +287,27 @@ class HomePage extends React.Component {
                         </h2>
                       </div>
                       <div className="col-auto ms-auto d-print-none">
-                        <div className="btn-group w-100">
+                        <div className="w-100 ">
                           <button
-                            className={`btn btn-primary d-none d-lg-inline ${creatingApp ? 'btn-loading' : ''}`}
+                            className={`btn btn-primary d-none d-lg-inline mb-3 ${isImportingApp ? 'btn-loading' : ''}`}
+                            onChange={this.handleImportApp}
+                          >
+                            <label>
+                              Import new application
+                              <input type="file" ref={this.fileInput} style={{ display: 'none' }} />
+                            </label>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="col-auto ms-auto d-print-none">
+                        <div className="w-100 ">
+                          <button
+                            className={`btn btn-primary d-none d-lg-inline mb-3 ${creatingApp ? 'btn-loading' : ''}`}
                             onClick={this.createApp}
                           >
                             Create new application
                           </button>
-                          <div
-                            className="btn-group"
-                            role="group"
-                            onBlur={() =>
-                              // FIXME: Setting timeout here such that onChange handler for
-                              // dropdowns can be fired before onBlur.
-                              setTimeout(() => this.setShowButtonGroupDropdown(false), 200)
-                            }
-                          >
-                            <button
-                              id="btnGroupDrop1"
-                              type="button"
-                              onClick={() => {
-                                this.setShowButtonGroupDropdown(true);
-                              }}
-                              className={`btn dropdown-toggle ${showButtonGroupDropdown ? 'show' : ''}`}
-                              data-bs-toggle="dropdown"
-                              aria-haspopup="true"
-                              aria-expanded="false"
-                            >
-                              {isImportingApp && (
-                                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                              )}
-                              Other
-                            </button>
-                            <div className={`dropdown-menu dropdown-menu-end ${showButtonGroupDropdown ? 'show' : ''}`}>
-                              <label>
-                                <div className="dropdown-item">
-                                  Import
-                                  <input
-                                    type="file"
-                                    onChange={this.handleImportApp}
-                                    ref={this.fileInput}
-                                    style={{ display: 'none' }}
-                                  />
-                                </div>
-                              </label>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>
