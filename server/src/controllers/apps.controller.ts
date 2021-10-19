@@ -17,11 +17,13 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { FoldersService } from '@services/folders.service';
 import { App } from 'src/entities/app.entity';
+import { AppImportExportService } from '@services/app_import_export.service';
 
 @Controller('apps')
 export class AppsController {
   constructor(
     private appsService: AppsService,
+    private appImportExportService: AppImportExportService,
     private foldersService: FoldersService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
@@ -74,7 +76,9 @@ export class AppsController {
   async appFromSlug(@Request() req, @Param() params) {
     if (req.user) {
       const app = await this.appsService.findBySlug(params.slug);
-      const ability = await this.appsAbilityFactory.appsActions(req.user, { id: app.id });
+      const ability = await this.appsAbilityFactory.appsActions(req.user, {
+        id: app.id,
+      });
 
       if (!ability.can('viewApp', app)) {
         throw new ForbiddenException('You do not have permissions to perform this action');
@@ -124,6 +128,33 @@ export class AppsController {
     const response = decamelizeKeys(result);
 
     return response;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/export')
+  async export(@Request() req, @Param() params) {
+    const appToExport = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
+
+    if (!ability.can('viewApp', appToExport)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const app = await this.appImportExportService.export(req.user, params.id);
+    return app;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/import')
+  async import(@Request() req) {
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+
+    if (!ability.can('createApp', App)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    await this.appImportExportService.import(req.user, req.body);
+
+    return;
   }
 
   @UseGuards(JwtAuthGuard)

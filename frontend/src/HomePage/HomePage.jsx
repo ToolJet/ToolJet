@@ -13,6 +13,7 @@ class HomePage extends React.Component {
   constructor(props) {
     super(props);
 
+    this.fileInput = React.createRef();
     this.state = {
       currentUser: authenticationService.currentUserValue,
       users: null,
@@ -20,7 +21,10 @@ class HomePage extends React.Component {
       creatingApp: false,
       isDeletingApp: false,
       isCloningApp: false,
+      isExportingApp: false,
+      isImportingApp: false,
       currentFolder: {},
+      currentPage: 1,
       showAppDeletionConfirmation: false,
       apps: [],
       folders: [],
@@ -118,6 +122,78 @@ class HomePage extends React.Component {
       });
   };
 
+  exportApp = (app) => {
+    this.setState({ isExportingApp: true });
+    appService
+      .exportApp(app.id)
+      .then((data) => {
+        const appName = app.name.replace(/\s+/g, '-').toLowerCase();
+        const fileName = `${appName}-export-${new Date().getTime()}`;
+        // simulate link click download
+        const json = JSON.stringify(data);
+        const blob = new Blob([json], { type: 'application/json' });
+        const href = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = fileName + '.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.fileInput.value = '';
+        this.setState({ isExportingApp: false });
+      })
+      .catch(({ _error }) => {
+        toast.error('Could not export the app.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
+        this.fileInput.value = '';
+        this.setState({ isExportingApp: false });
+        console.log(_error);
+      });
+  };
+
+  handleImportApp = (event) => {
+    const fileReader = new FileReader();
+    fileReader.readAsText(event.target.files[0], 'UTF-8');
+    fileReader.onload = (event) => {
+      const fileContent = event.target.result;
+      this.setState({ isImportingApp: true });
+      try {
+        const requestBody = JSON.parse(fileContent);
+        appService
+          .importApp(requestBody)
+          .then(() => {
+            toast.info('App imported successfully.', {
+              hideProgressBar: true,
+              position: 'top-center',
+            });
+            this.setState({
+              isImportingApp: false,
+            });
+            this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
+          })
+          .catch(({ error }) => {
+            toast.error(`Could not import the app: ${error}`, {
+              hideProgressBar: true,
+              position: 'top-center',
+            });
+            this.setState({
+              isImportingApp: false,
+            });
+          });
+      } catch (error) {
+        toast.error(`Could not import the app: ${error}`, {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
+        this.setState({
+          isImportingApp: false,
+        });
+      }
+    };
+  };
+
   isAppEditable = (app) => {
     return app.app_group_permissions.some((p) => p.update);
   };
@@ -163,8 +239,16 @@ class HomePage extends React.Component {
   };
 
   render() {
-    const { apps, isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp } =
-      this.state;
+    const {
+      apps,
+      isLoading,
+      creatingApp,
+      meta,
+      currentFolder,
+      showAppDeletionConfirmation,
+      isDeletingApp,
+      isImportingApp,
+    } = this.state;
     return (
       <div className="wrapper home-page">
         <ConfirmDialog
@@ -203,12 +287,28 @@ class HomePage extends React.Component {
                         </h2>
                       </div>
                       <div className="col-auto ms-auto d-print-none">
-                        <button
-                          className={`btn btn-primary d-none d-lg-inline ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={this.createApp}
-                        >
-                          Create new application
-                        </button>
+                        <div className="w-100 ">
+                          <button
+                            className={`btn btn-default d-none d-lg-inline mb-3 ${isImportingApp ? 'btn-loading' : ''}`}
+                            onChange={this.handleImportApp}
+                          >
+                            <label>
+                              Import
+                              <input type="file" ref={this.fileInput} style={{ display: 'none' }} />
+                            </label>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="col-auto ms-auto d-print-none">
+                        <div className="w-100 ">
+                          <button
+                            className={`btn btn-primary d-none d-lg-inline mb-3 ${creatingApp ? 'btn-loading' : ''}`}
+                            onClick={this.createApp}
+                          >
+                            Create new application
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -343,6 +443,7 @@ class HomePage extends React.Component {
                                         foldersChanged={this.foldersChanged}
                                         deleteApp={() => this.deleteApp(app)}
                                         cloneApp={() => this.cloneApp(app)}
+                                        exportApp={() => this.exportApp(app)}
                                       />
                                     )}
                                   </td>
