@@ -28,7 +28,7 @@ export class OrganizationUsersService {
       email: params['email'],
     };
 
-    var existingUser = await this.usersService.findByEmail(userParams.email);
+    const existingUser = await this.usersService.findByEmail(userParams.email);
     if (existingUser) {
       throw new BadRequestException('User with such email already exists.');
     }
