@@ -139,17 +139,16 @@ class HomePage extends React.Component {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        this.fileInput.value = '';
         this.setState({ isExportingApp: false });
       })
-      .catch(({ _error }) => {
+      .catch((error) => {
         toast.error('Could not export the app.', {
           hideProgressBar: true,
           position: 'top-center',
         });
-        this.fileInput.value = '';
+
         this.setState({ isExportingApp: false });
-        console.log(_error);
+        console.log(error);
       });
   };
 
@@ -191,6 +190,8 @@ class HomePage extends React.Component {
           isImportingApp: false,
         });
       }
+      // set file input as null to handle same file upload
+      event.target.value = null;
     };
   };
 
