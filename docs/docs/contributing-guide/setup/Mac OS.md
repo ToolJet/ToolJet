@@ -5,12 +5,15 @@ sidebar_position: 1
 # Mac OS
 Follow these steps to setup and run ToolJet on Mac OS for development purposes. Open terminal and run the commands below. We recommend reading our guide on [architecture](/docs/deployment/architecture) of ToolJet before proceeding.
 
-1. ## Setting up the environment
-    ### Install Homebrew
+## Setting up
+
+1. Set up the environment
+
+    1.1 Install Homebrew
     ```bash
-     /bin/bash -c "(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    /bin/bash -c "(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     ```
-    ### Install Node.js ( version: v14.17.3 )
+    1.2 Install Node.js ( version: v14.17.3 )
     ```bash
     brew install nvm
     export NVM_DIR=~/.nvm
@@ -19,7 +22,7 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
     nvm use 14.17.3
     ```
 
-    ### Install Postgres
+    1.3 Install Postgres
     :::tip
     ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not plan to support other databases such as MySQL.
     :::
@@ -27,13 +30,15 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
     ```bash
     brew install postgresql
     ```
-2. ## Setup environment variables
-    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given here: env variable reference
+
+2. Set up environment variables
+
+    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/deployment/env-vars)
     ```bash
-     cp .env.example .env
+    cp .env.example .env
     ```
 
-3. ## Populate the keys in the env file.
+3. Populate the keys in the env file
    :::info
    `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure   random key)
 
@@ -56,55 +61,55 @@ Follow these steps to setup and run ToolJet on Mac OS for development purposes. 
    ORM_LOGGING=all
    ```
 
-4. ## Install dependencies
+4. Install dependencies
     ```bash
     npm install --prefix server
     npm install --prefix frontend
     ```
-5. ## Setup database
+
+5. Set up database
     ```bash
     npm run --prefix server db:reset
     ```
-6. ## Install webpack & nest-cli
+
+6. Install webpack & nest-cli
     ```bash
     npm install -g webpack
     npm install -g webpack-cli
     npm install -g @nestjs/cli
     ```
 
-7. ## Running the server
+7. Run the server
     ```bash
     cd ./server && npm run start:dev
     ```
 
-8. ## Running the client
+8. Run the client
     ```bash
-     cd ./frontend && npm start
+    cd ./frontend && npm start
     ```
 
     The client will start on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
 
-9. ## Creating login credentials
+9. Create login credentials
+
     Visiting [https://localhost:8082](https://localhost:8082) should redirect you to the login page, click on the signup link and enter your email. The emails sent by the server in development environment are captured and are opened in your default browser. Click the invitation link in the email preview to setup the account.
 
+## Running tests
 
-10. ## Running tests
+Test config requires the presence of `.env.test` file at the root of the project.
 
-    Test config requires the presence of `.env.test` file at the root of the project.
+To run the unit tests
+```bash
+npm run --prefix server test
+```
 
-    To run the unit tests
+To run e2e tests
+```bash
+npm run --prefix server test:e2e
+```
 
-    ```bash
-    $ npm run --prefix server test
-    ```
-
-    To run e2e tests
-
-    ```bash
-    npm run --prefix server test:e2e
-    ```
-
-    To run a specific unit test
-    ```bash
-    npm run --prefix server test <path-to-file>
-    ```
+To run a specific unit test
+```bash
+npm run --prefix server test <path-to-file>
+```
