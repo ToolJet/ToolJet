@@ -17,6 +17,7 @@ export const Button = function Button({ id, width, height, component, onComponen
   const text = component.definition.properties.text.value;
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const color = component.definition.styles.textColor.value;
+  const borderRadius = component.definition.styles.borderRadius.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
@@ -33,6 +34,7 @@ export const Button = function Button({ id, width, height, component, onComponen
   const computedStyles = {
     backgroundColor,
     color,
+    borderRadius,
     width,
     height,
     display: parsedWidgetVisibility ? '' : 'none',
