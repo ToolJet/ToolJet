@@ -19,6 +19,14 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       }
     }
 
+    if (request.route.path === '/api/apps/:id/export') {
+      const app = await this.appsService.find(request.params.id);
+
+      if (app.isPublic === true) {
+        return true;
+      }
+    }
+
     return super.canActivate(context);
   }
 }

@@ -6,7 +6,7 @@ import Fuse from 'fuse.js';
 import { folderService } from '@/_services';
 import { toast } from 'react-toastify';
 
-export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteApp, cloneApp }) {
+export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteApp, cloneApp, exportApp }) {
   const [addToFolder, setAddToFolder] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -70,7 +70,7 @@ export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteAp
               <div>
                 <div className="field mb-2">
                   <span role="button" onClick={() => setAddToFolder(true)}>
-                    Add to folder{' '}
+                    Add to folder
                   </span>
                 </div>
                 <div className="field mb-2">
@@ -79,8 +79,13 @@ export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteAp
                   </span>
                 </div>
                 <div className="field mb-2">
+                  <span className="field mb-2" role="button" onClick={() => exportApp()}>
+                    Export app
+                  </span>
+                </div>
+                <div className="field mb-2">
                   <span className="my-3 text-danger" role="button" onClick={() => deleteApp()}>
-                    Delete app{' '}
+                    Delete app
                   </span>
                 </div>
               </div>

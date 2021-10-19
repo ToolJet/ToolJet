@@ -13,6 +13,7 @@ class HomePage extends React.Component {
   constructor(props) {
     super(props);
 
+    this.fileInput = React.createRef();
     this.state = {
       currentUser: authenticationService.currentUserValue,
       users: null,
@@ -20,7 +21,11 @@ class HomePage extends React.Component {
       creatingApp: false,
       isDeletingApp: false,
       isCloningApp: false,
+      isExportingApp: false,
+      isImportingApp: false,
       currentFolder: {},
+      currentPage: 1,
+      showButtonGroupDropdown: false,
       showAppDeletionConfirmation: false,
       apps: [],
       folders: [],
@@ -118,6 +123,80 @@ class HomePage extends React.Component {
       });
   };
 
+  exportApp = (app) => {
+    this.setState({ isExportingApp: true });
+    appService
+      .exportApp(app.id)
+      .then((data) => {
+        const appName = app.name.replace(/\s+/g, '-').toLowerCase();
+        const fileName = `${appName}-export-${new Date().getTime()}`;
+
+        // simulate link click download
+        const json = JSON.stringify(data);
+        const blob = new Blob([json], { type: 'application/json' });
+        const href = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = fileName + '.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        this.setState({ isExportingApp: false });
+      })
+      .catch(({ _error }) => {
+        toast.error('Could not export the app.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
+        this.setState({ isExportingApp: false });
+        console.log(_error);
+      });
+  };
+
+  handleImportApp = (event) => {
+    this.setState({ isImportingApp: true });
+
+    const fileReader = new FileReader();
+    fileReader.readAsText(event.target.files[0], 'UTF-8');
+    fileReader.onload = (event) => {
+      const fileContent = event.target.result;
+
+      try {
+        const requestBody = JSON.parse(fileContent);
+        appService
+          .importApp(requestBody)
+          .then(() => {
+            toast.info('App imported successfully.', {
+              hideProgressBar: true,
+              position: 'top-center',
+            });
+            this.setState({
+              isImportingApp: false,
+            });
+            this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
+          })
+          .catch(({ error }) => {
+            toast.error(`Could not import the app: ${error}`, {
+              hideProgressBar: true,
+              position: 'top-center',
+            });
+            this.setState({
+              isImportingApp: false,
+            });
+          });
+      } catch (error) {
+        toast.error(`Could not import the app: ${error}`, {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
+        this.setState({
+          isImportingApp: false,
+        });
+      }
+    };
+  };
+
   isAppEditable = (app) => {
     return app.app_group_permissions.some((p) => p.update);
   };
@@ -162,9 +241,24 @@ class HomePage extends React.Component {
     return this.state.currentFolder.id ? this.state.meta.folder_count : this.state.meta.total_count;
   };
 
+  setShowButtonGroupDropdown = (boolean) => {
+    this.setState({
+      showButtonGroupDropdown: boolean,
+    });
+  };
+
   render() {
-    const { apps, isLoading, creatingApp, meta, currentFolder, showAppDeletionConfirmation, isDeletingApp } =
-      this.state;
+    const {
+      apps,
+      isLoading,
+      creatingApp,
+      meta,
+      currentFolder,
+      showAppDeletionConfirmation,
+      isDeletingApp,
+      showButtonGroupDropdown,
+      isImportingApp,
+    } = this.state;
     return (
       <div className="wrapper home-page">
         <ConfirmDialog
@@ -203,12 +297,53 @@ class HomePage extends React.Component {
                         </h2>
                       </div>
                       <div className="col-auto ms-auto d-print-none">
-                        <button
-                          className={`btn btn-primary d-none d-lg-inline ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={this.createApp}
-                        >
-                          Create new application
-                        </button>
+                        <div className="btn-group w-100">
+                          <button
+                            className={`btn btn-primary d-none d-lg-inline ${creatingApp ? 'btn-loading' : ''}`}
+                            onClick={this.createApp}
+                          >
+                            Create new application
+                          </button>
+                          <div
+                            className="btn-group"
+                            role="group"
+                            onBlur={() =>
+                              // FIXME: Setting timeout here such that onChange handler for
+                              // dropdowns can be fired before onBlur.
+                              setTimeout(() => this.setShowButtonGroupDropdown(false), 200)
+                            }
+                          >
+                            <button
+                              id="btnGroupDrop1"
+                              type="button"
+                              onClick={() => {
+                                this.setShowButtonGroupDropdown(true);
+                              }}
+                              className={`btn dropdown-toggle ${showButtonGroupDropdown ? 'show' : ''}`}
+                              data-bs-toggle="dropdown"
+                              aria-haspopup="true"
+                              aria-expanded="false"
+                            >
+                              {isImportingApp && (
+                                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                              )}
+                              Other
+                            </button>
+                            <div className={`dropdown-menu dropdown-menu-end ${showButtonGroupDropdown ? 'show' : ''}`}>
+                              <label>
+                                <div className="dropdown-item">
+                                  Import
+                                  <input
+                                    type="file"
+                                    onChange={this.handleImportApp}
+                                    ref={this.fileInput}
+                                    style={{ display: 'none' }}
+                                  />
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -343,6 +478,7 @@ class HomePage extends React.Component {
                                         foldersChanged={this.foldersChanged}
                                         deleteApp={() => this.deleteApp(app)}
                                         cloneApp={() => this.cloneApp(app)}
+                                        exportApp={() => this.exportApp(app)}
                                       />
                                     )}
                                   </td>

@@ -16,7 +16,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { AppUser } from 'src/entities/app_user.entity';
-import { getRepository } from 'typeorm';
+import { getManager, getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 
 describe('apps controller', () => {
@@ -842,6 +842,150 @@ describe('apps controller', () => {
       const response = await request(app.getHttpServer()).get('/api/apps/slugs/foo');
 
       expect(response.statusCode).toBe(200);
+    });
+  });
+
+  describe('/api/apps/:id/export', () => {
+    it('should be able to export app if user has read permission within an organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const developerUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
+      });
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        groups: ['all_users', 'viewer'],
+        organization: adminUserData.organization,
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+        slug: 'foo',
+      });
+      // setup app permissions for developer
+      const developerUserGroup = await getRepository(GroupPermission).findOne({
+        group: 'developer',
+      });
+      await createAppGroupPermission(app, application, developerUserGroup.id, {
+        read: true,
+        update: true,
+        delete: false,
+      });
+      // setup app permissions for viewer
+      const viewerUserGroup = await getRepository(GroupPermission).findOne({
+        group: 'viewer',
+      });
+      await createAppGroupPermission(app, application, viewerUserGroup.id, {
+        read: true,
+        update: false,
+        delete: false,
+      });
+
+      for (const userData of [adminUserData, developerUserData, viewerUserData]) {
+        const response = await request(app.getHttpServer())
+          .get(`/api/apps/${application.id}/export`)
+          .set('Authorization', authHeaderForUser(userData.user));
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.id).toBe(application.id);
+        expect(response.body.name).toBe(application.name);
+        expect(response.body.isPublic).toBe(application.isPublic);
+        expect(response.body.organizationId).toBe(application.organizationId);
+      }
+    });
+
+    it('should not be able to export app if member of another organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+        slug: 'foo',
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/apps/${application.id}/export`)
+        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should be able to export app if it is a public app ( even if unauthenticated )', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+        slug: 'foo',
+        isPublic: true,
+      });
+
+      const response = await request(app.getHttpServer()).get(`/api/apps/${application.id}/export`);
+      expect(response.statusCode).toBe(200);
+      expect(response.body.id).toBe(application.id);
+      expect(response.body.name).toBe(application.name);
+      expect(response.body.isPublic).toBe(application.isPublic);
+      expect(response.body.organizationId).toBe(application.organizationId);
+    });
+  });
+
+  describe('/api/apps/import', () => {
+    it('should be able to import app only if user has admin group', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const organization = adminUserData.organization;
+      const developerUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization,
+      });
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        groups: ['all_users', 'viewer'],
+        organization,
+      });
+
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
+      await createApplicationVersion(app, application);
+
+      for (const userData of [viewerUserData, developerUserData]) {
+        const response = await request(app.getHttpServer())
+          .post('/api/apps/import')
+          .set('Authorization', authHeaderForUser(userData.user));
+
+        expect(response.statusCode).toBe(403);
+      }
+
+      const response = await request(app.getHttpServer())
+        .post('/api/apps/import')
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .send({ name: 'Imported App' });
+
+      expect(response.statusCode).toBe(201);
+
+      const importedApp = await getManager().find(App, {
+        name: 'Imported App',
+      });
+
+      expect(importedApp).toHaveLength(1);
     });
   });
 
