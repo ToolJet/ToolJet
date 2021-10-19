@@ -130,18 +130,14 @@ export class AppsController {
     return response;
   }
 
-  @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
+  @UseGuards(JwtAuthGuard)
   @Get(':id/export')
   async export(@Request() req, @Param() params) {
-    if (req.user) {
-      const appToExport = await this.appsService.find(params.id);
-      const ability = await this.appsAbilityFactory.appsActions(req.user, {
-        id: appToExport.id,
-      });
+    const appToExport = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
-      if (!ability.can('viewApp', appToExport)) {
-        throw new ForbiddenException('You do not have permissions to perform this action');
-      }
+    if (!ability.can('viewApp', appToExport)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     const app = await this.appImportExportService.export(req.user, params.id);

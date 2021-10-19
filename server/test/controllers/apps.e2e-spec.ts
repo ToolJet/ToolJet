@@ -920,7 +920,7 @@ describe('apps controller', () => {
       expect(response.statusCode).toBe(403);
     });
 
-    it('should be able to export app if it is a public app ( even if unauthenticated )', async () => {
+    it('should not be able to export app if it is a public app for an unauthenticated user', async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
         groups: ['all_users', 'admin'],
@@ -934,11 +934,7 @@ describe('apps controller', () => {
       });
 
       const response = await request(app.getHttpServer()).get(`/api/apps/${application.id}/export`);
-      expect(response.statusCode).toBe(200);
-      expect(response.body.id).toBe(application.id);
-      expect(response.body.name).toBe(application.name);
-      expect(response.body.isPublic).toBe(application.isPublic);
-      expect(response.body.organizationId).toBe(application.organizationId);
+      expect(response.statusCode).toBe(401);
     });
   });
 
