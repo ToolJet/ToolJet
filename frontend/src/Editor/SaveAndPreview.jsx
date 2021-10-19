@@ -178,7 +178,7 @@ class SaveAndPreview extends React.Component {
                               <button
                                 className="btn btn btn-sm mx-2 text-muted"
                                 onClick={() => this.props.setAppDefinitionFromVersion(version)}
-                                disabled={this.props.editingVersionId == version.id}
+                                disabled={this.props.editingVersionId === version.id}
                               >
                                 edit
                               </button>

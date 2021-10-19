@@ -101,11 +101,11 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap {
     });
   }
 
-  onModuleInit() {
+  onModuleInit(): void {
     console.log(`Initializing ToolJet server modules 📡 `);
   }
 
-  onApplicationBootstrap() {
+  onApplicationBootstrap(): void {
     console.log(`Initialized ToolJet server, waiting for requests 🚀`);
   }
 }

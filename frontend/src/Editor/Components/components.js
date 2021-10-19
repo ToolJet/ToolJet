@@ -336,7 +336,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: '' },
+        value: { value: '99' },
         placeholder: { value: '0' },
       },
       events: [],
@@ -385,7 +385,7 @@ export const componentTypes = [
         customRule: { value: null },
       },
       properties: {
-        defaultValue: { value: '' },
+        defaultValue: { value: '01/04/2021' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
@@ -563,7 +563,10 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: '' },
+        value: {
+          value:
+            'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
+        },
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
@@ -645,7 +648,7 @@ export const componentTypes = [
       properties: {
         text: { value: 'Text goes here !' },
         visible: { value: true },
-        loadingState: { value: false },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
@@ -849,6 +852,7 @@ export const componentTypes = [
     },
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' },
+      defaultValue: { type: 'code', displayName: 'Default Value' },
     },
     events: {},
     styles: {
@@ -856,7 +860,7 @@ export const componentTypes = [
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      value: {},
+      value: '',
     },
     definition: {
       others: {
@@ -865,6 +869,7 @@ export const componentTypes = [
       },
       properties: {
         placeholder: { value: 'Placeholder text' },
+        defaultValue: { value: '' },
       },
       events: [],
       styles: {

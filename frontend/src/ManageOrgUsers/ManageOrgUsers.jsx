@@ -5,6 +5,7 @@ import { Header } from '@/_components';
 import { toast } from 'react-toastify';
 import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import ReactTooltip from 'react-tooltip';
 
 class ManageOrgUsers extends React.Component {
   constructor(props) {
@@ -36,14 +37,14 @@ class ManageOrgUsers extends React.Component {
     if (!fields['firstName']) {
       errors['firstName'] = 'This field is required';
     } else if (typeof fields['firstName'] !== 'undefined') {
-      if (!fields['firstName'].match(/^[a-zA-Z]+$/)) {
+      if (!/^[a-zA-Z]+$/.test(fields['firstName'])) {
         errors['firstName'] = 'Only letters are allowed';
       }
     }
     if (!fields['lastName']) {
       errors['lastName'] = 'This field is required';
     } else if (typeof fields['lastName'] !== 'undefined') {
-      if (!fields['lastName'].match(/^[a-zA-Z]+$/)) {
+      if (!/^[a-zA-Z]+$/.test(fields['lastName'])) {
         errors['lastName'] = 'Only letters are allowed';
       }
     }
@@ -105,7 +106,7 @@ class ManageOrgUsers extends React.Component {
 
     if (this.handleValidation()) {
       let fields = {};
-      Object.keys(fields).map((key) => {
+      Object.keys(fields).forEach((key) => {
         fields[key] = '';
       });
 
@@ -150,6 +151,7 @@ class ManageOrgUsers extends React.Component {
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+        <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
         <div className="page-wrapper">
           <div className="container-xl">
@@ -178,7 +180,7 @@ class ManageOrgUsers extends React.Component {
                     <h3 className="card-title">Add new user</h3>
                   </div>
                   <div className="card-body">
-                    <form>
+                    <form onSubmit={this.createUser} noValidate>
                       <div className="form-group mb-3 ">
                         <div className="row">
                           <div className="col">
@@ -209,7 +211,7 @@ class ManageOrgUsers extends React.Component {
                         <label className="form-label">Email address</label>
                         <div>
                           <input
-                            type="email"
+                            type="text"
                             className="form-control"
                             aria-describedby="emailHelp"
                             placeholder="Enter email"
@@ -222,14 +224,15 @@ class ManageOrgUsers extends React.Component {
                       </div>
                       <div className="form-footer">
                         <button
+                          type="button"
                           className="btn btn-light mr-2"
                           onClick={() => this.setState({ showNewUserForm: false, newUser: {} })}
                         >
                           Cancel
                         </button>
                         <button
+                          type="submit"
                           className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
-                          onClick={this.createUser}
                           disabled={creatingUser}
                         >
                           Create User
@@ -302,7 +305,7 @@ class ManageOrgUsers extends React.Component {
                               </td>
                               <td className="text-muted">
                                 <span
-                                  className={`badge bg-${user.status === 'invited' ? 'warning' : 'success'} me-1 m-1`}
+                                  className={`badge bg-${user.status === 'invited' ? 'warning' : user.status === 'archived' ? 'danger' : 'success'} me-1 m-1`}
                                 ></span>
                                 <small className="user-status">{user.status}</small>
                                 {user.status === 'invited' && 'invitation_token' in user ? (
@@ -311,10 +314,14 @@ class ManageOrgUsers extends React.Component {
                                     onCopy={this.invitationLinkCopyHandler}
                                   >
                                     <img
+                                      data-tip="Copy invitation link"
                                       className="svg-icon"
                                       src="/assets/images/icons/copy.svg"
                                       width="15"
                                       height="15"
+                                      style={{
+                                        cursor: 'pointer'
+                                      }}
                                     ></img>
                                   </CopyToClipboard>
                                 ) : (
