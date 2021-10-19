@@ -3,7 +3,6 @@ import 'codemirror/theme/duotone-light.css';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { changeOption } from './utils';
-// import { resolveReferences } from '../../../_helpers/utils';
 
 class Googlesheets extends React.Component {
   constructor(props) {
