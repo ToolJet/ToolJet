@@ -23,7 +23,7 @@ import { UserGroupPermission } from './user_group_permission.entity';
 export class User extends BaseEntity {
   @BeforeInsert()
   @BeforeUpdate()
-  hashPassword() {
+  hashPassword(): void {
     if (this.password) {
       this.password = bcrypt.hashSync(this.password, 10);
     }

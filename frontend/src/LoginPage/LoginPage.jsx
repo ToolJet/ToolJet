@@ -70,7 +70,7 @@ class LoginPage extends React.Component {
                   name="email"
                   type="email"
                   className="form-control"
-                  placeholder="Enter email"
+                  placeholder="Email"
                   data-testid="emailField"
                 />
               </div>

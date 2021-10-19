@@ -7,7 +7,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
 
   function filterComponents(value) {
-    if (value != '') {
+    if (value !== '') {
       const fuse = new Fuse(componentTypes, { keys: ['component'] });
       const results = fuse.search(value);
       setFilteredComponents(results.map((result) => result.item));
@@ -71,7 +71,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     ];
     const integrationItems = ['Map'];
 
-    filteredComponents.map((f) => {
+    filteredComponents.forEach((f) => {
       if (commonItems.includes(f.name)) commonSection.items.push(f);
       if (formItems.includes(f.name)) formSection.items.push(f);
       else if (integrationItems.includes(f.name)) integrationSection.items.push(f);
