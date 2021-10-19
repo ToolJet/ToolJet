@@ -8,6 +8,7 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { Credential } from 'src/entities/credential.entity';
 
 @Injectable()
 export class AppImportExportService {
@@ -60,11 +61,13 @@ export class AppImportExportService {
     const appVersions = appParams?.appVersions || [];
 
     for (const source of dataSources) {
+      const newOptions = await this.copyOptionsWithNewCredentials(manager, source.options);
+
       const newSource = manager.create(DataSource, {
         app: importedApp,
         name: source.name,
         kind: source.kind,
-        options: source.options,
+        options: newOptions,
       });
 
       await manager.save(newSource);
@@ -97,6 +100,23 @@ export class AppImportExportService {
         await manager.update(App, importedApp, { currentVersionId });
       }
     }
+  }
+
+  async copyOptionsWithNewCredentials(manager: EntityManager, options: any) {
+    for (const key of Object.keys(options)) {
+      if ('credential_id' in options[key]) {
+        const existingCredential = await manager.findOne(Credential, {
+          id: options[key]['credential_id'],
+        });
+        const newCredential = manager.create(Credential, {
+          valueCiphertext: existingCredential.valueCiphertext,
+        });
+        await manager.save(newCredential);
+        options[key]['credential_id'] = newCredential.id;
+      }
+    }
+
+    return options;
   }
 
   async createAdminGroupPermissions(manager: EntityManager, app: App) {
