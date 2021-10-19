@@ -18,6 +18,10 @@ import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { AppCloneService } from '@services/app_clone.service';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { AppImportExportService } from '@services/app_import_export.service';
 
 @Module({
   imports: [
@@ -32,10 +36,13 @@ import { AppCloneService } from '@services/app_clone.service';
       User,
       Organization,
       DataSource,
+      GroupPermission,
+      AppGroupPermission,
+      UserGroupPermission,
     ]),
     CaslModule,
   ],
-  providers: [AppsService, AppUsersService, UsersService, FoldersService, AppCloneService],
+  providers: [AppsService, AppUsersService, UsersService, FoldersService, AppCloneService, AppImportExportService],
   controllers: [AppsController, AppUsersController],
 })
 export class AppsModule {}
