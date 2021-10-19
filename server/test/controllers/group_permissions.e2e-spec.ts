@@ -23,7 +23,7 @@ describe('group permissions controller', () => {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(defaultUser))
         .send({ group: 'avengers' });
 
@@ -35,7 +35,7 @@ describe('group permissions controller', () => {
         organization: { adminUser, organization },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -52,14 +52,14 @@ describe('group permissions controller', () => {
         organization: { adminUser },
       } = await setupOrganizations(nestApp);
       let response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
       expect(response.statusCode).toBe(201);
 
       response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -74,14 +74,14 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       let response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
       expect(response.statusCode).toBe(201);
 
       response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(anotherAdminUser))
         .send({ group: 'avengers' });
 
@@ -95,7 +95,7 @@ describe('group permissions controller', () => {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .get('/group_permissions/id')
+        .get('/api/group_permissions/id')
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -107,14 +107,14 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       let response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
       const groupPermissionId = response.body.id;
 
       response = await request(nestApp.getHttpServer())
-        .get(`/group_permissions/${groupPermissionId}`)
+        .get(`/api/group_permissions/${groupPermissionId}`)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -132,14 +132,14 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       let response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
       const groupPermissionId = response.body.id;
 
       response = await request(nestApp.getHttpServer())
-        .post(`/group_permissions/${groupPermissionId}`)
+        .post(`/api/group_permissions/${groupPermissionId}`)
         .set('Authorization', authHeaderForUser(anotherAdminUser))
         .send({ group: 'avengers' });
 
@@ -153,7 +153,7 @@ describe('group permissions controller', () => {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .put('/group_permissions/id')
+        .put('/api/group_permissions/id')
         .set('Authorization', authHeaderForUser(defaultUser))
         .send({ group: 'avengers' });
 
@@ -166,14 +166,14 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       let response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
       const groupPermissionId = response.body.id;
 
       response = await request(nestApp.getHttpServer())
-        .put(`/group_permissions/${groupPermissionId}`)
+        .put(`/api/group_permissions/${groupPermissionId}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ add_apps: [app.id] });
 
@@ -194,7 +194,7 @@ describe('group permissions controller', () => {
       expect(addedApp.delete).toBe(false);
 
       response = await request(nestApp.getHttpServer())
-        .put(`/group_permissions/${groupPermissionId}`)
+        .put(`/api/group_permissions/${groupPermissionId}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ remove_apps: [app.id] });
 
@@ -213,14 +213,14 @@ describe('group permissions controller', () => {
       } = await setupOrganizations(nestApp);
 
       let response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
       const groupPermissionId = response.body.id;
 
       response = await request(nestApp.getHttpServer())
-        .put(`/group_permissions/${groupPermissionId}`)
+        .put(`/api/group_permissions/${groupPermissionId}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ add_users: [defaultUser.id] });
 
@@ -238,7 +238,7 @@ describe('group permissions controller', () => {
       expect(addedUser.userId).toBe(defaultUser.id);
 
       response = await request(nestApp.getHttpServer())
-        .put(`/group_permissions/${groupPermissionId}`)
+        .put(`/api/group_permissions/${groupPermissionId}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ remove_users: [defaultUser.id] });
 
@@ -262,7 +262,7 @@ describe('group permissions controller', () => {
       });
 
       const response = await request(nestApp.getHttpServer())
-        .put(`/group_permissions/${adminGroupPermission.id}`)
+        .put(`/api/group_permissions/${adminGroupPermission.id}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ remove_users: [defaultUser.id] });
 
@@ -281,7 +281,7 @@ describe('group permissions controller', () => {
       });
 
       const response = await request(nestApp.getHttpServer())
-        .put(`/group_permissions/${adminGroupPermission.id}`)
+        .put(`/api/group_permissions/${adminGroupPermission.id}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ remove_users: [defaultUser.id] });
 
@@ -296,7 +296,7 @@ describe('group permissions controller', () => {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .get('/group_permissions')
+        .get('/api/group_permissions')
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -309,7 +309,7 @@ describe('group permissions controller', () => {
 
       // create group permission
       let response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -319,7 +319,7 @@ describe('group permissions controller', () => {
 
       // add apps and users to group permission
       response = await request(nestApp.getHttpServer())
-        .put(`/group_permissions/${groupPermissionId}`)
+        .put(`/api/group_permissions/${groupPermissionId}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ add_apps: [app.id], add_users: [defaultUser.id] });
 
@@ -327,7 +327,7 @@ describe('group permissions controller', () => {
 
       // list group permission
       response = await request(nestApp.getHttpServer())
-        .get('/group_permissions')
+        .get('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser));
       expect(response.statusCode).toBe(200);
 
@@ -346,7 +346,7 @@ describe('group permissions controller', () => {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .get('/group_permissions/id/apps')
+        .get('/api/group_permissions/id/apps')
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -364,7 +364,7 @@ describe('group permissions controller', () => {
       });
 
       const response = await request(nestApp.getHttpServer())
-        .get(`/group_permissions/${adminGroupPermission.id}/apps`)
+        .get(`/api/group_permissions/${adminGroupPermission.id}/apps`)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -393,7 +393,7 @@ describe('group permissions controller', () => {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .get('/group_permissions/id/addable_apps')
+        .get('/api/group_permissions/id/addable_apps')
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -406,7 +406,7 @@ describe('group permissions controller', () => {
 
       // create group permission
       let response = await request(nestApp.getHttpServer())
-        .post('/group_permissions')
+        .post('/api/group_permissions')
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ group: 'avengers' });
 
@@ -415,7 +415,7 @@ describe('group permissions controller', () => {
       const groupPermissionId = response.body.id;
 
       response = await request(nestApp.getHttpServer())
-        .get(`/group_permissions/${groupPermissionId}/addable_apps`)
+        .get(`/api/group_permissions/${groupPermissionId}/addable_apps`)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -452,7 +452,7 @@ describe('group permissions controller', () => {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .get('/group_permissions/id/users')
+        .get('/api/group_permissions/id/users')
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -470,7 +470,7 @@ describe('group permissions controller', () => {
       });
 
       const response = await request(nestApp.getHttpServer())
-        .get(`/group_permissions/${adminGroupPermission.id}/users`)
+        .get(`/api/group_permissions/${adminGroupPermission.id}/users`)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -490,7 +490,7 @@ describe('group permissions controller', () => {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .get('/group_permissions/id/addable_users')
+        .get('/api/group_permissions/id/addable_users')
         .set('Authorization', authHeaderForUser(defaultUser));
 
       expect(response.statusCode).toBe(403);
@@ -508,7 +508,7 @@ describe('group permissions controller', () => {
       });
       const groupPermissionId = adminGroupPermission.id;
       const response = await request(nestApp.getHttpServer())
-        .get(`/group_permissions/${groupPermissionId}/addable_users`)
+        .get(`/api/group_permissions/${groupPermissionId}/addable_users`)
         .set('Authorization', authHeaderForUser(adminUser));
 
       expect(response.statusCode).toBe(200);
@@ -528,7 +528,7 @@ describe('group permissions controller', () => {
         organization: { defaultUser },
       } = await setupOrganizations(nestApp);
       const response = await request(nestApp.getHttpServer())
-        .put('/group_permissions/id/app_group_permissions/id')
+        .put('/api/group_permissions/id/app_group_permissions/id')
         .set('Authorization', authHeaderForUser(defaultUser))
         .send({ read: true });
 
@@ -557,7 +557,7 @@ describe('group permissions controller', () => {
       expect(appGroupPermission.update).toBe(false);
 
       const response = await request(nestApp.getHttpServer())
-        .put(`/group_permissions/${groupPermissionId}/app_group_permissions/${appGroupPermissionId}`)
+        .put(`/api/group_permissions/${groupPermissionId}/app_group_permissions/${appGroupPermissionId}`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ actions: { read: false, update: true } });
 
@@ -592,7 +592,7 @@ describe('group permissions controller', () => {
       expect(appGroupPermission.update).toBe(false);
 
       const response = await request(nestApp.getHttpServer())
-        .put(`/group_permissions/${groupPermissionId}/app_group_permissions/${appGroupPermissionId}`)
+        .put(`/api/group_permissions/${groupPermissionId}/app_group_permissions/${appGroupPermissionId}`)
         .set('Authorization', authHeaderForUser(anotherAdminUser))
         .send({ actions: { read: false, update: true } });
 

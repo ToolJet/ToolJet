@@ -37,14 +37,14 @@ class ManageOrgUsers extends React.Component {
     if (!fields['firstName']) {
       errors['firstName'] = 'This field is required';
     } else if (typeof fields['firstName'] !== 'undefined') {
-      if (!fields['firstName'].match(/^[a-zA-Z]+$/)) {
+      if (!/^[a-zA-Z]+$/.test(fields['firstName'])) {
         errors['firstName'] = 'Only letters are allowed';
       }
     }
     if (!fields['lastName']) {
       errors['lastName'] = 'This field is required';
     } else if (typeof fields['lastName'] !== 'undefined') {
-      if (!fields['lastName'].match(/^[a-zA-Z]+$/)) {
+      if (!/^[a-zA-Z]+$/.test(fields['lastName'])) {
         errors['lastName'] = 'Only letters are allowed';
       }
     }
@@ -180,7 +180,7 @@ class ManageOrgUsers extends React.Component {
                     <h3 className="card-title">Add new user</h3>
                   </div>
                   <div className="card-body">
-                    <form>
+                    <form onSubmit={this.createUser} noValidate>
                       <div className="form-group mb-3 ">
                         <div className="row">
                           <div className="col">
@@ -211,7 +211,7 @@ class ManageOrgUsers extends React.Component {
                         <label className="form-label">Email address</label>
                         <div>
                           <input
-                            type="email"
+                            type="text"
                             className="form-control"
                             aria-describedby="emailHelp"
                             placeholder="Enter email"
@@ -224,14 +224,15 @@ class ManageOrgUsers extends React.Component {
                       </div>
                       <div className="form-footer">
                         <button
+                          type="button"
                           className="btn btn-light mr-2"
                           onClick={() => this.setState({ showNewUserForm: false, newUser: {} })}
                         >
                           Cancel
                         </button>
                         <button
+                          type="submit"
                           className={`btn mx-2 btn-primary ${creatingUser ? 'btn-loading' : ''}`}
-                          onClick={this.createUser}
                           disabled={creatingUser}
                         >
                           Create User
