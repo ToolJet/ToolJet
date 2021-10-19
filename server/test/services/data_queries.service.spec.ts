@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
 import { DataQueriesModule } from '../../src/modules/data_queries/data_queries.module';
 import { DataSourcesModule } from '../../src/modules/data_sources/data_sources.module';
-import { DataQueriesService } from './data_queries.service';
+import { DataQueriesService } from '../../src/services/data_queries.service';
 
 describe('DataQueriesService', () => {
   let service: DataQueriesService;

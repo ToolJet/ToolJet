@@ -7,6 +7,8 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { Credential } from 'src/entities/credential.entity';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 
 @Injectable()
 export class AppCloneService {
@@ -18,6 +20,7 @@ export class AppCloneService {
     await this.entityManager.transaction(async (manager) => {
       clonedApp = await this.createClonedAppForUser(manager, existingApp, user);
       await this.buildClonedAppAssociations(manager, clonedApp, existingApp);
+      await this.createAdminGroupPermissions(manager, clonedApp);
     });
 
     return clonedApp;
@@ -40,7 +43,7 @@ export class AppCloneService {
     return newApp;
   }
 
-  async buildClonedAppAssociations(manager, newApp: App, existingApp: App) {
+  async buildClonedAppAssociations(manager: EntityManager, newApp: App, existingApp: App) {
     const dataSourceMapping = {};
     const newDefinition = existingApp.editingVersion?.definition;
 
@@ -90,13 +93,13 @@ export class AppCloneService {
     });
   }
 
-  async cloneOptionsWithNewCredentials(manager, options) {
+  async cloneOptionsWithNewCredentials(manager: EntityManager, options: any) {
     for (const key of Object.keys(options)) {
       if ('credential_id' in options[key]) {
         const existingCredential = await manager.findOne(Credential, {
           id: options[key]['credential_id'],
         });
-        const newCredential = await manager.create(Credential, {
+        const newCredential = manager.create(Credential, {
           valueCiphertext: existingCredential.valueCiphertext,
         });
         await manager.save(newCredential);
@@ -105,5 +108,30 @@ export class AppCloneService {
     }
 
     return options;
+  }
+
+  async createAdminGroupPermissions(manager: EntityManager, app: App) {
+    const orgDefaultGroupPermissions = await manager.find(GroupPermission, {
+      where: {
+        organizationId: app.organizationId,
+        group: 'admin',
+      },
+    });
+
+    const adminPermissions = {
+      read: true,
+      update: true,
+      delete: true,
+    };
+
+    for (const groupPermission of orgDefaultGroupPermissions) {
+      const appGroupPermission = manager.create(AppGroupPermission, {
+        groupPermissionId: groupPermission.id,
+        appId: app.id,
+        ...adminPermissions,
+      });
+
+      return await manager.save(AppGroupPermission, appGroupPermission);
+    }
   }
 }

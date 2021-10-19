@@ -7,6 +7,7 @@ import Tabs from './Tabs';
 
 import { changeOption } from '../utils';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
+import { BaseUrl } from './BaseUrl';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -100,21 +101,7 @@ class Restapi extends React.Component {
 
               <div className="col" style={{ display: 'flex' }}>
                 {dataSourceURL && (
-                  <span
-                    htmlFor=""
-                    style={{
-                      padding: '7px',
-                      border: '1px solid rgb(217 220 222)',
-                      background: 'rgb(246 247 251)',
-                      color: '#9ca1a6',
-                      marginRight: '-3px',
-                      borderTopLeftRadius: '3px',
-                      borderBottomLeftRadius: '3px',
-                      zIndex: 1,
-                    }}
-                  >
-                    {dataSourceURL}
-                  </span>
+                  <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
                 <CodeHinter
                   currentState={this.props.currentState}
