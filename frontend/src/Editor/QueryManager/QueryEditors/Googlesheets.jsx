@@ -205,13 +205,9 @@ class Googlesheets extends React.Component {
               <CodeHinter
                 currentState={this.props.currentState}
                 lineNumbers={true}
-                className="query-hinter"
+                className="codehinter-query-editor-input"
                 theme={this.props.darkMode ? 'monokai' : 'default'}
-                onChange={(value) => {
-                  // const val = resolveReferences(value, currentState);
-                  console.log('val ====>', value);
-                  changeOption(this, 'body', value);
-                }}
+                onChange={(value) => changeOption(this, 'body', value)}
                 enablePreview={true}
               />
             </div>
