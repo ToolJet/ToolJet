@@ -1,6 +1,6 @@
 /* eslint-disable react/no-string-refs */
 import React from 'react';
-import { Editor, EditorState, RichUtils, getDefaultKeyBinding } from 'draft-js';
+import { Editor, EditorState, RichUtils, getDefaultKeyBinding, ContentState } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { stateToHTML } from 'draft-js-export-html';
 
@@ -127,7 +127,7 @@ const InlineStyleControls = (props) => {
 class DraftEditor extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { editorState: EditorState.createEmpty() };
+    this.state = { editorState: EditorState.createWithContent(ContentState.createFromText(this.props.defaultValue)) };
 
     this.focus = () => this.refs.editor.focus();
     this.onChange = (editorState) => {
@@ -140,6 +140,18 @@ class DraftEditor extends React.Component {
     this.mapKeyToEditorCommand = this._mapKeyToEditorCommand.bind(this);
     this.toggleBlockType = this._toggleBlockType.bind(this);
     this.toggleInlineStyle = this._toggleInlineStyle.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.defaultValue !== this.props.defaultValue) {
+      const newContentState = ContentState.createFromText(this.props.defaultValue);
+      const newEditorState = EditorState.createWithContent(newContentState);
+      const newEditorStateWithFocus = EditorState.moveFocusToEnd(newEditorState);
+      const html = stateToHTML(newContentState);
+
+      this.props.handleChange(html);
+      this.setState({ editorState: newEditorStateWithFocus });
+    }
   }
 
   _handleKeyCommand(command, editorState) {
