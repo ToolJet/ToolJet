@@ -121,6 +121,7 @@ export const componentTypes = [
       textColor: { type: 'color', displayName: 'Text color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {},
     definition: {
@@ -138,6 +139,7 @@ export const componentTypes = [
         backgroundColor: { value: '#3c92dc' },
         textColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
+        borderRadius: { value: '0px' },
         disabledState: { value: '{{false}}' },
       },
     },
