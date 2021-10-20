@@ -101,7 +101,7 @@ export const Datepicker = function Datepicker({
             <input
               {...props}
               value={dateText}
-              className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
+              className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2`}
             />
           );
         }}
