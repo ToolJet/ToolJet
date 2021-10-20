@@ -11,7 +11,7 @@ export class BackfillAppCreatePermissionsAsTruthyForAdminGroup1634729050892
 
     await GroupPermissionRepostory.update(
       { group: "admin" },
-      { app_create: true }
+      { app_create: true, app_delete: true }
     );
   }
 
@@ -22,7 +22,7 @@ export class BackfillAppCreatePermissionsAsTruthyForAdminGroup1634729050892
 
     await GroupPermissionRepostory.update(
       { group: "admin" },
-      { app_create: false }
+      { app_create: false, app_delete: true }
     );
   }
 }
