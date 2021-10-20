@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSpring, config, animated } from 'react-spring';
-
+// import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+// import Tooltip from 'react-bootstrap/Tooltip';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/mode/handlebars/handlebars';
 import 'codemirror/mode/javascript/javascript';
@@ -142,4 +143,23 @@ export function CodeHinter({
       {enablePreview && getPreview()}
     </>
   );
+}
+
+{
+  /* <div
+className="pop-out-hinter btn-link mx-2 col-2"
+onClick={() => {
+  event.stopPropagation();
+  console.log('tool tip');
+}}
+>
+<OverlayTrigger
+  trigger={['hover', 'focus']}
+  placement="top"
+  delay={{ show: 800, hide: 100 }}
+  overlay={<Tooltip id="button-tooltip">{'Pop out code editor into a new window'}</Tooltip>}
+>
+  <img className="svg-icon" src="/assets/images/icons/pop.svg" width="16" height="16" />
+</OverlayTrigger>
+</div> */
 }

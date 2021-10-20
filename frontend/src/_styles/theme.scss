@@ -949,9 +949,9 @@ tr:focus {
   box-shadow: none;
 }
 
-.jet-container {
+// .jet-container {
 
-}
+// }
 
 .select-search__option {
   color: rgb(90, 89, 89);
@@ -1263,6 +1263,34 @@ body {
     min-height: 70px;
   }
 }
+
+
+
+.code-hinter {
+  &:hover{
+    border: 1px solid #3c92dc !important;
+    // .pop-out-hinter {
+    //   // visibility: visible;
+    //   display: block;
+    // }
+  }
+  // &:active{
+  //   border: 1px solid #3c92dc !important;
+  // }
+
+}
+
+
+.pop-out-hinter {
+  // visibility: hidden;
+  // display: none;
+  // margin-top: -18%;
+  position: absolute;
+  // z-index: 1;
+  cursor: pointer;
+}
+
+
 
 .chart-data-input {
   .CodeMirror {
