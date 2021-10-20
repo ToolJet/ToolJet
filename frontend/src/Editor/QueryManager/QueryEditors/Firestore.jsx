@@ -77,50 +77,50 @@ class Firestore extends React.Component {
             </div>
             {(this.state.options.operation === 'get_document' ||
               this.state.options.operation === 'delete_document') && (
-                <div>
-                  <div className="mb-3 mt-2">
-                    <label className="form-label">Path</label>
-                    <CodeHinter
-                      currentState={this.props.currentState}
-                      initialValue={this.state.options.path}
-                      theme={this.props.darkMode ? 'monokai' : 'default'}
-                      onChange={(value) => changeOption(this, 'path', value)}
-                    />
-                  </div>
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Path</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.path}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => changeOption(this, 'path', value)}
+                  />
                 </div>
-              )}
+              </div>
+            )}
             {(this.state.options.operation === 'set_document' ||
               this.state.options.operation === 'update_document' ||
               this.state.options.operation === 'add_document') && (
-                <div>
-                  <div className="mb-3 mt-2">
-                    <label className="form-label">
-                      {this.state.options.operation === 'add_document' ? 'Collection' : 'Path'}
-                    </label>
-                    <CodeHinter
-                      currentState={this.props.currentState}
-                      initialValue={this.state.options.path}
-                      theme={this.props.darkMode ? 'monokai' : 'default'}
-                      onChange={(value) => changeOption(this, 'path', value)}
-                    />
-                  </div>
-                  <div className="mb-3 mt-2">
-                    <label className="form-label">Body</label>
-                    <CodeHinter
-                      currentState={this.props.currentState}
-                      initialValue={
-                        typeof this.state.options.body === 'string'
-                          ? this.state.options.body
-                          : JSON.stringify(this.state.options.body)
-                      }
-                      lineNumbers={true}
-                      className="query-hinter"
-                      theme={this.props.darkMode ? 'monokai' : 'default'}
-                      onChange={(value) => changeOption(this, 'body', value)}
-                    />
-                  </div>
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">
+                    {this.state.options.operation === 'add_document' ? 'Collection' : 'Path'}
+                  </label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.path}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => changeOption(this, 'path', value)}
+                  />
                 </div>
-              )}
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Body</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={
+                      typeof this.state.options.body === 'string'
+                        ? this.state.options.body
+                        : JSON.stringify(this.state.options.body)
+                    }
+                    lineNumbers={true}
+                    className="query-hinter"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => changeOption(this, 'body', value)}
+                  />
+                </div>
+              </div>
+            )}
             {this.state.options.operation === 'bulk_update' && (
               <div>
                 <div className="mb-3 mt-2">
