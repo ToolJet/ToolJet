@@ -299,7 +299,7 @@ class ManageOrgUsers extends React.Component {
                                 </span>
                               </td>
                               <td className="text-muted">
-                                <a href="#" className="text-reset user-email">
+                                <a className="text-reset user-email">
                                   {user.email}
                                 </a>
                               </td>
