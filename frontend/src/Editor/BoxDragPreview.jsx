@@ -1,6 +1,6 @@
 import React, { useEffect, useState, memo } from 'react';
 
-export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout }) {
+export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout, canvasWidth }) {
   const [tickTock, setTickTock] = useState(false);
 
   useEffect(
@@ -22,7 +22,7 @@ export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout
   return (
     <div
       className="resizer-active draggable-box"
-      style={{ height, width, border: 'solid 1px rgb(70, 165, 253)', padding: '2px' }}
+      style={{ height, width: width * canvasWidth / 100, border: 'solid 1px rgb(70, 165, 253)', padding: '2px' }}
     >
       <div
         style={{

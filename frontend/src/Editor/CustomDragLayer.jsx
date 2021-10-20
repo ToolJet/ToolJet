@@ -69,7 +69,7 @@ export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} currentLayout={currentLayout} />;
+        return <BoxDragPreview item={item} currentLayout={currentLayout} canvasWidth={canvasWidth} />;
       default:
         return null;
     }

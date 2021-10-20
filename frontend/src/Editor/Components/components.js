@@ -102,7 +102,7 @@ export const componentTypes = [
     description: 'Trigger actions: queries, alerts etc',
     component: 'Button',
     defaultSize: {
-      width: 120,
+      width: 10,
       height: 30,
     },
     others: {

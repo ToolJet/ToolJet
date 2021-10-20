@@ -83,6 +83,14 @@ export const Container = ({
     }
   });
 
+  function convertXToPercentage(x, canvasWidth) {
+    return (x * 100 / canvasWidth);
+  }
+
+  function convertXFromPercentage(x, canvasWidth) {
+    return x * canvasWidth / 100;
+  }
+
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
@@ -118,18 +126,17 @@ export const Container = ({
             deltaY = delta.y;
           }
 
-          left = Math.round(currentLayoutOptions.left + deltaX);
-          top = Math.round(currentLayoutOptions.top + deltaY);
-
           const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
           const canvasWidth = bundingRect?.width;
+
+          left = Math.round(convertXFromPercentage(currentLayoutOptions.left, canvasWidth) + deltaX);
+          top = Math.round(currentLayoutOptions.top + deltaY);
 
           if (snapToGrid) {
             [left, top] = doSnapToGrid(canvasWidth, left, top);
           }
 
-
-          left = (left * 100) / canvasWidth;
+          left = convertXToPercentage(left, canvasWidth);
 
           let newBoxes = {
             ...boxes,
@@ -163,8 +170,6 @@ export const Container = ({
 
           id = uuidv4();
 
-          console.log('brrru', 'dropped', item);
-
           const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
           const canvasWidth = bundingRect?.width;
 
@@ -180,7 +185,7 @@ export const Container = ({
             componentData.definition.others.showOnMobile.value = true;
           }
 
-          const width = (componentMeta.defaultSize.width * 100) / canvasWidth;
+          const width = componentMeta.defaultSize.width;
 
           setBoxes({
             ...boxes,
