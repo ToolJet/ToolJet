@@ -105,7 +105,6 @@ class LoginPage extends React.Component {
                   class="form-check-input" 
                   id="check-input"
                   name="check-input"
-                  checked = {this.showPassword}
                   onChange = {this.handleOnCheck}
                 />
                 <label
