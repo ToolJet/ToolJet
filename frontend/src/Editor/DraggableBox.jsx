@@ -41,7 +41,12 @@ const resizerStyles = {
   },
 };
 
-function getStyles(left, top, isDragging, component, isSelectedComponent) {
+function computeWidth(currentLayoutOptions) {
+  // scaleWidth(currentLayoutOptions.width, scaleValue) - 4
+  return `${currentLayoutOptions?.width}%`;
+}
+
+function getStyles(left, top, isDragging, component, isSelectedComponent, currentLayoutOptions) {
   // const transform = `translate3d(${left}px, ${top}px, 0)`;
   return {
     position: 'absolute',
@@ -52,6 +57,7 @@ function getStyles(left, top, isDragging, component, isSelectedComponent) {
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
     height: isDragging ? 0 : '100%',
+    width: computeWidth(currentLayoutOptions)
   };
 }
 
@@ -172,21 +178,14 @@ export const DraggableBox = function DraggableBox({
     return newWidth;
   }
 
-  function computeWidth() {
-    // scaleWidth(currentLayoutOptions.width, scaleValue) - 4
-    const gridXWidth = canvasWidth / 43;
-    return `${currentLayoutOptions.width}%`;
-  }
-
   return (
     <div className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'} style={!inCanvas ? {} : { width: computeWidth() }}>
       {inCanvas ? (
         <div
-          style={getStyles(left, top, isDragging, component, isSelectedComponent)}
+          style={getStyles(left, top, isDragging, component, isSelectedComponent, currentLayoutOptions)}
           className="draggable-box "
           onMouseOver={() => setMouseOver(true)}
           onMouseLeave={() => setMouseOver(false)}
-          style={{ width: computeWidth() }}
         >
           <Rnd
             style={{ ...style }}
