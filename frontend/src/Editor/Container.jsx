@@ -224,14 +224,14 @@ export const Container = ({
 
     let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
-    top = y;
-    left = (x * 100 / canvasWidth);
-
     const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     const canvasWidth = boundingRect?.width;
 
     width = width + (deltaWidth * 100 / canvasWidth); // convert the width delta to percentage
     height = height + deltaHeight;
+
+    top = y;
+    left = (x * 100 / canvasWidth);
 
     let newBoxes = {
       ...boxes,
