@@ -106,13 +106,12 @@ class ManageOrgUsers extends React.Component {
 
     if (this.handleValidation()) {
       let fields = {};
-      Object.keys(fields).forEach((key) => {
+      Object.keys(this.state.fields).map((key) => {
         fields[key] = '';
       });
 
       this.setState({
         creatingUser: true,
-        fields: fields,
       });
 
       organizationUserService
@@ -125,10 +124,11 @@ class ManageOrgUsers extends React.Component {
         .then(() => {
           toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
           this.fetchUsers();
-          this.setState({ creatingUser: false, showNewUserForm: false });
+          this.setState({ creatingUser: false, showNewUserForm: false, fields: fields });
         })
         .catch(({ error }) => {
           toast.error(error, { hideProgressBar: true, position: 'top-center' });
+          this.setState({ creatingUser: false });
         });
     } else {
       this.setState({ creatingUser: false, showNewUserForm: true });
@@ -259,7 +259,7 @@ class ManageOrgUsers extends React.Component {
                       </thead>
                       {isLoading ? (
                         <tbody className="w-100" style={{ minHeight: '300px' }}>
-                          {Array.from(Array(4)).map((index) => (
+                          {Array.from(Array(4)).map((_item, index) => (
                             <tr key={index}>
                               <td className="col-2 p-3">
                                 <div className="row">

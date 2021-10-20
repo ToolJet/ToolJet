@@ -1,61 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import React, { useEffect } from 'react';
 
-export const TextArea = function TextArea({
-  id,
-  width,
-  height,
-  component,
-  onComponentClick,
-  currentState,
-  onComponentOptionChanged,
-}) {
-  const value = component.definition.properties.value ? component.definition.properties.value.value : '';
-  const [text, setText] = useState(value);
-
-  const textProperty = component.definition.properties.value;
-  let newText = value;
-  if (textProperty && currentState) {
-    newText = resolveReferences(textProperty.value, currentState, '');
-  }
-
+export const TextArea = function TextArea({ width, height, properties, exposedVariables, styles, setExposedVariable }) {
   useEffect(() => {
-    setText(newText);
-    onComponentOptionChanged(component, 'value', newText);
+    setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newText]);
-
-  const placeholder = component.definition.properties.placeholder.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  }, [properties.value]);
 
   return (
     <textarea
-      disabled={parsedDisabledState}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
+      disabled={styles.disabledState}
       onChange={(e) => {
-        setText(e.target.value);
-        onComponentOptionChanged(component, 'value', e.target.value);
+        setExposedVariable('value', e.target.value);
       }}
       type="text"
       className="form-control"
-      placeholder={placeholder}
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
-      value={text}
+      placeholder={properties.placeholder}
+      style={{ width, height, display: styles.visibility ? '' : 'none' }}
+      value={exposedVariables.value}
     ></textarea>
   );
 };
