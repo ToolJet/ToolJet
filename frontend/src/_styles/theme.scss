@@ -947,7 +947,7 @@ tr:focus {
 }
 
 .jet-container {
-  border-radius: 8px;
+
 }
 
 .select-search__option {
@@ -2012,6 +2012,9 @@ input:focus-visible {
   .editor .editor-sidebar .inspector .header {
     border: solid rgba(255, 255, 255, 0.09) !important;
     border-width: 0px 0px 1px 0px !important;
+    .input-icon .input-icon-addon img {
+        filter: invert(1);
+    }
   }
   .editor .editor-sidebar .inspector .hr-text {
     color: #fff !important;

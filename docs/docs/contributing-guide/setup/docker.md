@@ -3,6 +3,7 @@ sidebar_position: 1
 ---
 
 # Docker
+
 Docker compose is the easiest way to setup ToolJet server and client locally.
 
 ## Prerequisites
@@ -10,9 +11,11 @@ Docker compose is the easiest way to setup ToolJet server and client locally.
 Make sure you have the latest version of `docker` and `docker-compose` installed.
 
 [Official docker installation guide](https://docs.docker.com/desktop/)
+
 [Official docker-compose installation guide](https://docs.docker.com/compose/install/)
 
 We recommend:
+
 ```bash
 docker --version
 Docker version 19.03.12, build 48a66213fe
@@ -23,25 +26,26 @@ docker-compose version 1.26.2, build eefe0d31
 
 ## Setting up
 
-1. Close the repository
+1. Clone the repository
    ```bash
-    git clone https://github.com/tooljet/tooljet.git
+   git clone https://github.com/tooljet/tooljet.git
    ```
 
-2. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given here: env variable reference
+2. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/deployment/env-vars)
    ```bash
-    cp .env.example .env
-    cp .env.example .env.test
+   cp .env.example .env
+   cp .env.example .env.test
    ```
 
-3. Populate the keys in the `.env` and `.env.test` file.
+3. Populate the keys in the `.env` and `.env.test` file
    :::info
-   `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure   random key)
+   `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure random key)
 
    `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
    :::
 
    Example:
+
    ```bash
     cat .env
     TOOLJET_HOST=http://localhost:8082
@@ -73,31 +77,33 @@ docker-compose version 1.26.2, build eefe0d31
    ```
 
 4. Build docker images
+
    ```bash
-    docker-compose build
+   docker-compose build
    ```
 
 5. Run ToolJet
+
    ```bash
-    docker-compose up
+   docker-compose up
    ```
 
 6. ToolJet server is built using NestJS and the data such as application definitions are persisted on a postgres database. You can run the below command to seed the database.
+
    ```bash
    docker-compose run --rm server npm run db:seed
    ```
 
 7. ToolJet should now be served locally at `http://localhost:8082`. You can login using the default user created.
-  ```
-  email: dev@tooljet.io
-  password: password
-  ```
+   ```
+   email: dev@tooljet.io
+   password: password
+   ```
 
-
-8.  To shut down the containers,
-    ```bash
-     docker-compose stop
-    ```
+8. To shut down the containers,
+   ```bash
+   docker-compose stop
+   ```
 
 ## Making changes to the codebase
 
@@ -111,6 +117,7 @@ Caveat:
 
 Example:
 Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:
+
 ```
 FROM node:14.17.0-buster
 
@@ -137,32 +144,32 @@ COPY ./.env ../.env
 RUN ["chmod", "755", "entrypoint.sh"]
 
 ```
-Once you've updated the Dockerfile, rebuild the image by running `docker-compose build server`. After building the new image, start the services by running `docker-compose up`.
 
+Once you've updated the Dockerfile, rebuild the image by running `docker-compose build server`. After building the new image, start the services by running `docker-compose up`.
 
 ## Running tests
 
 Test config picks up config from `.env.test` file at the root of the project.
 
 Run the following command to create and migrate data for test db
+
 ```bash
 docker-compose run --rm -e NODE_ENV=test server npm run db:create
 docker-compose run --rm -e NODE_ENV=test server npm run db:migrate
 ```
 
 To run the unit tests
-
 ```bash
-$ docker-compose --rm run server npm run test
+docker-compose --rm run server npm run test
 ```
 
 To run e2e tests
-
 ```bash
 docker-compose run --rm server npm run test:e2e
 ```
 
 To run a specific unit test
+
 ```bash
 docker-compose run --rm server npm run test <path-to-file>
 ```

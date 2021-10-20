@@ -47,5 +47,10 @@ If you're setting this environment variable, please make sure that the value doe
 simply be `yourdomain.com`.
 :::
 
+:::info
+### Restrict signup via SSO
+Set the environment variable `SSO_DISABLE_SIGNUP` to `true` to ensure that users can only log in and not sign up via SSO. If this variable is set to `true`, only those users who have already signed up, or the ones that are invited, can access ToolJet via SSO.
+:::
+
 <br />
 The Google sign-in button will now be available in your ToolJet login screen.
