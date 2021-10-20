@@ -9,11 +9,6 @@ const API_URL = {
   development: 'http://localhost:3000',
 };
 
-const ASSET_PATH = {
-  production: 'https://app.tooljet.io/',
-  development: '/public/',
-};
-
 module.exports = {
   mode: 'development',
   target: 'web',
@@ -93,14 +88,13 @@ module.exports = {
     historyApiFallback: true,
   },
   output: {
-    publicPath: '/',
+    publicPath: process.env.ASSET_PATH || '/',
     path: path.resolve(__dirname, 'build'),
   },
   externals: {
     // global app config object
     config: JSON.stringify({
       apiUrl: `${API_URL[environment] || ''}/api`,
-      assetPath: ASSET_PATH[environment],
       SERVER_IP: process.env.SERVER_IP,
     }),
   },
