@@ -31,6 +31,9 @@ export class GroupPermission extends BaseEntity {
   @Column({ default: false })
   app_create: boolean;
 
+  @Column({ default: false })
+  app_delete: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
