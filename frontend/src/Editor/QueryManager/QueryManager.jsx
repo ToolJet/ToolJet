@@ -67,8 +67,17 @@ let QueryManager = class QueryManager extends React.Component {
     );
   };
 
-  componentWillReceiveProps(nextProps) {
-    this.setStateFromProps(nextProps);
+  static getDerivedStateFromProps(props, state) { 
+    if (props !== state) {
+      return props;
+    }
+    return null;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props !== prevProps) {
+      this.setStateFromProps(prevProps)
+    }
   }
 
   componentDidMount() {
