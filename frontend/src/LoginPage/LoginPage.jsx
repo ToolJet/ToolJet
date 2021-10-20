@@ -90,7 +90,7 @@ class LoginPage extends React.Component {
                   <input
                     onChange={this.handleChange}
                     name="password"
-                    type="password"
+                    type={this.state.showPassword ?"text" : "password"}
                     className="form-control"
                     placeholder="Password"
                     autoComplete="off"
