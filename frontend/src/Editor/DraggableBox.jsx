@@ -57,7 +57,7 @@ function getStyles(left, top, isDragging, component, isSelectedComponent, curren
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
     height: isDragging ? 0 : '100%',
-    width: computeWidth(currentLayoutOptions)
+    width: computeWidth(currentLayoutOptions),
   };
 }
 
@@ -89,7 +89,7 @@ export const DraggableBox = function DraggableBox({
   deviceWindowWidth,
   isSelectedComponent,
   darkMode,
-  canvasWidth
+  canvasWidth,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
@@ -179,7 +179,10 @@ export const DraggableBox = function DraggableBox({
   }
 
   return (
-    <div className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'} style={!inCanvas ? {} : { width: computeWidth() }}>
+    <div
+      className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'}
+      style={!inCanvas ? {} : { width: computeWidth() }}
+    >
       {inCanvas ? (
         <div
           style={getStyles(left, top, isDragging, component, isSelectedComponent, currentLayoutOptions)}
@@ -191,11 +194,11 @@ export const DraggableBox = function DraggableBox({
             style={{ ...style }}
             resizeGrid={[canvasWidth / 43, 10]}
             size={{
-              width: canvasWidth * currentLayoutOptions.width / 100,
+              width: (canvasWidth * currentLayoutOptions.width) / 43,
               height: currentLayoutOptions.height,
             }}
             position={{
-              x: currentLayoutOptions ? (currentLayoutOptions.left * canvasWidth / 100) : 0,
+              x: currentLayoutOptions ? (currentLayoutOptions.left * canvasWidth) / 100 : 0,
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}

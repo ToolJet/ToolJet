@@ -38,7 +38,7 @@ export const Container = ({
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     height: 2400,
     position: 'absolute',
-    backgroundSize: `${canvasWidth / 43}px 10px`
+    backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
   const components = appDefinition.components;
@@ -84,11 +84,11 @@ export const Container = ({
   });
 
   function convertXToPercentage(x, canvasWidth) {
-    return (x * 100 / canvasWidth);
+    return (x * 100) / canvasWidth;
   }
 
   function convertXFromPercentage(x, canvasWidth) {
-    return x * canvasWidth / 100;
+    return (x * canvasWidth) / 100;
   }
 
   useEffect(() => {
@@ -177,7 +177,6 @@ export const Container = ({
             [left, top] = doSnapToGrid(canvasWidth, left, top);
           }
 
-
           left = (left * 100) / canvasWidth;
 
           if (item.currentLayout === 'mobile') {
@@ -227,11 +226,11 @@ export const Container = ({
     const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     const canvasWidth = boundingRect?.width;
 
-    width = width + (deltaWidth * 100 / canvasWidth); // convert the width delta to percentage
+    width = Math.round(width + (deltaWidth * 43) / canvasWidth); // convert the width delta to percentage
     height = height + deltaHeight;
 
     top = y;
-    left = (x * 100 / canvasWidth);
+    left = (x * 100) / canvasWidth;
 
     let newBoxes = {
       ...boxes,
