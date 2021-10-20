@@ -679,6 +679,7 @@ class Editor extends React.Component {
           </div>
           <div className="sub-section">
             <LeftSidebar
+              currentVersionId={this.state?.editingVersion?.id}
               errorLogs={currentState.errors}
               queries={currentState.queries}
               components={currentState.components}
