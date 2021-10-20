@@ -1760,6 +1760,11 @@ input:focus-visible {
   }
 }
 
+.user-email:hover {
+  text-decoration: none;
+  cursor: text;
+}
+
 .theme-dark {
   .navbar .navbar-nav .active > .nav-link,
   .theme-dark .navbar .navbar-nav .nav-link.active,
