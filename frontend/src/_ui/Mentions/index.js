@@ -4,7 +4,7 @@ import { organizationService } from '@/_services';
 
 import { MentionsInput, Mention } from 'react-mentions';
 
-const { emojis } = require('./emojis.json');
+// const { emojis } = require('./emojis.json');
 
 const Mentions = ({ value, setValue, placeholder }) => {
   const [users, setUsers] = React.useState([]);
@@ -23,12 +23,13 @@ const Mentions = ({ value, setValue, placeholder }) => {
   const queryEmojis = (query) => {
     if (query.length === 0) return;
 
-    const matches = emojis
-      .filter((emoji) => {
-        return emoji.name.indexOf(query.toLowerCase()) > -1;
-      })
-      .slice(0, 10);
-    return matches.map(({ emoji }) => ({ id: emoji }));
+    return;
+    // const matches = emojis
+    //   .filter((emoji) => {
+    //     return emoji.name.indexOf(query.toLowerCase()) > -1;
+    //   })
+    //   .slice(0, 10);
+    // return matches.map(({ emoji }) => ({ id: emoji }));
   };
   return (
     <MentionsInput
