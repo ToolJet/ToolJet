@@ -66,8 +66,8 @@ const imports = [
   OrganizationsModule,
   CaslModule,
   MetaModule,
-  CommentModule,
   ThreadModule,
+  CommentModule,
   EventsModule,
   GroupPermissionsModule,
 ];

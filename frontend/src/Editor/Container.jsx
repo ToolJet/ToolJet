@@ -37,6 +37,7 @@ export const Container = ({
   selectedComponent,
   darkMode,
   showComments,
+  currentVersionId,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
@@ -284,6 +285,7 @@ export const Container = ({
       appId: router.query.id,
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY,
+      currentVersionId,
     });
     addNewThread(data);
   };
@@ -301,6 +303,7 @@ export const Container = ({
       appId: router.query.id,
       x,
       y: y - 130,
+      currentVersionId,
     });
     addNewThread(data);
   };
@@ -315,7 +318,7 @@ export const Container = ({
         'cursor-text': showComments,
       })}
     >
-      {showComments && <Comments newThread={newThread} />}
+      {showComments && <Comments newThread={newThread} currentVersionId={currentVersionId} />}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =

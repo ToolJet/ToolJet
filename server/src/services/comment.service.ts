@@ -25,10 +25,11 @@ export class CommentService {
     return await this.commentRepository.createComment(createCommentDto, id, organizationId);
   }
 
-  public async getComments(threadId: string): Promise<Comment[]> {
+  public async getComments(threadId: string, currentVersionId: string): Promise<Comment[]> {
     return await this.commentRepository.find({
       where: {
         threadId,
+        currentVersionId,
       },
       order: {
         createdAt: 'ASC',

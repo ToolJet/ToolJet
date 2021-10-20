@@ -11,7 +11,7 @@ import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 
-const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads }) => {
+const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, currentVersionId }) => {
   const [loading, setLoading] = React.useState(true);
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
@@ -40,7 +40,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads }
   }, [trigger]);
 
   async function fetchData() {
-    const { data } = await commentsService.getComments(threadId);
+    const { data } = await commentsService.getComments(threadId, currentVersionId);
     setThread(data);
     setLoading(false);
   }
@@ -66,6 +66,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads }
     await commentsService.createComment({
       threadId,
       comment,
+      currentVersionId,
     });
     socket.send(
       JSON.stringify({

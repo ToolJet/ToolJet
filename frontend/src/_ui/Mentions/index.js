@@ -4,7 +4,7 @@ import { organizationService } from '@/_services';
 
 import { MentionsInput, Mention } from 'react-mentions';
 
-import { emojis } from './emojis.json';
+const { emojis } = require('./emojis.json');
 
 const Mentions = ({ value, setValue, placeholder }) => {
   const [users, setUsers] = React.useState([]);

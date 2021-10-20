@@ -6,7 +6,7 @@ import { ThreadService } from '../../services/thread.service';
 import { ThreadRepository } from '../../repositories/thread.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ThreadRepository])], // add this
+  imports: [TypeOrmModule.forFeature([ThreadRepository])],
   controllers: [ThreadController],
   providers: [ThreadService],
 })

@@ -4,8 +4,8 @@ import HttpClient from '@/_helpers/http-client';
 // TODO: use singleton pattern and move it to a static variable on page load
 const adapter = new HttpClient();
 
-function getThreads(appId) {
-  return adapter.get(`/threads/${appId}/all`);
+function getThreads(appId, currentVersionId) {
+  return adapter.get(`/threads/${appId}/all?currentVersionId=${currentVersionId}`);
 }
 
 function createThread(data) {
@@ -16,8 +16,8 @@ function updateThread(threadId, data) {
   return adapter.patch(`/threads/edit/${threadId}`, data);
 }
 
-function getComments(threadId) {
-  return adapter.get(`/comments/${threadId}/all`);
+function getComments(threadId, currentVersionId) {
+  return adapter.get(`/comments/${threadId}/all?currentVersionId=${currentVersionId}`);
 }
 
 function createComment(data) {

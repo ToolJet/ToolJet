@@ -92,6 +92,7 @@ class Editor extends React.Component {
     this.fetchApps(0);
 
     appService.getApp(appId).then((data) => {
+      console.log('2424', data);
       const dataDefinition = data.definition || { components: {} };
       this.setState(
         {
@@ -697,6 +698,7 @@ class Editor extends React.Component {
                   {defaultComponentStateComputed && (
                     <Container
                       showComments={showComments}
+                      currentVersionId={app?.current_version_id}
                       appDefinition={appDefinition}
                       appDefinitionChanged={this.appDefinitionChanged}
                       snapToGrid={true}

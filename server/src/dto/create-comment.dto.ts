@@ -12,4 +12,7 @@ export class CreateCommentDTO {
 
   @IsUUID()
   organizationId: string;
+
+  @IsString()
+  currentVersionId: string;
 }

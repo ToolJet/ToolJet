@@ -23,8 +23,8 @@ export class CommentController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:commentId/all')
-  public async getComments(@Param('commentId') commentId: string): Promise<Comment[]> {
-    const comments = await this.commentService.getComments(commentId);
+  public async getComments(@Param('commentId') commentId: string, @Query() query): Promise<Comment[]> {
+    const comments = await this.commentService.getComments(commentId, query.commentVersionId);
     return comments;
   }
 

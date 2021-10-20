@@ -1,8 +1,9 @@
-import { Controller, Request, Req, Post, Body, Get, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Request, Req, Post, Body, Get, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { ThreadService } from '../services/thread.service';
 import { CreateThreadDTO } from '../dto/create-thread.dto';
 import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
+// import { AppsService } from '../services/apps.service';
 
 @Controller('threads')
 export class ThreadController {
@@ -17,8 +18,8 @@ export class ThreadController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:appId/all')
-  public async getThreads(@Request() req, @Param('appId') appId: string): Promise<Thread[]> {
-    const threads = await this.threadService.getThreads(appId, req.user.organization.id);
+  public async getThreads(@Request() req, @Param('appId') appId: string, @Query() query): Promise<Thread[]> {
+    const threads = await this.threadService.getThreads(appId, req.user.organization.id, query.currentVersionId);
     return threads;
   }
 

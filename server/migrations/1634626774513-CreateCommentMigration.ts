@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class CreateCommentMigration1632740456613 implements MigrationInterface {
+export class CreateCommentMigration1634626774513 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -17,6 +17,11 @@ export class CreateCommentMigration1632740456613 implements MigrationInterface {
             name: 'thread_id',
             type: 'uuid',
             isNullable: false,
+          },
+          {
+            name: 'current_version_id',
+            type: 'varchar',
+            isNullable: true,
           },
           {
             name: 'organization_id',

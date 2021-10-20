@@ -17,6 +17,9 @@ export class Thread extends BaseEntity {
   @Column({ name: 'app_id' })
   appId: string;
 
+  @Column({ name: 'current_version_id' })
+  currentVersionId: string;
+
   @Column({ name: 'user_id' })
   userId: string;
 
