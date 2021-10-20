@@ -10,7 +10,7 @@ import TabContent from './Content';
 
 import useRouter from '@/_hooks/use-router';
 
-const CommentNotifications = ({ toggleComments }) => {
+const CommentNotifications = ({ toggleComments, currentVersionId }) => {
   const [notifications, setNotifications] = React.useState([]);
   const [key, setKey] = React.useState('active');
 
@@ -18,7 +18,7 @@ const CommentNotifications = ({ toggleComments }) => {
 
   async function fetchData(k) {
     const isResolved = k === 'resolved';
-    const { data } = await commentsService.getNotifications(router.query.id, isResolved);
+    const { data } = await commentsService.getNotifications(router.query.id, isResolved, currentVersionId);
     setNotifications(data);
   }
   React.useEffect(() => {

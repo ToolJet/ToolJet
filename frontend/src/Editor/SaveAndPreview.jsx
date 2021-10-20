@@ -54,6 +54,7 @@ class SaveAndPreview extends React.Component {
         containerId: this.state.appId,
       });
       this.fetchVersions();
+      this.props.fetchApp();
       // eslint-disable-next-line no-undef
       this.props.setAppDefinitionFromVersion(version);
     });

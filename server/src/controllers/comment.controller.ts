@@ -24,21 +24,29 @@ export class CommentController {
   @UseGuards(JwtAuthGuard)
   @Get('/:commentId/all')
   public async getComments(@Param('commentId') commentId: string, @Query() query): Promise<Comment[]> {
-    const comments = await this.commentService.getComments(commentId, query.commentVersionId);
+    const comments = await this.commentService.getComments(commentId, query.currentVersionId);
     return comments;
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/:orgId/all')
-  public async getOrganizationThreads(@Param('orgId') orgId: string, @Req() req: Request): Promise<Comment[]> {
-    const threads = await this.commentService.getOrganizationComments(orgId);
+  @Get('/:organizationId/all')
+  public async getOrganizationThreads(
+    @Param('organizationId') organizationId: string,
+    @Query() query
+  ): Promise<Comment[]> {
+    const threads = await this.commentService.getOrganizationComments(organizationId, query.currentVersionId);
     return threads;
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/:appId/notifications')
   public async getNotifications(@Request() req, @Param('appId') appId: string, @Query() query): Promise<Comment[]> {
-    const comments = await this.commentService.getNotifications(appId, req.user.id, query.isResolved);
+    const comments = await this.commentService.getNotifications(
+      appId,
+      req.user.id,
+      query.isResolved,
+      query.currentVersionId
+    );
     return comments;
   }
 

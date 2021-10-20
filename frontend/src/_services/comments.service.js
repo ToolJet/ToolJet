@@ -32,8 +32,8 @@ function deleteComment(commentId) {
   return adapter.delete(`/comments/delete/${commentId}`);
 }
 
-function getNotifications(appId, isResolved) {
-  return adapter.get(`/comments/${appId}/notifications?isResolved=${isResolved}`);
+function getNotifications(appId, isResolved, currentVersionId) {
+  return adapter.get(`/comments/${appId}/notifications?isResolved=${isResolved}&currentVersionId=${currentVersionId}`);
 }
 
 export const commentsService = {

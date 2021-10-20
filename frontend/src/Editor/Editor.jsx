@@ -88,29 +88,8 @@ class Editor extends React.Component {
   }
 
   componentDidMount() {
-    const appId = this.props.match.params.id;
     this.fetchApps(0);
-
-    appService.getApp(appId).then((data) => {
-      console.log('2424', data);
-      const dataDefinition = data.definition || { components: {} };
-      this.setState(
-        {
-          app: data,
-          isLoading: false,
-          editingVersion: data.editing_version,
-          appDefinition: { ...this.state.appDefinition, ...dataDefinition },
-          slug: data.slug,
-        },
-        () => {
-          computeComponentState(this, this.state.appDefinition.components).then(() => {
-            console.log('Default component state computed and set');
-            this.runQueries(data.data_queries);
-          });
-        }
-      );
-    });
-
+    this.fetchApp();
     this.fetchDataSources();
     this.fetchDataQueries();
     this.setState({
@@ -197,6 +176,29 @@ class Editor extends React.Component {
         isLoading: false,
       })
     );
+  };
+
+  fetchApp = () => {
+    const appId = this.props.match.params.id;
+
+    appService.getApp(appId).then((data) => {
+      const dataDefinition = data.definition || { components: {} };
+      this.setState(
+        {
+          app: data,
+          isLoading: false,
+          editingVersion: data.editing_version,
+          appDefinition: { ...this.state.appDefinition, ...dataDefinition },
+          slug: data.slug,
+        },
+        () => {
+          computeComponentState(this, this.state.appDefinition.components).then(() => {
+            console.log('Default component state computed and set');
+            this.runQueries(data.data_queries);
+          });
+        }
+      );
+    });
   };
 
   setAppDefinitionFromVersion = (version) => {
@@ -667,6 +669,7 @@ class Editor extends React.Component {
                         onVersionDeploy={this.onVersionDeploy}
                         editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null}
                         setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                        fetchApp={this.fetchApp}
                       />
                     )}
                   </div>
@@ -698,7 +701,7 @@ class Editor extends React.Component {
                   {defaultComponentStateComputed && (
                     <Container
                       showComments={showComments}
-                      currentVersionId={app?.current_version_id}
+                      currentVersionId={this.state?.editingVersion?.id}
                       appDefinition={appDefinition}
                       appDefinitionChanged={this.appDefinitionChanged}
                       snapToGrid={true}
@@ -879,7 +882,12 @@ class Editor extends React.Component {
                 ></WidgetManager>
               )}
             </div>
-            {showComments && <CommentNotifications toggleComments={this.toggleComments} />}
+            {showComments && (
+              <CommentNotifications
+                currentVersionId={this.state?.editingVersion?.id}
+                toggleComments={this.toggleComments}
+              />
+            )}
           </div>
         </DndProvider>
       </div>

@@ -37,10 +37,11 @@ export class CommentService {
     });
   }
 
-  public async getOrganizationComments(organizationId: string): Promise<Comment[]> {
+  public async getOrganizationComments(organizationId: string, currentVersionId: string): Promise<Comment[]> {
     return await this.commentRepository.find({
       where: {
         organizationId,
+        currentVersionId,
       },
       order: {
         createdAt: 'ASC',
@@ -48,11 +49,17 @@ export class CommentService {
     });
   }
 
-  public async getNotifications(appId: string, userId: string, isResolved = false): Promise<Comment[]> {
+  public async getNotifications(
+    appId: string,
+    userId: string,
+    isResolved = false,
+    currentVersionId: string
+  ): Promise<Comment[]> {
     return await this.commentRepository.find({
       where: {
         userId: Not(userId),
         thread: { appId, isResolved },
+        currentVersionId,
       },
       relations: ['thread'],
     });
