@@ -262,6 +262,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onChange',
       'onSelectionChange',
       'onSelect',
+      'onClick',
     ].includes(eventName)
   ) {
     const { component } = options;
