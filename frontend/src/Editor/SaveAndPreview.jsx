@@ -60,6 +60,11 @@ class SaveAndPreview extends React.Component {
     });
   };
 
+  editVersion = (version) => () => {
+    this.props.setAppDefinitionFromVersion(version);
+    this.props.fetchApp();
+  };
+
   saveVersion = (versionId) => {
     this.setState({ savingVersionId: versionId });
     appVersionService.save(this.props.appId, versionId, this.props.appDefinition).then(() => {
@@ -83,6 +88,7 @@ class SaveAndPreview extends React.Component {
         containerId: this.state.appId,
       });
 
+      this.props.fetchApp();
       this.props.onVersionDeploy(versionId);
     });
   };
@@ -178,7 +184,7 @@ class SaveAndPreview extends React.Component {
                               </button>
                               <button
                                 className="btn btn btn-sm mx-2 text-muted"
-                                onClick={() => this.props.setAppDefinitionFromVersion(version)}
+                                onClick={this.editVersion(version)}
                                 disabled={this.props.editingVersionId === version.id}
                               >
                                 edit
