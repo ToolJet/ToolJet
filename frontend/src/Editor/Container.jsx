@@ -220,15 +220,13 @@ export const Container = ({
     let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
     top = y;
-    left = x;
+    left = (x * 100 / canvasWidth);
 
-    width = width + deltaWidth;
+    const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    const canvasWidth = boundingRect?.width;
+
+    width = width + (deltaWidth * 100 / canvasWidth); // convert the width delta to percentage
     height = height + deltaHeight;
-
-    const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-    const canvasWidth = bundingRect?.width;
-
-    width = (width * 100) / canvasWidth;
 
     let newBoxes = {
       ...boxes,

@@ -192,7 +192,7 @@ export const DraggableBox = function DraggableBox({
             style={{ ...style }}
             resizeGrid={[canvasWidth / 43, 10]}
             size={{
-              width: computeWidth(),
+              width: canvasWidth * currentLayoutOptions.width / 100,
               height: currentLayoutOptions.height,
             }}
             position={{
