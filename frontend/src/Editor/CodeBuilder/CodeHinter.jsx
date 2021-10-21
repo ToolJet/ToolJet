@@ -82,7 +82,10 @@ export function CodeHinter({
   };
 
   const getPreview = () => {
-    const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
+    const _currentValue = ignoreBraces ? `{{${currentValue}}}` : currentValue;
+    console.log('preview ==> 🚀', _currentValue);
+    // console.log('preview ==> 🦑', currentValue);
+    const [preview, error] = resolveReferences(_currentValue, realState, null, {}, true);
 
     if (error) {
       return (
@@ -130,13 +133,16 @@ export function CodeHinter({
           height={height}
           onFocus={() => setFocused(true)}
           onBlur={(editor) => {
-            const value = editor.getValue();
+            let value = editor.getValue();
+            if (ignoreBraces) {
+              value = `{{${value}}}`;
+            }
             onChange(value);
             setFocused(false);
           }}
           onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
-          onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
           options={options}
+          onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
         />
       </div>
       {enablePreview && getPreview()}

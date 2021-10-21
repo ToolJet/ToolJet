@@ -132,7 +132,7 @@ export class DataQueriesService {
         object = options[object];
         return object;
       } else {
-        const variables = object.match(/\{\{(.*)?\}\}/g);
+        const variables = object.match(/\{\{(.*?)\}\}/g);
 
         if (variables?.length > 0) {
           for (const variable of variables) {

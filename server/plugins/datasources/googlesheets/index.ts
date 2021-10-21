@@ -72,6 +72,9 @@ export default class GooglesheetsQueryService implements QueryService {
     const spreadsheetRange = queryOptions['spreadsheet_range'] ? queryOptions['spreadsheet_range'] : 'A1:Z500';
     const accessToken = sourceOptions['access_token'];
     const queryOptionFilter = { key: queryOptions['filterOption'], value: queryOptions['filterData'] };
+
+    console.log('queryOptions', queryOptions);
+
     try {
       switch (operation) {
         case 'info':

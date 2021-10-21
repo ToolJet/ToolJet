@@ -206,8 +206,12 @@ class Googlesheets extends React.Component {
                 lineNumbers={true}
                 className="codehinter-query-editor-input"
                 theme={this.props.darkMode ? 'monokai' : 'default'}
-                onChange={(value) => changeOption(this, 'body', value)}
+                onChange={(value) => {
+                  // const val = `{{${value}}}`;
+                  changeOption(this, 'body', value);
+                }}
                 enablePreview={true}
+                ignoreBraces={true}
               />
             </div>
           </>
