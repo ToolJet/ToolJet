@@ -123,6 +123,7 @@ export class FoldersService {
       viewableApps = [];
     } else {
       viewableApps = await createQueryBuilder(App, 'apps')
+        .innerJoinAndSelect('apps.user', 'user')
         .innerJoin('apps.groupPermissions', 'group_permissions')
         .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
         .innerJoin(
