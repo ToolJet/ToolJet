@@ -612,6 +612,7 @@ class Editor extends React.Component {
                     <button
                       type="button"
                       className="btn btn-light"
+                      data-tip="Desktop view"
                       onClick={() => this.setState({ currentLayout: 'desktop' })}
                       disabled={currentLayout === 'desktop'}
                     >
@@ -620,6 +621,7 @@ class Editor extends React.Component {
                     <button
                       type="button"
                       className="btn btn-light"
+                      data-tip="Mobile view"
                       onClick={() => this.setState({ currentLayout: 'mobile' })}
                       disabled={currentLayout === 'mobile'}
                     >
