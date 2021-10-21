@@ -840,8 +840,8 @@ export function Table({
                             undefined
                           ) {
                             console.log('componentState.changeSet', componentState.changeSet);
-                            cellProps.style.backgroundColor = '#ffffde';
-                            cellProps.style['--tblr-table-accent-bg'] = '#ffffde';
+                            cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
+                            cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
                           }
                         }
                       }
