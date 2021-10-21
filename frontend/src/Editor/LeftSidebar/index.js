@@ -50,7 +50,7 @@ export const LeftSidebar = ({
       <div className="left-sidebar-stack-bottom">
         <LeftSidebarZoom onZoomChanged={onZoomChanged} />
         <div className="left-sidebar-item no-border">
-          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
+          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
       </div>
