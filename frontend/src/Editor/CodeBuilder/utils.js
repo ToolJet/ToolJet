@@ -32,7 +32,6 @@ export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false
 
   const split = sliced.split(splitter);
   const lastWord = split[split.length - 1];
-  // console.log('lastWord', lastWord);
   return lastWord;
 }
 

@@ -73,8 +73,6 @@ export default class GooglesheetsQueryService implements QueryService {
     const accessToken = sourceOptions['access_token'];
     const queryOptionFilter = { key: queryOptions['filterOption'], value: queryOptions['filterData'] };
 
-    console.log('queryOptions', queryOptions);
-
     try {
       switch (operation) {
         case 'info':

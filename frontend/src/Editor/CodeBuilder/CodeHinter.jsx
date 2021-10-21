@@ -140,8 +140,8 @@ export function CodeHinter({
             setFocused(false);
           }}
           onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
-          options={options}
           onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+          options={options}
         />
       </div>
       {enablePreview && getPreview()}
