@@ -266,6 +266,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+
       value: { type: 'code', displayName: 'Default value' },
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
@@ -295,7 +296,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: '' },
+        value: { value: "Hello have a great {{moment().format('dddd')}} 👋" },
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
