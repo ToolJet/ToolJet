@@ -1263,34 +1263,24 @@ body {
     min-height: 70px;
   }
 }
-
-
-
-.code-hinter {
-  &:hover{
-    border: 1px solid #3c92dc !important;
-    // .pop-out-hinter {
-    //   // visibility: visible;
-    //   display: block;
-    // }
-  }
-  // &:active{
-  //   border: 1px solid #3c92dc !important;
-  // }
-
+.popup-btn {
+  display: none;
 }
-
-
-.pop-out-hinter {
-  // visibility: hidden;
-  // display: none;
-  // margin-top: -18%;
-  position: absolute;
-  // z-index: 1;
+.float{
+  position: relative;
+  margin-top: -24px!important;
   cursor: pointer;
+  z-index: 99999;
 }
+.code-hinter-container:hover {
+  .code-hinter{
+    border: 1px solid #3c92dc !important;
+  }
+  .popup-btn {
+    display: block!important;
+  }
 
-
+}
 
 .chart-data-input {
   .CodeMirror {
