@@ -47,10 +47,6 @@ class Googlesheets extends React.Component {
     );
   };
 
-  codeChange = (optionType, value) => {
-    changeOption(this, optionType, value);
-  };
-
   render() {
     const { options } = this.props;
 
