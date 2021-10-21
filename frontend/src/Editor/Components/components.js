@@ -48,9 +48,9 @@ export const componentTypes = [
           { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
       },
-      cellSpacing: {
+      cellSize: {
         type: 'select',
-        displayName: 'Cell spacing',
+        displayName: 'Cell size',
         options: [
           { name: 'Compact', value: 'compact' },
           { name: 'Spacious', value: 'spacious' },
@@ -101,7 +101,7 @@ export const componentTypes = [
         textColor: { value: undefined },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        cellSpacing: { value: 'compact' },
+        cellSize: { value: 'compact' },
       },
     },
   },

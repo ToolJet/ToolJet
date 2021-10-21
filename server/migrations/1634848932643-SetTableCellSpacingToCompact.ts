@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
 
-export class SetTableCellSpacingToCompact1634848932643 implements MigrationInterface {
+export class SetTablecellSizeToCompact1634848932643 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const queryBuilder = queryRunner.connection.createQueryBuilder();
@@ -19,7 +19,7 @@ export class SetTableCellSpacingToCompact1634848932643 implements MigrationInter
           const component = components[componentId];
 
           if (component.component.component === 'Table') {
-            component.component.definition.styles.cellSpacing = { value: 'compact' };
+            component.component.definition.styles.cellSize = { value: 'compact' };
             components[componentId] = {
               ...component,
               component: {
