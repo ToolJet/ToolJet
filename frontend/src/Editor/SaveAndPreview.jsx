@@ -151,6 +151,7 @@ class SaveAndPreview extends React.Component {
               </div>
             ) : (
               <div className="table-responsive">
+                {!versions?.length && !showVersionForm && !isLoading && <div>No versions yet.</div>}
                 <table className="table table-vcenter">
                   <tbody>
                     {versions.map((version) => (
@@ -177,7 +178,7 @@ class SaveAndPreview extends React.Component {
                               <button
                                 className="btn btn btn-sm mx-2 text-muted"
                                 onClick={() => this.props.setAppDefinitionFromVersion(version)}
-                                disabled={this.props.editingVersionId == version.id}
+                                disabled={this.props.editingVersionId === version.id}
                               >
                                 edit
                               </button>

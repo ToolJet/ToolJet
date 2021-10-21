@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 var tinycolor = require('tinycolor2');
 
-export const Button = function Button({ id, width, height, component, onComponentClick, currentState }) {
-  console.log('currentState', currentState);
-
+export const Button = function Button({ width, height, component, currentState, fireEvent }) {
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
@@ -48,10 +46,10 @@ export const Button = function Button({ id, width, height, component, onComponen
       style={computedStyles}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        fireEvent('onClick');
       }}
     >
-      {text}
+      {resolveReferences(text, currentState)}
     </button>
   );
 };

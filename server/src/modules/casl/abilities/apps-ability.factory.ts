@@ -3,6 +3,7 @@ import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectTyp
 import { Injectable } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { UsersService } from 'src/services/users.service';
 
 type Actions =
   | 'authorizeOauthForSource'
@@ -32,21 +33,36 @@ export type AppsAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class AppsAbilityFactory {
+  constructor(private usersService: UsersService) {}
+
   async appsActions(user: User, params: any) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppsAbility>);
 
-    // Only admins can update app params such as name, friendly url & visibility
-    if (user.isAdmin) {
-      can('updateParams', App, { organizationId: user.organizationId });
+    if (await this.usersService.userCan(user, 'create', 'App')) {
       can('createUsers', App, { organizationId: user.organizationId });
-      can('deleteApp', App, { organizationId: user.organizationId });
-    }
-
-    // Only developers and admins can create new versions
-    if (user.isAdmin || user.isDeveloper) {
       can('createApp', App);
       can('cloneApp', App, { organizationId: user.organizationId });
+    }
 
+    if (await this.usersService.userCan(user, 'read', 'App', params.id)) {
+      can('viewApp', App, { organizationId: user.organizationId });
+
+      can('fetchUsers', App, { organizationId: user.organizationId });
+      can('fetchVersions', App, { organizationId: user.organizationId });
+
+      can('runQuery', App, { organizationId: user.organizationId });
+      can('getQueries', App, { organizationId: user.organizationId });
+      can('previewQuery', App, { organizationId: user.organizationId });
+
+      // policies for datasources
+      can('getDataSources', App, { organizationId: user.organizationId });
+      can('authorizeOauthForSource', App, {
+        organizationId: user.organizationId,
+      });
+    }
+
+    if (await this.usersService.userCan(user, 'update', 'App', params.id)) {
+      can('updateParams', App, { organizationId: user.organizationId });
       can('createVersions', App, { organizationId: user.organizationId });
       can('updateVersions', App, { organizationId: user.organizationId });
 
@@ -58,24 +74,12 @@ export class AppsAbilityFactory {
       can('createDataSource', App, { organizationId: user.organizationId });
     }
 
-    // All organization users can view the app users
-    can('fetchUsers', App, { organizationId: user.organizationId });
-    can('fetchVersions', App, { organizationId: user.organizationId });
+    if (await this.usersService.userCan(user, 'delete', 'App', params.id)) {
+      can('deleteApp', App, { organizationId: user.organizationId });
+    }
 
-    // Can view public apps
     can('viewApp', App, { isPublic: true });
-    can('viewApp', App, { organizationId: user.organizationId });
-
-    // if app belongs to org, queries can be run
-    can('runQuery', App, { organizationId: user.organizationId });
-    can('getQueries', App, { organizationId: user.organizationId });
-    can('previewQuery', App, { organizationId: user.organizationId });
-
-    // policies for datasources
-    can('getDataSources', App, { organizationId: user.organizationId });
-    can('authorizeOauthForSource', App, {
-      organizationId: user.organizationId,
-    });
+    can('runQuery', App, { isPublic: true });
 
     return build({
       detectSubjectType: (item) => item.constructor as ExtractSubjectType<Subjects>,

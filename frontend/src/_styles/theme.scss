@@ -388,7 +388,6 @@ body {
           z-index: 3;
           width: 59.3%;
           margin-top: 0px;
-          padding: 0.5px;
         }
 
         .preview-header {
@@ -775,7 +774,7 @@ body {
   }
 
   .table-row:hover,
-  .table-row:focus-within {
+  .table-row:focus {
     background: rgba(lightBlue, 0.25);
   }
 
@@ -893,7 +892,6 @@ body {
 
 .jet-data-table::-webkit-scrollbar {
   background: transparent;
-  height: 0;
 }
 
 .jet-data-table:hover {
@@ -952,7 +950,7 @@ tr:focus {
 }
 
 .jet-container {
-  border-radius: 8px;
+
 }
 
 .select-search__option {
@@ -1762,6 +1760,11 @@ input:focus-visible {
   }
 }
 
+.user-email:hover {
+  text-decoration: none;
+  cursor: text;
+}
+
 .theme-dark {
   .navbar .navbar-nav .active > .nav-link,
   .theme-dark .navbar .navbar-nav .nav-link.active,
@@ -1796,6 +1799,9 @@ input:focus-visible {
 
   .card {
     background-color: #324156 !important;
+  }
+  .card .table tbody td a{
+    color: inherit;
   }
 
   .DateInput {
@@ -2013,6 +2019,13 @@ input:focus-visible {
   .editor .editor-sidebar .inspector .header {
     border: solid rgba(255, 255, 255, 0.09) !important;
     border-width: 0px 0px 1px 0px !important;
+    .input-icon .input-icon-addon img {
+        filter: invert(1);
+    }
+  }
+
+  .hr-text {
+    color: #fff !important;
   }
 
   .skeleton-line::after {
@@ -2186,7 +2199,7 @@ input[type='text'] {
 .dropdown-widget,
 .multiselect-widget {
   .select-search__input {
-    padding: 0.2375rem 0.75rem;
+    padding: 0.1375rem 0.75rem;
   }
 
   .select-search__options {
@@ -2209,4 +2222,36 @@ input[type='text'] {
 
 .event-action{
   filter: brightness(0) invert(0);
+}
+
+.DateRangePicker {
+  padding: 1.25px 5px;
+}
+
+.datepicker-widget {
+  .input-field { 
+    min-height: 26px;
+    padding: 0;
+    padding-left: 2px;
+  }
+}
+
+.daterange-picker-widget {
+  .DateInput_input {
+    min-height: 24px;
+    line-height: normal;
+    border-bottom: 0px;
+    font-size: 0.85rem;
+  }
+  .DateRangePicker {
+    padding: 0;
+  }
+
+  .DateRangePickerInput_arrow_svg {
+    height: 17px;
+  }
+}
+
+.fw-500 {
+  font-weight: 500;
 }

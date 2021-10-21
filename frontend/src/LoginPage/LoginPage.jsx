@@ -15,11 +15,16 @@ class LoginPage extends React.Component {
 
     this.state = {
       isLoading: false,
+      showPassword: false,
     };
   }
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
+  };
+
+  handleOnCheck = () => {
+    this.setState({ showPassword: !this.state.showPassword });
   };
 
   authUser = (e) => {
@@ -68,7 +73,7 @@ class LoginPage extends React.Component {
                   name="email"
                   type="email"
                   className="form-control"
-                  placeholder="Enter email"
+                  placeholder="Email"
                   data-testid="emailField"
                 />
               </div>
@@ -85,7 +90,7 @@ class LoginPage extends React.Component {
                   <input
                     onChange={this.handleChange}
                     name="password"
-                    type="password"
+                    type={this.state.showPassword ? 'text' : 'password'}
                     className="form-control"
                     placeholder="Password"
                     autoComplete="off"
@@ -93,6 +98,18 @@ class LoginPage extends React.Component {
                   />
                   <span className="input-group-text"></span>
                 </div>
+              </div>
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="check-input"
+                  name="check-input"
+                  onChange={this.handleOnCheck}
+                />
+                <label className="form-check-label" htmlFor="check-input">
+                  show password
+                </label>
               </div>
               <div className="form-footer">
                 <button

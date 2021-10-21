@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const RadioButton = function RadioButton({
@@ -48,6 +48,8 @@ export const RadioButton = function RadioButton({
     console.log(err);
   }
 
+  const value = currentState?.components[component?.name]?.value ?? parsedDefaultValue;
+
   let selectOptions = [];
 
   try {
@@ -68,36 +70,42 @@ export const RadioButton = function RadioButton({
     console.log(err);
   }
 
-  function onSelect(event) {
-    const selection = event.target.value;
+  function onSelect(selection) {
     onComponentOptionChanged(component, 'value', selection);
     if (selection) {
       onEvent('onSelectionChange', { component });
     }
   }
 
+  useEffect(() => {
+    onComponentOptionChanged(component, 'value', parsedDefaultValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parsedDefaultValue]);
+
   return (
     <div
       data-disabled={parsedDisabledState}
-      className="row"
+      className="row py-1"
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component);
       }}
     >
-      <span className="form-check-label form-check-label col-auto py-1" style={{ color: textColor }}>
+      <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
         {label}
       </span>
-      <div className="col py-1" onChange={(e) => onSelect(e)}>
+      <div className="col px-1 py-0 mt-0">
         {selectOptions.map((option, index) => (
           <label key={index} className="form-check form-check-inline">
             <input
+              style={{ marginTop: '1px' }}
               className="form-check-input"
-              defaultChecked={parsedDefaultValue === option.value}
+              checked={value === option.value}
               type="radio"
               value={option.value}
-              name="radio-options"
+              name={`${id}-radio-options`}
+              onChange={() => onSelect(option.value)}
             />
             <span className="form-check-label" style={{ color: textColor }}>
               {option.name}

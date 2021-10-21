@@ -56,7 +56,7 @@ export function runTransformation(_ref, rawData, transformation, query) {
     result = evalFunction(data, moment, _, currentState.components, currentState.queries, currentState.globals);
   } catch (err) {
     console.log('Transformation failed for query: ', query.name, err);
-    toast.error(err.message, { hideProgressBar: true });
+    result = { message: err.stack.split('\n')[0], status: 'failed', data: data };
   }
 
   return result;
@@ -67,7 +67,7 @@ export async function executeActionsForEventId(_ref, eventId, component, mode) {
   const filteredEvents = events.filter((event) => event.eventId === eventId);
 
   for (const event of filteredEvents) {
-    await executeAction(_ref, event, mode);
+    await executeAction(_ref, event, mode); // skipcq: JS-0032
   }
 }
 
@@ -98,6 +98,11 @@ async function copyToClipboard(text) {
 }
 
 function showModal(_ref, modalId, show) {
+  if (_.isEmpty(modalId)) {
+    console.log('No modal is associated with this event.');
+    return Promise.resolve();
+  }
+
   const modalMeta = _ref.state.appDefinition.components[modalId];
 
   const newState = {
@@ -115,9 +120,7 @@ function showModal(_ref, modalId, show) {
 
   _ref.setState(newState);
 
-  return new Promise(function (resolve, reject) {
-    resolve();
-  });
+  return Promise.resolve();
 }
 
 function executeAction(_ref, event, mode) {
@@ -125,10 +128,8 @@ function executeAction(_ref, event, mode) {
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState);
-        toast(message, { hideProgressBar: true });
-        return new Promise(function (resolve, reject) {
-          resolve();
-        });
+        toast(message, { hideProgressBar: true, type: event.alertType });
+        return Promise.resolve();
       }
 
       case 'run-query': {
@@ -139,9 +140,7 @@ function executeAction(_ref, event, mode) {
       case 'open-webpage': {
         const url = resolveReferences(event.url, _ref.state.currentState);
         window.open(url, '_blank');
-        return new Promise(function (resolve, reject) {
-          resolve();
-        });
+        return Promise.resolve();
       }
 
       case 'go-to-app': {
@@ -174,9 +173,7 @@ function executeAction(_ref, event, mode) {
             window.open(url, '_blank');
           }
         }
-        return new Promise(function (resolve, reject) {
-          resolve();
-        });
+        return Promise.resolve();
       }
 
       case 'show-modal':
@@ -189,9 +186,7 @@ function executeAction(_ref, event, mode) {
         const contentToCopy = resolveReferences(event.contentToCopy, _ref.state.currentState);
         copyToClipboard(contentToCopy);
 
-        return new Promise(function (resolve, reject) {
-          resolve();
-        });
+        return Promise.resolve();
       }
     }
   }
@@ -267,6 +262,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onChange',
       'onSelectionChange',
       'onSelect',
+      'onClick',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -451,6 +447,34 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
 
           if (dataQuery.options.enableTransformation) {
             finalData = runTransformation(_self, rawData, dataQuery.options.transformation, dataQuery);
+            if (finalData.status === 'failed') {
+              return _self.setState(
+                {
+                  currentState: {
+                    ..._self.state.currentState,
+                    queries: {
+                      ..._self.state.currentState.queries,
+                      [queryName]: {
+                        ..._self.state.currentState.queries[queryName],
+                        isLoading: false,
+                      },
+                    },
+                    errors: {
+                      ..._self.state.currentState.errors,
+                      [queryName]: {
+                        type: 'transformations',
+                        data: finalData,
+                        options: options,
+                      },
+                    },
+                  },
+                },
+                () => {
+                  resolve();
+                  onEvent(_self, 'onDataQueryFailure', { definition: { events: dataQuery.options.events } });
+                }
+              );
+            }
           }
 
           if (dataQuery.options.showSuccessNotification) {

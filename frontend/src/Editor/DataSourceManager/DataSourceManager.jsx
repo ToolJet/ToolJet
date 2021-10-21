@@ -41,7 +41,7 @@ class DataSourceManager extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.selectedDataSource != this.props.selectedDataSource) {
+    if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
@@ -202,7 +202,7 @@ class DataSourceManager extends React.Component {
             {!selectedDataSource && (
               <div>
                 <div className="row row-deck">
-                  <h4 className="text-muted mb-2">DATABASES</h4>
+                  <h4 className="mb-2">DATABASES</h4>
                   {DataBaseSources.map((dataSource) => (
                     <div className="col-md-2" key={dataSource.name}>
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
@@ -225,7 +225,7 @@ class DataSourceManager extends React.Component {
                   ))}
                 </div>
                 <div className="row row-deck mt-2">
-                  <h4 className="text-muted mb-2">APIS</h4>
+                  <h4 className="mb-2">APIS</h4>
                   {ApiSources.map((dataSource) => (
                     <div className="col-md-2" key={dataSource.name}>
                       <div className="card" role="button" onClick={() => this.selectDataSource(dataSource)}>

@@ -86,7 +86,7 @@ module.exports = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} ToolJet.`,
+      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.`,
     },
   },
   presets: [

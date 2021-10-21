@@ -116,7 +116,6 @@ export const Container = ({
             deltaY = delta.y;
           }
 
-          componentData = item.component;
           left = Math.round(currentLayoutOptions.left + deltaX);
           top = Math.round(currentLayoutOptions.top + deltaY);
 
@@ -253,10 +252,6 @@ export const Container = ({
     }
   }
 
-  React.useEffect(() => {
-    console.log('current component => ', selectedComponent);
-  }, [selectedComponent]);
-
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? 'show-grid' : ''}`}>
       {Object.keys(boxes).map((key) => {
@@ -315,7 +310,12 @@ export const Container = ({
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '10%' }}>
           <center className="text-muted">
-            You haven&apos;t added any components yet. Drag components from the right sidebar and drop here.
+            You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
+            our{' '}
+            <a href="https://docs.tooljet.io/docs/tutorial/adding-widget" target="_blank" rel="noreferrer">
+              guide
+            </a>{' '}
+            on adding widgets.
           </center>
         </div>
       )}
