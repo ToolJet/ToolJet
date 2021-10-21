@@ -266,7 +266,8 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: { type: 'code', displayName: "Default value" },
+
+      value: { type: 'code', displayName: 'Default value' },
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     validation: {
