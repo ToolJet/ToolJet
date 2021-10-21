@@ -129,7 +129,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        text: { value: `Button` },
+        text: { value: 'Hello have a great {{moment().format('dddd')}}   👋   ' },
         visible: { value: true },
         loadingState: { value: `{{false}}` },
       },
