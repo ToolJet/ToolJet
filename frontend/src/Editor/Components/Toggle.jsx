@@ -37,8 +37,8 @@ export const ToggleSwitch = ({
   const toggleSwitchColorProperty = component.definition.styles.toggleSwitchColor;
   const toggleSwitchColor = toggleSwitchColorProperty ? toggleSwitchColorProperty.value : '#3c92dc';
   const textColor = textColorProperty ? textColorProperty.value : '#000';
-  const widgetVisibility = component.definition.styles.visibility.value ?? true;
-  const disabledState = component.definition.styles.disabledState.value ?? false;
+  const widgetVisibility = component.definition.styles.visibility?.value ?? true;
+  const disabledState = component.definition.styles.disabledState?.value ?? false;
   
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
