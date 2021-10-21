@@ -37,7 +37,7 @@ export const Container = ({
   selectedComponent,
   darkMode,
   showComments,
-  currentVersionId,
+  appVersionsId,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
@@ -279,18 +279,24 @@ export const Container = ({
     console.log('current component => ', selectedComponent);
   }, [selectedComponent]);
 
-  const handleAddComment = async (e) => {
+  const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
     const { data } = await commentsService.createThread({
       appId: router.query.id,
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY,
-      currentVersionId,
+      appVersionsId,
     });
+    // socket.send(
+    //   JSON.stringify({
+    //     event: 'events',
+    //     data: threadId,
+    //   })
+    // );
     addNewThread(data);
   };
 
-  const handleAddCommentOnComponent = async (_, __, e) => {
+  const handleAddThreadOnComponent = async (_, __, e) => {
     e.stopPropogation && e.stopPropogation();
 
     const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
@@ -303,14 +309,14 @@ export const Container = ({
       appId: router.query.id,
       x,
       y: y - 130,
-      currentVersionId,
+      appVersionsId,
     });
     addNewThread(data);
   };
 
   return (
     <div
-      {...(showComments && { onClick: handleAddComment })}
+      {...(showComments && { onClick: handleAddThread })}
       ref={drop}
       style={styles}
       className={cx('real-canvas', {
@@ -318,7 +324,7 @@ export const Container = ({
         'cursor-text': showComments,
       })}
     >
-      {showComments && <Comments newThread={newThread} currentVersionId={currentVersionId} />}
+      {showComments && <Comments newThread={newThread} appVersionsId={appVersionsId} />}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =
@@ -327,7 +333,7 @@ export const Container = ({
         if (!box.parent && canShowInCurrentLayout) {
           return (
             <DraggableBox
-              onComponentClick={showComments ? handleAddCommentOnComponent : onComponentClick}
+              onComponentClick={showComments ? handleAddThreadOnComponent : onComponentClick}
               onEvent={onEvent}
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}

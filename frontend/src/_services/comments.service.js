@@ -4,8 +4,8 @@ import HttpClient from '@/_helpers/http-client';
 // TODO: use singleton pattern and move it to a static variable on page load
 const adapter = new HttpClient();
 
-function getThreads(appId, currentVersionId) {
-  return adapter.get(`/threads/${appId}/all?currentVersionId=${currentVersionId}`);
+function getThreads(appId, appVersionsId) {
+  return adapter.get(`/threads/${appId}/all?appVersionsId=${appVersionsId}`);
 }
 
 function createThread(data) {
@@ -16,8 +16,8 @@ function updateThread(threadId, data) {
   return adapter.patch(`/threads/edit/${threadId}`, data);
 }
 
-function getComments(threadId, currentVersionId) {
-  return adapter.get(`/comments/${threadId}/all?currentVersionId=${currentVersionId}`);
+function getComments(threadId, appVersionsId) {
+  return adapter.get(`/comments/${threadId}/all?appVersionsId=${appVersionsId}`);
 }
 
 function createComment(data) {
@@ -32,8 +32,8 @@ function deleteComment(commentId) {
   return adapter.delete(`/comments/delete/${commentId}`);
 }
 
-function getNotifications(appId, isResolved, currentVersionId) {
-  return adapter.get(`/comments/${appId}/notifications?isResolved=${isResolved}&currentVersionId=${currentVersionId}`);
+function getNotifications(appId, isResolved, appVersionsId) {
+  return adapter.get(`/comments/${appId}/notifications?isResolved=${isResolved}&appVersionsId=${appVersionsId}`);
 }
 
 export const commentsService = {

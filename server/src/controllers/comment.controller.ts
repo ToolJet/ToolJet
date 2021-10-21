@@ -24,7 +24,7 @@ export class CommentController {
   @UseGuards(JwtAuthGuard)
   @Get('/:commentId/all')
   public async getComments(@Param('commentId') commentId: string, @Query() query): Promise<Comment[]> {
-    const comments = await this.commentService.getComments(commentId, query.currentVersionId);
+    const comments = await this.commentService.getComments(commentId, query.appVersionsId);
     return comments;
   }
 
@@ -34,7 +34,7 @@ export class CommentController {
     @Param('organizationId') organizationId: string,
     @Query() query
   ): Promise<Comment[]> {
-    const threads = await this.commentService.getOrganizationComments(organizationId, query.currentVersionId);
+    const threads = await this.commentService.getOrganizationComments(organizationId, query.appVersionsId);
     return threads;
   }
 
@@ -45,7 +45,7 @@ export class CommentController {
       appId,
       req.user.id,
       query.isResolved,
-      query.currentVersionId
+      query.appVersionsId
     );
     return comments;
   }

@@ -19,7 +19,7 @@ export class ThreadController {
   @UseGuards(JwtAuthGuard)
   @Get('/:appId/all')
   public async getThreads(@Request() req, @Param('appId') appId: string, @Query() query): Promise<Thread[]> {
-    const threads = await this.threadService.getThreads(appId, req.user.organization.id, query.currentVersionId);
+    const threads = await this.threadService.getThreads(appId, req.user.organization.id, query.appVersionsId);
     return threads;
   }
 

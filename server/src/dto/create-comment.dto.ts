@@ -14,5 +14,5 @@ export class CreateCommentDTO {
   organizationId: string;
 
   @IsString()
-  currentVersionId: string;
+  appVersionsId: string;
 }

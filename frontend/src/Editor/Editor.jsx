@@ -679,7 +679,7 @@ class Editor extends React.Component {
           </div>
           <div className="sub-section">
             <LeftSidebar
-              currentVersionId={this.state?.editingVersion?.id}
+              appVersionsId={this.state?.editingVersion?.id}
               errorLogs={currentState.errors}
               queries={currentState.queries}
               components={currentState.components}
@@ -702,7 +702,7 @@ class Editor extends React.Component {
                   {defaultComponentStateComputed && (
                     <Container
                       showComments={showComments}
-                      currentVersionId={this.state?.editingVersion?.id}
+                      appVersionsId={this.state?.editingVersion?.id}
                       appDefinition={appDefinition}
                       appDefinitionChanged={this.appDefinitionChanged}
                       snapToGrid={true}
@@ -885,7 +885,7 @@ class Editor extends React.Component {
             </div>
             {showComments && (
               <CommentNotifications
-                currentVersionId={this.state?.editingVersion?.id}
+                appVersionsId={this.state?.editingVersion?.id}
                 toggleComments={this.toggleComments}
               />
             )}

@@ -27,8 +27,8 @@ export class Comment extends BaseEntity {
   @Column({ default: false, name: 'is_read' })
   isRead: boolean;
 
-  @Column({ name: 'current_version_id' })
-  currentVersionId: string;
+  @Column({ name: 'app_versions_id' })
+  appVersionsId: string;
 
   @Column({ name: 'user_id' })
   userId: string;

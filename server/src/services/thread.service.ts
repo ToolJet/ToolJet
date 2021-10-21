@@ -15,12 +15,12 @@ export class ThreadService {
     return await this.threadRepository.createThread(createThreadDto, userId, orgId);
   }
 
-  public async getThreads(appId: string, organizationId: string, currentVersionId: string): Promise<Thread[]> {
+  public async getThreads(appId: string, organizationId: string, appVersionsId: string): Promise<Thread[]> {
     return await this.threadRepository.find({
       where: {
         appId,
         organizationId,
-        currentVersionId,
+        appVersionsId,
       },
     });
   }

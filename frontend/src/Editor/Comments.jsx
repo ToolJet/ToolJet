@@ -9,7 +9,7 @@ import { commentsService } from '@/_services';
 
 import useRouter from '@/_hooks/use-router';
 
-const Comments = ({ newThread = {}, currentVersionId }) => {
+const Comments = ({ newThread = {}, appVersionsId }) => {
   const [threads, setThreads] = React.useState([]);
   const [socket, setWebSocket] = React.useState(null);
   // const [reload, setReload] = React.useState(false);
@@ -17,7 +17,7 @@ const Comments = ({ newThread = {}, currentVersionId }) => {
   const router = useRouter();
 
   async function fetchData() {
-    const { data } = await commentsService.getThreads(router.query.id, currentVersionId);
+    const { data } = await commentsService.getThreads(router.query.id, appVersionsId);
     setThreads(data);
   }
   React.useEffect(() => {
@@ -59,7 +59,7 @@ const Comments = ({ newThread = {}, currentVersionId }) => {
     return (
       <Comment
         key={id}
-        currentVersionId={currentVersionId}
+        appVersionsId={appVersionsId}
         fetchThreads={fetchData}
         socket={socket}
         threadId={id}

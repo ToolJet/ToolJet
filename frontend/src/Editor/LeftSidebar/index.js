@@ -24,7 +24,7 @@ export const LeftSidebar = ({
   dataSources = [],
   dataSourcesChanged,
   errorLogs,
-  currentVersionId,
+  appVersionsId,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -38,7 +38,7 @@ export const LeftSidebar = ({
         dataSourcesChanged={dataSourcesChanged}
       />
       <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
-      <LeftSidebarComment currentVersionId={currentVersionId} toggleComments={toggleComments} />
+      <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       <LeftSidebarItem
         onClick={() => setShowLeaveDialog(true)}
         tip="Back to home"

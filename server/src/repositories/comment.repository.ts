@@ -9,14 +9,14 @@ export class CommentRepository extends Repository<Comment> {
     userId: string,
     organizationId: string
   ): Promise<Comment> {
-    const { comment, threadId, currentVersionId } = createCommentDto;
+    const { comment, threadId, appVersionsId } = createCommentDto;
 
     const _comment = new Comment();
     _comment.comment = comment;
     _comment.threadId = threadId;
     _comment.userId = userId;
     _comment.organizationId = organizationId;
-    _comment.currentVersionId = currentVersionId;
+    _comment.appVersionsId = appVersionsId;
 
     await _comment.save();
     return _comment;

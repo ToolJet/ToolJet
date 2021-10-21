@@ -14,7 +14,7 @@ export class CreateThreadDTO {
   organizationId: string;
 
   @IsString()
-  currentVersionId: string;
+  appVersionsId: string;
 
   @IsBoolean()
   isResolved: boolean;

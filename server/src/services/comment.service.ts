@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not } from 'typeorm';
 
 import { Comment } from '../entities/comment.entity';
 import { CommentRepository } from '../repositories/comment.repository';
@@ -25,11 +24,11 @@ export class CommentService {
     return await this.commentRepository.createComment(createCommentDto, id, organizationId);
   }
 
-  public async getComments(threadId: string, currentVersionId: string): Promise<Comment[]> {
+  public async getComments(threadId: string, appVersionsId: string): Promise<Comment[]> {
     return await this.commentRepository.find({
       where: {
         threadId,
-        currentVersionId,
+        appVersionsId,
       },
       order: {
         createdAt: 'ASC',
@@ -37,11 +36,11 @@ export class CommentService {
     });
   }
 
-  public async getOrganizationComments(organizationId: string, currentVersionId: string): Promise<Comment[]> {
+  public async getOrganizationComments(organizationId: string, appVersionsId: string): Promise<Comment[]> {
     return await this.commentRepository.find({
       where: {
         organizationId,
-        currentVersionId,
+        appVersionsId,
       },
       order: {
         createdAt: 'ASC',
@@ -53,13 +52,12 @@ export class CommentService {
     appId: string,
     userId: string,
     isResolved = false,
-    currentVersionId: string
+    appVersionsId: string
   ): Promise<Comment[]> {
     return await this.commentRepository.find({
       where: {
-        userId: Not(userId),
         thread: { appId, isResolved },
-        currentVersionId,
+        appVersionsId,
       },
       relations: ['thread'],
     });

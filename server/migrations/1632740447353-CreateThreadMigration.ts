@@ -34,8 +34,8 @@ export class CreateThreadMigration1632740447353 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'current_version_id',
-            type: 'varchar',
+            name: 'app_versions_id',
+            type: 'uuid',
             isNullable: true,
           },
           {
@@ -92,6 +92,16 @@ export class CreateThreadMigration1632740447353 implements MigrationInterface {
         columnNames: ['organization_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'organizations',
+        onDelete: 'CASCADE',
+      })
+    );
+
+    await queryRunner.createForeignKey(
+      'threads',
+      new TableForeignKey({
+        columnNames: ['app_versions_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'app_versions',
         onDelete: 'CASCADE',
       })
     );
