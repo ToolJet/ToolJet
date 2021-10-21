@@ -3,7 +3,7 @@ set -eu
 
 export SERVER_HOST="${SERVER_HOST:=server}"
 export SERVER_USER="${SERVER_USER:=root}"
-VARS_TO_SUBSTITUTE="$SERVER_HOST:$SERVER_USER"
+VARS_TO_SUBSTITUTE='$SERVER_HOST:$SERVER_USER'
 
 envsubst "${VARS_TO_SUBSTITUTE}" < /etc/openresty/nginx.conf.template > /etc/openresty/nginx.conf
 
