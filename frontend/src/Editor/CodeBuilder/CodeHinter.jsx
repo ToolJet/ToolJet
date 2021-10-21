@@ -135,7 +135,7 @@ export function CodeHinter({
           onBlur={(editor) => {
             let value = editor.getValue();
             if (ignoreBraces) {
-              value = `{{${value}}}`;
+              value = resolveReferences(`{{${value}}}`, realState);
             }
             onChange(value);
             setFocused(false);
