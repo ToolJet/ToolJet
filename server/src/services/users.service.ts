@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { App } from 'src/entities/app.entity';
 import { createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
@@ -19,7 +20,9 @@ export class UsersService {
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     @InjectRepository(Organization)
-    private organizationsRepository: Repository<Organization>
+    private organizationsRepository: Repository<Organization>,
+    @InjectRepository(App)
+    private appsRepository: Repository<App>
   ) {}
 
   async findOne(id: string): Promise<User> {
@@ -229,19 +232,53 @@ export class UsersService {
   async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
     switch (entityName) {
       case 'App':
-        if (action == 'create') {
-          return await this.hasGroup(user, 'admin');
-        } else {
-          return this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, resourceId));
-        }
+        return await this.canUserPerformActionOnApp(user, action, resourceId);
+
+      case 'User':
+        return await this.hasGroup(user, 'admin');
 
       default:
         return false;
     }
   }
 
-  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[]): boolean {
-    return permissions.some((p) => p[action.toLowerCase()]);
+  async canUserPerformActionOnApp(user: User, action: string, appId?: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('appCreate', await this.groupPermissions(user));
+        break;
+      case 'read':
+      case 'update':
+        permissionGrant =
+          this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, appId)) ||
+          (await this.isUserOwnerOfApp(user, appId));
+        break;
+      case 'delete':
+        permissionGrant =
+          this.canAnyGroupPerformAction('delete', await this.appGroupPermissions(user, appId)) ||
+          this.canAnyGroupPerformAction('appDelete', await this.groupPermissions(user)) ||
+          (await this.isUserOwnerOfApp(user, appId));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async isUserOwnerOfApp(user, appId): Promise<boolean> {
+    const app = await this.appsRepository.findOne({
+      id: appId,
+      userId: user.id,
+    });
+    return !!app;
+  }
+
+  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
+    return permissions.some((p) => p[action]);
   }
 
   async groupPermissions(user: User, organizationId?: string): Promise<GroupPermission[]> {

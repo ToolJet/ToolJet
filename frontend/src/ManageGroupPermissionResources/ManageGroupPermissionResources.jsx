@@ -45,19 +45,23 @@ class ManageGroupPermissionResources extends React.Component {
     }
   };
 
-  fetchGroupAndResources = (groupPermissionId) => {
+  fetchGroupPermission = (groupPermissionId) => {
     groupPermissionService.getGroup(groupPermissionId).then((data) => {
       this.setState({
         groupPermission: data,
         isLoadingGroup: false,
       });
-
-      this.fetchUsersNotInGroup(groupPermissionId);
-      this.fetchUsersInGroup(groupPermissionId);
-
-      this.fetchAppsNotInGroup(groupPermissionId);
-      this.fetchAppsInGroup(groupPermissionId);
     });
+  };
+
+  fetchGroupAndResources = (groupPermissionId) => {
+    this.setState({ isLoadingGroup: true });
+
+    this.fetchGroupPermission(groupPermissionId);
+    this.fetchUsersNotInGroup(groupPermissionId);
+    this.fetchUsersInGroup(groupPermissionId);
+    this.fetchAppsNotInGroup(groupPermissionId);
+    this.fetchAppsInGroup(groupPermissionId);
   };
 
   fetchUsersNotInGroup = (groupPermissionId) => {
@@ -92,6 +96,23 @@ class ManageGroupPermissionResources extends React.Component {
         isLoadingApps: false,
       });
     });
+  };
+
+  updateGroupPermission = (groupPermissionId, params) => {
+    console.log(params);
+    groupPermissionService
+      .update(groupPermissionId, params)
+      .then(() => {
+        toast.success('Group permissions updated', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
+
+        this.fetchGroupPermission(groupPermissionId);
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+      });
   };
 
   updateAppGroupPermission = (app, groupPermissionId, action) => {
@@ -154,7 +175,7 @@ class ManageGroupPermissionResources extends React.Component {
   addSelectedAppsToGroup = (groupPermissionId, selectedAppIds) => {
     this.setState({ isAddingApps: true });
     const updateParams = {
-      selectedAppIds,
+      add_apps: selectedAppIds,
     };
     groupPermissionService
       .update(groupPermissionId, updateParams)
@@ -180,7 +201,7 @@ class ManageGroupPermissionResources extends React.Component {
 
   removeAppFromGroup = (groupPermissionId, appId) => {
     const updateParams = {
-      removeAppIds: [appId],
+      remove_apps: [appId],
     };
     groupPermissionService
       .update(groupPermissionId, updateParams)
@@ -203,7 +224,7 @@ class ManageGroupPermissionResources extends React.Component {
   addSelectedUsersToGroup = (groupPermissionId, selectedUserIds) => {
     this.setState({ isAddingUsers: true });
     const updateParams = {
-      selectedUserIds,
+      add_users: selectedUserIds,
     };
     groupPermissionService
       .update(groupPermissionId, updateParams)
@@ -229,7 +250,7 @@ class ManageGroupPermissionResources extends React.Component {
 
   removeUserFromGroup = (groupPermissionId, userId) => {
     const updateParams = {
-      removeUserIds: [userId],
+      remove_users: [userId],
     };
     groupPermissionService
       .update(groupPermissionId, updateParams)
@@ -324,9 +345,18 @@ class ManageGroupPermissionResources extends React.Component {
                       Users
                     </a>
                   </li>
+                  <li className="nav-item">
+                    <a
+                      className={`nav-link ${currentTab === 'permissions' ? 'active' : ''}`}
+                      onClick={() => this.setState({ currentTab: 'permissions' })}
+                    >
+                      Permissions
+                    </a>
+                  </li>
                 </ul>
                 <div className="card-body">
                   <div className="tab-content">
+                    {/* Apps Tab */}
                     <div className={`tab-pane ${currentTab === 'apps' ? 'active show' : ''}`}>
                       <div className="row">
                         <div className="col-5">
@@ -365,7 +395,7 @@ class ManageGroupPermissionResources extends React.Component {
                               </tr>
                             </thead>
                             <tbody>
-                              {isLoadingApps ? (
+                              {isLoadingGroup || isLoadingApps ? (
                                 <tr>
                                   <td className="col-auto">
                                     <div className="row">
@@ -431,6 +461,8 @@ class ManageGroupPermissionResources extends React.Component {
                         </div>
                       </div>
                     </div>
+
+                    {/* Users Tab */}
                     <div className={`tab-pane ${currentTab === 'users' ? 'active show' : ''}`}>
                       <div className="row">
                         <div className="col-5">
@@ -469,7 +501,7 @@ class ManageGroupPermissionResources extends React.Component {
                               </tr>
                             </thead>
                             <tbody>
-                              {isLoadingUsers ? (
+                              {isLoadingGroup || isLoadingUsers ? (
                                 <tr>
                                   <td className="col-auto">
                                     <div className="row">
@@ -502,6 +534,77 @@ class ManageGroupPermissionResources extends React.Component {
                                     </td>
                                   </tr>
                                 ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Permissions Tab */}
+                    <div className={`tab-pane ${currentTab === 'permissions' ? 'active show' : ''}`}>
+                      <div>
+                        <div className="table-responsive">
+                          <table className="table table-vcenter">
+                            <thead>
+                              <tr>
+                                <th>Resource</th>
+                                <th>Permissions</th>
+                                <th></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {isLoadingGroup ? (
+                                <tr>
+                                  <td className="col-auto">
+                                    <div className="row">
+                                      <div className="skeleton-line w-10 col mx-3"></div>
+                                    </div>
+                                  </td>
+                                  <td className="col-auto">
+                                    <div className="skeleton-line w-10"></div>
+                                  </td>
+                                  <td className="col-auto">
+                                    <div className="skeleton-line w-10"></div>
+                                  </td>
+                                </tr>
+                              ) : (
+                                <tr>
+                                  <td>Apps</td>
+                                  <td className="text-muted">
+                                    <div>
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              app_create: !groupPermission.app_create,
+                                            });
+                                          }}
+                                          checked={groupPermission.app_create}
+                                          disabled={groupPermission.group === 'admin'}
+                                        />
+                                        <span className="form-check-label">Create</span>
+                                      </label>
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              app_delete: !groupPermission.app_delete,
+                                            });
+                                          }}
+                                          checked={groupPermission.app_delete}
+                                          disabled={groupPermission.group === 'admin'}
+                                        />
+                                        <span className="form-check-label">Delete</span>
+                                      </label>
+                                    </div>
+                                  </td>
+                                  <td></td>
+                                </tr>
                               )}
                             </tbody>
                           </table>

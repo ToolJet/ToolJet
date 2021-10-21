@@ -9,11 +9,11 @@ import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { AppCloneService } from './app_clone.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
+import { AppImportExportService } from './app_import_export.service';
 
 @Injectable()
 export class AppsService {
@@ -42,8 +42,8 @@ export class AppsService {
     @InjectRepository(AppGroupPermission)
     private appGroupPermissionsRepository: Repository<AppGroupPermission>,
 
-    private AppCloneService: AppCloneService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private appImportExportService: AppImportExportService
   ) {}
 
   async find(id: string): Promise<App> {
@@ -88,12 +88,12 @@ export class AppsService {
       })
     );
 
-    await this.createAdminGroupPermissions(app);
+    await this.createAppGroupPermissionsForAdmin(app);
 
     return app;
   }
 
-  async createAdminGroupPermissions(app: App) {
+  async createAppGroupPermissionsForAdmin(app: App) {
     const orgDefaultGroupPermissions = await this.groupPermissionsRepository.find({
       where: {
         organizationId: app.organizationId,
@@ -105,14 +105,14 @@ export class AppsService {
       const appGroupPermission = this.appGroupPermissionsRepository.create({
         groupPermissionId: groupPermission.id,
         appId: app.id,
-        ...this.determineDefaultAppGroupPermissions(groupPermission.group),
+        ...this.fetchDefaultAppGroupPermissions(groupPermission.group),
       });
 
       await this.appGroupPermissionsRepository.save(appGroupPermission);
     }
   }
 
-  determineDefaultAppGroupPermissions(group: string): {
+  fetchDefaultAppGroupPermissions(group: string): {
     read: boolean;
     update: boolean;
     delete: boolean;
@@ -128,7 +128,8 @@ export class AppsService {
   }
 
   async clone(existingApp: App, user: User): Promise<App> {
-    const clonedApp = await this.AppCloneService.perform(existingApp, user);
+    const appWithRelations = await this.appImportExportService.export(user, existingApp.id);
+    const clonedApp = await this.appImportExportService.import(user, appWithRelations);
 
     return clonedApp;
   }
@@ -144,9 +145,10 @@ export class AppsService {
       )
       .where('user_group_permissions.user_id = :userId', { userId: user.id })
       .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('apps.is_public = :value AND apps.organization_id = :organizationId', {
+      .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
         value: true,
         organizationId: user.organizationId,
+        userId: user.id,
       })
       .getCount();
   }
@@ -162,9 +164,10 @@ export class AppsService {
       )
       .where('user_group_permissions.user_id = :userId', { userId: user.id })
       .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('apps.is_public = :value AND apps.organization_id = :organizationId', {
+      .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
         value: true,
         organizationId: user.organizationId,
+        userId: user.id,
       });
 
     // FIXME:
