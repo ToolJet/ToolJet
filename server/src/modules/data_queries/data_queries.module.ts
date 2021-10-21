@@ -14,13 +14,13 @@ import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { AppCloneService } from '@services/app_clone.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { AppImportExportService } from '@services/app_import_export.service';
 
 @Module({
   imports: [
@@ -46,8 +46,8 @@ import { Organization } from 'src/entities/organization.entity';
     EncryptionService,
     DataSourcesService,
     AppsService,
-    AppCloneService,
     UsersService,
+    AppImportExportService,
   ],
   controllers: [DataQueriesController],
 })
