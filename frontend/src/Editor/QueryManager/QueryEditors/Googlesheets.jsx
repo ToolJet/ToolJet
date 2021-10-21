@@ -212,6 +212,7 @@ class Googlesheets extends React.Component {
                 }}
                 enablePreview={true}
                 ignoreBraces={true}
+                appendBraces={true}
               />
             </div>
           </>
