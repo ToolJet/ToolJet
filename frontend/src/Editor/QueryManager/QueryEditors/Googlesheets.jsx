@@ -199,8 +199,9 @@ class Googlesheets extends React.Component {
               <label className="form-label">Update Value</label>
               <CodeHinter
                 currentState={this.props.currentState}
-                lineNumbers={true}
-                className="codehinter-query-editor-input"
+                lineNumbers={false}
+                height="120px"
+                className="query-hinter"
                 theme={this.props.darkMode ? 'monokai' : 'default'}
                 onChange={(value) => changeOption(this, 'body', value)}
                 enablePreview={true}
