@@ -347,6 +347,57 @@ export const componentTypes = [
     },
   },
   {
+    name: 'PasswordInput',
+    displayName: 'Password Input',
+    description: 'Password input field for forms',
+    component: 'PasswordInput',
+    defaultSize: {
+      width: 210,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      placeholder: { type: 'code', displayName: 'Placeholder' },
+    },
+    validation: {
+      regex: { type: 'code', displayName: 'Regex' },
+      minLength: { type: 'code', displayName: 'Min length' },
+      maxLength: { type: 'code', displayName: 'Max length' },
+      customRule: { type: 'code', displayName: 'Custom validation' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      value: '',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        placeholder: { value: 'password' },
+      },
+      validation: {
+        regex: { value: '' },
+        minLength: { value: null },
+        maxLength: { value: null },
+        customRule: { value: null },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
     name: 'Datepicker',
     displayName: 'Date Picker',
     description: 'Select a date and time',
