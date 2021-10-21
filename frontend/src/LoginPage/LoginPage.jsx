@@ -90,7 +90,7 @@ class LoginPage extends React.Component {
                   <input
                     onChange={this.handleChange}
                     name="password"
-                    type={this.state.showPassword ?"text" : "password"}
+                    type={this.state.showPassword ? 'text' : 'password'}
                     className="form-control"
                     placeholder="Password"
                     autoComplete="off"
@@ -99,18 +99,15 @@ class LoginPage extends React.Component {
                   <span className="input-group-text"></span>
                 </div>
               </div>
-              <div class="form-check">
-                <input 
-                  type="checkbox" 
-                  class="form-check-input" 
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
                   id="check-input"
                   name="check-input"
-                  onChange = {this.handleOnCheck}
+                  onChange={this.handleOnCheck}
                 />
-                <label
-                  class="form-check-label" 
-                  for="check-input"
-                >
+                <label className="form-check-label" htmlFor="check-input">
                   show password
                 </label>
               </div>
