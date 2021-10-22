@@ -73,6 +73,8 @@ export function Table({
   let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
+  const cellSizeType = component.definition.styles.cellSize?.value;
+
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
@@ -857,6 +859,7 @@ export function Table({
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
+                            [cellSizeType]: true,
                           })}
                           {...cellProps}
                         >
