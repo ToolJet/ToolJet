@@ -91,6 +91,7 @@ export class AppImportExportService {
       dataSourceMapping[source.id] = newSource.id;
     }
 
+    const newDataQueries = [];
     for (const query of dataQueries) {
       const newQuery = manager.create(DataQuery, {
         app: importedApp,
@@ -102,6 +103,10 @@ export class AppImportExportService {
       await manager.save(newQuery);
 
       dataQueryMapping[query.id] = newQuery.id;
+      newDataQueries.push(newQuery);
+    }
+
+    for (const newQuery of newDataQueries) {
       const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
       newQuery.options = newOptions;
       await manager.save(newQuery);
