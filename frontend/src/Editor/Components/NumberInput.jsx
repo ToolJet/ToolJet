@@ -52,7 +52,7 @@ export const NumberInput = function NumberInput({
         onComponentOptionChanged(component, 'value', parseInt(e.target.value));
       }}
       type="number"
-      className="form-control"
+      className="form-control rounded-0"
       placeholder={placeholder}
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       value={number}
