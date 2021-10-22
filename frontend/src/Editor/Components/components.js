@@ -48,6 +48,14 @@ export const componentTypes = [
           { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
       },
+      cellSize: {
+        type: 'select',
+        displayName: 'Cell size',
+        options: [
+          { name: 'Compact', value: 'compact' },
+          { name: 'Spacious', value: 'spacious' },
+        ],
+      },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -93,6 +101,7 @@ export const componentTypes = [
         textColor: { value: undefined },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        cellSize: { value: 'compact' },
       },
     },
   },
