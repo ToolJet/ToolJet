@@ -99,7 +99,6 @@ class ManageGroupPermissionResources extends React.Component {
   };
 
   updateGroupPermission = (groupPermissionId, params) => {
-    console.log(params);
     groupPermissionService
       .update(groupPermissionId, params)
       .then(() => {
