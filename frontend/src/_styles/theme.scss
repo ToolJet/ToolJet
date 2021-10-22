@@ -2206,6 +2206,11 @@ input[type='text'] {
 
 .dropdown-widget,
 .multiselect-widget {
+
+  .form-label {
+    margin-bottom: 0px;
+  }
+
   .select-search__input {
     height: 100%;
   }
