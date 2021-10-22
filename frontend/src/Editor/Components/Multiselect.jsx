@@ -61,12 +61,12 @@ export const Multiselect = function Multiselect({
         onComponentClick(id, component);
       }}
     >
-      <div className="col-auto">
+      <div className="col-auto my-auto">
         <label style={{ marginRight: '1rem' }} className="form-label py-1">
           {label}
         </label>
       </div>
-      <div className="col px-0">
+      <div className="col px-0 h-100">
         <SelectSearch
           disabled={parsedDisabledState}
           options={selectOptions}
