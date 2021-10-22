@@ -1254,6 +1254,60 @@ body {
   user-select: none;
 }
 
+.dropmenu{
+  position: relative;
+  display: inline-block;
+  margin-right: 16px;
+
+  .dropdownbtn{
+    color: #999;
+    background:none;
+    cursor: pointer;
+    outline: none;
+    border: none;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    z-index: 2;
+    width: 100%;
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px 2px rgba(47, 54, 59, 0.15);
+
+    a {
+      text-decoration: none;
+      width: 100%;
+      position: relative;
+      display: block;
+
+      span {
+        text-align: center;
+        width: 100%;
+        text-align: center;
+        padding: 3px 0px;
+    }
+  }
+  }
+}
+.dropmenu .dropdown-content a:hover{
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dropmenu:hover {
+  .dropdownbtn{
+    color: #5890ff;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+  
+  .dropdown-content{
+    display: block;
+  }
+}
+
 .RichEditor-styleButton {
   color: #999;
   cursor: pointer;
