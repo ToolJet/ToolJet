@@ -2207,7 +2207,15 @@ input[type='text'] {
 .dropdown-widget,
 .multiselect-widget {
   .select-search__input {
-    padding: 0.1375rem 0.75rem;
+    height: 100%;
+  }
+
+  .select-search__value {
+    height: 100%;
+  }
+
+  .select-search {
+    height: 100%
   }
 
   .select-search__options {

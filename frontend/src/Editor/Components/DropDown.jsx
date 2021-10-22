@@ -105,7 +105,7 @@ export const DropDown = function DropDown({
           {label}
         </label>
       </div>
-      <div className="col px-0">
+      <div className="col px-0 h-100">
         <SelectSearch
           disabled={parsedDisabledState}
           options={selectOptions}
