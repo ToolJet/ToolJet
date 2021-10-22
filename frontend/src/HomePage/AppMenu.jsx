@@ -6,7 +6,16 @@ import Fuse from 'fuse.js';
 import { folderService } from '@/_services';
 import { toast } from 'react-toastify';
 
-export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteApp, cloneApp, exportApp }) {
+export const AppMenu = function AppMenu({
+  app,
+  folders,
+  foldersChanged,
+  deleteApp,
+  cloneApp,
+  exportApp,
+  canCreateApp,
+  canDeleteApp,
+}) {
   const [addToFolder, setAddToFolder] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -68,26 +77,32 @@ export const AppMenu = function AppMenu({ app, folders, foldersChanged, deleteAp
           <Popover.Content>
             {!addToFolder && (
               <div>
-                <div className="field mb-2">
-                  <span role="button" onClick={() => setAddToFolder(true)}>
-                    Add to folder
-                  </span>
-                </div>
-                <div className="field mb-2">
-                  <span className="field mb-2" role="button" onClick={() => cloneApp()}>
-                    Clone app
-                  </span>
-                </div>
-                <div className="field mb-2">
-                  <span className="field mb-2" role="button" onClick={() => exportApp()}>
-                    Export app
-                  </span>
-                </div>
-                <div className="field mb-2">
-                  <span className="my-3 text-danger" role="button" onClick={() => deleteApp()}>
-                    Delete app
-                  </span>
-                </div>
+                {canCreateApp && (
+                  <>
+                    <div className="field mb-2">
+                      <span role="button" onClick={() => setAddToFolder(true)}>
+                        Add to folder
+                      </span>
+                    </div>
+                    <div className="field mb-2">
+                      <span className="field mb-2" role="button" onClick={() => cloneApp()}>
+                        Clone app
+                      </span>
+                    </div>
+                    <div className="field mb-2">
+                      <span className="field mb-2" role="button" onClick={() => exportApp()}>
+                        Export app
+                      </span>
+                    </div>
+                  </>
+                )}
+                {canDeleteApp && (
+                  <div className="field mb-2">
+                    <span className="my-3 text-danger" role="button" onClick={() => deleteApp()}>
+                      Delete app
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 

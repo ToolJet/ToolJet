@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const BlankPage = function BlankPage({ createApp }) {
+export const BlankPage = function BlankPage({ createApp, handleImportApp, isImportingApp, fileInput }) {
   return (
     <div>
       <div className="page-wrapper">
@@ -13,7 +13,7 @@ export const BlankPage = function BlankPage({ createApp }) {
               </div>
               <p className="empty-title">You haven&apos;t created any apps yet.</p>
               <div className="empty-action">
-                <a onClick={createApp} className="btn btn-primary text-light">
+                <a onClick={createApp} className="btn btn-primary text-light mx-1">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="icon"
@@ -35,7 +35,20 @@ export const BlankPage = function BlankPage({ createApp }) {
                 <a
                   href="https://docs.tooljet.io"
                   target="_blank"
-                  className="btn btn-primary text-light mx-2"
+                  className="btn btn-primary text-light mx-1"
+                  rel="noreferrer"
+                  onChange={handleImportApp}
+                >
+                  <label>
+                    {isImportingApp && <span className="spinner-border spinner-border-sm me-2" role="status"></span>}
+                    Import an app
+                    <input type="file" ref={fileInput} style={{ display: 'none' }} />
+                  </label>
+                </a>
+                <a
+                  href="https://docs.tooljet.io"
+                  target="_blank"
+                  className="btn btn-primary text-light mx-1"
                   rel="noreferrer"
                 >
                   Read documentation

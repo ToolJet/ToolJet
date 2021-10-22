@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
 import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
+import { decamelizeKeys } from 'humps';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -33,13 +34,16 @@ export class AuthService {
     if (user) {
       const payload = { username: user.id, sub: user.email };
 
-      return {
+      return decamelizeKeys({
+        id: user.id,
         auth_token: this.jwtService.sign(payload),
         email: user.email,
         first_name: user.firstName,
         last_name: user.lastName,
         admin: await this.usersService.hasGroup(user, 'admin'),
-      };
+        group_permissions: await this.usersService.groupPermissions(user),
+        app_group_permissions: await this.usersService.appGroupPermissions(user),
+      });
     } else {
       throw new UnauthorizedException('Invalid credentials');
     }

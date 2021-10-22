@@ -295,15 +295,21 @@ export class UsersService {
     return await groupPermissionRepository.find({ organizationId });
   }
 
-  async appGroupPermissions(user: User, appId: string, organizationId?: string): Promise<AppGroupPermission[]> {
+  async appGroupPermissions(user: User, appId?: string, organizationId?: string): Promise<AppGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, organizationId);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
     const appGroupPermissionRepository = getRepository(AppGroupPermission);
 
-    return await appGroupPermissionRepository.find({
-      groupPermissionId: In(groupIds),
-      appId: appId,
-    });
+    if (appId) {
+      return await appGroupPermissionRepository.find({
+        groupPermissionId: In(groupIds),
+        appId: appId,
+      });
+    } else {
+      return await appGroupPermissionRepository.find({
+        groupPermissionId: In(groupIds),
+      });
+    }
   }
 
   async userGroupPermissions(user: User, organizationId?: string): Promise<UserGroupPermission[]> {
