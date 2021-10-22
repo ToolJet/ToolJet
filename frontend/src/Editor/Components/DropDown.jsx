@@ -100,7 +100,7 @@ export const DropDown = function DropDown({
         onComponentClick(id, component);
       }}
     >
-      <div className="col-auto">
+      <div className="col-auto my-auto">
         <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
           {label}
         </label>
