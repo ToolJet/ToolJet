@@ -798,6 +798,14 @@ body {
     }
   }
 
+  td.spacious {
+    min-height: 47px;
+  }
+
+  td.compact {
+    min-height: 40px;
+  }
+
   .has-dropdown,
   .has-multiselect,
   .has-text,
