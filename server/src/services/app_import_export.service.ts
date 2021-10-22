@@ -57,6 +57,8 @@ export class AppImportExportService {
       user: user,
       slug: null, // Prevent db unique constraint error.
       isPublic: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
     await manager.save(importedApp);
     return importedApp;
@@ -81,6 +83,8 @@ export class AppImportExportService {
         name: source.name,
         kind: source.kind,
         options: newOptions,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       await manager.save(newSource);
@@ -108,6 +112,8 @@ export class AppImportExportService {
         app: importedApp,
         definition: appVersion.definition,
         name: appVersion.name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       await manager.save(version);
