@@ -148,7 +148,7 @@ export function Table({
     let newFilters = filters;
     newFilters.splice(index, 1);
     setFilters(newFilters);
-    setAllFilters(newFilters);
+    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
 
   function clearFilters() {
