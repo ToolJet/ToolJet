@@ -201,7 +201,7 @@ class DraftEditor extends React.Component {
           <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
           <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
         </div>
-        <div className={className} onClick={this.focus}>
+        <div className={className} style={{height: `${this.props.height-60}px`}} onClick={this.focus}>
           <Editor
             blockStyleFn={getBlockStyle}
             customStyleMap={styleMap}

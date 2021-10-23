@@ -1225,6 +1225,7 @@ body {
 
 .RichEditor-editor .public-DraftEditor-content {
   min-height: 100px;
+  overflow-y: scroll;
 }
 
 .RichEditor-hidePlaceholder .public-DraftEditorPlaceholder-root {
