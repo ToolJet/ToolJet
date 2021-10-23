@@ -10,17 +10,19 @@ import OptionsIcon from './icons/options.svg';
 import { commentsService } from '@/_services';
 
 const CommentActions = ({ commentId, comment, setEditCommentId, setEditComment, fetchComments, isCommentOwner }) => {
-  const [open, trigger, content] = usePopover(false);
+  const [open, trigger, content, setOpen] = usePopover(false);
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
 
   const handleDelete = async () => {
     await commentsService.deleteComment(commentId);
     fetchComments();
+    setOpen(false);
   };
 
   const handleEdit = async () => {
     setEditComment(comment);
     setEditCommentId(commentId);
+    setOpen(false);
   };
 
   return (

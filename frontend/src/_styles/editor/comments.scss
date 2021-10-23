@@ -10,6 +10,10 @@
     z-index: 3;
   }
 
+  .card-header {
+    border-bottom: 0 !important;
+  }
+
   .comment {
     border: 2.5px solid #FCAA0D;
   }
@@ -45,6 +49,7 @@
   }
 
   .comment-action {
+    font-size: 12px;
     padding: 5px !important;
   }
 
@@ -53,6 +58,9 @@
   }
   .comment-time {
     font-size: 12px;
+  }
+  .comment-body {
+    font-size: 14px;
   }
 }
 

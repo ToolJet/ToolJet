@@ -44,9 +44,10 @@ const Mentions = ({ value, setValue, placeholder }) => {
           border: '1px solid transparent',
         },
         input: {
-          fontSize: 14,
+          fontSize: 12,
           lineHeight: 1.5,
           padding: 9,
+          paddingLeft: 0,
           border: 0,
           outline: 0,
         },

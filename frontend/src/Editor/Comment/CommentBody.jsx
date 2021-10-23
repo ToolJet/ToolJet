@@ -58,7 +58,7 @@ const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetc
               </div>
 
               <div className="card-subtitle comment-time">{moment(createdAt).fromNow()}</div>
-              <p className="cursor-auto" dangerouslySetInnerHTML={{ __html: getComment(comment) }} />
+              <p className="cursor-auto comment-body " dangerouslySetInnerHTML={{ __html: getComment(comment) }} />
             </div>
           );
         })}
