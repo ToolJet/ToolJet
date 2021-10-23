@@ -17,7 +17,7 @@ export const Button = function Button({ width, height, component, currentState, 
   const text = component.definition.properties.text.value;
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const color = component.definition.styles.textColor.value;
-  const borderRadius = component.definition.styles.borderRadius.value;
+  const borderRadius = component.definition.styles.borderRadius?.value ?? 3; // using 2 for backward compatibility
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
