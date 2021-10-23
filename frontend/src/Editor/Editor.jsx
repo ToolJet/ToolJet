@@ -592,12 +592,12 @@ class Editor extends React.Component {
                     />
                   </span>
                   <span
-                    className={`btn btn-default mx-2`}
+                    className={`btn btn-light mx-2`}
                     onClick={this.toggleQueryEditor}
                     data-tip="Show query editor"
                     data-class="py-1 px-2"
                     ref={this.toolTipRefShow}
-                    style={{ display: 'none' }}
+                    style={{ display: 'none', opacity: 0.5 }}
                   >
                     <img
                       style={{ transform: 'rotate(-90deg)' }}
