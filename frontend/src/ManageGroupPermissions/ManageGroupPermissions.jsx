@@ -2,7 +2,7 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { groupPermissionService } from '../_services/groupPermission.service';
 import 'react-toastify/dist/ReactToastify.css';
-import { Header } from '@/_components';
+import { Header, ConfirmDialog } from '@/_components';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
@@ -17,6 +17,8 @@ class ManageGroupPermissions extends React.Component {
       creatingGroup: false,
       showNewGroupForm: false,
       newGroupName: null,
+      isDeletingGroup: false,
+      showGroupDeletionConfirmation: false,
     };
   }
 
@@ -81,10 +83,15 @@ class ManageGroupPermissions extends React.Component {
   };
 
   deleteGroup = (groupPermissionId) => {
+    this.setState({ showGroupDeletionConfirmation: true, groupToBeDeleted: groupPermissionId });
+  };
+
+  executeGroupDeletion = () => {
+    this.setState({ isDeletingGroup: true });
     groupPermissionService
-      .del(groupPermissionId)
+      .del(this.state.groupToBeDeleted)
       .then(() => {
-        toast.success('Group has been deleted', {
+        toast.success('Group deleted successfully', {
           hideProgressBar: true,
           position: 'top-center',
         });
@@ -93,12 +100,31 @@ class ManageGroupPermissions extends React.Component {
       .catch(({ error }) => {
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
       });
+    this.setState({
+      isDeletingGroup: false,
+      groupToBeDeleted: null,
+      showGroupDeletionConfirmation: false,
+    });
   };
 
   render() {
-    const { isLoading, showNewGroupForm, creatingGroup, groups } = this.state;
+    const {
+      isLoading,
+      showNewGroupForm,
+      creatingGroup,
+      groups,
+      isDeletingGroup,
+      showGroupDeletionConfirmation } = this.state;
     return (
       <div className="wrapper org-users-page">
+        <ConfirmDialog
+          show={showGroupDeletionConfirmation}
+          message={"This group will be permanently deleted. Do you want to continue?"}
+          confirmButtonLoading={isDeletingGroup}
+          onConfirm={() => this.executeGroupDeletion()}
+          onCancel={() => { }}
+        />
+
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
 
         <div className="page-wrapper">
