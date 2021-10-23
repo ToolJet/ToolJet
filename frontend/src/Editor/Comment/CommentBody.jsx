@@ -25,15 +25,8 @@ const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetc
   }, []);
 
   const getComment = (comment) => {
-    const _comment = comment.split(' ');
-    return _comment
-      .map((c) => {
-        if (c.startsWith('@')) {
-          return `<span>${c}</span>`;
-        }
-        return c;
-      })
-      .join(' ');
+    var regex = /(\()([^)]+)(\))/g;
+    return comment.replace(regex, '<span class=mentioned-user>$2</span>');
   };
 
   const getContent = () => {

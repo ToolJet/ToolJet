@@ -74,7 +74,7 @@ const Mentions = ({ value, setValue, placeholder }) => {
         trigger="@"
         regex={/@(\S+)/}
         displayTransform={(display) => `@${display}`}
-        markup="@__display__"
+        markup="(@__display__)"
         data={users}
         // style={{
         //   backgroundColor: '#218DE3',
