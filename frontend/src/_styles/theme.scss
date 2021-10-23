@@ -2005,6 +2005,10 @@ input:focus-visible {
     background-color: #1f2936 !important;
   }
 
+  .input-icon .input-icon-addon img {
+    filter: invert(1);
+  }
+  
   .svg-icon {
     filter: brightness(0) invert(1);
   }
@@ -2027,9 +2031,6 @@ input:focus-visible {
   .editor .editor-sidebar .inspector .header {
     border: solid rgba(255, 255, 255, 0.09) !important;
     border-width: 0px 0px 1px 0px !important;
-    .input-icon .input-icon-addon img {
-        filter: invert(1);
-    }
   }
 
   .hr-text {
