@@ -383,7 +383,7 @@ class ManageGroupPermissionResources extends React.Component {
                                 appsInGroup.map((app) => (
                                   <tr key={app.id}>
                                     <td>{app.name}</td>
-                                    <td className="text-muted">
+                                    <td className="text-secondary">
                                       <div>
                                         <label className="form-check form-check-inline">
                                           <input
