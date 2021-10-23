@@ -6,6 +6,13 @@ import { isEmpty } from 'lodash';
 import moment from 'moment';
 import CommentActions from './CommentActions';
 
+moment.updateLocale('en', {
+  relativeTime: {
+    past: '%s',
+    s: 'just now',
+  },
+});
+
 const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
   const bottomRef = React.useRef();
 

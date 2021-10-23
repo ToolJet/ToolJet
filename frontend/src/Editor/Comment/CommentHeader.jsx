@@ -34,9 +34,26 @@ const CommentHeader = ({ count = 0, threadId, isResolved, isThreadOwner, fetchTh
     return <UnResolvedIcon />;
   };
 
+  const getIcon = () => {
+    if (isResolved)
+      return (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6" cy="6" r="6" fill="#8991A0" />
+        </svg>
+      );
+
+    return (
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="6" cy="6" r="6" fill="#FCAA0D" />
+      </svg>
+    );
+  };
+
   return (
     <div className="card-header">
-      <div className="card-subtitle mt-1">{pluralize(count, 'comment')}</div>
+      <div className="card-subtitle mt-1">
+        {getIcon()} {pluralize(count, 'comment')}
+      </div>
       <div className="ms-auto d-flex">
         <span
           title={isThreadOwner ? 'toggle resolved' : 'only creator of thread can resolve'}
