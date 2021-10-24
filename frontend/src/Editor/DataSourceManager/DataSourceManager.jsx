@@ -110,23 +110,29 @@ class DataSourceManager extends React.Component {
         encrypted: keyMeta ? keyMeta.encrypted : false,
       };
     });
-
-    if (selectedDataSource.id) {
-      this.setState({ isSaving: true });
-      datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
-        this.setState({ isSaving: false });
-        this.hideModal();
-        toast.success('Datasource Saved', { hideProgressBar: true, position: 'top-center' });
-        this.props.dataSourcesChanged();
-      });
+    if (name.trim() !== ''){
+      if (selectedDataSource.id) {
+        this.setState({ isSaving: true });
+        datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
+          this.setState({ isSaving: false });
+          this.hideModal();
+          toast.success('Datasource Saved', { hideProgressBar: true, position: 'top-center' });
+          this.props.dataSourcesChanged();
+        });
+      } else {
+        this.setState({ isSaving: true });
+        datasourceService.create(appId, name, kind, parsedOptions).then(() => {
+          this.setState({ isSaving: false });
+          this.hideModal();
+          toast.success('Datasource Added', { hideProgressBar: true, position: 'top-center' });
+          this.props.dataSourcesChanged();
+        });
+      }
     } else {
-      this.setState({ isSaving: true });
-      datasourceService.create(appId, name, kind, parsedOptions).then(() => {
-        this.setState({ isSaving: false });
-        this.hideModal();
-        toast.success('Datasource Added', { hideProgressBar: true, position: 'top-center' });
-        this.props.dataSourcesChanged();
-      });
+      toast.error(
+        "Can't add datasource with empty name", 
+        { hideProgressBar: true, position: 'top-center' }
+      );
     }
   };
 
