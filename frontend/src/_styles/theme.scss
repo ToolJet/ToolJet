@@ -318,7 +318,6 @@ body {
       height: 350px;
       width: 79%;
       position: fixed;
-      // z-index: 1;
       left: 3%;
       bottom: 0;
       overflow-x: hidden;
@@ -422,10 +421,6 @@ body {
             --tblr-gutter-x: 0rem;
           }
 
-          .query-list {
-            // padding-top: 40px;
-          }
-
           .query-list::-webkit-scrollbar {
             width: 0;
             background: transparent;
@@ -489,7 +484,6 @@ body {
         background: #edeff5;
         margin: 0px auto;
         background-size: 80px 80px;
-        // background-image: url(/public/images/tile.png);
         background-repeat: repeat;
       }
     }
@@ -766,11 +760,6 @@ body {
 .jet-data-table {
   thead {
     z-index: 2;
-  }
-
-  .markdown > table > :not(caption) > * > *,
-  .table > :not(caption) > * > * {
-    //padding-bottom: 0.1rem;
   }
 
   .table-row:hover,
@@ -1441,9 +1430,6 @@ body {
     }
   }
 
-  .CodeMirror-focused {
-  }
-
   .CodeMirror-vscrollbar,
   .CodeMirror-hscrollbar {
     background: transparent;
@@ -1566,11 +1552,9 @@ hr {
   }
 }
 
-// .draggable-box:hover {
 .config-handle {
   display: block;
 }
-// }
 
 .apps-table {
   .app-title {
@@ -2093,13 +2077,8 @@ input:focus-visible {
   }
 
   .skeleton-line::after {
-    // background-image: linear-gradient(to right, #232e3c 0, #4c5b79 40%, #4c5b79 80%);
     background-image: linear-gradient(to right, #566177 0, #5a6170 40%, #4c5b79 80%);
   }
-
-  // .btn {
-  //   filter: brightness(1) invert(1);
-  // }
 
   .select-search__input {
     color: rgb(224, 224, 224);
@@ -2213,20 +2192,10 @@ input:focus-visible {
 }
 
 .nav-tabs .nav-link.active {
-  // background: 0;
   border: 0;
   border-bottom: 1px solid #206bc4;
   font-weight: 400;
-  // color: #fff;
 }
-
-// .nav-tabs .nav-link.active:hover {
-//   border-bottom: 1px solid #206bc4;
-// }
-
-// .nav-tabs .nav-link:hover {
-//   border: 0;
-// }
 
 .table-no-divider {
   td {
