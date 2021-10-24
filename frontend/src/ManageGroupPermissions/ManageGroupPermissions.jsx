@@ -86,6 +86,14 @@ class ManageGroupPermissions extends React.Component {
     this.setState({ showGroupDeletionConfirmation: true, groupToBeDeleted: groupPermissionId });
   };
 
+  cancelDeleteGroupDialog = () => {
+    this.setState({
+      isDeletingGroup: false,
+      groupToBeDeleted: null,
+      showGroupDeletionConfirmation: false,
+    });
+  };
+
   executeGroupDeletion = () => {
     this.setState({ isDeletingGroup: true });
     groupPermissionService
@@ -99,12 +107,10 @@ class ManageGroupPermissions extends React.Component {
       })
       .catch(({ error }) => {
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
+      })
+      .finally(() => {
+        this.cancelDeleteGroupDialog();
       });
-    this.setState({
-      isDeletingGroup: false,
-      groupToBeDeleted: null,
-      showGroupDeletionConfirmation: false,
-    });
   };
 
   render() {
@@ -122,7 +128,7 @@ class ManageGroupPermissions extends React.Component {
           message={"This group will be permanently deleted. Do you want to continue?"}
           confirmButtonLoading={isDeletingGroup}
           onConfirm={() => this.executeGroupDeletion()}
-          onCancel={() => { }}
+          onCancel={() => this.cancelDeleteGroupDialog()}
         />
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
