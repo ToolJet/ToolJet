@@ -194,7 +194,7 @@ export const Inspector = ({
         </div>
       </div>
 
-      {componentMeta.component === 'Table' && (
+      {componentMeta?.component === 'Table' && (
         <Table
           component={component}
           paramUpdated={paramUpdated}
@@ -210,7 +210,7 @@ export const Inspector = ({
         />
       )}
 
-      {componentMeta.component === 'Chart' && (
+      {componentMeta?.component === 'Chart' && (
         <Chart
           component={component}
           paramUpdated={paramUpdated}
@@ -224,7 +224,7 @@ export const Inspector = ({
         />
       )}
 
-      {!['Table', 'Chart'].includes(componentMeta.component) && (
+      {!['Table', 'Chart'].includes(componentMeta?.component) && (
         <div className="properties-container p-2">
           {Object.keys(componentMeta.properties).map((property) =>
             renderElement(
