@@ -1000,6 +1000,9 @@ export const componentTypes = [
         defaultMarkers: {
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
         },
+        canSearch: {
+          value: true ,
+        },
       },
       addNewMarkers: { value: '{{false}}' },
       events: [],
