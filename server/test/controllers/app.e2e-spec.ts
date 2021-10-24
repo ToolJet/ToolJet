@@ -21,13 +21,13 @@ describe('Authentication', () => {
   });
 
   it('should create new users', async () => {
-    const response = await request(app.getHttpServer()).post('/signup').send({ email: 'test@tooljet.io' });
+    const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
     expect(response.statusCode).toBe(201);
 
     const id = response.body['id'];
     const user = await userRepository.findOne(id, { relations: ['organization'] });
 
-    expect(user.organization.name).toBe('Untitled organization');
+    expect(await user.organization.name).toBe('Untitled organization');
 
     const groupPermissions = await user.groupPermissions;
     const groupNames = groupPermissions.map((x) => x.group);
@@ -37,14 +37,14 @@ describe('Authentication', () => {
 
   it('authenticate if valid credentials', async () => {
     await request(app.getHttpServer())
-      .post('/authenticate')
+      .post('/api/authenticate')
       .send({ email: 'admin@tooljet.io', password: 'password' })
       .expect(201);
   });
 
   it('throw 401 if invalid credentials', async () => {
     await request(app.getHttpServer())
-      .post('/authenticate')
+      .post('/api/authenticate')
       .send({ email: 'amdin@tooljet.io', password: 'pwd' })
       .expect(401);
   });

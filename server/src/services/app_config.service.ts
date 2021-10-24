@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppConfigService {
-  constructor() {}
-
   async public_config() {
     const whitelistedConfigVars = process.env.ALLOWED_CLIENT_CONFIG_VARS
       ? this.fetchAllowedConfigFromEnv()

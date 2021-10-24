@@ -39,26 +39,26 @@ describe('organization users controller', () => {
     });
 
     await request(app.getHttpServer())
-      .post(`/organization_users`)
+      .post(`/api/organization_users`)
       .set('Authorization', authHeaderForUser(adminUserData.user))
       .send({ email: 'test@tooljet.io', groups: ['Viewer', 'all_users'] })
       .expect(201);
 
     await request(app.getHttpServer())
-      .post(`/organization_users`)
+      .post(`/api/organization_users`)
       .set('Authorization', authHeaderForUser(developerUserData.user))
       .send({ email: 'test2@tooljet.io', groups: ['Viewer', 'all_users'] })
       .expect(403);
 
     await request(app.getHttpServer())
-      .post(`/organization_users`)
+      .post(`/api/organization_users`)
       .set('Authorization', authHeaderForUser(viewerUserData.user))
       .send({ email: 'test3@tooljet.io', groups: ['Viewer', 'all_users'] })
       .expect(403);
   });
 
   it('should allow only authenticated users to archive org users', async () => {
-    await request(app.getHttpServer()).post('/organization_users/random-id/archive/').expect(401);
+    await request(app.getHttpServer()).post('/api/organization_users/random-id/archive/').expect(401);
   });
 
   it('should allow only admin users to archive org users', async () => {
@@ -79,7 +79,7 @@ describe('organization users controller', () => {
     });
 
     let response = await request(app.getHttpServer())
-      .post(`/organization_users/${adminUserData.orgUser.id}/archive`)
+      .post(`/api/organization_users/${adminUserData.orgUser.id}/archive`)
       .set('Authorization', authHeaderForUser(viewerUserData.user))
       .expect(403);
 
@@ -87,7 +87,7 @@ describe('organization users controller', () => {
     expect(adminUserData.orgUser.status).toBe('invited');
 
     response = await request(app.getHttpServer())
-      .post(`/organization_users/${adminUserData.orgUser.id}/archive`)
+      .post(`/api/organization_users/${adminUserData.orgUser.id}/archive`)
       .set('Authorization', authHeaderForUser(developerUserData.user))
       .expect(403);
 
@@ -95,7 +95,7 @@ describe('organization users controller', () => {
     expect(adminUserData.orgUser.status).toBe('invited');
 
     response = await request(app.getHttpServer())
-      .post(`/organization_users/${developerUserData.orgUser.id}/archive`)
+      .post(`/api/organization_users/${developerUserData.orgUser.id}/archive`)
       .set('Authorization', authHeaderForUser(adminUserData.user))
       .expect(201);
 

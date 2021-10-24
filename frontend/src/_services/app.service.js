@@ -6,6 +6,8 @@ export const appService = {
   getAll,
   createApp,
   cloneApp,
+  exportApp,
+  importApp,
   deleteApp,
   getApp,
   getAppBySlug,
@@ -38,6 +40,16 @@ function createApp() {
 function cloneApp(id) {
   const requestOptions = { method: 'POST', headers: authHeader() };
   return fetch(`${config.apiUrl}/apps/${id}/clone`, requestOptions).then(handleResponse);
+}
+
+function exportApp(id) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/apps/${id}/export`, requestOptions).then(handleResponse);
+}
+
+function importApp(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/apps/import`, requestOptions).then(handleResponse);
 }
 
 function getApp(id) {

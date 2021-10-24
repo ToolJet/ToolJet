@@ -53,7 +53,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
       case 'toggle':
         return {
           defaultChecked: options[$key],
-          onChange: () => optionchanged($key, !options[$key]),
+          onChange: () => optionchanged($key, !options[$key].value),
         };
       case 'dropdown':
       case 'dropdown-component-flip':

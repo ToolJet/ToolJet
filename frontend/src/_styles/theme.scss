@@ -798,6 +798,14 @@ body {
     }
   }
 
+  td.spacious {
+    min-height: 47px;
+  }
+
+  td.compact {
+    min-height: 40px;
+  }
+
   .has-dropdown,
   .has-multiselect,
   .has-text,
@@ -950,7 +958,7 @@ tr:focus {
 }
 
 .jet-container {
-  border-radius: 8px;
+
 }
 
 .select-search__option {
@@ -1217,6 +1225,7 @@ body {
 
 .RichEditor-editor .public-DraftEditor-content {
   min-height: 100px;
+  overflow-y: scroll;
 }
 
 .RichEditor-hidePlaceholder .public-DraftEditorPlaceholder-root {
@@ -1760,6 +1769,11 @@ input:focus-visible {
   }
 }
 
+.user-email:hover {
+  text-decoration: none;
+  cursor: text;
+}
+
 .theme-dark {
   .navbar .navbar-nav .active > .nav-link,
   .theme-dark .navbar .navbar-nav .nav-link.active,
@@ -1794,6 +1808,9 @@ input:focus-visible {
 
   .card {
     background-color: #324156 !important;
+  }
+  .card .table tbody td a{
+    color: inherit;
   }
 
   .DateInput {
@@ -2011,10 +2028,15 @@ input:focus-visible {
   .editor .editor-sidebar .inspector .header {
     border: solid rgba(255, 255, 255, 0.09) !important;
     border-width: 0px 0px 1px 0px !important;
+    .input-icon .input-icon-addon img {
+        filter: invert(1);
+    }
   }
-  .editor .editor-sidebar .inspector .hr-text {
+
+  .hr-text {
     color: #fff !important;
   }
+
   .skeleton-line::after {
     // background-image: linear-gradient(to right, #232e3c 0, #4c5b79 40%, #4c5b79 80%);
     background-image: linear-gradient(to right, #566177 0, #5a6170 40%, #4c5b79 80%);
@@ -2185,8 +2207,21 @@ input[type='text'] {
 
 .dropdown-widget,
 .multiselect-widget {
+
+  .form-label {
+    margin-bottom: 0px;
+  }
+
   .select-search__input {
-    padding: 0.1375rem 0.75rem;
+    height: 100%;
+  }
+
+  .select-search__value {
+    height: 100%;
+  }
+
+  .select-search {
+    height: 100%
   }
 
   .select-search__options {

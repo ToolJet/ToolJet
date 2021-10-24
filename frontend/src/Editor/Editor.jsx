@@ -309,6 +309,23 @@ class Editor extends React.Component {
     });
   };
 
+  saveAppName = (id, name, notify = false) => {
+
+    if (!name.trim()) {
+      toast.warn("App name can't be empty or whitespace", {
+        hideProgressBar: true,
+        position: 'top-center',
+      });
+
+      this.setState({
+        app: { ...this.state.app, name: this.state.oldName },
+      })
+
+      return;
+    }
+    this.saveApp(id, {name}, notify);
+  }
+
   renderDataSource = (dataSource) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
     return (
@@ -569,8 +586,9 @@ class Editor extends React.Component {
                   <input
                     type="text"
                     style={{ width: '200px', left: '80px', position: 'absolute' }}
+                    onFocus={(e) => this.setState({ oldName: e.target.value })}
                     onChange={(e) => this.onNameChanged(e.target.value)}
-                    onBlur={(e) => this.saveApp(this.state.app.id, { name: e.target.value })}
+                    onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
                     className="form-control-plaintext form-control-plaintext-sm"
                     value={this.state.app.name}
                   />
@@ -592,12 +610,12 @@ class Editor extends React.Component {
                     />
                   </span>
                   <span
-                    className={`btn btn-default mx-2`}
+                    className={`btn btn-light mx-2`}
                     onClick={this.toggleQueryEditor}
                     data-tip="Show query editor"
                     data-class="py-1 px-2"
                     ref={this.toolTipRefShow}
-                    style={{ display: 'none' }}
+                    style={{ display: 'none', opacity: 0.5 }}
                   >
                     <img
                       style={{ transform: 'rotate(-90deg)' }}
@@ -612,6 +630,7 @@ class Editor extends React.Component {
                     <button
                       type="button"
                       className="btn btn-light"
+                      data-tip="Desktop view"
                       onClick={() => this.setState({ currentLayout: 'desktop' })}
                       disabled={currentLayout === 'desktop'}
                     >
@@ -620,6 +639,7 @@ class Editor extends React.Component {
                     <button
                       type="button"
                       className="btn btn-light"
+                      data-tip="Mobile view"
                       onClick={() => this.setState({ currentLayout: 'mobile' })}
                       disabled={currentLayout === 'mobile'}
                     >

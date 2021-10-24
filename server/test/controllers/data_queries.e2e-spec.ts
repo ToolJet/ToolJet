@@ -84,7 +84,7 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData]) {
       const newOptions = { method: userData.user.email };
       const response = await request(app.getHttpServer())
-        .patch(`/data_queries/${dataQuery.id}`)
+        .patch(`/api/data_queries/${dataQuery.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: newOptions,
@@ -99,7 +99,7 @@ describe('data queries controller', () => {
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const oldOptions = dataQuery.options;
       const response = await request(app.getHttpServer())
-        .patch(`/data_queries/${dataQuery.id}`)
+        .patch(`/api/data_queries/${dataQuery.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: { method: '' },
@@ -160,7 +160,7 @@ describe('data queries controller', () => {
       const newOptions = { method: userData.user.email };
 
       const response = await request(app.getHttpServer())
-        .delete(`/data_queries/${dataQuery.id}`)
+        .delete(`/api/data_queries/${dataQuery.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: newOptions,
@@ -185,7 +185,7 @@ describe('data queries controller', () => {
       const oldOptions = dataQuery.options;
 
       const response = await request(app.getHttpServer())
-        .delete(`/data_queries/${dataQuery.id}`)
+        .delete(`/api/data_queries/${dataQuery.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: { method: '' },
@@ -239,7 +239,7 @@ describe('data queries controller', () => {
 
     for (const userData of [adminUserData, developerUserData]) {
       const response = await request(app.getHttpServer())
-        .get(`/data_queries?app_id=${application.id}`)
+        .get(`/api/data_queries?app_id=${application.id}`)
         .set('Authorization', authHeaderForUser(userData.user));
 
       expect(response.statusCode).toBe(200);
@@ -247,14 +247,14 @@ describe('data queries controller', () => {
     }
 
     let response = await request(app.getHttpServer())
-      .get(`/data_queries?app_id=${application.id}`)
+      .get(`/api/data_queries?app_id=${application.id}`)
       .set('Authorization', authHeaderForUser(viewerUserData.user));
 
-    expect(response.statusCode).toBe(403);
+    expect(response.statusCode).toBe(200);
 
     // Forbidden if user of another organization
     response = await request(app.getHttpServer())
-      .get(`/data_queries?app_id=${application.id}`)
+      .get(`/api/data_queries?app_id=${application.id}`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
     expect(response.statusCode).toBe(403);
@@ -302,7 +302,7 @@ describe('data queries controller', () => {
 
     for (const userData of [adminUserData, developerUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/data_queries`)
+        .post(`/api/data_queries`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send(queryParams);
 
@@ -312,7 +312,7 @@ describe('data queries controller', () => {
     // Forbidden if a viewer or a user of another organization
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/data_queries`)
+        .post(`/api/data_queries`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send(queryParams);
 
@@ -349,7 +349,7 @@ describe('data queries controller', () => {
 
     // Create query if data source belongs to same app
     let response = await request(app.getHttpServer())
-      .post(`/data_queries`)
+      .post(`/api/data_queries`)
       .set('Authorization', authHeaderForUser(adminUserData.user))
       .send(queryParams);
 
@@ -364,7 +364,7 @@ describe('data queries controller', () => {
 
     // Fordbidden if data source belongs to another app
     response = await request(app.getHttpServer())
-      .post(`/data_queries`)
+      .post(`/api/data_queries`)
       .set('Authorization', authHeaderForUser(adminUserData.user))
       .send(queryParams);
 
@@ -425,7 +425,7 @@ describe('data queries controller', () => {
 
     for (const userData of [adminUserData, developerUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/data_queries/${dataQuery.id}/run`)
+        .post(`/api/data_queries/${dataQuery.id}/run`)
         .set('Authorization', authHeaderForUser(userData.user));
 
       expect(response.statusCode).toBe(201);
@@ -460,7 +460,7 @@ describe('data queries controller', () => {
     });
 
     const response = await request(app.getHttpServer())
-      .post(`/data_queries/${dataQuery.id}/run`)
+      .post(`/api/data_queries/${dataQuery.id}/run`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
     expect(response.statusCode).toBe(403);
@@ -488,7 +488,7 @@ describe('data queries controller', () => {
       },
     });
 
-    const response = await request(app.getHttpServer()).post(`/data_queries/${dataQuery.id}/run`);
+    const response = await request(app.getHttpServer()).post(`/api/data_queries/${dataQuery.id}/run`);
 
     expect(response.statusCode).toBe(201);
     expect(response.body.data.length).toBe(30);
@@ -516,7 +516,7 @@ describe('data queries controller', () => {
       },
     });
 
-    const response = await request(app.getHttpServer()).post(`/data_queries/${dataQuery.id}/run`);
+    const response = await request(app.getHttpServer()).post(`/api/data_queries/${dataQuery.id}/run`);
 
     expect(response.statusCode).toBe(401);
   });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const TextInput = function TextInput({
   id,
@@ -9,6 +9,7 @@ export const TextInput = function TextInput({
   onComponentClick,
   currentState,
   onComponentOptionChanged,
+  validate,
 }) {
   const placeholder = component.definition.properties.placeholder.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
@@ -35,11 +36,7 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newText]);
 
-  const validationData = validateWidget({
-    validationObject: component.definition.validation,
-    widgetValue: value,
-    currentState,
-  });
+  const validationData = validate(value);
 
   const { isValid, validationError } = validationData;
 

@@ -66,7 +66,7 @@ describe('data sources controller', () => {
 
     for (const userData of [adminUserData, developerUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/data_sources`)
+        .post(`/api/data_sources`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send(dataSourceParams);
 
@@ -79,7 +79,7 @@ describe('data sources controller', () => {
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
-        .post(`/data_sources`)
+        .post(`/api/data_sources`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send(dataSourceParams);
 
@@ -135,7 +135,7 @@ describe('data sources controller', () => {
         { key: 'foo', value: 'baz', encrypted: 'true' },
       ];
       const response = await request(app.getHttpServer())
-        .put(`/data_sources/${dataSource.id}`)
+        .put(`/api/data_sources/${dataSource.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: newOptions,
@@ -156,7 +156,7 @@ describe('data sources controller', () => {
         { key: 'foo', value: 'baz', encrypted: 'true' },
       ];
       const response = await request(app.getHttpServer())
-        .put(`/data_sources/${dataSource.id}`)
+        .put(`/api/data_sources/${dataSource.id}`)
         .set('Authorization', authHeaderForUser(userData.user))
         .send({
           options: newOptions,
@@ -208,7 +208,7 @@ describe('data sources controller', () => {
 
     for (const userData of [adminUserData, developerUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
-        .get(`/data_sources?app_id=${application.id}`)
+        .get(`/api/data_sources?app_id=${application.id}`)
         .set('Authorization', authHeaderForUser(userData.user));
 
       expect(response.statusCode).toBe(200);
@@ -217,7 +217,7 @@ describe('data sources controller', () => {
 
     // Forbidden if user of another organization
     const response = await request(app.getHttpServer())
-      .get(`/data_sources?app_id=${application.id}`)
+      .get(`/api/data_sources?app_id=${application.id}`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
     expect(response.statusCode).toBe(403);
@@ -246,7 +246,7 @@ describe('data sources controller', () => {
 
     // Should not update if user of another org
     const response = await request(app.getHttpServer())
-      .post(`/data_sources/${dataSource.id}/authorize_oauth2`)
+      .post(`/api/data_sources/${dataSource.id}/authorize_oauth2`)
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
       .send({
         code: 'oauth-auth-code',

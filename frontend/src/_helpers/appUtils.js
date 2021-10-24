@@ -67,7 +67,7 @@ export async function executeActionsForEventId(_ref, eventId, component, mode) {
   const filteredEvents = events.filter((event) => event.eventId === eventId);
 
   for (const event of filteredEvents) {
-    await executeAction(_ref, event, mode);
+    await executeAction(_ref, event, mode); // skipcq: JS-0032
   }
 }
 
@@ -262,6 +262,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onChange',
       'onSelectionChange',
       'onSelect',
+      'onClick',
     ].includes(eventName)
   ) {
     const { component } = options;
