@@ -1001,7 +1001,7 @@ export const componentTypes = [
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
         },
         canSearch: {
-          value: true ,
+          value: `{{true}}` ,
         },
       },
       addNewMarkers: { value: '{{false}}' },
