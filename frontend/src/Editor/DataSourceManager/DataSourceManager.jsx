@@ -322,13 +322,21 @@ class DataSourceManager extends React.Component {
 
           {!dataSourceMeta?.hideSave && selectedDataSource && dataSourceMeta.customTesting && (
             <Modal.Footer>
-              <div className="row mt-3">
-                <div className="col"></div>
-                <div className="col-auto">
-                  <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
-                    {isSaving ? 'Saving...' : 'Save'}
-                  </Button>
-                </div>
+              <div className="col">
+                <small>
+                  <a
+                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Read documentation
+                  </a>
+                </small>
+              </div>
+              <div className="col-auto">
+                <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Button>
               </div>
             </Modal.Footer>
           )}
