@@ -462,7 +462,7 @@ class Editor extends React.Component {
   };
 
   toggleQueryEditor = () => {
-    this.setState({ showQueryEditor: !this.state.showQueryEditor });
+    this.setState((prev) => ({ showQueryEditor: !prev.showQueryEditor }));
     this.toolTipRefHide.current.style.display = this.state.showQueryEditor ? 'none' : 'flex';
     this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'flex' : 'none';
   };
@@ -490,7 +490,7 @@ class Editor extends React.Component {
   };
 
   toggleQuerySearch = () => {
-    this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
+    this.setState((prev) => ({ showQuerySearchField: !prev.showQuerySearchField }));
   };
 
   onVersionDeploy = (versionId) => {
