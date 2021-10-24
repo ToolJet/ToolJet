@@ -310,7 +310,6 @@ class Editor extends React.Component {
   };
 
   saveAppName = (id, name, notify = false) => {
-
     if (!name.trim()) {
       toast.warn("App name can't be empty or whitespace", {
         hideProgressBar: true,
@@ -319,12 +318,12 @@ class Editor extends React.Component {
 
       this.setState({
         app: { ...this.state.app, name: this.state.oldName },
-      })
+      });
 
       return;
     }
-    this.saveApp(id, {name}, notify);
-  }
+    this.saveApp(id, { name }, notify);
+  };
 
   renderDataSource = (dataSource) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -508,8 +507,8 @@ class Editor extends React.Component {
     });
   };
 
-  toolTipRefHide = createRef(null);
-  toolTipRefShow = createRef(null);
+  toolTipRefHide = createRef();
+  toolTipRefShow = createRef();
 
   render() {
     const {
