@@ -314,11 +314,7 @@ class HomePage extends React.Component {
                     </div>
 
                     <div
-                      className={
-                        currentFolder.count === 0
-                          ? 'table-responsive w-100 apps-table mt-3 d-flex align-items-center'
-                          : 'table-responsive w-100 apps-table mt-3'
-                      }
+                      className='table-responsive w-100 apps-table'
                       style={{ minHeight: '600px' }}
                     >
                       <table

@@ -310,7 +310,6 @@ class Editor extends React.Component {
   };
 
   saveAppName = (id, name, notify = false) => {
-
     if (!name.trim()) {
       toast.warn("App name can't be empty or whitespace", {
         hideProgressBar: true,
@@ -319,12 +318,12 @@ class Editor extends React.Component {
 
       this.setState({
         app: { ...this.state.app, name: this.state.oldName },
-      })
+      });
 
       return;
     }
-    this.saveApp(id, {name}, notify);
-  }
+    this.saveApp(id, { name }, notify);
+  };
 
   renderDataSource = (dataSource) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -462,7 +461,7 @@ class Editor extends React.Component {
   };
 
   toggleQueryEditor = () => {
-    this.setState({ showQueryEditor: !this.state.showQueryEditor });
+    this.setState((prev) => ({ showQueryEditor: !prev.showQueryEditor }));
     this.toolTipRefHide.current.style.display = this.state.showQueryEditor ? 'none' : 'flex';
     this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'flex' : 'none';
   };
@@ -490,7 +489,7 @@ class Editor extends React.Component {
   };
 
   toggleQuerySearch = () => {
-    this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
+    this.setState((prev) => ({ showQuerySearchField: !prev.showQuerySearchField }));
   };
 
   onVersionDeploy = (versionId) => {
@@ -508,8 +507,8 @@ class Editor extends React.Component {
     });
   };
 
-  toolTipRefHide = createRef(null);
-  toolTipRefShow = createRef(null);
+  toolTipRefHide = createRef();
+  toolTipRefShow = createRef();
 
   render() {
     const {
