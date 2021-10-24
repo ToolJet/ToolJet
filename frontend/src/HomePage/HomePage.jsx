@@ -203,6 +203,14 @@ class HomePage extends React.Component {
     return app.app_group_permissions.some((p) => p.delete);
   };
 
+  cancelDeleteAppDialog = () => {
+    this.setState({
+      isDeletingApp: false,
+      appToBeDeleted: null,
+      showAppDeletionConfirmation: false,
+    });
+  };
+
   executeAppDeletion = () => {
     this.setState({ isDeletingApp: true });
     appService
@@ -213,11 +221,6 @@ class HomePage extends React.Component {
           hideProgressBar: true,
           position: 'top-center',
         });
-        this.setState({
-          isDeletingApp: false,
-          appToBeDeleted: null,
-          showAppDeletionConfirmation: false,
-        });
         this.fetchApps(this.state.currentPage || 1, this.state.currentFolder.id);
         this.fetchFolders();
       })
@@ -226,12 +229,10 @@ class HomePage extends React.Component {
           hideProgressBar: true,
           position: 'top-center',
         });
-        this.setState({
-          isDeletingApp: false,
-          appToBeDeleted: null,
-          showAppDeletionConfirmation: false,
-        });
         console.log(error);
+      })
+      .finally(() => {
+        this.cancelDeleteAppDialog();
       });
   };
 
@@ -257,7 +258,7 @@ class HomePage extends React.Component {
           message={'The app and the associated data will be permanently deleted, do you want to continue?'}
           confirmButtonLoading={isDeletingApp}
           onConfirm={() => this.executeAppDeletion()}
-          onCancel={() => {}}
+          onCancel={() => this.cancelDeleteAppDialog()}
         />
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -388,11 +389,10 @@ class HomePage extends React.Component {
                                         >
                                           {
                                             <span
-                                              className={`${
-                                                app?.current_version_id
-                                                  ? 'badge bg-blue-lt mx-2 '
-                                                  : 'badge bg-light-grey mx-2'
-                                              }`}
+                                              className={`${app?.current_version_id
+                                                ? 'badge bg-blue-lt mx-2 '
+                                                : 'badge bg-light-grey mx-2'
+                                                }`}
                                             >
                                               launch{' '}
                                             </span>
@@ -414,11 +414,10 @@ class HomePage extends React.Component {
                                         >
                                           {
                                             <span
-                                              className={`${
-                                                app?.current_version_id === null
-                                                  ? 'badge mx-2 '
-                                                  : 'badge bg-azure-lt mx-2'
-                                              }`}
+                                              className={`${app?.current_version_id === null
+                                                ? 'badge mx-2 '
+                                                : 'badge bg-azure-lt mx-2'
+                                                }`}
                                               style={{
                                                 filter:
                                                   app?.current_version_id === null
