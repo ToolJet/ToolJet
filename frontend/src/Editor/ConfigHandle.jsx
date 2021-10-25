@@ -18,6 +18,7 @@ export const ConfigHandle = function ConfigHandle({ id, component, configHandleC
           src="/assets/images/icons/menu.svg"
           width="8"
           height="8"
+          draggable="false"
         />
         {component.name}
       </span>
@@ -28,6 +29,7 @@ export const ConfigHandle = function ConfigHandle({ id, component, configHandleC
         role="button"
         className="mx-2"
         height="12"
+        draggable="false"
         onClick={() => removeComponent({ id })}
       />
     </div>
