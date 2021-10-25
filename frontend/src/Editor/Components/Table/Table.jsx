@@ -756,6 +756,10 @@ export function Table({
     }
   }, [state.columnResizing.isResizingColumn]);
 
+  useEffect(() => {
+    if (pageCount <= pageIndex) gotoPage(pageCount - 1);
+  }, [pageCount]);
+
   return (
     <div
       data-disabled={parsedDisabledState}
