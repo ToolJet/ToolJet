@@ -48,7 +48,7 @@ export class GroupPermissionsService {
     if (groupPermission.group == 'admin' || groupPermission.group == 'all_users') {
       throw new BadRequestException('Cannot delete default group');
     }
-    getManager().transaction(async (manager) => {
+    await getManager().transaction(async (manager) => {
       const relationalEntitiesToBeDeleted = [AppGroupPermission, UserGroupPermission];
 
       for (const entityToDelete of relationalEntitiesToBeDeleted) {
@@ -94,25 +94,37 @@ export class GroupPermissionsService {
       organizationId: user.organizationId,
     });
 
-    await this.appGroupPermissionsRepository.manager.transaction(async (manager) => {
-      if (body.remove_apps) {
+    const { app_create, app_delete, add_apps, remove_apps, add_users, remove_users } = body;
+
+    await getManager().transaction(async (manager) => {
+      // update group permissions
+      const groupPermissionUpdateParams = {
+        ...(typeof app_create === 'boolean' && { appCreate: app_create }),
+        ...(typeof app_delete === 'boolean' && { appDelete: app_delete }),
+      };
+      if (Object.keys(groupPermissionUpdateParams).length !== 0) {
+        await manager.update(GroupPermission, groupPermissionId, groupPermissionUpdateParams);
+      }
+
+      // update app group permissions
+      if (remove_apps) {
         if (groupPermission.group == 'admin') {
           throw new BadRequestException('Cannot update admin group');
         }
-        for (const appId of body.remove_apps) {
-          manager.delete(AppGroupPermission, {
+        for (const appId of remove_apps) {
+          await manager.delete(AppGroupPermission, {
             appId: appId,
             groupPermissionId: groupPermissionId,
           });
         }
       }
 
-      if (body.add_apps) {
+      if (add_apps) {
         if (groupPermission.group == 'admin') {
           throw new BadRequestException('Cannot update admin group');
         }
-        for (const appId of body.add_apps) {
-          manager.save(
+        for (const appId of add_apps) {
+          await manager.save(
             AppGroupPermission,
             manager.create(AppGroupPermission, {
               appId: appId,
@@ -122,10 +134,9 @@ export class GroupPermissionsService {
           );
         }
       }
-    });
 
-    await this.userGroupPermissionsRepository.manager.transaction(async (manager) => {
-      if (body.remove_users) {
+      // update user group permissions
+      if (remove_users) {
         for (const userId of body.remove_users) {
           const params = {
             removeGroups: [groupPermission.group],
@@ -134,7 +145,7 @@ export class GroupPermissionsService {
         }
       }
 
-      if (body.add_users) {
+      if (add_users) {
         for (const userId of body.add_users) {
           const params = {
             addGroups: [groupPermission.group],
