@@ -269,7 +269,7 @@ export const EventManager = ({
 
             {event.actionId === 'set-localstorage-value' && (
               <>
-                <div className="row mt-3">
+                <div className="row">
                   <div className="col-3 p-2">Key</div>
                   <div className="col-9">
                     <CodeHinter
@@ -280,7 +280,7 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row">
+                <div className="row mt-3">
                   <div className="col-3 p-2">Value</div>
                   <div className="col-9">
                     <CodeHinter
