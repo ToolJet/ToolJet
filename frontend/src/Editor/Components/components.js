@@ -1001,7 +1001,7 @@ export const componentTypes = [
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
         },
         canSearch: {
-          value: `{{true}}` ,
+          value: `{{true}}`,
         },
       },
       addNewMarkers: { value: '{{false}}' },
@@ -1133,8 +1133,63 @@ export const componentTypes = [
       properties: {},
       events: [],
       styles: {
-        dividerColor: { value: '#E7E8EA' },
         visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'FilePicker',
+    displayName: 'File Picker',
+    description: 'FilePicker desc',
+    component: 'FilePicker',
+    defaultSize: {
+      width: 300,
+      height: 100,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      enableDropzone: { type: 'toggle', displayName: 'Use Drop zone' },
+      enablePicker: { type: 'toggle', displayName: 'Use File Picker' },
+      enableMultiple: { type: 'code', displayName: 'Pick mulitple files' },
+      maxFileCount: { type: 'code', displayName: 'Max file count' },
+      fileType: { type: 'code', displayName: 'Accept file types' },
+      maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
+      minSize: { type: 'code', displayName: 'Min size limit (Bytes)' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      name: [],
+      content: [],
+      type: [],
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        enableDropzone: { value: '{{true}}' },
+        enablePicker: { value: '{{true}}' },
+        maxFileCount: { value: '{{2}}' },
+        enableMultiple: { value: '{{false}}' },
+        fileType: { value: '{{"image/jpeg, image/png"}}' },
+        maxSize: { value: '{{1048576}}' },
+        minSize: { value: '{{5000}}' },
+      },
+      events: {
+        onFileSelected: { displayName: 'On File Selected' },
+      },
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },
