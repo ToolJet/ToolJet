@@ -115,7 +115,7 @@ export class AppImportExportService {
     for (const appVersion of appVersions) {
       const version = manager.create(AppVersion, {
         app: importedApp,
-        definition: appVersion.definition,
+        definition: await this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping),
         name: appVersion.name,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -177,5 +177,39 @@ export class AppImportExportService {
       options.events = replacedEvents;
     }
     return options;
+  }
+
+  replaceDataQueryIdWithinDefinitions(definition, dataQueryMapping) {
+    if (definition?.components) {
+      for (const id of Object.keys(definition.components)) {
+        const component = definition.components[id].component;
+
+        if (component?.definition?.events) {
+          const replacedComponentEvents = component.definition.events.map((event) => {
+            if (event.queryId) {
+              event.queryId = dataQueryMapping[event.queryId];
+            }
+            return event;
+          });
+          component.definition.events = replacedComponentEvents;
+        }
+
+        if (component?.definition?.properties?.actions?.value) {
+          for (const value of component.definition.properties.actions.value) {
+            if (value?.events) {
+              const replacedComponentActionEvents = value.events.map((event) => {
+                if (event.queryId) {
+                  event.queryId = dataQueryMapping[event.queryId];
+                }
+                return event;
+              });
+              value.events = replacedComponentActionEvents;
+            }
+          }
+        }
+        definition.components[id].component = component;
+      }
+    }
+    return definition;
   }
 }
