@@ -160,16 +160,21 @@ describe('UsersService', () => {
 
   describe('.appGroupPermissions', () => {
     it('should return app group permissions for the user', async () => {
-      const { defaultUser, app } = await setupOrganization(nestApp);
-      const groupPermissionIdsFromApp = (await service.appGroupPermissions(defaultUser, app.id)).map(
+      const { adminUser, defaultUser, app } = await setupOrganization(nestApp);
+      let groupPermissionIdsFromApp = (await service.appGroupPermissions(adminUser, app.id)).map(
         (x) => x.groupPermissionId
       );
-
-      const groupPermissionIds = (await service.groupPermissions(defaultUser))
+      const adminGroupPermissionIds = (await service.groupPermissions(adminUser))
         .filter((x) => x.group == 'admin')
         .map((x) => x.id);
 
-      expect(new Set(groupPermissionIdsFromApp)).toEqual(new Set(groupPermissionIds));
+      expect(new Set(groupPermissionIdsFromApp)).toEqual(new Set(adminGroupPermissionIds));
+
+      groupPermissionIdsFromApp = (await service.appGroupPermissions(defaultUser, app.id)).map(
+        (x) => x.groupPermissionId
+      );
+
+      expect(groupPermissionIdsFromApp).toEqual([]);
     });
   });
 
