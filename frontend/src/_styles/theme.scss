@@ -1774,6 +1774,11 @@ input:focus-visible {
 }
 
 .theme-dark {
+
+ .breadcrumb a {
+    color: #fff;
+  }
+  
   .navbar .navbar-nav .active > .nav-link,
   .theme-dark .navbar .navbar-nav .nav-link.active,
   .theme-dark .navbar .navbar-nav .nav-link.show,
