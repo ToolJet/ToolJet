@@ -38,6 +38,7 @@ export const Container = ({
   darkMode,
   showComments,
   appVersionsId,
+  socket,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
@@ -287,12 +288,12 @@ export const Container = ({
       y: e.nativeEvent.offsetY,
       appVersionsId,
     });
-    // socket.send(
-    //   JSON.stringify({
-    //     event: 'events',
-    //     data: threadId,
-    //   })
-    // );
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: 'threads',
+      })
+    );
     addNewThread(data);
   };
 
@@ -311,6 +312,12 @@ export const Container = ({
       y: y - 130,
       appVersionsId,
     });
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: 'threads',
+      })
+    );
     addNewThread(data);
   };
 
@@ -324,7 +331,7 @@ export const Container = ({
         'cursor-text': showComments,
       })}
     >
-      {showComments && <Comments newThread={newThread} appVersionsId={appVersionsId} />}
+      {showComments && <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} />}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =

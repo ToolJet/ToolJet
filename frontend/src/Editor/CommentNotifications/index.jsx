@@ -10,7 +10,7 @@ import TabContent from './Content';
 
 import useRouter from '@/_hooks/use-router';
 
-const CommentNotifications = ({ toggleComments, appVersionsId }) => {
+const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   const [notifications, setNotifications] = React.useState([]);
   const [key, setKey] = React.useState('active');
 
@@ -23,6 +23,13 @@ const CommentNotifications = ({ toggleComments, appVersionsId }) => {
   }
   React.useEffect(() => {
     fetchData();
+  }, []);
+
+  React.useEffect(() => {
+    // Listen for messages
+    socket?.addEventListener('message', function (event) {
+      if (event.data === 'notifications') fetchData();
+    });
   }, []);
 
   return (

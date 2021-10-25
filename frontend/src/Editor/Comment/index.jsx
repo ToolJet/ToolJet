@@ -74,6 +74,12 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
         data: threadId,
       })
     );
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: 'notifications',
+      })
+    );
     fetchData();
   };
 

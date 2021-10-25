@@ -59,6 +59,9 @@ export class CommentService {
         thread: { appId, isResolved },
         appVersionsId,
       },
+      order: {
+        createdAt: 'DESC',
+      },
       relations: ['thread'],
     });
   }

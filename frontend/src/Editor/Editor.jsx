@@ -29,6 +29,7 @@ import ReactTooltip from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
+import config from 'config';
 import queryString from 'query-string';
 
 class Editor extends React.Component {
@@ -84,6 +85,7 @@ class Editor extends React.Component {
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
+      socket: null,
     };
   }
 
@@ -92,11 +94,42 @@ class Editor extends React.Component {
     this.fetchApp();
     this.fetchDataSources();
     this.fetchDataQueries();
+    this.initWebSocket();
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
     });
   }
+
+  componentWillUnmount() {
+    if (this.state.socket) {
+      this.state.socket?.close();
+    }
+  }
+
+  initWebSocket = () => {
+    // TODO: add retry policy
+    const socket = new WebSocket(`ws://${config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '')}`);
+
+    // Connection opened
+    socket.addEventListener('open', function (event) {
+      console.log('connection established', event);
+    });
+
+    // Connection closed
+    socket.addEventListener('close', function (event) {
+      console.log('connection closed', event);
+    });
+
+    // Listen for possible errors
+    socket.addEventListener('error', function (event) {
+      console.log('WebSocket error: ', event);
+    });
+
+    this.setState({
+      socket,
+    });
+  };
 
   fetchDataSources = () => {
     this.setState(
@@ -701,6 +734,7 @@ class Editor extends React.Component {
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
                   {defaultComponentStateComputed && (
                     <Container
+                      socket={this.state.socket}
                       showComments={showComments}
                       appVersionsId={this.state?.editingVersion?.id}
                       appDefinition={appDefinition}
@@ -885,6 +919,7 @@ class Editor extends React.Component {
             </div>
             {showComments && (
               <CommentNotifications
+                socket={this.state.socket}
                 appVersionsId={this.state?.editingVersion?.id}
                 toggleComments={this.toggleComments}
               />
