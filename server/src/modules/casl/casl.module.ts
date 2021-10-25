@@ -8,6 +8,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
 import { AppsAbilityFactory } from './abilities/apps-ability.factory';
 import { ThreadsAbilityFactory } from './abilities/threads-ability.factory';
+import { CommentsAbilityFactory } from './abilities/comments-ability.factory';
 import { CaslAbilityFactory } from './casl-ability.factory';
 
 @Module({
@@ -19,7 +20,8 @@ import { CaslAbilityFactory } from './casl-ability.factory';
     EmailService,
     AppsAbilityFactory,
     ThreadsAbilityFactory,
+    CommentsAbilityFactory,
   ],
-  exports: [CaslAbilityFactory, AppsAbilityFactory, ThreadsAbilityFactory],
+  exports: [CaslAbilityFactory, AppsAbilityFactory, ThreadsAbilityFactory, CommentsAbilityFactory],
 })
 export class CaslModule {}

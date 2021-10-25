@@ -235,6 +235,7 @@ export class UsersService {
           return this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, resourceId));
         }
       case 'Thread':
+      case 'Comment':
         return this.canAnyGroupPerformAction('update', await this.appGroupPermissions(user, resourceId));
 
       default:
