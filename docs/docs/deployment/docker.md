@@ -41,10 +41,10 @@ For example, if the server is an AWS EC2 instance and the installation should re
   Set up environment variables in `.env` file as explained in [environment variables reference](/docs/deployment/env-vars)
 
 
-  `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
+ The `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
 
 :::info
-We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
+We use a [Let's encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
 :::
 
   Examples:
@@ -82,4 +82,4 @@ We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to crea
     password: `password`
 
 
-9.  You're all done, ToolJet client would now be served at the URL you've set in `TOOLJET_HOST`.
+9.  You're all done,the ToolJet client will now be served at the URL you've set in `TOOLJET_HOST`.
