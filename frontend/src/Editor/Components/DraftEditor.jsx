@@ -46,13 +46,16 @@ class StyleButton extends React.Component {
   }
 }
 
-const BLOCK_TYPES = [
+const HEADINGS = [
   { label: 'H1', style: 'header-one' },
   { label: 'H2', style: 'header-two' },
   { label: 'H3', style: 'header-three' },
   { label: 'H4', style: 'header-four' },
   { label: 'H5', style: 'header-five' },
   { label: 'H6', style: 'header-six' },
+]
+
+const BLOCK_TYPES = [
   {
     label: <img src="/assets/images/icons/rich-text-editor/blockquote.svg" style={{ height: '16px' }} />,
     style: 'blockquote',
@@ -78,6 +81,26 @@ const BlockStyleControls = (props) => {
 
   return (
     <>
+      <div className="dropmenu">
+        <button className="dropdownbtn px-2" type="button">
+          Heading
+        </button>
+        <div className="dropdown-content bg-white">
+          {
+            HEADINGS.map((type) => (
+              <a className="dropitem m-0 p-0" href="#" key={type.label}>
+                <StyleButton
+                  key={type.label}
+                  active={type.style === blockType}
+                  label={type.label}
+                  onToggle={props.onToggle}
+                  style={type.style}
+                />
+              </a>
+            ))
+          }
+        </div>
+      </div>
       {BLOCK_TYPES.map((type) => (
         <StyleButton
           key={type.label}
@@ -201,7 +224,7 @@ class DraftEditor extends React.Component {
           <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
           <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
         </div>
-        <div className={className} onClick={this.focus}>
+        <div className={className} style={{height: `${this.props.height-60}px`}} onClick={this.focus}>
           <Editor
             blockStyleFn={getBlockStyle}
             customStyleMap={styleMap}
