@@ -13,7 +13,7 @@ moment.updateLocale('en', {
   },
 });
 
-const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
+const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
   const bottomRef = React.useRef();
 
   const scrollToBottom = () => {
@@ -48,6 +48,7 @@ const CommentBody = ({ thread, isLoading, setEditComment, setEditCommentId, fetc
               <div className="d-flex card-title comment-author">
                 {`${user?.firstName} ${user?.lastName}`}{' '}
                 <CommentActions
+                  socket={socket}
                   fetchComments={fetchComments}
                   comment={comment}
                   commentId={id}

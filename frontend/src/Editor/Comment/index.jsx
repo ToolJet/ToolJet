@@ -135,12 +135,14 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
                 setOpen(false);
               }, 0)
             }
+            socket={socket}
             threadId={threadId}
             fetchThreads={fetchThreads}
             isThreadOwner={currentUser.id === user.id}
             isResolved={isResolved}
           />
           <CommentBody
+            socket={socket}
             setEditComment={setEditComment}
             setEditCommentId={setEditCommentId}
             fetchComments={fetchData}

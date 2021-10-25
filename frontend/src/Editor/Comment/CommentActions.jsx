@@ -9,7 +9,15 @@ import OptionsIcon from './icons/options.svg';
 
 import { commentsService } from '@/_services';
 
-const CommentActions = ({ commentId, comment, setEditCommentId, setEditComment, fetchComments, isCommentOwner }) => {
+const CommentActions = ({
+  socket,
+  commentId,
+  comment,
+  setEditCommentId,
+  setEditComment,
+  fetchComments,
+  isCommentOwner,
+}) => {
   const [open, trigger, content, setOpen] = usePopover(false);
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
 
@@ -17,12 +25,24 @@ const CommentActions = ({ commentId, comment, setEditCommentId, setEditComment, 
     await commentsService.deleteComment(commentId);
     fetchComments();
     setOpen(false);
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: 'notifications',
+      })
+    );
   };
 
   const handleEdit = async () => {
     setEditComment(comment);
     setEditCommentId(commentId);
     setOpen(false);
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: 'notifications',
+      })
+    );
   };
 
   return (

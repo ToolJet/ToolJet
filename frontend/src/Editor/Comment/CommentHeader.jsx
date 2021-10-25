@@ -11,7 +11,7 @@ import Spinner from '@/_ui/Spinner';
 import UnResolvedIcon from './icons/unresolved.svg';
 import ResolvedIcon from './icons/resolved.svg';
 
-const CommentHeader = ({ count = 0, threadId, isResolved, isThreadOwner, fetchThreads, close }) => {
+const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner, fetchThreads, close }) => {
   const [spinning, setSpinning] = React.useState(false);
 
   const handleResolved = async () => {
@@ -19,6 +19,12 @@ const CommentHeader = ({ count = 0, threadId, isResolved, isThreadOwner, fetchTh
     await commentsService.updateThread(threadId, { isResolved: !isResolved });
     setSpinning(false);
     fetchThreads();
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: 'notifications',
+      })
+    );
     if (!isResolved) {
       toast.success('Thread resolved');
     } else {
