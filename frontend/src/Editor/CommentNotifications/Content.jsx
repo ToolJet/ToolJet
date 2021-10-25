@@ -18,6 +18,11 @@ const Content = ({ notifications }) => {
     else setSelectedCommentId('');
   }, [router]);
 
+  const getComment = (comment) => {
+    var regex = /(\()([^)]+)(\))/g;
+    return comment.replace(regex, '<span class=mentioned-user>$2</span>');
+  };
+
   const getContent = () => {
     if (isEmpty(notifications))
       return (
@@ -48,7 +53,10 @@ const Content = ({ notifications }) => {
                 </span>
                 <div className="comment-notification-count ms-auto">{moment(notification.createdAt).fromNow()}</div>
               </div>
-              <div className="comment-notification-message">{notification.comment}</div>
+              <div
+                className="comment-notification-message"
+                dangerouslySetInnerHTML={{ __html: getComment(notification.comment) }}
+              />
             </div>
           );
         })}

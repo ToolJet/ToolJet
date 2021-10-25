@@ -104,6 +104,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
           <span
             className={cx('comment cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded', {
               resolved: isResolved,
+              'comment-open': open,
             })}
           >
             {`${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}`}

@@ -1,5 +1,9 @@
 @import '../colors.scss';
 
+.mentioned-user {
+  color: #218DE3;
+}
+
 .comments {
   z-index: 2;
   display: inline-block;
@@ -20,6 +24,10 @@
 
   .comment {
     border: 2.5px solid #FCAA0D;
+  }
+
+  .comment-open {
+    border: 2.5px solid #218DE3 !important;
   }
 
   .comment-body {

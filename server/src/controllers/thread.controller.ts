@@ -37,6 +37,11 @@ export class ThreadController {
   @UseGuards(JwtAuthGuard)
   @Get('/:appId/all')
   public async getThreads(@Request() req, @Param('appId') appId: string, @Query() query): Promise<Thread[]> {
+    const ability = await this.threadsAbilityFactory.appsActions(req.user, { id: appId });
+
+    if (!ability.can('fetchThreads', Thread)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
     const threads = await this.threadService.getThreads(appId, req.user.organization.id, query.appVersionsId);
     return threads;
   }
@@ -50,7 +55,16 @@ export class ThreadController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:threadId')
-  public async getThread(@Param('threadId') threadId: number) {
+  public async getThread(@Param('threadId') threadId: number, @Request() req) {
+    const _response = await Thread.findOne({
+      where: { id: threadId },
+    });
+
+    const ability = await this.threadsAbilityFactory.appsActions(req.user, { id: _response.appId });
+
+    if (!ability.can('fetchThreads', Thread)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
     const thread = await this.threadService.getThread(threadId);
     return thread;
   }
@@ -59,15 +73,34 @@ export class ThreadController {
   @Patch('/edit/:threadId')
   public async editThread(
     @Body() createThreadDto: CreateThreadDTO,
-    @Param('threadId') threadId: number
+    @Param('threadId') threadId: number,
+    @Request() req
   ): Promise<Thread> {
+    const _response = await Thread.findOne({
+      where: { id: threadId },
+    });
+
+    const ability = await this.threadsAbilityFactory.appsActions(req.user, { id: _response.appId });
+
+    if (!ability.can('updateThread', Thread)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
     const thread = await this.threadService.editThread(threadId, createThreadDto);
     return thread;
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('/delete/:threadId')
-  public async deleteThread(@Param('threadId') threadId: number) {
+  public async deleteThread(@Param('threadId') threadId: number, @Request() req) {
+    const _response = await Thread.findOne({
+      where: { id: threadId },
+    });
+
+    const ability = await this.threadsAbilityFactory.appsActions(req.user, { id: _response.appId });
+
+    if (!ability.can('deleteThread', Thread)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
     const deletedThread = await this.threadService.deleteThread(threadId);
     return deletedThread;
   }

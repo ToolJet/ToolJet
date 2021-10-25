@@ -235,11 +235,7 @@ export class UsersService {
           return this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, resourceId));
         }
       case 'Thread':
-        if (action == 'create') {
-          return await this.hasGroup(user, 'admin');
-        } else {
-          return this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, resourceId));
-        }
+        return this.canAnyGroupPerformAction('update', await this.appGroupPermissions(user, resourceId));
 
       default:
         return false;
