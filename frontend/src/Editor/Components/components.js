@@ -1144,7 +1144,7 @@ export const componentTypes = [
     description: 'FilePicker desc',
     component: 'FilePicker',
     defaultSize: {
-      width: 300,
+      width: 270,
       height: 100,
     },
     others: {
@@ -1160,15 +1160,13 @@ export const componentTypes = [
       maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
       minSize: { type: 'code', displayName: 'Min size limit (Bytes)' },
     },
-    events: {},
+    events: { onFileSelected: { displayName: 'On File Selected' } },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      name: [],
-      content: [],
-      type: [],
+      file: [{ name: [], content: [], type: [] }],
     },
     definition: {
       others: {
@@ -1182,11 +1180,9 @@ export const componentTypes = [
         enableMultiple: { value: '{{false}}' },
         fileType: { value: '{{"image/jpeg, image/png"}}' },
         maxSize: { value: '{{1048576}}' },
-        minSize: { value: '{{5000}}' },
+        minSize: { value: '{{50}}' },
       },
-      events: {
-        onFileSelected: { displayName: 'On File Selected' },
-      },
+      events: [],
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
