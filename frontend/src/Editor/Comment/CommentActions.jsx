@@ -37,12 +37,6 @@ const CommentActions = ({
     setEditComment(comment);
     setEditCommentId(commentId);
     setOpen(false);
-    socket.send(
-      JSON.stringify({
-        event: 'events',
-        data: 'notifications',
-      })
-    );
   };
 
   return (

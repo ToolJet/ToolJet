@@ -86,6 +86,12 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
   const handleEdit = async (comment, cid) => {
     await commentsService.updateComment(cid, { comment });
     fetchData();
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: 'notifications',
+      })
+    );
   };
 
   const commentFadeStyle = useSpring({ from: { opacity: 0 }, to: { opacity: 1 } });
