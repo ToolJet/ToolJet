@@ -1,5 +1,10 @@
 import React from 'react';
 
-const Textarea = ({ ...props }) => <textarea data-bs-toggle="autosize" {...props} />;
+const Input = ({ helpText, ...props }) => (
+  <>
+    <textarea {...props} />
+    {helpText && <small className="text-muted" dangerouslySetInnerHTML={{ __html: helpText }} />}
+  </>
+);
 
-export default Textarea;
+export default Input;
