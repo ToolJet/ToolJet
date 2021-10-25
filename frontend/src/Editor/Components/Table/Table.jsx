@@ -756,6 +756,10 @@ export function Table({
     }
   }, [state.columnResizing.isResizingColumn]);
 
+  useEffect(() => {
+    if (pageCount <= pageIndex) gotoPage(pageCount - 1);
+  }, [pageCount]);
+
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -891,7 +895,7 @@ export function Table({
             <div className="col">
               {(clientSidePagination || serverSidePagination) && (
                 <Pagination
-                  lastActivePageIndex={currentState.components[component.name]?.pageIndex ?? 1}
+                  lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}
                   autoGotoPage={gotoPage}
                   autoCanNextPage={canNextPage}
