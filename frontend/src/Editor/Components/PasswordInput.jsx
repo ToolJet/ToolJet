@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import React, { useState } from 'react';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const TextInput = function TextInput({
+export const PasswordInput = ({
   id,
   width,
   height,
@@ -10,7 +10,10 @@ export const TextInput = function TextInput({
   currentState,
   onComponentOptionChanged,
   validate,
-}) {
+}) => {
+  const value = currentState?.components[component?.name]?.value;
+  const [text, setText] = useState(() => value ?? '');
+
   const placeholder = component.definition.properties.placeholder.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -18,23 +21,10 @@ export const TextInput = function TextInput({
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
-  let parsedWidgetVisibility = widgetVisibility;
-  const value = currentState?.components[component?.name]?.value;
+  const parsedWidgetVisibility =
+    typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility, currentState) : widgetVisibility;
+
   const currentValidState = currentState?.components[component?.name]?.isValid;
-
-  const [text, setText] = useState(value);
-
-  const textProperty = component.definition.properties.value;
-  let newText = value;
-  if (textProperty && currentState) {
-    newText = resolveReferences(textProperty.value, currentState, '');
-  }
-
-  useEffect(() => {
-    setText(newText);
-    onComponentOptionChanged(component, 'value', newText);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newText]);
 
   const validationData = validate(value);
 
@@ -42,12 +32,6 @@ export const TextInput = function TextInput({
 
   if (currentValidState !== isValid) {
     onComponentOptionChanged(component, 'isValid', isValid);
-  }
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
   }
 
   return (
@@ -62,12 +46,13 @@ export const TextInput = function TextInput({
           setText(e.target.value);
           onComponentOptionChanged(component, 'value', e.target.value);
         }}
-        type="text"
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
+        type={'password'}
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon rounded-0`}
         placeholder={placeholder}
-        style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
         value={text}
+        style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       />
+
       <div className="invalid-feedback">{validationError}</div>
     </div>
   );

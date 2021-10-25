@@ -240,6 +240,8 @@ export async function maybeCreateDefaultGroupPermissions(
       const groupPermission = groupPermissionRepository.create({
         organizationId: organizationId,
         group: group,
+        appCreate: group == 'admin',
+        appDelete: group == 'admin',
       });
       await groupPermissionRepository.save(groupPermission);
     }

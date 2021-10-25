@@ -48,6 +48,14 @@ export const componentTypes = [
           { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
       },
+      cellSize: {
+        type: 'select',
+        displayName: 'Cell size',
+        options: [
+          { name: 'Compact', value: 'compact' },
+          { name: 'Spacious', value: 'spacious' },
+        ],
+      },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -93,6 +101,7 @@ export const componentTypes = [
         textColor: { value: undefined },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        cellSize: { value: 'compact' },
       },
     },
   },
@@ -121,6 +130,7 @@ export const componentTypes = [
       textColor: { type: 'color', displayName: 'Text color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {},
     definition: {
@@ -138,6 +148,7 @@ export const componentTypes = [
         backgroundColor: { value: '#3c92dc' },
         textColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
+        borderRadius: { value: '{{0}}' },
         disabledState: { value: '{{false}}' },
       },
     },
@@ -338,6 +349,57 @@ export const componentTypes = [
       properties: {
         value: { value: '99' },
         placeholder: { value: '0' },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'PasswordInput',
+    displayName: 'Password Input',
+    description: 'Password input field for forms',
+    component: 'PasswordInput',
+    defaultSize: {
+      width: 210,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      placeholder: { type: 'code', displayName: 'Placeholder' },
+    },
+    validation: {
+      regex: { type: 'code', displayName: 'Regex' },
+      minLength: { type: 'code', displayName: 'Min length' },
+      maxLength: { type: 'code', displayName: 'Max length' },
+      customRule: { type: 'code', displayName: 'Custom validation' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      value: '',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        placeholder: { value: 'password' },
+      },
+      validation: {
+        regex: { value: '' },
+        minLength: { value: null },
+        maxLength: { value: null },
+        customRule: { value: null },
       },
       events: [],
       styles: {
@@ -937,6 +999,9 @@ export const componentTypes = [
         },
         defaultMarkers: {
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
+        },
+        canSearch: {
+          value: `{{true}}` ,
         },
       },
       addNewMarkers: { value: '{{false}}' },

@@ -16,12 +16,13 @@ import { EmailService } from '@services/email.service';
 import { OauthService, GoogleOAuthService } from '@ee/services/oauth';
 import { OauthController } from '@ee/controllers/oauth.controller';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { App } from 'src/entities/app.entity';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    TypeOrmModule.forFeature([User, Organization, OrganizationUser, GroupPermission]),
+    TypeOrmModule.forFeature([User, Organization, OrganizationUser, GroupPermission, App]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
