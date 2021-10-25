@@ -38,8 +38,11 @@ export class AppsAbilityFactory {
   async appsActions(user: User, params: any) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppsAbility>);
 
-    if (await this.usersService.userCan(user, 'create', 'App')) {
+    if (await this.usersService.userCan(user, 'create', 'User')) {
       can('createUsers', App, { organizationId: user.organizationId });
+    }
+
+    if (await this.usersService.userCan(user, 'create', 'App')) {
       can('createApp', App);
       can('cloneApp', App, { organizationId: user.organizationId });
     }

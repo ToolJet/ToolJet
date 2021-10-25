@@ -285,7 +285,7 @@ describe('apps controller', () => {
         expect(await AppUser.findOne({ appId: application.id })).toBeUndefined();
       });
 
-      it('should not be possible for non-admin user to delete an app, cascaded with its versions, queries and data sources', async () => {
+      it('should be possible for app creator to delete an app', async () => {
         const developer = await createUser(app, {
           email: 'developer@tooljet.io',
           groups: ['all_users', 'developer'],
@@ -306,10 +306,34 @@ describe('apps controller', () => {
           .delete(`/api/apps/${application.id}`)
           .set('Authorization', authHeaderForUser(developer.user));
 
-        expect(response.statusCode).toBe(403);
-
-        expect(await App.findOne(application.id)).not.toBeUndefined();
+        expect(response.statusCode).toBe(200);
+        expect(await App.findOne(application.id)).toBeUndefined();
       });
+    });
+
+    it('should not be possible for non admin to delete an app', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
+
+      const developerUserData = await createUser(app, {
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/apps/${application.id}`)
+        .set('Authorization', authHeaderForUser(developerUserData.user));
+
+      expect(response.statusCode).toBe(403);
+
+      expect(await App.findOne(application.id)).not.toBeUndefined();
     });
   });
 
