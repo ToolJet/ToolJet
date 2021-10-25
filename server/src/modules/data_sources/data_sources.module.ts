@@ -14,13 +14,13 @@ import { CaslModule } from '../casl/casl.module';
 import { DataQueriesService } from '@services/data_queries.service';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { AppCloneService } from '@services/app_clone.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { AppImportExportService } from '@services/app_import_export.service';
 
 @Module({
   imports: [
@@ -46,8 +46,8 @@ import { Organization } from 'src/entities/organization.entity';
     EncryptionService,
     AppsService,
     DataQueriesService,
-    AppCloneService,
     UsersService,
+    AppImportExportService,
   ],
   controllers: [DataSourcesController],
 })
