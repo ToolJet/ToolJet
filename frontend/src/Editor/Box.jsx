@@ -22,6 +22,7 @@ import { RadioButton } from './Components/RadioButton';
 import { StarRating } from './Components/StarRating';
 import { Divider } from './Components/Divider';
 import { PasswordInput } from './Components/PasswordInput';
+import { CodeHinter } from './Components/CodeHinter';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -52,6 +53,7 @@ const AllComponents = {
   StarRating,
   Divider,
   PasswordInput,
+  CodeHinter,
 };
 
 export const Box = function Box({

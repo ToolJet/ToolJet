@@ -1001,7 +1001,7 @@ export const componentTypes = [
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
         },
         canSearch: {
-          value: `{{true}}` ,
+          value: `{{true}}`,
         },
       },
       addNewMarkers: { value: '{{false}}' },
@@ -1135,6 +1135,45 @@ export const componentTypes = [
       styles: {
         dividerColor: { value: '#E7E8EA' },
         visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'CodeHinter',
+    displayName: 'Code Hinter',
+    description: 'Code Hinter',
+    component: 'CodeHinter',
+    defaultSize: {
+      width: 240,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      label: { type: 'code', displayName: 'Label' },
+    },
+    events: {
+      onChange: { displayName: 'On Change' },
+    },
+    styles: {
+      theme: { type: 'theme', displayName: 'Theme' },
+    },
+    exposedVariables: {
+      // value: 0,
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        label: { value: 'Select Code Hinter' },
+      },
+      events: [],
+      styles: {
+        theme: { value: 'dark' },
       },
     },
   },
