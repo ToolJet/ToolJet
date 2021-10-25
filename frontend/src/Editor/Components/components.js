@@ -1134,7 +1134,7 @@ export const componentTypes = [
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
+        dividerColor: { value: '#E7E8EA' },
       },
     },
   },
