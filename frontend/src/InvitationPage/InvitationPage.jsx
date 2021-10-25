@@ -21,9 +21,20 @@ class InvitationPage extends React.Component {
     e.preventDefault();
 
     const token = this.props.match.params.token;
-    const { password, organization, newSignup, firstName, lastName } = this.state;
-
+    const { password, organization, newSignup, firstName, lastName, password_confirmation } = this.state;
     this.setState({ isLoading: true });
+
+    if(!password || !password_confirmation || !password.trim() || !password_confirmation.trim()) {
+      this.setState({ isLoading: false });
+      toast.error("Password shouldn't be empty or contain white space(s)", { hideProgressBar: true, position: 'top-center' });
+      return;
+    }
+
+    if(password !== password_confirmation) {
+      this.setState({ isLoading: false });
+      toast.error("Passwords don't match", { hideProgressBar: true, position: 'top-center' });
+      return;
+    }
 
     userService
       .setPasswordFromToken({ token, password, organization, newSignup, firstName, lastName })
