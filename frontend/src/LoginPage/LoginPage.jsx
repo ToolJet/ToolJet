@@ -35,7 +35,7 @@ class LoginPage extends React.Component {
 
     const { email, password } = this.state;
 
-    if(!email || !password || !email.trim() || !password.trim() || !validateEmail(email)) {
+    if(!validateEmail(email) || !password || !password.trim()) {
       toast.error('Invalid email or password', {
         toastId: 'toast-login-auth-error',
         hideProgressBar: true,
