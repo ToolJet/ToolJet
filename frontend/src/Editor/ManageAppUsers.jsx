@@ -104,7 +104,7 @@ class ManageAppUsers extends React.Component {
   };
 
   handleSetSlug = (event) => {
-    const newSlug = event.target.value || this.props.app.id;
+    const newSlug = event.target.value.trim() || this.props.app.id;
     this.setState({ isSlugVerificationInProgress: true });
 
     appService
