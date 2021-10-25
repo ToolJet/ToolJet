@@ -288,6 +288,14 @@ class HomePage extends React.Component {
       });
   };
 
+  resetAppDeletion = () => {
+    this.setState({
+      isDeletingApp: false,
+      appToBeDeleted: null,
+      showAppDeletionConfirmation: false,
+    });
+  };
+
   pageCount = () => {
     return this.state.currentFolder.id ? this.state.meta.folder_count : this.state.meta.total_count;
   };
@@ -310,7 +318,7 @@ class HomePage extends React.Component {
           message={'The app and the associated data will be permanently deleted, do you want to continue?'}
           confirmButtonLoading={isDeletingApp}
           onConfirm={() => this.executeAppDeletion()}
-          onCancel={() => {}}
+          onCancel={() => this.resetAppDeletion()}
         />
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
