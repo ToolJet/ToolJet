@@ -7,11 +7,19 @@ import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
 import { AppsAbilityFactory } from './abilities/apps-ability.factory';
+import { ThreadsAbilityFactory } from './abilities/threads-ability.factory';
 import { CaslAbilityFactory } from './casl-ability.factory';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Organization, OrganizationUser])],
-  providers: [CaslAbilityFactory, OrganizationUsersService, UsersService, EmailService, AppsAbilityFactory],
-  exports: [CaslAbilityFactory, AppsAbilityFactory],
+  providers: [
+    CaslAbilityFactory,
+    OrganizationUsersService,
+    UsersService,
+    EmailService,
+    AppsAbilityFactory,
+    ThreadsAbilityFactory,
+  ],
+  exports: [CaslAbilityFactory, AppsAbilityFactory, ThreadsAbilityFactory],
 })
 export class CaslModule {}

@@ -1,17 +1,35 @@
-import { Controller, Request, Req, Post, Body, Get, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Request,
+  Req,
+  Post,
+  Body,
+  Get,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+  ForbiddenException,
+} from '@nestjs/common';
 import { ThreadService } from '../services/thread.service';
 import { CreateThreadDTO } from '../dto/create-thread.dto';
 import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
-// import { AppsService } from '../services/apps.service';
+import { ThreadsAbilityFactory } from 'src/modules/casl/abilities/threads-ability.factory';
 
 @Controller('threads')
 export class ThreadController {
-  constructor(private threadService: ThreadService) {}
+  constructor(private threadService: ThreadService, private threadsAbilityFactory: ThreadsAbilityFactory) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
   public async createThread(@Request() req, @Body() createThreadDto: CreateThreadDTO): Promise<Thread> {
+    const ability = await this.threadsAbilityFactory.appsActions(req.user, { id: createThreadDto.appId });
+
+    if (!ability.can('createThread', Thread)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
     const thread = await this.threadService.createThread(createThreadDto, req.user.id, req.user.organization.id);
     return thread;
   }
