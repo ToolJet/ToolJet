@@ -5,7 +5,7 @@ sidebar_position: 1
 # Airtable
 
 
-ToolJet can connect to your Airtable account to read and write data. Airtable API key is required to create an Airtable datasource on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
+ToolJet can connect to your Airtable account to read and write data. Airtable API key is required to create an Airtable datasource on ToolJet. You can generate API key by visiting the [Airtable account page](https://airtable.com/account). 
 
 <img class="screenshot-full" src="/img/datasource-reference/airtable/airtable-intro.gif" alt="ToolJet - ToolJet - Datasource Airtable" height="420" />
 
@@ -14,7 +14,7 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 :::
 
 :::tip
-This guide assumes that you have already gone throgh [Adding a datasource
+This guide assumes that you have already gone through [Adding a datasource
 ](/docs/tutorial/adding-a-datasource) tutorial.
 :::
 
