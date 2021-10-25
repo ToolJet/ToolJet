@@ -130,7 +130,7 @@ class DataSourceManager extends React.Component {
       }
     } else {
       toast.error(
-        "Can't add datasource with empty name", 
+        "The name of datasource should not be empty", 
         { hideProgressBar: true, position: 'top-center' }
       );
     }
