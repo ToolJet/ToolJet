@@ -2150,6 +2150,14 @@ input:focus-visible {
     border-right: 1px solid #fff;
     border-bottom: 1px solid #fff;
   }
+
+  .widget-documentation-link {
+    background-color: #1f2936;
+  }
+
+  .widget-documentation-link a {
+    color: rgb(66, 153, 225);
+  }
 }
 
 .main-wrapper {
