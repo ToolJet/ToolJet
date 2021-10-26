@@ -20,7 +20,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     typeof maxFileCount !== 'number' ? resolveWidgetFieldValue(maxFileCount, currentState) : maxFileCount;
   const parsedEnableMultiple =
     typeof enableMultiple !== 'boolean' ? resolveWidgetFieldValue(enableMultiple, currentState) : enableMultiple;
-  const parsedFileType = typeof fileType !== 'string' ? resolveWidgetFieldValue(fileType, currentState) : 'image/*';
+  const parsedFileType = resolveWidgetFieldValue(fileType, currentState);
   const parsedMinSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(minSize, currentState) : minSize;
   const parsedMaxSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(maxSize, currentState) : maxSize;
 
@@ -69,6 +69,13 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   function onDropRejected() {
     console.log('fileRejections', fileRejections);
   }
+
+  useEffect(() => {
+    console.log('parsedFileType ==>', parsedFileType);
+  }, [parsedFileType]);
+
+  //Todo : handle error for rejected files.
+  //? Accpeted and Rejected Files should be shown in the UI or not.
 
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
