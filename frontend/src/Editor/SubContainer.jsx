@@ -147,12 +147,14 @@ export const SubContainer = ({
         if (id) {
           const delta = monitor.getDifferenceFromInitialOffset();
           componentData = item.component;
-          left = Math.round(currentLayoutOptions.left + delta.x);
+          left = Math.round(convertXFromPercentage(currentLayoutOptions.left, canvasBoundingRect.width) + delta.x);
           top = Math.round(currentLayoutOptions.top + delta.y);
 
           if (snapToGrid) {
             [left, top] = doSnapToGrid(canvasBoundingRect.width, left, top);
           }
+
+          left = convertXToPercentage(left, canvasBoundingRect.width);
 
           let newBoxes = {
             ...boxes,
