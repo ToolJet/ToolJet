@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent }) => {
-  const [selectedFiles, setSelectedFiles] = useState([]);
-
+export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode }) => {
   //* property definations
   const enableDropzone = component.definition.properties.enableDropzone?.value ?? true;
-  const enablePicker = component.definition.properties.enablePicker?.value ?? true;
+  const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
   const enableMultiple = component.definition.properties.enableMultiple?.value ?? false;
   const fileType = component.definition.properties.fileType?.value ?? 'image/*';
@@ -15,14 +13,14 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   const minSize = component.definition.properties.minSize?.value ?? 0;
 
   const parsedEnableDropzone =
-    typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : enableDropzone;
+    typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
   const parsedEnablePicker =
-    typeof enablePicker !== 'boolean' ? resolveWidgetFieldValue(enablePicker, currentState) : enablePicker;
+    typeof enablePicker !== 'boolean' ? resolveWidgetFieldValue(enablePicker, currentState) : true;
   const parsedMaxFileCount =
     typeof maxFileCount !== 'number' ? resolveWidgetFieldValue(maxFileCount, currentState) : maxFileCount;
   const parsedEnableMultiple =
     typeof enableMultiple !== 'boolean' ? resolveWidgetFieldValue(enableMultiple, currentState) : enableMultiple;
-  const parsedFileType = typeof fileType !== 'string' ? resolveWidgetFieldValue(fileType, currentState) : fileType;
+  const parsedFileType = typeof fileType !== 'string' ? resolveWidgetFieldValue(fileType, currentState) : 'image/*';
   const parsedMinSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(minSize, currentState) : minSize;
   const parsedMaxSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(maxSize, currentState) : maxSize;
 
@@ -35,72 +33,94 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   const parsedWidgetVisibility =
     typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility, currentState) : widgetVisibility;
 
-  const style = {
+  const bgThemeColor = darkMode ? '#232E3C' : '#fff';
+
+  const baseStyle = {
     flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     padding: '20px',
-    borderWidth: 1,
-    borderRadius: 1,
+    borderWidth: 1.5,
+    borderRadius: 2,
+    borderColor: '#42536A',
     borderStyle: 'dashed',
+    color: '#bdbdbd',
     outline: 'none',
     transition: 'border .24s ease-in-out',
+    display: parsedWidgetVisibility ? 'flex' : 'none',
     width,
     height,
-    display: parsedWidgetVisibility ? 'flex' : 'none',
+    backgroundColor: !parsedDisabledState && bgThemeColor,
   };
 
-  const isFileTooLarge = rejectedFiles?.length > 0 && rejectedFiles[0].size > parsedMaxSize;
-  const { getRootProps, getInputProps, open, rejectedFiles, isDragActive, isDragReject, isDragAccept, draggedFiles } =
-    useDropzone({
-      accept: parsedFileType,
-      noClick: true,
-      noKeyboard: true,
-      maxFiles: parsedMaxFileCount,
-      minSize: parsedMinSize,
-      maxSize: parsedMinSize,
-      onDrop,
-      multiple: parsedEnableMultiple,
-      disabled: parsedDisabledState,
-    });
+  const activeStyle = {
+    borderColor: '#2196f3',
+  };
 
-  const onDrop = (acceptedFiles) => {
-    console.log(acceptedFiles);
-    if (isDragAccept) {
-      setSelectedFiles(() =>
-        acceptedFiles.map((acceptedFile) => ({
-          name: acceptedFile.name.substring(0, acceptedFile.name.lastIndexOf('.')),
-          content: JSON.stringify(acceptedFile),
-          type: acceptedFile.type,
-        }))
-      );
-    }
+  const acceptStyle = {
+    borderColor: '#00e676',
+  };
+
+  const rejectStyle = {
+    borderColor: '#ff1744',
   };
 
   React.useEffect(() => {
-    if (selectedFiles.length > 0) {
-      onComponentOptionChanged(component, 'file', selectedFiles).then(() => onEvent('onFileSelected', { component }));
+    console.log('parsedEnablePicker', parsedEnablePicker);
+  }, [parsedEnablePicker]);
+
+  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles } = useDropzone({
+    accept: parsedFileType,
+    noClick: !parsedEnablePicker,
+    noKeyboard: true,
+    maxFiles: parsedMaxFileCount,
+    minSize: parsedMinSize,
+    maxSize: parsedMaxSize,
+    multiple: parsedEnableMultiple,
+    disabled: parsedDisabledState,
+  });
+
+  const style = useMemo(
+    () => ({
+      ...baseStyle,
+      ...(isDragActive && parsedEnableDropzone ? activeStyle : {}),
+      ...(isDragAccept && parsedEnableDropzone ? acceptStyle : {}),
+      ...(isDragReject && parsedEnableDropzone ? rejectStyle : {}),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [baseStyle, isDragActive, isDragAccept, acceptStyle, isDragReject]
+  );
+
+  useEffect(() => {
+    console.log('acceptedFiles', acceptedFiles);
+    if (!isDragReject) {
+      const fileSelected = acceptedFiles.map((acceptedFile) => ({
+        name: acceptedFile.name.substring(0, acceptedFile.name.lastIndexOf('.')),
+        content: JSON.stringify(acceptedFile),
+        type: acceptedFile.type,
+      }));
+      onComponentOptionChanged(component, 'file', fileSelected).then(() => onEvent('onFileSelected', { component }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedFiles]);
+  }, [acceptedFiles, isDragReject]);
 
   return (
-    <div className="container text-center border-light p-1" {...getRootProps({ style })}>
-      <div>{parsedEnablePicker && <button onClick={open}>Open File Dialog</button>}</div>
-      <div className="mt-1">{parsedEnableDropzone && <input style={{ width, height }} {...getInputProps()} />}</div>
-
-      <div className="mt-1">
+    <div className="container text-center" {...getRootProps({ style, className: parsedEnableDropzone && 'dropzone' })}>
+      <center>
+        <input {...getInputProps()} />
         {!isDragActive && (
-          <span className="text-secondary">
-            {parsedEnablePicker && !parsedEnableDropzone && 'Click here to select a file!'}
-            {parsedEnableDropzone && !parsedEnablePicker && 'Drag files here.'}
-            {parsedEnableDropzone && parsedEnableDropzone && 'Click here or Drag files here'}
-          </span>
+          <p className={parsedDisabledState ? 'text-mute' : 'text-azure'}>
+            Drag & drop some files here, or click to select files
+          </p>
         )}
-        {isDragActive && !isDragReject && <span className="text-info">Drop Area</span>}
-        {isFileTooLarge && <span className="text-danger">File is too large.</span>}
-        {draggedFiles && isDragReject && <span>{draggedFiles.length}</span>}
-      </div>
+
+        {isDragAccept && <p className="text-success">All files will be accepted</p>}
+        {isDragReject && <p className="text-danger">File is too large.</p>}
+      </center>
     </div>
   );
 };
+
+//Todo: display text according to the selectors [picker, dragzone]
+//Todo: Replace the icon
