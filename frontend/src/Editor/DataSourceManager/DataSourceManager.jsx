@@ -73,6 +73,7 @@ class DataSourceManager extends React.Component {
       dataSourceMeta: {},
       selectedDataSource: null,
       options: {},
+      connectionTestError: null,
     });
   };
 
