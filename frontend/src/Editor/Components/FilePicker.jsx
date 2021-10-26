@@ -108,19 +108,18 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   return (
     <div className="container text-center" {...getRootProps({ style, className: parsedEnableDropzone && 'dropzone' })}>
       <center>
-        <input {...getInputProps()} />
         {!isDragActive && (
-          <p className={parsedDisabledState ? 'text-mute' : 'text-azure'}>
+          <p className={`${parsedDisabledState ? 'text-mute' : 'text-azure'} mt-3`}>
             Drag & drop some files here, or click to select files
           </p>
         )}
 
-        {isDragAccept && <p className="text-success">All files will be accepted</p>}
-        {isDragReject && <p className="text-danger">File is too large.</p>}
+        {isDragAccept && <p className="text-lime mt-3">All files will be accepted</p>}
+        {isDragReject && <p className="text-red mt-3">Files will be rejected!</p>}
+        <input {...getInputProps()} />
       </center>
     </div>
   );
 };
 
 //Todo: display text according to the selectors [picker, dragzone]
-//Todo: Replace the icon
