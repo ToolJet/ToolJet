@@ -143,7 +143,7 @@ export const SubContainer = ({
           top = Math.round(currentLayoutOptions.top + delta.y);
 
           if (snapToGrid) {
-            [left, top] = doSnapToGrid(left, top);
+            [left, top] = doSnapToGrid(canvasBoundingRect.width, left, top);
           }
 
           let newBoxes = {
@@ -180,14 +180,17 @@ export const SubContainer = ({
           id = uuidv4();
         }
 
+        const subContainerWidth = canvasBoundingRect.width;
         if (snapToGrid) {
-          [left, top] = doSnapToGrid(left, top);
+          [left, top] = doSnapToGrid(subContainerWidth, left, top);
         }
 
         if (item.currentLayout === 'mobile') {
           componentData.definition.others.showOnDesktop.value = false;
           componentData.definition.others.showOnMobile.value = true;
         }
+
+        const width = (componentMeta.defaultSize.width * 43) / subContainerWidth;
 
         setBoxes({
           ...boxes,
@@ -198,7 +201,7 @@ export const SubContainer = ({
               [item.currentLayout]: {
                 top: top,
                 left: left,
-                width: componentMeta.defaultSize.width,
+                width: width,
                 height: componentMeta.defaultSize.height,
               },
             },
@@ -229,7 +232,10 @@ export const SubContainer = ({
     top = y;
     left = x;
 
-    width = width + deltaWidth;
+    const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    const subContainerWidth = canvasBoundingRect.width;
+
+    width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
 
     let newBoxes = {

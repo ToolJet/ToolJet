@@ -3,7 +3,6 @@ import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_h
 
 export const TextInput = function TextInput({
   id,
-  width,
   height,
   component,
   onComponentClick,
@@ -68,7 +67,7 @@ export const TextInput = function TextInput({
         type="text"
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
         placeholder={placeholder}
-        style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+        style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
         value={text}
       />
       <div className="invalid-feedback">{validationError}</div>

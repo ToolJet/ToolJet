@@ -23,7 +23,6 @@ class Switch extends React.Component {
 
 export const ToggleSwitch = ({
   id,
-  width,
   height,
   component,
   onComponentClick,
@@ -62,7 +61,7 @@ export const ToggleSwitch = ({
   return (
     <div
       className="row py-1"
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component);
