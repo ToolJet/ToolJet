@@ -119,6 +119,14 @@ export const SubContainer = ({
     setIsDragging(draggingState);
   }, [draggingState]);
 
+  function convertXToPercentage(x, canvasWidth) {
+    return (x * 100) / canvasWidth;
+  }
+
+  function convertXFromPercentage(x, canvasWidth) {
+    return (x * canvasWidth) / 100;
+  }
+
   const [, drop] = useDrop(
     () => ({
       accept: ItemTypes.BOX,
@@ -190,6 +198,9 @@ export const SubContainer = ({
           componentData.definition.others.showOnMobile.value = true;
         }
 
+        // convert the left offset to percentage
+        left = (left * 100) / subContainerWidth;
+
         const width = (componentMeta.defaultSize.width * 43) / subContainerWidth;
 
         setBoxes({
@@ -214,6 +225,11 @@ export const SubContainer = ({
     [moveBox]
   );
 
+  function getContainerCanvasWidth() {
+    const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    return canvasBoundingRect.width;
+  }
+
   function onResizeStop(id, e, direction, ref, d, position) {
     const deltaWidth = d.width;
     const deltaHeight = d.height;
@@ -229,11 +245,11 @@ export const SubContainer = ({
 
     let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
-    top = y;
-    left = x;
-
     const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
     const subContainerWidth = canvasBoundingRect.width;
+
+    top = y;
+    left = (x * 100) / subContainerWidth;
 
     width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
@@ -306,6 +322,7 @@ export const SubContainer = ({
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
           removeComponent={removeComponent}
+          canvasWidth={getContainerCanvasWidth()}
         />
       ))}
 
