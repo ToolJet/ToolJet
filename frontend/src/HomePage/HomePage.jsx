@@ -360,7 +360,7 @@ class HomePage extends React.Component {
                                     <span className="spinner-border spinner-border-sm me-2" role="status"></span>
                                   )}
                                   Import
-                                  <input type="file" ref={this.fileInput} style={{ display: 'none' }} />
+                                  <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
                                 </label>
                               </button>
                             </div>
