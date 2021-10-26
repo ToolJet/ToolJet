@@ -619,8 +619,8 @@ body {
 }
 
 /**
- * Options
- */
+* Options
+*/
 .select-search__options {
   list-style: none;
 }
@@ -2304,4 +2304,9 @@ input[type='text'] {
 
 .fw-500 {
   font-weight: 500;
+}
+
+.popover-action-select-search > .select-search .select-search__select {
+  max-height: 200px;
+  overflow-y: scroll;
 }
