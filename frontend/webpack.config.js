@@ -72,11 +72,6 @@ module.exports = {
           options: {
             plugins: [
               ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
-              [
-                'import',
-                { libraryName: 'react-dropzone', libraryDirectory: '', camel2DashComponentName: true },
-                'react-dropzone',
-              ],
             ],
           },
         },
