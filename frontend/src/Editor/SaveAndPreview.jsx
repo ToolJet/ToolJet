@@ -49,7 +49,6 @@ class SaveAndPreview extends React.Component {
     
     if (newVersionName.trim() !== ''){
       this.setState({ creatingVersion: true });
-
       appVersionService.create(appId, newVersionName).then(() => {
         this.setState({ showVersionForm: false, creatingVersion: false });
         toast.success('Version Created', {

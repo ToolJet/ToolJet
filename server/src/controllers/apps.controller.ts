@@ -141,7 +141,10 @@ export class AppsController {
     }
 
     const app = await this.appImportExportService.export(req.user, params.id);
-    return app;
+    return {
+      ...app,
+      tooljetVersion: globalThis.TOOLJET_VERSION,
+    };
   }
 
   @UseGuards(JwtAuthGuard)
