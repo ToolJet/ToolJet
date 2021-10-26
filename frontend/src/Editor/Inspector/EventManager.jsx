@@ -136,7 +136,7 @@ export const EventManager = ({
             <div className="col-3 p-2">
               <span>Action</span>
             </div>
-            <div className="col-9">
+            <div className="col-9 popover-action-select-search">
               <SelectSearch
                 options={actionOptions}
                 value={event.actionId}
