@@ -125,6 +125,11 @@ class Viewer extends React.Component {
     }
   }
 
+  getCanvasWidth = () => {
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    return canvasBoundingRect?.width;
+  }
+
   render() {
     const {
       appDefinition,
@@ -202,6 +207,7 @@ class Viewer extends React.Component {
                           onComponentOptionsChanged={(component, options) =>
                             onComponentOptionsChanged(this, component, options)
                           }
+                          canvasWidth={this.getCanvasWidth()}
                         />
                       )}
                     </>

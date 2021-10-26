@@ -462,6 +462,8 @@ body {
 
     .canvas-container {
       scrollbar-width: none;
+      width: 80%;
+      margin-left: 10%;
     }
 
     .canvas-container::-webkit-scrollbar {
