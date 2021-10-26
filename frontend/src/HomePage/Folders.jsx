@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { folderService } from '@/_services';
 import { toast } from 'react-toastify';
 
@@ -11,10 +11,25 @@ export const Folders = function Folders({
   foldersChanged,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
+  const addFolderRef = useRef()
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
   }, [foldersLoading]);
+  
+  useEffect(() => {
+    const eventHandler = (event) => {
+      if(!addFolderRef.current.contains(event.target)){
+        setShowForm(false);
+      }
+    }
+
+    document.addEventListener("mousedown", eventHandler);
+
+    return () => {
+      document.removeEventListener("mousedown",eventHandler)
+    }
+  })
 
   const [showForm, setShowForm] = useState(false);
   const [isCreating, setCreationStatus] = useState(false);
@@ -102,7 +117,7 @@ export const Folders = function Folders({
             </a>
           )}
           {showForm && (
-            <div className="p-2 row">
+            <div className="p-2 row" ref={addFolderRef}>
               <div className="col">
                 <input
                   type="text"
