@@ -1,10 +1,10 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/7828962/120930301-4ec3fe80-c70a-11eb-91b7-4bdbc31fd928.png" width="200" />
   <br/>
-  Build and deploy internal tools.
+  Build and deploy internal tools
 </p>
 
-ToolJet is an **open-source no-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources such as databases ( like PostgreSQL, MongoDB, Elasticsearch, etc ), API endpoints ( ToolJet supports importing OpenAPI spec & OAuth2 authorization), and external services ( like Stripe, Slack, Google Sheets, Airtable ) and use our pre-built UI widgets to build internal tools.
+ToolJet is an **open-source no-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources, such as databases (like PostgreSQL, MongoDB, Elasticsearch, etc), API endpoints (ToolJet supports importing OpenAPI spec & OAuth2 authorization), and external services (like Stripe, Slack, Google Sheets, Airtable) and use our pre-built UI widgets to build internal tools.
 
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/tooljet/tooljet-ce)
 ![GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)
@@ -27,7 +27,7 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 
 ## Features
 
-- Visual app builder with widgets such as tables, charts, modals, buttons, dropdowns, and more.
+- Visual app builder with widgets, such as tables, charts, modals, buttons, dropdowns, and more.
 - Mobile 📱 & desktop layouts 🖥
 - Dark mode 🌛
 - Connect to databases, APIs, and external services.
