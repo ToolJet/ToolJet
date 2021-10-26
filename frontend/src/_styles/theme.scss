@@ -2305,3 +2305,9 @@ input[type='text'] {
 .fw-500 {
   font-weight: 500;
 }
+
+//select-search-action
+.popover-action-select-search > .select-search .select-search__select {
+  max-height: 200px;
+  overflow-y: scroll;
+}
