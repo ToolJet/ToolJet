@@ -15,6 +15,7 @@ class SaveAndPreview extends React.Component {
       appId: props.appId,
       isLoading: true,
       showVersionForm: false,
+      newVersionName: '',
     };
   }
 
@@ -38,25 +39,34 @@ class SaveAndPreview extends React.Component {
   hideModal = () => {
     this.setState({
       showModal: false,
+      showVersionForm: false,
     });
   };
 
   createVersion = () => {
     const newVersionName = this.state.newVersionName;
     const appId = this.props.appId;
-    this.setState({ creatingVersion: true });
-
-    appVersionService.create(appId, newVersionName).then(() => {
-      this.setState({ showVersionForm: false, creatingVersion: false });
-      toast.success('Version Created', {
+    
+    if (newVersionName.trim() !== ''){
+      this.setState({ creatingVersion: true });
+      appVersionService.create(appId, newVersionName).then(() => {
+        this.setState({ showVersionForm: false, creatingVersion: false });
+        toast.success('Version Created', {
+          hideProgressBar: true,
+          position: 'top-center',
+          containerId: this.state.appId,
+        });
+        this.fetchVersions();
+        // eslint-disable-next-line no-undef
+        this.props.setAppDefinitionFromVersion(version);
+      });
+    } else {
+      toast.error(
+        'The name of version should not be empty', {
         hideProgressBar: true,
         position: 'top-center',
-        containerId: this.state.appId,
       });
-      this.fetchVersions();
-      // eslint-disable-next-line no-undef
-      this.props.setAppDefinitionFromVersion(version);
-    });
+    }
   };
 
   saveVersion = (versionId) => {
@@ -151,11 +161,7 @@ class SaveAndPreview extends React.Component {
               </div>
             ) : (
               <div className="table-responsive">
-                {!versions?.length && !showVersionForm && !isLoading && (
-                  <div>
-                    No versions yet.
-                  </div>
-                )}
+                {!versions?.length && !showVersionForm && !isLoading && <div>No versions yet.</div>}
                 <table className="table table-vcenter">
                   <tbody>
                     {versions.map((version) => (
@@ -182,7 +188,7 @@ class SaveAndPreview extends React.Component {
                               <button
                                 className="btn btn btn-sm mx-2 text-muted"
                                 onClick={() => this.props.setAppDefinitionFromVersion(version)}
-                                disabled={this.props.editingVersionId == version.id}
+                                disabled={this.props.editingVersionId === version.id}
                               >
                                 edit
                               </button>

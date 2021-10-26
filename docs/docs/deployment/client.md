@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 # Deploying ToolJet client
@@ -15,14 +15,14 @@ For example: `TOOLJET_SERVER_URL=https://server.tooljet.io npm run build && fire
 :::
 
 1. Initialize firebase project
-    ```bash
-     firebase init 
-    ```
-    Select Firebase Hosting and set build as the static file directory
+   ```bash
+    firebase init
+   ```
+   Select Firebase Hosting and set build as the static file directory
 2. Deploy client to Firebase
-    ```bash
-     firebase deploy
-    ```
+   ```bash
+    firebase deploy
+   ```
 
 :::tip
 If you want to run ToolJet on your local machine, please checkout the setup section of the contributing guide: [link](/docs/contributing-guide/setup/docker)

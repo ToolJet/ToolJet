@@ -31,6 +31,9 @@ export function resolve(data, state) {
 }
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+
+  object = _.clone(object)
+
   const objectType = typeof object;
   let error;
   switch (objectType) {
@@ -165,7 +168,7 @@ export const serializeNestedObjectToQueryParams = function (obj, prefix) {
   var str = [],
     p;
   for (p in obj) {
-    if (obj.hasOwnProperty(p)) {
+    if (Object.prototype.hasOwnProperty.call(obj, p)) {
       var k = prefix ? prefix + '[' + p + ']' : p,
         v = obj[p];
       str.push(

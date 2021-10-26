@@ -25,7 +25,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, par
     };
   }
 
-  let { x, y } = currentOffset;
+  let x, y;
 
   let id = item.id;
 

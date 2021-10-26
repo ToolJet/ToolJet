@@ -36,7 +36,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
       ])(errors);
 
       const errorData = [];
-      Object.entries(newError).map(([key, value]) => {
+      Object.entries(newError).forEach(([key, value]) => {
         const variableNames = {
           options: '',
           response: '',

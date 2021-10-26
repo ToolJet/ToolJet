@@ -42,7 +42,7 @@ export function makeOverlay(style) {
       var ch;
       if (stream.match('{{')) {
         while ((ch = stream.next()) != null)
-          if (ch == '}' && stream.next() == '}') {
+          if (ch === '}' && stream.next() === '}') {
             stream.eat('}');
             return style;
           }

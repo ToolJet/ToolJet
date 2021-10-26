@@ -48,6 +48,14 @@ export const componentTypes = [
           { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
       },
+      cellSize: {
+        type: 'select',
+        displayName: 'Cell size',
+        options: [
+          { name: 'Compact', value: 'compact' },
+          { name: 'Spacious', value: 'spacious' },
+        ],
+      },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -93,6 +101,7 @@ export const componentTypes = [
         textColor: { value: undefined },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        cellSize: { value: 'compact' },
       },
     },
   },
@@ -121,6 +130,7 @@ export const componentTypes = [
       textColor: { type: 'color', displayName: 'Text color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {},
     definition: {
@@ -138,6 +148,7 @@ export const componentTypes = [
         backgroundColor: { value: '#3c92dc' },
         textColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
+        borderRadius: { value: '{{0}}' },
         disabledState: { value: '{{false}}' },
       },
     },
@@ -336,8 +347,59 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: '' },
+        value: { value: '99' },
         placeholder: { value: '0' },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'PasswordInput',
+    displayName: 'Password Input',
+    description: 'Password input field for forms',
+    component: 'PasswordInput',
+    defaultSize: {
+      width: 210,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      placeholder: { type: 'code', displayName: 'Placeholder' },
+    },
+    validation: {
+      regex: { type: 'code', displayName: 'Regex' },
+      minLength: { type: 'code', displayName: 'Min length' },
+      maxLength: { type: 'code', displayName: 'Max length' },
+      customRule: { type: 'code', displayName: 'Custom validation' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      value: '',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        placeholder: { value: 'password' },
+      },
+      validation: {
+        regex: { value: '' },
+        minLength: { value: null },
+        maxLength: { value: null },
+        customRule: { value: null },
       },
       events: [],
       styles: {
@@ -385,7 +447,7 @@ export const componentTypes = [
         customRule: { value: null },
       },
       properties: {
-        defaultValue: { value: '' },
+        defaultValue: { value: '01/04/2021' },
         format: { value: 'DD/MM/YYYY' },
         enableTime: { value: '{{false}}' },
         enableDate: { value: '{{true}}' },
@@ -563,7 +625,10 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        value: { value: '' },
+        value: {
+          value:
+            'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
+        },
         placeholder: { value: 'Placeholder text' },
       },
       events: [],
@@ -645,7 +710,7 @@ export const componentTypes = [
       properties: {
         text: { value: 'Text goes here !' },
         visible: { value: true },
-        loadingState: { value: false },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
@@ -774,7 +839,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        value: { value: '' },
+        value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true },
@@ -849,6 +914,7 @@ export const componentTypes = [
     },
     properties: {
       placeholder: { type: 'code', displayName: 'Placeholder' },
+      defaultValue: { type: 'code', displayName: 'Default Value' },
     },
     events: {},
     styles: {
@@ -856,7 +922,7 @@ export const componentTypes = [
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      value: {},
+      value: '',
     },
     definition: {
       others: {
@@ -865,6 +931,7 @@ export const componentTypes = [
       },
       properties: {
         placeholder: { value: 'Placeholder text' },
+        defaultValue: { value: '' },
       },
       events: [],
       styles: {
@@ -932,6 +999,9 @@ export const componentTypes = [
         },
         defaultMarkers: {
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
+        },
+        canSearch: {
+          value: `{{true}}` ,
         },
       },
       addNewMarkers: { value: '{{false}}' },
@@ -1030,6 +1100,41 @@ export const componentTypes = [
         labelColor: { value: '#333' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Divider',
+    displayName: 'Divider',
+    description: 'Separator between components',
+    component: 'Divider',
+    defaultSize: {
+      width: 200,
+      height: 10,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      dividerColor: { type: 'color', displayName: 'Divider Color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {
+      value: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        dividerColor: { value: '#E7E8EA' },
+        visibility: { value: '{{true}}' },
       },
     },
   },

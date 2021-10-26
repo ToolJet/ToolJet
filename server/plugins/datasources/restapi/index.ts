@@ -80,7 +80,7 @@ export default class RestapiQueryService implements QueryService {
     let result = {};
 
     /* Prefixing the base url of datasouce if datasource exists */
-    const url = hasDataSource ? `${sourceOptions.url}${queryOptions.url}` : queryOptions.url;
+    const url = hasDataSource ? `${sourceOptions.url}${queryOptions.url || ''}` : queryOptions.url;
 
     const method = queryOptions['method'];
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;

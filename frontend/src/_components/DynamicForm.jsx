@@ -1,5 +1,6 @@
 import React from 'react';
 import Input from '@/_ui/Input';
+import Textarea from '@/_ui/Textarea';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
@@ -17,8 +18,9 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
     switch (type) {
       case 'password':
       case 'text':
-      case 'textarea':
         return Input;
+      case 'textarea':
+        return Textarea;
       case 'dropdown':
         return Select;
       case 'toggle':
@@ -53,7 +55,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
       case 'toggle':
         return {
           defaultChecked: options[$key],
-          onChange: () => optionchanged($key, !options[$key]),
+          onChange: () => optionchanged($key, !options[$key].value),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -96,7 +98,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
     return (
       <div className="row">
         {Object.keys(obj).map((key) => {
-          const { $label, type } = obj[key];
+          const { $label, type, $encrypted } = obj[key];
 
           const Element = getElement(type);
 
@@ -105,7 +107,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
               {$label && (
                 <label className="form-label">
                   {$label}
-                  {type === 'password' && (
+                  {(type === 'password' || $encrypted) && (
                     <small className="text-green mx-2">
                       <img
                         className="mx-2 encrypted-icon"

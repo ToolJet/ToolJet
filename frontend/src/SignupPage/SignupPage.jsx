@@ -43,7 +43,7 @@ class SignupPage extends React.Component {
       <div className="page page-center">
         <div className="container-tight py-2">
           <div className="text-center mb-4">
-            <a href=".">
+            <a href="." className="navbar-brand-autodark">
               <img src="/assets/images/logo-text.svg" height="30" alt="" />
             </a>
           </div>

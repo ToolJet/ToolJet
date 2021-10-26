@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { Repository } from 'typeorm';
 import { Organization } from 'src/entities/organization.entity';
+import { UsersService } from './users.service';
+import { GroupPermission } from 'src/entities/group_permission.entity';
 
 @Injectable()
 export class OrganizationsService {
@@ -10,17 +12,40 @@ export class OrganizationsService {
     @InjectRepository(Organization)
     private organizationsRepository: Repository<Organization>,
     @InjectRepository(OrganizationUser)
-    private organizationUsersRepository: Repository<OrganizationUser>
+    private organizationUsersRepository: Repository<OrganizationUser>,
+    @InjectRepository(GroupPermission)
+    private groupPermissionsRepository: Repository<GroupPermission>,
+    private usersService: UsersService
   ) {}
 
   async create(name: string): Promise<Organization> {
-    return this.organizationsRepository.save(
+    const organization = await this.organizationsRepository.save(
       this.organizationsRepository.create({
         name,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
     );
+
+    await this.createDefaultGroupPermissionsForOrganization(organization);
+
+    return organization;
+  }
+
+  async createDefaultGroupPermissionsForOrganization(organization: Organization) {
+    const defaultGroups = ['all_users', 'admin'];
+    const createdGroupPermissions = [];
+
+    for (const group of defaultGroups) {
+      const groupPermission = this.groupPermissionsRepository.create({
+        organizationId: organization.id,
+        group: group,
+      });
+      await this.groupPermissionsRepository.save(groupPermission);
+      createdGroupPermissions.push(groupPermission);
+    }
+
+    return createdGroupPermissions;
   }
 
   async fetchUsers(user: any): Promise<OrganizationUser[]> {
@@ -42,7 +67,7 @@ export class OrganizationsService {
         status: orgUser.status,
       };
 
-      if (user.isAdmin && orgUser.user.invitationToken)
+      if (await this.usersService.hasGroup(user, 'admin') && orgUser.user.invitationToken)
         serializedUser['invitationToken'] = orgUser.user.invitationToken;
 
       serializedUsers.push(serializedUser);

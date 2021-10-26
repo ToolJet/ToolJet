@@ -32,7 +32,9 @@ export class DataQueriesController {
   @Get()
   async index(@Request() req, @Query() query) {
     const app = await this.appsService.find(query.app_id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {
+      id: query.app_id,
+    });
 
     if (!ability.can('getQueries', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -61,7 +63,9 @@ export class DataQueriesController {
     const appId = req.body.app_id;
 
     const app = await this.appsService.find(appId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {
+      id: appId,
+    });
 
     if (!ability.can('createQuery', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -88,7 +92,9 @@ export class DataQueriesController {
     const dataQueryId = params.id;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {
+      id: dataQuery.appId,
+    });
 
     if (!ability.can('updateQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -104,7 +110,9 @@ export class DataQueriesController {
     const dataQueryId = params.id;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {
+      id: dataQuery.appId,
+    });
 
     if (!ability.can('deleteQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -123,7 +131,9 @@ export class DataQueriesController {
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
     if (req.user) {
-      const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+      const ability = await this.appsAbilityFactory.appsActions(req.user, {
+        id: dataQuery.appId,
+      });
 
       if (!ability.can('runQuery', dataQuery.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
@@ -166,7 +176,9 @@ export class DataQueriesController {
     };
 
     if (dataQueryEntity.dataSource) {
-      const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+      const ability = await this.appsAbilityFactory.appsActions(req.user, {
+        id: dataQueryEntity.dataSource.appId,
+      });
 
       if (!ability.can('previewQuery', dataQueryEntity.dataSource.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');

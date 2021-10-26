@@ -22,6 +22,13 @@ export const Folders = function Folders({
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
 
   function saveFolder() {
+    if (!newFolderName || !newFolderName.trim()) {
+      toast.warn("folder name can't be empty.", {
+        hideProgressBar: true,
+        position: 'top-left',
+      });
+      return;
+    }
     setCreationStatus(true);
     folderService.create(newFolderName).then(() => {
       toast.info('folder created.', {
@@ -98,8 +105,6 @@ export const Folders = function Folders({
             <div className="p-2 row">
               <div className="col">
                 <input
-                  // eslint-disable-next-line no-undef
-                  onClick={() => onComponentClick(id, component)} //onComponentClick, id and compoenent is not defined
                   type="text"
                   onChange={(e) => setNewFolderName(e.target.value)}
                   className="form-control"

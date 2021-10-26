@@ -10,9 +10,11 @@ import { OrganizationUsersController } from '@controllers/organization_users.con
 import { UsersService } from 'src/services/users.service';
 import { CaslModule } from '../casl/casl.module';
 import { EmailService } from '@services/email.service';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { App } from 'src/entities/app.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Organization, OrganizationUser, User]), CaslModule],
+  imports: [TypeOrmModule.forFeature([Organization, OrganizationUser, User, GroupPermission, App]), CaslModule],
   providers: [OrganizationsService, OrganizationUsersService, UsersService, EmailService],
   controllers: [OrganizationsController, OrganizationUsersController],
 })

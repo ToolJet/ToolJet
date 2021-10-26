@@ -122,7 +122,7 @@ export class DataQueriesService {
   }
 
   async parseQueryOptions(object: any, options: object): Promise<object> {
-    if (typeof object === 'object') {
+    if (typeof object === 'object' && object !== null) {
       for (const key of Object.keys(object)) {
         object[key] = await this.parseQueryOptions(object[key], options);
       }

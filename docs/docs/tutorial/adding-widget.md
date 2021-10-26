@@ -30,7 +30,7 @@ Now we will connect the `data` object of the `fetch customers` query with the ta
 
 Let's select `data` object of the 'postgresql' query. 
 
-Since we have already run the query in previous step, the data will be immedietly displayed in the table.
+Since we have already run the query in previous step, the data will be immediately displayed in the table.
 
 <img class="screenshot-full" src="/img/tutorial/adding-widget/table-data.gif" alt="ToolJet - Table with data" height="420"/>
 

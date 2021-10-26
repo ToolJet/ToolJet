@@ -11,7 +11,7 @@ appService
   .then((config) => {
     window.public_config = config;
 
-    if (window.public_config.APM_VENDOR == 'sentry') {
+    if (window.public_config.APM_VENDOR === 'sentry') {
       const history = createBrowserHistory();
       const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
       const tracingOrigins = ['localhost', /^\//];

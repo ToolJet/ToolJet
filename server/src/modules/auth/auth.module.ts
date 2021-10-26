@@ -13,12 +13,14 @@ import { OrganizationsService } from 'src/services/organizations.service';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '@services/email.service';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { App } from 'src/entities/app.entity';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    TypeOrmModule.forFeature([User, Organization, OrganizationUser]),
+    TypeOrmModule.forFeature([User, Organization, OrganizationUser, GroupPermission, App]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {

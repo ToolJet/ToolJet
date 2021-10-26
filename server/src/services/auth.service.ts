@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
 import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
+import { decamelizeKeys } from 'humps';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -20,7 +21,6 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
-
     if (!user) return null;
 
     const isVerified = await bcrypt.compare(password, user.password);
@@ -34,13 +34,16 @@ export class AuthService {
     if (user) {
       const payload = { username: user.id, sub: user.email };
 
-      return {
+      return decamelizeKeys({
+        id: user.id,
         auth_token: this.jwtService.sign(payload),
         email: user.email,
         first_name: user.firstName,
         last_name: user.lastName,
-        role: user.role,
-      };
+        admin: await this.usersService.hasGroup(user, 'admin'),
+        group_permissions: await this.usersService.groupPermissions(user),
+        app_group_permissions: await this.usersService.appGroupPermissions(user),
+      });
     } else {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -54,9 +57,9 @@ export class AuthService {
 
     const { email } = params;
     const organization = await this.organizationsService.create('Untitled organization');
-    const user = await this.usersService.create({ email }, organization);
+    const user = await this.usersService.create({ email }, organization, ['all_users', 'admin']);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const organizationUser = await this.organizationUsersService.create(user, organization, 'admin');
+    const organizationUser = await this.organizationUsersService.create(user, organization);
 
     this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
@@ -75,7 +78,10 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Invalid token');
     } else {
-      this.usersService.update(user.id, { password, forgotPasswordToken: null });
+      this.usersService.update(user.id, {
+        password,
+        forgotPasswordToken: null,
+      });
     }
   }
 }

@@ -7,18 +7,18 @@ export const organizationUserService = {
   changeRole,
 };
 
-function create(first_name, last_name, email, role) {
+function create(first_name, last_name, email) {
   const body = {
     first_name,
     last_name,
     email,
-    role,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization_users`, requestOptions).then(handleResponse);
 }
 
+// Deprecated
 function changeRole(id, role) {
   const body = {
     role,

@@ -11,7 +11,7 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
   useEffect(() => {
     if (isTesting) {
       setButtonText('Testing connection...');
-    } else if (!isTesting && connectionStatus === 'success') {
+    } else if (connectionStatus === 'success') {
       setButtonText('Connection verified');
     } else {
       setButtonText('Test Connection');
@@ -54,7 +54,7 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
         <Button
           className="m-2"
           variant="success"
-          disabled={isTesting || (!isTesting && !(connectionStatus !== 'success'))}
+          disabled={isTesting || connectionStatus === 'success'}
           onClick={testDataSource}
         >
           {buttonText}

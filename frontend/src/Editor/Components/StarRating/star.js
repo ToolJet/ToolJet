@@ -48,7 +48,7 @@ const Star = ({
   }
 
   function roundValueToPrecision(value, precision) {
-    if (value == null) {
+    if (value === null || value === undefined) {
       return value;
     }
 

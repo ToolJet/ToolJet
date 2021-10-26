@@ -22,7 +22,7 @@ function SettingsPage(props) {
 
   const changePassword = async () => {
     setPasswordChangeInProgress(true);
-    const response = userService.changePassword(currentpassword, newPassword);
+    const response = await userService.changePassword(currentpassword, newPassword);
     response
       .then(() => {
         toast.success('Password updated successfully', { hideProgressBar: true, autoClose: 3000 });
@@ -40,7 +40,7 @@ function SettingsPage(props) {
 
   const newPasswordKeyPressHandler = async (event) => {
     if (event.key === 'Enter') {
-      changePassword();
+      await changePassword();
     }
   };
 
@@ -54,7 +54,7 @@ function SettingsPage(props) {
             <div className="row align-items-center">
               <div className="col">
                 <div className="page-pretitle"></div>
-                <h2 className="page-title">Settings</h2>
+                <h2 className="page-title">Profile Settings</h2>
               </div>
             </div>
           </div>

@@ -19,7 +19,9 @@ export class DataSourcesController {
   @Get()
   async index(@Request() req, @Query() query) {
     const app = await this.appsService.find(query.app_id);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {
+      id: app.id,
+    });
 
     if (!ability.can('getDataSources', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -38,7 +40,9 @@ export class DataSourcesController {
     const appId = req.body.app_id;
 
     const app = await this.appsService.find(appId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {
+      id: appId,
+    });
 
     if (!ability.can('createDataSource', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -57,7 +61,9 @@ export class DataSourcesController {
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
 
     const app = await this.appsService.find(dataSource.appId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {
+      id: app.id,
+    });
 
     if (!ability.can('updateDataSource', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
@@ -90,7 +96,9 @@ export class DataSourcesController {
     const dataSource = await this.dataSourcesService.findOne(dataSourceId);
 
     const app = await this.appsService.find(dataSource.appId);
-    const ability = await this.appsAbilityFactory.appsActions(req.user, {});
+    const ability = await this.appsAbilityFactory.appsActions(req.user, {
+      id: app.id,
+    });
 
     if (!ability.can('authorizeOauthForSource', app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
