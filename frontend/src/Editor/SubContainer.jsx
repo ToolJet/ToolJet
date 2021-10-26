@@ -201,7 +201,7 @@ export const SubContainer = ({
         // convert the left offset to percentage
         left = (left * 100) / subContainerWidth;
 
-        const width = (componentMeta.defaultSize.width * 43) / subContainerWidth;
+        const width = componentMeta.defaultSize.width * 100 / 43;
 
         setBoxes({
           ...boxes,
