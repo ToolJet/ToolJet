@@ -188,6 +188,12 @@ function executeAction(_ref, event, mode) {
 
         return Promise.resolve();
       }
+
+      case 'set-localstorage-value': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const value = resolveReferences(event.value, _ref.state.currentState);
+        localStorage.setItem(key, value);
+      }
     }
   }
 }

@@ -579,11 +579,10 @@ class Editor extends React.Component {
                 >
                   <span className="navbar-toggler-icon"></span>
                 </button>
-                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-                  <Link to={'/'} className="">
-                    <img src="/assets/images/logo.svg" width="99" height="30" className="navbar-brand-image" />
+                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+                  <Link to={'/'}>
+                    <img src="/assets/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
                   </Link>
-                  <a href="/"></a>
                 </h1>
                 {this.state.app && (
                   <input

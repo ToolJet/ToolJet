@@ -1186,10 +1186,6 @@ body {
   color: #3e525b;
 }
 
-.navbar-brand-image {
-  height: 1.6rem;
-}
-
 .RichEditor-root {
   background: #fff;
   border: 1px solid #ddd;
@@ -2149,6 +2145,14 @@ input:focus-visible {
     transform: rotate(45deg);
     border-right: 1px solid #fff;
     border-bottom: 1px solid #fff;
+  }
+
+  .widget-documentation-link {
+    background-color: #1f2936;
+  }
+
+  .widget-documentation-link a {
+    color: rgb(66, 153, 225);
   }
 }
 

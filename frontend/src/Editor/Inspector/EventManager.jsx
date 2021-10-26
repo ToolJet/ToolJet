@@ -266,6 +266,33 @@ export const EventManager = ({
                 </div>
               </div>
             )}
+
+            {event.actionId === 'set-localstorage-value' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">Key</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.key}
+                      onChange={(value) => handlerChanged(index, 'key', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">Value</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.value}
+                      onChange={(value) => handlerChanged(index, 'value', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </Popover.Content>
       </Popover>
