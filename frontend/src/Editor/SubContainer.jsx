@@ -7,12 +7,6 @@ import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
 
-const styles = {
-  width: '100%',
-  height: '100%',
-  position: 'absolute',
-};
-
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
     (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
@@ -228,8 +222,12 @@ export const SubContainer = ({
   );
 
   function getContainerCanvasWidth() {
-    const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-    return canvasBoundingRect.width;
+    let width = 0;
+    if (parentRef.current) {
+      const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+      width = canvasBoundingRect.width;
+    }
+    return width;
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
@@ -298,6 +296,13 @@ export const SubContainer = ({
       );
     }
   }
+
+  const styles = {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
+  };
 
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
