@@ -73,6 +73,8 @@ export function Table({
   let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
+  const cellSizeType = component.definition.styles.cellSize?.value;
+
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
@@ -148,7 +150,7 @@ export function Table({
     let newFilters = filters;
     newFilters.splice(index, 1);
     setFilters(newFilters);
-    setAllFilters(newFilters);
+    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
 
   function clearFilters() {
@@ -754,6 +756,10 @@ export function Table({
     }
   }, [state.columnResizing.isResizingColumn]);
 
+  useEffect(() => {
+    if (pageCount <= pageIndex) gotoPage(pageCount - 1);
+  }, [pageCount]);
+
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -840,8 +846,8 @@ export function Table({
                             undefined
                           ) {
                             console.log('componentState.changeSet', componentState.changeSet);
-                            cellProps.style.backgroundColor = '#ffffde';
-                            cellProps.style['--tblr-table-accent-bg'] = '#ffffde';
+                            cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
+                            cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
                           }
                         }
                       }
@@ -857,6 +863,7 @@ export function Table({
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
+                            [cellSizeType]: true,
                           })}
                           {...cellProps}
                         >
@@ -888,7 +895,7 @@ export function Table({
             <div className="col">
               {(clientSidePagination || serverSidePagination) && (
                 <Pagination
-                  lastActivePageIndex={currentState.components[component.name]?.pageIndex ?? 1}
+                  lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}
                   autoGotoPage={gotoPage}
                   autoCanNextPage={canNextPage}
@@ -943,7 +950,7 @@ export function Table({
         <div className="table-filters card">
           <div className="card-header row">
             <div className="col">
-              <h4 className="text-muted">Filters</h4>
+              <h4 className="font-weight-normal">Filters</h4>
             </div>
             <div className="col-auto">
               <button onClick={() => hideFilters()} className="btn btn-light btn-sm">
@@ -1001,7 +1008,7 @@ export function Table({
                   />
                 </div>
                 <div className="col-auto">
-                  <button onClick={() => removeFilter(index)} className="btn btn-light btn-sm p-2 text-danger">
+                  <button onClick={() => removeFilter(index)} className={`btn ${darkMode ? "btn-dark" : "btn-light"} btn-sm p-2 text-danger font-weight-bold`}>
                     x
                   </button>
                 </div>
@@ -1010,16 +1017,16 @@ export function Table({
             {filters.length === 0 && (
               <div>
                 <center>
-                  <span className="text-muted">no filters yet.</span>
+                  <span>no filters yet.</span>
                 </center>
               </div>
             )}
           </div>
           <div className="card-footer">
-            <button onClick={addFilter} className="btn btn-light btn-sm text-muted">
+            <button onClick={addFilter} className="btn btn-light btn-sm">
               + add filter
             </button>
-            <button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2 text-muted">
+            <button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2">
               clear filters
             </button>
           </div>

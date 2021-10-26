@@ -58,6 +58,8 @@ class Chart extends React.Component {
 
     const data = this.state.component.component.definition.properties.data;
 
+    const chartType = this.state.component.component.definition.properties.type.value;
+
     return (
       <div className="properties-container p-2">
         {renderElement(
@@ -99,17 +101,19 @@ class Chart extends React.Component {
 
         {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
 
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'markerColor', 'properties', currentState)}
+        {chartType !== 'pie' &&
+          renderElement(component, componentMeta, paramUpdated, dataQueries, 'markerColor', 'properties', currentState)}
 
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'showGridLines',
-          'properties',
-          currentState
-        )}
+        {chartType !== 'pie' &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showGridLines',
+            'properties',
+            currentState
+          )}
       </div>
     );
   }

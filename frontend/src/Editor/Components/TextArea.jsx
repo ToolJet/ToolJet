@@ -15,7 +15,7 @@ export const TextArea = function TextArea({ width, height, properties, exposedVa
       type="text"
       className="form-control"
       placeholder={properties.placeholder}
-      style={{ width, height, display: styles.visibility ? '' : 'none' }}
+      style={{ width, height, resize:'none', display: styles.visibility ? '' : 'none' }}
       value={exposedVariables.value}
     ></textarea>
   );
