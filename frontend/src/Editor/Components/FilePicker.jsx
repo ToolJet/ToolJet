@@ -66,20 +66,23 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     borderColor: '#ff1744',
   };
 
-  React.useEffect(() => {
-    console.log('parsedEnablePicker', parsedEnablePicker);
-  }, [parsedEnablePicker]);
+  function onDropRejected() {
+    console.log('fileRejections', fileRejections);
+  }
 
-  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles } = useDropzone({
-    accept: parsedFileType,
-    noClick: !parsedEnablePicker,
-    noKeyboard: true,
-    maxFiles: parsedMaxFileCount,
-    minSize: parsedMinSize,
-    maxSize: parsedMaxSize,
-    multiple: parsedEnableMultiple,
-    disabled: parsedDisabledState,
-  });
+  const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
+    useDropzone({
+      accept: parsedFileType,
+      noClick: !parsedEnablePicker,
+      noDrag: !parsedEnableDropzone,
+      noKeyboard: true,
+      maxFiles: parsedMaxFileCount,
+      minSize: parsedMinSize,
+      maxSize: parsedMaxSize,
+      multiple: parsedEnableMultiple,
+      disabled: parsedDisabledState,
+      onDropRejected: onDropRejected,
+    });
 
   const style = useMemo(
     () => ({
@@ -92,34 +95,58 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     [baseStyle, isDragActive, isDragAccept, acceptStyle, isDragReject]
   );
 
+  const [accepted, setAccepted] = React.useState(false);
+
   useEffect(() => {
     console.log('acceptedFiles', acceptedFiles);
-    if (!isDragReject) {
+    if (acceptedFiles.length !== 0) {
       const fileSelected = acceptedFiles.map((acceptedFile) => ({
         name: acceptedFile.name.substring(0, acceptedFile.name.lastIndexOf('.')),
         content: JSON.stringify(acceptedFile),
         type: acceptedFile.type,
       }));
-      onComponentOptionChanged(component, 'file', fileSelected).then(() => onEvent('onFileSelected', { component }));
+      onComponentOptionChanged(component, 'file', fileSelected).then(() =>
+        onEvent('onFileSelected', { component }).then(() => {
+          setAccepted(true);
+          return new Promise(function (resolve, reject) {
+            setTimeout(() => {
+              setAccepted(false);
+              resolve();
+            }, 400);
+          });
+        })
+      );
     }
+
+    return () => {
+      setAccepted(false);
+    };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [acceptedFiles, isDragReject]);
+  }, [acceptedFiles.length]);
 
   return (
-    <div className="container text-center" {...getRootProps({ style, className: parsedEnableDropzone && 'dropzone' })}>
-      <center>
-        {!isDragActive && (
-          <p className={`${parsedDisabledState ? 'text-mute' : 'text-azure'} mt-3`}>
-            Drag & drop some files here, or click to select files
-          </p>
-        )}
+    <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
+      <input {...getInputProps()} />
 
-        {isDragAccept && <p className="text-lime mt-3">All files will be accepted</p>}
-        {isDragReject && <p className="text-red mt-3">Files will be rejected!</p>}
-        <input {...getInputProps()} />
-      </center>
+      <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure" />
+      <FilePicker.Signifiers
+        signifier={!isDragAccept && !accepted}
+        feedback={'Drag & drop some files here, or click to select files'}
+        cls={`${parsedDisabledState ? 'text-mute' : 'text-azure'} mt-3`}
+      />
+
+      <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" />
+
+      <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
     </div>
   );
 };
 
-//Todo: display text according to the selectors [picker, dragzone]
+FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
+  if (signifier) {
+    return <center>{feedback === null ? <div className={cls}></div> : <p className={cls}>{feedback}</p>}</center>;
+  }
+
+  return null;
+};
