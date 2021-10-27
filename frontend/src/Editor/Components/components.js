@@ -1167,7 +1167,7 @@ export const componentTypes = [
       properties: {
         events: {
           value:
-            "{{[\n\t\t{\n\t\t\t title: 'Sample event',\n\t\t\t start: Date.now(),\n\t\t\t end: Date.now(),\n\t\t\t allDay: false,\n\t\t\t resource: 'Sample resource'\n\t\t}\n]}}",
+            "{{[\n\t\t{\n\t\t\t title: 'Sample event',\n\t\t\t start: new Date(Date.now()),\n\t\t\t end: new Date(Date.now()),\n\t\t\t allDay: false\n\t\t}\n]}}",
         },
       },
       events: [],
