@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { toast } from 'react-toastify';
+
+//? Accpeted and Rejected Files should be shown in the UI or not.
+
+//! Types of files accpeted should be "MIME types" --> a selection component might be better as for selecting pdf its `Application/pdf` and for html -> `text/html`
 
 export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode }) => {
   //* property definations
@@ -66,17 +71,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     borderColor: '#ff1744',
   };
 
-  function onDropRejected() {
-    console.log('fileRejections', fileRejections);
-  }
-
-  useEffect(() => {
-    console.log('parsedFileType ==>', parsedFileType);
-  }, [parsedFileType]);
-
-  //Todo : handle error for rejected files.
-  //? Accpeted and Rejected Files should be shown in the UI or not.
-
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
       accept: parsedFileType,
@@ -88,7 +82,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
       maxSize: parsedMaxSize,
       multiple: parsedEnableMultiple,
       disabled: parsedDisabledState,
-      onDropRejected: onDropRejected,
     });
 
   const style = useMemo(
@@ -105,7 +98,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   const [accepted, setAccepted] = React.useState(false);
 
   useEffect(() => {
-    console.log('acceptedFiles', acceptedFiles);
     if (acceptedFiles.length !== 0) {
       const fileSelected = acceptedFiles.map((acceptedFile) => ({
         name: acceptedFile.name.substring(0, acceptedFile.name.lastIndexOf('.')),
@@ -125,12 +117,18 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
       );
     }
 
+    if (fileRejections.length > 0) {
+      fileRejections.map((rejectedFile) =>
+        toast.error(rejectedFile.errors[0].message, { hideProgressBar: true, autoClose: 3000 })
+      );
+    }
+
     return () => {
       setAccepted(false);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [acceptedFiles.length]);
+  }, [acceptedFiles.length, fileRejections.length]);
 
   return (
     <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
@@ -138,7 +136,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
       <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure" />
       <FilePicker.Signifiers
-        signifier={!isDragAccept && !accepted}
+        signifier={!isDragAccept && !accepted & !isDragReject}
         feedback={'Drag & drop some files here, or click to select files'}
         cls={`${parsedDisabledState ? 'text-mute' : 'text-azure'} mt-3`}
       />
