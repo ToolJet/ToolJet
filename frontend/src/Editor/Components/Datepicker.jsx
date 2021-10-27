@@ -48,8 +48,8 @@ export const Datepicker = function Datepicker({
   }
 
   function onDateChange(event) {
-    let _dateFormat = enableTime ? `${dateFormat.value} LT` : dateFormat.value;
-    const value = event._isAMomentObject ? event.format(_dateFormat) : event;
+    const selectedDateFormat = enableTime ? `${dateFormat.value} LT` : dateFormat.value;
+    const value = event._isAMomentObject ? event.format(selectedDateFormat) : event;
 
     setDateText(value);
     onComponentOptionChanged(component, 'value', value);

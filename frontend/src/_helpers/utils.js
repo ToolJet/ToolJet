@@ -31,6 +31,9 @@ export function resolve(data, state) {
 }
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+
+  object = _.clone(object)
+
   const objectType = typeof object;
   let error;
   switch (objectType) {

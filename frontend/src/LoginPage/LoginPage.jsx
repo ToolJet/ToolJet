@@ -24,7 +24,7 @@ class LoginPage extends React.Component {
   };
 
   handleOnCheck = () => {
-    this.setState({ showPassword: !this.state.showPassword });
+    this.setState((prev) => ({ showPassword: !prev.showPassword }));
   };
 
   authUser = (e) => {

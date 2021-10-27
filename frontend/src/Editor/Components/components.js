@@ -48,6 +48,14 @@ export const componentTypes = [
           { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
       },
+      cellSize: {
+        type: 'select',
+        displayName: 'Cell size',
+        options: [
+          { name: 'Compact', value: 'compact' },
+          { name: 'Spacious', value: 'spacious' },
+        ],
+      },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -93,6 +101,7 @@ export const componentTypes = [
         textColor: { value: undefined },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        cellSize: { value: 'compact' },
       },
     },
   },
@@ -121,6 +130,7 @@ export const componentTypes = [
       textColor: { type: 'color', displayName: 'Text color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {},
     definition: {
@@ -138,6 +148,7 @@ export const componentTypes = [
         backgroundColor: { value: '#3c92dc' },
         textColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
+        borderRadius: { value: '{{0}}' },
         disabledState: { value: '{{false}}' },
       },
     },
@@ -828,7 +839,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        value: { value: '' },
+        value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true },
@@ -988,6 +999,9 @@ export const componentTypes = [
         },
         defaultMarkers: {
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
+        },
+        canSearch: {
+          value: `{{true}}` ,
         },
       },
       addNewMarkers: { value: '{{false}}' },

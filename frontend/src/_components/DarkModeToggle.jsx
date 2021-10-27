@@ -3,7 +3,11 @@ import { useSpring, animated } from 'react-spring';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 
-export const DarkModeToggle = function DarkModeToggle({ darkMode = false, switchDarkMode }) {
+export const DarkModeToggle = function DarkModeToggle({
+  darkMode = false,
+  switchDarkMode,
+  tooltipPlacement = 'bottom',
+}) {
   const toggleDarkMode = () => {
     switchDarkMode(!darkMode);
   };
@@ -43,7 +47,7 @@ export const DarkModeToggle = function DarkModeToggle({ darkMode = false, switch
 
   return (
     <OverlayTrigger
-      placement="bottom"
+      placement={tooltipPlacement}
       delay={{ show: 250, hide: 400 }}
       overlay={<Tooltip id="button-tooltip">{darkMode ? 'Activate light mode' : 'Activate dark mode'}</Tooltip>}
     >
