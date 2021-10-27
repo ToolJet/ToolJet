@@ -34,50 +34,49 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 }
 
 export async function batchUpdateToSheet(spreadSheetId: string, requestBody: any, filterData: any, authHeader: any) {
-  const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, 'A1:Z500', authHeader);
+  //!
 
-  const getRowIndex = (inputFilter, response): number => {
-    const columnValues = response.filter((column) => column[0] === inputFilter.key).flat();
-    if (columnValues.length === 0) return -1;
+  const lookUpData = await lookUpSheetData(spreadSheetId, requestBody, filterData, authHeader);
 
-    const rowIndex = columnValues.findIndex((values) => values === inputFilter.value);
+  const updateBody = (requestBody, updateIndexes) => {
+    const body = [];
 
-    return rowIndex;
-  };
+    // Object.keys(requestBody).map((key, index) => {
+    //   updateIndexes.map((cellIndex) => {
+    //     const b = { key: key, rangeIndex: cellIndex, value: requestBody[key] };
+    //     body.push(b);
+    //   });
+    // });
 
-  const rowIndex = getRowIndex(filterData, responseLookUpCellValues['values']);
-  if (rowIndex !== -1) {
-    const arr = [];
+    // const arrayHashmap = body.reduce((obj, item) => {
+    //   obj[item.id] ? obj[item.id].elements.push(...item.elements) : (obj[item.id] = { ...item });
+    //   return obj;
+    // }, {});
 
-    const keys = Object.keys(requestBody);
-    keys.map((key) =>
-      responseLookUpCellValues['values'].filter((val, index) => {
-        if (val[0] === key) {
-          arr.push({ key: key, index: index, rangeIndex: `${String.fromCharCode(65 + index)}${rowIndex + 1}` });
-        }
-      })
-    );
+    // const mergedArray = Object.values(arrayHashmap);
 
-    const _data = arr.map((data, index) => {
+    // console.log(mergedArray);
+
+    const _data = body.map((data) => {
       return {
         majorDimension: 'ROWS',
         range: data.rangeIndex,
-        values: [[Object.values(requestBody)[index]]],
+        values: [[data.value]],
       };
     });
+    // console.log('data', JSON.stringify(_data));
 
-    const reqBody = {
-      data: _data,
-      valueInputOption: 'USER_ENTERED',
-      includeValuesInResponse: true,
-    };
+    return _data;
+  };
 
-    const response = await makeRequestToBatchUpdateValues(spreadSheetId, reqBody, authHeader);
+  const reqBody = {
+    data: updateBody(requestBody, lookUpData),
+    valueInputOption: 'USER_ENTERED',
+    includeValuesInResponse: true,
+  };
 
-    return response;
-  } else {
-    throw new Error(`${filterData.key} not found.`);
-  }
+  const response = await makeRequestToBatchUpdateValues(spreadSheetId, reqBody, authHeader);
+  return response;
 }
 
 export async function readDataFromSheet(spreadSheetId: string, sheet: string, range: string, authHeader: any) {
@@ -169,3 +168,60 @@ export async function deleteData(
 ): Promise<any> {
   return await deleteDataFromSheet(spreadSheetId, sheet, rowIndex, authHeader);
 }
+
+async function lookUpSheetData(spreadSheetId: string, requestBody: any, filterCondition: any, authHeader: any) {
+  const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, 'A1:Z500', authHeader);
+  const lookUpData = await responseLookUpCellValues['values'];
+
+  try {
+    const rowsIndexes = getRowsIndex(filterCondition, lookUpData) as any[];
+    const colIndexes = getInputKeys(requestBody, lookUpData);
+
+    const updateCellIndexes = [];
+    // colIndexes.map((colIndex) => {
+    //   rowsIndexes.map((rowIndex) => updateCellIndexes.push(`${colIndex}${rowIndex}`));
+    // });
+
+    rowsIndexes.map((rowIndex) => {
+      colIndexes.map((colIndex) => updateCellIndexes.push(`${colIndex}${rowIndex}`));
+    });
+
+    // for(let rows = 0; i < )
+
+    console.log('JSON:', JSON.stringify(updateCellIndexes));
+    return updateCellIndexes;
+  } catch (error) {
+    throw new Error('error');
+  }
+}
+
+export const getInputKeys = (inputBody, data) => {
+  const keys = Object.keys(inputBody);
+  const arr = [];
+  keys.map((key) =>
+    data.filter((val, index) => {
+      if (val[0] === key) {
+        const kIndex = `${String.fromCharCode(65 + index)}`;
+        arr.push(kIndex);
+      }
+    })
+  );
+
+  return arr;
+};
+
+export const getRowsIndex = (inputFilter, response) => {
+  const columnValues = response.filter((column) => column[0] === inputFilter.key).flat();
+  if (columnValues.length === 0) {
+    return -1;
+  }
+
+  const rowIndex = [];
+  columnValues.forEach((col, index) => {
+    if (col === inputFilter.value) {
+      rowIndex.push(index + 1);
+    }
+  });
+  //   console.log('col value', rowIndex);
+  return rowIndex;
+};
