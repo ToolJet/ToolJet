@@ -194,7 +194,6 @@ export const DraggableBox = function DraggableBox({
     >
       {inCanvas ? (
         <div
-          style={getStyles(left, top, isDragging, component, isSelectedComponent, currentLayoutOptions)}
           className="draggable-box "
           onMouseOver={() => setMouseOver(true)}
           onMouseLeave={() => setMouseOver(false)}
