@@ -221,6 +221,7 @@ export const SubContainer = ({
     [moveBox]
   );
 
+
   function getContainerCanvasWidth() {
     let width = 0;
     if (parentRef.current) {
@@ -228,6 +229,40 @@ export const SubContainer = ({
       width = canvasBoundingRect.width;
     }
     return width;
+  }
+
+  function onDragStop(e, componentId, direction, currentLayout) {
+    const id = componentId ? componentId : uuidv4();
+
+    // Get the width of the canvas
+    const canvasWidth = getContainerCanvasWidth();
+    const nodeBounds = direction.node.getBoundingClientRect();
+
+    const canvasBounds = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+
+    // Computing the left offset
+    const leftOffset = nodeBounds.x - canvasBounds.x;
+    const left = convertXToPercentage(leftOffset, canvasWidth);
+
+    // Computing the top offset
+    const top = nodeBounds.y - canvasBounds.y;
+
+    let newBoxes = {
+      ...boxes,
+      [id]: {
+        ...boxes[id],
+        layouts: {
+          ...boxes[id]['layouts'],
+          [currentLayout]: {
+            ...boxes[id]['layouts'][currentLayout],
+            top: top,
+            left: left,
+          },
+        },
+      },
+    };
+
+    setBoxes(newBoxes);
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
@@ -305,7 +340,7 @@ export const SubContainer = ({
   };
 
   return (
-    <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
+    <div ref={drop} style={styles} id={`canvas-${parent}`} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
       {Object.keys(childComponents).map((key) => (
         <DraggableBox
           onComponentClick={onComponentClick}
@@ -315,6 +350,7 @@ export const SubContainer = ({
           key={key}
           currentState={currentState}
           onResizeStop={onResizeStop}
+          onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
           {...boxes[key]}

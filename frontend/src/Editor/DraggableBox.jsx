@@ -227,6 +227,7 @@ export const DraggableBox = function DraggableBox({
               setResizing(false);
               onResizeStop(id, e, direction, ref, d, position);
             }}
+            bounds={parent !== undefined ? `#canvas-${parent}` : 'body'}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
               {mode === 'edit' && mouseOver && !isResizing && (

@@ -103,9 +103,6 @@ export const Container = ({
           return;
         }
 
-        let layouts = item['layouts'];
-        const currentLayoutOptions = layouts ? layouts[item.currentLayout] : {};
-
         let componentData = {};
         let componentMeta = {};
         let id = item.id;
@@ -167,7 +164,7 @@ export const Container = ({
     [moveBox]
   );
 
-  function onDragStop(e, componentId, direction, currentLayout, currentLayoutOptions) {
+  function onDragStop(e, componentId, direction, currentLayout) {
     const id = componentId ? componentId : uuidv4();
 
     // Get the width of the canvas
