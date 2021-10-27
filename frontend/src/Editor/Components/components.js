@@ -1144,8 +1144,8 @@ export const componentTypes = [
     description: 'Calendar',
     component: 'Calendar',
     defaultSize: {
-      width: 450,
-      height: 450,
+      width: 700,
+      height: 600,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
