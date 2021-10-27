@@ -214,7 +214,11 @@ export const DraggableBox = function DraggableBox({
             defaultSize={{}}
             className={`resizer ${mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''} `}
             onResize={() => setResizing(true)}
-            onDrag={() => setDragging(true)}
+            onDrag={(e) => {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              setDragging(true)
+            }}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
             disableDragging={false}
@@ -222,12 +226,13 @@ export const DraggableBox = function DraggableBox({
               setDragging(false)
               onDragStop(e, id, direction, currentLayout, currentLayoutOptions)
             }}
+            onDragStart={(e) => e.stopPropagation()}
             enableResizing={mode === 'edit'}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
               onResizeStop(id, e, direction, ref, d, position);
             }}
-            bounds={parent !== undefined ? `#canvas-${parent}` : 'body'}
+            bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
               {mode === 'edit' && mouseOver && !isResizing && (

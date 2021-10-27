@@ -356,6 +356,7 @@ export const SubContainer = ({
           {...boxes[key]}
           mode={mode}
           resizingStatusChanged={(status) => setIsResizing(status)}
+          draggingStatusChanged={(status) => setIsDragging(status)}
           inCanvas={true}
           zoomLevel={zoomLevel}
           configHandleClicked={configHandleClicked}
