@@ -18,6 +18,7 @@ export const Calendar = function ({ height, width, properties }) {
         endAccessor="end"
         style={style}
         views={['day', 'week', 'month']}
+        defaultView={properties.defaultView}
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"

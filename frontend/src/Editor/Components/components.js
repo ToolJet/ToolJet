@@ -1154,6 +1154,8 @@ export const componentTypes = [
     properties: {
       events: { type: 'code', displayName: 'Events' },
       resources: { type: 'code', displayName: 'Resources' },
+      views: { type: 'code', displayName: 'Views' },
+      defaultView: { type: 'code', displayName: 'Default view' },
     },
     events: {},
     styles: {
@@ -1172,6 +1174,12 @@ export const componentTypes = [
         },
         resources: {
           value: "{{[{ resourceId: 1, title: 'Sample resource' }]}}",
+        },
+        views: {
+          value: "{{['day', 'week', 'month']}}",
+        },
+        defaultView: {
+          value: "{{'month'}}",
         },
       },
       events: [],
