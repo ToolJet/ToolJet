@@ -1813,9 +1813,14 @@ input:focus-visible {
   .theme-dark .navbar .navbar-nav .nav-link.active,
   .theme-dark .navbar .navbar-nav .nav-link.show,
   .theme-dark .navbar .navbar-nav .show > .nav-link {
-    color: #fff;
+    color:#fff;
   }
-
+  .form-check > .form-check-input:not(:checked){
+    background-color:#fff;
+  }
+  .form-check-label{
+    color:white;
+  }
   .left-sidebar .active {
     background: #333c48;
   }
