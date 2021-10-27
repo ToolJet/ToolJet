@@ -224,6 +224,27 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
+  if (eventName === 'onEventSelect') {
+    const { component, calendarEvent } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedEvent: { ...calendarEvent },
+            },
+          },
+        },
+      },
+      () => {
+        executeActionsForEventId(_ref, 'onEventSelect', component, mode);
+      }
+    );
+  }
+
   if (eventName === 'onTableActionButtonClicked') {
     const { component, data, action, rowId } = options;
     _self.setState(

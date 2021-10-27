@@ -1157,11 +1157,15 @@ export const componentTypes = [
       views: { type: 'code', displayName: 'Views' },
       defaultView: { type: 'code', displayName: 'Default view' },
     },
-    events: {},
+    events: {
+      onEventSelect: { displayName: 'On Event Select' },
+    },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      selectedEvent: {},
+    },
     definition: {
       others: {
         showOnDesktop: { value: true },

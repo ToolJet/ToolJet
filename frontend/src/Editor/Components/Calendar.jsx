@@ -5,7 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
 
-export const Calendar = function ({ height, width, properties }) {
+export const Calendar = function ({ height, width, properties, fireEvent }) {
   const style = { height, width, backgroundColor: 'white', padding: 10 };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
 
@@ -22,6 +22,7 @@ export const Calendar = function ({ height, width, properties }) {
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"
+        onSelectEvent={(calendarEvent) => fireEvent('onEventSelect', { calendarEvent })}
       />
     </div>
   );
