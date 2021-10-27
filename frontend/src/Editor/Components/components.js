@@ -1151,7 +1151,9 @@ export const componentTypes = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    properties: {},
+    properties: {
+      events: { type: 'code', displayName: 'Events' },
+    },
     events: {},
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
@@ -1162,7 +1164,12 @@ export const componentTypes = [
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
       },
-      properties: {},
+      properties: {
+        events: {
+          value:
+            "{{[\n\t\t{\n\t\t\t title: 'Sample event',\n\t\t\t start: Date.now(),\n\t\t\t end: Date.now(),\n\t\t\t allDay: false,\n\t\t\t resource: 'Sample resource'\n\t\t}\n]}}",
+        },
+      },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
