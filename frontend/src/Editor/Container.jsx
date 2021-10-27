@@ -115,98 +115,90 @@ export const Container = ({
 
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
-        // Component already exists and this is just a reposition event
-        if (id) {
-          const delta = monitor.getDifferenceFromInitialOffset();
-          let deltaX = 0;
-          let deltaY = 0;
+        //  This is a new component
+        componentMeta = componentTypes.find((component) => component.component === item.component.component);
+        console.log('adding new component');
+        componentData = JSON.parse(JSON.stringify(componentMeta));
+        componentData.name = computeComponentName(componentData.component, boxes);
 
-          if (delta) {
-            deltaX = delta.x;
-            deltaY = delta.y;
-          }
+        const offsetFromTopOfWindow = canvasBoundingRect.top;
+        const offsetFromLeftOfWindow = canvasBoundingRect.left;
+        const currentOffset = monitor.getSourceClientOffset();
 
-          const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-          const canvasWidth = bundingRect?.width;
+        left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+        top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
 
-          left = Math.round(convertXFromPercentage(currentLayoutOptions.left, canvasWidth) + deltaX);
-          top = Math.round(currentLayoutOptions.top + deltaY);
+        id = uuidv4();
 
-          if (snapToGrid) {
-            [left, top] = doSnapToGrid(canvasWidth, left, top);
-          }
+        const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+        const canvasWidth = bundingRect?.width;
 
-          left = convertXToPercentage(left, canvasWidth);
-
-          let newBoxes = {
-            ...boxes,
-            [id]: {
-              ...boxes[id],
-              layouts: {
-                ...boxes[id]['layouts'],
-                [item.currentLayout]: {
-                  ...boxes[id]['layouts'][item.currentLayout],
-                  top: top,
-                  left: left,
-                },
-              },
-            },
-          };
-
-          setBoxes(newBoxes);
-        } else {
-          //  This is a new component
-          componentMeta = componentTypes.find((component) => component.component === item.component.component);
-          console.log('adding new component');
-          componentData = JSON.parse(JSON.stringify(componentMeta));
-          componentData.name = computeComponentName(componentData.component, boxes);
-
-          const offsetFromTopOfWindow = canvasBoundingRect.top;
-          const offsetFromLeftOfWindow = canvasBoundingRect.left;
-          const currentOffset = monitor.getSourceClientOffset();
-
-          left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-          top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
-
-          id = uuidv4();
-
-          const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-          const canvasWidth = bundingRect?.width;
-
-          if (snapToGrid) {
-            [left, top] = doSnapToGrid(canvasWidth, left, top);
-          }
-
-          left = (left * 100) / canvasWidth;
-
-          if (item.currentLayout === 'mobile') {
-            componentData.definition.others.showOnDesktop.value = false;
-            componentData.definition.others.showOnMobile.value = true;
-          }
-
-          const width = componentMeta.defaultSize.width;
-
-          setBoxes({
-            ...boxes,
-            [id]: {
-              component: componentData,
-              layouts: {
-                [item.currentLayout]: {
-                  top,
-                  left,
-                  width,
-                  height: componentMeta.defaultSize.height,
-                },
-              },
-            },
-          });
+        if (snapToGrid) {
+          [left, top] = doSnapToGrid(canvasWidth, left, top);
         }
+
+        left = (left * 100) / canvasWidth;
+
+        if (item.currentLayout === 'mobile') {
+          componentData.definition.others.showOnDesktop.value = false;
+          componentData.definition.others.showOnMobile.value = true;
+        }
+
+        const width = componentMeta.defaultSize.width;
+
+        setBoxes({
+          ...boxes,
+          [id]: {
+            component: componentData,
+            layouts: {
+              [item.currentLayout]: {
+                top,
+                left,
+                width,
+                height: componentMeta.defaultSize.height,
+              },
+            },
+          },
+        });
 
         return undefined;
       },
     }),
     [moveBox]
   );
+
+  function onDragStop(e, componentId, direction, currentLayout, currentLayoutOptions) {
+    const id = componentId ? componentId : uuidv4();
+
+    // Get the width of the canvas
+    const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    const canvasWidth = canvasBounds?.width;
+    const nodeBounds = direction.node.getBoundingClientRect();
+
+    // Computing the left offset
+    const leftOffset = nodeBounds.x - canvasBounds.x;
+    const left = convertXToPercentage(leftOffset, canvasWidth);
+
+    // Computing the top offset
+    const top = nodeBounds.y - canvasBounds.y;
+
+    let newBoxes = {
+      ...boxes,
+      [id]: {
+        ...boxes[id],
+        layouts: {
+          ...boxes[id]['layouts'],
+          [currentLayout]: {
+            ...boxes[id]['layouts'][currentLayout],
+            top: top,
+            left: left,
+          },
+        },
+      },
+    };
+
+    setBoxes(newBoxes);
+  }
 
   function onResizeStop(id, e, direction, ref, d, position) {
     const deltaWidth = d.width;
@@ -275,6 +267,7 @@ export const Container = ({
     }
   }
 
+
   return (
     <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? 'show-grid' : ''}`}>
       {Object.keys(boxes).map((key) => {
@@ -293,11 +286,13 @@ export const Container = ({
               key={key}
               currentState={currentState}
               onResizeStop={onResizeStop}
+              onDragStop={onDragStop}
               paramUpdated={paramUpdated}
               id={key}
               {...boxes[key]}
               mode={mode}
               resizingStatusChanged={(status) => setIsResizing(status)}
+              draggingStatusChanged={(status) => setIsDragging(status)}
               inCanvas={true}
               zoomLevel={zoomLevel}
               configHandleClicked={configHandleClicked}

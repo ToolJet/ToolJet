@@ -220,6 +220,7 @@ body {
     .components-container {
       height: 88%;
       overflow: auto;
+      overflow-x: hidden;
 
       .component-image-holder {
         background: rgb(244, 246, 250);

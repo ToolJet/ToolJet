@@ -77,6 +77,7 @@ export const DraggableBox = function DraggableBox({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onResizeStop,
+  onDragStop,
   paramUpdated,
   resizingStatusChanged,
   zoomLevel,
@@ -88,10 +89,12 @@ export const DraggableBox = function DraggableBox({
   scaleValue,
   deviceWindowWidth,
   isSelectedComponent,
+  draggingStatusChanged,
   darkMode,
   canvasWidth,
 }) {
   const [isResizing, setResizing] = useState(false);
+  const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
 
@@ -124,6 +127,12 @@ export const DraggableBox = function DraggableBox({
       resizingStatusChanged(isResizing);
     }
   }, [isResizing]);
+
+  useEffect(() => {
+    if (draggingStatusChanged) {
+      draggingStatusChanged(isDragging2);
+    }
+  }, [isDragging2]);
 
   const style = {
     display: 'inline-block',
@@ -193,6 +202,7 @@ export const DraggableBox = function DraggableBox({
           <Rnd
             style={{ ...style }}
             resizeGrid={[canvasWidth / 43, 10]}
+            dragGrid={[canvasWidth / 43, 10]}
             size={{
               width: (canvasWidth * currentLayoutOptions.width) / 43,
               height: currentLayoutOptions.height,
@@ -204,9 +214,14 @@ export const DraggableBox = function DraggableBox({
             defaultSize={{}}
             className={`resizer ${mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''} `}
             onResize={() => setResizing(true)}
+            onDrag={() => setDragging(true)}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
-            disableDragging={true}
+            disableDragging={false}
+            onDragStop={(e, direction) => {
+              setDragging(false)
+              onDragStop(e, id, direction, currentLayout, currentLayoutOptions)
+            }}
             enableResizing={mode === 'edit'}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
@@ -218,7 +233,6 @@ export const DraggableBox = function DraggableBox({
                 <ConfigHandle
                   id={id}
                   removeComponent={removeComponent}
-                  dragRef={refProps.ref}
                   component={component}
                   configHandleClicked={(id, component) => configHandleClicked(id, component)}
                 />
