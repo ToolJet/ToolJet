@@ -1153,6 +1153,7 @@ export const componentTypes = [
     },
     properties: {
       events: { type: 'code', displayName: 'Events' },
+      resources: { type: 'code', displayName: 'Resources' },
     },
     events: {},
     styles: {
@@ -1167,7 +1168,10 @@ export const componentTypes = [
       properties: {
         events: {
           value:
-            "{{[\n\t\t{\n\t\t\t title: 'Sample event',\n\t\t\t start: new Date(Date.now()),\n\t\t\t end: new Date(Date.now()),\n\t\t\t allDay: false\n\t\t}\n]}}",
+            "{{[\n\t\t{\n\t\t\t title: 'Sample event',\n\t\t\t start: new Date(Date.now()),\n\t\t\t end: new Date(Date.now()),\n\t\t\t allDay: false,\n\t\t\t resourceId: 1\n\t\t}\n]}}",
+        },
+        resources: {
+          value: "{{[{ resourceId: 1, title: 'Sample resource' }]}}",
         },
       },
       events: [],

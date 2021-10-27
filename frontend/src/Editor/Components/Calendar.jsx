@@ -6,6 +6,9 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 const localizer = momentLocalizer(moment);
 
 export const Calendar = function ({ height, width, properties }) {
+  const style = { height, width, backgroundColor: 'white', padding: 10 };
+  const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
+
   return (
     <div>
       <ReactCalendar
@@ -13,7 +16,11 @@ export const Calendar = function ({ height, width, properties }) {
         events={properties.events}
         startAccessor="start"
         endAccessor="end"
-        style={{ height, width, backgroundColor: 'white', padding: 10 }}
+        style={style}
+        views={['day', 'week', 'month']}
+        {...resourcesParam}
+        resourceIdAccessor="resourceId"
+        resourceTitleAccessor="title"
       />
     </div>
   );
