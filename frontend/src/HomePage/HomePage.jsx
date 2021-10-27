@@ -382,10 +382,7 @@ class HomePage extends React.Component {
                       )}
                     </div>
 
-                    <div
-                      className='table-responsive w-100 apps-table'
-                      style={{ minHeight: '600px' }}
-                    >
+                    <div className="table-responsive w-100 apps-table" style={{ minHeight: '600px' }}>
                       <table
                         data-testid="appsTable"
                         className={`table table-vcenter ${this.props.darkMode ? 'bg-dark' : 'bg-white'}`}
@@ -485,8 +482,8 @@ class HomePage extends React.Component {
                                             <span
                                               className={`${
                                                 app?.current_version_id === null
-                                                  ? 'badge mx-2 '
-                                                  : 'badge bg-azure-lt mx-2'
+                                                  ? 'badge launch-btn mx-2 '
+                                                  : 'badge launch-btn bg-azure-lt mx-2'
                                               }`}
                                               style={{
                                                 filter:

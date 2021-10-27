@@ -2053,6 +2053,11 @@ input:focus-visible {
     filter: brightness(0) invert(1);
   }
 
+  .launch-btn {
+    filter: brightness(0.4) !important;
+    background: #8d9095;
+  }
+
   .badge {
     filter: brightness(1) invert(1);
 
