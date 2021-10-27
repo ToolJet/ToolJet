@@ -18,11 +18,11 @@ export const Datepicker = function Datepicker({ value, onChange, readOnly, isTim
 
   React.useEffect(() => {
     if (!isTimeChecked) {
-      setDate(moment(value, 'DD-MM-YYYY').format(dateFormat));
+      setDate(moment(value).format(dateFormat));
     }
 
     if (isTimeChecked) {
-      setDate(moment(value, 'DD-MM-YYYY LT').format(`${dateFormat} LT`));
+      setDate(moment(value).format(`${dateFormat} LT`));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimeChecked, readOnly, dateFormat]);
