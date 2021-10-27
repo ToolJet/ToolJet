@@ -1001,7 +1001,7 @@ export const componentTypes = [
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
         },
         canSearch: {
-          value: `{{true}}` ,
+          value: `{{true}}`,
         },
       },
       addNewMarkers: { value: '{{false}}' },
@@ -1134,6 +1134,37 @@ export const componentTypes = [
       events: [],
       styles: {
         dividerColor: { value: '#E7E8EA' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'Calendar',
+    displayName: 'Calendar',
+    description: 'Calendar',
+    component: 'Calendar',
+    defaultSize: {
+      width: 450,
+      height: 450,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {},
+      events: [],
+      styles: {
         visibility: { value: '{{true}}' },
       },
     },
