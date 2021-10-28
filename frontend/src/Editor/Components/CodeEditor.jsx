@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from 'react';
-// import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
+
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 export const CodeEditor = ({ width, height, component, currentState, onComponentOptionChanged, darkMode }) => {
+  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
+  const disabledState = component.definition.styles?.disabledState?.value ?? false;
+
+  const parsedDisabledState =
+    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedWidgetVisibility =
+    typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility, currentState) : widgetVisibility;
+
   const [value, setValue] = useState('');
 
   function codeChanged(code) {
@@ -16,12 +25,12 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
   const styles = {
     width: width,
     height: height,
-    display: '',
+    display: !parsedWidgetVisibility ? 'none' : 'block',
   };
 
   console.log('component', JSON.stringify(currentState));
   return (
-    <div style={styles} className="container p-1">
+    <div data-disabled={parsedDisabledState} style={styles} className="container p-1">
       <CodeHinter
         placeholder="placeholder"
         currentState={currentState}

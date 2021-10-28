@@ -1154,7 +1154,6 @@ export const componentTypes = [
     properties: {
       enableLineNumber: { type: 'code', displayName: 'Show Line Number' },
       mode: { type: 'code', displayName: 'Mode' },
-      enablePreview: { type: 'toggle', displayName: 'Enable Preview' },
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
@@ -1173,7 +1172,6 @@ export const componentTypes = [
       properties: {
         enableLineNumber: { value: '{{true}}' },
         mode: { value: 'javascript' },
-        enablePreview: { value: true },
         placeholder: { value: '' },
       },
       events: [],
