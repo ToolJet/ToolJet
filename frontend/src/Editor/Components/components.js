@@ -1141,7 +1141,7 @@ export const componentTypes = [
   {
     name: 'FilePicker',
     displayName: 'File Picker',
-    description: 'FilePicker desc',
+    description: 'File Picker',
     component: 'FilePicker',
     defaultSize: {
       width: 270,
