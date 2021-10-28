@@ -88,20 +88,11 @@ const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner,
           viewBox="0 0 20 20"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
         >
-          <rect width="20" height="20" fill="url(#pattern0)" />
-          <defs>
-            <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
-              <use xlinkHref="#image0_479:24" transform="scale(0.02)" />
-            </pattern>
-            <image
-              id="image0_479:24"
-              width="50"
-              height="50"
-              xlinkHref="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAABtklEQVRoge2ZPS8EQRjHf4t4qdxpheQiOYXCJfcFJETnI4go9T6DKFQahUZDwUe4aIRCFCRCJUGjJF427hKcYocdm123L88x1vySSf47z+R55p+dyWR2wWKxWP4STpvyDgOLQBnoDIk3gUtgFThr0xwyMwjc4k22VWsAld+ZZmuWiGfio21KFO2SSBKgrOltYDdkTAVYUHpUomgSIw5QiDGuT9MnwE7IGBffSDdQjJH3AXiNMa4lBZItGen27V7qkHBoArkxkgQHby0v47/uLdUn3cJqhJ1HnyTZ7E3gDqhrfQ3VJ03iGrlZWrkxInkgFoGq0nVgX4tNafoAeFa6in+GnAM3aYtLGhkHakpfASUtVtN0ScUBVoAJpeeBjbTFc7O0rBHTsEZMwxoxDWvENKwR07BGTMMaMQ3J+8gL/t36PhDT79xvmn7SYo0sxSWN7AMDEbGo/hmp4rlZWv/aiKvpIamJBNDzupGjNNLskSNNTwJrwHGKPFGMALPa86Fg7i84eJ90fuIL/AXQ2y4j4P1eO22ziWtgLO6EsvwM7QHmgGmgP0OeIC6wB6wDj4J5LRaLxSDeAUc+ozONRVpCAAAAAElFTkSuQmCC"
-            />
-          </defs>
+          <path
+            d="M5 15.8333C5 16.75 5.75 17.5 6.66667 17.5H13.3333C14.25 17.5 15 16.75 15 15.8333V5.83333H5V15.8333ZM6.66667 7.5H13.3333V15.8333H6.66667V7.5ZM12.9167 3.33333L12.0833 2.5H7.91667L7.08333 3.33333H5V5H15V3.33333H12.9167Z"
+            fill="#8092AC"
+          />
         </svg>
         <div onClick={close} className="m-1 cursor-pointer">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">

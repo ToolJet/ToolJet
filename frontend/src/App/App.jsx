@@ -10,6 +10,7 @@ import { InvitationPage } from '@/InvitationPage';
 import { Authorize } from '@/Oauth2';
 import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
+import 'emoji-mart/css/emoji-mart.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
