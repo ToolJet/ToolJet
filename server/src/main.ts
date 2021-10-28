@@ -16,7 +16,9 @@ async function bootstrap() {
     abortOnError: false,
   });
 
-  app.useWebSocketAdapter(new WsAdapter(app));
+  if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
+    app.useWebSocketAdapter(new WsAdapter(app));
+  }
   await app.setGlobalPrefix('api');
   await app.enableCors();
 

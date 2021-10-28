@@ -66,9 +66,6 @@ const imports = [
   OrganizationsModule,
   CaslModule,
   MetaModule,
-  ThreadModule,
-  CommentModule,
-  EventsModule,
   GroupPermissionsModule,
 ];
 
@@ -88,6 +85,10 @@ if (process.env.APM_VENDOR == 'sentry') {
       debug: !!process.env.SENTRY_DEBUG,
     })
   );
+}
+
+if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
+  imports.unshift(CommentModule, ThreadModule, EventsModule);
 }
 
 @Module({
