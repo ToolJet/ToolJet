@@ -4,15 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment.entity';
 import { CommentRepository } from '../repositories/comment.repository';
 import { CreateCommentDTO } from '../dto/create-comment.dto';
+import { groupBy, head } from 'lodash';
 
-// import { UsersService } from 'src/services/users.service';
-// import { User } from '../entities/user.entity';
-
-// createComment(): Create a new comment
-// getComments(): Get all created comments
-// getComment(): Retrieve the details of a single comment
-// editComment(): Edit the details of a particular comment
-// deleteComment(): Delete a single comment
 @Injectable()
 export class CommentService {
   constructor(
@@ -54,7 +47,7 @@ export class CommentService {
     isResolved = false,
     appVersionsId: string
   ): Promise<Comment[]> {
-    return await this.commentRepository.find({
+    const comments = await this.commentRepository.find({
       where: {
         thread: { appId, isResolved },
         appVersionsId,
@@ -64,6 +57,16 @@ export class CommentService {
       },
       relations: ['thread'],
     });
+
+    const groupedComments = groupBy(comments, 'threadId');
+
+    const _comments = [];
+
+    Object.keys(groupedComments).map((k) => {
+      _comments.push({ comment: head(groupedComments[k]), count: groupedComments[k].length });
+    });
+
+    return _comments;
   }
 
   public async getComment(commentId: number): Promise<Comment> {

@@ -11,6 +11,7 @@ import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
 import { ConfirmDialog } from '@/_components';
+import config from 'config';
 
 export const LeftSidebar = ({
   appId,
@@ -38,7 +39,9 @@ export const LeftSidebar = ({
         dataSourcesChanged={dataSourcesChanged}
       />
       <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
-      <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
+      {config.COMMENT_FEATURE_ENABLE && (
+        <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
+      )}
       <LeftSidebarItem
         onClick={() => setShowLeaveDialog(true)}
         tip="Back to home"

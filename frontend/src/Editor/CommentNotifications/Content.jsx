@@ -32,30 +32,30 @@ const Content = ({ notifications }) => {
       );
 
     return (
-      <div className="divide-y cursor-pointer">
-        {notifications.map((notification) => {
+      <div className="cursor-pointer">
+        {notifications.map(({ comment }) => {
           return (
             <div
               className={cx('comment-notification', {
-                'comment-notification-selected': selectedCommentId === notification.id,
+                'comment-notification-selected': selectedCommentId === comment.id,
               })}
               onClick={() => {
                 router.push({
                   pathname: window.location.pathname,
-                  search: `?threadId=${notification.thread.id}&commentId=${notification.id}`,
+                  search: `?threadId=${comment.thread.id}&commentId=${comment.id}`,
                 });
               }}
-              key={notification.id}
+              key={comment.id}
             >
               <div className="d-flex justify-content-between">
                 <span className="comment-notification-user">
-                  {`${notification.user?.firstName} ${notification.user?.lastName}`}{' '}
+                  {`${comment.user?.firstName} ${comment.user?.lastName}`}{' '}
                 </span>
-                <div className="comment-notification-count ms-auto">{moment(notification.createdAt).fromNow()}</div>
+                <div className="comment-notification-count ms-auto">{moment(comment.createdAt).fromNow()}</div>
               </div>
               <div
                 className="comment-notification-message"
-                dangerouslySetInnerHTML={{ __html: getComment(notification.comment) }}
+                dangerouslySetInnerHTML={{ __html: getComment(comment.comment) }}
               />
             </div>
           );
@@ -71,7 +71,7 @@ const Content = ({ notifications }) => {
         <sub className="fw-400 comment-notification-count light-gray">
           Total {pluralize(notifications.length, 'comment')}
         </sub>
-        <div className="ms-auto position-relative">
+        {/* <div className="ms-auto position-relative">
           <svg {...trigger} width="15" height="14" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M14.3333 1H1L6.33333 7.30667V11.6667L9 13V7.30667L14.3333 1Z"
@@ -103,7 +103,7 @@ const Content = ({ notifications }) => {
                   </svg>
                 </div>
               </div>
-              {/* <div className="d-flex">
+              <div className="d-flex">
                 <span>Only mention of you</span>
                 <div className="ms-auto">
                   <svg width="12" height="9" viewBox="0 0 12 9" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -115,10 +115,10 @@ const Content = ({ notifications }) => {
                     />
                   </svg>
                 </div>
-              </div> */}
+              </div>
             </div>
           </animated.div>
-        </div>
+        </div> */}
       </div>
       <div>{getContent()}</div>
     </div>

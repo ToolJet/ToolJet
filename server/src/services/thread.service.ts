@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Thread } from '../entities/thread.entity';
+import { Comment } from '../entities/comment.entity';
 import { CreateThreadDTO } from '../dto/create-thread.dto';
 import { ThreadRepository } from '../repositories/thread.repository';
 
@@ -50,6 +51,11 @@ export class ThreadService {
   }
 
   public async deleteThread(threadId: number): Promise<void> {
+    const comments = await Comment.find({
+      where: { threadId },
+    });
+
+    comments.map((c) => Comment.delete(c.id));
     await this.threadRepository.delete(threadId);
   }
 }

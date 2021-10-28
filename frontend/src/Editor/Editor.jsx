@@ -94,7 +94,7 @@ class Editor extends React.Component {
     this.fetchApp();
     this.fetchDataSources();
     this.fetchDataQueries();
-    this.initWebSocket();
+    config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
@@ -936,7 +936,7 @@ class Editor extends React.Component {
                 ></WidgetManager>
               )}
             </div>
-            {showComments && (
+            {config.COMMENT_FEATURE_ENABLE && showComments && (
               <CommentNotifications
                 socket={this.state.socket}
                 appVersionsId={this.state?.editingVersion?.id}

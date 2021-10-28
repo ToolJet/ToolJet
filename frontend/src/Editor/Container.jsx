@@ -10,6 +10,7 @@ import { computeComponentName } from '@/_helpers/utils';
 import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
+import config from 'config';
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -323,7 +324,7 @@ export const Container = ({
 
   return (
     <div
-      {...(showComments && { onClick: handleAddThread })}
+      {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
       ref={drop}
       style={styles}
       className={cx('real-canvas', {
@@ -331,7 +332,9 @@ export const Container = ({
         'cursor-text': showComments,
       })}
     >
-      {showComments && <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} />}
+      {config.COMMENT_FEATURE_ENABLE && showComments && (
+        <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} />
+      )}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =
@@ -340,7 +343,9 @@ export const Container = ({
         if (!box.parent && canShowInCurrentLayout) {
           return (
             <DraggableBox
-              onComponentClick={showComments ? handleAddThreadOnComponent : onComponentClick}
+              onComponentClick={
+                config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
+              }
               onEvent={onEvent}
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}

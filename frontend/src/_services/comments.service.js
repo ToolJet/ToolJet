@@ -16,6 +16,10 @@ function updateThread(threadId, data) {
   return adapter.patch(`/threads/edit/${threadId}`, data);
 }
 
+function deleteThread(threadId) {
+  return adapter.delete(`/threads/delete/${threadId}`);
+}
+
 function getComments(threadId, appVersionsId) {
   return adapter.get(`/comments/${threadId}/all?appVersionsId=${appVersionsId}`);
 }
@@ -40,6 +44,7 @@ export const commentsService = {
   getThreads,
   createThread,
   updateThread,
+  deleteThread,
   getComments,
   createComment,
   updateComment,

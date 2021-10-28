@@ -32,6 +32,18 @@ const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner,
     }
   };
 
+  const handleDelete = async () => {
+    await commentsService.deleteThread(threadId);
+    toast.success('Thread deleted');
+    fetchThreads();
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: 'notifications',
+      })
+    );
+  };
+
   const getResolveIcon = () => {
     if (spinning) return <Spinner />;
 
@@ -68,6 +80,29 @@ const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner,
         >
           {getResolveIcon()}
         </span>
+        <svg
+          onClick={handleDelete}
+          className="m-1"
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlnsXlink="http://www.w3.org/1999/xlink"
+        >
+          <rect width="20" height="20" fill="url(#pattern0)" />
+          <defs>
+            <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+              <use xlinkHref="#image0_479:24" transform="scale(0.02)" />
+            </pattern>
+            <image
+              id="image0_479:24"
+              width="50"
+              height="50"
+              xlinkHref="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAABtklEQVRoge2ZPS8EQRjHf4t4qdxpheQiOYXCJfcFJETnI4go9T6DKFQahUZDwUe4aIRCFCRCJUGjJF427hKcYocdm123L88x1vySSf47z+R55p+dyWR2wWKxWP4STpvyDgOLQBnoDIk3gUtgFThr0xwyMwjc4k22VWsAld+ZZmuWiGfio21KFO2SSBKgrOltYDdkTAVYUHpUomgSIw5QiDGuT9MnwE7IGBffSDdQjJH3AXiNMa4lBZItGen27V7qkHBoArkxkgQHby0v47/uLdUn3cJqhJ1HnyTZ7E3gDqhrfQ3VJ03iGrlZWrkxInkgFoGq0nVgX4tNafoAeFa6in+GnAM3aYtLGhkHakpfASUtVtN0ScUBVoAJpeeBjbTFc7O0rBHTsEZMwxoxDWvENKwR07BGTMMaMQ3J+8gL/t36PhDT79xvmn7SYo0sxSWN7AMDEbGo/hmp4rlZWv/aiKvpIamJBNDzupGjNNLskSNNTwJrwHGKPFGMALPa86Fg7i84eJ90fuIL/AXQ2y4j4P1eO22ziWtgLO6EsvwM7QHmgGmgP0OeIC6wB6wDj4J5LRaLxSDeAUc+ozONRVpCAAAAAElFTkSuQmCC"
+            />
+          </defs>
+        </svg>
         <div onClick={close} className="m-1 cursor-pointer">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
