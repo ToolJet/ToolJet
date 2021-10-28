@@ -232,3 +232,8 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     validationError,
   };
 }
+
+export function validateEmail(email) {
+  const emailRegex =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+  return emailRegex.test(email)
+}
