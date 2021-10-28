@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
+
 export const CodeEditor = ({ width, height, component, currentState, onComponentOptionChanged, darkMode }) => {
+  const enableLineNumber = component.definition.properties?.enableLineNumber?.value ?? true;
+  const languageMode = component.definition.properties.mode.value;
+  const placeholder = component.definition.properties.placeholder.value;
+
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
@@ -11,16 +15,17 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
   const parsedWidgetVisibility =
     typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility, currentState) : widgetVisibility;
 
-  const [value, setValue] = useState('');
+  const parsedEnableLineNumber =
+    typeof enableLineNumber !== 'boolean' ? resolveWidgetFieldValue(enableLineNumber, currentState) : enableLineNumber;
+
+  const value = currentState?.components[component?.name]?.value;
+
+  const [editorValue, setEditorValue] = useState(value);
 
   function codeChanged(code) {
-    setValue(code);
+    setEditorValue(code);
+    onComponentOptionChanged(component, 'value', code);
   }
-
-  useEffect(() => {
-    onComponentOptionChanged(component, 'value', value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
 
   const styles = {
     width: width,
@@ -32,16 +37,16 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
   return (
     <div data-disabled={parsedDisabledState} style={styles} className="container p-1">
       <CodeHinter
-        placeholder="placeholder"
+        placeholder={placeholder}
         currentState={currentState}
         height={height}
-        initialValue={value}
+        initialValue={editorValue}
         theme={darkMode ? 'monokai' : 'duotone-light'}
-        lineNumbers={true}
+        lineNumbers={parsedEnableLineNumber}
         className="query-hinter, mb-1"
         ignoreBraces={true}
         onChange={(value) => codeChanged(value)}
-        mode="javascript"
+        mode={languageMode}
         enablePreview={true}
       />
     </div>
