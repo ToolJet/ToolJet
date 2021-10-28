@@ -34,47 +34,42 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 }
 
 export async function batchUpdateToSheet(spreadSheetId: string, requestBody: any, filterData: any, authHeader: any) {
-  //!
+  const lookUpData = await lookUpSheetData(spreadSheetId, authHeader);
 
-  const lookUpData = await lookUpSheetData(spreadSheetId, requestBody, filterData, authHeader);
+  const updateBody = (requestBody, filterCondition, data) => {
+    const rowsIndexes = getRowsIndex(filterCondition, data) as any[];
+    const colIndexes = getInputKeys(requestBody, data);
 
-  const updateBody = (requestBody, updateIndexes) => {
+    const updateCellIndexes = [];
+    colIndexes.map((col) => {
+      rowsIndexes.map((rowIndex) => updateCellIndexes.push({ ...col, cellIndex: `${col.colIndex}${rowIndex}` }));
+    });
+
     const body = [];
-
-    // Object.keys(requestBody).map((key, index) => {
-    //   updateIndexes.map((cellIndex) => {
-    //     const b = { key: key, rangeIndex: cellIndex, value: requestBody[key] };
-    //     body.push(b);
-    //   });
-    // });
-
-    // const arrayHashmap = body.reduce((obj, item) => {
-    //   obj[item.id] ? obj[item.id].elements.push(...item.elements) : (obj[item.id] = { ...item });
-    //   return obj;
-    // }, {});
-
-    // const mergedArray = Object.values(arrayHashmap);
-
-    // console.log(mergedArray);
+    Object.entries(requestBody).map((item) => {
+      updateCellIndexes.map((cell) => {
+        if (item[0] === cell.col) {
+          body.push({ cellValue: item[1], cellIndex: cell.cellIndex });
+        }
+      });
+    });
 
     const _data = body.map((data) => {
       return {
         majorDimension: 'ROWS',
-        range: data.rangeIndex,
-        values: [[data.value]],
+        range: data.cellIndex,
+        values: [[data.cellValue]],
       };
     });
-    // console.log('data', JSON.stringify(_data));
 
     return _data;
   };
 
   const reqBody = {
-    data: updateBody(requestBody, lookUpData),
+    data: updateBody(requestBody, filterData, lookUpData),
     valueInputOption: 'USER_ENTERED',
     includeValuesInResponse: true,
   };
-
   const response = await makeRequestToBatchUpdateValues(spreadSheetId, reqBody, authHeader);
   return response;
 }
@@ -169,59 +164,42 @@ export async function deleteData(
   return await deleteDataFromSheet(spreadSheetId, sheet, rowIndex, authHeader);
 }
 
-async function lookUpSheetData(spreadSheetId: string, requestBody: any, filterCondition: any, authHeader: any) {
+async function lookUpSheetData(spreadSheetId: string, authHeader: any) {
   const responseLookUpCellValues = await makeRequestToLookUpCellValues(spreadSheetId, 'A1:Z500', authHeader);
-  const lookUpData = await responseLookUpCellValues['values'];
+  const data = await responseLookUpCellValues['values'];
 
-  try {
-    const rowsIndexes = getRowsIndex(filterCondition, lookUpData) as any[];
-    const colIndexes = getInputKeys(requestBody, lookUpData);
-
-    const updateCellIndexes = [];
-    // colIndexes.map((colIndex) => {
-    //   rowsIndexes.map((rowIndex) => updateCellIndexes.push(`${colIndex}${rowIndex}`));
-    // });
-
-    rowsIndexes.map((rowIndex) => {
-      colIndexes.map((colIndex) => updateCellIndexes.push(`${colIndex}${rowIndex}`));
-    });
-
-    // for(let rows = 0; i < )
-
-    console.log('JSON:', JSON.stringify(updateCellIndexes));
-    return updateCellIndexes;
-  } catch (error) {
-    throw new Error('error');
-  }
+  return data;
 }
 
-export const getInputKeys = (inputBody, data) => {
+//* utils
+const getInputKeys = (inputBody, data) => {
   const keys = Object.keys(inputBody);
   const arr = [];
   keys.map((key) =>
     data.filter((val, index) => {
       if (val[0] === key) {
         const kIndex = `${String.fromCharCode(65 + index)}`;
-        arr.push(kIndex);
+        arr.push({ col: val[0], colIndex: kIndex });
       }
     })
   );
-
   return arr;
 };
 
-export const getRowsIndex = (inputFilter, response) => {
+const getRowsIndex = (inputFilter, response) => {
   const columnValues = response.filter((column) => column[0] === inputFilter.key).flat();
+
   if (columnValues.length === 0) {
     return -1;
   }
 
   const rowIndex = [];
+
   columnValues.forEach((col, index) => {
     if (col === inputFilter.value) {
       rowIndex.push(index + 1);
     }
   });
-  //   console.log('col value', rowIndex);
+
   return rowIndex;
 };
