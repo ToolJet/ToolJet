@@ -33,7 +33,7 @@ const Content = ({ notifications }) => {
 
     return (
       <div className="cursor-pointer">
-        {notifications.map(({ comment }) => {
+        {notifications.map(({ comment, count }) => {
           return (
             <div
               className={cx('comment-notification', {
@@ -57,6 +57,7 @@ const Content = ({ notifications }) => {
                 className="comment-notification-message"
                 dangerouslySetInnerHTML={{ __html: getComment(comment.comment) }}
               />
+              <div className="my-2 count">{`${count} replies`}</div>
             </div>
           );
         })}
