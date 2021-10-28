@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import config from 'config';
+import { validateEmail } from "../_helpers/utils"
 
 class ForgotPassword extends React.Component {
   constructor(props) {
@@ -24,6 +25,11 @@ class ForgotPassword extends React.Component {
 
   handleClick = (event) => {
     event.preventDefault();
+
+    if(!validateEmail(this.state.email)) {
+      toast.error('Invalid email', { toastId: 'toast-forgot-password-email-error' });
+      return
+    }
 
     fetch(`${config.apiUrl}/forgot_password`, {
       method: 'POST',
