@@ -187,6 +187,9 @@ export const DraggableBox = function DraggableBox({
     return newWidth;
   }
 
+  const gridWidth = canvasWidth / 43;
+  const width = (canvasWidth * currentLayoutOptions.width) / 43
+
   return (
     <div
       className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'}
@@ -200,10 +203,10 @@ export const DraggableBox = function DraggableBox({
         >
           <Rnd
             style={{ ...style }}
-            resizeGrid={[canvasWidth / 43, 10]}
-            dragGrid={[canvasWidth / 43, 10]}
+            resizeGrid={[gridWidth, 10]}
+            dragGrid={[gridWidth, 10]}
             size={{
-              width: (canvasWidth * currentLayoutOptions.width) / 43,
+              width: width,
               height: currentLayoutOptions.height,
             }}
             position={{
@@ -245,7 +248,7 @@ export const DraggableBox = function DraggableBox({
               <Box
                 component={component}
                 id={id}
-                width={scaleWidth(currentLayoutOptions.width, scaleValue) - 4}
+                width={width}
                 height={currentLayoutOptions.height - 4}
                 mode={mode}
                 changeCanDrag={changeCanDrag}
@@ -259,6 +262,7 @@ export const DraggableBox = function DraggableBox({
                 containerProps={containerProps}
                 darkMode={darkMode}
                 removeComponent={removeComponent}
+                canvasWidth={canvasWidth}
               />
             </div>
           </Rnd>

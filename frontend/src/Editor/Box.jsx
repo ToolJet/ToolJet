@@ -68,6 +68,7 @@ export const Box = function Box({
   containerProps,
   darkMode,
   removeComponent,
+  canvasWidth
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -108,6 +109,7 @@ export const Box = function Box({
             containerProps={containerProps}
             darkMode={darkMode}
             removeComponent={removeComponent}
+            canvasWidth={canvasWidth}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '100%' }}>

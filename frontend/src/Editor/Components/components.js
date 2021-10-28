@@ -740,7 +740,7 @@ export const componentTypes = [
     displayName: 'Dropdown',
     description: 'Select one value from options',
     defaultSize: {
-      width: 240,
+      width: 8,
       height: 30,
     },
     component: 'DropDown',
@@ -794,7 +794,7 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 240,
+      width: 8,
       height: 30,
     },
     component: 'Multiselect',
@@ -843,7 +843,7 @@ export const componentTypes = [
     description: 'Rich text editor',
     component: 'RichTextEditor',
     defaultSize: {
-      width: 600,
+      width: 16,
       height: 210,
     },
     others: {
@@ -884,7 +884,7 @@ export const componentTypes = [
     description: 'Display Google Maps',
     component: 'Map',
     defaultSize: {
-      width: 420,
+      width: 12,
       height: 420,
     },
     others: {
@@ -990,7 +990,7 @@ export const componentTypes = [
     description: 'Star rating',
     component: 'StarRating',
     defaultSize: {
-      width: 240,
+      width: 8,
       height: 30,
     },
     others: {
