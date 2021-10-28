@@ -1005,7 +1005,6 @@ export const componentTypes = [
         },
         addNewMarkers : {value:`{{true}}`},
       },
-      addNewMarkers: { value: '{{false}}' },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
