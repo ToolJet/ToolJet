@@ -57,7 +57,7 @@ const Content = ({ notifications }) => {
                 className="comment-notification-message"
                 dangerouslySetInnerHTML={{ __html: getComment(comment.comment) }}
               />
-              <div className="my-2 count">{`${count} replies`}</div>
+              <div className="my-2 count">{`${count - 1} replies`}</div>
             </div>
           );
         })}
