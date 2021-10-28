@@ -1145,7 +1145,7 @@ export const componentTypes = [
     component: 'CodeEditor',
     defaultSize: {
       width: 270,
-      height: 100,
+      height: 120,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -1153,13 +1153,18 @@ export const componentTypes = [
     },
     properties: {
       enableLineNumber: { type: 'code', displayName: 'Show Line Number' },
+      mode: { type: 'code', displayName: 'Mode' },
+      enablePreview: { type: 'toggle', displayName: 'Enable Preview' },
+      placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      value: '',
+    },
     definition: {
       others: {
         showOnDesktop: { value: true },
@@ -1167,6 +1172,9 @@ export const componentTypes = [
       },
       properties: {
         enableLineNumber: { value: '{{true}}' },
+        mode: { value: 'javascript' },
+        enablePreview: { value: true },
+        placeholder: { value: '' },
       },
       events: [],
       styles: {

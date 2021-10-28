@@ -1,31 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 // import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import { changeOption } from '../QueryManager/QueryEditors/utils';
-export class CodeEditor extends React.Component {
-  constructor(props) {
-    super(props);
+export const CodeEditor = ({ width, height, component, currentState, onComponentOptionChanged, darkMode }) => {
+  const [value, setValue] = useState('');
 
-    this.state = {
-      options: this.props.options,
-    };
+  function codeChanged(code) {
+    setValue(code);
   }
-  render() {
-    const { component, currentState, darkMode } = this.props;
-    // const { width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode } = this.props;
-    console.log('component', JSON.stringify(component));
-    return (
-      <div className="py-1">
-        <CodeHinter
-          currentState={currentState}
-          height="100"
-          initialValue={''}
-          theme={darkMode ? 'monokai' : 'duotone-light'}
-          lineNumbers={true}
-          className="query-hinter"
-          onChange={(value) => changeOption(this, 'codeWidget', value)}
-        />
-      </div>
-    );
-  }
-}
+
+  useEffect(() => {
+    onComponentOptionChanged(component, 'value', value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  const styles = {
+    width: width,
+    height: height,
+    display: '',
+  };
+
+  console.log('component', JSON.stringify(currentState));
+  return (
+    <div style={styles} className="container p-1">
+      <CodeHinter
+        placeholder="placeholder"
+        currentState={currentState}
+        height={height}
+        initialValue={value}
+        theme={darkMode ? 'monokai' : 'duotone-light'}
+        lineNumbers={true}
+        className="query-hinter, mb-1"
+        ignoreBraces={true}
+        onChange={(value) => codeChanged(value)}
+        mode="javascript"
+        enablePreview={true}
+      />
+    </div>
+  );
+};
