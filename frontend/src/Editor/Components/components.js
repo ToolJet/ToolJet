@@ -1139,13 +1139,13 @@ export const componentTypes = [
     },
   },
   {
-    name: 'CodeHinter',
-    displayName: 'Code Hinter',
-    description: 'Code Hinter',
-    component: 'CodeHinter',
+    name: 'CodeEditor',
+    displayName: 'Code Editor',
+    description: 'Code Editor',
+    component: 'CodeEditor',
     defaultSize: {
       width: 240,
-      height: 30,
+      height: 100,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -1169,7 +1169,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        label: { value: 'Select Code Hinter' },
+        label: { value: 'Code Hinter' },
       },
       events: [],
       styles: {
