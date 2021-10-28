@@ -2,7 +2,7 @@ import React from 'react';
 // import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { changeOption } from '../QueryManager/QueryEditors/utils';
-class CodeEditor extends React.Component {
+export class CodeEditor extends React.Component {
   constructor(props) {
     super(props);
 
@@ -11,13 +11,16 @@ class CodeEditor extends React.Component {
     };
   }
   render() {
+    const { component, currentState, darkMode } = this.props;
+    // const { width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode } = this.props;
+    console.log('component', JSON.stringify(component));
     return (
       <div className="py-1">
         <CodeHinter
-          currentState={this.props.currentState}
+          currentState={currentState}
           height="100"
           initialValue={''}
-          theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+          theme={darkMode ? 'monokai' : 'duotone-light'}
           lineNumbers={true}
           className="query-hinter"
           onChange={(value) => changeOption(this, 'codeWidget', value)}
@@ -26,5 +29,3 @@ class CodeEditor extends React.Component {
     );
   }
 }
-
-export { CodeEditor };
