@@ -33,17 +33,19 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
     display: !parsedWidgetVisibility ? 'none' : 'block',
   };
 
-  console.log('component', JSON.stringify(currentState));
+  // console.log('parsedEnableLineNumber');
+
   return (
-    <div data-disabled={parsedDisabledState} style={styles} className="container p-1">
+    <div data-disabled={parsedDisabledState} style={styles}>
       <CodeHinter
         placeholder={placeholder}
         currentState={currentState}
         height={height}
+        minHeight={height}
         initialValue={editorValue}
         theme={darkMode ? 'monokai' : 'duotone-light'}
         lineNumbers={parsedEnableLineNumber}
-        className="query-hinter, mb-1"
+        className="query-hinter code-editor-widget"
         ignoreBraces={true}
         onChange={(value) => codeChanged(value)}
         mode={languageMode}
