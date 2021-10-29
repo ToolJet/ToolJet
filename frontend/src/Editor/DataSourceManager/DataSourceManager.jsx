@@ -5,7 +5,13 @@ import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
 import { defaultOptions } from './DefaultOptions';
 import { TestConnection } from './TestConnection';
-import { DataBaseSources, ApiSources, DataSourceTypes, SourceComponents } from './SourceComponents';
+import {
+  DataBaseSources,
+  ApiSources,
+  DataSourceTypes,
+  SourceComponents,
+  CloudStorageSources,
+} from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 
@@ -228,7 +234,30 @@ class DataSourceManager extends React.Component {
                   <h4 className="mb-2">APIS</h4>
                   {ApiSources.map((dataSource) => (
                     <div className="col-md-2" key={dataSource.name}>
-                      <div className="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
+                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
+                        <div className="card-body">
+                          <center>
+                            <img
+                              src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`}
+                              width="50"
+                              height="50"
+                              alt=""
+                            />
+
+                            <br></br>
+                            <br></br>
+                            {dataSource.name}
+                          </center>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="row row-deck mt-2">
+                  <h4 className="mb-2">CLOUD STORAGES</h4>
+                  {CloudStorageSources.map((dataSource) => (
+                    <div className="col-md-2" key={dataSource.name}>
+                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
                             <img
