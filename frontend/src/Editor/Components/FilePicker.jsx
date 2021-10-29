@@ -138,7 +138,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
       <FilePicker.Signifiers
         signifier={!isDragAccept && !accepted & !isDragReject}
         feedback={'Drag & drop some files here, or click to select files'}
-        cls={`${parsedDisabledState ? 'text-mute' : 'text-azure'} mt-3`}
+        cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
       />
 
       <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" />
