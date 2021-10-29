@@ -33,7 +33,7 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
   }, [currentState]);
 
   const computedStyles = {
-    width,
+    width: width - 4,
     height,
     display: parsedWidgetVisibility ? '' : 'none',
     background: darkMode ? '#1f2936' : 'white',
@@ -57,7 +57,7 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
   const fontColor = darkMode ? '#c3c3c3' : null;
 
   const layout = {
-    width,
+    width: width - 4,
     height,
     plot_bgcolor: darkMode ? '#1f2936' : null,
     paper_bgcolor: darkMode ? '#1f2936' : null,
@@ -136,7 +136,7 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
       }}
     >
       {loadingState === true ? (
-        <div style={{ width: '100%' }} className="p-2">
+        <div style={{ width }} className="p-2">
           <center>
             <div className="spinner-border mt-5" role="status"></div>
           </center>
