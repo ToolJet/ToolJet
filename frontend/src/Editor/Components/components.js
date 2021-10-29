@@ -1153,6 +1153,7 @@ export const componentTypes = [
     },
     properties: {
       dateFormat: { type: 'code', displayName: 'Date format' },
+      defaultDate: { type: 'code', displayName: 'Default date' },
       events: { type: 'code', displayName: 'Events' },
       resources: { type: 'code', displayName: 'Resources' },
       views: { type: 'code', displayName: 'Views' },
@@ -1175,7 +1176,10 @@ export const componentTypes = [
       },
       properties: {
         dateFormat: {
-          value: 'MM-DD-YYYY HH:mm:ss A ZZ',
+          value: 'MM-DD-YYYY HH:mm:ss A Z',
+        },
+        defaultDate: {
+          value: '{{moment().format("MM-DD-YYYY HH:mm:ss A Z")}}',
         },
         events: {
           value:

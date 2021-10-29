@@ -11,16 +11,20 @@ const prepareEvent = (event, dateFormat) => ({
   end: moment(event.end, dateFormat).toDate(),
 });
 
+const parseDate = (date, dateFormat) => moment(date, dateFormat).toDate();
+
 export const Calendar = function ({ height, width, properties, fireEvent }) {
   const style = { height, width, backgroundColor: 'white', padding: 10 };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
 
   const events = properties.events ? properties.events.map((event) => prepareEvent(event, properties.dateFormat)) : [];
+  const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
 
   return (
     <div>
       <ReactCalendar
         localizer={localizer}
+        defaultDate={defaultDate}
         events={events}
         startAccessor="start"
         endAccessor="end"
