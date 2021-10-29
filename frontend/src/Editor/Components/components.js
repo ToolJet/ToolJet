@@ -1003,8 +1003,8 @@ export const componentTypes = [
         canSearch: {
           value: `{{true}}` ,
         },
+        addNewMarkers : {value:`{{true}}`},
       },
-      addNewMarkers: { value: '{{false}}' },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
