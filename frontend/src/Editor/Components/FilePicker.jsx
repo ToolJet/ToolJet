@@ -166,7 +166,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
               key={index}
               signifier={acceptedFiles.length > 0}
               feedback={acceptedFile.name}
-              cls="text-secondary d-flex justify-content-star"
+              cls="text-secondary d-flex justify-content-start file-list"
             />
           ))}
         </FilePicker.AcceptedFiles>
@@ -187,7 +187,7 @@ FilePicker.AcceptedFiles = ({ children }) => {
   return (
     <aside>
       <span className="text-info">Files</span>
-      <div className="row">{children}</div>
+      <div className="row accepted-files">{children}</div>
     </aside>
   );
 };
