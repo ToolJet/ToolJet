@@ -95,6 +95,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
   useEffect(() => {
     if (acceptedFiles.length !== 0) {
+      const fileData = [];
       acceptedFiles.map((acceptedFile) => {
         return new Promise((resolve, reject) => {
           let reader = new FileReader();
@@ -112,19 +113,20 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
             type: zippedResults[1].type,
           };
 
-          onComponentOptionChanged(component, 'file', fileSelected).then(() =>
-            onEvent('onFileSelected', { component }).then(() => {
-              setAccepted(true);
-              return new Promise(function (resolve, reject) {
-                setTimeout(() => {
-                  setAccepted(false);
-                  resolve();
-                }, 400);
-              });
-            })
-          );
+          fileData.push(fileSelected);
         });
       });
+      onComponentOptionChanged(component, 'file', fileData).then(() =>
+        onEvent('onFileSelected', { component }).then(() => {
+          setAccepted(true);
+          return new Promise(function (resolve, reject) {
+            setTimeout(() => {
+              setAccepted(false);
+              resolve();
+            }, 200);
+          });
+        })
+      );
     }
 
     if (fileRejections.length > 0) {
