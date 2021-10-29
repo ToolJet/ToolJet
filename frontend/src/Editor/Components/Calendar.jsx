@@ -25,12 +25,13 @@ export const Calendar = function ({ height, width, properties, fireEvent }) {
         startAccessor="start"
         endAccessor="end"
         style={style}
-        views={['day', 'week', 'month']}
+        views={properties.views}
         defaultView={properties.defaultView}
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"
         onSelectEvent={(calendarEvent) => fireEvent('onEventSelect', { calendarEvent })}
+        toolbar={properties.displayToolbar}
       />
     </div>
   );

@@ -1157,6 +1157,7 @@ export const componentTypes = [
       resources: { type: 'code', displayName: 'Resources' },
       views: { type: 'code', displayName: 'Views' },
       defaultView: { type: 'code', displayName: 'Default view' },
+      displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
     },
     events: {
       onEventSelect: { displayName: 'On Event Select' },
@@ -1188,6 +1189,9 @@ export const componentTypes = [
         },
         defaultView: {
           value: "{{'month'}}",
+        },
+        displayToolbar: {
+          value: true,
         },
       },
       events: [],
