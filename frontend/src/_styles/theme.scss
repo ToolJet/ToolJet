@@ -2303,6 +2303,9 @@ input[type='text'] {
 }
 
 .code-editor-widget {
-  padding: 2px!important;
-  margin-top: -2px!important;
+  border-radius: 0;
+  .CodeMirror {
+    border-radius: inherit;
+    margin-top: -1px!important;
+  }
 }
