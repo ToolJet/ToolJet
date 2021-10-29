@@ -13,7 +13,10 @@
       "rawData": []
     },
     "options": {
-      "gcp_key": { "type": "string", "encrypted": true }
+      "gcp_key": {
+        "type": "string",
+        "encrypted": true
+      }
     }
   },
   "properties": {
@@ -21,9 +24,12 @@
       "$label": "Private key",
       "$key": "gcp_key",
       "$rows": 15,
+      "$encrypted": true,
       "type": "textarea",
       "description": "Enter private key"
     }
   },
-  "required": ["gcp_key"]
+  "required": [
+    "gcp_key"
+  ]
 }
