@@ -953,7 +953,7 @@ export const componentTypes = [
     description: 'Scan QR codes and hold its data',
     component: 'QrScanner',
     defaultSize: {
-      width: 300,
+      width: 10,
       height: 300,
     },
     others: {
@@ -1044,7 +1044,7 @@ export const componentTypes = [
     description: 'Separator between components',
     component: 'Divider',
     defaultSize: {
-      width: 200,
+      width: 10,
       height: 10,
     },
     others: {
