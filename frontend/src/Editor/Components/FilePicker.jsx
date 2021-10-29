@@ -99,22 +99,36 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
   useEffect(() => {
     if (acceptedFiles.length !== 0) {
-      const fileSelected = acceptedFiles.map((acceptedFile) => ({
-        name: acceptedFile.name.substring(0, acceptedFile.name.lastIndexOf('.')),
-        content: JSON.stringify(acceptedFile),
-        type: acceptedFile.type,
-      }));
-      onComponentOptionChanged(component, 'file', fileSelected).then(() =>
-        onEvent('onFileSelected', { component }).then(() => {
-          setAccepted(true);
-          return new Promise(function (resolve, reject) {
-            setTimeout(() => {
-              setAccepted(false);
-              resolve();
-            }, 400);
-          });
-        })
-      );
+      acceptedFiles.map((acceptedFile) => {
+        return new Promise((resolve, reject) => {
+          let reader = new FileReader();
+          reader.onload = (result) => {
+            //* Resolve both the FileReader result and its original file.
+            resolve([result, acceptedFile]);
+          };
+          //* Reads contents of the file as a text string.
+          reader.readAsText(acceptedFile);
+        }).then((zippedResults) => {
+          //? Run the callback after all files have been read.
+          const fileSelected = {
+            name: zippedResults[1].name,
+            content: zippedResults[0].srcElement.result,
+            type: zippedResults[1].type,
+          };
+
+          onComponentOptionChanged(component, 'file', fileSelected).then(() =>
+            onEvent('onFileSelected', { component }).then(() => {
+              setAccepted(true);
+              return new Promise(function (resolve, reject) {
+                setTimeout(() => {
+                  setAccepted(false);
+                  resolve();
+                }, 400);
+              });
+            })
+          );
+        });
+      });
     }
 
     if (fileRejections.length > 0) {
