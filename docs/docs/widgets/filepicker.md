@@ -5,7 +5,9 @@ sidebar_position: 6
 # Filepicker
 
 Filepicker widget allows the user to drag and drop files or upload files by browsing the filesystem and selecting one or more files in a directory.
-### gif
+
+<img class="screenshot-full" src="/img/widgets/filepicker/filepicker.gif" alt="oolJet - Widget Reference - Filepicker " height="420"/>
+
 :::info
  File types must be a valid [MIME](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) type according to input element specification or a valid file extension.
 :::
