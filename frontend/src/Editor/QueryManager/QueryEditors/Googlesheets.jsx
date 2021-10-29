@@ -201,8 +201,8 @@ class Googlesheets extends React.Component {
                 currentState={this.props.currentState}
                 lineNumbers={false}
                 height="120px"
-                className="query-hinter"
-                theme={this.props.darkMode ? 'monokai' : 'default'}
+                className="codehinter-gsheet-input codehinter-default-input"
+                theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                 onChange={(value) => changeOption(this, 'body', value)}
                 enablePreview={true}
                 ignoreBraces={true}

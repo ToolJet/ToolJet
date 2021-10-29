@@ -2311,3 +2311,12 @@ input[type='text'] {
   max-height: 200px;
   overflow-y: scroll;
 }
+
+//codeHinter - gsheet
+.codehinter-gsheet-input {
+  border-radius: 0!important;
+  
+  .CodeMirror {
+    border-radius: 0!important;
+  }
+}
