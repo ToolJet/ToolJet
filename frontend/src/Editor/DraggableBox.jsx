@@ -42,7 +42,6 @@ const resizerStyles = {
 };
 
 function computeWidth(currentLayoutOptions) {
-  // scaleWidth(currentLayoutOptions.width, scaleValue) - 4
   return `${currentLayoutOptions?.width}%`;
 }
 
@@ -86,7 +85,6 @@ export const DraggableBox = function DraggableBox({
   removeComponent,
   currentLayout,
   layouts,
-  scaleValue,
   deviceWindowWidth,
   isSelectedComponent,
   draggingStatusChanged,
@@ -167,25 +165,6 @@ export const DraggableBox = function DraggableBox({
     console.log(layoutData);
     setCurrentLayoutOptions(layoutData);
   }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top, currentLayout]);
-
-  function scaleWidth(width, scaleValue) {
-    let newWidth = width * scaleValue;
-
-    if (currentLayout === 'desktop') return newWidth;
-
-    const diff = currentLayoutOptions.left + newWidth - deviceWindowWidth;
-
-    if (diff > 0) {
-      setCurrentLayoutOptions({
-        ...currentLayoutOptions,
-        left: currentLayoutOptions.left - diff,
-      });
-
-      return width;
-    }
-
-    return newWidth;
-  }
 
   const gridWidth = canvasWidth / 43;
   const width = (canvasWidth * currentLayoutOptions.width) / 43

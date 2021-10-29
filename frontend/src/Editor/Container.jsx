@@ -30,7 +30,6 @@ export const Container = ({
   currentLayout,
   removeComponent,
   deviceWindowWidth,
-  scaleValue,
   selectedComponent,
   darkMode,
 }) => {
@@ -295,7 +294,6 @@ export const Container = ({
               configHandleClicked={configHandleClicked}
               removeComponent={removeComponent}
               currentLayout={currentLayout}
-              scaleValue={scaleValue}
               deviceWindowWidth={deviceWindowWidth}
               isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
               darkMode={darkMode}
@@ -314,7 +312,6 @@ export const Container = ({
                 configHandleClicked,
                 removeComponent,
                 currentLayout,
-                scaleValue,
                 deviceWindowWidth,
                 selectedComponent,
                 darkMode,

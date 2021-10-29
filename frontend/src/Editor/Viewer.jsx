@@ -24,11 +24,9 @@ class Viewer extends React.Component {
 
     const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
-    let scaleValue = isMobileDevice ? deviceWindowWidth / 450 : 1;
 
     this.state = {
       deviceWindowWidth,
-      scaleValue,
       currentLayout: isMobileDevice ? 'mobile' : 'desktop',
       currentUser: authenticationService.currentUserValue,
       isLoading: true,
@@ -137,7 +135,6 @@ class Viewer extends React.Component {
       isLoading,
       currentLayout,
       deviceWindowWidth,
-      scaleValue,
       defaultComponentStateComputed,
     } = this.state;
 
@@ -192,7 +189,6 @@ class Viewer extends React.Component {
                           darkMode={this.props.darkMode}
                           onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
                           mode="view"
-                          scaleValue={scaleValue}
                           deviceWindowWidth={deviceWindowWidth}
                           currentLayout={currentLayout}
                           currentState={this.state.currentState}

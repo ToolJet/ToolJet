@@ -62,7 +62,6 @@ class Editor extends React.Component {
       showLeftSidebar: true,
       zoomLevel: 1.0,
       currentLayout: 'desktop',
-      scaleValue: 1,
       deviceWindowWidth: 450,
       appDefinition: {
         components: {},
@@ -523,7 +522,6 @@ class Editor extends React.Component {
       zoomLevel,
       currentLayout,
       deviceWindowWidth,
-      scaleValue,
       dataQueriesDefaultText,
       showQuerySearchField,
       showDataQueryDeletionConfirmation,
@@ -704,7 +702,6 @@ class Editor extends React.Component {
                         currentLayout={currentLayout}
                         deviceWindowWidth={deviceWindowWidth}
                         selectedComponent={selectedComponent || {}}
-                        scaleValue={scaleValue}
                         appLoading={isLoading}
                         onEvent={(eventName, options) => onEvent(this, eventName, options)}
                         onComponentOptionChanged={(component, optionName, value) =>

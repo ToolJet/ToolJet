@@ -29,7 +29,6 @@ export const SubContainer = ({
   parentRef,
   configHandleClicked,
   deviceWindowWidth,
-  scaleValue,
   selectedComponent,
   currentLayout,
   removeComponent,
@@ -361,7 +360,6 @@ export const SubContainer = ({
           zoomLevel={zoomLevel}
           configHandleClicked={configHandleClicked}
           currentLayout={currentLayout}
-          scaleValue={scaleValue}
           selectedComponent={selectedComponent}
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
