@@ -37,7 +37,7 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
   };
 
   const getContent = () => {
-    if (isEmpty(thread)) return <div className="text-center">Your message will post here</div>;
+    if (isEmpty(thread)) return <div className="text-center">There are no comments to display</div>;
 
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     return (
