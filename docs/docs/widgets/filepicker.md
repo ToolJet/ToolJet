@@ -25,7 +25,7 @@ On file selected event can be triggered when one or more files are selected.
 
 | properties      | description |
 | ----------- | ----------- |
-| Use Drop zone | creates a drag 'n' drop zone. Files can be dragged and dropped to the "drag & drop" zone. |
+| Use Drop zone | creates a drag & drop zone. Files can be dragged and dropped to the "drag & drop" zone. |
 | Use File Picker | On clicking it invokes the default OS file prompt.|
 | Pick mulitple files | Allows drag and drop (or selection from the file dialog) of multiple files. `Pick multiple files` is disabled by default. |
 | Max file count | The maximum accepted number of files The default value is `2`.|
