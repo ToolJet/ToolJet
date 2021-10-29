@@ -3,10 +3,6 @@ import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-toastify';
 
-//? Accpeted and Rejected Files should be shown in the UI or not.
-
-//! Types of files accpeted should be "MIME types" --> a selection component might be better as for selecting pdf its `Application/pdf` and for html -> `text/html`
-
 export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode }) => {
   //* property definations
   const enableDropzone = component.definition.properties.enableDropzone?.value ?? true;
@@ -145,20 +141,35 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   }, [acceptedFiles.length, fileRejections.length]);
 
   return (
-    <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
-      <input {...getInputProps()} />
+    <section>
+      <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
+        <input {...getInputProps()} />
 
-      <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure" />
-      <FilePicker.Signifiers
-        signifier={!isDragAccept && !accepted & !isDragReject}
-        feedback={'Drag & drop some files here, or click to select files'}
-        cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
-      />
+        <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure" />
+        <FilePicker.Signifiers
+          signifier={!isDragAccept && !accepted & !isDragReject}
+          feedback={'Drag & drop some files here, or click to select files'}
+          cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
+        />
 
-      <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" />
+        <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" />
 
-      <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
-    </div>
+        <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
+      </div>
+
+      {acceptedFiles.length > 0 && (
+        <FilePicker.AcceptedFiles>
+          {acceptedFiles.map((acceptedFile, index) => (
+            <FilePicker.Signifiers
+              key={index}
+              signifier={acceptedFiles.length > 0}
+              feedback={acceptedFile.name}
+              cls="text-secondary d-flex justify-content-star"
+            />
+          ))}
+        </FilePicker.AcceptedFiles>
+      )}
+    </section>
   );
 };
 
@@ -168,4 +179,13 @@ FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   }
 
   return null;
+};
+
+FilePicker.AcceptedFiles = ({ children }) => {
+  return (
+    <aside>
+      <span className="text-info">Files</span>
+      <div className="row">{children}</div>
+    </aside>
+  );
 };
