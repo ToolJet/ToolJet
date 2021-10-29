@@ -14,6 +14,13 @@ function SettingsPage(props) {
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
 
   const updateDetails = async () => {
+    if (!firstName || !lastName) {
+      toast.warn("Name can't be empty!", {
+        hideProgressBar: true,
+        position: 'top-left',
+      });
+      return;
+    }
     setUpdateInProgress(true);
     const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
     authenticationService.updateCurrentUserDetails(updatedDetails);
