@@ -1152,6 +1152,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      dateFormat: { type: 'code', displayName: 'Date format' },
       events: { type: 'code', displayName: 'Events' },
       resources: { type: 'code', displayName: 'Resources' },
       views: { type: 'code', displayName: 'Views' },
@@ -1172,12 +1173,15 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
+        dateFormat: {
+          value: 'MM-DD-YYYY HH:mm:ss A ZZ',
+        },
         events: {
           value:
-            "{{[\n\t\t{\n\t\t\t title: 'Sample event',\n\t\t\t start: new Date(Date.now()),\n\t\t\t end: new Date(Date.now()),\n\t\t\t allDay: false,\n\t\t\t resourceId: 1\n\t\t}\n]}}",
+            "{{[\n\t\t{\n\t\t\t title: 'Sample event',\n\t\t\t start: `${moment().startOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}`,\n\t\t\t end: `${moment().endOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}`,\n\t\t\t allDay: false\n\t\t}\n]}}",
         },
         resources: {
-          value: "{{[{ resourceId: 1, title: 'Sample resource' }]}}",
+          value: '{{[]}}',
         },
         views: {
           value: "{{['day', 'week', 'month']}}",
