@@ -18,7 +18,7 @@ ToolJet requires the following to connect to your DynamoDB.
 - **Access key**
 - **Secret key**
 
-It is recommended to create a new database user so that you can control the access levels of ToolJet.
+It is recommended to create a new IAM user for the database so that you can control the access levels of ToolJet.
 
 <img src="/img/datasource-reference/dynamo-connect.png" alt="ToolJet - Dynamo connection" height="250"/>
 
