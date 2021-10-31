@@ -6,7 +6,7 @@ sidebar_position: 16
 
 Star rating widget can be used to display as well as input ratings. The widget supports half stars, and the number of stars can be set too.
 
-<img class="screenshot-full" src="/img/widgets/star/star-rating.gif" alt="ToolJet - Star rating Widget" height="420"/>
+<img class="screenshot-full" src="https://github.com/ToolJet/ToolJet/blob/develop/docs/static/img/widgets/star/star-rating.gif" alt="ToolJet - Star rating Widget" height="420"/>
 
 ### Event: On Change
 
