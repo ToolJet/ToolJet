@@ -112,7 +112,7 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 | changeSet | Object with row number as the key and object of edited fields and their values as the value |
 | dataUpdates | Just like changeSet but includes the data of the entire row |
 | selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
-| searchText | The value of the search field if server-side paginaton is enabled |
+| searchText | The value of the search field if server-side pagination is enabled |
 
 #### Events
 
