@@ -6,7 +6,7 @@ sidebar_position: 17
 
 Tables can be used for both displaying and editing data.
 
-<img class="screenshot-full" src="/img/widgets/table/adding.gif" alt="ToolJet - Widget Reference - Table" height="420"/>
+<img class="screenshot-full" src="https://github.com/ToolJet/ToolJet/blob/develop/docs/static/img/widgets/table/adding.gif" alt="ToolJet - Widget Reference - Table" height="420"/>
 
 ## Displaying Data
 
