@@ -6,7 +6,7 @@ sidebar_position: 14
 
 Radio button widget can be used to select one option from a group of options.
 
-<img class="screenshot-full" src="/img/widgets/radio-button/radiobutton.gif" alt="oolJet - Widget Reference - RadioButton " height="420"/>
+<img class="screenshot-full" src="https://github.com/ToolJet/ToolJet/blob/develop/docs/static/img/widgets/radio-button/radiobutton.gif" alt="oolJet - Widget Reference - RadioButton " height="420"/>
 
 :::tip
 Radio buttons are preferred when the list of options is less than six, and all the options can be displayed at once.
