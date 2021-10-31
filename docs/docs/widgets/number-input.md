@@ -10,7 +10,7 @@ Number Input widget lets users enter and change numbers.
 Numbers can be changed by using the arrow keys.
 :::
 
-<img class="screenshot-full" src="/img/widgets/number-input/number-input.gif" alt="ToolJet - Widget Reference - Number Input" height="420"/>
+<img class="screenshot-full" src="https://github.com/ToolJet/ToolJet/blob/develop/docs/static/img/widgets/number-input/number-input.gif" alt="ToolJet - Widget Reference - Number Input" height="420"/>
 
 #### Properties
 
