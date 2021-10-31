@@ -14,7 +14,7 @@ Default date format is **DD/MM/YYYY** .
 Date format should be followed as ISO 8601 as mentioned in the [moment documentation](https://momentjs.com/docs/) .
 :::
 
-<img class="screenshot-full" src="/img/widgets/date-range-picker/date-range-picker.gif" alt="ToolJet - Widget Reference - Date-range picker" height="420"/>
+<img class="screenshot-full" src="https://github.com/ToolJet/ToolJet/blob/develop/docs/static/img/widgets/date-range-picker/date-range-picker.gif" alt="ToolJet - Widget Reference - Date-range picker" height="420"/>
 
 
 #### Properties
