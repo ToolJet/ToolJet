@@ -6,7 +6,7 @@ sidebar_position: 6
 
 Divider widget is used to add separator between components. 
 
-<img class="screenshot-full" src="/img/widgets/divider/divider.gif" alt="ToolJet - Widget Reference - Divider" height="420"/>
+<img class="screenshot-full" src="https://github.com/ToolJet/ToolJet/blob/develop/docs/static/img/widgets/divider/divider.gif" alt="ToolJet - Widget Reference - Divider" height="420"/>
 
 
 #### Properties
