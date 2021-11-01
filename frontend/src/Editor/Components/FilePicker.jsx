@@ -92,6 +92,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   );
 
   const [accepted, setAccepted] = React.useState(false);
+  const [showSelectdFiles, setShowSelectedFiles] = React.useState(false);
 
   useEffect(() => {
     if (acceptedFiles.length !== 0) {
@@ -121,9 +122,10 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
           setAccepted(true);
           return new Promise(function (resolve, reject) {
             setTimeout(() => {
+              setShowSelectedFiles(true);
               setAccepted(false);
               resolve();
-            }, 200);
+            }, 600);
           });
         })
       );
@@ -137,30 +139,20 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
     return () => {
       setAccepted(false);
+      setShowSelectedFiles(false);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acceptedFiles.length, fileRejections.length]);
 
+  const clearSelectedFiles = () => {
+    onComponentOptionChanged(component, 'file', []).then(() => setShowSelectedFiles(false));
+  };
+
   return (
     <section>
-      <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
-        <input {...getInputProps()} />
-
-        <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure" />
-        <FilePicker.Signifiers
-          signifier={!isDragAccept && !accepted & !isDragReject}
-          feedback={'Drag & drop some files here, or click to select files'}
-          cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
-        />
-
-        <FilePicker.Signifiers signifier={isDragAccept} feedback={'All files will be accepted'} cls="text-lime mt-3" />
-
-        <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
-      </div>
-
-      {acceptedFiles.length > 0 && (
-        <FilePicker.AcceptedFiles>
+      {showSelectdFiles ? (
+        <FilePicker.AcceptedFiles clearSelectedFiles={clearSelectedFiles} width={width} height={height}>
           {acceptedFiles.map((acceptedFile, index) => (
             <FilePicker.Signifiers
               key={index}
@@ -170,6 +162,25 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
             />
           ))}
         </FilePicker.AcceptedFiles>
+      ) : (
+        //* Dropzone
+        <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
+          <input {...getInputProps()} />
+          <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
+          <FilePicker.Signifiers
+            signifier={!isDragAccept && !accepted & !isDragReject}
+            feedback={'Drag & drop some files here, or click to select files'}
+            cls={`${darkMode ? 'text-secondary' : 'text-dark'} mt-3`}
+          />
+
+          <FilePicker.Signifiers
+            signifier={isDragAccept}
+            feedback={'All files will be accepted'}
+            cls="text-lime mt-3"
+          />
+
+          <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
+        </div>
       )}
     </section>
   );
@@ -183,10 +194,26 @@ FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   return null;
 };
 
-FilePicker.AcceptedFiles = ({ children }) => {
+FilePicker.AcceptedFiles = ({ children, clearSelectedFiles, width, height }) => {
+  const styles = {
+    borderWidth: 1.5,
+    borderRadius: 2,
+    borderColor: '#42536A',
+    borderStyle: 'dashed',
+    color: '#bdbdbd',
+    outline: 'none',
+    padding: '5px',
+    width,
+    height,
+  };
   return (
-    <aside>
-      <span className="text-info">Files</span>
+    <aside style={styles}>
+      <div className="d-flex justify-content-between">
+        <span className="text-info">Files</span>
+        <button className="btn btn-sm btn-light" onClick={clearSelectedFiles}>
+          clear
+        </button>
+      </div>
       <div className="row accepted-files">{children}</div>
     </aside>
   );
