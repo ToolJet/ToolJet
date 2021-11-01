@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useRef, useState, useEffect, useCallback } from 'react';
+import { isEmpty } from 'lodash';
+
 const noop = () => {};
 const useEscapeHandler = (handler = noop, dependencies = []) => {
   const escapeHandler = (e) => {
@@ -8,9 +10,8 @@ const useEscapeHandler = (handler = noop, dependencies = []) => {
     }
   };
   useEffect(() => {
-    document === null || document === void 0 ? void 0 : document.addEventListener('keyup', escapeHandler);
-    return () =>
-      document === null || document === void 0 ? void 0 : document.removeEventListener('keyup', escapeHandler);
+    isEmpty(document) ? undefined : document.addEventListener('keyup', escapeHandler);
+    return () => (isEmpty(document) ? undefined : document.removeEventListener('keyup', escapeHandler));
   }, dependencies);
 };
 const useClickOutside = (dependencies, handler = noop) => {
@@ -26,13 +27,9 @@ const useClickOutside = (dependencies, handler = noop) => {
     callbackRef.current = handler;
   });
   useEffect(() => {
-    document === null || document === void 0
-      ? void 0
-      : document.addEventListener('click', outsideClickHandler, { capture: true });
+    isEmpty(document) ? undefined : document.addEventListener('click', outsideClickHandler, { capture: true });
     return () =>
-      document === null || document === void 0
-        ? void 0
-        : document.removeEventListener('click', outsideClickHandler, { capture: true });
+      isEmpty(document) ? undefined : document.removeEventListener('click', outsideClickHandler, { capture: true });
   }, dependencies);
   return ref;
 };
@@ -40,7 +37,10 @@ const role = 'dialog';
 const usePopover = (defaultOpen = false) => {
   const triggerRef = useRef(null);
   const [open, setOpen] = useState(defaultOpen);
-  const toggle = useCallback(() => setOpen(!open), []);
+  const toggle = useCallback((e) => {
+    e.stopPropagation();
+    setOpen(!open);
+  }, []);
   const close = useCallback(() => setOpen(false), []);
   useEscapeHandler(close, []);
   const contentRef = useClickOutside([], open ? close : undefined);
