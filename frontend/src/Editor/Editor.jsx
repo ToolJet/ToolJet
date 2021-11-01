@@ -768,7 +768,6 @@ class Editor extends React.Component {
                       currentLayout={currentLayout}
                       deviceWindowWidth={deviceWindowWidth}
                       selectedComponent={selectedComponent || {}}
-                      scaleValue={scaleValue}
                       appLoading={isLoading}
                       onEvent={(eventName, options) => onEvent(this, eventName, options)}
                       onComponentOptionChanged={(component, optionName, value) =>
