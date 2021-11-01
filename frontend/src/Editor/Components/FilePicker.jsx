@@ -93,10 +93,15 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
   const [accepted, setAccepted] = React.useState(false);
   const [showSelectdFiles, setShowSelectedFiles] = React.useState(false);
+  const [selectedFiles, setSelectedFiles] = React.useState([]);
 
   useEffect(() => {
+    if (acceptedFiles.length === 0) {
+      onComponentOptionChanged(component, 'file', []);
+    }
+
     if (acceptedFiles.length !== 0) {
-      const fileData = [];
+      const fileData = [...selectedFiles];
       acceptedFiles.map((acceptedFile) => {
         return new Promise((resolve, reject) => {
           let reader = new FileReader();
@@ -117,6 +122,8 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
           fileData.push(fileSelected);
         });
       });
+
+      setSelectedFiles(fileData);
       onComponentOptionChanged(component, 'file', fileData).then(() =>
         onEvent('onFileSelected', { component }).then(() => {
           setAccepted(true);
@@ -145,21 +152,47 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acceptedFiles.length, fileRejections.length]);
 
-  const clearSelectedFiles = () => {
-    onComponentOptionChanged(component, 'file', []).then(() => setShowSelectedFiles(false));
+  const clearSelectedFiles = (index) => {
+    setSelectedFiles((prevState) => {
+      const copy = JSON.parse(JSON.stringify(prevState));
+      copy.splice(index, 1);
+      return copy;
+    });
   };
+
+  useEffect(() => {
+    if (selectedFiles.length === 0) {
+      setShowSelectedFiles(false);
+    }
+    onComponentOptionChanged(component, 'file', selectedFiles);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFiles]);
 
   return (
     <section>
       {showSelectdFiles ? (
-        <FilePicker.AcceptedFiles clearSelectedFiles={clearSelectedFiles} width={width} height={height}>
-          {acceptedFiles.map((acceptedFile, index) => (
-            <FilePicker.Signifiers
-              key={index}
-              signifier={acceptedFiles.length > 0}
-              feedback={acceptedFile.name}
-              cls="text-secondary d-flex justify-content-start file-list"
-            />
+        <FilePicker.AcceptedFiles width={width} height={height} showFilezone={setShowSelectedFiles}>
+          {selectedFiles.map((acceptedFile, index) => (
+            <>
+              <div key={index} className="col-10">
+                <FilePicker.Signifiers
+                  signifier={selectedFiles.length > 0}
+                  feedback={acceptedFile.name}
+                  cls="text-secondary d-flex justify-content-start file-list"
+                />
+              </div>
+              <div className="col-2 mt-1">
+                <button
+                  className="btn badge bg-azure-lt"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearSelectedFiles(index);
+                  }}
+                >
+                  <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                </button>
+              </div>
+            </>
           ))}
         </FilePicker.AcceptedFiles>
       ) : (
@@ -194,7 +227,7 @@ FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   return null;
 };
 
-FilePicker.AcceptedFiles = ({ children, clearSelectedFiles, width, height }) => {
+FilePicker.AcceptedFiles = ({ children, width, height, showFilezone }) => {
   const styles = {
     borderWidth: 1.5,
     borderRadius: 2,
@@ -203,17 +236,15 @@ FilePicker.AcceptedFiles = ({ children, clearSelectedFiles, width, height }) => 
     color: '#bdbdbd',
     outline: 'none',
     padding: '5px',
+    overflowX: 'hidden',
+    overflowY: 'auto',
+    scrollbarWidth: 'none',
     width,
     height,
   };
   return (
-    <aside style={styles}>
-      <div className="d-flex justify-content-between">
-        <span className="text-info">Files</span>
-        <button className="btn btn-sm btn-light" onClick={clearSelectedFiles}>
-          clear
-        </button>
-      </div>
+    <aside style={styles} onClick={() => showFilezone(false)}>
+      <span className="text-info">Files</span>
       <div className="row accepted-files">{children}</div>
     </aside>
   );
