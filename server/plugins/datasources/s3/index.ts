@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
-import { listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
+import { getObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
 import { S3Client } from '@aws-sdk/client-s3';
 import { QueryError } from 'src/modules/data_sources/query.error';
 
@@ -20,6 +20,9 @@ export default class S3QueryService implements QueryService {
           break;
         case 'list_objects':
           result = await listObjects(client, queryOptions);
+          break;
+        case 'get_object':
+          result = await getObject(client, queryOptions);
           break;
         case 'signed_url_for_get':
           result = await signedUrlForGet(client, queryOptions);

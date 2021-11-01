@@ -46,6 +46,7 @@ class S3 extends React.Component {
                 options={[
                   { value: 'list_buckets', name: 'List Buckets' },
                   { value: 'list_objects', name: 'List Objects within a bucket' },
+                  { value: 'get_object', name: 'Get Object' },
                   { value: 'signed_url_for_get', name: 'Signed url for GET request' },
                   { value: 'signed_url_for_put', name: 'Signed url for PUT request' },
                 ]}
@@ -69,6 +70,31 @@ class S3 extends React.Component {
                     theme={this.props.darkMode ? 'monokai' : 'default'}
                     className="codehinter-query-editor-input"
                     onChange={(value) => changeOption(this, 'bucket', value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {['get_object'].includes(this.state.options.operation) && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Bucket</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.bucket}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    className="codehinter-query-editor-input"
+                    onChange={(value) => changeOption(this, 'bucket', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Key</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.key}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    className="codehinter-query-editor-input"
+                    onChange={(value) => changeOption(this, 'key', value)}
                   />
                 </div>
               </div>

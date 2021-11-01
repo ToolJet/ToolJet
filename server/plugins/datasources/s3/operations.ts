@@ -29,6 +29,27 @@ export async function signedUrlForGet(client: S3Client, options: object): Promis
   return { url };
 }
 
+export async function getObject(client: S3Client, options: object): Promise<object> {
+  // Create a helper function to convert a ReadableStream to a string.
+  const streamToString = (stream) =>
+    new Promise((resolve, reject) => {
+      const chunks = [];
+      stream.on('data', (chunk) => chunks.push(chunk));
+      stream.on('error', reject);
+      stream.on('end', () => resolve(Buffer.concat(chunks).toString('base64')));
+    });
+
+  // Get the object} from the Amazon S3 bucket. It is returned as a ReadableStream.
+  const command = new GetObjectCommand({
+    Bucket: options['bucket'],
+    Key: options['key'],
+  });
+  const data = await client.send(command);
+  // Convert the ReadableStream to a string.
+  const bodyContents = await streamToString(data.Body);
+  return { ...data, Body: bodyContents };
+}
+
 export async function signedUrlForPut(client: S3Client, options: object): Promise<object> {
   const command = new PutObjectCommand({
     Bucket: options['bucket'],
