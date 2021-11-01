@@ -118,11 +118,13 @@ export const Container = ({
           const offsetFromLeftOfWindow = canvasBoundingRect.left;
           const currentOffset = monitor.getSourceClientOffset();
 
-          const x = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          const xOffset = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
           const y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
 
+          const x = (xOffset * 100) / canvasWidth;
+
           const element = document.getElementById(`thread-${item.threadId}`);
-          element.style.transform = `translate(${x}px, ${y}px)`;
+          element.style.transform = `translate(${xOffset}px, ${y}px)`;
           commentsService.updateThread(item.threadId, { x, y });
           return undefined;
         }
@@ -297,9 +299,14 @@ export const Container = ({
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
+
+    const x = e.nativeEvent.offsetX * 100 / canvasWidth;
+
+    debugger
+
     const { data } = await commentsService.createThread({
       appId: router.query.id,
-      x: e.nativeEvent.offsetX,
+      x: x,
       y: e.nativeEvent.offsetY,
       appVersionsId,
     });
@@ -319,8 +326,11 @@ export const Container = ({
     const offsetFromTopOfWindow = canvasBoundingRect.top;
     const offsetFromLeftOfWindow = canvasBoundingRect.left;
 
-    const x = Math.round(e.screenX + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
+    let x = Math.round(e.screenX + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
     const y = Math.round(e.screenY + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
+
+    x = (x * 100) / canvasWidth;
+
     const { data } = await commentsService.createThread({
       appId: router.query.id,
       x,
@@ -347,7 +357,7 @@ export const Container = ({
       })}
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
-        <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} />
+        <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} canvasWidth={canvasWidth} />
       )}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];

@@ -11,7 +11,7 @@ import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 
-const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, appVersionsId }) => {
+const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, appVersionsId, canvasWidth }) => {
   const [loading, setLoading] = React.useState(true);
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
@@ -106,7 +106,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
         id={`thread-${threadId}`}
         className={cx('comments cursor-move', { open: open })}
         style={{
-          transform: `translate(${x}px, ${y}px)`,
+          transform: `translate(${x * canvasWidth / 100}px, ${y}px)`,
           ...commentFadeStyle,
         }}
         onDragStart={() => setOpen(false)}

@@ -8,7 +8,7 @@ import { commentsService } from '@/_services';
 
 import useRouter from '@/_hooks/use-router';
 
-const Comments = ({ newThread = {}, appVersionsId, socket }) => {
+const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
   const [threads, setThreads] = React.useState([]);
   const router = useRouter();
 
@@ -43,6 +43,7 @@ const Comments = ({ newThread = {}, appVersionsId, socket }) => {
         fetchThreads={fetchData}
         socket={socket}
         threadId={id}
+        canvasWidth={canvasWidth}
         {...thread}
       />
     );
