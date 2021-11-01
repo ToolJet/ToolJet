@@ -48,8 +48,8 @@ class S3 extends React.Component {
                   { value: 'upload_object', name: 'Upload object' },
                   { value: 'list_buckets', name: 'List buckets' },
                   { value: 'list_objects', name: 'List objects in a bucket' },
-                  { value: 'signed_url_for_get', name: 'Signed url for http GET' },
-                  { value: 'signed_url_for_put', name: 'Signed url for http PUT' },
+                  { value: 'signed_url_for_get', name: 'Signed url for download' },
+                  { value: 'signed_url_for_put', name: 'Signed url for upload' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
