@@ -8,8 +8,6 @@ ToolJet can connect to DynamoDB to read and write data.
 
 ## Connection
 
-Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
-
 To add a new DynamoDB, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select DynamoDB from the modal that pops up.
 
 ToolJet requires the following to connect to your DynamoDB.
