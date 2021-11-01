@@ -23,6 +23,7 @@ export const Calendar = function ({ height, width, properties, fireEvent }) {
   return (
     <div>
       <ReactCalendar
+        className="calendar-widget"
         localizer={localizer}
         defaultDate={defaultDate}
         events={events}

@@ -2311,3 +2311,18 @@ input[type='text'] {
   max-height: 200px;
   overflow-y: scroll;
 }
+
+.calendar-widget {
+  .rbc-time-view-resources .rbc-time-header-content {
+    min-width: auto;
+  }
+
+  .rbc-time-view-resources .rbc-day-slot {
+    min-width: 50px;
+  }
+
+  .rbc-time-view-resources .rbc-header,
+  .rbc-time-view-resources .rbc-day-bg {
+    width: 50px;
+  }
+}
