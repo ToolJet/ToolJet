@@ -14,6 +14,15 @@ body {
   }
 }
 
+.emoji-mart-scroll {
+  border-bottom: 0;
+  margin-bottom: 6px;
+}
+
+.emoji-mart-scroll + .emoji-mart-bar {
+  display: none;
+}
+
 .editor {
   .header-container {
     max-width: 100%;
@@ -1155,6 +1164,10 @@ tr:focus {
   }
 }
 
+.mentions-popover {
+  
+}
+
 .input-icon {
   .input-icon-addon {
     display: none;
@@ -1813,9 +1826,14 @@ input:focus-visible {
   .theme-dark .navbar .navbar-nav .nav-link.active,
   .theme-dark .navbar .navbar-nav .nav-link.show,
   .theme-dark .navbar .navbar-nav .show > .nav-link {
-    color: #fff;
+    color:#fff;
   }
-
+  .form-check > .form-check-input:not(:checked){
+    background-color:#fff;
+  }
+  .form-check-label{
+    color:white;
+  }
   .left-sidebar .active {
     background: #333c48;
   }
@@ -2048,6 +2066,11 @@ input:focus-visible {
     filter: brightness(0) invert(1);
   }
 
+  .launch-btn {
+    filter: brightness(0.4) !important;
+    background: #8d9095;
+  }
+
   .badge {
     filter: brightness(1) invert(1);
 
@@ -2262,10 +2285,26 @@ input[type='text'] {
   }
 }
 
+.show {
+  display: block;
+}
+.hide {
+  display: none;
+}
+
 .draggable-box:focus-within {
   z-index: 2 !important;
 }
 
+.cursor-wait {
+  cursor: wait;
+}
+.cursor-text{
+  cursor: text;
+}
+.cursor-none {
+  cursor: none;
+}
 .theme-dark .event-action {
   filter: brightness(0) invert(1);
 }
@@ -2274,6 +2313,10 @@ input[type='text'] {
   filter: brightness(0) invert(0);
 }
 
+.disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
 .DateRangePicker {
   padding: 1.25px 5px;
 }
@@ -2302,6 +2345,48 @@ input[type='text'] {
   }
 }
 
+.fw-400 {
+  font-weight: 400;
+}
+
 .fw-500 {
   font-weight: 500;
+}
+
+.ligh-gray {
+  color: #656D77;
+}
+
+.nav-item {
+  background: #fff !important;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  text-align: left;
+}
+
+.nav-link {
+  min-width: 100px;
+  justify-content: center;
+}
+
+.nav-tabs .nav-link.active {
+  font-weight: 600 !important;
+  color: #0565FE !important;
+}
+
+.empty-title {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 15px;
+  letter-spacing: -0.01em;
+  text-align: left;
+}
+//select-search-action
+.popover-action-select-search > .select-search .select-search__select {
+  max-height: 200px;
+  overflow-y: scroll;
 }

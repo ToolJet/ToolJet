@@ -1,5 +1,5 @@
 import React from 'react';
-import usePopover from '../../_hooks/use-popover';
+import usePopover from '@/_hooks/use-popover';
 import { LeftSidebarItem } from './sidebar-item';
 
 export const LeftSidebarZoom = ({ onZoomChanged }) => {
