@@ -21,9 +21,12 @@ import { ToggleSwitch } from './Components/Toggle';
 import { RadioButton } from './Components/RadioButton';
 import { StarRating } from './Components/StarRating';
 import { Divider } from './Components/Divider';
+import { PasswordInput } from './Components/PasswordInput';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
+import { resolveProperties, resolveStyles } from './component-properties-resolution';
+import { validateWidget } from '@/_helpers/utils';
 
 const AllComponents = {
   Button,
@@ -48,6 +51,7 @@ const AllComponents = {
   RadioButton,
   StarRating,
   Divider,
+  PasswordInput,
 };
 
 export const Box = function Box({
@@ -84,6 +88,16 @@ export const Box = function Box({
   }
 
   const ComponentToRender = AllComponents[component.component];
+  const resolvedProperties = resolveProperties(component, currentState);
+  const resolvedStyles = resolveStyles(component, currentState);
+  const exposedVariables = currentState?.components[component.name] ?? {};
+
+  const fireEvent = (eventName, options) => onEvent(eventName, { ...options, component });
+  const validate = (value) =>
+    validateWidget({
+      ...{ widgetValue: value },
+      ...{ validationObject: component.definition.validation, currentState },
+    });
 
   return (
     <OverlayTrigger
@@ -110,6 +124,12 @@ export const Box = function Box({
             darkMode={darkMode}
             removeComponent={removeComponent}
             canvasWidth={canvasWidth}
+            properties={resolvedProperties}
+            exposedVariables={exposedVariables}
+            styles={resolvedStyles}
+            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+            fireEvent={fireEvent}
+            validate={validate}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '100%' }}>

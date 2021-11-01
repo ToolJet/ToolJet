@@ -22,7 +22,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
           {/* <span className="navbar-toggler-icon"></span> */}
         </button>
-        <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+        <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
           <Link to={'/'}>
             <img src="/assets/images/logo-text.svg" width="110" height="32" className="navbar-brand-image" />
           </Link>

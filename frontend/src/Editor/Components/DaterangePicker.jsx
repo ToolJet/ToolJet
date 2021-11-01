@@ -61,7 +61,7 @@ export const DaterangePicker = function DaterangePicker({
       style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       <DateRangePicker

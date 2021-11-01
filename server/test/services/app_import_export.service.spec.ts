@@ -14,7 +14,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 
-describe('UsersService', () => {
+describe('AppImportExportService', () => {
   let nestApp: INestApplication;
   let service: AppImportExportService;
 
@@ -135,7 +135,7 @@ describe('UsersService', () => {
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
       expect(importedApp.name).toBe(exportedApp.name);
-      expect(importedApp.isPublic).toBe(exportedApp.isPublic);
+      expect(importedApp.isPublic).toBeFalsy();
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
       expect(importedApp.appVersions).toEqual([]);
@@ -186,7 +186,7 @@ describe('UsersService', () => {
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
       expect(importedApp.name).toBe(exportedApp.name);
-      expect(importedApp.isPublic).toBe(exportedApp.isPublic);
+      expect(importedApp.isPublic).toBeFalsy();
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
 

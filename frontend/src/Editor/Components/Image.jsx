@@ -31,7 +31,7 @@ export const Image = function Image({ id, height, component, onComponentClick, c
       style={{ display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       <LazyLoad height={height} placeholder={<Placeholder />} debounce={500}>

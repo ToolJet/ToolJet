@@ -9,7 +9,9 @@ import { LeftSidebarZoom } from './sidebar-zoom';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
+import { LeftSidebarComment } from './SidebarComment';
 import { ConfirmDialog } from '@/_components';
+import config from 'config';
 
 export const LeftSidebar = ({
   appId,
@@ -18,10 +20,12 @@ export const LeftSidebar = ({
   globals,
   components,
   queries,
+  toggleComments,
   onZoomChanged,
   dataSources = [],
   dataSourcesChanged,
   errorLogs,
+  appVersionsId,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -35,6 +39,9 @@ export const LeftSidebar = ({
         dataSourcesChanged={dataSourcesChanged}
       />
       <LeftSidebarDebugger darkMode={darkMode} components={components} errors={errorLogs} />
+      {config.COMMENT_FEATURE_ENABLE && (
+        <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
+      )}
       <LeftSidebarItem
         onClick={() => setShowLeaveDialog(true)}
         tip="Back to home"
@@ -50,7 +57,7 @@ export const LeftSidebar = ({
       <div className="left-sidebar-stack-bottom">
         <LeftSidebarZoom onZoomChanged={onZoomChanged} />
         <div className="left-sidebar-item no-border">
-          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
+          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
       </div>

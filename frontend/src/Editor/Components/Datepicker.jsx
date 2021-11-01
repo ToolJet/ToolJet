@@ -47,7 +47,9 @@ export const Datepicker = function Datepicker({
   }
 
   function onDateChange(event) {
-    const value = event._isAMomentObject ? event.format(dateFormat.value) : event;
+    const selectedDateFormat = enableTime ? `${dateFormat.value} LT` : dateFormat.value;
+    const value = event._isAMomentObject ? event.format(selectedDateFormat) : event;
+
     setDateText(value);
     onComponentOptionChanged(component, 'value', value);
   }
@@ -84,7 +86,7 @@ export const Datepicker = function Datepicker({
       style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       <Datetime
@@ -98,7 +100,7 @@ export const Datepicker = function Datepicker({
             <input
               {...props}
               value={dateText}
-              className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
+              className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2`}
             />
           );
         }}

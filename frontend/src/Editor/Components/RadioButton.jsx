@@ -88,7 +88,7 @@ export const RadioButton = function RadioButton({
       style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
