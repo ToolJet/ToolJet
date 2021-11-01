@@ -44,11 +44,12 @@ class S3 extends React.Component {
               <label className="form-label">Operation</label>
               <SelectSearch
                 options={[
-                  { value: 'list_buckets', name: 'List Buckets' },
-                  { value: 'list_objects', name: 'List Objects within a bucket' },
-                  { value: 'get_object', name: 'Get Object' },
-                  { value: 'signed_url_for_get', name: 'Signed url for GET request' },
-                  { value: 'signed_url_for_put', name: 'Signed url for PUT request' },
+                  { value: 'get_object', name: 'Read object' },
+                  { value: 'upload_object', name: 'Upload object' },
+                  { value: 'list_buckets', name: 'List buckets' },
+                  { value: 'list_objects', name: 'List objects in a bucket' },
+                  { value: 'signed_url_for_get', name: 'Signed url for http GET' },
+                  { value: 'signed_url_for_put', name: 'Signed url for http PUT' },
                 ]}
                 value={this.state.options.operation}
                 search={true}
@@ -95,6 +96,51 @@ class S3 extends React.Component {
                     theme={this.props.darkMode ? 'monokai' : 'default'}
                     className="codehinter-query-editor-input"
                     onChange={(value) => changeOption(this, 'key', value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {['upload_object'].includes(this.state.options.operation) && (
+              <div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Bucket</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.bucket}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    className="codehinter-query-editor-input"
+                    onChange={(value) => changeOption(this, 'bucket', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Key</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.key}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    className="codehinter-query-editor-input"
+                    onChange={(value) => changeOption(this, 'key', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Content Type</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.contentType}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    className="codehinter-query-editor-input"
+                    onChange={(value) => changeOption(this, 'contentType', value)}
+                  />
+                </div>
+                <div className="mb-3 mt-2">
+                  <label className="form-label">Upload data</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={this.state.options.data}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    className="codehinter-query-editor-input"
+                    onChange={(value) => changeOption(this, 'data', value)}
                   />
                 </div>
               </div>

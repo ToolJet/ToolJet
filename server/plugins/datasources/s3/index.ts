@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
-import { getObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
+import { getObject, uploadObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
 import { S3Client } from '@aws-sdk/client-s3';
 import { QueryError } from 'src/modules/data_sources/query.error';
 
@@ -24,6 +24,9 @@ export default class S3QueryService implements QueryService {
         case 'get_object':
           result = await getObject(client, queryOptions);
           break;
+        case 'upload_object':
+          result = await uploadObject(client, queryOptions);
+          break;
         case 'signed_url_for_get':
           result = await signedUrlForGet(client, queryOptions);
           break;
@@ -42,7 +45,9 @@ export default class S3QueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
-    const client: S3Client = await this.getConnection(sourceOptions, { operation: 'list_objects' });
+    const client: S3Client = await this.getConnection(sourceOptions, {
+      operation: 'list_objects',
+    });
     await listBuckets(client, {});
 
     return {
