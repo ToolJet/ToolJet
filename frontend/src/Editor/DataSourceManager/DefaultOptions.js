@@ -88,5 +88,6 @@ export const defaultOptions = {
   s3: {
     access_key: { value: '' },
     secret_key: { value: '' },
+    region: { value: '' },
   },
 };

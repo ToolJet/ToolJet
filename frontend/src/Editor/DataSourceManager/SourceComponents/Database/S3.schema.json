@@ -14,7 +14,8 @@
     },
     "options": {
       "access_key": { "type": "string" },
-      "secret_key": { "type": "string", "encrypted": true }
+      "secret_key": { "type": "string", "encrypted": true },
+      "region": { "type": "string" }
     }
   },
   "properties": {
@@ -29,7 +30,13 @@
       "$key": "secret_key",
       "type": "password",
       "description": "Enter secret key"
+    },
+    "region": {
+      "$label": "Region",
+      "$key": "region",
+      "type": "text",
+      "description": "Enter region"
     }
   },
-  "required": ["access_key", "secret_key"]
+  "required": ["access_key", "secret_key", "region"]
 }
