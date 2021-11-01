@@ -36,6 +36,7 @@ export const Calendar = function ({ height, width, properties, fireEvent }) {
         resourceTitleAccessor="title"
         onSelectEvent={(calendarEvent) => fireEvent('onEventSelect', { calendarEvent })}
         toolbar={properties.displayToolbar}
+        eventPropGetter={(event) => ({ style: { backgroundColor: event.color } })}
       />
     </div>
   );
