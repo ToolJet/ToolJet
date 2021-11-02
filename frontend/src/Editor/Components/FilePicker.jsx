@@ -101,7 +101,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     }
 
     if (acceptedFiles.length !== 0) {
-      const fileData = [...selectedFiles];
+      const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
       acceptedFiles.map((acceptedFile) => {
         return new Promise((resolve, reject) => {
           let reader = new FileReader();
@@ -171,7 +171,12 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   return (
     <section>
       {showSelectdFiles ? (
-        <FilePicker.AcceptedFiles width={width} height={height} showFilezone={setShowSelectedFiles}>
+        <FilePicker.AcceptedFiles
+          width={width}
+          height={height}
+          showFilezone={setShowSelectedFiles}
+          bgThemeColor={bgThemeColor}
+        >
           {selectedFiles.map((acceptedFile, index) => (
             <>
               <div key={index} className="col-10">
@@ -227,7 +232,7 @@ FilePicker.Signifiers = ({ signifier, feedback, cls }) => {
   return null;
 };
 
-FilePicker.AcceptedFiles = ({ children, width, height, showFilezone }) => {
+FilePicker.AcceptedFiles = ({ children, width, height, showFilezone, bgThemeColor }) => {
   const styles = {
     borderWidth: 1.5,
     borderRadius: 2,
@@ -241,6 +246,7 @@ FilePicker.AcceptedFiles = ({ children, width, height, showFilezone }) => {
     scrollbarWidth: 'none',
     width,
     height,
+    backgroundColor: bgThemeColor,
   };
   return (
     <aside style={styles} onClick={() => showFilezone(false)}>
