@@ -20,7 +20,7 @@ export const LeftSidebarItem = ({
       delay={{ show: 800, hide: 100 }}
       overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
     >
-      <div {...rest} className={className} onClick={onClick && onClick}>
+      <div {...rest} className={className} onClick={onClick && onClick} style={{ pointerEvents: 'visible' }}>
         {icon && (
           <img
             className="svg-icon"

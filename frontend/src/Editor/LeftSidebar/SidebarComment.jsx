@@ -7,15 +7,17 @@ export const LeftSidebarComment = ({ toggleComments, appVersionsId }) => {
   return (
     <LeftSidebarItem
       commentBadge
-      tip="toggle comments"
+      tip={appVersionsId ? 'toggle comments' : 'At least one version of the app should be deployed'}
       icon={`comments`}
       className={cx(`left-sidebar-item sidebar-zoom position-relative`, {
         disabled: !appVersionsId,
         active: isActive,
       })}
       onClick={() => {
-        toggleActive(!isActive);
-        toggleComments();
+        if (appVersionsId) {
+          toggleActive(!isActive);
+          toggleComments();
+        }
       }}
     />
   );
