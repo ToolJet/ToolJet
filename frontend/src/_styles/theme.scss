@@ -2392,3 +2392,11 @@ input[type='text'] {
   max-height: 200px;
   overflow-y: scroll;
 }
+
+.navbar .navbar-nav {
+  min-height: 2rem;
+}
+
+.navbar-brand-image {
+  height: 1.6rem;
+}
