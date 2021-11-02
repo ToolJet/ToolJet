@@ -202,7 +202,7 @@ export const DraggableBox = function DraggableBox({
             }}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
-            disableDragging={false}
+            disableDragging={mode !== 'edit'}
             onDragStop={(e, direction) => {
               setDragging(false)
               onDragStop(e, id, direction, currentLayout, currentLayoutOptions)
