@@ -752,9 +752,9 @@ class Editor extends React.Component {
                 style={{ transform: `scale(${zoomLevel})` }}
                 onClick={() => this.switchSidebarTab(2)}
               >
-                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '100%' : '450px' }}>
+                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '100%' : '450px', maxWidth: '1292px' }}>
                   {defaultComponentStateComputed && (
-                    <div>
+                    <>
                       <Container
                         canvasWidth={this.getCanvasWidth()}
                         socket={this.state.socket}
@@ -787,7 +787,7 @@ class Editor extends React.Component {
                         }}
                       />
                       <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} canvasWidth={this.getCanvasWidth()} />
-                    </div>
+                    </>
                   )}
                 </div>
               </div>

@@ -170,6 +170,7 @@ class Viewer extends React.Component {
                   className="canvas-area"
                   style={{
                     width: currentLayout === 'desktop' ? '100%' : `${deviceWindowWidth}px`,
+                    maxWidth: '1292px'
                   }}
                 >
                   {defaultComponentStateComputed && (
