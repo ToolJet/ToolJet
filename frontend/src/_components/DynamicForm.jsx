@@ -5,6 +5,7 @@ import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
+import Codehinter from '@/Editor/CodeBuilder/CodeHinter';
 
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
@@ -33,6 +34,8 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         return GoogleSheets;
       case 'react-component-slack':
         return Slack;
+      case 'codehinter':
+        return Codehinter;
       default:
         return <div>Type is invalid</div>;
     }
@@ -89,6 +92,16 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
       case 'react-component-google-sheets':
       case 'react-component-slack':
         return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
+      case 'codehinter':
+        return {
+          currentState: '',
+          initialValue: '',
+          mode: '',
+          lineNumbers: true,
+          className: 'query-hinter',
+          onChange: (value) => optionchanged($key, value),
+          // theme: {this.props.darkMode ? 'monokai' : 'duotone-light'}
+        };
       default:
         return {};
     }
