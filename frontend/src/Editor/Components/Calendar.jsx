@@ -66,6 +66,7 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
         onSelectSlot={slotSelectHandler}
         toolbar={properties.displayToolbar}
         eventPropGetter={eventPropGetter}
+        tooltipAccessor="tooltip"
       />
     </div>
   );
