@@ -300,14 +300,12 @@ export const Container = ({
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
 
-    const x = e.nativeEvent.offsetX * 100 / canvasWidth;
-
-    debugger
+    const x = (e.nativeEvent.offsetX - 18) * 100 / canvasWidth;
 
     const { data } = await commentsService.createThread({
       appId: router.query.id,
       x: x,
-      y: e.nativeEvent.offsetY,
+      y: e.nativeEvent.offsetY - 18,
       appVersionsId,
     });
     socket.send(
@@ -326,8 +324,8 @@ export const Container = ({
     const offsetFromTopOfWindow = canvasBoundingRect.top;
     const offsetFromLeftOfWindow = canvasBoundingRect.left;
 
-    let x = Math.round(e.screenX + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
-    const y = Math.round(e.screenY + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
+    let x = Math.round(e.screenX - 18 + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
+    const y = Math.round(e.screenY + 18 + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
 
     x = (x * 100) / canvasWidth;
 
