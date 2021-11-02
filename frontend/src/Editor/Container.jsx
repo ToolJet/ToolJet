@@ -11,6 +11,7 @@ import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
+import Spinner from '@/_ui/Spinner';
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -52,6 +53,7 @@ export const Container = ({
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
   const router = useRouter();
 
@@ -283,18 +285,35 @@ export const Container = ({
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
+    const elementIndex = commentsPreviewList.length;
+    setCommentsPreviewList([
+      ...commentsPreviewList,
+      {
+        x: e.nativeEvent.offsetX,
+        y: e.nativeEvent.offsetY,
+      },
+    ]);
     const { data } = await commentsService.createThread({
       appId: router.query.id,
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY,
       appVersionsId,
     });
+
+    // Remove the temporary loader preview
+    const _commentsPreviewList = [...commentsPreviewList];
+    _commentsPreviewList.splice(elementIndex, 1);
+    setCommentsPreviewList(_commentsPreviewList);
+
+    // Update the threads on all connected clients using websocket
     socket.send(
       JSON.stringify({
         event: 'events',
         data: 'threads',
       })
     );
+
+    // Update the list of threads on the current users page
     addNewThread(data);
   };
 
@@ -307,20 +326,44 @@ export const Container = ({
 
     const x = Math.round(e.screenX + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
     const y = Math.round(e.screenY + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
+
+    const elementIndex = commentsPreviewList.length;
+    setCommentsPreviewList([
+      ...commentsPreviewList,
+      {
+        x: e.nativeEvent.offsetX,
+        y: e.nativeEvent.offsetY,
+      },
+    ]);
     const { data } = await commentsService.createThread({
       appId: router.query.id,
       x,
       y: y - 130,
       appVersionsId,
     });
+
+    // Remove the temporary loader preview
+    const _commentsPreviewList = [...commentsPreviewList];
+    _commentsPreviewList.splice(elementIndex, 1);
+    setCommentsPreviewList(_commentsPreviewList);
+
+    // Update the threads on all connected clients using websocket
     socket.send(
       JSON.stringify({
         event: 'events',
         data: 'threads',
       })
     );
+
+    // Update the list of threads on the current users page
     addNewThread(data);
   };
+
+  if (showComments) {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const currentUserInitials = `${currentUser.first_name?.charAt(0)}${currentUser.last_name?.charAt(0)}`;
+    styles.cursor = `url("data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 34 34' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='17' cy='17' r='15.25' fill='white' stroke='%23FCAA0D' stroke-width='2.5' opacity='0.5' /%3E%3Ctext x='10' y='20' fill='%23000' opacity='0.5' font-family='inherit' font-size='11.2' font-weight='500' color='%23656d77'%3E${currentUserInitials}%3C/text%3E%3C/svg%3E%0A"), text`;
+  }
 
   return (
     <div
@@ -329,11 +372,31 @@ export const Container = ({
       style={styles}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
-        'cursor-text': showComments,
+        // 'add-comment-cursor': showComments,
       })}
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
-        <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} />
+        <>
+          <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} />
+          {commentsPreviewList.map((previewComment, index) => (
+            <div
+              key={index}
+              style={{
+                transform: `translate(${previewComment.x}px, ${previewComment.y}px)`,
+              }}
+            >
+              <label className="form-selectgroup-item comment-preview-bubble">
+                <span
+                  className={cx(
+                    'comment comment-preview-bubble-border cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded'
+                  )}
+                >
+                  <Spinner />
+                </span>
+              </label>
+            </div>
+          ))}
+        </>
       )}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
