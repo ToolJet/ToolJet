@@ -1159,6 +1159,7 @@ export const componentTypes = [
       views: { type: 'code', displayName: 'Views' },
       defaultView: { type: 'code', displayName: 'Default view' },
       displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
+      highlightToday: { type: 'toggle', displayName: 'Highlight today' },
     },
     events: {
       onCalendarEventSelect: { displayName: 'On Event Select' },
@@ -1205,6 +1206,9 @@ export const componentTypes = [
           value: "{{'month'}}",
         },
         displayToolbar: {
+          value: true,
+        },
+        highlightToday: {
           value: true,
         },
       },

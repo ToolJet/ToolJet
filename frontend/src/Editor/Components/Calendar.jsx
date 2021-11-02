@@ -49,7 +49,9 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
   return (
     <div>
       <ReactCalendar
-        className={styles.cellSizeInViewsClassifiedByResource === 'compact' ? 'calendar-widget' : ''}
+        className={`calendar-widget
+        ${styles.cellSizeInViewsClassifiedByResource}
+        ${properties.highlightToday ? '' : 'dont-highlight-today'}`}
         localizer={localizer}
         defaultDate={defaultDate}
         events={events}

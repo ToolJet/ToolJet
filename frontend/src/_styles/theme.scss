@@ -2312,7 +2312,7 @@ input[type='text'] {
   overflow-y: scroll;
 }
 
-.calendar-widget {
+.calendar-widget.compact {
   .rbc-time-view-resources .rbc-time-header-content {
     min-width: auto;
   }
@@ -2329,5 +2329,15 @@ input[type='text'] {
   .rbc-time-view-resources .rbc-header,
   .rbc-time-view-resources .rbc-day-bg {
     width: 50px;
+  }
+}
+
+.calendar-widget.dont-highlight-today {
+  .rbc-today {
+    background-color: inherit;
+  }
+
+  .rbc-current-time-indicator {
+    display: none;
   }
 }
