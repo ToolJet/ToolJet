@@ -332,7 +332,7 @@ export const Container = ({
       ...commentsPreviewList,
       {
         x: e.nativeEvent.offsetX,
-        y: e.nativeEvent.offsetY,
+        y: e.nativeEvent.offsetY - 130,
       },
     ]);
     const { data } = await commentsService.createThread({
@@ -372,7 +372,6 @@ export const Container = ({
       style={styles}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
-        // 'add-comment-cursor': showComments,
       })}
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
