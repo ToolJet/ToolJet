@@ -1161,10 +1161,19 @@ export const componentTypes = [
       displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
     },
     events: {
-      onEventSelect: { displayName: 'On Event Select' },
+      onCalendarEventSelect: { displayName: 'On Event Select' },
+      onCalendarSlotSelect: { displayName: 'On Slot Select' },
     },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
+      cellSizeInViewsClassifiedByResource: {
+        type: 'select',
+        displayName: 'Cell size in views classified by resource',
+        options: [
+          { name: 'Compact', value: 'compact' },
+          { name: 'Spacious', value: 'spacious' },
+        ],
+      },
     },
     exposedVariables: {
       selectedEvent: {},
@@ -1201,6 +1210,7 @@ export const componentTypes = [
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
+        cellSizeInViewsClassifiedByResource: { value: 'spacious' },
       },
     },
   },

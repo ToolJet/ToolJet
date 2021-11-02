@@ -2319,6 +2319,11 @@ input[type='text'] {
 
   .rbc-time-view-resources .rbc-day-slot {
     min-width: 50px;
+    .rbc-event {
+      .rbc-event-label {
+        display: none;
+      }
+    }
   }
 
   .rbc-time-view-resources .rbc-header,

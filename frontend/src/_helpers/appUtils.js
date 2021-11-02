@@ -224,7 +224,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
-  if (eventName === 'onEventSelect') {
+  if (eventName === 'onCalendarEventSelect') {
     const { component, calendarEvent } = options;
     _self.setState(
       {
@@ -240,7 +240,28 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
       () => {
-        executeActionsForEventId(_ref, 'onEventSelect', component, mode);
+        executeActionsForEventId(_ref, 'onCalendarEventSelect', component, mode);
+      }
+    );
+  }
+
+  if (eventName === 'onCalendarSlotSelect') {
+    const { component, calendarSlot } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedSlot: { ...calendarSlot },
+            },
+          },
+        },
+      },
+      () => {
+        executeActionsForEventId(_ref, 'onCalendarSlotSelect', component, mode);
       }
     );
   }
