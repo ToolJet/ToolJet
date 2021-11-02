@@ -1177,6 +1177,7 @@ export const componentTypes = [
     },
     exposedVariables: {
       selectedEvent: {},
+      selectedSlots: {},
     },
     definition: {
       others: {

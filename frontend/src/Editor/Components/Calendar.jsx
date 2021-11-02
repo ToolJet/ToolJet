@@ -29,6 +29,23 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
     return { style };
   };
 
+  const slotSelectHandler = (calendarSlots) => {
+    const { slots, start, end, resourceId, action } = calendarSlots;
+    const formattedSlots = slots.map((slot) => moment(slot).format(properties.dateFormat));
+    const formattedStart = moment(start).format(properties.dateFormat);
+    const formattedEnd = moment(end).format(properties.dateFormat);
+
+    const selectedSlots = {
+      slots: formattedSlots,
+      start: formattedStart,
+      end: formattedEnd,
+      resourceId,
+      action,
+    };
+
+    fireEvent('onCalendarSlotSelect', { selectedSlots });
+  };
+
   return (
     <div>
       <ReactCalendar
@@ -46,7 +63,7 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
         resourceTitleAccessor="title"
         onSelectEvent={(calendarEvent) => fireEvent('onCalendarEventSelect', { calendarEvent })}
         selectable={true}
-        onSelectSlot={(calendarSlot) => fireEvent('onCalendarSlotSelect', { calendarSlot })}
+        onSelectSlot={slotSelectHandler}
         toolbar={properties.displayToolbar}
         eventPropGetter={eventPropGetter}
       />

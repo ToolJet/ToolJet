@@ -246,7 +246,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 
   if (eventName === 'onCalendarSlotSelect') {
-    const { component, calendarSlot } = options;
+    const { component, selectedSlots } = options;
     _self.setState(
       {
         currentState: {
@@ -255,7 +255,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
             ..._self.state.currentState.components,
             [component.name]: {
               ..._self.state.currentState.components[component.name],
-              selectedSlot: { ...calendarSlot },
+              selectedSlots,
             },
           },
         },
