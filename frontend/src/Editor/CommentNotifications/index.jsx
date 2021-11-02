@@ -33,7 +33,7 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   }, []);
 
   return (
-    <div className="editor-sidebar">
+    <div className="comment-notification-sidebar editor-sidebar">
       <div className="card-header">
         <span className="comment-notification-header">Comments</span>
         <div className="ms-auto">
