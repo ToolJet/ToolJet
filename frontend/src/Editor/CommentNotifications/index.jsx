@@ -61,9 +61,11 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
       <span className="border-bottom" />
       <Tabs
         activeKey={key}
-        onSelect={(k) => {
+        onSelect={async (k) => {
           setKey(k);
-          fetchData(k);
+          setLoading(true);
+          await fetchData(k);
+          setLoading(false);
         }}
         className="dflex justify-content-center"
       >
