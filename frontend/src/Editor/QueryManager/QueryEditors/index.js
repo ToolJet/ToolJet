@@ -14,12 +14,14 @@ import { Slack } from './Slack';
 import { Mongodb } from './Mongodb';
 import { Dynamodb } from './Dynamodb';
 import { Airtable } from './Airtable';
-import { Graphql } from './Graphql';
+// import { Graphql } from './Graphql';
 // import { Mssql } from './Mssql';
 import { S3 } from './S3';
 
 import MssqlSchema from './Mssql.schema.json';
+import GraphqlSchema from './Graphql.schema.json';
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
+const Graphql = ({ ...rest }) => <DynamicForm schema={GraphqlSchema} {...rest} />;
 
 export const allSources = {
   Restapi,
