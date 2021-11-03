@@ -7,7 +7,7 @@ import { Mysql } from './Mysql';
 import { Postgresql } from './Postgresql';
 import { Stripe } from './Stripe';
 import { Firestore } from './Firestore';
-import { Redis } from './Redis';
+// import { Redis } from './Redis';
 import { Googlesheets } from './Googlesheets';
 import { Elasticsearch } from './Elasticsearch';
 import { Slack } from './Slack';
@@ -20,8 +20,10 @@ import { S3 } from './S3';
 
 import MssqlSchema from './Mssql.schema.json';
 import GraphqlSchema from './Graphql.schema.json';
+import RedisSchema from './Redis.schema.json';
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
 const Graphql = ({ ...rest }) => <DynamicForm schema={GraphqlSchema} {...rest} />;
+const Redis = ({ ...rest }) => <DynamicForm schema={RedisSchema} {...rest} />;
 
 export const allSources = {
   Restapi,

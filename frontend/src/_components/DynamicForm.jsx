@@ -51,7 +51,16 @@ const DynamicForm = ({
     }
   };
 
-  const getElementProps = ({ $key, $options, $rows = 5, $hasSearch, helpText, description, type }) => {
+  const getElementProps = ({
+    $key,
+    $options,
+    $rows = 5,
+    $hasSearch,
+    helpText,
+    description,
+    type,
+    placeholder = '',
+  }) => {
     switch (type) {
       case 'password':
       case 'text':
@@ -111,6 +120,7 @@ const DynamicForm = ({
           className: 'query-hinter',
           onChange: (value) => optionchanged($key, value),
           theme: darkMode ? 'monokai' : 'duotone-light',
+          placeholder,
         };
       default:
         return {};
@@ -123,11 +133,8 @@ const DynamicForm = ({
         {Object.keys(obj).map((key) => {
           const { $label, type, $encrypted } = obj[key];
 
-          console.log('eeee', type);
-
           const Element = getElement(type);
 
-          console.log('eeee', Element);
           return (
             <div className="col-md-12 my-2" key={key}>
               {$label && (
