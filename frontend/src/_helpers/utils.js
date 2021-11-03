@@ -23,6 +23,8 @@ export function findProp(obj, prop, defval) {
   return obj;
 }
 
+export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
+
 export function resolve(data, state) {
   if (data.startsWith('{{queries.') || data.startsWith('{{globals.') || data.startsWith('{{components.')) {
     let prop = data.replace('{{', '').replace('}}', '');
@@ -229,4 +231,9 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
     isValid,
     validationError,
   };
+}
+
+export function validateEmail(email) {
+  const emailRegex =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+  return emailRegex.test(email)
 }

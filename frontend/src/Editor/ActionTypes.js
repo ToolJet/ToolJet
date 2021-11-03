@@ -37,4 +37,12 @@ export const ActionTypes = [
     id: 'copy-to-clipboard',
     options: [{ name: 'copy-to-clipboard', type: 'text', default: '' }],
   },
+  {
+    name: 'Set local storage',
+    id: 'set-localstorage-value',
+    options: [
+      { name: 'key', type: 'code', default: '' },
+      { name: 'value', type: 'code', default: '' },
+    ],
+  },
 ];

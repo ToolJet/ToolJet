@@ -134,7 +134,7 @@ function executeAction(_ref, event, mode) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName);
+        return runQuery(_ref, queryId, queryName, true, mode);
       }
 
       case 'open-webpage': {
@@ -187,6 +187,12 @@ function executeAction(_ref, event, mode) {
         copyToClipboard(contentToCopy);
 
         return Promise.resolve();
+      }
+
+      case 'set-localstorage-value': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const value = resolveReferences(event.value, _ref.state.currentState);
+        localStorage.setItem(key, value);
       }
     }
   }
@@ -361,7 +367,7 @@ export function previewQuery(_ref, query) {
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) {
   const query = _ref.state.app.data_queries.find((query) => query.id === queryId);
   let dataQuery = {};
 
@@ -510,7 +516,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
             },
             () => {
               resolve();
-              onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } });
+              onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
             }
           );
         })

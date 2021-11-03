@@ -839,7 +839,7 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        value: { value: '' },
+        value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true },
@@ -1003,8 +1003,8 @@ export const componentTypes = [
         canSearch: {
           value: `{{true}}`,
         },
+        addNewMarkers : {value:`{{true}}`},
       },
-      addNewMarkers: { value: '{{false}}' },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
