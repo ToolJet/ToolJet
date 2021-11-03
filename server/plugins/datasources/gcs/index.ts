@@ -8,9 +8,9 @@ import { Storage } from '@google-cloud/storage';
 
 @Injectable()
 export default class GcsQueryService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: any, queryOptions: any, _dataSourceId: string): Promise<QueryResult> {
     const operation = queryOptions.operation;
-    const client = await this.getConnection(sourceOptions, { operation });
+    const client = await this.getConnection(sourceOptions);
     let result = {};
 
     try {
@@ -53,7 +53,7 @@ export default class GcsQueryService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: any): Promise<any> {
+  async getConnection(sourceOptions: any, _options?: object): Promise<any> {
     const privateKey = JSON.parse(sourceOptions['private_key']);
     const storage = new Storage({
       projectId: privateKey['project_id'],
