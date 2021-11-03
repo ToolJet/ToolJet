@@ -13,8 +13,8 @@ const prepareEvent = (event, dateFormat) => ({
 
 const parseDate = (date, dateFormat) => moment(date, dateFormat).toDate();
 
-export const Calendar = function ({ height, width, properties, styles, fireEvent }) {
-  const style = { height, width, backgroundColor: 'white', padding: 10 };
+export const Calendar = function ({ height, width, properties, styles, fireEvent, darkMode }) {
+  const style = { height, width };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
 
   const events = properties.events ? properties.events.map((event) => prepareEvent(event, properties.dateFormat)) : [];
@@ -50,6 +50,7 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
     <div>
       <ReactCalendar
         className={`calendar-widget
+        ${darkMode ? 'dark-mode' : ''}
         ${styles.cellSizeInViewsClassifiedByResource}
         ${properties.highlightToday ? '' : 'dont-highlight-today'}`}
         localizer={localizer}
