@@ -24,7 +24,7 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
     const backgroundColor = event.color;
     const textStyle =
       event.textOrientation === 'vertical' ? { writingMode: 'vertical-rl', textOrientation: 'mixed' } : {};
-    const style = { backgroundColor, ...textStyle };
+    const style = { backgroundColor, ...textStyle, fontWeight: 500, padding: 3 };
 
     return { style };
   };
@@ -69,6 +69,7 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
         toolbar={properties.displayToolbar}
         eventPropGetter={eventPropGetter}
         tooltipAccessor="tooltip"
+        popup={true}
       />
     </div>
   );

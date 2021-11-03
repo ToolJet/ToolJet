@@ -2341,3 +2341,9 @@ input[type='text'] {
     display: none;
   }
 }
+
+.calendar-widget {
+  .rbc-day-slot .rbc-event, .rbc-day-slot .rbc-background-event {
+    border-left: 3px solid #26598533;
+  }
+}
