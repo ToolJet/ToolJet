@@ -2354,6 +2354,12 @@ input[type='text'] {
       display: none;
     }
   }
+
+  .rbc-toolbar {
+    .rbc-btn-group:nth-of-type(3) {
+      display: none;
+    }
+  }
 }
 
 .calendar-widget.dark-mode {

@@ -1156,8 +1156,7 @@ export const componentTypes = [
       defaultDate: { type: 'code', displayName: 'Default date' },
       events: { type: 'code', displayName: 'Events' },
       resources: { type: 'code', displayName: 'Resources' },
-      views: { type: 'code', displayName: 'Views' },
-      defaultView: { type: 'code', displayName: 'Default view' },
+      view: { type: 'code', displayName: 'View' },
       displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
       highlightToday: { type: 'toggle', displayName: 'Highlight today' },
     },
@@ -1199,10 +1198,7 @@ export const componentTypes = [
         resources: {
           value: '{{[]}}',
         },
-        views: {
-          value: "{{['day', 'week', 'month']}}",
-        },
-        defaultView: {
+        view: {
           value: "{{'month'}}",
         },
         displayToolbar: {

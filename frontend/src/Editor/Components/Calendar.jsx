@@ -13,6 +13,8 @@ const prepareEvent = (event, dateFormat) => ({
 
 const parseDate = (date, dateFormat) => moment(date, dateFormat).toDate();
 
+const allowedCalendarViews = ['month', 'week', 'day'];
+
 export const Calendar = function ({ height, width, properties, styles, fireEvent, darkMode }) {
   const style = { height, width };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
@@ -46,6 +48,8 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
     fireEvent('onCalendarSlotSelect', { selectedSlots });
   };
 
+  const view = allowedCalendarViews.includes(properties.view) ? properties.view : allowedCalendarViews[0];
+
   return (
     <div>
       <ReactCalendar
@@ -59,8 +63,8 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
         startAccessor="start"
         endAccessor="end"
         style={style}
-        views={properties.views}
-        defaultView={properties.defaultView}
+        views={allowedCalendarViews}
+        view={view}
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"
