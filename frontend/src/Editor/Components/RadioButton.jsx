@@ -71,9 +71,7 @@ export const RadioButton = function RadioButton({
 
   function onSelect(selection) {
     onComponentOptionChanged(component, 'value', selection);
-    if (selection) {
-      onEvent('onSelectionChange', { component });
-    }
+    onEvent('onSelectionChange', { component });
   }
 
   useEffect(() => {
