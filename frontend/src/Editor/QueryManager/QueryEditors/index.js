@@ -1,3 +1,7 @@
+import React from 'react';
+
+import DynamicForm from '@/_components/DynamicForm';
+
 import { Restapi } from './Restapi';
 import { Mysql } from './Mysql';
 import { Postgresql } from './Postgresql';
@@ -11,8 +15,11 @@ import { Mongodb } from './Mongodb';
 import { Dynamodb } from './Dynamodb';
 import { Airtable } from './Airtable';
 import { Graphql } from './Graphql';
-import { Mssql } from './Mssql';
+// import { Mssql } from './Mssql';
 import { S3 } from './S3';
+
+import MssqlSchema from './Mssql.schema.json';
+const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
 
 export const allSources = {
   Restapi,

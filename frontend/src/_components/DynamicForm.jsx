@@ -5,14 +5,24 @@ import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
-import Codehinter from '@/Editor/CodeBuilder/CodeHinter';
+import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 
 import { find } from 'lodash';
 
-const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
+const DynamicForm = ({
+  schema,
+  optionchanged,
+  createDataSource,
+  options,
+  isSaving,
+  selectedDataSource,
+  currentState,
+  darkMode,
+  isEditMode,
+}) => {
   // if(schema.properties)  todo add empty check
 
   const getElement = (type) => {
@@ -35,7 +45,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
       case 'react-component-slack':
         return Slack;
       case 'codehinter':
-        return Codehinter;
+        return CodeHinter;
       default:
         return <div>Type is invalid</div>;
     }
@@ -94,13 +104,13 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
       case 'codehinter':
         return {
-          currentState: '',
-          initialValue: '',
-          mode: '',
+          currentState,
+          initialValue: options[$key],
+          mode: 'sql',
           lineNumbers: true,
           className: 'query-hinter',
           onChange: (value) => optionchanged($key, value),
-          // theme: {this.props.darkMode ? 'monokai' : 'duotone-light'}
+          theme: darkMode ? 'monokai' : 'duotone-light',
         };
       default:
         return {};
@@ -113,8 +123,11 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         {Object.keys(obj).map((key) => {
           const { $label, type, $encrypted } = obj[key];
 
+          console.log('eeee', type);
+
           const Element = getElement(type);
 
+          console.log('eeee', Element);
           return (
             <div className="col-md-12 my-2" key={key}>
               {$label && (

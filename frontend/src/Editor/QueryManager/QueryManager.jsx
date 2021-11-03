@@ -371,6 +371,7 @@ let QueryManager = class QueryManager extends React.Component {
                       selectedDataSource={this.state.selectedSource}
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}
+                      optionchanged={this.optionsChanged}
                       currentState={currentState}
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
