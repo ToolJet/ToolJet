@@ -2480,3 +2480,11 @@ input[type='text'] {
 .navbar-brand-image {
   height: 1.6rem;
 }
+
+.nav-tabs .nav-link.active {
+  font-weight: 500 !important;
+}
+
+.nav-tabs .nav-link {
+  font-weight: 400 !important;
+}
