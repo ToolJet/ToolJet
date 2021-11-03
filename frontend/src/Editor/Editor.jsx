@@ -766,7 +766,7 @@ class Editor extends React.Component {
                       selectedComponent={selectedComponent || {}}
                       scaleValue={scaleValue}
                       appLoading={isLoading}
-                      onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                      onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
                       onComponentOptionChanged={(component, optionName, value) =>
                         onComponentOptionChanged(this, component, optionName, value)
                       }
