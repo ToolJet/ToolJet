@@ -1545,6 +1545,7 @@ hr {
   .config-handle {
     top: -20px;
     position: fixed;
+    max-height: 10px;
 
     .badge {
       font-size: 9px;
