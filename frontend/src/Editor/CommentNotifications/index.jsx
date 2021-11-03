@@ -12,13 +12,16 @@ import useRouter from '@/_hooks/use-router';
 
 const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   const [notifications, setNotifications] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
   const [key, setKey] = React.useState('active');
 
   const router = useRouter();
 
   async function fetchData(k) {
     const isResolved = k === 'resolved';
+    setLoading(true);
     const { data } = await commentsService.getNotifications(router.query.id, isResolved, appVersionsId);
+    setLoading(false);
     setNotifications(data);
   }
   React.useEffect(() => {
@@ -33,7 +36,7 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   }, []);
 
   return (
-    <div className="editor-sidebar">
+    <div className="comment-notification-sidebar editor-sidebar">
       <div className="card-header">
         <span className="comment-notification-header">Comments</span>
         <div className="ms-auto">
@@ -58,17 +61,19 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
       <span className="border-bottom" />
       <Tabs
         activeKey={key}
-        onSelect={(k) => {
+        onSelect={async (k) => {
           setKey(k);
-          fetchData(k);
+          setLoading(true);
+          await fetchData(k);
+          setLoading(false);
         }}
         className="dflex justify-content-center"
       >
         <Tab className="comment-notification-nav-item" eventKey="active" title="Active">
-          <TabContent notifications={notifications} />
+          <TabContent notifications={notifications} loading={loading} />
         </Tab>
         <Tab className="comment-notification-nav-item" eventKey="resolved" title="Resolved">
-          <TabContent notifications={notifications} />
+          <TabContent notifications={notifications} loading={loading} />
         </Tab>
       </Tabs>
     </div>
