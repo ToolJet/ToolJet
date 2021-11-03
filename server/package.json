@@ -47,6 +47,7 @@
     "@types/got": "^9.6.12",
     "@types/humps": "^2.0.1",
     "@types/nodemailer": "^6.4.4",
+    "@types/ws": "^8.2.0",
     "aws-sdk": "^2.947.0",
     "bcrypt": "^5.0.1",
     "class-validator": "^0.13.1",
