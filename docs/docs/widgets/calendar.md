@@ -90,3 +90,17 @@ Determines whether the calendar toolbar should be displayed or not.
 When `resources` are specified, the calendar could take up quite a lot of horizontal space, making the horizontal scroll bar of calendar having to be relied upon all the time.  
 
 If we set this property to `compact`, the cell sizes will be smaller in `week` and `day` views.
+
+### Events
+
+#### On Event selected
+
+This event is fired when the user clicks on a calendar event.  
+  
+Last selected event is exposed as `selectedEvent`.
+
+#### on Slot selected
+
+This event is fired when the user either clicks on an calendar slot(empty cell or empty space of a cell with event) or when they click and drag to select multiple slots.  
+  
+Last selected slot(s) are exposed as `selectedSlots`.
