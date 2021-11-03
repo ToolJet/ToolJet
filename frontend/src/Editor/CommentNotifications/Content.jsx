@@ -7,7 +7,9 @@ import usePopover from '@/_hooks/use-popover';
 import { useSpring, animated } from 'react-spring';
 import useRouter from '@/_hooks/use-router';
 
-const Content = ({ notifications }) => {
+import Spinner from '@/_ui/Spinner';
+
+const Content = ({ notifications, loading }) => {
   const router = useRouter();
   const [selectedCommentId, setSelectedCommentId] = React.useState(router.query.commentId);
   const [open, trigger, content] = usePopover(false);
@@ -27,7 +29,7 @@ const Content = ({ notifications }) => {
     if (isEmpty(notifications))
       return (
         <div className="empty">
-          <p className="empty-title">No messages to show</p>
+          <p className="empty-title">{loading ? <Spinner /> : 'No messages to show'}</p>
         </div>
       );
 
@@ -68,11 +70,12 @@ const Content = ({ notifications }) => {
   // TODO: move filter to separate file
   return (
     <div className="card">
-      <div className="card-header">
-        <sub className="fw-400 comment-notification-count light-gray">
-          Total {pluralize(notifications.length, 'comment')}
-        </sub>
-        {/* <div className="ms-auto position-relative">
+      {!loading && (
+        <div className="card-header">
+          <sub className="fw-400 comment-notification-count light-gray">
+            Total {pluralize(notifications.length, 'comment')}
+          </sub>
+          {/* <div className="ms-auto position-relative">
           <svg {...trigger} width="15" height="14" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M14.3333 1H1L6.33333 7.30667V11.6667L9 13V7.30667L14.3333 1Z"
@@ -120,7 +123,8 @@ const Content = ({ notifications }) => {
             </div>
           </animated.div>
         </div> */}
-      </div>
+        </div>
+      )}
       <div>{getContent()}</div>
     </div>
   );
