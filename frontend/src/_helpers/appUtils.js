@@ -224,6 +224,48 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
+  if (eventName === 'onCalendarEventSelect') {
+    const { component, calendarEvent } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedEvent: { ...calendarEvent },
+            },
+          },
+        },
+      },
+      () => {
+        executeActionsForEventId(_ref, 'onCalendarEventSelect', component, mode);
+      }
+    );
+  }
+
+  if (eventName === 'onCalendarSlotSelect') {
+    const { component, selectedSlots } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedSlots,
+            },
+          },
+        },
+      },
+      () => {
+        executeActionsForEventId(_ref, 'onCalendarSlotSelect', component, mode);
+      }
+    );
+  }
+
   if (eventName === 'onTableActionButtonClicked') {
     const { component, data, action, rowId } = options;
     _self.setState(

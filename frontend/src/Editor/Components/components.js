@@ -1003,7 +1003,7 @@ export const componentTypes = [
         canSearch: {
           value: `{{true}}`,
         },
-        addNewMarkers : {value:`{{true}}`},
+        addNewMarkers: { value: `{{true}}` },
       },
       events: [],
       styles: {
@@ -1186,6 +1186,87 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Calendar',
+    displayName: 'Calendar',
+    description: 'Calendar',
+    component: 'Calendar',
+    defaultSize: {
+      width: 700,
+      height: 600,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      dateFormat: { type: 'code', displayName: 'Date format' },
+      defaultDate: { type: 'code', displayName: 'Default date' },
+      events: { type: 'code', displayName: 'Events' },
+      resources: { type: 'code', displayName: 'Resources' },
+      defaultView: { type: 'code', displayName: 'Default view' },
+      displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
+      displayViewSwitcher: { type: 'toggle', displayName: 'Show view switcher' },
+      highlightToday: { type: 'toggle', displayName: 'Highlight today' },
+    },
+    events: {
+      onCalendarEventSelect: { displayName: 'On Event Select' },
+      onCalendarSlotSelect: { displayName: 'On Slot Select' },
+    },
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      cellSizeInViewsClassifiedByResource: {
+        type: 'select',
+        displayName: 'Cell size in views classified by resource',
+        options: [
+          { name: 'Compact', value: 'compact' },
+          { name: 'Spacious', value: 'spacious' },
+        ],
+      },
+    },
+    exposedVariables: {
+      selectedEvent: {},
+      selectedSlots: {},
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        dateFormat: {
+          value: 'MM-DD-YYYY HH:mm:ss A Z',
+        },
+        defaultDate: {
+          value: '{{moment().format("MM-DD-YYYY HH:mm:ss A Z")}}',
+        },
+        events: {
+          value:
+            "{{[\n\t\t{\n\t\t\t title: 'Sample event',\n\t\t\t start: `${moment().startOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}`,\n\t\t\t end: `${moment().endOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}`,\n\t\t\t allDay: false,\n\t\t\t color: '#4D72DA'\n\t\t}\n]}}",
+        },
+        resources: {
+          value: '{{[]}}',
+        },
+        defaultView: {
+          value: "{{'month'}}",
+        },
+        displayToolbar: {
+          value: true,
+        },
+        displayViewSwitcher: {
+          value: true,
+        },
+        highlightToday: {
+          value: true,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        cellSizeInViewsClassifiedByResource: { value: 'spacious' },
       },
     },
   },
