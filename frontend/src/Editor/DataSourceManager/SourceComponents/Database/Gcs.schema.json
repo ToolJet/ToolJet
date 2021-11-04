@@ -20,7 +20,7 @@
     "private_key": {
       "$label": "Private key",
       "$key": "private_key",
-      "type": "password",
+      "type": "textarea",
       "description": "Enter JSON private key for service account"
     }
   },
