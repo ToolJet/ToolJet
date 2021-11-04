@@ -26,7 +26,7 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
     const backgroundColor = event.color;
     const textStyle =
       event.textOrientation === 'vertical' ? { writingMode: 'vertical-rl', textOrientation: 'mixed' } : {};
-    const style = { backgroundColor, ...textStyle, padding: 3 };
+    const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5 };
 
     return { style };
   };
