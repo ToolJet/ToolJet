@@ -237,6 +237,10 @@ export class UsersService {
       case 'User':
         return await this.hasGroup(user, 'admin');
 
+      case 'Thread':
+      case 'Comment':
+        return this.canAnyGroupPerformAction('update', await this.appGroupPermissions(user, resourceId));
+
       default:
         return false;
     }

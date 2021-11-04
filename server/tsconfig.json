@@ -13,9 +13,21 @@
     "baseUrl": "./",
     "incremental": true,
     "paths": {
-      "@services/*": ["src/services/*"],
-      "@plugins/*": ["plugins/*"],
-      "@controllers/*": ["src/controllers/*"],
+      "@services/*": [
+        "src/services/*"
+      ],
+      "@plugins/*": [
+        "plugins/*"
+      ],
+      "@controllers/*": [
+        "src/controllers/*"
+      ],
+      "@repositories/*": [
+        "src/repositories/*"
+      ],
+      "@dto/*": [
+        "src/dto/*"
+      ],
     }
   }
 }
