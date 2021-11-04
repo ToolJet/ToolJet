@@ -75,14 +75,14 @@ const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner,
       <div className="ms-auto d-flex">
         <span
           title={isThreadOwner ? 'toggle resolved' : 'only creator of thread can resolve'}
-          className={cx('m-1', { disabled: !isThreadOwner })}
+          className={cx('m-1 cursor-pointer', { disabled: !isThreadOwner })}
           onClick={handleResolved}
         >
           {getResolveIcon()}
         </span>
         <svg
           onClick={handleDelete}
-          className="m-1"
+          className="m-1 cursor-pointer"
           width="20"
           height="20"
           viewBox="0 0 20 20"
