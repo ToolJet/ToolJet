@@ -2433,7 +2433,9 @@ input[type='text'] {
       display: none;
     }
   }
+}
 
+.calendar-widget.hide-view-switcher {
   .rbc-toolbar {
     .rbc-btn-group:nth-of-type(3) {
       display: none;

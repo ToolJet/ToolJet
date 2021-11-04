@@ -1003,7 +1003,7 @@ export const componentTypes = [
         canSearch: {
           value: `{{true}}`,
         },
-        addNewMarkers : {value:`{{true}}`},
+        addNewMarkers: { value: `{{true}}` },
       },
       events: [],
       styles: {
@@ -1156,8 +1156,9 @@ export const componentTypes = [
       defaultDate: { type: 'code', displayName: 'Default date' },
       events: { type: 'code', displayName: 'Events' },
       resources: { type: 'code', displayName: 'Resources' },
-      view: { type: 'code', displayName: 'View' },
+      defaultView: { type: 'code', displayName: 'Default view' },
       displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
+      displayViewSwitcher: { type: 'toggle', displayName: 'Show view switcher' },
       highlightToday: { type: 'toggle', displayName: 'Highlight today' },
     },
     events: {
@@ -1198,10 +1199,13 @@ export const componentTypes = [
         resources: {
           value: '{{[]}}',
         },
-        view: {
+        defaultView: {
           value: "{{'month'}}",
         },
         displayToolbar: {
+          value: true,
+        },
+        displayViewSwitcher: {
           value: true,
         },
         highlightToday: {

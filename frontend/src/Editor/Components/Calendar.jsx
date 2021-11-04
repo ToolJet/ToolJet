@@ -48,7 +48,9 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
     fireEvent('onCalendarSlotSelect', { selectedSlots });
   };
 
-  const view = allowedCalendarViews.includes(properties.view) ? properties.view : allowedCalendarViews[0];
+  const defaultView = allowedCalendarViews.includes(properties.defaultView)
+    ? properties.defaultView
+    : allowedCalendarViews[0];
 
   return (
     <div>
@@ -56,7 +58,8 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
         className={`calendar-widget
         ${darkMode ? 'dark-mode' : ''}
         ${styles.cellSizeInViewsClassifiedByResource}
-        ${properties.highlightToday ? '' : 'dont-highlight-today'}`}
+        ${properties.highlightToday ? '' : 'dont-highlight-today'}
+        ${properties.displayViewSwitcher ? '' : 'hide-view-switcher'}`}
         localizer={localizer}
         defaultDate={defaultDate}
         events={events}
@@ -64,7 +67,7 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
         endAccessor="end"
         style={style}
         views={allowedCalendarViews}
-        view={view}
+        defaultView={defaultView}
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"
