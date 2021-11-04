@@ -45,12 +45,12 @@ export async function uploadFile(client: Storage, options: object): Promise<obje
   passthroughStream.write(options['data']);
   passthroughStream.end();
 
-  const response = passthroughStream.pipe(
+  passthroughStream.pipe(
     file.createWriteStream({
       metadata: { contentType: options['contentType'] },
     })
   );
-  return response;
+  return { success: true };
 }
 
 export async function signedUrlForGet(client: Storage, options: object): Promise<object> {
