@@ -61,7 +61,9 @@ export const DropDown = function DropDown({
 
   const currentValueProperty = component.definition.properties.value;
   const value = currentValueProperty ? currentValueProperty.value : '';
-  const [currentValue, setCurrentValue] = useState('');
+  const [currentValue, setCurrentValue] = useState(() =>
+    resolveReferences(currentValueProperty.value, currentState, '')
+  );
 
   const [optionValues, setOptionValue] = useState(() => selectOptions);
 
@@ -103,6 +105,15 @@ export const DropDown = function DropDown({
     onComponentOptionChanged(component, 'value', currentValue).then(() => onEvent('onSelect', { component }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue]);
+
+  useEffect(() => {
+    if (selectOptions.some((e) => e.value === newValue)) {
+      setCurrentValue(newValue);
+    } else {
+      setCurrentValue(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [values]);
 
   return (
     <div
