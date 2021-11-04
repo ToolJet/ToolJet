@@ -76,6 +76,7 @@ export const Box = function Box({
   containerProps,
   darkMode,
   removeComponent,
+  mode
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -95,7 +96,12 @@ export const Box = function Box({
   const resolvedStyles = resolveStyles(component, currentState);
   const exposedVariables = currentState?.components[component.name] ?? {};
 
-  const fireEvent = (eventName, options) => onEvent(eventName, { ...options, component });
+  const fireEvent = (eventName, options) => {
+    if (mode === 'edit' && eventName === 'onClick') {
+      onComponentClick(id, component);
+    };
+    onEvent(eventName, { ...options, component });
+  }
   const validate = (value) =>
     validateWidget({
       ...{ widgetValue: value },
