@@ -36,6 +36,7 @@
     "plotly.js-basic-dist-min": "^1.58.4",
     "query-string": "^6.13.6",
     "react": "^16.14.0",
+    "react-big-calendar": "^0.38.0",
     "react-bootstrap": "^1.5.2",
     "react-color": "^2.19.3",
     "react-copy-to-clipboard": "^5.0.3",
