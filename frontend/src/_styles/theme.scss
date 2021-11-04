@@ -2433,6 +2433,20 @@ input[type='text'] {
       display: none;
     }
   }
+
+  .rbc-off-range-bg {
+    background-color: #f4f6fa;
+  }
+
+  .rbc-toolbar {
+    .rbc-btn-group {
+      button {
+        box-shadow: none;
+        border-radius: 0;
+        border-width: 1px;
+      }
+    }
+  }
 }
 
 .calendar-widget.hide-view-switcher {
