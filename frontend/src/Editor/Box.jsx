@@ -21,6 +21,7 @@ import { ToggleSwitch } from './Components/Toggle';
 import { RadioButton } from './Components/RadioButton';
 import { StarRating } from './Components/StarRating';
 import { Divider } from './Components/Divider';
+import { FilePicker } from './Components/FilePicker';
 import { PasswordInput } from './Components/PasswordInput';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -51,6 +52,7 @@ const AllComponents = {
   RadioButton,
   StarRating,
   Divider,
+  FilePicker,
   PasswordInput,
 };
 
