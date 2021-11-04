@@ -1,12 +1,20 @@
-import { Storage } from '@google-cloud/storage';
+import { GetBucketsResponse, GetFilesResponse, GetSignedUrlResponse, Storage } from '@google-cloud/storage';
 import * as stream from 'stream';
 
 export async function listBuckets(client: Storage, _options: object): Promise<object> {
-  return await client.getBuckets();
+  const [buckets, ,]: GetBucketsResponse = await client.getBuckets({
+    autoPaginate: false,
+  });
+
+  return { buckets: buckets.map((bucket) => bucket.name) };
 }
 
 export async function listFiles(client: Storage, options: object): Promise<object> {
-  return await client.bucket(options['bucket']).getFiles({ prefix: options['prefix'] });
+  const [, , metadata]: GetFilesResponse = await client
+    .bucket(options['bucket'])
+    .getFiles({ prefix: options['prefix'], autoPaginate: false });
+
+  return { files: metadata.items };
 }
 
 export async function getFile(client: Storage, options: object): Promise<object> {
@@ -49,7 +57,7 @@ export async function signedUrlForGet(client: Storage, options: object): Promise
   const defaultExpiry = Date.now() + 15 * 60 * 1000; // 15 mins
   const expiresIn = options['expiresIn'] ? Date.now() + options['expiresIn'] * 1000 : defaultExpiry;
 
-  const [url] = await client.bucket(options['bucket']).file(options['file']).getSignedUrl({
+  const [url]: GetSignedUrlResponse = await client.bucket(options['bucket']).file(options['file']).getSignedUrl({
     version: 'v4',
     action: 'read',
     expires: expiresIn,
@@ -62,14 +70,14 @@ export async function signedUrlForPut(client: Storage, options: object): Promise
   const defaultExpiry = Date.now() + 15 * 60 * 1000; // 15 mins
   const expiresIn = options['expiresIn'] ? Date.now() + options['expiresIn'] * 1000 : defaultExpiry;
 
-  const [url] = await client
+  const [url]: GetSignedUrlResponse = await client
     .bucket(options['bucket'])
     .file(options['file'])
     .getSignedUrl({
       version: 'v4',
       action: 'write',
       expires: expiresIn,
-      contentType: options['contentType'] || 'application/octet-stream',
+      ...(options['contentType'] && { contentType: options['contentType'] }),
     });
 
   return { url };
