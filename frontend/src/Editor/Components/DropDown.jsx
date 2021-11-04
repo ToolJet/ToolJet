@@ -63,7 +63,7 @@ export const DropDown = function DropDown({
   const value = currentValueProperty ? currentValueProperty.value : '';
   const [currentValue, setCurrentValue] = useState('');
 
-  const [optionValues, setOptionValue] = useState(() => selectOptions ?? '');
+  const [optionValues, setOptionValue] = useState(() => selectOptions);
 
   useEffect(() => {
     const nextOptionValues = JSON.stringify(parsedValues);
