@@ -75,7 +75,7 @@ If we specify the `resourceId` of any of the events as `1`, then that event will
 
 <img class="screenshot-full" src="/img/widgets/calendar/calendar-resource.png" alt="ToolJet - Widget Reference - Calendar Resources" height="600"/>
 
-#### View
+#### Default view
 
 Determines whether the calendar would display a `day`, a `week` or a `month`.  
 Setting this property to anything other than these values will make the calendar default to `month` view.
@@ -84,6 +84,9 @@ Setting this property to anything other than these values will make the calendar
 
 Determines whether the calendar toolbar should be displayed or not.
 
+#### Show view switcher
+
+Determinues whether the calendar's buttons that allow user to switch between `month`, `week` and `day` level views will be displayed.
 ### Styles
 #### Cell size in views classified by resource
 
