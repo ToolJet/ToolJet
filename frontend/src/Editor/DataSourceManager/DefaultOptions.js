@@ -90,4 +90,7 @@ export const defaultOptions = {
     secret_key: { value: '' },
     region: { value: '' },
   },
+  gcs: {
+    private_key: { value: '' },
+  },
 };
