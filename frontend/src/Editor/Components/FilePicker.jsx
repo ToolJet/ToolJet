@@ -4,7 +4,7 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-toastify';
 
 export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode }) => {
-  //* property definations
+  //* properties definitions
   const enableDropzone = component.definition.properties.enableDropzone?.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -25,7 +25,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   const parsedMinSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(minSize, currentState) : minSize;
   const parsedMaxSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(maxSize, currentState) : maxSize;
 
-  //* style definations
+  //* styles definitions
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
