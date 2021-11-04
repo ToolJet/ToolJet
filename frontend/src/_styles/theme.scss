@@ -2391,6 +2391,104 @@ input[type='text'] {
   overflow-y: scroll;
 }
 
+.calendar-widget.compact {
+  .rbc-time-view-resources .rbc-time-header-content {
+    min-width: auto;
+  }
+
+  .rbc-time-view-resources .rbc-day-slot {
+    min-width: 50px;
+  }
+
+  .rbc-time-view-resources .rbc-header,
+  .rbc-time-view-resources .rbc-day-bg {
+    width: 50px;
+  }
+}
+
+.calendar-widget.dont-highlight-today {
+  .rbc-today {
+    background-color: inherit;
+  }
+
+  .rbc-current-time-indicator {
+    display: none;
+  }
+}
+
+.calendar-widget {
+  padding: 10px;
+  background-color: white;
+
+  .rbc-day-slot .rbc-event, .rbc-day-slot .rbc-background-event {
+    border-left: 3px solid #26598533;
+  }
+
+  .rbc-toolbar {
+    font-size: 14px;
+  }
+
+  .rbc-event {
+    .rbc-event-label {
+      display: none;
+    }
+  }
+
+  .rbc-off-range-bg {
+    background-color: #f4f6fa;
+  }
+
+  .rbc-toolbar {
+    .rbc-btn-group {
+      button {
+        box-shadow: none;
+        border-radius: 0;
+        border-width: 1px;
+      }
+    }
+  }
+}
+
+.calendar-widget.hide-view-switcher {
+  .rbc-toolbar {
+    .rbc-btn-group:nth-of-type(3) {
+      display: none;
+    }
+  }
+}
+
+.calendar-widget.dark-mode {
+  background-color: #1d2a39;
+
+  .rbc-toolbar {
+    button {
+      color: white;
+    }
+
+    button:hover, button.rbc-active {
+      color: black;
+    }
+  }
+
+  .rbc-off-range-bg {
+    background-color: #2b394b;
+  }
+
+  .rbc-selected-cell {
+    background-color: #22242d;
+  }
+
+  .rbc-today {
+    background-color: #5a7ca8;
+  }
+}
+
+.calendar-widget.dark-mode.dont-highlight-today {
+  .rbc-today {
+    background-color: inherit;
+  }
+}
+
 .navbar .navbar-nav {
   min-height: 2rem;
 }
