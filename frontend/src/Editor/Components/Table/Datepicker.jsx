@@ -21,8 +21,7 @@ export const Datepicker = function Datepicker({ value, onChange, readOnly, isTim
   const [date, setDate] = React.useState(() => (value._isAMomentObject ? getDate(value, dateFormat) : value));
 
   const dateChange = (event) => {
-    const selectedDateFormat = isTimeChecked ? `${dateFormat.value} LT` : dateFormat.value;
-    const value = event._isAMomentObject ? event.format(selectedDateFormat) : event;
+    const value = event._isAMomentObject ? event.format() : event;
 
     setDate(value);
     onChange(value);
@@ -55,7 +54,7 @@ export const Datepicker = function Datepicker({ value, onChange, readOnly, isTim
         dateFormat={dateFormat}
         value={date}
         onChange={dateChange}
-        closeOnSelect={true}
+        closeOnSelect={!isTimeChecked}
       />
     </>
   );
