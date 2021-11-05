@@ -6,11 +6,15 @@ sidebar_position: 6
 
 Filepicker widget allows the user to drag and drop files or upload files by browsing the filesystem and selecting one or more files in a directory.
 
-<img class="screenshot-full" src="/img/widgets/filepicker/filepicker.gif" alt="oolJet - Widget Reference - Filepicker " height="420"/>
+<img class="screenshot-full" src="/img/widgets/filepicker/filepicker.gif" alt="ToolJet - Widget Reference - Filepicker " height="420"/>
 
 :::info
  File types must be a valid [MIME](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) type according to input element specification or a valid file extension.
+
+ To accept any/all file type(s), set `Accept file types` to an empty value.
 :::
+
+<img class="screenshot-full" src="/img/widgets/filepicker/file-types.gif" alt="ToolJet - Widget Reference - Filepicker file types " height="420"/>
 
 :::tip
 [MIME](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) type determination is not reliable across platforms. CSV files, for example, are reported as text/plain under macOS but as application/vnd.ms-excel under Windows.
