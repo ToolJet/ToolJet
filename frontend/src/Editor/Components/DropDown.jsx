@@ -65,19 +65,6 @@ export const DropDown = function DropDown({
     resolveReferences(currentValueProperty.value, currentState, '')
   );
 
-  const [optionValues, setOptionValue] = useState(() => selectOptions);
-
-  useEffect(() => {
-    const nextOptionValues = JSON.stringify(parsedValues);
-    const prevOptionValues = JSON.stringify(optionValues);
-
-    if (nextOptionValues !== prevOptionValues) {
-      setOptionValue(() => JSON.parse(nextOptionValues));
-      setCurrentValue('');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parsedValues]);
-
   let newValue = value;
   if (currentValueProperty && currentState) {
     newValue = resolveReferences(currentValueProperty.value, currentState, '');
