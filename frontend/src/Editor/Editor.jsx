@@ -779,7 +779,6 @@ class Editor extends React.Component {
                       onComponentClick={(id, component) => {
                         this.setState({ selectedComponent: { id, component } });
                         this.switchSidebarTab(1);
-                        onComponentClick(this, id, component);
                       }}
                     />
                   )}
