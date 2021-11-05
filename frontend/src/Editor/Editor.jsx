@@ -116,7 +116,7 @@ class Editor extends React.Component {
 
   initWebSocket = () => {
     // TODO: add retry policy
-    const socket = new WebSocket(`ws://${this.getWebsocketUrl()}`);
+    const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
 
     // Connection opened
     socket.addEventListener('open', function (event) {
