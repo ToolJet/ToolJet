@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/dataqueries/Mysql.schema.json",
+  "title": "Mysql datasource",
+  "description": "A schema defining Mysql datasource",
+  "type": "object",
+  "properties": {
+    "mode": {
+      "$label": "",
+      "$key": "mode",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "$options": [
+        { "name": "SQL mode", "value": "sql" },
+        { "name": "GUI mode", "value": "gui" }
+      ]
+    },
+    "sql": {
+      "query": {
+        "$key": "query",
+        "type": "codehinter",
+        "description": "Enter query"
+      }
+    },
+    "gui": {
+      "operation": {
+        "$label": "Operation",
+        "$key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Single select dropdown for mode",
+        "$options": [
+          {
+            "name": "Bulk update using primary key",
+            "value": "bulk_update_pkey"
+          }
+        ]
+      },
+      "bulk_update_pkey": {
+        "table": {
+          "$label": "Table",
+          "$key": "table",
+          "type": "codehinter",
+          "description": "Enter table"
+        },
+        "primary_key_column": {
+          "$label": "Primary key column",
+          "$key": "primary_key_column",
+          "type": "codehinter",
+          "description": "Enter primary key column"
+        },
+        "records": {
+          "$label": "records",
+          "$key": "records",
+          "type": "codehinter",
+          "description": "Enter records"
+        }
+      }
+    }
+  }
+}

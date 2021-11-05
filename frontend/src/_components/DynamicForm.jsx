@@ -10,7 +10,7 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 
-import { find } from 'lodash';
+import { find, isEmpty } from 'lodash';
 
 const DynamicForm = ({
   schema,
@@ -128,6 +128,13 @@ const DynamicForm = ({
   };
 
   const getLayout = (obj) => {
+    if (isEmpty(obj)) return null;
+    const flipComponentDropdown = isFlipComponentDropdown(obj);
+
+    if (flipComponentDropdown) {
+      return flipComponentDropdown;
+    }
+
     return (
       <div className="row">
         {Object.keys(obj).map((key) => {
@@ -161,18 +168,29 @@ const DynamicForm = ({
     );
   };
 
-  const flipComponentDropdown = find(schema.properties, ['type', 'dropdown-component-flip']);
+  const isFlipComponentDropdown = (obj) => {
+    const flipComponentDropdown = find(obj, ['type', 'dropdown-component-flip']);
+    if (flipComponentDropdown) {
+      // options[key].value for datasource
+      // options[key] for dataquery
+      const selector = options[flipComponentDropdown.$key]?.value || options[flipComponentDropdown.$key];
+
+      return (
+        <div className="row">
+          <div className="col-md-12 my-2">
+            {flipComponentDropdown.$label && <label className="form-label">{flipComponentDropdown.$label}</label>}
+            <Select {...getElementProps(flipComponentDropdown)} />
+          </div>
+          {getLayout(obj[selector])}
+        </div>
+      );
+    }
+  };
+
+  const flipComponentDropdown = isFlipComponentDropdown(schema.properties);
 
   if (flipComponentDropdown) {
-    return (
-      <div className="row">
-        <div className="col-md-12 my-2">
-          {flipComponentDropdown.$label && <label className="form-label">{flipComponentDropdown.$label}</label>}
-          <Select {...getElementProps(flipComponentDropdown)} />
-        </div>
-        {getLayout(schema.properties[options[flipComponentDropdown.$key].value])}
-      </div>
-    );
+    return flipComponentDropdown;
   }
 
   return getLayout(schema.properties);
