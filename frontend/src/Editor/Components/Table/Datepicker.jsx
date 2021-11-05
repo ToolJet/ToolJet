@@ -5,34 +5,45 @@ import moment from 'moment';
 import 'react-datetime/css/react-datetime.css';
 import '@/_styles/custom.scss';
 
-export const Datepicker = function Datepicker({ value, onChange, readOnly, isTimeChecked, dateFormat }) {
-  const [date, setDate] = React.useState(value);
+const getDate = (value, displayFormat) => {
+  const dateString = value;
+  const momentObj = moment(dateString, [
+    'MM-DD-YYYY',
+    moment.ISO_8601,
+    moment(dateString).creationData().format,
+    'MM/DD/YYYY',
+  ]);
+  const momentString = momentObj.format(displayFormat);
+  return momentString;
+};
 
-  const dateChange = (e) => {
-    if (isTimeChecked) {
-      setDate(e.format(`${dateFormat} LT`));
-    } else {
-      setDate(e.format(dateFormat));
-    }
+export const Datepicker = function Datepicker({ value, onChange, readOnly, isTimeChecked, dateFormat }) {
+  const [date, setDate] = React.useState(() => (value._isAMomentObject ? getDate(value, dateFormat) : value));
+
+  const dateChange = (event) => {
+    const selectedDateFormat = isTimeChecked ? `${dateFormat.value} LT` : dateFormat.value;
+    const value = event._isAMomentObject ? event.format(selectedDateFormat) : event;
+
+    setDate(value);
+    onChange(value);
   };
 
   React.useEffect(() => {
     if (!isTimeChecked) {
-      setDate(moment(value).format(dateFormat));
+      let momentString = getDate(value, dateFormat);
+      setDate(momentString);
     }
 
     if (isTimeChecked) {
-      setDate(moment(value).format(`${dateFormat} LT`));
+      let momentString = getDate(value, `${dateFormat} LT`);
+      setDate(momentString);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimeChecked, readOnly, dateFormat]);
 
   let inputProps = {
     disabled: !readOnly,
-  };
-
-  const onDatepickerClose = () => {
-    onChange(date);
   };
 
   return (
@@ -44,7 +55,7 @@ export const Datepicker = function Datepicker({ value, onChange, readOnly, isTim
         dateFormat={dateFormat}
         value={date}
         onChange={dateChange}
-        onClose={onDatepickerClose}
+        closeOnSelect={true}
       />
     </>
   );
