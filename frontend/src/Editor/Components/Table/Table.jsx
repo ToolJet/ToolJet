@@ -190,7 +190,7 @@ export function Table({
       [index]: { ...obj },
     };
 
-    onComponentOptionsChanged(component, [
+    return onComponentOptionsChanged(component, [
       ['dataUpdates', newDataUpdates],
       ['changeSet', newChangeset],
     ]);
@@ -511,12 +511,15 @@ export function Table({
                   readOnly={!column.isEditable}
                   activeColor={column.activeColor}
                   onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                    fireEvent('OnTableToggleCellChanged', {
-                      column: column,
-                      rowId: cell.row.id,
-                      row: cell.row.original,
-                    });
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original).then(
+                      () => {
+                        fireEvent('OnTableToggleCellChanged', {
+                          column: column,
+                          rowId: cell.row.id,
+                          row: cell.row.original,
+                        });
+                      }
+                    );
                   }}
                 />
               </div>
