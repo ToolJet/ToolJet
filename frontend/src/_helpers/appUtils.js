@@ -283,13 +283,13 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
       () => {
-        if (action) {
-          action.events?.forEach((event) => {
+        if (action && action.events) {
+          for (const event of action.events) {
             if (event.actionId) {
               // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
               executeAction(_self, { ...event, ...event.options }, mode);
             }
-          });
+          }
         } else {
           console.log('No action is associated with this event');
         }
@@ -314,13 +314,13 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
       () => {
-        if (column) {
-          column.events?.forEach((event) => {
+        if (column && column.events) {
+          for (const event of column.events) {
             if (event.actionId) {
               // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
               executeAction(_self, { ...event, ...event.options }, mode);
             }
-          });
+          }
         } else {
           console.log('No action is associated with this event');
         }
