@@ -22,24 +22,21 @@ export const Datepicker = function Datepicker({ value, onChange, readOnly, isTim
 
   const dateChange = (event) => {
     const value = event._isAMomentObject ? event.format() : event;
-
-    setDate(value);
-    onChange(value);
+    let selectedDateFormat = isTimeChecked ? `${dateFormat} LT` : dateFormat;
+    const dateString = moment(value).format(selectedDateFormat);
+    setDate(() => dateString);
   };
 
   React.useEffect(() => {
-    if (!isTimeChecked) {
-      let momentString = getDate(value, dateFormat);
-      setDate(momentString);
-    }
-
-    if (isTimeChecked) {
-      let momentString = getDate(value, `${dateFormat} LT`);
-      setDate(momentString);
-    }
-
+    let selectedDateFormat = isTimeChecked ? `${dateFormat} LT` : dateFormat;
+    const dateString = moment(value).format(selectedDateFormat);
+    setDate(() => dateString);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimeChecked, readOnly, dateFormat]);
+
+  const onDatepickerClose = () => {
+    onChange(date);
+  };
 
   let inputProps = {
     disabled: !readOnly,
@@ -54,7 +51,8 @@ export const Datepicker = function Datepicker({ value, onChange, readOnly, isTim
         dateFormat={dateFormat}
         value={date}
         onChange={dateChange}
-        closeOnSelect={!isTimeChecked}
+        closeOnSelect={true}
+        onClose={onDatepickerClose}
       />
     </>
   );
