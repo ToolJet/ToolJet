@@ -107,9 +107,16 @@ class Editor extends React.Component {
     }
   }
 
+  getWebsocketUrl = () => {
+    const re = /https?:\/\//g;
+    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '');
+
+    return window.location.host;
+  };
+
   initWebSocket = () => {
     // TODO: add retry policy
-    const socket = new WebSocket(`ws://${config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '')}`);
+    const socket = new WebSocket(`ws://${this.getWebsocketUrl()}`);
 
     // Connection opened
     socket.addEventListener('open', function (event) {
