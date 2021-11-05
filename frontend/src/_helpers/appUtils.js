@@ -282,12 +282,12 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
           },
         },
       },
-      () => {
+      async () => {
         if (action && action.events) {
           for (const event of action.events) {
             if (event.actionId) {
               // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-              executeAction(_self, { ...event, ...event.options }, mode);
+              await executeAction(_self, { ...event, ...event.options }, mode);
             }
           }
         } else {
@@ -313,12 +313,12 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
           },
         },
       },
-      () => {
+      async () => {
         if (column && column.events) {
           for (const event of column.events) {
             if (event.actionId) {
               // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-              executeAction(_self, { ...event, ...event.options }, mode);
+              await executeAction(_self, { ...event, ...event.options }, mode);
             }
           }
         } else {
