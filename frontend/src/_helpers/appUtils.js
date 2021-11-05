@@ -297,6 +297,37 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
+  if (eventName === 'OnTableToggleCellChanged') {
+    const { component, column, rowId, row } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedRow: row,
+              selectedRowId: rowId,
+            },
+          },
+        },
+      },
+      () => {
+        if (column) {
+          column.events?.forEach((event) => {
+            if (event.actionId) {
+              // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+              executeAction(_self, { ...event, ...event.options }, mode);
+            }
+          });
+        } else {
+          console.log('No action is associated with this event');
+        }
+      }
+    );
+  }
+
   if (
     [
       'onDetect',

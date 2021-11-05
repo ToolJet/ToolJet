@@ -38,6 +38,7 @@ export function Table({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   darkMode,
+  fireEvent,
 }) {
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
@@ -511,6 +512,11 @@ export function Table({
                   activeColor={column.activeColor}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    fireEvent('OnTableToggleCellChanged', {
+                      column: column,
+                      rowId: cell.row.id,
+                      row: cell.row.original,
+                    });
                   }}
                 />
               </div>
@@ -1008,7 +1014,10 @@ export function Table({
                   />
                 </div>
                 <div className="col-auto">
-                  <button onClick={() => removeFilter(index)} className={`btn ${darkMode ? "btn-dark" : "btn-light"} btn-sm p-2 text-danger font-weight-bold`}>
+                  <button
+                    onClick={() => removeFilter(index)}
+                    className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
+                  >
                     x
                   </button>
                 </div>
