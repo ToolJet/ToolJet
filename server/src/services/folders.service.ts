@@ -18,7 +18,7 @@ export class FoldersService {
     @InjectRepository(App)
     private appsRepository: Repository<App>,
     private usersService: UsersService
-  ) {}
+  ) { }
 
   async create(user: User, folderName): Promise<Folder> {
     return this.foldersRepository.save(
@@ -136,7 +136,6 @@ export class FoldersService {
         .andWhere('app_group_permissions.app_id IN(:...folderAppIds)', {
           folderAppIds,
         })
-        .orWhere('apps.is_public = :value', { value: true })
         .take(10)
         .skip(10 * (page - 1))
         // .orderBy('apps.created_at', 'DESC')
