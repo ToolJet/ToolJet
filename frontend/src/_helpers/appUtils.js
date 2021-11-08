@@ -282,14 +282,45 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
           },
         },
       },
-      () => {
-        if (action) {
-          action.events?.forEach((event) => {
+      async () => {
+        if (action && action.events) {
+          for (const event of action.events) {
             if (event.actionId) {
               // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-              executeAction(_self, { ...event, ...event.options }, mode);
+              await executeAction(_self, { ...event, ...event.options }, mode);
             }
-          });
+          }
+        } else {
+          console.log('No action is associated with this event');
+        }
+      }
+    );
+  }
+
+  if (eventName === 'OnTableToggleCellChanged') {
+    const { component, column, rowId, row } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedRow: row,
+              selectedRowId: rowId,
+            },
+          },
+        },
+      },
+      async () => {
+        if (column && column.events) {
+          for (const event of column.events) {
+            if (event.actionId) {
+              // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+              await executeAction(_self, { ...event, ...event.options }, mode);
+            }
+          }
         } else {
           console.log('No action is associated with this event');
         }

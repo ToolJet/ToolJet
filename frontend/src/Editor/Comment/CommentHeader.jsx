@@ -7,12 +7,14 @@ import { commentsService } from '@/_services';
 import { pluralize } from '@/_helpers/utils';
 
 import Spinner from '@/_ui/Spinner';
+import useRouter from '@/_hooks/use-router';
 
 import UnResolvedIcon from './icons/unresolved.svg';
 import ResolvedIcon from './icons/resolved.svg';
 
 const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner, fetchThreads, close }) => {
   const [spinning, setSpinning] = React.useState(false);
+  const router = useRouter();
 
   const handleResolved = async () => {
     setSpinning(true);
@@ -22,7 +24,7 @@ const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner,
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: 'notifications',
+        data: { message: 'notifications', appId: router.query.id },
       })
     );
     if (!isResolved) {
@@ -39,7 +41,7 @@ const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner,
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: 'notifications',
+        data: { message: 'notifications', appId: router.query.id },
       })
     );
   };
