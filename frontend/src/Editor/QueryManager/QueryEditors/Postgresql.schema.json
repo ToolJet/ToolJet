@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Mysql.schema.json",
-  "title": "Mysql datasource",
-  "description": "A schema defining Mysql datasource",
+  "$id": "https://tooljet.io/dataqueries/Postgresql.schema.json",
+  "title": "Postgresql datasource",
+  "description": "A schema defining Postgresql datasource",
   "type": "object",
   "properties": {
     "mode": {

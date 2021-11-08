@@ -4,7 +4,7 @@ import DynamicForm from '@/_components/DynamicForm';
 
 import { Restapi } from './Restapi';
 // import { Mysql } from './Mysql';
-import { Postgresql } from './Postgresql';
+// import { Postgresql } from './Postgresql';
 import { Stripe } from './Stripe';
 // import { Firestore } from './Firestore';
 // import { Redis } from './Redis';
@@ -27,6 +27,7 @@ import DynamodbSchema from './Dynamodb.schema.json';
 import FirestoreSchema from './Firestore.schema.json';
 import ElasticsearchSchema from './Elasticsearch.schema.json';
 import MongodbSchema from './Mongodb.schema.json';
+import PostgresqlSchema from './Postgresql.schema.json';
 
 const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
@@ -37,6 +38,7 @@ const Dynamodb = ({ ...rest }) => <DynamicForm schema={DynamodbSchema} {...rest}
 const Firestore = ({ ...rest }) => <DynamicForm schema={FirestoreSchema} {...rest} />;
 const Elasticsearch = ({ ...rest }) => <DynamicForm schema={ElasticsearchSchema} {...rest} />;
 const Mongodb = ({ ...rest }) => <DynamicForm schema={MongodbSchema} {...rest} />;
+const Postgresql = ({ ...rest }) => <DynamicForm schema={PostgresqlSchema} {...rest} />;
 
 export const allSources = {
   Restapi,
