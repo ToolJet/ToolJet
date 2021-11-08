@@ -58,7 +58,7 @@ export const Text = function Text({ id, width, height, component, onComponentCli
       style={computedStyles}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />}

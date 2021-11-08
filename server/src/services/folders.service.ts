@@ -55,24 +55,24 @@ export class FoldersService {
       )
       .where('user_group_permissions.user_id = :userId', { userId: user.id })
       .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('apps.is_public = :value and apps.organization_id = :organizationId', {
-        value: true,
-        organizationId: user.organizationId,
-      })
       .getMany();
     const allViewableAppIds = allViewableApps.map((app) => app.id);
 
-    return await createQueryBuilder(Folder, 'folders')
-      .innerJoinAndSelect('folders.folderApps', 'folder_apps')
-      .where('folder_apps.app_id IN(:...allViewableAppIds)', {
-        allViewableAppIds,
-      })
-      .andWhere('folders.organization_id = :organizationId', {
-        organizationId: user.organizationId,
-      })
-      .orWhere('folder_apps.app_id IS NULL')
-      .orderBy('folders.name', 'ASC')
-      .getMany();
+    if (allViewableAppIds.length !== 0) {
+      return await createQueryBuilder(Folder, 'folders')
+        .innerJoinAndSelect('folders.folderApps', 'folder_apps')
+        .where('folder_apps.app_id IN(:...allViewableAppIds)', {
+          allViewableAppIds,
+        })
+        .andWhere('folders.organization_id = :organizationId', {
+          organizationId: user.organizationId,
+        })
+        .orWhere('folder_apps.app_id IS NULL')
+        .orderBy('folders.name', 'ASC')
+        .getMany();
+    } else {
+      return [];
+    }
   }
 
   async findOne(folderId: string): Promise<Folder> {
@@ -104,7 +104,6 @@ export class FoldersService {
       .andWhere('app_group_permissions.app_id IN(:...folderAppIds)', {
         folderAppIds,
       })
-      .orWhere('apps.is_public = :value', { value: true })
       .getCount();
   }
 
@@ -122,6 +121,7 @@ export class FoldersService {
       viewableApps = [];
     } else {
       viewableApps = await createQueryBuilder(App, 'apps')
+        .innerJoinAndSelect('apps.user', 'user')
         .innerJoin('apps.groupPermissions', 'group_permissions')
         .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
         .innerJoin(
@@ -134,7 +134,6 @@ export class FoldersService {
         .andWhere('app_group_permissions.app_id IN(:...folderAppIds)', {
           folderAppIds,
         })
-        .orWhere('apps.is_public = :value', { value: true })
         .take(10)
         .skip(10 * (page - 1))
         // .orderBy('apps.created_at', 'DESC')

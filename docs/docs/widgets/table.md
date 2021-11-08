@@ -1,5 +1,5 @@
 ---
-sidebar_position: 15
+sidebar_position: 17
 ---
 
 # Table
@@ -112,7 +112,7 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 | changeSet | Object with row number as the key and object of edited fields and their values as the value |
 | dataUpdates | Just like changeSet but includes the data of the entire row |
 | selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
-| searchText | The value of the search field if server-side paginaton is enabled |
+| searchText | The value of the search field if server-side pagination is enabled |
 
 #### Events
 
@@ -137,3 +137,9 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 | Show search box | It can be used to show or hide Table Search box. |
 | Show download button | Show or hide download button at the Table footer. |
 | Show filter button | Show or hide filter button at the Table footer. |
+
+#### Styles
+
+| Style      | Description |
+| ----------- | ----------- |
+| Cell size |  This decides the size of table cells. You can choose between a `Compact` size for table cells or a `Spacious` size |

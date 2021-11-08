@@ -43,8 +43,13 @@ Lastly, supply the environment variable `SSO_GOOGLE_OAUTH2_CLIENT_ID` to your de
 
 ### Restrict to your domain
 Set the environment variable `RESTRICTED_DOMAIN` to ensure that ToolJet verifies the domain of the user who signs in via SSO, on the server side.
-If you're setting this environment variable, please make sure that the value does not contain any protocols, sub domains or slashes. It should
+If you're setting this environment variable, please make sure that the value does not contain any protocols, subdomains or slashes. It should
 simply be `yourdomain.com`.
+:::
+
+:::info
+### Restrict signup via SSO
+Set the environment variable `SSO_DISABLE_SIGNUP` to `true` to ensure that users can only log in and not sign up via SSO. If this variable is set to `true`, only those users who have already signed up, or the ones that are invited, can access ToolJet via SSO.
 :::
 
 <br />

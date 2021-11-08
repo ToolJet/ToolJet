@@ -27,14 +27,7 @@ function create(group) {
   return fetch(`${config.apiUrl}/group_permissions`, requestOptions).then(handleResponse);
 }
 
-function update(groupPermissionId, params) {
-  const body = {
-    add_apps: params.selectedAppIds,
-    remove_apps: params.removeAppIds,
-    add_users: params.selectedUserIds,
-    remove_users: params.removeUserIds,
-  };
-
+function update(groupPermissionId, body) {
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
