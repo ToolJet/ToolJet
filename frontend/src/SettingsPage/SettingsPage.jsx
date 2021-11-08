@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
+  const email=authenticationService.currentUserValue.email;
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
@@ -13,6 +14,13 @@ function SettingsPage(props) {
   const [passwordChangeInProgress, setPasswordChangeInProgress] = React.useState(false);
 
   const updateDetails = async () => {
+    if (!firstName || !lastName) {
+      toast.warn("Name can't be empty!", {
+        hideProgressBar: true,
+        position: 'top-left',
+      });
+      return;
+    }
     setUpdateInProgress(true);
     const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
     authenticationService.updateCurrentUserDetails(updatedDetails);
@@ -70,7 +78,7 @@ function SettingsPage(props) {
                 <div className="row">
                   <div className="col">
                     <div className="mb-3">
-                      <label className="form-label">First name</label>
+                      <label className="form-label">First name </label>
                       <input
                         type="text"
                         className="form-control"
@@ -92,6 +100,21 @@ function SettingsPage(props) {
                         value={lastName}
                         onChange={(event) => setLastName(event.target.value)}
                       />
+                    </div>
+                  </div>
+                  <div className="row">
+                  <div className="col-6">
+                    <div className="mb-3">
+                      <label className="form-label">Email </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="email"
+                        value={email}
+                         readonly
+                         disabled
+                      />
+                    </div>
                     </div>
                   </div>
                 </div>

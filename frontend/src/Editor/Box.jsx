@@ -21,7 +21,9 @@ import { ToggleSwitch } from './Components/Toggle';
 import { RadioButton } from './Components/RadioButton';
 import { StarRating } from './Components/StarRating';
 import { Divider } from './Components/Divider';
+import { FilePicker } from './Components/FilePicker';
 import { PasswordInput } from './Components/PasswordInput';
+import { Calendar } from './Components/Calendar';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -51,7 +53,9 @@ const AllComponents = {
   RadioButton,
   StarRating,
   Divider,
+  FilePicker,
   PasswordInput,
+  Calendar,
 };
 
 export const Box = function Box({
@@ -72,6 +76,7 @@ export const Box = function Box({
   containerProps,
   darkMode,
   removeComponent,
+  mode,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -91,7 +96,12 @@ export const Box = function Box({
   const resolvedStyles = resolveStyles(component, currentState);
   const exposedVariables = currentState?.components[component.name] ?? {};
 
-  const fireEvent = (eventName, options) => onEvent(eventName, { ...options, component });
+  const fireEvent = (eventName, options) => {
+    if (mode === 'edit' && eventName === 'onClick') {
+      onComponentClick(id, component);
+    }
+    onEvent(eventName, { ...options, component });
+  };
   const validate = (value) =>
     validateWidget({
       ...{ widgetValue: value },

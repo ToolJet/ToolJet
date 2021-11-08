@@ -45,7 +45,7 @@ export const NumberInput = function NumberInput({
       disabled={parsedDisabledState}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
       onChange={(e) => {
         setNumber(parseInt(e.target.value));
