@@ -16,7 +16,6 @@ import { SaveAndPreview } from './SaveAndPreview';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  onComponentClick,
   onEvent,
   onQueryConfirm,
   onQueryCancel,
