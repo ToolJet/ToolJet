@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
-import { validateEmail } from "../_helpers/utils";
+import { validateEmail } from '../_helpers/utils';
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -124,7 +124,7 @@ class LoginPage extends React.Component {
                   show password
                 </label>
               </div>
-              <div className="form-footer">
+              <div className="form-footer d-flex flex-column align-items-center">
                 <button
                   data-testid="loginButton"
                   className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
