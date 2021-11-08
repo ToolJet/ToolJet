@@ -2,6 +2,7 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import { validateEmail } from "../_helpers/utils";
 
 class SignupPage extends React.Component {
   constructor(props) {
@@ -22,6 +23,16 @@ class SignupPage extends React.Component {
     this.setState({ isLoading: true });
 
     const { email } = this.state;
+
+    if(!validateEmail(email)) {
+      toast.error('Invalid email', {
+        toastId: 'toast-login-auth-error',
+        hideProgressBar: true,
+        position: 'top-center',
+      });
+      this.setState({ isLoading: false });
+      return;
+    }
 
     authenticationService.signup(email).then(
       () => {

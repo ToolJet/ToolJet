@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
+import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
@@ -6,6 +7,11 @@ import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
+import useRouter from '@/_hooks/use-router';
+import Comments from './Comments';
+import { commentsService } from '@/_services';
+import config from 'config';
+import Spinner from '@/_ui/Spinner';
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -32,6 +38,9 @@ export const Container = ({
   scaleValue,
   selectedComponent,
   darkMode,
+  showComments,
+  appVersionsId,
+  socket,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
@@ -44,6 +53,9 @@ export const Container = ({
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [commentsPreviewList, setCommentsPreviewList] = useState([]);
+  const [newThread, addNewThread] = useState({});
+  const router = useRouter();
 
   useEffect(() => {
     setBoxes(components);
@@ -87,10 +99,25 @@ export const Container = ({
 
   const [, drop] = useDrop(
     () => ({
-      accept: ItemTypes.BOX,
-      drop(item, monitor) {
+      accept: [ItemTypes.BOX, ItemTypes.COMMENT],
+      async drop(item, monitor) {
         if (item.parent) {
           return;
+        }
+
+        if (item.name === 'comment') {
+          const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+          const offsetFromTopOfWindow = canvasBoundingRect.top;
+          const offsetFromLeftOfWindow = canvasBoundingRect.left;
+          const currentOffset = monitor.getSourceClientOffset();
+
+          const x = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          const y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+
+          const element = document.getElementById(`thread-${item.threadId}`);
+          element.style.transform = `translate(${x}px, ${y}px)`;
+          commentsService.updateThread(item.threadId, { x, y });
+          return undefined;
         }
 
         let layouts = item['layouts'];
@@ -252,8 +279,124 @@ export const Container = ({
     }
   }
 
+  React.useEffect(() => {
+    console.log('current component => ', selectedComponent);
+  }, [selectedComponent]);
+
+  const handleAddThread = async (e) => {
+    e.stopPropogation && e.stopPropogation();
+    const elementIndex = commentsPreviewList.length;
+    setCommentsPreviewList([
+      ...commentsPreviewList,
+      {
+        x: e.nativeEvent.offsetX,
+        y: e.nativeEvent.offsetY,
+      },
+    ]);
+    const { data } = await commentsService.createThread({
+      appId: router.query.id,
+      x: e.nativeEvent.offsetX,
+      y: e.nativeEvent.offsetY,
+      appVersionsId,
+    });
+
+    // Remove the temporary loader preview
+    const _commentsPreviewList = [...commentsPreviewList];
+    _commentsPreviewList.splice(elementIndex, 1);
+    setCommentsPreviewList(_commentsPreviewList);
+
+    // Update the threads on all connected clients using websocket
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: { message: 'threads', appId: router.query.id },
+      })
+    );
+
+    // Update the list of threads on the current users page
+    addNewThread(data);
+  };
+
+  const handleAddThreadOnComponent = async (_, __, e) => {
+    e.stopPropogation && e.stopPropogation();
+
+    const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    const offsetFromTopOfWindow = canvasBoundingRect.top;
+    const offsetFromLeftOfWindow = canvasBoundingRect.left;
+
+    const x = Math.round(e.screenX + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
+    const y = Math.round(e.screenY + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
+
+    const elementIndex = commentsPreviewList.length;
+    setCommentsPreviewList([
+      ...commentsPreviewList,
+      {
+        x: e.nativeEvent.offsetX,
+        y: e.nativeEvent.offsetY - 130,
+      },
+    ]);
+    const { data } = await commentsService.createThread({
+      appId: router.query.id,
+      x,
+      y: y - 130,
+      appVersionsId,
+    });
+
+    // Remove the temporary loader preview
+    const _commentsPreviewList = [...commentsPreviewList];
+    _commentsPreviewList.splice(elementIndex, 1);
+    setCommentsPreviewList(_commentsPreviewList);
+
+    // Update the threads on all connected clients using websocket
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: { message: 'threads', appId: router.query.id },
+      })
+    );
+
+    // Update the list of threads on the current users page
+    addNewThread(data);
+  };
+
+  if (showComments) {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const currentUserInitials = `${currentUser.first_name?.charAt(0)}${currentUser.last_name?.charAt(0)}`;
+    styles.cursor = `url("data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 34 34' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='17' cy='17' r='15.25' fill='white' stroke='%23FCAA0D' stroke-width='2.5' opacity='0.5' /%3E%3Ctext x='10' y='20' fill='%23000' opacity='0.5' font-family='inherit' font-size='11.2' font-weight='500' color='%23656d77'%3E%3C/text%3E%3C/svg%3E%0A"), text`;
+  }
+
   return (
-    <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? 'show-grid' : ''}`}>
+    <div
+      {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
+      ref={drop}
+      style={styles}
+      className={cx('real-canvas', {
+        'show-grid': isDragging || isResizing,
+      })}
+    >
+      {config.COMMENT_FEATURE_ENABLE && showComments && (
+        <>
+          <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} />
+          {commentsPreviewList.map((previewComment, index) => (
+            <div
+              key={index}
+              style={{
+                transform: `translate(${previewComment.x}px, ${previewComment.y}px)`,
+              }}
+            >
+              <label className="form-selectgroup-item comment-preview-bubble">
+                <span
+                  className={cx(
+                    'comment comment-preview-bubble-border cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded'
+                  )}
+                >
+                  <Spinner />
+                </span>
+              </label>
+            </div>
+          ))}
+        </>
+      )}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =
@@ -262,7 +405,9 @@ export const Container = ({
         if (!box.parent && canShowInCurrentLayout) {
           return (
             <DraggableBox
-              onComponentClick={onComponentClick}
+              onComponentClick={
+                config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
+              }
               onEvent={onEvent}
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}

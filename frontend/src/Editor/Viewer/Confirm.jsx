@@ -10,16 +10,12 @@ export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationD
   }, [show]);
 
   const handleClose = () => {
+    onCancel();
     setShow(false);
   };
 
   const handleConfirm = () => {
     onConfirm(queryConfirmationData);
-    handleClose();
-  };
-
-  const handleCancel = () => {
-    onCancel();
     handleClose();
   };
 
@@ -29,7 +25,7 @@ export function Confirm({ show, message, onConfirm, onCancel, queryConfirmationD
         <div className="modal-status bg-danger"></div>
         <Modal.Body>{message}</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCancel}>
+          <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
           <Button variant="primary" onClick={handleConfirm}>

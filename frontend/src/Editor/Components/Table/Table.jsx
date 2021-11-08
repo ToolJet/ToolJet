@@ -38,6 +38,7 @@ export function Table({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   darkMode,
+  fireEvent,
 }) {
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
@@ -189,7 +190,7 @@ export function Table({
       [index]: { ...obj },
     };
 
-    onComponentOptionsChanged(component, [
+    return onComponentOptionsChanged(component, [
       ['dataUpdates', newDataUpdates],
       ['changeSet', newChangeset],
     ]);
@@ -510,7 +511,15 @@ export function Table({
                   readOnly={!column.isEditable}
                   activeColor={column.activeColor}
                   onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original).then(
+                      () => {
+                        fireEvent('OnTableToggleCellChanged', {
+                          column: column,
+                          rowId: cell.row.id,
+                          row: cell.row.original,
+                        });
+                      }
+                    );
                   }}
                 />
               </div>
@@ -767,7 +776,7 @@ export function Table({
       style={{ width: `${width}px`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
@@ -950,7 +959,7 @@ export function Table({
         <div className="table-filters card">
           <div className="card-header row">
             <div className="col">
-              <h4 className="text-muted">Filters</h4>
+              <h4 className="font-weight-normal">Filters</h4>
             </div>
             <div className="col-auto">
               <button onClick={() => hideFilters()} className="btn btn-light btn-sm">
@@ -1008,7 +1017,10 @@ export function Table({
                   />
                 </div>
                 <div className="col-auto">
-                  <button onClick={() => removeFilter(index)} className="btn btn-light btn-sm p-2 text-danger">
+                  <button
+                    onClick={() => removeFilter(index)}
+                    className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
+                  >
                     x
                   </button>
                 </div>
@@ -1017,16 +1029,16 @@ export function Table({
             {filters.length === 0 && (
               <div>
                 <center>
-                  <span className="text-muted">no filters yet.</span>
+                  <span>no filters yet.</span>
                 </center>
               </div>
             )}
           </div>
           <div className="card-footer">
-            <button onClick={addFilter} className="btn btn-light btn-sm text-muted">
+            <button onClick={addFilter} className="btn btn-light btn-sm">
               + add filter
             </button>
-            <button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2 text-muted">
+            <button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2">
               clear filters
             </button>
           </div>

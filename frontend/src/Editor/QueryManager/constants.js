@@ -32,6 +32,8 @@ export const defaultOptions = {
   },
   slack: {},
   dynamodb: {},
+  s3: {},
+  gcs: {},
   airtable: {},
   mssql: {},
 };
