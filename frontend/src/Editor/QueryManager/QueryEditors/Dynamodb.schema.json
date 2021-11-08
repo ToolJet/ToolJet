@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/dataqueries/Dynamodb.schema.json",
+  "title": "Dynamodb datasource",
+  "description": "A schema defining Dynamodb datasource",
+  "type": "object",
+  "properties": {
+    "operation": {
+      "$label": "",
+      "$key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "$options": [
+        { "value": "list_tables", "name": "List Tables" },
+        { "value": "get_item", "name": "Get Item" },
+        { "value": "query_table", "name": "Query Table" },
+        { "value": "scan_table", "name": "Scan Table" },
+        { "value": "delete_item", "name": "Delete Item" }
+      ]
+    },
+    "get_item": {
+      "table": {
+        "$label": "Table",
+        "$key": "table",
+        "type": "codehinter",
+        "description": "Enter table"
+      },
+      "key": {
+        "$label": "Key name",
+        "$key": "key",
+        "type": "codehinter",
+        "description": "Enter key name"
+      }
+    },
+    "query_table": {
+      "query_condition": {
+        "$label": "Query condition",
+        "$key": "query_condition",
+        "type": "codehinter",
+        "description": "Enter query condition"
+      }
+    },
+    "scan_table": {
+      "scan_condition": {
+        "$label": "Scan condition",
+        "$key": "scan_condition",
+        "type": "codehinter",
+        "description": "Enter scan condition"
+      }
+    },
+    "delete_item": {
+      "table": {
+        "$label": "Table",
+        "$key": "get_item",
+        "type": "codehinter",
+        "description": "Enter table"
+      },
+      "key": {
+        "$label": "Key name",
+        "$key": "key",
+        "type": "codehinter",
+        "description": "Enter key name"
+      }
+    },
+    "retrieve_record": {
+      "base_id": {
+        "$label": "Base ID",
+        "$key": "base_id",
+        "type": "codehinter",
+        "description": "Enter base ID"
+      },
+      "table_name": {
+        "$label": "Table name",
+        "$key": "table_name",
+        "type": "codehinter",
+        "description": "Enter table name"
+      },
+      "record_id": {
+        "$label": "Record ID",
+        "$key": "record_id",
+        "type": "codehinter",
+        "description": "Enter record id"
+      }
+    },
+    "update_record": {
+      "base_id": {
+        "$label": "Base ID",
+        "$key": "base_id",
+        "type": "codehinter",
+        "description": "Enter base ID"
+      },
+      "table_name": {
+        "$label": "Table name",
+        "$key": "table_name",
+        "type": "codehinter",
+        "description": "Enter table name"
+      },
+      "record_id": {
+        "$label": "Record ID",
+        "$key": "record_id",
+        "type": "codehinter",
+        "description": "Enter record id"
+      },
+      "body": {
+        "$label": "Body",
+        "$key": "body",
+        "type": "codehinter",
+        "description": "Enter body"
+      }
+    },
+    "delete_record": {
+      "base_id": {
+        "$label": "Base ID",
+        "$key": "base_id",
+        "type": "codehinter",
+        "description": "Enter base ID"
+      },
+      "table_name": {
+        "$label": "Table name",
+        "$key": "table_name",
+        "type": "codehinter",
+        "description": "Enter table name"
+      },
+      "record_id": {
+        "$label": "Record ID",
+        "$key": "record_id",
+        "type": "codehinter",
+        "description": "Enter record id"
+      }
+    }
+  }
+}
