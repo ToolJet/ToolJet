@@ -11,7 +11,7 @@ import { Stripe } from './Stripe';
 import { Googlesheets } from './Googlesheets';
 // import { Elasticsearch } from './Elasticsearch';
 import { Slack } from './Slack';
-import { Mongodb } from './Mongodb';
+// import { Mongodb } from './Mongodb';
 // import { Dynamodb } from './Dynamodb';
 // import { Airtable } from './Airtable';
 // import { Graphql } from './Graphql';
@@ -26,6 +26,7 @@ import AirtableSchema from './Airtable.schema.json';
 import DynamodbSchema from './Dynamodb.schema.json';
 import FirestoreSchema from './Firestore.schema.json';
 import ElasticsearchSchema from './Elasticsearch.schema.json';
+import MongodbSchema from './Mongodb.schema.json';
 
 const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
@@ -35,6 +36,7 @@ const Airtable = ({ ...rest }) => <DynamicForm schema={AirtableSchema} {...rest}
 const Dynamodb = ({ ...rest }) => <DynamicForm schema={DynamodbSchema} {...rest} />;
 const Firestore = ({ ...rest }) => <DynamicForm schema={FirestoreSchema} {...rest} />;
 const Elasticsearch = ({ ...rest }) => <DynamicForm schema={ElasticsearchSchema} {...rest} />;
+const Mongodb = ({ ...rest }) => <DynamicForm schema={MongodbSchema} {...rest} />;
 
 export const allSources = {
   Restapi,
