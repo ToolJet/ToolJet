@@ -13,10 +13,12 @@
     "baseUrl": "./",
     "incremental": true,
     "paths": {
+      "@ee/*": ["ee/*"],
       "@services/*": ["src/services/*"],
       "@plugins/*": ["plugins/*"],
       "@controllers/*": ["src/controllers/*"],
-      "@ee/*": ["ee/*"],
+      "@repositories/*": ["src/repositories/*"],
+      "@dto/*": ["src/dto/*"]
     }
   }
 }

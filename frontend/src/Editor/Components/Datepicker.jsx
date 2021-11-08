@@ -87,7 +87,7 @@ export const Datepicker = function Datepicker({
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       <Datetime

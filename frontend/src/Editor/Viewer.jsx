@@ -149,7 +149,7 @@ class Viewer extends React.Component {
           <div className="header">
             <header className="navbar navbar-expand-md navbar-light d-print-none">
               <div className="container-xl header-container">
-                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                   <a href="/">
                     <img src="/assets/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
                   </a>

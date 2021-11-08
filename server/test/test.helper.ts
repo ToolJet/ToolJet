@@ -1,22 +1,23 @@
 /* eslint-disable prefer-const */
-import { JwtService } from "@nestjs/jwt";
-import { ConfigService } from "@nestjs/config";
-import { getConnection, Repository } from "typeorm";
-import { OrganizationUser } from "src/entities/organization_user.entity";
-import { Organization } from "src/entities/organization.entity";
-import { User } from "src/entities/user.entity";
-import { App } from "src/entities/app.entity";
-import { INestApplication } from "@nestjs/common";
-import { Test } from "@nestjs/testing";
-import { AppModule } from "src/app.module";
-import { AppVersion } from "src/entities/app_version.entity";
-import { DataQuery } from "src/entities/data_query.entity";
-import { DataSource } from "src/entities/data_source.entity";
-import { DataSourcesService } from "src/services/data_sources.service";
-import { DataSourcesModule } from "src/modules/data_sources/data_sources.module";
-import { GroupPermission } from "src/entities/group_permission.entity";
-import { UserGroupPermission } from "src/entities/user_group_permission.entity";
-import { AppGroupPermission } from "src/entities/app_group_permission.entity";
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { getConnection, Repository } from 'typeorm';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { Organization } from 'src/entities/organization.entity';
+import { User } from 'src/entities/user.entity';
+import { App } from 'src/entities/app.entity';
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { AppModule } from 'src/app.module';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { DataQuery } from 'src/entities/data_query.entity';
+import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourcesService } from 'src/services/data_sources.service';
+import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
+import { ThreadRepository } from '@repositories/thread.repository';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -366,5 +367,23 @@ export async function createDataQuery(
       createdAt: new Date(),
       updatedAt: new Date(),
     })
+  );
+}
+
+export async function createThread(nestInstance, { appId, x, y, userId, organizationId, appVersionsId }: any) {
+  let threadRepository: ThreadRepository;
+  threadRepository = nestInstance.get('ThreadRepository');
+
+  return await threadRepository.createThread(
+    {
+      appId,
+      x,
+      y,
+      isResolved: false,
+      organizationId,
+      appVersionsId,
+    },
+    userId,
+    organizationId
   );
 }

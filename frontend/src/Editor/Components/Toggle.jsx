@@ -65,7 +65,7 @@ export const ToggleSwitch = ({
       style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>

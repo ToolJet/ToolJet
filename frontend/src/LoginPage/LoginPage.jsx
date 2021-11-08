@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
+import { validateEmail } from "../_helpers/utils";
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -34,6 +35,16 @@ class LoginPage extends React.Component {
     this.setState({ isLoading: true });
 
     const { email, password } = this.state;
+
+    if (!validateEmail(email) || !password || !password.trim()) {
+      toast.error('Invalid email or password', {
+        toastId: 'toast-login-auth-error',
+        hideProgressBar: true,
+        position: 'top-center',
+      });
+      this.setState({ isLoading: false });
+      return;
+    }
 
     authenticationService.login(email, password).then(this.authSuccessHandler, this.authFailureHandler);
   };
