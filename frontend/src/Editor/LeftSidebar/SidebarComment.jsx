@@ -14,10 +14,8 @@ export const LeftSidebarComment = ({ toggleComments, appVersionsId }) => {
         active: isActive,
       })}
       onClick={() => {
-        if (appVersionsId) {
-          toggleActive(!isActive);
-          toggleComments();
-        }
+        toggleActive(!isActive);
+        toggleComments();
       }}
     />
   );
