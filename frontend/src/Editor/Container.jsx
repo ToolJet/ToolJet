@@ -309,7 +309,7 @@ export const Container = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: 'threads',
+        data: { message: 'threads', appId: router.query.id },
       })
     );
 
@@ -351,7 +351,7 @@ export const Container = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: 'threads',
+        data: { message: 'threads', appId: router.query.id },
       })
     );
 

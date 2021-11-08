@@ -18,12 +18,20 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(client: any): void {}
 
   broadcast(data) {
-    this.server.clients.forEach((client) => client.send(data));
+    this.server.clients.forEach((client: any) => {
+      if (client.appId === data.appId) client.send(data.message);
+    });
+  }
+
+  @SubscribeMessage('subscribe')
+  onSubscribeEvent(client: any, data: string) {
+    client.appId = data;
+    return;
   }
 
   @SubscribeMessage('events')
-  onEvent(@MessageBody() data: unknown) {
+  onEvent(@MessageBody() data: any) {
     this.broadcast(data);
-    return data;
+    return data.message;
   }
 }

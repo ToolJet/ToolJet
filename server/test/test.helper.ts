@@ -328,7 +328,7 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
   );
 }
 
-export async function createThread(nestInstance, { appId, x, y, user_id }: any) {
+export async function createThread(nestInstance, { appId, x, y, userId, organizationId, appVersionsId }: any) {
   let threadRepository: ThreadRepository;
   threadRepository = nestInstance.get('ThreadRepository');
 
@@ -338,7 +338,10 @@ export async function createThread(nestInstance, { appId, x, y, user_id }: any) 
       x,
       y,
       isResolved: false,
+      organizationId,
+      appVersionsId,
     },
-    user_id
+    userId,
+    organizationId
   );
 }
