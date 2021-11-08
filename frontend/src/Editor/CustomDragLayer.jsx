@@ -62,6 +62,8 @@ export const CustomDragLayer = ({ currentLayout }) => {
     isDragging: monitor.isDragging(),
     delta: monitor.getDifferenceFromInitialOffset(),
   }));
+
+  if (itemType === ItemTypes.COMMENT) return null;
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:

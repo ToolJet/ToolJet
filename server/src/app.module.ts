@@ -25,8 +25,11 @@ import { FolderAppsModule } from './modules/folder_apps/folder_apps.module';
 import { DataQueriesModule } from './modules/data_queries/data_queries.module';
 import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { CommentModule } from './modules/comments/comment.module';
 import { join } from 'path';
 import { SampleAppModule } from './modules/sample_app/sample_app.module';
+import { ThreadModule } from './modules/thread/thread.module';
+import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 
 const imports = [
@@ -84,6 +87,10 @@ if (process.env.APM_VENDOR == 'sentry') {
       debug: !!process.env.SENTRY_DEBUG,
     })
   );
+}
+
+if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
+  imports.unshift(CommentModule, ThreadModule, EventsModule);
 }
 
 @Module({

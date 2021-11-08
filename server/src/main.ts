@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { AppModule } from './app.module';
 import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
@@ -15,8 +16,14 @@ async function bootstrap() {
     abortOnError: false,
   });
 
+  if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
+    app.useWebSocketAdapter(new WsAdapter(app));
+  }
   await app.setGlobalPrefix('api');
   await app.enableCors();
+
+  const host = new URL(process.env.TOOLJET_HOST);
+  const domain = host.hostname;
 
   app.useLogger(app.get(Logger));
   app.use(
@@ -27,6 +34,7 @@ async function bootstrap() {
         'img-src': ['*', 'data:'],
         'script-src': ['maps.googleapis.com', "'self'", "'unsafe-inline'", "'unsafe-eval'", 'blob:'],
         'default-src': ['maps.googleapis.com', '*.sentry.io', "'self'", 'blob:'],
+        'connect-src': ['ws://' + domain, "'self'", 'maps.googleapis.com', '*.sentry.io'],
       },
     })
   );

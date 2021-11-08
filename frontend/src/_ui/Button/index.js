@@ -1,11 +1,16 @@
 import React from 'react';
-import Button from 'react-bootstrap/Button';
+import cx from 'classnames';
 
-const Input = ({ disabled, className, onClick, children, ...props }) => {
+const Input = ({ disabled, loading, className, onClick, children, ...props }) => {
   return (
-    <Button className={className} disabled={disabled} variant="primary" onClick={onClick} {...props}>
+    <button
+      disabled={disabled}
+      className={cx(`btn btn-primary w-100 ${className}`, { 'btn-loading': loading })}
+      onClick={onClick}
+      {...props}
+    >
       {children}
-    </Button>
+    </button>
   );
 };
 

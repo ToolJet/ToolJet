@@ -58,21 +58,34 @@ async function setupInitialGroupPermissions(
 ): Promise<Array<GroupPermission>> {
   const existingRoles = ["admin", "developer", "viewer"];
   const groupsToCreate = ["all_users", ...existingRoles];
-  const createdGroupPermissions = [];
+  const createdGroupPermissionIds = [];
+
+  for (const group of groupsToCreate) {
+    // Note: Since we are running data population as a part of migrations
+    // queries run should explicitly mention what columns are being used and
+    // what data is returned. This is because the entity at hand can be updated
+    // at code and the database schema would not represent it when migrations
+    // are run.
+    const insertResult = await entityManager
+      .createQueryBuilder()
+      .insert()
+      .into(GroupPermission, ["organizationId", "group"])
+      .values({
+        organizationId: organization.id,
+        group: group,
+      })
+      .returning("id")
+      .execute();
+
+    createdGroupPermissionIds.push(insertResult.raw[0].id);
+  }
 
   const groupPermissionRepository =
     entityManager.getRepository(GroupPermission);
 
-  for (const group of groupsToCreate) {
-    const groupPermission = groupPermissionRepository.create({
-      organizationId: organization.id,
-      group: group,
-    });
-    await groupPermissionRepository.save(groupPermission);
-    createdGroupPermissions.push(groupPermission);
-  }
-
-  return createdGroupPermissions;
+  return await groupPermissionRepository.findByIds(createdGroupPermissionIds, {
+    select: ["id", "group", "organizationId"],
+  });
 }
 
 async function setupUserAndAppGroupPermissions(
@@ -80,41 +93,53 @@ async function setupUserAndAppGroupPermissions(
   organization: Organization,
   createdGroupPermissions: Array<GroupPermission>
 ): Promise<void> {
-  const userGroupPermissionRepository =
-    entityManager.getRepository(UserGroupPermission);
-
-  const appGroupPermissionRepository =
-    entityManager.getRepository(AppGroupPermission);
-
   const appRepository = entityManager.getRepository(App);
 
   const organizationApps = await appRepository.find({
-    organizationId: organization.id,
+    where: {organizationId: organization.id},
+    select: ['id']
   });
 
   for (const groupPermission of createdGroupPermissions) {
     const usersForGroup = organization.users.filter(
       (u) =>
-        u.organizationUsers[0].role == groupPermission.group || groupPermission.group == "all_users"
+        u.organizationUsers[0].role == groupPermission.group ||
+        groupPermission.group == "all_users"
     );
 
     for (const user of usersForGroup) {
-      const userGroupPermission = userGroupPermissionRepository.create({
-        groupPermissionId: groupPermission.id,
-        userId: user.id,
-      });
-      await userGroupPermissionRepository.save(userGroupPermission);
+      await entityManager
+        .createQueryBuilder()
+        .insert()
+        .into(UserGroupPermission, ["groupPermissionId", "userId"])
+        .values({
+          groupPermissionId: groupPermission.id,
+          userId: user.id,
+        })
+        .returning("id")
+        .execute();
     }
 
     const permissions = determinePermissionsForGroup(groupPermission.group);
 
     for (const app of organizationApps) {
-      const appGroupPermission = appGroupPermissionRepository.create({
-        groupPermissionId: groupPermission.id,
-        appId: app.id,
-        ...permissions,
-      });
-      await appGroupPermissionRepository.save(appGroupPermission);
+      await entityManager
+        .createQueryBuilder()
+        .insert()
+        .into(AppGroupPermission, [
+          "groupPermissionId",
+          "appId",
+          "read",
+          "update",
+          "delete",
+        ])
+        .values({
+          groupPermissionId: groupPermission.id,
+          appId: app.id,
+          ...permissions,
+        })
+        .returning("id")
+        .execute();
     }
   }
 }

@@ -10,3 +10,4 @@ export * from './openapi.service';
 export * from './folder.service';
 export * from './sample.service';
 export * from './tooljet.service';
+export * from './comments.service';
