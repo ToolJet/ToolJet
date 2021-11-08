@@ -1,7 +1,3 @@
----
-sidebar_position: 7
----
-
 # Dropdown
 
 The Dropdown widget can be used to collect user input from a list of options.
