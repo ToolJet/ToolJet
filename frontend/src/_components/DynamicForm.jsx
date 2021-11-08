@@ -60,6 +60,7 @@ const DynamicForm = ({
     description,
     type,
     placeholder = '',
+    mode = 'sql',
   }) => {
     switch (type) {
       case 'password':
@@ -115,7 +116,7 @@ const DynamicForm = ({
         return {
           currentState,
           initialValue: options[$key],
-          mode: 'sql',
+          mode,
           lineNumbers: true,
           className: 'query-hinter',
           onChange: (value) => optionchanged($key, value),
