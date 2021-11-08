@@ -7,6 +7,7 @@ import {
   createApplication,
   createUser,
   createNestAppInstance,
+  createApplicationVersion,
 } from '../test.helper';
 
 describe('comment controller', () => {
@@ -26,18 +27,24 @@ describe('comment controller', () => {
 
   it('should list all comments in a thread', async () => {
     const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+
+    const { user } = userData;
+
     const application = await createApplication(app, {
       name: 'App to clone',
-      user: userData.user,
+      user,
     });
+
+    const version = await createApplicationVersion(app, application);
+
     const thread = await createThread(app, {
       appId: application.id,
       x: 100,
       y: 200,
       userId: userData.user.id,
+      organizationId: user.organization.id,
+      appVersionsId: version.id,
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { user } = userData;
 
     const response = await request(app.getHttpServer())
       .get(`/comment/${thread.id}/all`)

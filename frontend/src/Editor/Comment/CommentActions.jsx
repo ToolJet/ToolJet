@@ -6,6 +6,7 @@ import usePopover from '@/_hooks/use-popover';
 
 import OptionsIcon from './icons/options.svg';
 // import OptionsSelectedIcon from './icons/options-selected.svg';
+import useRouter from '@/_hooks/use-router';
 
 import { commentsService } from '@/_services';
 
@@ -20,6 +21,7 @@ const CommentActions = ({
 }) => {
   const [open, trigger, content, setOpen] = usePopover(false);
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
+  const router = useRouter();
 
   const handleDelete = async () => {
     await commentsService.deleteComment(commentId);
@@ -28,7 +30,7 @@ const CommentActions = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: 'notifications',
+        data: { message: 'notifications', appId: router.query.id },
       })
     );
   };

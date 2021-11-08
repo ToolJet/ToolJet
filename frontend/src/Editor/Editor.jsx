@@ -118,9 +118,17 @@ class Editor extends React.Component {
     // TODO: add retry policy
     const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
 
+    const appId = this.props.match.params.id;
+
     // Connection opened
     socket.addEventListener('open', function (event) {
       console.log('connection established', event);
+      socket.send(
+        JSON.stringify({
+          event: 'subscribe',
+          data: appId,
+        })
+      );
     });
 
     // Connection closed
