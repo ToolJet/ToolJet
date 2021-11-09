@@ -203,7 +203,12 @@ class Googlesheets extends React.Component {
                 height="120px"
                 className="codehinter-gsheet-input codehinter-default-input"
                 theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-                onChange={(value) => changeOption(this, 'body', value)}
+                onChange={(value) => {
+                  if (!(value.slice(0, 3) === '{{(' && value.slice(-3) === ')}}')) {
+                    value = '{{(' + value + ')}}';
+                  }
+                  changeOption(this, 'body', value);
+                }}
                 enablePreview={true}
                 ignoreBraces={true}
                 appendBraces={true}
