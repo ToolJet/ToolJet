@@ -1,7 +1,3 @@
----
-sidebar_position: 22
----
-
 # Calendar
 Calendar widget comes with the following features:  
 - Day, month and week level views
