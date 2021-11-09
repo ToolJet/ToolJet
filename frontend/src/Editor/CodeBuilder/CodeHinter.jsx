@@ -118,12 +118,6 @@ export function CodeHinter({
     );
   };
 
-  useEffect(() => {
-    const check = resolveReferences(`{{${currentValue}}}`, realState);
-    console.log('CodeHinter: useEffect', check);
-    onChange(check);
-  }, [currentValue, realState]);
-
   return (
     <>
       <div
