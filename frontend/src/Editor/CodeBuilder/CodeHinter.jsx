@@ -26,7 +26,6 @@ export function CodeHinter({
   className,
   placeholder,
   ignoreBraces,
-  appendBraces,
   enablePreview,
   height,
   minHeight,
@@ -83,8 +82,8 @@ export function CodeHinter({
   };
 
   const getPreview = () => {
-    const _currentValue = ignoreBraces && appendBraces ? `{{${currentValue}}}` : currentValue;
-    const [preview, error] = resolveReferences(_currentValue, realState, null, {}, true);
+    const previewValue = ignoreBraces ? `{{${currentValue}}}` : currentValue;
+    const [preview, error] = resolveReferences(previewValue, realState, null, {}, true);
 
     if (error) {
       return (
@@ -132,7 +131,7 @@ export function CodeHinter({
           height={height}
           onFocus={() => setFocused(true)}
           onBlur={(editor) => {
-            let value = editor.getValue();
+            const value = editor.getValue();
             onChange(value);
             setFocused(false);
           }}
