@@ -1,7 +1,3 @@
----
-sidebar_position: 8
----
-
 # Image
 
 Image widget is used to display images in your app. 
