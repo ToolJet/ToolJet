@@ -5,20 +5,23 @@ import moment from 'moment';
 import 'react-datetime/css/react-datetime.css';
 import '@/_styles/custom.scss';
 
-const getDate = (value, displayFormat) => {
+const getDate = (value, parseDateFormat, displayFormat) => {
   const dateString = value;
-  const momentObj = moment(dateString, [
-    'MM-DD-YYYY',
-    moment.ISO_8601,
-    moment(dateString).creationData().format,
-    'MM/DD/YYYY',
-  ]);
+  const momentObj = moment(dateString, parseDateFormat);
+  console.log('parsedDateObj', momentObj);
   const momentString = momentObj.format(displayFormat);
   return momentString;
 };
 
-export const Datepicker = function Datepicker({ value, onChange, readOnly, isTimeChecked, dateFormat }) {
-  const [date, setDate] = React.useState(() => (value._isAMomentObject ? getDate(value, dateFormat) : value));
+export const Datepicker = function Datepicker({
+  value,
+  onChange,
+  readOnly,
+  isTimeChecked,
+  dateFormat, //?Display date format
+  parseDateFormat, //?Parse date format
+}) {
+  const [date, setDate] = React.useState(() => getDate(value, parseDateFormat, dateFormat));
 
   const dateChange = (event) => {
     const value = event._isAMomentObject ? event.format() : event;

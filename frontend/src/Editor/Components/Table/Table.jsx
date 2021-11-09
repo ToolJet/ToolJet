@@ -302,6 +302,7 @@ export function Table({
     if (columnType === 'datepicker') {
       column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
       column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
+      column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
     }
 
     const width = columnSize || defaultColumn.width;
@@ -524,6 +525,7 @@ export function Table({
                   isTimeChecked={column.isTimeChecked}
                   value={cellValue}
                   readOnly={column.isEditable}
+                  parseDateFormat={column.parseDateFormat}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
@@ -1008,7 +1010,10 @@ export function Table({
                   />
                 </div>
                 <div className="col-auto">
-                  <button onClick={() => removeFilter(index)} className={`btn ${darkMode ? "btn-dark" : "btn-light"} btn-sm p-2 text-danger font-weight-bold`}>
+                  <button
+                    onClick={() => removeFilter(index)}
+                    className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
+                  >
                     x
                   </button>
                 </div>
