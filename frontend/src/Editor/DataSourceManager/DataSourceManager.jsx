@@ -5,7 +5,13 @@ import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
 import { defaultOptions } from './DefaultOptions';
 import { TestConnection } from './TestConnection';
-import { DataBaseSources, ApiSources, DataSourceTypes, SourceComponents } from './SourceComponents';
+import {
+  DataBaseSources,
+  ApiSources,
+  DataSourceTypes,
+  SourceComponents,
+  CloudStorageSources,
+} from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 
@@ -73,6 +79,7 @@ class DataSourceManager extends React.Component {
       dataSourceMeta: {},
       selectedDataSource: null,
       options: {},
+      connectionTestError: null,
     });
   };
 
@@ -110,23 +117,29 @@ class DataSourceManager extends React.Component {
         encrypted: keyMeta ? keyMeta.encrypted : false,
       };
     });
-
-    if (selectedDataSource.id) {
-      this.setState({ isSaving: true });
-      datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
-        this.setState({ isSaving: false });
-        this.hideModal();
-        toast.success('Datasource Saved', { hideProgressBar: true, position: 'top-center' });
-        this.props.dataSourcesChanged();
-      });
+    if (name.trim() !== ''){
+      if (selectedDataSource.id) {
+        this.setState({ isSaving: true });
+        datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
+          this.setState({ isSaving: false });
+          this.hideModal();
+          toast.success('Datasource Saved', { hideProgressBar: true, position: 'top-center' });
+          this.props.dataSourcesChanged();
+        });
+      } else {
+        this.setState({ isSaving: true });
+        datasourceService.create(appId, name, kind, parsedOptions).then(() => {
+          this.setState({ isSaving: false });
+          this.hideModal();
+          toast.success('Datasource Added', { hideProgressBar: true, position: 'top-center' });
+          this.props.dataSourcesChanged();
+        });
+      }
     } else {
-      this.setState({ isSaving: true });
-      datasourceService.create(appId, name, kind, parsedOptions).then(() => {
-        this.setState({ isSaving: false });
-        this.hideModal();
-        toast.success('Datasource Added', { hideProgressBar: true, position: 'top-center' });
-        this.props.dataSourcesChanged();
-      });
+      toast.error(
+        "The name of datasource should not be empty", 
+        { hideProgressBar: true, position: 'top-center' }
+      );
     }
   };
 
@@ -202,7 +215,7 @@ class DataSourceManager extends React.Component {
             {!selectedDataSource && (
               <div>
                 <div className="row row-deck">
-                  <h4 className="text-muted mb-2">DATABASES</h4>
+                  <h4 className="mb-2">DATABASES</h4>
                   {DataBaseSources.map((dataSource) => (
                     <div className="col-md-2" key={dataSource.name}>
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
@@ -225,10 +238,33 @@ class DataSourceManager extends React.Component {
                   ))}
                 </div>
                 <div className="row row-deck mt-2">
-                  <h4 className="text-muted mb-2">APIS</h4>
+                  <h4 className="mb-2">APIS</h4>
                   {ApiSources.map((dataSource) => (
                     <div className="col-md-2" key={dataSource.name}>
-                      <div className="card" role="button" onClick={() => this.selectDataSource(dataSource)}>
+                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
+                        <div className="card-body">
+                          <center>
+                            <img
+                              src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`}
+                              width="50"
+                              height="50"
+                              alt=""
+                            />
+
+                            <br></br>
+                            <br></br>
+                            {dataSource.name}
+                          </center>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="row row-deck mt-2">
+                  <h4 className="mb-2">CLOUD STORAGES</h4>
+                  {CloudStorageSources.map((dataSource) => (
+                    <div className="col-md-2" key={dataSource.name}>
+                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
                             <img
@@ -322,13 +358,21 @@ class DataSourceManager extends React.Component {
 
           {!dataSourceMeta?.hideSave && selectedDataSource && dataSourceMeta.customTesting && (
             <Modal.Footer>
-              <div className="row mt-3">
-                <div className="col"></div>
-                <div className="col-auto">
-                  <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
-                    {isSaving ? 'Saving...' : 'Save'}
-                  </Button>
-                </div>
+              <div className="col">
+                <small>
+                  <a
+                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Read documentation
+                  </a>
+                </small>
+              </div>
+              <div className="col-auto">
+                <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Button>
               </div>
             </Modal.Footer>
           )}

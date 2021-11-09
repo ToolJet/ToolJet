@@ -34,7 +34,7 @@ ToolJet server uses lockbox to encrypt datasource credentials. You should set th
 ToolJet server uses a secure 64 byte hexadecimal string to encrypt session cookies. You should set the environment variable `SECRET_KEY_BASE`.
 
 :::tip
-If you have `openssl` installed, you can run the following commands to generate the the value for `LOCKBOX_MASTER_KEY` and `SECRET_KEY_BASE`.
+If you have `openssl` installed, you can run the following commands to generate the value for `LOCKBOX_MASTER_KEY` and `SECRET_KEY_BASE`.
 
 For `LOCKBOX_MASTER_KEY` use `openssl rand -hex 32`
 For `SECRET_KEY_BASE` use `openssl rand -hex 64`
@@ -42,7 +42,7 @@ For `SECRET_KEY_BASE` use `openssl rand -hex 64`
 
 #### Disabling signups ( optional )
 
-If want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
+If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
 
 :::tip
 You will still be able to see the signup page but won't be able to successfully submit the form.
@@ -129,3 +129,13 @@ This is required when client is built separately.
 | variable           | description                                                 |
 | ------------------ | ----------------------------------------------------------- |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.io ) |
+
+
+#### Asset path ( optionally required )
+
+This is required when the assets for the client are to be loaded from elsewhere (eg: CDN).
+This can be an absolute path, or relative to main HTML file.
+
+| variable           | description                                                   |
+| ------------------ | -----------------------------------------------------------   |
+| ASSET_PATH         | the asset path for the website ( eg: https://app.tooljet.io/) |

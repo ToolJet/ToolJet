@@ -1,7 +1,3 @@
----
-sidebar_position: 11
----
-
 # QR Scanner
 Scan QR codes using device camera and hold the data they carry.
 <img class="screenshot-full" src="/img/widgets/qr-scanner/qr-scanner.jpeg" alt="ToolJet - QR Scanner" height="420"/>

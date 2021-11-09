@@ -1,10 +1,6 @@
----
-sidebar_position: 8
----
-
 # Map
 
-The map widget can be used to pick or select locations on the google map with the location's coordinates.
+The map widget can be used to pick or select locations on the Google map with the location's coordinates.
 
 <img class="screenshot-full" src="/img/widgets/map/map.gif" alt="ToolJet - Widget Reference - Map" height="420"/>
 

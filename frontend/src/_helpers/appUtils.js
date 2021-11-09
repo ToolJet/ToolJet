@@ -134,7 +134,7 @@ function executeAction(_ref, event, mode) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName);
+        return runQuery(_ref, queryId, queryName, true, mode);
       }
 
       case 'open-webpage': {
@@ -188,6 +188,12 @@ function executeAction(_ref, event, mode) {
 
         return Promise.resolve();
       }
+
+      case 'set-localstorage-value': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const value = resolveReferences(event.value, _ref.state.currentState);
+        localStorage.setItem(key, value);
+      }
     }
   }
 }
@@ -218,6 +224,48 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     );
   }
 
+  if (eventName === 'onCalendarEventSelect') {
+    const { component, calendarEvent } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedEvent: { ...calendarEvent },
+            },
+          },
+        },
+      },
+      () => {
+        executeActionsForEventId(_ref, 'onCalendarEventSelect', component, mode);
+      }
+    );
+  }
+
+  if (eventName === 'onCalendarSlotSelect') {
+    const { component, selectedSlots } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedSlots,
+            },
+          },
+        },
+      },
+      () => {
+        executeActionsForEventId(_ref, 'onCalendarSlotSelect', component, mode);
+      }
+    );
+  }
+
   if (eventName === 'onTableActionButtonClicked') {
     const { component, data, action, rowId } = options;
     _self.setState(
@@ -234,14 +282,45 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
           },
         },
       },
-      () => {
-        if (action) {
-          action.events?.forEach((event) => {
+      async () => {
+        if (action && action.events) {
+          for (const event of action.events) {
             if (event.actionId) {
               // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-              executeAction(_self, { ...event, ...event.options }, mode);
+              await executeAction(_self, { ...event, ...event.options }, mode);
             }
-          });
+          }
+        } else {
+          console.log('No action is associated with this event');
+        }
+      }
+    );
+  }
+
+  if (eventName === 'OnTableToggleCellChanged') {
+    const { component, column, rowId, row } = options;
+    _self.setState(
+      {
+        currentState: {
+          ..._self.state.currentState,
+          components: {
+            ..._self.state.currentState.components,
+            [component.name]: {
+              ..._self.state.currentState.components[component.name],
+              selectedRow: row,
+              selectedRowId: rowId,
+            },
+          },
+        },
+      },
+      async () => {
+        if (column && column.events) {
+          for (const event of column.events) {
+            if (event.actionId) {
+              // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+              await executeAction(_self, { ...event, ...event.options }, mode);
+            }
+          }
         } else {
           console.log('No action is associated with this event');
         }
@@ -262,6 +341,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onChange',
       'onSelectionChange',
       'onSelect',
+      'onClick',
+      'onFileSelected',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -359,7 +440,7 @@ export function previewQuery(_ref, query) {
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) {
   const query = _ref.state.app.data_queries.find((query) => query.id === queryId);
   let dataQuery = {};
 
@@ -508,7 +589,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined) {
             },
             () => {
               resolve();
-              onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } });
+              onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
             }
           );
         })

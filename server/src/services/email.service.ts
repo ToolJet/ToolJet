@@ -86,11 +86,13 @@ export class EmailService {
         </head>
         <body>
           <p>Hi ${name || ''},</p>
+          <br>
           <span>
           ${sender} has invited you to use ToolJet. Use the link below to set up your account and get started.
           </span>
           <br>
           <a href="${inviteUrl}">${inviteUrl}</a>
+          <br>
           <br>
           <p>
             Welcome aboard,<br>

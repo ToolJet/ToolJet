@@ -1,7 +1,3 @@
----
-sidebar_position: 16
----
-
 # Number Input
 
 Number Input widget lets users enter and change numbers.

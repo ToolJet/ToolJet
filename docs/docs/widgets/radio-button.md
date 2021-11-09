@@ -1,7 +1,3 @@
----
-sidebar_position: 12
----
-
 # Radio Button
 
 Radio button widget can be used to select one option from a group of options.

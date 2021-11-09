@@ -10,16 +10,12 @@ export function ConfirmDialog({ show, message, onConfirm, onCancel, confirmButto
   }, [show]);
 
   const handleClose = () => {
+    onCancel();
     setShow(false);
   };
 
   const handleConfirm = () => {
     onConfirm();
-  };
-
-  const handleCancel = () => {
-    onCancel();
-    handleClose();
   };
 
   return (
@@ -28,7 +24,7 @@ export function ConfirmDialog({ show, message, onConfirm, onCancel, confirmButto
         <div className="modal-status bg-danger"></div>
         <Modal.Body>{message}</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCancel}>
+          <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
           <Button
