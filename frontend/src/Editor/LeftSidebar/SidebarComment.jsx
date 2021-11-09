@@ -7,7 +7,7 @@ export const LeftSidebarComment = ({ toggleComments, appVersionsId }) => {
   return (
     <LeftSidebarItem
       commentBadge
-      tip="toggle comments"
+      tip={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
       icon={`comments`}
       className={cx(`left-sidebar-item sidebar-zoom position-relative`, {
         disabled: !appVersionsId,
