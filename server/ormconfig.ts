@@ -40,6 +40,7 @@ function buildConnectionOptions(filePath: string, env: string | undefined): Type
     uuidExtension: 'pgcrypto',
     migrationsRun: false,
     logging: data.ORM_LOGGING || false,
+    migrationsTransactionMode: 'each',
     migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
     cli: {
       migrationsDir: 'migrations',

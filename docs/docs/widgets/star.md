@@ -1,7 +1,3 @@
----
-sidebar_position: 16
----
-
 # Star rating
 
 Star rating widget can be used to display as well as input ratings. The widget supports half stars, and the number of stars can be set too.
@@ -10,7 +6,7 @@ Star rating widget can be used to display as well as input ratings. The widget s
 
 ### Event: On Change
 
-This event is triggered when an star is clicked.
+This event is triggered when a star is clicked.
 
 
 #### Properties

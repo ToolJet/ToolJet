@@ -1,7 +1,3 @@
----
-sidebar_position: 18
----
-
 # Text Input
 
 Text Input widget let users enter and edit text.

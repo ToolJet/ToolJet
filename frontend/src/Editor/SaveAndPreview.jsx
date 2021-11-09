@@ -46,8 +46,8 @@ class SaveAndPreview extends React.Component {
   createVersion = () => {
     const newVersionName = this.state.newVersionName;
     const appId = this.props.appId;
-    
-    if (newVersionName.trim() !== ''){
+
+    if (newVersionName.trim() !== '') {
       this.setState({ creatingVersion: true });
       appVersionService.create(appId, newVersionName).then(() => {
         this.setState({ showVersionForm: false, creatingVersion: false });
@@ -61,12 +61,20 @@ class SaveAndPreview extends React.Component {
         this.props.setAppDefinitionFromVersion(version);
       });
     } else {
-      toast.error(
-        'The name of version should not be empty', {
+      toast.error('The name of version should not be empty', {
         hideProgressBar: true,
         position: 'top-center',
       });
+      this.fetchVersions();
+      this.props.fetchApp();
+      // eslint-disable-next-line no-undef
+      this.props.setAppDefinitionFromVersion(version);
     }
+  };
+
+  editVersion = (version) => () => {
+    this.props.setAppDefinitionFromVersion(version);
+    this.props.fetchApp();
   };
 
   saveVersion = (versionId) => {
@@ -92,6 +100,7 @@ class SaveAndPreview extends React.Component {
         containerId: this.state.appId,
       });
 
+      this.props.fetchApp();
       this.props.onVersionDeploy(versionId);
     });
   };
@@ -187,7 +196,7 @@ class SaveAndPreview extends React.Component {
                               </button>
                               <button
                                 className="btn btn btn-sm mx-2 text-muted"
-                                onClick={() => this.props.setAppDefinitionFromVersion(version)}
+                                onClick={this.editVersion(version)}
                                 disabled={this.props.editingVersionId === version.id}
                               >
                                 edit

@@ -16,7 +16,6 @@ import { SaveAndPreview } from './SaveAndPreview';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  onComponentClick,
   onEvent,
   onQueryConfirm,
   onQueryCancel,
@@ -26,8 +25,10 @@ import {
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
+import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
+import config from 'config';
 import queryString from 'query-string';
 
 class Editor extends React.Component {
@@ -60,6 +61,7 @@ class Editor extends React.Component {
       loadingDataQueries: true,
       showQueryEditor: true,
       showLeftSidebar: true,
+      showComments: false,
       zoomLevel: 1.0,
       currentLayout: 'desktop',
       scaleValue: 1,
@@ -82,39 +84,66 @@ class Editor extends React.Component {
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
+      socket: null,
     };
   }
 
   componentDidMount() {
-    const appId = this.props.match.params.id;
     this.fetchApps(0);
-
-    appService.getApp(appId).then((data) => {
-      const dataDefinition = data.definition || { components: {} };
-      this.setState(
-        {
-          app: data,
-          isLoading: false,
-          editingVersion: data.editing_version,
-          appDefinition: { ...this.state.appDefinition, ...dataDefinition },
-          slug: data.slug,
-        },
-        () => {
-          computeComponentState(this, this.state.appDefinition.components).then(() => {
-            console.log('Default component state computed and set');
-            this.runQueries(data.data_queries);
-          });
-        }
-      );
-    });
-
+    this.fetchApp();
     this.fetchDataSources();
     this.fetchDataQueries();
+    config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
     });
   }
+
+  componentWillUnmount() {
+    if (this.state.socket) {
+      this.state.socket?.close();
+    }
+  }
+
+  getWebsocketUrl = () => {
+    const re = /https?:\/\//g;
+    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '');
+
+    return window.location.host;
+  };
+
+  initWebSocket = () => {
+    // TODO: add retry policy
+    const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
+
+    const appId = this.props.match.params.id;
+
+    // Connection opened
+    socket.addEventListener('open', function (event) {
+      console.log('connection established', event);
+      socket.send(
+        JSON.stringify({
+          event: 'subscribe',
+          data: appId,
+        })
+      );
+    });
+
+    // Connection closed
+    socket.addEventListener('close', function (event) {
+      console.log('connection closed', event);
+    });
+
+    // Listen for possible errors
+    socket.addEventListener('error', function (event) {
+      console.log('WebSocket error: ', event);
+    });
+
+    this.setState({
+      socket,
+    });
+  };
 
   fetchDataSources = () => {
     this.setState(
@@ -194,6 +223,29 @@ class Editor extends React.Component {
         isLoading: false,
       })
     );
+  };
+
+  fetchApp = () => {
+    const appId = this.props.match.params.id;
+
+    appService.getApp(appId).then((data) => {
+      const dataDefinition = data.definition || { components: {} };
+      this.setState(
+        {
+          app: data,
+          isLoading: false,
+          editingVersion: data.editing_version,
+          appDefinition: { ...this.state.appDefinition, ...dataDefinition },
+          slug: data.slug,
+        },
+        () => {
+          computeComponentState(this, this.state.appDefinition.components).then(() => {
+            console.log('Default component state computed and set');
+            this.runQueries(data.data_queries);
+          });
+        }
+      );
+    });
   };
 
   setAppDefinitionFromVersion = (version) => {
@@ -470,6 +522,10 @@ class Editor extends React.Component {
     this.setState({ showLeftSidebar: !this.state.showLeftSidebar });
   };
 
+  toggleComments = () => {
+    this.setState({ showComments: !this.state.showComments });
+  };
+
   configHandleClicked = (id, component) => {
     this.switchSidebarTab(1);
     this.setState({ selectedComponent: { id, component } });
@@ -541,6 +597,7 @@ class Editor extends React.Component {
       isDeletingDataQuery,
       apps,
       defaultComponentStateComputed,
+      showComments,
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
 
@@ -677,6 +734,7 @@ class Editor extends React.Component {
                         onVersionDeploy={this.onVersionDeploy}
                         editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null}
                         setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                        fetchApp={this.fetchApp}
                       />
                     )}
                   </div>
@@ -686,6 +744,7 @@ class Editor extends React.Component {
           </div>
           <div className="sub-section">
             <LeftSidebar
+              appVersionsId={this.state?.editingVersion?.id}
               errorLogs={currentState.errors}
               queries={currentState.queries}
               components={currentState.components}
@@ -695,6 +754,7 @@ class Editor extends React.Component {
               dataSources={this.state.dataSources}
               dataSourcesChanged={this.dataSourcesChanged}
               onZoomChanged={this.onZoomChanged}
+              toggleComments={this.toggleComments}
               switchDarkMode={this.props.switchDarkMode}
             />
             <div className="main">
@@ -706,6 +766,9 @@ class Editor extends React.Component {
                 <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
                   {defaultComponentStateComputed && (
                     <Container
+                      socket={this.state.socket}
+                      showComments={showComments}
+                      appVersionsId={this.state?.editingVersion?.id}
                       appDefinition={appDefinition}
                       appDefinitionChanged={this.appDefinitionChanged}
                       snapToGrid={true}
@@ -717,7 +780,7 @@ class Editor extends React.Component {
                       selectedComponent={selectedComponent || {}}
                       scaleValue={scaleValue}
                       appLoading={isLoading}
-                      onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                      onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
                       onComponentOptionChanged={(component, optionName, value) =>
                         onComponentOptionChanged(this, component, optionName, value)
                       }
@@ -730,7 +793,6 @@ class Editor extends React.Component {
                       onComponentClick={(id, component) => {
                         this.setState({ selectedComponent: { id, component } });
                         this.switchSidebarTab(1);
-                        onComponentClick(this, id, component);
                       }}
                     />
                   )}
@@ -886,6 +948,13 @@ class Editor extends React.Component {
                 ></WidgetManager>
               )}
             </div>
+            {config.COMMENT_FEATURE_ENABLE && showComments && (
+              <CommentNotifications
+                socket={this.state.socket}
+                appVersionsId={this.state?.editingVersion?.id}
+                toggleComments={this.toggleComments}
+              />
+            )}
           </div>
         </DndProvider>
       </div>
