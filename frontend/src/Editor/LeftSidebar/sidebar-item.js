@@ -20,18 +20,20 @@ export const LeftSidebarItem = ({
       delay={{ show: 800, hide: 100 }}
       overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
     >
-      <div {...rest} className={className} onClick={onClick && onClick}>
-        {icon && (
-          <img
-            className="svg-icon"
-            src={`/assets/images/icons/editor/left-sidebar/${icon}.svg`}
-            width="20"
-            height="20"
-          />
-        )}
-        {badge && <LeftSidebarItem.Badge count={count} />}
-        {commentBadge && <LeftSidebarItem.CommentBadge />}
-        {text && text}
+      <div>
+        <div {...rest} className={className} onClick={onClick && onClick}>
+          {icon && (
+            <img
+              className="svg-icon"
+              src={`/assets/images/icons/editor/left-sidebar/${icon}.svg`}
+              width="20"
+              height="20"
+            />
+          )}
+          {badge && <LeftSidebarItem.Badge count={count} />}
+          {commentBadge && <LeftSidebarItem.CommentBadge />}
+          {text && text}
+        </div>
       </div>
     </OverlayTrigger>
   );

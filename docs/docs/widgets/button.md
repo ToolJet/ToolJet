@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Button
 
 Button widget can be used to take actions.

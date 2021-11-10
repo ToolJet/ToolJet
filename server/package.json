@@ -32,6 +32,7 @@
     "@casl/ability": "^5.3.1",
     "@elastic/elasticsearch": "^7.13.0",
     "@google-cloud/firestore": "^4.15.1",
+    "@google-cloud/storage": "^5.15.4",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.0",
     "@nestjs/core": "^8.0.0",
@@ -47,6 +48,7 @@
     "@types/got": "^9.6.12",
     "@types/humps": "^2.0.1",
     "@types/nodemailer": "^6.4.4",
+    "@types/ws": "^8.2.0",
     "aws-sdk": "^2.947.0",
     "bcrypt": "^5.0.1",
     "class-validator": "^0.13.1",
@@ -74,7 +76,8 @@
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.2.38",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "ws": "^7.5.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

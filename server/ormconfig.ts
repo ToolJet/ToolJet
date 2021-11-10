@@ -41,6 +41,7 @@ function buildConnectionOptions(filePath: string, env: string | undefined): Type
     migrationsRun: false,
     migrationsTransactionMode: 'each',
     logging: data.ORM_LOGGING || false,
+    migrationsTransactionMode: 'each',
     migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
     cli: {
       migrationsDir: 'migrations',

@@ -71,13 +71,13 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: threadId,
+        data: { message: threadId, appId: router.query.id },
       })
     );
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: 'notifications',
+        data: { message: 'notifications', appId: router.query.id },
       })
     );
     fetchData();
@@ -89,7 +89,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: 'notifications',
+        data: { message: 'notifications', appId: router.query.id },
       })
     );
   };

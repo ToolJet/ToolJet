@@ -16,7 +16,6 @@ import { SaveAndPreview } from './SaveAndPreview';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  onComponentClick,
   onEvent,
   onQueryConfirm,
   onQueryCancel,
@@ -106,13 +105,28 @@ class Editor extends React.Component {
     }
   }
 
+  getWebsocketUrl = () => {
+    const re = /https?:\/\//g;
+    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '');
+
+    return window.location.host;
+  };
+
   initWebSocket = () => {
     // TODO: add retry policy
-    const socket = new WebSocket(`ws://${config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '')}`);
+    const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
+
+    const appId = this.props.match.params.id;
 
     // Connection opened
     socket.addEventListener('open', function (event) {
       console.log('connection established', event);
+      socket.send(
+        JSON.stringify({
+          event: 'subscribe',
+          data: appId,
+        })
+      );
     });
 
     // Connection closed
@@ -770,7 +784,7 @@ class Editor extends React.Component {
                         deviceWindowWidth={deviceWindowWidth}
                         selectedComponent={selectedComponent || {}}
                         appLoading={isLoading}
-                        onEvent={(eventName, options) => onEvent(this, eventName, options)}
+                        onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
                         onComponentOptionChanged={(component, optionName, value) =>
                           onComponentOptionChanged(this, component, optionName, value)
                         }
@@ -783,7 +797,6 @@ class Editor extends React.Component {
                         onComponentClick={(id, component) => {
                           this.setState({ selectedComponent: { id, component } });
                           this.switchSidebarTab(1);
-                          onComponentClick(this, id, component);
                         }}
                       />
                       <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} canvasWidth={this.getCanvasWidth()} />

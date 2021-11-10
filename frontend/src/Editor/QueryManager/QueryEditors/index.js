@@ -13,6 +13,7 @@ import { Airtable } from './Airtable';
 import { Graphql } from './Graphql';
 import { Mssql } from './Mssql';
 import { S3 } from './S3';
+import { Gcs } from './Gcs';
 
 export const allSources = {
   Restapi,
@@ -30,4 +31,5 @@ export const allSources = {
   Graphql,
   Mssql,
   S3,
+  Gcs,
 };
