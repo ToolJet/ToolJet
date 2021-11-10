@@ -50,7 +50,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     outline: 'none',
     transition: 'border .24s ease-in-out',
     display: parsedWidgetVisibility ? 'flex' : 'none',
-    width,
     height,
     backgroundColor: !parsedDisabledState && bgThemeColor,
   };
