@@ -122,6 +122,14 @@ class Editor extends React.Component {
     // Connection opened
     socket.addEventListener('open', function (event) {
       console.log('connection established', event);
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+      socket.send(
+        JSON.stringify({
+          event: 'authenticate',
+          data: currentUser.auth_token,
+        })
+      );
       socket.send(
         JSON.stringify({
           event: 'subscribe',
