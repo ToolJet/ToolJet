@@ -55,7 +55,7 @@ export const LeftSidebar = ({
         onCancel={() => setShowLeaveDialog(false)}
       />
       <div className="left-sidebar-stack-bottom">
-        <LeftSidebarZoom onZoomChanged={onZoomChanged} />
+        {/* <LeftSidebarZoom onZoomChanged={onZoomChanged} /> */}
         <div className="left-sidebar-item no-border">
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
