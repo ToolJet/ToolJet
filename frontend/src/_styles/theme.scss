@@ -388,13 +388,12 @@ body {
       }
 
       .query-definition-pane {
+        margin-top: 1px;
         .header {
           border: solid rgba(0, 0, 0, 0.125);
           border-width: 0px 0px 1px 0px;
           background: white;
-          position: fixed;
           z-index: 3;
-          width: 59.3%;
           margin-top: 0px;
         }
 
