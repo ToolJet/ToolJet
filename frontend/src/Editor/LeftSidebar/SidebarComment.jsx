@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { LeftSidebarItem } from './sidebar-item';
+import { LeftSidebarItem } from './SidebarItem';
 
 export const LeftSidebarComment = ({ toggleComments, appVersionsId }) => {
   const [isActive, toggleActive] = React.useState(false);

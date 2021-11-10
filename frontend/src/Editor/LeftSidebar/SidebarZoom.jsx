@@ -1,6 +1,6 @@
 import React from 'react';
 import usePopover from '@/_hooks/use-popover';
-import { LeftSidebarItem } from './sidebar-item';
+import { LeftSidebarItem } from './SidebarItem';
 
 export const LeftSidebarZoom = ({ onZoomChanged }) => {
   const [open, trigger, content, setOpen] = usePopover(false);
