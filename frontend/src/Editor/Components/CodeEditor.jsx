@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import { CodeHinter } from '../CodeBuilder/CodeHinter';
+import CodeMirror from '@uiw/react-codemirror';
+import 'codemirror/mode/handlebars/handlebars';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/sql/sql';
+import 'codemirror/addon/hint/show-hint';
+import 'codemirror/addon/display/placeholder';
+import 'codemirror/addon/search/match-highlighter';
+import 'codemirror/addon/hint/show-hint.css';
+import 'codemirror/theme/base16-light.css';
+import 'codemirror/theme/duotone-light.css';
+import 'codemirror/theme/monokai.css';
+import { getSuggestionKeys, onBeforeChange, handleChange } from '../CodeBuilder/utils';
 
 export const CodeEditor = ({ width, height, component, currentState, onComponentOptionChanged, darkMode }) => {
   const enableLineNumber = component.definition.properties?.enableLineNumber?.value ?? true;
@@ -21,6 +32,7 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
   const value = currentState?.components[component?.name]?.value;
 
   const [editorValue, setEditorValue] = useState(value);
+  const [realState, setRealState] = useState(currentState);
 
   function codeChanged(code) {
     setEditorValue(code);
@@ -33,21 +45,54 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
     display: !parsedWidgetVisibility ? 'none' : 'block',
   };
 
+  const options = {
+    lineNumbers: parsedEnableLineNumber,
+    // lineWrapping: lineWrapping,
+    singleLine: true,
+    mode: languageMode,
+    tabSize: 2,
+    theme: darkMode ? 'monokai' : 'duotone-light',
+    readOnly: false,
+    highlightSelectionMatches: true,
+    placeholder,
+  };
+
+  function valueChanged(editor, onChange, suggestions, ignoreBraces = false) {
+    handleChange(editor, onChange, suggestions, ignoreBraces);
+    setEditorValue(editor.getValue());
+  }
+
+  let suggestions = React.useMemo(() => {
+    return getSuggestionKeys(realState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [realState.components, realState.queries]);
+
+  React.useEffect(() => {
+    setRealState(currentState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState.components]);
+
   return (
     <div data-disabled={parsedDisabledState} style={styles}>
-      <CodeHinter
-        placeholder={placeholder}
-        currentState={currentState}
-        height={height - 1}
-        minHeight={height - 1}
-        initialValue={editorValue}
-        theme={darkMode ? 'monokai' : 'duotone-light'}
-        lineNumbers={parsedEnableLineNumber}
-        className="codehinter-default-input code-editor-widget"
-        ignoreBraces={false}
-        onChange={(value) => codeChanged(value)}
-        mode={languageMode}
-      />
+      <div
+        className={`code-hinter codehinter-default-input code-editor-widget`}
+        key={suggestions.length}
+        style={{ height: height || 'auto', minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }}
+      >
+        <CodeMirror
+          value={editorValue}
+          realState={realState}
+          scrollbarStyle={null}
+          height={height - 1}
+          onBlur={(editor) => {
+            const value = editor.getValue();
+            codeChanged(value);
+          }}
+          onChange={(editor) => valueChanged(editor, codeChanged, suggestions)}
+          onBeforeChange={(editor, change) => onBeforeChange(editor, change)}
+          options={options}
+        />
+      </div>
     </div>
   );
 };
