@@ -11,7 +11,7 @@ import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
 import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
-import { getSuggestionKeys, onBeforeChange, handleChange } from '../CodeBuilder/utils';
+import { onBeforeChange, handleChange } from '../CodeBuilder/utils';
 
 export const CodeEditor = ({ width, height, component, currentState, onComponentOptionChanged, darkMode }) => {
   const enableLineNumber = component.definition.properties?.enableLineNumber?.value ?? true;
@@ -44,10 +44,10 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
     height: height,
     display: !parsedWidgetVisibility ? 'none' : 'block',
   };
-
+  console.log('parsedEnableLineNumber', parsedEnableLineNumber);
   const options = {
     lineNumbers: parsedEnableLineNumber,
-    // lineWrapping: lineWrapping,
+    lineWrapping: true,
     singleLine: true,
     mode: languageMode,
     tabSize: 2,
@@ -57,15 +57,10 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
     placeholder,
   };
 
-  function valueChanged(editor, onChange, suggestions, ignoreBraces = false) {
-    handleChange(editor, onChange, suggestions, ignoreBraces);
+  function valueChanged(editor, onChange, ignoreBraces = false) {
+    handleChange(editor, onChange, [], ignoreBraces);
     setEditorValue(editor.getValue());
   }
-
-  let suggestions = React.useMemo(() => {
-    return getSuggestionKeys(realState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [realState.components, realState.queries]);
 
   React.useEffect(() => {
     setRealState(currentState);
@@ -76,7 +71,6 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
     <div data-disabled={parsedDisabledState} style={styles}>
       <div
         className={`code-hinter codehinter-default-input code-editor-widget`}
-        key={suggestions.length}
         style={{ height: height || 'auto', minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }}
       >
         <CodeMirror
@@ -88,7 +82,7 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
             const value = editor.getValue();
             codeChanged(value);
           }}
-          onChange={(editor) => valueChanged(editor, codeChanged, suggestions)}
+          onChange={(editor) => valueChanged(editor, codeChanged)}
           onBeforeChange={(editor, change) => onBeforeChange(editor, change)}
           options={options}
         />
