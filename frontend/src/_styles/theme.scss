@@ -278,6 +278,7 @@ body {
 
     .canvas-container {
       scrollbar-width: none;
+      background-color: #eeeff6;
     }
 
     .canvas-container::-webkit-scrollbar {
@@ -2183,6 +2184,7 @@ input:focus-visible {
   position: fixed;
   min-height: 100%;
   min-width: 100%;
+  background-color: white;
 }
 
 .jet-table {
