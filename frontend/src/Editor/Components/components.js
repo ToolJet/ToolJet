@@ -1195,7 +1195,7 @@ export const componentTypes = [
     description: 'Calendar',
     component: 'Calendar',
     defaultSize: {
-      width: 700,
+      width: 30,
       height: 600,
     },
     others: {
