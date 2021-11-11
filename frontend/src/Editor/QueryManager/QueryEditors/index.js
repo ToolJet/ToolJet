@@ -3,20 +3,7 @@ import React from 'react';
 import DynamicForm from '@/_components/DynamicForm';
 
 import { Restapi } from './Restapi';
-// import { Mysql } from './Mysql';
-// import { Postgresql } from './Postgresql';
 import { Stripe } from './Stripe';
-// import { Firestore } from './Firestore';
-// import { Redis } from './Redis';
-// import { Googlesheets } from './Googlesheets';
-// import { Elasticsearch } from './Elasticsearch';
-// import { Slack } from './Slack';
-// import { Mongodb } from './Mongodb';
-// import { Dynamodb } from './Dynamodb';
-// import { Airtable } from './Airtable';
-// import { Graphql } from './Graphql';
-// import { Mssql } from './Mssql';
-// import { S3 } from './S3';
 
 import MysqlSchema from './Mysql.schema.json';
 import MssqlSchema from './Mssql.schema.json';
@@ -31,6 +18,7 @@ import PostgresqlSchema from './Postgresql.schema.json';
 import SlackSchema from './Slack.schema.json';
 import S3Schema from './S3.schema.json';
 import GooglesheetsSchema from './Googlesheets.schema.json';
+import GcsSchema from './Gcs.schema.json';
 
 const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
@@ -45,12 +33,13 @@ const Postgresql = ({ ...rest }) => <DynamicForm schema={PostgresqlSchema} {...r
 const Slack = ({ ...rest }) => <DynamicForm schema={SlackSchema} {...rest} />;
 const S3 = ({ ...rest }) => <DynamicForm schema={S3Schema} {...rest} />;
 const Googlesheets = ({ ...rest }) => <DynamicForm schema={GooglesheetsSchema} {...rest} />;
+const Gcs = ({ ...rest }) => <DynamicForm schema={GcsSchema} {...rest} />;
 
 export const allSources = {
   Restapi,
+  Stripe,
   Mysql,
   Postgresql,
-  Stripe,
   Firestore,
   Redis,
   Googlesheets,
@@ -62,4 +51,5 @@ export const allSources = {
   Graphql,
   Mssql,
   S3,
+  Gcs,
 };

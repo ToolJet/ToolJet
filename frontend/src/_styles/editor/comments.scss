@@ -86,3 +86,12 @@
   background: transparent;
   height: 1000vh;
 }
+
+.comment-preview-bubble {
+  opacity: 0.5;
+  display: inline !important;
+}
+
+.comment-preview-bubble-border {
+  border: 2.5px solid #FCAA0D;
+}

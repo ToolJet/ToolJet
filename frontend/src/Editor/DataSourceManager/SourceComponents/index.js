@@ -22,6 +22,7 @@ import MssqlSchema from './Database/Mssql.schema.json';
 
 // Cloud storage sources
 import S3Schema from './Database/S3.schema.json';
+import GcsSchema from './Database/Gcs.schema.json';
 
 const Airtable = ({ ...rest }) => <DynamicForm schema={AirtableSchema} {...rest} />;
 const Restapi = ({ ...rest }) => <DynamicForm schema={RestapiSchema} {...rest} />;
@@ -38,6 +39,7 @@ const Postgresql = ({ ...rest }) => <DynamicForm schema={PostgresqlSchema} {...r
 const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
 const S3 = ({ ...rest }) => <DynamicForm schema={S3Schema} {...rest} />;
+const Gcs = ({ ...rest }) => <DynamicForm schema={GcsSchema} {...rest} />;
 
 export const DataBaseSources = [
   DynamodbSchema.source,
@@ -57,7 +59,7 @@ export const ApiSources = [
   GooglesheetSchema.source,
   SlackSchema.source,
 ];
-export const CloudStorageSources = [S3Schema.source];
+export const CloudStorageSources = [S3Schema.source, GcsSchema.source];
 export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources];
 
 export const SourceComponents = {
@@ -76,4 +78,5 @@ export const SourceComponents = {
   Mysql,
   Mssql,
   S3,
+  Gcs,
 };

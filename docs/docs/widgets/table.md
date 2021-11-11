@@ -1,7 +1,3 @@
----
-sidebar_position: 17
----
-
 # Table
 
 Tables can be used for both displaying and editing data.
