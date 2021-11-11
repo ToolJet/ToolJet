@@ -7,7 +7,7 @@ import Button from '@/_ui/Button';
 import useShortcuts from '@/_hooks/use-shortcuts';
 import usePopover from '@/_hooks/use-popover';
 
-function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
+function CommentFooter({ users, editComment = '', editCommentId, handleSubmit }) {
   const [comment, setComment] = React.useState(editComment);
   const [loading, setLoading] = React.useState(false);
   const [open, trigger, content, setOpen] = usePopover(false);
@@ -38,7 +38,12 @@ function CommentFooter({ editComment = '', editCommentId, handleSubmit }) {
       <div className="card-footer">
         <div className="row align-items-center">
           <div className="col-8">
-            <TextareaMentions value={comment} setValue={setComment} placeholder="Type your comment here" />
+            <TextareaMentions
+              users={users}
+              value={comment}
+              setValue={setComment}
+              placeholder="Type your comment here"
+            />
           </div>
           <div className="col-1 cursor-pointer">
             <svg {...trigger} width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

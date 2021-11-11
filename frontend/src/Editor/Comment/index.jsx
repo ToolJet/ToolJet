@@ -11,7 +11,7 @@ import usePopover from '@/_hooks/use-popover';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 
-const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, appVersionsId }) => {
+const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, appVersionsId, users }) => {
   const [loading, setLoading] = React.useState(true);
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
@@ -156,6 +156,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
             thread={thread}
           />
           <CommentFooter
+            users={users}
             editComment={editComment}
             editCommentId={editCommentId}
             handleSubmit={editCommentId ? handleEdit : handleSubmit}
