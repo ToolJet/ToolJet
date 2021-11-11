@@ -6,6 +6,10 @@ sidebar_position: 3
 
 Code Editor widget is a versatile text editor for editing code and supports several languages. 
 
+:::info
+Supporting all commonly used languages. For more information about **[Language modes](https://codemirror.net/mode/)**.
+:::
+
 <img class="screenshot-full" src="/img/widgets/code-editor/code-editor.png" alt="ToolJet - Widget Reference - Code Editor" height="420"/>
 
 
