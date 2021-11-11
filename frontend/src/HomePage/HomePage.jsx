@@ -223,21 +223,6 @@ class HomePage extends React.Component {
     return permissionGrant;
   }
 
-  canUserPerformActionOnFolder(user, action) {
-    let permissionGrant;
-
-    switch (action) {
-      case 'create':
-        permissionGrant = this.canAnyGroupPerformAction('app_create', user.group_permissions);
-        break;
-      default:
-        permissionGrant = false;
-        break;
-    }
-
-    return permissionGrant;
-  }
-
   canAnyGroupPerformActionOnApp(action, appGroupPermissions, app) {
     if (!appGroupPermissions) {
       return false;
@@ -260,15 +245,15 @@ class HomePage extends React.Component {
   }
 
   canCreateApp = () => {
-    return this.canUserPerform(this.state.currentUser, 'create', 'App');
+    return this.canUserPerform(this.state.currentUser, 'create');
   };
 
   canUpdateApp = (app) => {
-    return this.canUserPerform(this.state.currentUser, 'update', 'App', app);
+    return this.canUserPerform(this.state.currentUser, 'update', app);
   };
 
   canDeleteApp = (app) => {
-    return this.canUserPerform(this.state.currentUser, 'delete', 'App', app);
+    return this.canUserPerform(this.state.currentUser, 'delete', app);
   };
 
   canCreateFolder = () => {
