@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
 
-export class multiselectProperties1635788669976 implements MigrationInterface {
+export class SetMultiselectProperties1635788669976 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const queryBuilder = queryRunner.connection.createQueryBuilder();
