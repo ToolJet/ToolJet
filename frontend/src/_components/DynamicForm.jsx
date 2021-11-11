@@ -20,8 +20,6 @@ const DynamicForm = ({
   isSaving,
   selectedDataSource,
   currentState,
-  darkMode,
-  isEditMode,
 }) => {
   // if(schema.properties)  todo add empty check
 
@@ -61,7 +59,10 @@ const DynamicForm = ({
     type,
     placeholder = '',
     mode = 'sql',
+    lineNumbers = true,
   }) => {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+
     switch (type) {
       case 'password':
       case 'text':
@@ -117,10 +118,10 @@ const DynamicForm = ({
           currentState,
           initialValue: options[$key],
           mode,
-          lineNumbers: true,
-          className: 'query-hinter',
+          lineNumbers,
+          className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => optionchanged($key, value),
-          theme: darkMode ? 'monokai' : 'duotone-light',
+          theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
         };
       default:
