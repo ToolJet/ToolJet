@@ -37,7 +37,7 @@ export const Multiselect = function Multiselect({
 
   let newValue = value;
   if (currentValueProperty && currentState) {
-    newValue = resolveReferences(currentValueProperty.value, currentState, '');
+    newValue = resolveReferences(currentValueProperty.value, currentState, []);
   }
 
   let parsedWidgetVisibility = widgetVisibility;
@@ -51,6 +51,11 @@ export const Multiselect = function Multiselect({
   useEffect(() => {
     setCurrentValue(newValue);
   }, [newValue]);
+
+  useEffect(() => {
+    onComponentOptionChanged(component, 'values', currentValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentValue]);
 
   return (
     <div
@@ -75,7 +80,7 @@ export const Multiselect = function Multiselect({
           multiple={true}
           printOptions="on-focus"
           onChange={(newValues) => {
-            onComponentOptionChanged(component, 'values', newValues);
+            setCurrentValue(newValues);
           }}
           filterOptions={fuzzySearch}
           placeholder="Select.."
