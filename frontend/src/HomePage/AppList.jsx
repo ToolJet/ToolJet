@@ -8,7 +8,7 @@ import _ from 'lodash';
 
 const AppList = (props) => {
   return (
-    <div style={{ minHeight: '600px' }}>
+    <div style={{ minHeight: '600px' }} className="app-list">
       {props.isLoading && (
         <>
           {Array.from(Array(10)).map((index) => (
@@ -30,11 +30,11 @@ const AppList = (props) => {
       )}
 
       {props.meta.total_count > 0 && (
-        <div className="container">
+        <div className="container px-0">
           {_.chunk(props.apps, 5).map((fiveApps, index) => (
             <div className="row" key={index}>
               {fiveApps.map((app) => (
-                <div className="appCard col" key={app.id}>
+                <div className="app-card col m-2 p-2" key={app.id}>
                   <span className="app-title mb-3">{app.name}</span>
                   <br />
                   <small className="pt-2 app-description">
