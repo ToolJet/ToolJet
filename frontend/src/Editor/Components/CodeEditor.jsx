@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import CodeMirror from '@uiw/react-codemirror';
-import 'codemirror/mode/handlebars/handlebars';
-import 'codemirror/mode/javascript/javascript';
-import 'codemirror/mode/sql/sql';
+import 'codemirror/addon/comment/comment';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/display/placeholder';
 import 'codemirror/addon/search/match-highlighter';
@@ -44,7 +42,6 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
     height: height,
     display: !parsedWidgetVisibility ? 'none' : 'block',
   };
-  console.log('parsedEnableLineNumber', parsedEnableLineNumber);
   const options = {
     lineNumbers: parsedEnableLineNumber,
     lineWrapping: true,
@@ -62,7 +59,7 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
     setEditorValue(editor.getValue());
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     setRealState(currentState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
