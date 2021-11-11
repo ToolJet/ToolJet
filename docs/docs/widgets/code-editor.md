@@ -1,7 +1,3 @@
----
-sidebar_position: 3
----
-
 # Code Editor
 
 Code Editor widget is a versatile text editor for editing code and supports several languages. 
