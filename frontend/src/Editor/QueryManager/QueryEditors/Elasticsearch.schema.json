@@ -19,16 +19,17 @@
     },
     "search": {
       "index": {
-        "$label": "index",
+        "$label": "Index",
         "$key": "index",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter index"
       },
       "query": {
         "$label": "Query",
         "$key": "query",
         "type": "codehinter",
-        "placeholder": "{ name: '' }",
+        "placeholder": "{ \"name\": \"\" }",
         "description": "Enter query"
       }
     },
@@ -37,13 +38,14 @@
         "$label": "Index",
         "$key": "index",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter index"
       },
       "body": {
-        "$label": "body",
+        "$label": "Body",
         "$key": "body",
         "type": "codehinter",
-        "placeholder": "{ name: 'The Hitchhikers Guide to the Galaxy' }",
+        "placeholder": "{ \"name\": \"The Hitchhikers Guide to the Galaxy\" }",
         "description": "Enter body"
       }
     },
@@ -52,12 +54,14 @@
         "$label": "Index",
         "$key": "index",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter index"
       },
       "id": {
         "$label": "Id",
         "$key": "id",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter id"
       }
     },
@@ -66,12 +70,14 @@
         "$label": "Index",
         "$key": "index",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter index"
       },
       "id": {
         "$label": "Id",
         "$key": "id",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter id"
       },
       "body": {
