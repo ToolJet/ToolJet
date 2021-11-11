@@ -14,7 +14,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
-    "@uiw/react-codemirror": "^3.0.6",
+    "@uiw/react-codemirror": "^3.0.6", //! Do not Upgrade to latest version, Language resources do not need to be imported in @codemirror-v3.x.x
     "array-move": "^3.0.1",
     "babel-loader": "^8.0.5",
     "babel-plugin-console-source": "^2.0.5",
