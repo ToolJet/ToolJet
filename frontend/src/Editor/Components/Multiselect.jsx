@@ -31,7 +31,7 @@ export const Multiselect = function Multiselect({
     }),
   ];
 
-  const currentValueProperty = component.definition.properties.values;
+  const currentValueProperty = component.definition.properties.value;
   const value = currentValueProperty ? currentValueProperty.value : '';
   const [currentValue, setCurrentValue] = useState(value);
 

@@ -866,7 +866,7 @@ export const componentTypes = [
     },
     properties: {
       label: { type: 'code', displayName: 'Label' },
-      default_value: { type: 'code', displayName: 'Default value' },
+      value: { type: 'code', displayName: 'Default value' },
       option_values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
     },
@@ -887,10 +887,9 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        default_value: { value: '' },
+        value: { value: '{{2}}' },
         option_values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visible: { value: true },
       },
       events: [],
       styles: {
