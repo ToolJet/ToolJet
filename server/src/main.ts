@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
-import url from 'url';
+import { AllExceptionsFilter } from './all-exceptions-filter';
 
 const fs = require('fs');
 
@@ -16,17 +16,18 @@ async function bootstrap() {
     bufferLogs: true,
     abortOnError: false,
   });
-
-  if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
-    app.useWebSocketAdapter(new WsAdapter(app));
-  }
-  await app.setGlobalPrefix('api');
-  await app.enableCors();
-
   const host = new URL(process.env.TOOLJET_HOST);
   const domain = host.hostname;
 
+  app.setGlobalPrefix('api');
+  app.enableCors();
+
   app.useLogger(app.get(Logger));
+  app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
+  if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
+    app.useWebSocketAdapter(new WsAdapter(app));
+  }
+
   app.use(
     helmet.contentSecurityPolicy({
       useDefaults: true,
@@ -35,7 +36,7 @@ async function bootstrap() {
         'img-src': ['*', 'data:'],
         'script-src': ['maps.googleapis.com', "'self'", "'unsafe-inline'", "'unsafe-eval'", 'blob:'],
         'default-src': ['maps.googleapis.com', '*.sentry.io', "'self'", 'blob:'],
-        'connect-src': ['ws://' + domain, "'self'", 'maps.googleapis.com', '*.sentry.io',]
+        'connect-src': ['ws://' + domain, "'self'", 'maps.googleapis.com', '*.sentry.io'],
       },
     })
   );
