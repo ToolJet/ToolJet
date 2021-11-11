@@ -223,6 +223,21 @@ class HomePage extends React.Component {
     return permissionGrant;
   }
 
+  canUserPerformActionOnFolder(user, action) {
+    let permissionGrant;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('app_create', user.group_permissions);
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
   canAnyGroupPerformActionOnApp(action, appGroupPermissions, app) {
     if (!appGroupPermissions) {
       return false;
@@ -245,15 +260,19 @@ class HomePage extends React.Component {
   }
 
   canCreateApp = () => {
-    return this.canUserPerform(this.state.currentUser, 'create');
+    return this.canUserPerform(this.state.currentUser, 'create', 'App');
   };
 
   canUpdateApp = (app) => {
-    return this.canUserPerform(this.state.currentUser, 'update', app);
+    return this.canUserPerform(this.state.currentUser, 'update', 'App', app);
   };
 
   canDeleteApp = (app) => {
-    return this.canUserPerform(this.state.currentUser, 'delete', app);
+    return this.canUserPerform(this.state.currentUser, 'delete', 'App', app);
+  };
+
+  canCreateFolder = () => {
+    return this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions);
   };
 
   cancelDeleteAppDialog = () => {
@@ -337,6 +356,7 @@ class HomePage extends React.Component {
                     currentFolder={currentFolder}
                     folderChanged={this.folderChanged}
                     foldersChanged={this.foldersChanged}
+                    canCreateFolder={this.canCreateFolder()}
                   />
                 </div>
 
@@ -455,10 +475,11 @@ class HomePage extends React.Component {
                                         >
                                           {
                                             <span
-                                              className={`${app?.current_version_id
-                                                ? 'badge bg-blue-lt mx-2 '
-                                                : 'badge bg-light-grey mx-2'
-                                                }`}
+                                              className={`${
+                                                app?.current_version_id
+                                                  ? 'badge bg-blue-lt mx-2 '
+                                                  : 'badge bg-light-grey mx-2'
+                                              }`}
                                             >
                                               launch{' '}
                                             </span>
