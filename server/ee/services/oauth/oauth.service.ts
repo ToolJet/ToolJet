@@ -5,6 +5,7 @@ import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
 import { GoogleOAuthService } from './google_oauth.service';
+import { decamelizeKeys } from 'humps';
 
 @Injectable()
 export class OauthService {
@@ -41,13 +42,16 @@ export class OauthService {
 
   async #generateLoginResultPayload(user: User): Promise<any> {
     const JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId };
-    return {
+    return decamelizeKeys({
+      id: user.id,
       auth_token: this.jwtService.sign(JWTPayload),
       email: user.email,
       first_name: user.firstName,
       last_name: user.lastName,
       admin: await this.usersService.hasGroup(user, 'admin'),
-    };
+      group_permissions: await this.usersService.groupPermissions(user),
+      app_group_permissions: await this.usersService.appGroupPermissions(user),
+    });
   }
 
   async signIn(token: string): Promise<any> {

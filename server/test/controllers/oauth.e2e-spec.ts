@@ -31,14 +31,39 @@ describe('oauth controller', () => {
 
       const token = ['someStuff'];
 
-      const response = await request(app.getHttpServer()).post('/oauth/sign-in').send({ token });
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token });
 
-      expect(googleVerifyMock).toHaveBeenCalledWith({ idToken: token, audience: expect.anything() });
+      expect(googleVerifyMock).toHaveBeenCalledWith({
+        idToken: token,
+        audience: expect.anything(),
+      });
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.email).toEqual('ssoUser@tooljet.io');
-      expect(response.body.first_name).toEqual('SSO');
-      expect(response.body.last_name).toEqual('User');
+      expect(new Set(Object.keys(response.body))).toEqual(
+        new Set([
+          'id',
+          'email',
+          'first_name',
+          'last_name',
+          'auth_token',
+          'admin',
+          'group_permissions',
+          'app_group_permissions',
+        ])
+      );
+
+      const { email, first_name, last_name, admin, group_permissions, app_group_permissions } = response.body;
+
+      expect(email).toEqual('ssoUser@tooljet.io');
+      expect(first_name).toEqual('SSO');
+      expect(last_name).toEqual('User');
+      expect(admin).toBeFalsy();
+      expect(group_permissions).toHaveLength(1);
+      expect(group_permissions[0].group).toEqual('all_users');
+      expect(new Set(Object.keys(group_permissions[0]))).toEqual(
+        new Set(['id', 'organization_id', 'group', 'app_create', 'app_delete', 'updated_at', 'created_at'])
+      );
+      expect(app_group_permissions).toHaveLength(0);
     });
 
     it('should be forbid logging in when the user does not exist and signups are disabled', async () => {
@@ -58,9 +83,12 @@ describe('oauth controller', () => {
 
       const token = ['someStuff'];
 
-      const response = await request(app.getHttpServer()).post('/oauth/sign-in').send({ token });
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token });
 
-      expect(googleVerifyMock).toHaveBeenCalledWith({ idToken: token, audience: expect.anything() });
+      expect(googleVerifyMock).toHaveBeenCalledWith({
+        idToken: token,
+        audience: expect.anything(),
+      });
 
       expect(response.statusCode).toBe(401);
       process.env.SSO_DISABLE_SIGNUP = 'false';
@@ -83,18 +111,44 @@ describe('oauth controller', () => {
         ssoId: 'someSSOId',
         firstName: 'Existing',
         lastName: 'Name',
+        groups: ['all_users', 'admin'],
       });
 
       const token = ['someStuff'];
 
-      const response = await request(app.getHttpServer()).post('/oauth/sign-in').send({ token });
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token });
 
-      expect(googleVerifyMock).toHaveBeenCalledWith({ idToken: token, audience: expect.anything() });
+      expect(googleVerifyMock).toHaveBeenCalledWith({
+        idToken: token,
+        audience: expect.anything(),
+      });
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.email).toEqual('ssoUser@tooljet.io');
-      expect(response.body.first_name).toEqual('Existing');
-      expect(response.body.last_name).toEqual('Name');
+      expect(new Set(Object.keys(response.body))).toEqual(
+        new Set([
+          'id',
+          'email',
+          'first_name',
+          'last_name',
+          'auth_token',
+          'admin',
+          'group_permissions',
+          'app_group_permissions',
+        ])
+      );
+
+      const { email, first_name, last_name, admin, group_permissions, app_group_permissions } = response.body;
+
+      expect(email).toEqual('ssoUser@tooljet.io');
+      expect(first_name).toEqual('Existing');
+      expect(last_name).toEqual('Name');
+      expect(admin).toBeTruthy();
+      expect(group_permissions).toHaveLength(2);
+      expect(new Set(group_permissions.map((p) => p.group))).toEqual(new Set(['all_users', 'admin']));
+      expect(new Set(Object.keys(group_permissions[0]))).toEqual(
+        new Set(['id', 'organization_id', 'group', 'app_create', 'app_delete', 'updated_at', 'created_at'])
+      );
+      expect(app_group_permissions).toHaveLength(0);
     });
   });
 
