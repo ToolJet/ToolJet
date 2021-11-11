@@ -25,6 +25,7 @@
         "$label": "Path",
         "$key": "path",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter path"
       }
     },
@@ -33,12 +34,14 @@
         "$label": "Path",
         "$key": "path",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter path"
       },
       "order_field": {
         "$label": "Order",
         "$key": "order_field",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter order"
       },
       "order_type": {
@@ -55,12 +58,14 @@
         "$label": "Limit",
         "$key": "limit",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter limit"
       },
       "where_field": {
         "$label": "Field",
         "$key": "where_field",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter field"
       },
       "where_operation": {
@@ -84,6 +89,7 @@
         "$label": "Value",
         "$key": "where_value",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter value"
       }
     },
@@ -92,6 +98,7 @@
         "$label": "Collection",
         "$key": "path",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter collection"
       },
       "body": {
@@ -106,6 +113,7 @@
         "$label": "Path",
         "$key": "path",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter path"
       },
       "body": {
@@ -120,6 +128,7 @@
         "$label": "Path",
         "$key": "path",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter path"
       },
       "body": {
@@ -134,12 +143,14 @@
         "$label": "Collection",
         "$key": "collection",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter collection"
       },
       "document_id_key": {
         "$label": "Key for document Id",
         "$key": "document_id_key",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter key for document Id"
       },
       "records": {
@@ -154,6 +165,7 @@
         "$label": "Path",
         "$key": "path",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter path"
       }
     }
