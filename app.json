@@ -30,7 +30,7 @@
       "value": ""
     },
     "NODE_OPTIONS": {
-      "description": "Node options",
+      "description": "Node options configured to increase node memory to support app build",
       "value": "--max-old-space-size=2048"
     }
   },
