@@ -74,6 +74,7 @@ export class FoldersService {
         })
         .orWhere('folder_apps.app_id IS NULL')
         .orderBy('folders.name', 'ASC')
+        .distinct()
         .getMany();
     } else {
       return [];
