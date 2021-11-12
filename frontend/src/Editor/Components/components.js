@@ -1271,9 +1271,9 @@ export const componentTypes = [
     },
   },
   {
-    name: 'IFrame',
-    displayName: 'IFrame',
-    description: 'Display an IFrame',
+    name: 'Iframe',
+    displayName: 'Iframe',
+    description: 'Display an Iframe',
     defaultSize: {
       width: 560,
       height: 310,
