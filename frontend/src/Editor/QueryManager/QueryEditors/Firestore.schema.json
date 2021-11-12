@@ -162,6 +162,7 @@
         "$label": "Records",
         "$key": "records",
         "type": "codehinter",
+        "mode": "javascript",
         "description": "Enter records"
       }
     },

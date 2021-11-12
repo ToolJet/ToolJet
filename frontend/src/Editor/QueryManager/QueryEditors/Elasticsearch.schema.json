@@ -45,6 +45,7 @@
         "$label": "Body",
         "$key": "body",
         "type": "codehinter",
+        "mode": "javascript",
         "placeholder": "{ \"name\": \"The Hitchhikers Guide to the Galaxy\" }",
         "description": "Enter body"
       }

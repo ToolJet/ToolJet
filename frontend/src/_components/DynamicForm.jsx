@@ -118,7 +118,11 @@ const DynamicForm = ({
       case 'codehinter':
         return {
           currentState,
-          initialValue: options[$key] || initialValue,
+          initialValue: options[$key]
+            ? typeof options[$key] === 'string'
+              ? options[$key]
+              : JSON.stringify(options[$key])
+            : initialValue,
           mode,
           lineNumbers,
           className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
