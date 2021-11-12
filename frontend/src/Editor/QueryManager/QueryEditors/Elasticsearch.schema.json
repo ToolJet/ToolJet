@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "operation": {
-      "$label": "",
+      "$label": "Operation",
       "$key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
@@ -53,6 +53,7 @@
       "index": {
         "$label": "Index",
         "$key": "index",
+        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter index"
@@ -60,6 +61,7 @@
       "id": {
         "$label": "Id",
         "$key": "id",
+        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter id"
@@ -69,6 +71,7 @@
       "index": {
         "$label": "Index",
         "$key": "index",
+        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter index"
@@ -76,6 +79,7 @@
       "id": {
         "$label": "Id",
         "$key": "id",
+        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter id"

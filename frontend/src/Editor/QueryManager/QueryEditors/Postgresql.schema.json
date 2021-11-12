@@ -40,16 +40,18 @@
           "$label": "Table",
           "$key": "table",
           "type": "codehinter",
+          "lineNumbers": false,
           "description": "Enter table"
         },
         "primary_key_column": {
           "$label": "Primary key column",
           "$key": "primary_key_column",
           "type": "codehinter",
+          "lineNumbers": false,
           "description": "Enter primary key column"
         },
         "records": {
-          "$label": "Records",
+          "$label": "Records to update",
           "$key": "records",
           "type": "codehinter",
           "description": "Enter records"

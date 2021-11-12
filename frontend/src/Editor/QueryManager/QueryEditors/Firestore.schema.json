@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "operation": {
-      "$label": "",
+      "$label": "Operation",
       "$key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
@@ -40,6 +40,7 @@
       "order_field": {
         "$label": "Order",
         "$key": "order_field",
+        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter order"
@@ -47,6 +48,7 @@
       "order_type": {
         "$label": "Order type",
         "$key": "order_type",
+        "className": "col-6",
         "type": "dropdown",
         "description": "Single select dropdown for order type",
         "$options": [
@@ -64,6 +66,7 @@
       "where_field": {
         "$label": "Field",
         "$key": "where_field",
+        "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter field"
@@ -71,6 +74,7 @@
       "where_operation": {
         "$label": "Operator",
         "$key": "where_operation",
+        "className": "col-4",
         "type": "dropdown",
         "description": "Single select dropdown for where operation",
         "$options": [
@@ -88,6 +92,7 @@
       "where_value": {
         "$label": "Value",
         "$key": "where_value",
+        "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter value"

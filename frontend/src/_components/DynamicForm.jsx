@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import Input from '@/_ui/Input';
 import Textarea from '@/_ui/Textarea';
 import Select from '@/_ui/Select';
@@ -60,6 +61,7 @@ const DynamicForm = ({
     placeholder = '',
     mode = 'sql',
     lineNumbers = true,
+    initialValue,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -116,7 +118,7 @@ const DynamicForm = ({
       case 'codehinter':
         return {
           currentState,
-          initialValue: options[$key],
+          initialValue: options[$key] || initialValue,
           mode,
           lineNumbers,
           className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
@@ -140,12 +142,12 @@ const DynamicForm = ({
     return (
       <div className="row">
         {Object.keys(obj).map((key) => {
-          const { $label, type, $encrypted } = obj[key];
+          const { $label, type, $encrypted, className } = obj[key];
 
           const Element = getElement(type);
 
           return (
-            <div className="col-md-12 my-2" key={key}>
+            <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
               {$label && (
                 <label className="form-label">
                   {$label}
@@ -178,13 +180,15 @@ const DynamicForm = ({
       const selector = options[flipComponentDropdown.$key]?.value || options[flipComponentDropdown.$key];
 
       return (
-        <div className="row">
-          <div className="col-md-12 my-2">
-            {flipComponentDropdown.$label && <label className="form-label">{flipComponentDropdown.$label}</label>}
-            <Select {...getElementProps(flipComponentDropdown)} />
+        <>
+          <div className="row">
+            <div className="col-md-12 my-2">
+              {flipComponentDropdown.$label && <label className="form-label">{flipComponentDropdown.$label}</label>}
+              <Select {...getElementProps(flipComponentDropdown)} />
+            </div>
           </div>
           {getLayout(obj[selector])}
-        </div>
+        </>
       );
     }
   };

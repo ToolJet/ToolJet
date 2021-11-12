@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "operation": {
-      "$label": "",
+      "$label": "Operation",
       "$key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
@@ -21,6 +21,7 @@
         "$label": "Collection",
         "$key": "collection",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter collection"
       },
       "document": {
@@ -37,6 +38,7 @@
         "$label": "Collection",
         "$key": "collection",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter collection"
       },
       "document": {

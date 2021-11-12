@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "operation": {
-      "$label": "",
+      "$label": "Operation",
       "$key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
@@ -22,24 +22,28 @@
         "$label": "Base ID",
         "$key": "base_id",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter base ID"
       },
       "table_name": {
         "$label": "Table name",
         "$key": "table_name",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter table name"
       },
       "page_size": {
         "$label": "Page size",
         "$key": "page_size",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter page size"
       },
       "offset": {
         "$label": "Offset",
         "$key": "offset",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter offset"
       }
     },
@@ -48,18 +52,21 @@
         "$label": "Base ID",
         "$key": "base_id",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter base ID"
       },
       "table_name": {
         "$label": "Table name",
         "$key": "table_name",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter table name"
       },
       "record_id": {
         "$label": "Record ID",
         "$key": "record_id",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter record id"
       }
     },
@@ -68,11 +75,13 @@
         "$label": "Base ID",
         "$key": "base_id",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter base ID"
       },
       "table_name": {
         "$label": "Table name",
         "$key": "table_name",
+        "lineNumbers": false,
         "type": "codehinter",
         "description": "Enter table name"
       },
@@ -80,6 +89,7 @@
         "$label": "Record ID",
         "$key": "record_id",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter record id"
       },
       "body": {
@@ -94,18 +104,21 @@
         "$label": "Base ID",
         "$key": "base_id",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter base ID"
       },
       "table_name": {
         "$label": "Table name",
         "$key": "table_name",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter table name"
       },
       "record_id": {
         "$label": "Record ID",
         "$key": "record_id",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter record id"
       }
     }

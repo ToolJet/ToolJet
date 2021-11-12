@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "operation": {
-      "$label": "",
+      "$label": "Operation",
       "$key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
@@ -24,12 +24,14 @@
         "$label": "Bucket",
         "$key": "bucket",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter bucket"
       },
       "key": {
         "$label": "Key",
         "$key": "key",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter key"
       }
     },
@@ -38,24 +40,28 @@
         "$label": "Bucket",
         "$key": "bucket",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter bucket"
       },
       "key": {
         "$label": "Key",
         "$key": "key",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter key"
       },
       "contentType": {
         "$label": "Content Type",
         "$key": "contentType",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter content type"
       },
       "data": {
         "$label": "Upload data",
         "$key": "data",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter upload data"
       }
     },
@@ -64,6 +70,7 @@
         "$label": "Bucket",
         "$key": "bucket",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter bucket"
       }
     },
@@ -72,18 +79,22 @@
         "$label": "Bucket",
         "$key": "bucket",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter bucket"
       },
       "key": {
         "$label": "Key",
         "$key": "key",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter key"
       },
       "expiresIn": {
         "$label": "Expires in",
         "$key": "expiresIn",
         "type": "codehinter",
+        "lineNumbers": false,
+        "initialValue": "3600",
         "description": "Enter expires in"
       }
     },
@@ -92,24 +103,29 @@
         "$label": "Bucket",
         "$key": "bucket",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter bucket"
       },
       "key": {
         "$label": "Key",
         "$key": "key",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter key"
       },
       "expiresIn": {
         "$label": "Expires in",
         "$key": "expiresIn",
         "type": "codehinter",
+        "initialValue": "3600",
+        "lineNumbers": false,
         "description": "Enter expires in"
       },
       "contentType": {
         "$label": "Content Type",
         "$key": "contentType",
         "type": "codehinter",
+        "lineNumbers": false,
         "description": "Enter content type"
       }
     }
