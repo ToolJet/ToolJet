@@ -37,7 +37,7 @@ async function bootstrap() {
         'script-src': ['maps.googleapis.com', "'self'", "'unsafe-inline'", "'unsafe-eval'", 'blob:'],
         'default-src': ['maps.googleapis.com', '*.sentry.io', "'self'", 'blob:'],
         'connect-src': ['ws://' + domain, "'self'", 'maps.googleapis.com', '*.sentry.io'],
-        'frame-src': ['*', 'self'],
+        'frame-src': ['*'],
       },
     })
   );
