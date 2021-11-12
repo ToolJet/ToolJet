@@ -28,6 +28,10 @@
     "SECRET_KEY_BASE": {
       "description": "Used by ToolJet server as the input secret to the application's key generator.",
       "value": ""
+    },
+    "NODE_OPTIONS": {
+      "description": "Node options",
+      "value": "--max-old-space-size=2048"
     }
   },
   "formation": {
