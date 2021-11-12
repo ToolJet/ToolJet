@@ -17,7 +17,62 @@ export class RebaseWidgetWidthAndLeftOffsetForResponsiveCanvas1636372753632 impl
 
         for (const componentId of Object.keys(components)) {
           const component = components[componentId];
+          console.log('component', component);
           const layouts = component.layouts;
+
+          if (!component.parent) continue;
+
+          for (const layoutIndex in layouts) {
+            const layout = layouts[layoutIndex];
+
+            let containerWidth = 1292;
+            console.log('layout index', layoutIndex);
+            if (component.parent) {
+              const parentComponent: any = Object.entries(components).filter(
+                (entry) => entry[0] === component.parent
+              )[0][1];
+              console.log('parent component', parentComponent);
+              const parentLayoutCandidateEntries: any = Object.entries(parentComponent.layouts).filter(
+                (entry) => entry[0] === layoutIndex
+              );
+              console.log('parentLayoutCandidateEntries', parentLayoutCandidateEntries);
+              if (parentLayoutCandidateEntries.length > 0) {
+                containerWidth = parentLayoutCandidateEntries[0][1].width;
+                console.log('yepski', containerWidth);
+              }
+            }
+
+            const width = layout.width;
+            const newWidth = (width * 43) / containerWidth;
+            component.layouts[layoutIndex].width = newWidth;
+
+            const left = layout.left;
+            const newLeft = (left * 100) / containerWidth;
+            component.layouts[layoutIndex].left = newLeft;
+          }
+
+          console.log('component', component);
+          components[componentId] = {
+            ...component,
+            component: {
+              ...component.component,
+              definition: {
+                ...component.component.definition,
+              },
+            },
+          };
+        }
+
+        definition['components'] = components;
+        version.definition = definition;
+
+        await queryBuilder.update(AppVersion).set({ definition }).where('id = :id', { id: version.id }).execute();
+
+        for (const componentId of Object.keys(components)) {
+          const component = components[componentId];
+          const layouts = component.layouts;
+
+          if (component.parent) continue;
 
           for (const layoutIndex in layouts) {
             const layout = layouts[layoutIndex];
