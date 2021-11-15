@@ -2266,3 +2266,31 @@ input[type='text'] {
 .fw-500 {
   font-weight: 500;
 }
+
+//Portal
+
+.modal-portal-wrapper {
+  // border: 1px solid #2fcc8b;
+  width: 100vmax;
+  overflow-y: hidden;
+  // background-color: rgba(51, 51, 51, 0.3);
+  // backdrop-filter: blur(1px);
+  justify-content: center;
+  align-items: center;
+  top: 0px;
+  z-index: 10000000;
+}
+
+
+
+// .modal-content {
+//   padding: 20px;
+//   box-sizing: border-box;
+//   min-height: 50px;
+//   min-width: 50px;
+//   max-height: 80%;
+//   max-width: 80%;
+//   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+//   background-color: white;
+//   border-radius: 2px;
+// }

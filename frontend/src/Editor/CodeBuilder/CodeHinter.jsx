@@ -16,6 +16,7 @@ import 'codemirror/theme/monokai.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
+import Portal from '../../_components/Portal';
 
 export function CodeHinter({
   initialValue,
@@ -116,9 +117,21 @@ export function CodeHinter({
       </animated.div>
     );
   };
+  const [isOpen, setIsOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    console.log('isOpen', isOpen);
+  }, [isOpen]);
+
+  // const handleClose = () => setIsOpen(false);
   return (
-    <CodeHinter.Container enablePreview={enablePreview} getPreview={getPreview}>
+    <CodeHinter.Container
+      darkMode={theme}
+      isOpen={isOpen}
+      callback={setIsOpen}
+      enablePreview={enablePreview}
+      getPreview={getPreview}
+    >
       <div
         className={` code-hinter ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
@@ -144,21 +157,84 @@ export function CodeHinter({
   );
 }
 
-CodeHinter.Container = ({ children, enablePreview, getPreview }) => {
+const Container = ({ children, darkMode, isOpen, callback, enablePreview, getPreview }) => {
+  console.log('darkMode ==>', darkMode);
+  const handleClose = () => {
+    callback(false);
+  };
   return (
     <div className="code-hinter-container">
       {children}
-      <div className="d-flex justify-content-end" onClick={() => console.log('🐔')}>
+
+      <div className="d-flex justify-content-end">
         <OverlayTrigger
           trigger={['hover', 'focus']}
           placement="top"
           delay={{ show: 800, hide: 100 }}
           overlay={<Tooltip id="button-tooltip">{'Pop out code editor into a new window'}</Tooltip>}
         >
-          <img className="svg-icon float m-2 popup-btn" src="/assets/images/icons/pop.svg" width="16" height="16" />
+          <img
+            className="svg-icon float m-2 popup-btn"
+            src="/assets/images/icons/pop.svg"
+            width="16"
+            height="16"
+            onClick={(e) => {
+              e.stopPropagation();
+              callback(true);
+            }}
+          />
         </OverlayTrigger>
       </div>
-      {enablePreview && getPreview()}
+      {enablePreview && !isOpen && getPreview()}
+      <CodeHinter.PopUpHinter component={children} open={isOpen} onClose={handleClose} preview={getPreview} />
     </div>
   );
 };
+
+const PopUpHinter = ({ component, open, onClose, preview }) => {
+  const handleClose = (e) => {
+    e.stopPropagation();
+    console.log('open || close', open);
+    onClose();
+  };
+
+  React.useEffect(() => {
+    if (open) {
+      document.querySelector('#app').setAttribute('inert', 'true');
+    }
+
+    return () => {
+      document.querySelector('#app').removeAttribute('inert');
+    };
+  }, [open, onClose]);
+
+  return (
+    <React.Fragment>
+      {open && (
+        <Portal className="modal-portal-wrapper">
+          <div className="modal-dialog modal-portal-wrapper" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">component</h5>
+                <button
+                  onClick={handleClose}
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body p-1">
+                {component}
+                {preview()}
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+    </React.Fragment>
+  );
+};
+
+CodeHinter.Container = Container;
+CodeHinter.PopUpHinter = PopUpHinter;
