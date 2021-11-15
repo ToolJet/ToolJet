@@ -167,7 +167,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'string', displayName: 'Title' },
+      title: { type: 'code', displayName: 'Title' },
       data: { type: 'json', displayName: 'Data' },
       loadingState: { type: 'code', displayName: 'Loading State' },
       markerColor: { type: 'color', displayName: 'Marker color' },
@@ -230,7 +230,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      title: { type: 'string', displayName: 'Title' },
+      title: { type: 'code', displayName: 'Title' },
       size: {
         type: 'select',
         displayName: 'Modal size',
@@ -1267,6 +1267,87 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         cellSizeInViewsClassifiedByResource: { value: 'spacious' },
+      },
+    },
+  },
+  {
+    name: 'Iframe',
+    displayName: 'Iframe',
+    description: 'Display an Iframe',
+    defaultSize: {
+      width: 560,
+      height: 310,
+    },
+    component: 'IFrame',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      source: { type: 'code', displayName: 'URL' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        source: { value: 'https://tooljet.io/' },
+        visible: { value: true },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'CodeEditor',
+    displayName: 'Code Editor',
+    description: 'Code Editor',
+    component: 'CodeEditor',
+    defaultSize: {
+      width: 270,
+      height: 120,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      enableLineNumber: { type: 'code', displayName: 'Show Line Number' },
+      mode: { type: 'code', displayName: 'Mode' },
+      placeholder: { type: 'code', displayName: 'Placeholder' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      value: '',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        enableLineNumber: { value: '{{true}}' },
+        mode: { value: 'javascript' },
+        placeholder: { value: '' },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },

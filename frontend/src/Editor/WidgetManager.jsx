@@ -5,6 +5,14 @@ import { isEmpty } from 'lodash';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  function handleSearchQueryChange(e) {
+    const { value } = e.target;
+
+    setSearchQuery(value);
+    filterComponents(value);
+  }
 
   function filterComponents(value) {
     if (value !== '') {
@@ -49,6 +57,15 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
           <p className={`empty-subtitle ${darkMode ? 'text-white-50' : 'text-secondary'}`}>
             Try adjusting your search or filter to find what you&apos;re looking for.
           </p>
+          <button
+            className="btn btn-sm btn-outline-azure mt-3"
+            onClick={() => {
+              setFilteredComponents(componentTypes);
+              setSearchQuery('');
+            }}
+          >
+            clear query
+          </button>
         </div>
       );
     }
@@ -95,7 +112,8 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
           type="text"
           className="form-control mb-2"
           placeholder="Search…"
-          onChange={(e) => filterComponents(e.target.value)}
+          value={searchQuery}
+          onChange={(e) => handleSearchQueryChange(e)}
         />
       </div>
       <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>

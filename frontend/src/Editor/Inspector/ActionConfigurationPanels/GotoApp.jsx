@@ -52,8 +52,8 @@ export function GotoApp({ getAllApps, currentState, event, handlerChanged, event
       {Array(numberOfQueryParams)
         .fill(0)
         .map((_, index) => (
-          <div key={index}>
-            <div className="input-group mt-1">
+          <div key={index} className="row input-group mt-1">
+            <div className="col">
               <CodeHinter
                 currentState={currentState}
                 initialValue={event.queryParams[index][0]}
@@ -62,6 +62,8 @@ export function GotoApp({ getAllApps, currentState, event, handlerChanged, event
                 className="form-control codehinter-query-editor-input"
                 height={30}
               />
+            </div>
+            <div className="col">
               <CodeHinter
                 currentState={currentState}
                 initialValue={event.queryParams[index][1]}
@@ -70,10 +72,10 @@ export function GotoApp({ getAllApps, currentState, event, handlerChanged, event
                 className="form-control codehinter-query-editor-input"
                 height={30}
               />
-              <span className="input-group-text btn-sm" role="button" onClick={() => deleteQueryParam(index)}>
-                x
-              </span>
             </div>
+            <span className="btn-sm col-auto my-1" role="button" onClick={() => deleteQueryParam(index)}>
+              x
+            </span>
           </div>
         ))}
 

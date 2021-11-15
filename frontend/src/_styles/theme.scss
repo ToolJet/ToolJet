@@ -2510,3 +2510,11 @@ input[type='text'] {
   font-weight: 400 !important;
   margin: 0 !important;
 }
+
+.code-editor-widget {
+  border-radius: 0;
+  .CodeMirror {
+    border-radius: inherit;
+    margin-top: -1px!important;
+  }
+}
