@@ -24,7 +24,7 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 2. Deploy new cloud run service
 
-:::Note
+:::note
 This command takes the assumption that certain required environment has already been created in secrets. If you haven't created already then use the [secret manager](https://console.cloud.google.com/security/secret-manager).
 :::
 
@@ -47,7 +47,7 @@ This command takes the assumption that certain required environment has already 
 Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
 
-:::Tip
+:::tip
 If you are to use [Public IP](https://cloud.google.com/sql/docs/mysql/connect-run) for Cloud SQL, then database host connection needs to be done via unix socket. In that case you can set value for `PG_HOST` as `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`. Additionally you will also have to set these two flags with the above command:
 ```
    --set-cloudsql-instances <replace-cloud-sql-connection-name> \
@@ -88,7 +88,7 @@ The default username of the admin is `dev@tooljet.io` and the password is `passw
 
 2. Deploy new cloud run service
 
-:::Note
+:::note
 This command takes the assumption that certain required environment has already been created in secrets. If you haven't created already then use the [secret manager](https://console.cloud.google.com/security/secret-manager).
 :::
 
@@ -109,7 +109,7 @@ This command takes the assumption that certain required environment has already 
    --args "npm,run,start:prod"
    ```
 
-:::Tip
+:::tip
 If you are to use [Public IP](https://cloud.google.com/sql/docs/mysql/connect-run) for Cloud SQL, then database host connection needs to be done via unix socket. In that case you can set value for `PG_HOST` as `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`. Additionally you will also have to set these two flags with the above command:
 ```
    --set-cloudsql-instances <replace-cloud-sql-connection-name> \
