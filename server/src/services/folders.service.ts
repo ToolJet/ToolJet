@@ -65,7 +65,7 @@ export class FoldersService {
 
     if (allViewableAppIds.length !== 0) {
       return await createQueryBuilder(Folder, 'folders')
-        .innerJoinAndSelect('folders.folderApps', 'folder_apps')
+        .leftJoinAndSelect('folders.folderApps', 'folder_apps')
         .where('folder_apps.app_id IN(:...allViewableAppIds)', {
           allViewableAppIds,
         })
@@ -74,6 +74,7 @@ export class FoldersService {
         })
         .orWhere('folder_apps.app_id IS NULL')
         .orderBy('folders.name', 'ASC')
+        .distinct()
         .getMany();
     } else {
       return [];
