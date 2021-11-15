@@ -1270,4 +1270,42 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Iframe',
+    displayName: 'Iframe',
+    description: 'Display an Iframe',
+    defaultSize: {
+      width: 560,
+      height: 310,
+    },
+    component: 'IFrame',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      source: { type: 'code', displayName: 'URL' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        source: { value: 'https://tooljet.io/' },
+        visible: { value: true },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
