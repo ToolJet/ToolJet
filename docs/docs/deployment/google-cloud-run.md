@@ -6,14 +6,14 @@ sidebar_label: Google Cloud Run
 # Deploying ToolJet on Google Cloud Run
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using Cloud SQL since this guide is for deploying using GKE.
+You should setup a PostgreSQL database manually to be used by ToolJet.
 :::
 
 Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 ## Deploying ToolJet application
 
-1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific tooljet image from docker hub and then tag with you project to push it to cloud registry.
+1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific tooljet image from docker hub and then tag with your project to push it to cloud registry.
 
    ```bash
    gcloud auth configure-docker
