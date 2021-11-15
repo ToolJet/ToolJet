@@ -1308,4 +1308,47 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'CodeEditor',
+    displayName: 'Code Editor',
+    description: 'Code Editor',
+    component: 'CodeEditor',
+    defaultSize: {
+      width: 270,
+      height: 120,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      enableLineNumber: { type: 'code', displayName: 'Show Line Number' },
+      mode: { type: 'code', displayName: 'Mode' },
+      placeholder: { type: 'code', displayName: 'Placeholder' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      value: '',
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        enableLineNumber: { value: '{{true}}' },
+        mode: { value: 'javascript' },
+        placeholder: { value: '' },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
