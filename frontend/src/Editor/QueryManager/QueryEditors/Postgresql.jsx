@@ -52,8 +52,6 @@ class Postgresql extends React.Component {
                   theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                   lineNumbers={true}
                   className="query-hinter"
-                  enablePreview
-                  height="120px"
                   onChange={(value) => changeOption(this, 'query', value)}
                 />
               </div>

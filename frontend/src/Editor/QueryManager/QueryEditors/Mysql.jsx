@@ -53,9 +53,6 @@ class Mysql extends React.Component {
                   lineNumbers={true}
                   lineWrapping={true}
                   className="query-hinter"
-                  enablePreview
-                  height="auto"
-                  minHeight="120px"
                   onChange={(value) => changeOption(this, 'query', value)}
                 />
               </div>
