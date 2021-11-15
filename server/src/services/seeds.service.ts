@@ -64,6 +64,7 @@ export class SeedsService {
       group: group,
       appCreate: group == 'admin',
       appDelete: group == 'admin',
+      folderCreate: group == 'admin',
     });
 
     await manager.save(groupPermission);
