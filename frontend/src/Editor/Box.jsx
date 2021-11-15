@@ -25,6 +25,7 @@ import { FilePicker } from './Components/FilePicker';
 import { PasswordInput } from './Components/PasswordInput';
 import { Calendar } from './Components/Calendar';
 import { IFrame } from './Components/IFrame';
+import { CodeEditor } from './Components/CodeEditor';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -58,6 +59,7 @@ const AllComponents = {
   PasswordInput,
   Calendar,
   IFrame,
+  CodeEditor,
 };
 
 export const Box = function Box({
