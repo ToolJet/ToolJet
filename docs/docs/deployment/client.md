@@ -51,7 +51,7 @@ For example: `NODE_ENV=production TOOLJET_SERVER_URL=https://server.tooljet.io n
      upload: build/(.*)
    ```
 
-3. Active cloud shell on your browser and create build folder
+3. Activate cloud shell on your browser and create build folder
    ```bash
    mkdir tooljet-assets
    ```
