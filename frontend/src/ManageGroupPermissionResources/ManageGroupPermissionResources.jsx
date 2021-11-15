@@ -568,42 +568,67 @@ class ManageGroupPermissionResources extends React.Component {
                                   </td>
                                 </tr>
                               ) : (
-                                <tr>
-                                  <td>Apps</td>
-                                  <td className="text-muted">
-                                    <div>
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          onChange={() => {
-                                            this.updateGroupPermission(groupPermission.id, {
-                                              app_create: !groupPermission.app_create,
-                                            });
-                                          }}
-                                          checked={groupPermission.app_create}
-                                          disabled={groupPermission.group === 'admin'}
-                                        />
-                                        <span className="form-check-label">Create</span>
-                                      </label>
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          onChange={() => {
-                                            this.updateGroupPermission(groupPermission.id, {
-                                              app_delete: !groupPermission.app_delete,
-                                            });
-                                          }}
-                                          checked={groupPermission.app_delete}
-                                          disabled={groupPermission.group === 'admin'}
-                                        />
-                                        <span className="form-check-label">Delete</span>
-                                      </label>
-                                    </div>
-                                  </td>
-                                  <td></td>
-                                </tr>
+                                <>
+                                  <tr>
+                                    <td>Apps</td>
+                                    <td className="text-muted">
+                                      <div>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                app_create: !groupPermission.app_create,
+                                              });
+                                            }}
+                                            checked={groupPermission.app_create}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Create</span>
+                                        </label>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                app_delete: !groupPermission.app_delete,
+                                              });
+                                            }}
+                                            checked={groupPermission.app_delete}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Delete</span>
+                                        </label>
+                                      </div>
+                                    </td>
+                                    <td></td>
+                                  </tr>
+
+                                  <tr>
+                                    <td>Folders</td>
+                                    <td className="text-muted">
+                                      <div>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                folder_create: !groupPermission.folder_create,
+                                              });
+                                            }}
+                                            checked={groupPermission.folder_create}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Create</span>
+                                        </label>
+                                      </div>
+                                    </td>
+                                    <td></td>
+                                  </tr>
+                                </>
                               )}
                             </tbody>
                           </table>

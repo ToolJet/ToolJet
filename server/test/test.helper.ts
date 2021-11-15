@@ -18,6 +18,8 @@ import { ThreadRepository } from '@repositories/thread.repository';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { AllExceptionsFilter } from 'src/all-exceptions-filter';
+import { Logger } from 'nestjs-pino';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -29,6 +31,7 @@ export async function createNestAppInstance() {
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
+  app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   await app.init();
 
   return app;
@@ -218,6 +221,7 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         group: group,
         appCreate: group == 'admin',
         appDelete: group == 'admin',
+        folderCreate: group == 'admin',
       });
       await groupPermissionRepository.save(groupPermission);
     }

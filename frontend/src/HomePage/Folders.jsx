@@ -9,6 +9,7 @@ export const Folders = function Folders({
   currentFolder,
   folderChanged,
   foldersChanged,
+  canCreateFolder,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
 
@@ -96,7 +97,7 @@ export const Folders = function Folders({
             </a>
           ))}
           <hr />
-          {!showForm && (
+          {!showForm && canCreateFolder && (
             <a className="mx-3 fw-500" onClick={() => setShowForm(true)}>
               + Folder
             </a>

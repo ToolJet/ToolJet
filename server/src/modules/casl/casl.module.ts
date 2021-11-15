@@ -11,6 +11,7 @@ import { AppsAbilityFactory } from './abilities/apps-ability.factory';
 import { ThreadsAbilityFactory } from './abilities/threads-ability.factory';
 import { CommentsAbilityFactory } from './abilities/comments-ability.factory';
 import { CaslAbilityFactory } from './casl-ability.factory';
+import { FoldersAbilityFactory } from './abilities/folders-ability.factory';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Organization, OrganizationUser, App])],
@@ -22,7 +23,14 @@ import { CaslAbilityFactory } from './casl-ability.factory';
     AppsAbilityFactory,
     ThreadsAbilityFactory,
     CommentsAbilityFactory,
+    FoldersAbilityFactory,
   ],
-  exports: [CaslAbilityFactory, AppsAbilityFactory, ThreadsAbilityFactory, CommentsAbilityFactory],
+  exports: [
+    CaslAbilityFactory,
+    AppsAbilityFactory,
+    ThreadsAbilityFactory,
+    CommentsAbilityFactory,
+    FoldersAbilityFactory,
+  ],
 })
 export class CaslModule {}
