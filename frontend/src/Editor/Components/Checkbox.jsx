@@ -3,7 +3,6 @@ import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const Checkbox = function Checkbox({
   id,
-  width,
   height,
   component,
   onComponentClick,
@@ -46,7 +45,7 @@ export const Checkbox = function Checkbox({
     <div
       data-disabled={parsedDisabledState}
       className="row py-1"
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);

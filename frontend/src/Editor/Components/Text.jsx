@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ id, width, height, component, onComponentClick, currentState }) {
+export const Text = function Text({ id, height, component, onComponentClick, currentState }) {
   const text = component.definition.properties.text.value;
   const color = component.definition.styles.textColor.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
@@ -45,7 +45,6 @@ export const Text = function Text({ id, width, height, component, onComponentCli
 
   const computedStyles = {
     color,
-    width,
     height,
     display: parsedWidgetVisibility ? 'flex' : 'none',
     alignItems: 'center',

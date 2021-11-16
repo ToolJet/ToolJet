@@ -20,6 +20,7 @@ function uuidv4() {
 }
 
 export const Container = ({
+  canvasWidth,
   mode,
   snapToGrid,
   onComponentClick,
@@ -35,7 +36,6 @@ export const Container = ({
   currentLayout,
   removeComponent,
   deviceWindowWidth,
-  scaleValue,
   selectedComponent,
   darkMode,
   showComments,
@@ -43,9 +43,11 @@ export const Container = ({
   socket,
 }) => {
   const styles = {
-    width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
+    width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     height: 2400,
+    maxWidth: '1292px',
     position: 'absolute',
+    backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
   const components = appDefinition.components;
@@ -93,6 +95,14 @@ export const Container = ({
     }
   });
 
+  function convertXToPercentage(x, canvasWidth) {
+    return (x * 100) / canvasWidth;
+  }
+
+  function convertXFromPercentage(x, canvasWidth) {
+    return (x * canvasWidth) / 100;
+  }
+
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
@@ -111,11 +121,13 @@ export const Container = ({
           const offsetFromLeftOfWindow = canvasBoundingRect.left;
           const currentOffset = monitor.getSourceClientOffset();
 
-          const x = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          const xOffset = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
           const y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
 
+          const x = (xOffset * 100) / canvasWidth;
+
           const element = document.getElementById(`thread-${item.threadId}`);
-          element.style.transform = `translate(${x}px, ${y}px)`;
+          element.style.transform = `translate(${xOffset}px, ${y}px)`;
           commentsService.updateThread(item.threadId, { x, y });
           return undefined;
         }
@@ -132,86 +144,90 @@ export const Container = ({
 
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
-        // Component already exists and this is just a reposition event
-        if (id) {
-          const delta = monitor.getDifferenceFromInitialOffset();
-          let deltaX = 0;
-          let deltaY = 0;
+        //  This is a new component
+        componentMeta = componentTypes.find((component) => component.component === item.component.component);
+        console.log('adding new component');
+        componentData = JSON.parse(JSON.stringify(componentMeta));
+        componentData.name = computeComponentName(componentData.component, boxes);
 
-          if (delta) {
-            deltaX = delta.x;
-            deltaY = delta.y;
-          }
+        const offsetFromTopOfWindow = canvasBoundingRect.top;
+        const offsetFromLeftOfWindow = canvasBoundingRect.left;
+        const currentOffset = monitor.getSourceClientOffset();
 
-          left = Math.round(currentLayoutOptions.left + deltaX);
-          top = Math.round(currentLayoutOptions.top + deltaY);
+        left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+        top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
 
-          if (snapToGrid) {
-            [left, top] = doSnapToGrid(left, top);
-          }
+        id = uuidv4();
 
-          let newBoxes = {
-            ...boxes,
-            [id]: {
-              ...boxes[id],
-              layouts: {
-                ...boxes[id]['layouts'],
-                [item.currentLayout]: {
-                  ...boxes[id]['layouts'][item.currentLayout],
-                  top: top,
-                  left: left,
-                },
-              },
-            },
-          };
+        const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+        const canvasWidth = bundingRect?.width;
 
-          setBoxes(newBoxes);
-        } else {
-          //  This is a new component
-          componentMeta = componentTypes.find((component) => component.component === item.component.component);
-          console.log('adding new component');
-          componentData = JSON.parse(JSON.stringify(componentMeta));
-          componentData.name = computeComponentName(componentData.component, boxes);
-
-          const offsetFromTopOfWindow = canvasBoundingRect.top;
-          const offsetFromLeftOfWindow = canvasBoundingRect.left;
-          const currentOffset = monitor.getSourceClientOffset();
-
-          left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-          top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
-
-          id = uuidv4();
-
-          if (snapToGrid) {
-            [left, top] = doSnapToGrid(left, top);
-          }
-
-          if (item.currentLayout === 'mobile') {
-            componentData.definition.others.showOnDesktop.value = false;
-            componentData.definition.others.showOnMobile.value = true;
-          }
-
-          setBoxes({
-            ...boxes,
-            [id]: {
-              component: componentData,
-              layouts: {
-                [item.currentLayout]: {
-                  top: top,
-                  left: left,
-                  width: componentMeta.defaultSize.width,
-                  height: componentMeta.defaultSize.height,
-                },
-              },
-            },
-          });
+        if (snapToGrid) {
+          [left, top] = doSnapToGrid(canvasWidth, left, top);
         }
+
+        left = (left * 100) / canvasWidth;
+
+        if (item.currentLayout === 'mobile') {
+          componentData.definition.others.showOnDesktop.value = false;
+          componentData.definition.others.showOnMobile.value = true;
+        }
+
+        const width = componentMeta.defaultSize.width;
+
+        setBoxes({
+          ...boxes,
+          [id]: {
+            component: componentData,
+            layouts: {
+              [item.currentLayout]: {
+                top,
+                left,
+                width,
+                height: componentMeta.defaultSize.height,
+              },
+            },
+          },
+        });
 
         return undefined;
       },
     }),
     [moveBox]
   );
+
+  function onDragStop(e, componentId, direction, currentLayout) {
+    const id = componentId ? componentId : uuidv4();
+
+    // Get the width of the canvas
+    const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    const canvasWidth = canvasBounds?.width;
+    const nodeBounds = direction.node.getBoundingClientRect();
+
+    // Computing the left offset
+    const leftOffset = nodeBounds.x - canvasBounds.x;
+    const left = convertXToPercentage(leftOffset, canvasWidth);
+
+    // Computing the top offset
+    const top = nodeBounds.y - canvasBounds.y;
+
+    let newBoxes = {
+      ...boxes,
+      [id]: {
+        ...boxes[id],
+        layouts: {
+          ...boxes[id]['layouts'],
+          [currentLayout]: {
+            ...boxes[id]['layouts'][currentLayout],
+            top: top,
+            left: left,
+          },
+        },
+      },
+    };
+
+    setBoxes(newBoxes);
+  }
 
   function onResizeStop(id, e, direction, ref, d, position) {
     const deltaWidth = d.width;
@@ -228,13 +244,14 @@ export const Container = ({
 
     let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
-    top = y;
-    left = x;
+    const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    const canvasWidth = boundingRect?.width;
 
-    width = width + deltaWidth;
+    width = Math.round(width + (deltaWidth * 43) / canvasWidth); // convert the width delta to percentage
     height = height + deltaHeight;
 
-    // [width, height] = doSnapToGrid(width, height)
+    top = y;
+    left = (x * 100) / canvasWidth;
 
     let newBoxes = {
       ...boxes,
@@ -285,17 +302,21 @@ export const Container = ({
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
+
+    const x = (e.nativeEvent.offsetX) * 100 / canvasWidth;
+
     const elementIndex = commentsPreviewList.length;
     setCommentsPreviewList([
       ...commentsPreviewList,
       {
-        x: e.nativeEvent.offsetX,
+        x: x,
         y: e.nativeEvent.offsetY,
       },
     ]);
+
     const { data } = await commentsService.createThread({
       appId: router.query.id,
-      x: e.nativeEvent.offsetX,
+      x: x,
       y: e.nativeEvent.offsetY,
       appVersionsId,
     });
@@ -324,15 +345,17 @@ export const Container = ({
     const offsetFromTopOfWindow = canvasBoundingRect.top;
     const offsetFromLeftOfWindow = canvasBoundingRect.left;
 
-    const x = Math.round(e.screenX + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
-    const y = Math.round(e.screenY + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
+    let x = Math.round(e.screenX - 18 + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
+    const y = Math.round(e.screenY + 18 + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
+
+    x = (x * 100) / canvasWidth;
 
     const elementIndex = commentsPreviewList.length;
     setCommentsPreviewList([
       ...commentsPreviewList,
       {
-        x: e.nativeEvent.offsetX,
-        y: e.nativeEvent.offsetY - 130,
+        x,
+        y: y - 130,
       },
     ]);
     const { data } = await commentsService.createThread({
@@ -376,12 +399,12 @@ export const Container = ({
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
-          <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} />
+          <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} canvasWidth={canvasWidth} />
           {commentsPreviewList.map((previewComment, index) => (
             <div
               key={index}
               style={{
-                transform: `translate(${previewComment.x}px, ${previewComment.y}px)`,
+                transform: `translate(${previewComment.x * canvasWidth / 100}px, ${previewComment.y}px)`,
               }}
             >
               <label className="form-selectgroup-item comment-preview-bubble">
@@ -405,6 +428,7 @@ export const Container = ({
         if (!box.parent && canShowInCurrentLayout) {
           return (
             <DraggableBox
+              canvasWidth={canvasWidth}
               onComponentClick={
                 config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
               }
@@ -414,17 +438,18 @@ export const Container = ({
               key={key}
               currentState={currentState}
               onResizeStop={onResizeStop}
+              onDragStop={onDragStop}
               paramUpdated={paramUpdated}
               id={key}
               {...boxes[key]}
               mode={mode}
               resizingStatusChanged={(status) => setIsResizing(status)}
+              draggingStatusChanged={(status) => setIsDragging(status)}
               inCanvas={true}
               zoomLevel={zoomLevel}
               configHandleClicked={configHandleClicked}
               removeComponent={removeComponent}
               currentLayout={currentLayout}
-              scaleValue={scaleValue}
               deviceWindowWidth={deviceWindowWidth}
               isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
               darkMode={darkMode}
@@ -443,7 +468,6 @@ export const Container = ({
                 configHandleClicked,
                 removeComponent,
                 currentLayout,
-                scaleValue,
                 deviceWindowWidth,
                 selectedComponent,
                 darkMode,
