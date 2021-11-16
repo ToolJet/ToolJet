@@ -1155,7 +1155,7 @@ export const componentTypes = [
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
       enablePicker: { type: 'code', displayName: 'Use File Picker' },
       readAsDataURL: { type: 'code', displayName: 'Read file as URL encoded string' },
-      readAsText: { type: 'code', displayName: 'Read file as String' },
+      readAsText: { type: 'code', displayName: 'Read file as string' },
       enableMultiple: { type: 'code', displayName: 'Pick mulitple files' },
       maxFileCount: { type: 'code', displayName: 'Max file count' },
       fileType: { type: 'code', displayName: 'Accept file types' },
