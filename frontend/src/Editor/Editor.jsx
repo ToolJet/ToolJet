@@ -64,7 +64,6 @@ class Editor extends React.Component {
       showComments: false,
       zoomLevel: 1.0,
       currentLayout: 'desktop',
-      scaleValue: 1,
       deviceWindowWidth: 450,
       appDefinition: {
         components: {},
@@ -574,6 +573,11 @@ class Editor extends React.Component {
   toolTipRefHide = createRef();
   toolTipRefShow = createRef();
 
+  getCanvasWidth = () => {
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    return canvasBoundingRect?.width;
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -598,7 +602,6 @@ class Editor extends React.Component {
       zoomLevel,
       currentLayout,
       deviceWindowWidth,
-      scaleValue,
       dataQueriesDefaultText,
       showQuerySearchField,
       showDataQueryDeletionConfirmation,
@@ -771,40 +774,49 @@ class Editor extends React.Component {
                 style={{ transform: `scale(${zoomLevel})` }}
                 onClick={() => this.switchSidebarTab(2)}
               >
-                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
+                <div
+                  className="canvas-area"
+                  style={{ width: currentLayout === 'desktop' ? '100%' : '450px', maxWidth: '1292px' }}
+                >
                   {defaultComponentStateComputed && (
-                    <Container
-                      socket={this.state.socket}
-                      showComments={showComments}
-                      appVersionsId={this.state?.editingVersion?.id}
-                      appDefinition={appDefinition}
-                      appDefinitionChanged={this.appDefinitionChanged}
-                      snapToGrid={true}
-                      darkMode={this.props.darkMode}
-                      mode={'edit'}
-                      zoomLevel={zoomLevel}
-                      currentLayout={currentLayout}
-                      deviceWindowWidth={deviceWindowWidth}
-                      selectedComponent={selectedComponent || {}}
-                      scaleValue={scaleValue}
-                      appLoading={isLoading}
-                      onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
-                      onComponentOptionChanged={(component, optionName, value) =>
-                        onComponentOptionChanged(this, component, optionName, value)
-                      }
-                      onComponentOptionsChanged={(component, options) =>
-                        onComponentOptionsChanged(this, component, options)
-                      }
-                      currentState={this.state.currentState}
-                      configHandleClicked={this.configHandleClicked}
-                      removeComponent={this.removeComponent}
-                      onComponentClick={(id, component) => {
-                        this.setState({ selectedComponent: { id, component } });
-                        this.switchSidebarTab(1);
-                      }}
-                    />
+                    <>
+                      <Container
+                        canvasWidth={this.getCanvasWidth()}
+                        socket={this.state.socket}
+                        showComments={showComments}
+                        appVersionsId={this.state?.editingVersion?.id}
+                        appDefinition={appDefinition}
+                        appDefinitionChanged={this.appDefinitionChanged}
+                        snapToGrid={true}
+                        darkMode={this.props.darkMode}
+                        mode={'edit'}
+                        zoomLevel={zoomLevel}
+                        currentLayout={currentLayout}
+                        deviceWindowWidth={deviceWindowWidth}
+                        selectedComponent={selectedComponent || {}}
+                        appLoading={isLoading}
+                        onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
+                        onComponentOptionChanged={(component, optionName, value) =>
+                          onComponentOptionChanged(this, component, optionName, value)
+                        }
+                        onComponentOptionsChanged={(component, options) =>
+                          onComponentOptionsChanged(this, component, options)
+                        }
+                        currentState={this.state.currentState}
+                        configHandleClicked={this.configHandleClicked}
+                        removeComponent={this.removeComponent}
+                        onComponentClick={(id, component) => {
+                          this.setState({ selectedComponent: { id, component } });
+                          this.switchSidebarTab(1);
+                        }}
+                      />
+                      <CustomDragLayer
+                        snapToGrid={true}
+                        currentLayout={currentLayout}
+                        canvasWidth={this.getCanvasWidth()}
+                      />
+                    </>
                   )}
-                  <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} />
                 </div>
               </div>
               <div

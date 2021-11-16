@@ -80,6 +80,7 @@ export const Box = function Box({
   containerProps,
   darkMode,
   removeComponent,
+  canvasWidth,
   mode,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
@@ -136,6 +137,7 @@ export const Box = function Box({
             containerProps={containerProps}
             darkMode={darkMode}
             removeComponent={removeComponent}
+            canvasWidth={canvasWidth}
             properties={resolvedProperties}
             exposedVariables={exposedVariables}
             styles={resolvedStyles}
