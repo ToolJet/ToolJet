@@ -1154,6 +1154,8 @@ export const componentTypes = [
     properties: {
       enableDropzone: { type: 'code', displayName: 'Use Drop zone' },
       enablePicker: { type: 'code', displayName: 'Use File Picker' },
+      readAsDataURL: { type: 'code', displayName: 'Read file as URL' },
+      readAsText: { type: 'code', displayName: 'Read file as String' },
       enableMultiple: { type: 'code', displayName: 'Pick mulitple files' },
       maxFileCount: { type: 'code', displayName: 'Max file count' },
       fileType: { type: 'code', displayName: 'Accept file types' },
@@ -1166,7 +1168,7 @@ export const componentTypes = [
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      file: [{ name: [], content: [], type: [] }],
+      file: [{ name: [], content: '', data: '', type: '' }],
     },
     definition: {
       others: {
@@ -1176,6 +1178,8 @@ export const componentTypes = [
       properties: {
         enableDropzone: { value: '{{true}}' },
         enablePicker: { value: '{{true}}' },
+        readAsDataURL: { value: '{{true}}' },
+        readAsText: { value: '{{true}}' },
         maxFileCount: { value: '{{2}}' },
         enableMultiple: { value: '{{false}}' },
         fileType: { value: '{{"image/*"}}' },
