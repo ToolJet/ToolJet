@@ -1697,6 +1697,7 @@ hr {
 .query-manager-header {
   .nav-item {
     border-right: solid 1px #dadcde;
+    background: 0 0;
   }
 
   .nav-link {
@@ -1826,6 +1827,9 @@ input:focus-visible {
 }
 
 .theme-dark {
+  .nav-item {
+    background: 0 0;
+  }
   .navbar .navbar-nav .active > .nav-link,
   .theme-dark .navbar .navbar-nav .nav-link.active,
   .theme-dark .navbar .navbar-nav .nav-link.show,
@@ -2362,7 +2366,7 @@ input[type='text'] {
 }
 
 .nav-item {
-  background: #fff !important;
+  background: #fff;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -2503,8 +2507,18 @@ input[type='text'] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
+  margin-bottom: -1px !important;
 }
 
 .nav-tabs .nav-link {
   font-weight: 400 !important;
+  margin: 0 !important;
+}
+
+.code-editor-widget {
+  border-radius: 0;
+  .CodeMirror {
+    border-radius: inherit;
+    margin-top: -1px!important;
+  }
 }

@@ -239,7 +239,10 @@ export class UsersService {
 
       case 'Thread':
       case 'Comment':
-        return this.canAnyGroupPerformAction('update', await this.appGroupPermissions(user, resourceId));
+        return await this.canUserPerformActionOnApp(user, 'update', resourceId);
+
+      case 'Folder':
+        return await this.canUserPerformActionOnFolder(user, action, resourceId);
 
       default:
         return false;
@@ -264,6 +267,21 @@ export class UsersService {
           this.canAnyGroupPerformAction('delete', await this.appGroupPermissions(user, appId)) ||
           this.canAnyGroupPerformAction('appDelete', await this.groupPermissions(user)) ||
           (await this.isUserOwnerOfApp(user, appId));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnFolder(user: User, action: string, folderId?: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('folderCreate', await this.groupPermissions(user));
         break;
       default:
         permissionGrant = false;

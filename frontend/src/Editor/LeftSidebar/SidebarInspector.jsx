@@ -1,6 +1,6 @@
 import React from 'react';
 import usePinnedPopover from '@/_hooks/usePinnedPopover';
-import { LeftSidebarItem } from './sidebar-item';
+import { LeftSidebarItem } from './SidebarItem';
 import { SidebarPinnedButton } from './SidebarPinnedButton';
 import ReactJson from 'react-json-view';
 

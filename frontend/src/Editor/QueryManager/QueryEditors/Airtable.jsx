@@ -179,7 +179,7 @@ class Airtable extends React.Component {
                       initialValue={'{}'}
                       lineNumbers={true}
                       className="query-hinter"
-                      theme={'duotone-light'}
+                      theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
                       onChange={(value) => changeOption(this, 'body', value)}
                     />
                   </div>

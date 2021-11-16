@@ -121,6 +121,14 @@ class Editor extends React.Component {
     // Connection opened
     socket.addEventListener('open', function (event) {
       console.log('connection established', event);
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+      socket.send(
+        JSON.stringify({
+          event: 'authenticate',
+          data: currentUser.auth_token,
+        })
+      );
       socket.send(
         JSON.stringify({
           event: 'subscribe',
@@ -568,7 +576,7 @@ class Editor extends React.Component {
   getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     return canvasBoundingRect?.width;
-  }
+  };
 
   render() {
     const {
@@ -766,7 +774,10 @@ class Editor extends React.Component {
                 style={{ transform: `scale(${zoomLevel})` }}
                 onClick={() => this.switchSidebarTab(2)}
               >
-                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '100%' : '450px', maxWidth: '1292px' }}>
+                <div
+                  className="canvas-area"
+                  style={{ width: currentLayout === 'desktop' ? '100%' : '450px', maxWidth: '1292px' }}
+                >
                   {defaultComponentStateComputed && (
                     <>
                       <Container
@@ -799,7 +810,11 @@ class Editor extends React.Component {
                           this.switchSidebarTab(1);
                         }}
                       />
-                      <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} canvasWidth={this.getCanvasWidth()} />
+                      <CustomDragLayer
+                        snapToGrid={true}
+                        currentLayout={currentLayout}
+                        canvasWidth={this.getCanvasWidth()}
+                      />
                     </>
                   )}
                 </div>

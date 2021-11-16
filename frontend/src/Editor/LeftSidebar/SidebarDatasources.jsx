@@ -1,6 +1,6 @@
 import React from 'react';
 import usePopover from '../../_hooks/use-popover';
-import { LeftSidebarItem } from './sidebar-item';
+import { LeftSidebarItem } from './SidebarItem';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 
