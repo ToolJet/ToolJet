@@ -14,19 +14,23 @@ export class RebaseWidgetWidthAndLeftOffsetForResponsiveCanvas1636372753632 impl
 
       if (definition) {
         const components = definition['components'];
+        const changesRequired: {
+          component: any;
+          componentId: string;
+          layout: string;
+          newWidth: number;
+          newLeft: number;
+        }[] = [];
 
         for (const componentId of Object.keys(components)) {
           const component = components[componentId];
-          console.log('component', component);
           const layouts = component.layouts;
-
-          if (!component.parent) continue;
 
           for (const layoutIndex in layouts) {
             const layout = layouts[layoutIndex];
 
             let containerWidth = 1292;
-            console.log('layout index', layoutIndex);
+            if (layoutIndex === 'mobile') containerWidth = 450;
             if (component.parent) {
               const parentComponent: any = Object.entries(components).filter(
                 (entry) => entry[0] === component.parent
@@ -40,7 +44,6 @@ export class RebaseWidgetWidthAndLeftOffsetForResponsiveCanvas1636372753632 impl
                 containerWidth = parentLayoutCandidateEntries[0][1].width;
 
                 if (parentComponent.component.component === 'Modal') {
-                  console.log('modal properties', parentComponent.component.definition.properties.size);
                   switch (parentComponent.component.definition.properties.size.value) {
                     case 'lg':
                       containerWidth = 718;
@@ -53,61 +56,32 @@ export class RebaseWidgetWidthAndLeftOffsetForResponsiveCanvas1636372753632 impl
                       break;
                   }
                 }
-                console.log('yepski', containerWidth);
               }
             }
 
             const width = layout.width;
             const newWidth = (width * 43) / containerWidth;
-            component.layouts[layoutIndex].width = newWidth;
+            // component.layouts[layoutIndex].width = newWidth;
 
             const left = layout.left;
             const newLeft = (left * 100) / containerWidth;
-            component.layouts[layoutIndex].left = newLeft;
-          }
+            // component.layouts[layoutIndex].left = newLeft;
 
-          console.log('component', component);
-          components[componentId] = {
-            ...component,
-            component: {
-              ...component.component,
-              definition: {
-                ...component.component.definition,
-              },
-            },
-          };
+            changesRequired.push({ component, componentId, layout: layoutIndex, newWidth, newLeft });
+          }
         }
 
-        definition['components'] = components;
-        version.definition = definition;
+        for (const change of changesRequired) {
+          change.component.layouts[change.layout].left = change.newLeft;
+          change.component.layouts[change.layout].width = change.newWidth;
 
-        await queryBuilder.update(AppVersion).set({ definition }).where('id = :id', { id: version.id }).execute();
-
-        for (const componentId of Object.keys(components)) {
-          const component = components[componentId];
-          const layouts = component.layouts;
-
-          if (component.parent != undefined) continue;
-
-          for (const layoutIndex in layouts) {
-            const layout = layouts[layoutIndex];
-            const width = layout.width;
-            const newWidth = (width * 43) / 1292;
-            component.layouts[layoutIndex].width = newWidth;
-
-            const left = layout.left;
-            const newLeft = (left * 100) / 1292;
-            component.layouts[layoutIndex].left = newLeft;
-          }
-
-          console.log('component', component);
-          components[componentId] = {
-            ...component,
+          components[change.componentId] = {
+            ...change.component,
             component: {
-              ...component.component,
-              definition: {
-                ...component.component.definition,
-              },
+              ...change.component.component,
+            },
+            layouts: {
+              ...change.component.layouts,
             },
           };
         }
