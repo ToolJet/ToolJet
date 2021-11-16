@@ -666,7 +666,7 @@ export function Table({
   const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
 
   const computedStyles = {
-    width: `${width}px`,
+    // width: `${width}px`,
   };
 
   const {
@@ -773,7 +773,7 @@ export function Table({
     <div
       data-disabled={parsedDisabledState}
       className="card jet-table"
-      style={{ width: `${width}px`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ width: `100%`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);
