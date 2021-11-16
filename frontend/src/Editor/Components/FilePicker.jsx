@@ -7,8 +7,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   //* properties definitions
   const enableDropzone = component.definition.properties.enableDropzone?.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
-  const readAsDataURL = component.definition.properties?.readAsDataURL?.value ?? true;
-  const readAsText = component.definition.properties?.readAsText?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
   const enableMultiple = component.definition.properties.enableMultiple?.value ?? false;
   const fileType = component.definition.properties.fileType?.value ?? 'image/*';
@@ -19,10 +17,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
   const parsedEnablePicker =
     typeof enablePicker !== 'boolean' ? resolveWidgetFieldValue(enablePicker, currentState) : true;
-
-  const parsedReadAsDataURL =
-    typeof readAsDataURL !== 'boolean' ? resolveWidgetFieldValue(readAsDataURL, currentState) : true;
-  const parsedReadAsText = typeof readAsText !== 'boolean' ? resolveWidgetFieldValue(readAsText, currentState) : true;
 
   const parsedMaxFileCount =
     typeof maxFileCount !== 'number' ? resolveWidgetFieldValue(maxFileCount, currentState) : maxFileCount;
@@ -74,17 +68,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     borderColor: '#ff1744',
   };
 
-  function validateFileReader() {
-    if (!parsedReadAsDataURL && !parsedReadAsText) {
-      return {
-        code: 'file-reader-required',
-        message: `No file File reader selected`,
-      };
-    }
-
-    return null;
-  }
-
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
       accept: parsedFileType,
@@ -96,7 +79,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
       maxSize: parsedMaxSize,
       multiple: parsedEnableMultiple,
       disabled: parsedDisabledState,
-      validator: validateFileReader,
     });
 
   const style = useMemo(
@@ -142,10 +124,10 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
   const fileReader = async (file) => {
     // * readAsText
-    const readFileAsText = parsedReadAsText ? await getFileData(file) : null;
+    const readFileAsText = await getFileData(file);
 
     // * readAsDataURL
-    const readFileAsDataURL = parsedReadAsDataURL ? await getFileData(file, 'readAsDataURL') : null;
+    const readFileAsDataURL = await getFileData(file, 'readAsDataURL');
 
     return {
       name: file.name,
