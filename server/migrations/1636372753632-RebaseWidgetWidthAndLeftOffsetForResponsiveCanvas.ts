@@ -38,6 +38,21 @@ export class RebaseWidgetWidthAndLeftOffsetForResponsiveCanvas1636372753632 impl
               console.log('parentLayoutCandidateEntries', parentLayoutCandidateEntries);
               if (parentLayoutCandidateEntries.length > 0) {
                 containerWidth = parentLayoutCandidateEntries[0][1].width;
+
+                if (parentComponent.component.component === 'Modal') {
+                  console.log('modal properties', parentComponent.component.definition.properties.size);
+                  switch (parentComponent.component.definition.properties.size.value) {
+                    case 'lg':
+                      containerWidth = 718;
+                      break;
+                    case 'md':
+                      containerWidth = 538;
+                      break;
+                    case 'sm':
+                      containerWidth = 378;
+                      break;
+                  }
+                }
                 console.log('yepski', containerWidth);
               }
             }
@@ -72,7 +87,7 @@ export class RebaseWidgetWidthAndLeftOffsetForResponsiveCanvas1636372753632 impl
           const component = components[componentId];
           const layouts = component.layouts;
 
-          if (component.parent) continue;
+          if (component.parent != undefined) continue;
 
           for (const layoutIndex in layouts) {
             const layout = layouts[layoutIndex];
