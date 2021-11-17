@@ -78,4 +78,9 @@ export class OrganizationsService {
 
     return serializedUsers;
   }
+
+  async findFirst(): Promise<Organization> {
+    const organizations = await this.organizationsRepository.find();
+    return organizations[0];
+  }
 }
