@@ -54,6 +54,9 @@ export const defaultOptions = {
   firestore: {
     gcp_key: { value: '' },
   },
+  bigquery: {
+    gcp_key: { value: '' },
+  },
   restapi: {
     url: { value: '' },
     auth_type: { value: 'none' },

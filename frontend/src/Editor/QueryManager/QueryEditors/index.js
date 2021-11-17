@@ -19,6 +19,7 @@ import SlackSchema from './Slack.schema.json';
 import S3Schema from './S3.schema.json';
 import GooglesheetsSchema from './Googlesheets.schema.json';
 import GcsSchema from './Gcs.schema.json';
+import BigquerySchema from './Bigquery.schema.json';
 
 const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
@@ -34,6 +35,7 @@ const Slack = ({ ...rest }) => <DynamicForm schema={SlackSchema} {...rest} />;
 const S3 = ({ ...rest }) => <DynamicForm schema={S3Schema} {...rest} />;
 const Googlesheets = ({ ...rest }) => <DynamicForm schema={GooglesheetsSchema} {...rest} />;
 const Gcs = ({ ...rest }) => <DynamicForm schema={GcsSchema} {...rest} />;
+const Bigquery = ({ ...rest }) => <DynamicForm schema={BigquerySchema} {...rest} />;
 
 export const allSources = {
   Restapi,
@@ -52,4 +54,5 @@ export const allSources = {
   Mssql,
   S3,
   Gcs,
+  Bigquery
 };

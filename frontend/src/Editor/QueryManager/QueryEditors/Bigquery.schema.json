@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/dataqueries/Bigquery.schema.json",
+  "title": "BigQuery",
+  "description": "A schema defining BigQuery datasource",
+  "type": "object",
+  "properties": {
+    "operation": {
+      "$label": "Operation",
+      "$key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "$options": [
+        {
+          "value": "list_datasets",
+          "name": "List datasets"
+        },
+        {
+          "value": "query",
+          "name": "Query"
+        }
+      ]
+    },
+    "list_datasets": {},
+    "query": {
+      "query": {
+        "$key": "query",
+        "type": "codehinter",
+        "description": "Enter query"
+      }
+    }
+  }
+}

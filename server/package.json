@@ -31,6 +31,7 @@
     "@aws-sdk/s3-request-presigner": "^3.39.0",
     "@casl/ability": "^5.3.1",
     "@elastic/elasticsearch": "^7.13.0",
+    "@google-cloud/bigquery": "^5.9.2",
     "@google-cloud/firestore": "^4.15.1",
     "@google-cloud/storage": "^5.15.4",
     "@nestjs/common": "^8.0.0",

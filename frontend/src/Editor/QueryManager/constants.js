@@ -34,6 +34,7 @@ export const defaultOptions = {
   dynamodb: {},
   s3: {},
   gcs: {},
+  bigquery: {},
   airtable: {},
   mssql: {},
 };

@@ -11,8 +11,14 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
       "$options": [
-        { "name": "SQL mode", "value": "sql" },
-        { "name": "GUI mode", "value": "gui" }
+        {
+          "name": "SQL mode",
+          "value": "sql"
+        },
+        {
+          "name": "GUI mode",
+          "value": "gui"
+        }
       ]
     },
     "sql": {

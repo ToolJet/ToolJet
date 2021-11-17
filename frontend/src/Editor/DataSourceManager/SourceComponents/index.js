@@ -19,6 +19,7 @@ import MongodbSchema from './Database/Mongodb.schema.json';
 import PostgresqlSchema from './Database/Postgresql.schema.json';
 import MysqlSchema from './Database/Mysql.schema.json';
 import MssqlSchema from './Database/Mssql.schema.json';
+import BigquerySchema from './Database/Bigquery.schema.json';
 
 // Cloud storage sources
 import S3Schema from './Database/S3.schema.json';
@@ -40,6 +41,7 @@ const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
 const S3 = ({ ...rest }) => <DynamicForm schema={S3Schema} {...rest} />;
 const Gcs = ({ ...rest }) => <DynamicForm schema={GcsSchema} {...rest} />;
+const Bigquery = ({ ...rest }) => <DynamicForm schema={BigquerySchema} {...rest} />;
 
 export const DataBaseSources = [
   DynamodbSchema.source,
@@ -50,6 +52,7 @@ export const DataBaseSources = [
   PostgresqlSchema.source,
   MysqlSchema.source,
   MssqlSchema.source,
+  BigquerySchema.source
 ];
 export const ApiSources = [
   AirtableSchema.source,
@@ -79,4 +82,5 @@ export const SourceComponents = {
   Mssql,
   S3,
   Gcs,
+  Bigquery
 };
