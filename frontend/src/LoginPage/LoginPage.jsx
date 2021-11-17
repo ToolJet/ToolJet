@@ -52,7 +52,8 @@ class LoginPage extends React.Component {
   authSuccessHandler = () => {
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-    this.props.history.push(from);
+    const redirectPath = from.pathname === '/login' ? '/' : from;
+    this.props.history.push(redirectPath);
     this.setState({ isLoading: false });
   };
 
