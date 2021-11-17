@@ -213,8 +213,6 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   render() {
-    console.log(this.state.options);
-
     const {
       dataSources,
       selectedDataSource,
