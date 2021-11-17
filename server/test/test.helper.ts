@@ -91,7 +91,7 @@ export async function createApplicationVersion(nestApp, application) {
   );
 }
 
-export async function createUser(nestApp, { firstName, lastName, email, groups, organization, status }: any) {
+export async function createUser(nestApp, { firstName, lastName, email, groups, organization, ssoId, status }: any) {
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
   let organizationUsersRepository: Repository<OrganizationUser>;
@@ -117,6 +117,7 @@ export async function createUser(nestApp, { firstName, lastName, email, groups, 
       email: email || 'dev@tooljet.io',
       password: 'password',
       organization,
+      ssoId,
       createdAt: new Date(),
       updatedAt: new Date(),
     })

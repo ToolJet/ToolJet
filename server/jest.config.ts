@@ -15,6 +15,7 @@ module.exports = async () => {
       '@plugins/(.*)': '<rootDir>/plugins/$1',
       '@services/(.*)': '<rootDir>/src/services/$1',
       '@controllers/(.*)': '<rootDir>/src/controllers/$1',
+      '@ee/(.*)': '<rootDir>/ee/$1',
     },
   };
 };
