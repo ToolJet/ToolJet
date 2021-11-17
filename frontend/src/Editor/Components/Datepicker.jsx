@@ -5,7 +5,6 @@ import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_h
 
 export const Datepicker = function Datepicker({
   id,
-  width,
   height,
   component,
   onComponentClick,
@@ -84,7 +83,7 @@ export const Datepicker = function Datepicker({
     <div
       data-disabled={parsedDisabledState}
       className="datepicker-widget"
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);

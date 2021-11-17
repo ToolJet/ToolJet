@@ -14,6 +14,7 @@ export const Map = function Map({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onEvent,
+  canvasWidth
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
@@ -50,7 +51,7 @@ export const Map = function Map({
   const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState));
 
   const containerStyle = {
-    width,
+    width: '100%',
     height,
   };
 
@@ -111,7 +112,7 @@ export const Map = function Map({
   return (
     <div
       data-disabled={parsedDisabledState}
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);

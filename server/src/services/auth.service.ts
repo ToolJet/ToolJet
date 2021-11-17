@@ -19,6 +19,15 @@ export class AuthService {
     private emailService: EmailService
   ) {}
 
+  verifyToken(token: string) {
+    try {
+      const signedJwt = this.jwtService.verify(token);
+      return signedJwt;
+    } catch (err) {
+      return null;
+    }
+  }
+
   async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
     if (!user) return null;

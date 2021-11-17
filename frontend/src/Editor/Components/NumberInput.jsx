@@ -3,7 +3,6 @@ import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const NumberInput = function NumberInput({
   id,
-  width,
   height,
   component,
   onComponentClick,
@@ -54,7 +53,7 @@ export const NumberInput = function NumberInput({
       type="number"
       className="form-control rounded-0"
       placeholder={placeholder}
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       value={number}
     />
   );

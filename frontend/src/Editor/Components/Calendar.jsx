@@ -16,7 +16,7 @@ const parseDate = (date, dateFormat) => moment(date, dateFormat).toDate();
 const allowedCalendarViews = ['month', 'week', 'day'];
 
 export const Calendar = function ({ height, width, properties, styles, fireEvent, darkMode }) {
-  const style = { height, width };
+  const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
 
   const events = properties.events ? properties.events.map((event) => prepareEvent(event, properties.dateFormat)) : [];

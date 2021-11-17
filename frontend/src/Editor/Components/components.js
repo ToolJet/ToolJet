@@ -26,7 +26,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     defaultSize: {
-      width: 810,
+      width: 20,
       height: 300,
     },
     events: {
@@ -111,7 +111,7 @@ export const componentTypes = [
     description: 'Trigger actions: queries, alerts etc',
     component: 'Button',
     defaultSize: {
-      width: 120,
+      width: 3,
       height: 30,
     },
     others: {
@@ -159,7 +159,7 @@ export const componentTypes = [
     description: 'Display charts',
     component: 'Chart',
     defaultSize: {
-      width: 600,
+      width: 20,
       height: 400,
     },
     others: {
@@ -222,7 +222,7 @@ export const componentTypes = [
     description: 'Modal triggered by events',
     component: 'Modal',
     defaultSize: {
-      width: 600,
+      width: 10,
       height: 400,
     },
     others: {
@@ -269,7 +269,7 @@ export const componentTypes = [
     description: 'Text field for forms',
     component: 'TextInput',
     defaultSize: {
-      width: 210,
+      width: 4,
       height: 30,
     },
     others: {
@@ -322,7 +322,7 @@ export const componentTypes = [
     description: 'Number field for forms',
     component: 'NumberInput',
     defaultSize: {
-      width: 210,
+      width: 4,
       height: 30,
     },
     others: {
@@ -414,7 +414,7 @@ export const componentTypes = [
     description: 'Select a date and time',
     component: 'Datepicker',
     defaultSize: {
-      width: 150,
+      width: 4,
       height: 30,
     },
     validation: {
@@ -465,7 +465,7 @@ export const componentTypes = [
     description: 'A single checkbox',
     component: 'Checkbox',
     defaultSize: {
-      width: 150,
+      width: 4,
       height: 30,
     },
     others: {
@@ -509,7 +509,7 @@ export const componentTypes = [
     description: 'Radio buttons',
     component: 'RadioButton',
     defaultSize: {
-      width: 210,
+      width: 5,
       height: 30,
     },
     others: {
@@ -557,7 +557,7 @@ export const componentTypes = [
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
-      width: 150,
+      width: 5,
       height: 30,
     },
     others: {
@@ -600,7 +600,7 @@ export const componentTypes = [
     description: 'Text area form field',
     component: 'TextArea',
     defaultSize: {
-      width: 240,
+      width: 6,
       height: 100,
     },
     others: {
@@ -644,7 +644,7 @@ export const componentTypes = [
     description: 'Select a date range',
     component: 'DaterangePicker',
     defaultSize: {
-      width: 300,
+      width: 8,
       height: 30,
     },
     others: {
@@ -692,7 +692,7 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Show loading state' },
     },
     defaultSize: {
-      width: 120,
+      width: 3,
       height: 30,
     },
     events: [],
@@ -725,7 +725,7 @@ export const componentTypes = [
     displayName: 'Image',
     description: 'Display an Image',
     defaultSize: {
-      width: 210,
+      width: 5,
       height: 210,
     },
     component: 'Image',
@@ -765,7 +765,7 @@ export const componentTypes = [
     displayName: 'Container',
     description: 'Wrapper for multiple components',
     defaultSize: {
-      width: 210,
+      width: 5,
       height: 200,
     },
     component: 'Container',
@@ -802,7 +802,7 @@ export const componentTypes = [
     displayName: 'Dropdown',
     description: 'Select one value from options',
     defaultSize: {
-      width: 240,
+      width: 8,
       height: 30,
     },
     component: 'DropDown',
@@ -856,7 +856,7 @@ export const componentTypes = [
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
     defaultSize: {
-      width: 240,
+      width: 8,
       height: 30,
     },
     component: 'Multiselect',
@@ -905,7 +905,7 @@ export const componentTypes = [
     description: 'Rich text editor',
     component: 'RichTextEditor',
     defaultSize: {
-      width: 600,
+      width: 16,
       height: 210,
     },
     others: {
@@ -946,7 +946,7 @@ export const componentTypes = [
     description: 'Display Google Maps',
     component: 'Map',
     defaultSize: {
-      width: 420,
+      width: 12,
       height: 420,
     },
     others: {
@@ -1018,7 +1018,7 @@ export const componentTypes = [
     description: 'Scan QR codes and hold its data',
     component: 'QrScanner',
     defaultSize: {
-      width: 300,
+      width: 10,
       height: 300,
     },
     others: {
@@ -1055,7 +1055,7 @@ export const componentTypes = [
     description: 'Star rating',
     component: 'StarRating',
     defaultSize: {
-      width: 240,
+      width: 8,
       height: 30,
     },
     others: {
@@ -1109,7 +1109,7 @@ export const componentTypes = [
     description: 'Separator between components',
     component: 'Divider',
     defaultSize: {
-      width: 200,
+      width: 10,
       height: 10,
     },
     others: {
@@ -1144,7 +1144,7 @@ export const componentTypes = [
     description: 'File Picker',
     component: 'FilePicker',
     defaultSize: {
-      width: 270,
+      width: 15,
       height: 100,
     },
     others: {
@@ -1195,7 +1195,7 @@ export const componentTypes = [
     description: 'Calendar',
     component: 'Calendar',
     defaultSize: {
-      width: 700,
+      width: 30,
       height: 600,
     },
     others: {
