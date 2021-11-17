@@ -46,23 +46,24 @@ class LoginPage extends React.Component {
       return;
     }
 
-    authenticationService.login(email, password).then(
-      () => {
-        const params = queryString.parse(this.props.location.search);
-        const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-        const redirectPath = from.pathname === '/login' ? '/' : from;
-        this.props.history.push(redirectPath);
-        this.setState({ isLoading: false });
-      },
-      () => {
-        toast.error('Invalid email or password', {
-          toastId: 'toast-login-auth-error',
-          hideProgressBar: true,
-          position: 'top-center',
-        });
-        this.setState({ isLoading: false });
-      }
-    );
+    authenticationService.login(email, password).then(this.authSuccessHandler, this.authFailureHandler);
+  };
+
+  authSuccessHandler = () => {
+    const params = queryString.parse(this.props.location.search);
+    const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
+    const redirectPath = from.pathname === '/login' ? '/' : from;
+    this.props.history.push(redirectPath);
+    this.setState({ isLoading: false });
+  };
+
+  authFailureHandler = () => {
+    toast.error('Invalid email or password', {
+      toastId: 'toast-login-auth-error',
+      hideProgressBar: true,
+      position: 'top-center',
+    });
+    this.setState({ isLoading: false });
   };
 
   render() {
