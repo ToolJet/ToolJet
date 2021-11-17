@@ -3,7 +3,7 @@ import { authenticationService } from '@/_services';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
-import { validateEmail } from "../_helpers/utils";
+import { validateEmail } from '../_helpers/utils';
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -35,7 +35,7 @@ class LoginPage extends React.Component {
 
     const { email, password } = this.state;
 
-    if(!validateEmail(email) || !password || !password.trim()) {
+    if (!validateEmail(email) || !password || !password.trim()) {
       toast.error('Invalid email or password', {
         toastId: 'toast-login-auth-error',
         hideProgressBar: true,
@@ -49,7 +49,8 @@ class LoginPage extends React.Component {
       () => {
         const params = queryString.parse(this.props.location.search);
         const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-        this.props.history.push(from);
+        const redirectPath = from.pathname === '/login' ? '/' : from;
+        this.props.history.push(redirectPath);
         this.setState({ isLoading: false });
       },
       () => {
