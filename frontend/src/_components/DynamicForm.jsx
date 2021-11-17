@@ -87,7 +87,7 @@ const DynamicForm = ({
       case 'dropdown-component-flip':
         return {
           options: $options,
-          value: options[$key]?.value,
+          value: options[$key]?.value || options[$key],
           hasSearch: $hasSearch,
           onChange: (value) => optionchanged($key, value),
         };
