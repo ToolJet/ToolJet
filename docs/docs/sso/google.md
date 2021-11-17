@@ -5,10 +5,6 @@ sidebar_label: Google
 
 # Google Single Sign-on
 
-:::info
-  This feature is available only on the enterprise edition for ToolJet
-:::
-
 Goto [Google cloud console](https://console.cloud.google.com/) and create a project.
 
 <img class="screenshot-full" src="/img/sso/google/create-project.png" alt="ToolJet - Google create project" height="420"/>
