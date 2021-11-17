@@ -1,17 +1,27 @@
 import React from 'react';
+import cx from 'classnames';
 import Input from '@/_ui/Input';
 import Textarea from '@/_ui/Textarea';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
+import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 
-import { find } from 'lodash';
+import { find, isEmpty } from 'lodash';
 
-const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
+const DynamicForm = ({
+  schema,
+  optionchanged,
+  createDataSource,
+  options,
+  isSaving,
+  selectedDataSource,
+  currentState,
+}) => {
   // if(schema.properties)  todo add empty check
 
   const getElement = (type) => {
@@ -33,12 +43,28 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
         return GoogleSheets;
       case 'react-component-slack':
         return Slack;
+      case 'codehinter':
+        return CodeHinter;
       default:
         return <div>Type is invalid</div>;
     }
   };
 
-  const getElementProps = ({ $key, $options, $rows = 5, $hasSearch, helpText, description, type }) => {
+  const getElementProps = ({
+    $key,
+    $options,
+    $rows = 5,
+    $hasSearch,
+    helpText,
+    description,
+    type,
+    placeholder = '',
+    mode = 'sql',
+    lineNumbers = true,
+    initialValue,
+  }) => {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+
     switch (type) {
       case 'password':
       case 'text':
@@ -61,7 +87,7 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
       case 'dropdown-component-flip':
         return {
           options: $options,
-          value: options[$key]?.value,
+          value: options[$key]?.value || options[$key],
           hasSearch: $hasSearch,
           onChange: (value) => optionchanged($key, value),
         };
@@ -89,21 +115,43 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
       case 'react-component-google-sheets':
       case 'react-component-slack':
         return { optionchanged, createDataSource, options, isSaving, selectedDataSource };
+      case 'codehinter':
+        return {
+          currentState,
+          initialValue: options[$key]
+            ? typeof options[$key] === 'string'
+              ? options[$key]
+              : JSON.stringify(options[$key])
+            : initialValue,
+          mode,
+          lineNumbers,
+          className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
+          onChange: (value) => optionchanged($key, value),
+          theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
+          placeholder,
+        };
       default:
         return {};
     }
   };
 
   const getLayout = (obj) => {
+    if (isEmpty(obj)) return null;
+    const flipComponentDropdown = isFlipComponentDropdown(obj);
+
+    if (flipComponentDropdown) {
+      return flipComponentDropdown;
+    }
+
     return (
       <div className="row">
         {Object.keys(obj).map((key) => {
-          const { $label, type, $encrypted } = obj[key];
+          const { $label, type, $encrypted, className } = obj[key];
 
           const Element = getElement(type);
 
           return (
-            <div className="col-md-12 my-2" key={key}>
+            <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
               {$label && (
                 <label className="form-label">
                   {$label}
@@ -128,18 +176,31 @@ const DynamicForm = ({ schema, optionchanged, createDataSource, options, isSavin
     );
   };
 
-  const flipComponentDropdown = find(schema.properties, ['type', 'dropdown-component-flip']);
+  const isFlipComponentDropdown = (obj) => {
+    const flipComponentDropdown = find(obj, ['type', 'dropdown-component-flip']);
+    if (flipComponentDropdown) {
+      // options[key].value for datasource
+      // options[key] for dataquery
+      const selector = options[flipComponentDropdown.$key]?.value || options[flipComponentDropdown.$key];
+
+      return (
+        <>
+          <div className="row">
+            <div className="col-md-12 my-2">
+              {flipComponentDropdown.$label && <label className="form-label">{flipComponentDropdown.$label}</label>}
+              <Select {...getElementProps(flipComponentDropdown)} />
+            </div>
+          </div>
+          {getLayout(obj[selector])}
+        </>
+      );
+    }
+  };
+
+  const flipComponentDropdown = isFlipComponentDropdown(schema.properties);
 
   if (flipComponentDropdown) {
-    return (
-      <div className="row">
-        <div className="col-md-12 my-2">
-          {flipComponentDropdown.$label && <label className="form-label">{flipComponentDropdown.$label}</label>}
-          <Select {...getElementProps(flipComponentDropdown)} />
-        </div>
-        {getLayout(schema.properties[options[flipComponentDropdown.$key].value])}
-      </div>
-    );
+    return flipComponentDropdown;
   }
 
   return getLayout(schema.properties);
