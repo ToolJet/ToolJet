@@ -1166,7 +1166,7 @@ export const componentTypes = [
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      file: [{ name: [], content: '', data: '', type: '' }],
+      file: [{ name: '', content: '', data: '', type: '' }],
     },
     definition: {
       others: {
