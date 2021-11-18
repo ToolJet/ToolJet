@@ -33,7 +33,6 @@ export function CodeHinter({
   minHeight,
   lineWrapping,
 }) {
-  console.log('theme', theme);
   const options = {
     lineNumbers: lineNumbers,
     lineWrapping: lineWrapping,
@@ -118,13 +117,8 @@ export function CodeHinter({
       </animated.div>
     );
   };
+  enablePreview = enablePreview ?? true;
   const [isOpen, setIsOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    console.log('isOpen', isOpen);
-  }, [isOpen]);
-
-  // const handleClose = () => setIsOpen(false);
   return (
     <CodeHinter.Container
       darkMode={theme}
@@ -214,9 +208,9 @@ const PopUpHinter = ({ component, open, onClose, preview }) => {
       {open && (
         <Portal className="modal-portal-wrapper">
           <div className="modal-dialog modal-portal-wrapper" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">component</h5>
+            <div className="modal-content" style={{ background: 'tranparent' }}>
+              <div style={{ height: '24px', padding: '0px' }} className="modal-header">
+                <p className="modal-title mx-3">component</p>
                 <button
                   onClick={handleClose}
                   type="button"
@@ -225,9 +219,9 @@ const PopUpHinter = ({ component, open, onClose, preview }) => {
                   aria-label="Close"
                 ></button>
               </div>
-              <div className="modal-body p-1">
-                {component}
-                {preview()}
+              <div className="modal-body p-0">
+                <div className="editor">{component}</div>
+                <div className="preview">{preview()}</div>
               </div>
             </div>
           </div>
