@@ -62,9 +62,9 @@ const DynamicForm = ({
     mode = 'sql',
     lineNumbers = true,
     initialValue,
+    height = 'auto',
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
-
     switch (type) {
       case 'password':
       case 'text':
@@ -129,6 +129,7 @@ const DynamicForm = ({
           onChange: (value) => optionchanged($key, value),
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
+          height,
         };
       default:
         return {};

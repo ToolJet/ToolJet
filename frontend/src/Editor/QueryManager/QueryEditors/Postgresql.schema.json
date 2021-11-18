@@ -19,7 +19,8 @@
       "query": {
         "$key": "query",
         "type": "codehinter",
-        "description": "Enter query"
+        "description": "Enter query",
+        "height": "150px"
       }
     },
     "gui": {
@@ -54,7 +55,8 @@
           "$label": "Records to update",
           "$key": "records",
           "type": "codehinter",
-          "description": "Enter records"
+          "description": "Enter records",
+          "height": "150px"
         }
       }
     }

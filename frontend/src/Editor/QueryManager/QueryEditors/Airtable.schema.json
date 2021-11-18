@@ -96,7 +96,8 @@
         "$label": "Body",
         "$key": "body",
         "type": "codehinter",
-        "description": "Enter body"
+        "description": "Enter body",
+        "height": "150px"
       }
     },
     "delete_record": {
