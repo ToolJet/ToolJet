@@ -133,7 +133,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
       name: file.name,
       type: file.type,
       content: readFileAsText,
-      data: readFileAsDataURL,
+      dataURL: readFileAsDataURL,
     };
   };
 
