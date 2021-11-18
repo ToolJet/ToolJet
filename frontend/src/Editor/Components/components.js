@@ -1351,4 +1351,41 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Tabs',
+    displayName: 'Tabs',
+    description: 'Tabs component',
+    defaultSize: {
+      width: 30,
+      height: 200,
+    },
+    component: 'Tabs',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      tabCount: { type: 'code', displayName: 'Number of tabs' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        visible: { value: true },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];

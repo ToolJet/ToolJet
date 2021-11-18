@@ -7,6 +7,7 @@ import { TextInput } from './Components/TextInput';
 import { NumberInput } from './Components/NumberInput';
 import { TextArea } from './Components/TextArea';
 import { Container } from './Components/Container';
+import { Tabs } from './Components/Tabs';
 import { RichTextEditor } from './Components/RichTextEditor';
 import { DropDown } from './Components/DropDown';
 import { Checkbox } from './Components/Checkbox';
@@ -41,6 +42,7 @@ const AllComponents = {
   Table,
   TextArea,
   Container,
+  Tabs,
   RichTextEditor,
   DropDown,
   Checkbox,

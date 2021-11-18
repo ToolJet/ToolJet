@@ -33,6 +33,7 @@ export const SubContainer = ({
   currentLayout,
   removeComponent,
 }) => {
+
   zoomLevel = zoomLevel || 1;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -202,7 +203,7 @@ export const SubContainer = ({
           ...boxes,
           [id]: {
             component: componentData,
-            parent: parent,
+            parent: parentRef.current.id,
             layouts: {
               [item.currentLayout]: {
                 top: top,
