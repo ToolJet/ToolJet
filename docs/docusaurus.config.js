@@ -1,8 +1,8 @@
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'ToolJet - Documentation',
-  tagline: 'Build and deploy internal tools.',
-  url: 'https://docs.tooljet.io',
+  tagline: 'Low-code framework to Build internal tools and business apps.',
+  url: 'https://docs.tooljet.com',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
@@ -10,6 +10,11 @@ module.exports = {
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
+    gtag: {
+      trackingID: process.env.GA_MID,
+      // Optional fields.
+      anonymizeIP: true, // Should IPs be anonymized?
+     },
     colorMode: {
       switchConfig: {
         darkIcon: '\00a0 ',
