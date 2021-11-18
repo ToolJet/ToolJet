@@ -4,6 +4,9 @@
   "title": "Postgresql datasource",
   "description": "A schema defining Postgresql datasource",
   "type": "object",
+  "defaults": {
+    "mode": "sql"
+  },
   "properties": {
     "mode": {
       "$label": "",

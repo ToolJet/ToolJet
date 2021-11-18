@@ -3,7 +3,6 @@ import { datasourceService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-toastify';
-import { defaultOptions } from './DefaultOptions';
 import { TestConnection } from './TestConnection';
 import {
   DataBaseSources,
@@ -60,7 +59,7 @@ class DataSourceManager extends React.Component {
     this.setState({
       dataSourceMeta: source,
       selectedDataSource: source,
-      options: defaultOptions[source.kind],
+      // options: defaultOptions[source.kind],
       name: source.kind,
     });
   };
@@ -117,7 +116,7 @@ class DataSourceManager extends React.Component {
         encrypted: keyMeta ? keyMeta.encrypted : false,
       };
     });
-    if (name.trim() !== ''){
+    if (name.trim() !== '') {
       if (selectedDataSource.id) {
         this.setState({ isSaving: true });
         datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
@@ -136,10 +135,7 @@ class DataSourceManager extends React.Component {
         });
       }
     } else {
-      toast.error(
-        "The name of datasource should not be empty", 
-        { hideProgressBar: true, position: 'top-center' }
-      );
+      toast.error('The name of datasource should not be empty', { hideProgressBar: true, position: 'top-center' });
     }
   };
 
@@ -150,6 +146,7 @@ class DataSourceManager extends React.Component {
     const ComponentToRender = SourceComponents[sourceComponentName];
     return (
       <ComponentToRender
+        optionsChanged={(options = {}) => this.setState({ options })}
         optionchanged={this.optionchanged}
         createDataSource={this.createDataSource}
         options={options}

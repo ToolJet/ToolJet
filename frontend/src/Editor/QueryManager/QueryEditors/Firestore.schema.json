@@ -4,6 +4,11 @@
   "title": "Firestore datasource",
   "description": "A schema defining Firestore datasource",
   "type": "object",
+  "defaults": {
+    "path": "",
+    "operation": "get_document",
+    "order_type": "desc"
+  },
   "properties": {
     "operation": {
       "$label": "Operation",

@@ -18,6 +18,9 @@
     "customTesting": true,
     "hideSave": true
   },
+  "defaults": {
+    "access_type": { "value": "read" }
+  },
   "properties": {
     "sheets": {
       "$label": "",

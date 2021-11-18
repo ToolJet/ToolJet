@@ -4,6 +4,7 @@
   "title": "Dynamodb datasource",
   "description": "A schema defining Dynamodb datasource",
   "type": "object",
+  "defaults": {},
   "properties": {
     "operation": {
       "$label": "Operation",

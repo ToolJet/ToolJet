@@ -4,6 +4,7 @@
   "title": "Mysql datasource",
   "description": "A schema defining Mysql datasource",
   "type": "object",
+  "defaults": {},
   "properties": {
     "mode": {
       "$label": "",

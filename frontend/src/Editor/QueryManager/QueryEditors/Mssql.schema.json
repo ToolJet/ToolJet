@@ -4,6 +4,7 @@
   "title": "Mysql data query schema",
   "description": "A schema defining mysql data query",
   "type": "object",
+  "defaults": {},
   "properties": {
     "query": {
       "$key": "query",

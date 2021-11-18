@@ -79,11 +79,23 @@ let QueryManager = class QueryManager extends React.Component {
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
+    const isSchemaUnavailable = ['restapi', 'stripe'].includes(source.kind);
+    const schemaUnavailableOptions = {
+      restapi: {
+        method: 'get',
+        url: null,
+        url_params: [],
+        headers: [],
+        body: [],
+      },
+      stripe: {},
+    };
+
     this.setState({
       selectedDataSource: source,
       selectedSource: source,
-      options: defaultOptions[source.kind],
       queryName: this.computeQueryName(source.kind),
+      ...(isSchemaUnavailable && { options: schemaUnavailableOptions[source.kind] }),
     });
   };
 
