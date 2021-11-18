@@ -29,7 +29,7 @@ const DynamicForm = ({
   React.useEffect(() => {
     console.log(selectedDataSource?.options);
     if (!isEditMode || isEmpty(options)) {
-      optionsChanged(schema.defaults);
+      optionsChanged(schema?.defaults ?? {});
     }
   }, []);
 
