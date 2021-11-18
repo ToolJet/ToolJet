@@ -19,7 +19,7 @@
       "password": { "type": "string", "encrypted": true }
     }
   },
-  "default": {
+  "defaults": {
     "scheme": { "value": "https" },
     "host": { "value": "localhost" },
     "port": { "value": 9200 },

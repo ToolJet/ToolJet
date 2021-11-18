@@ -20,7 +20,7 @@
       "password": { "type": "string", "encrypted": true }
     }
   },
-  "mysql": {
+  "defaults": {
     "host": { "value": "localhost" },
     "port": { "value": 3306 },
     "database": { "value": "" },

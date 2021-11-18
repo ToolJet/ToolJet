@@ -27,10 +27,11 @@ const DynamicForm = ({
   // if(schema.properties)  todo add empty check
 
   React.useEffect(() => {
-    if (!isEditMode || isEmpty(selectedDataSource?.options)) {
+    console.log(selectedDataSource?.options);
+    if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema.defaults);
     }
-  }, [isEditMode, optionsChanged, schema.defaults, selectedDataSource?.options]);
+  }, []);
 
   const getElement = (type) => {
     switch (type) {

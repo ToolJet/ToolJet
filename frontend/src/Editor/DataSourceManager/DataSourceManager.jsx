@@ -13,6 +13,7 @@ import {
 } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
+import { isEmpty } from 'lodash';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -59,7 +60,6 @@ class DataSourceManager extends React.Component {
     this.setState({
       dataSourceMeta: source,
       selectedDataSource: source,
-      // options: defaultOptions[source.kind],
       name: source.kind,
     });
   };
@@ -153,6 +153,7 @@ class DataSourceManager extends React.Component {
         isSaving={isSaving}
         hideModal={this.hideModal}
         selectedDataSource={this.state.selectedDataSource}
+        isEditMode={!isEmpty(this.state.selectedDataSource)}
       />
     );
   };
