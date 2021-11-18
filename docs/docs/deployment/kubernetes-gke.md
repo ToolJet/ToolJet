@@ -31,7 +31,7 @@ Change the domain name to the domain/subdomain that you wish to use for ToolJet 
     curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/deployment.yaml
    ```
 
-Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](https://docs.tooljet.io/docs/deployment/env-vars).
+Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](https://docs.tooljet.com/docs/deployment/env-vars).
 
 4. Create k8s service
 
