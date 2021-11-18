@@ -33,6 +33,7 @@ This command takes the assumption that certain required environment has already 
    --allow-unauthenticated \
    --cpu 1 \
    --memory 1Gi \
+   --min-instances 1 \
    --set-env-vars "TOOLJET_HOST=https://<replace-your-public-host>.com" \
    --set-secrets "PG_HOST=PG_HOST:latest" \
    --set-secrets "PG_DB=PG_DB:latest" \
@@ -97,6 +98,7 @@ This command takes the assumption that certain required environment has already 
    --allow-unauthenticated \
    --cpu 1 \
    --memory 1Gi \
+   --min-instances 1 \
    --set-env-vars "SERVE_CLIENT=false" \
    --set-env-vars "TOOLJET_HOST=https://<replace-your-public-host>.com" \
    --set-secrets "PG_HOST=PG_HOST:latest" \
