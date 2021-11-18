@@ -11,7 +11,7 @@ ToolJet client is a standalone application and can be deployed on static website
 :::tip
 You should set the environment variable `TOOLJET_SERVER_URL` ( URL of the server ) while building the frontend.
 
-For example: `NODE_ENV=production TOOLJET_SERVER_URL=https://server.tooljet.io npm run build && firebase deploy`
+For example: `NODE_ENV=production TOOLJET_SERVER_URL=https://server.tooljet.com npm run build && firebase deploy`
 :::
 
 1. Initialize firebase project
@@ -29,7 +29,7 @@ For example: `NODE_ENV=production TOOLJET_SERVER_URL=https://server.tooljet.io n
 :::tip
 You should set the environment variable `TOOLJET_SERVER_URL` ( URL of the server ) while building the frontend.
 
-For example: `NODE_ENV=production TOOLJET_SERVER_URL=https://server.tooljet.io npm run build && firebase deploy`
+For example: `NODE_ENV=production TOOLJET_SERVER_URL=https://server.tooljet.com npm run build && firebase deploy`
 :::
 
 1. Copy the build folder onto a bucket
