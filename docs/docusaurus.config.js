@@ -10,7 +10,7 @@ module.exports = {
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
-    googleAnalytics: {
+    gtag: {
       trackingID: process.env.GA_MID,
       // Optional fields.
       anonymizeIP: true, // Should IPs be anonymized?
