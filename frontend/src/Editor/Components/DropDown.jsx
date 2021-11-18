@@ -4,7 +4,6 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const DropDown = function DropDown({
   id,
-  width,
   height,
   component,
   onComponentClick,
@@ -61,7 +60,9 @@ export const DropDown = function DropDown({
 
   const currentValueProperty = component.definition.properties.value;
   const value = currentValueProperty ? currentValueProperty.value : '';
-  const [currentValue, setCurrentValue] = useState('');
+  const [currentValue, setCurrentValue] = useState(() =>
+    resolveReferences(currentValueProperty.value, currentState, '')
+  );
 
   let newValue = value;
   if (currentValueProperty && currentState) {
@@ -91,21 +92,30 @@ export const DropDown = function DropDown({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue]);
 
+  useEffect(() => {
+    if (selectOptions.some((e) => e.value === newValue)) {
+      setCurrentValue(newValue);
+    } else {
+      setCurrentValue(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [values]);
+
   return (
     <div
       className="dropdown-widget row g-0"
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
-      <div className="col-auto">
+      <div className="col-auto my-auto">
         <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
           {label}
         </label>
       </div>
-      <div className="col px-0">
+      <div className="col px-0 h-100">
         <SelectSearch
           disabled={parsedDisabledState}
           options={selectOptions}

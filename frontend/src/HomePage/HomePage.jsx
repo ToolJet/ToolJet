@@ -88,11 +88,11 @@ class HomePage extends React.Component {
     appService
       .createApp()
       .then((data) => {
-        console.log(data);
         _self.props.history.push(`/apps/${data.id}`);
       })
       .catch(({ error }) => {
         toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        _self.setState({ creatingApp: false });
       });
   };
 
@@ -171,6 +171,7 @@ class HomePage extends React.Component {
               isImportingApp: false,
             });
             this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
+            this.fetchFolders();
           })
           .catch(({ error }) => {
             toast.error(`Could not import the app: ${error}`, {
@@ -195,12 +196,76 @@ class HomePage extends React.Component {
     };
   };
 
-  isAppEditable = (app) => {
-    return app.app_group_permissions.some((p) => p.update);
+  canUserPerform(user, action, app) {
+    let permissionGrant;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('app_create', user.group_permissions);
+        break;
+      case 'read':
+      case 'update':
+        permissionGrant =
+          this.canAnyGroupPerformActionOnApp(action, user.app_group_permissions, app) ||
+          this.isUserOwnerOfApp(user, app);
+        break;
+      case 'delete':
+        permissionGrant =
+          this.canAnyGroupPerformActionOnApp('delete', user.app_group_permissions, app) ||
+          this.canAnyGroupPerformAction('app_delete', user.group_permissions) ||
+          this.isUserOwnerOfApp(user, app);
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  canAnyGroupPerformActionOnApp(action, appGroupPermissions, app) {
+    if (!appGroupPermissions) {
+      return false;
+    }
+
+    const permissionsToCheck = appGroupPermissions.filter((permission) => permission.app_id == app.id);
+    return this.canAnyGroupPerformAction(action, permissionsToCheck);
+  }
+
+  canAnyGroupPerformAction(action, permissions) {
+    if (!permissions) {
+      return false;
+    }
+
+    return permissions.some((p) => p[action]);
+  }
+
+  isUserOwnerOfApp(user, app) {
+    return user.id == app.user_id;
+  }
+
+  canCreateApp = () => {
+    return this.canUserPerform(this.state.currentUser, 'create');
   };
 
-  isAppDeletable = (app) => {
-    return app.app_group_permissions.some((p) => p.delete);
+  canUpdateApp = (app) => {
+    return this.canUserPerform(this.state.currentUser, 'update', app);
+  };
+
+  canDeleteApp = (app) => {
+    return this.canUserPerform(this.state.currentUser, 'delete', app);
+  };
+
+  canCreateFolder = () => {
+    return this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions);
+  };
+
+  cancelDeleteAppDialog = () => {
+    this.setState({
+      isDeletingApp: false,
+      appToBeDeleted: null,
+      showAppDeletionConfirmation: false,
+    });
   };
 
   executeAppDeletion = () => {
@@ -213,11 +278,6 @@ class HomePage extends React.Component {
           hideProgressBar: true,
           position: 'top-center',
         });
-        this.setState({
-          isDeletingApp: false,
-          appToBeDeleted: null,
-          showAppDeletionConfirmation: false,
-        });
         this.fetchApps(this.state.currentPage || 1, this.state.currentFolder.id);
         this.fetchFolders();
       })
@@ -226,12 +286,10 @@ class HomePage extends React.Component {
           hideProgressBar: true,
           position: 'top-center',
         });
-        this.setState({
-          isDeletingApp: false,
-          appToBeDeleted: null,
-          showAppDeletionConfirmation: false,
-        });
         console.log(error);
+      })
+      .finally(() => {
+        this.cancelDeleteAppDialog();
       });
   };
 
@@ -257,11 +315,18 @@ class HomePage extends React.Component {
           message={'The app and the associated data will be permanently deleted, do you want to continue?'}
           confirmButtonLoading={isDeletingApp}
           onConfirm={() => this.executeAppDeletion()}
-          onCancel={() => {}}
+          onCancel={() => this.cancelDeleteAppDialog()}
         />
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-        {!isLoading && meta.total_count === 0 && !currentFolder.id && <BlankPage createApp={this.createApp} />}
+        {!isLoading && meta.total_count === 0 && !currentFolder.id && (
+          <BlankPage
+            createApp={this.createApp}
+            isImportingApp={isImportingApp}
+            fileInput={this.fileInput}
+            handleImportApp={this.handleImportApp}
+          />
+        )}
 
         {(isLoading || meta.total_count > 0) && (
           <div className="page-body homepage-body">
@@ -276,6 +341,7 @@ class HomePage extends React.Component {
                     currentFolder={currentFolder}
                     folderChanged={this.folderChanged}
                     foldersChanged={this.foldersChanged}
+                    canCreateFolder={this.canCreateFolder()}
                   />
                 </div>
 
@@ -287,40 +353,42 @@ class HomePage extends React.Component {
                           {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
                         </h2>
                       </div>
-                      <div className="col-auto ms-auto d-print-none">
-                        <div className="w-100 ">
-                          <button
-                            className={`btn btn-default d-none d-lg-inline mb-3 ${isImportingApp ? 'btn-loading' : ''}`}
-                            onChange={this.handleImportApp}
-                          >
-                            <label>
-                              Import
-                              <input type="file" ref={this.fileInput} style={{ display: 'none' }} />
-                            </label>
-                          </button>
-                        </div>
-                      </div>
+                      {this.canCreateApp() && (
+                        <>
+                          <div className="col-auto ms-auto d-print-none">
+                            <div className="w-100 ">
+                              <button
+                                className={'btn btn-default d-none d-lg-inline mb-3'}
+                                onChange={this.handleImportApp}
+                              >
+                                <label>
+                                  {isImportingApp && (
+                                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                  )}
+                                  Import
+                                  <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                                </label>
+                              </button>
+                            </div>
+                          </div>
 
-                      <div className="col-auto ms-auto d-print-none">
-                        <div className="w-100 ">
-                          <button
-                            className={`btn btn-primary d-none d-lg-inline mb-3 ${creatingApp ? 'btn-loading' : ''}`}
-                            onClick={this.createApp}
-                          >
-                            Create new application
-                          </button>
-                        </div>
-                      </div>
+                          <div className="col-auto ms-auto d-print-none">
+                            <div className="w-100 ">
+                              <button
+                                className={`btn btn-primary d-none d-lg-inline mb-3 ${
+                                  creatingApp ? 'btn-loading' : ''
+                                }`}
+                                onClick={this.createApp}
+                              >
+                                Create new application
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
 
-                    <div
-                      className={
-                        currentFolder.count === 0
-                          ? 'table-responsive w-100 apps-table mt-3 d-flex align-items-center'
-                          : 'table-responsive w-100 apps-table mt-3'
-                      }
-                      style={{ minHeight: '600px' }}
-                    >
+                    <div className="table-responsive w-100 apps-table" style={{ minHeight: '600px' }}>
                       <table
                         data-testid="appsTable"
                         className={`table table-vcenter ${this.props.darkMode ? 'bg-dark' : 'bg-white'}`}
@@ -358,7 +426,7 @@ class HomePage extends React.Component {
                                     </small>
                                   </td>
                                   <td className="text-muted col-auto pt-4">
-                                    {!isLoading && this.isAppEditable(app) && (
+                                    {!isLoading && this.canUpdateApp(app) && (
                                       <Link to={`/apps/${app.id}`} className="d-none d-lg-inline">
                                         <OverlayTrigger
                                           placement="top"
@@ -420,8 +488,8 @@ class HomePage extends React.Component {
                                             <span
                                               className={`${
                                                 app?.current_version_id === null
-                                                  ? 'badge mx-2 '
-                                                  : 'badge bg-azure-lt mx-2'
+                                                  ? 'badge launch-btn mx-2 '
+                                                  : 'badge launch-btn bg-azure-lt mx-2'
                                               }`}
                                               style={{
                                                 filter:
@@ -437,9 +505,11 @@ class HomePage extends React.Component {
                                       )}
                                     </Link>
 
-                                    {this.isAppDeletable(app) && (
+                                    {(this.canCreateApp(app) || this.canDeleteApp(app)) && (
                                       <AppMenu
                                         app={app}
+                                        canCreateApp={this.canCreateApp()}
+                                        canDeleteApp={this.canDeleteApp(app)}
                                         folders={this.state.folders}
                                         foldersChanged={this.foldersChanged}
                                         deleteApp={() => this.deleteApp(app)}

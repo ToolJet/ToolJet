@@ -16,6 +16,7 @@ module.exports = {
     extensions: ['.js', '.jsx', '.png'],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
+      '@ee': path.resolve(__dirname, 'ee/'),
     },
   },
   ...(environment === 'development' && { devtool: 'inline-source-map' }),
@@ -44,7 +45,7 @@ module.exports = {
           },
           {
             loader: 'css-loader',
-          }
+          },
         ],
       },
       {
@@ -96,6 +97,7 @@ module.exports = {
     config: JSON.stringify({
       apiUrl: `${API_URL[environment] || ''}/api`,
       SERVER_IP: process.env.SERVER_IP,
+      COMMENT_FEATURE_ENABLE: true,
     }),
   },
 };

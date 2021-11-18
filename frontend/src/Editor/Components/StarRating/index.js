@@ -96,12 +96,12 @@ export const StarRating = function StarRating({
       className="star-rating"
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
       style={{ display: parsedWidgetVisibility ? '' : 'none' }}
     >
       {/* TODO: Add label color defination property instead of hardcoded color*/}
-      <span className="label form-check-label form-check-label col-auto" style={{ color: labelColor }}>
+      <span className="label form-check-label col-auto" style={{ color: labelColor }}>
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">

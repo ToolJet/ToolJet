@@ -41,6 +41,9 @@ export class App extends BaseEntity {
   @Column({ name: 'current_version_id' })
   currentVersionId: string;
 
+  @Column({ name: 'user_id' })
+  userId: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

@@ -13,7 +13,7 @@ const layerStyles = {
   height: '100%',
 };
 
-function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout) {
+function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout, canvasWidth) {
   if (!initialOffset || !currentOffset) {
     return {
       display: 'none',
@@ -31,7 +31,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)
   if (id) {
     // Dragging within the canvas
 
-    x = Math.round(item.layouts[currentLayout].left + delta.x);
+    x = Math.round((item.layouts[currentLayout].left * canvasWidth / 100) + delta.x);
     y = Math.round(item.layouts[currentLayout].top + delta.y);
   } else {
     // New component being dragged  from components sidebar
@@ -43,9 +43,13 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)
     y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
   }
 
-  [x, y] = snapToGrid(x, y);
+  [x, y] = snapToGrid(canvasWidth, x, y);
 
   x += realCanvasDelta;
+
+  console.log('cvv', canvasWidth, x)
+
+  // x = (x * canvasWidth) / 100;
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
@@ -53,7 +57,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)
     WebkitTransform: transform,
   };
 }
-export const CustomDragLayer = ({ currentLayout }) => {
+export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
   const { itemType, isDragging, item, initialOffset, currentOffset, delta } = useDragLayer((monitor) => ({
     item: monitor.getItem(),
     itemType: monitor.getItemType(),
@@ -62,10 +66,12 @@ export const CustomDragLayer = ({ currentLayout }) => {
     isDragging: monitor.isDragging(),
     delta: monitor.getDifferenceFromInitialOffset(),
   }));
+
+  if (itemType === ItemTypes.COMMENT) return null;
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} currentLayout={currentLayout} />;
+        return <BoxDragPreview item={item} currentLayout={currentLayout} canvasWidth={canvasWidth} />;
       default:
         return null;
     }
@@ -77,7 +83,7 @@ export const CustomDragLayer = ({ currentLayout }) => {
 
   return (
     <div style={layerStyles}>
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout)}>{renderItem()}</div>
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout, canvasWidth)}>{renderItem()}</div>
     </div>
   );
 };

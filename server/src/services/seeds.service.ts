@@ -62,6 +62,9 @@ export class SeedsService {
     const groupPermission = manager.create(GroupPermission, {
       organizationId: user.organizationId,
       group: group,
+      appCreate: group == 'admin',
+      appDelete: group == 'admin',
+      folderCreate: group == 'admin',
     });
 
     await manager.save(groupPermission);

@@ -6,7 +6,7 @@ import Headers from './TabHeaders';
 import Params from './TabParams';
 import Body from './TabBody';
 
-function ControlledTabs({ options, currentState, theme, onChange, removeKeyValuePair }) {
+function ControlledTabs({ options, currentState, theme, onChange, removeKeyValuePair, darkMode }) {
   const [key, setKey] = React.useState('headers');
 
   return (
@@ -18,6 +18,7 @@ function ControlledTabs({ options, currentState, theme, onChange, removeKeyValue
           options={options['headers']}
           currentState={currentState}
           theme={theme}
+          darkMode={darkMode}
         />
       </Tab>
       <Tab eventKey="params" title="Params">

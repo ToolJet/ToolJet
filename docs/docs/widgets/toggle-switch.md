@@ -1,7 +1,3 @@
----
-sidebar_position: 19
----
-
 # Toggle Switch
 
 The toggle switch widget allows the user to change a setting between two states.

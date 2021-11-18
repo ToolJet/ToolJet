@@ -55,18 +55,18 @@ export const Multiselect = function Multiselect({
   return (
     <div
       className="multiselect-widget row g-0"
-      style={{ width, height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
-      <div className="col-auto">
+      <div className="col-auto my-auto">
         <label style={{ marginRight: '1rem' }} className="form-label py-1">
           {label}
         </label>
       </div>
-      <div className="col px-0">
+      <div className="col px-0 h-100">
         <SelectSearch
           disabled={parsedDisabledState}
           options={selectOptions}

@@ -1,7 +1,3 @@
----
-sidebar_position: 18
----
-
 # Textarea
 
 Textarea widgets let users enter and edit just text like [Text Input](/docs/widgets/text-input) widget.

@@ -17,11 +17,13 @@ export const Button = function Button({ width, height, component, currentState, 
   const text = component.definition.properties.text.value;
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const color = component.definition.styles.textColor.value;
+  const borderRadius = component.definition.styles.borderRadius?.value ?? 3; // using 2 for backward compatibility
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const parsedBorderRadius = typeof borderRadius !== 'number' ? resolveWidgetFieldValue(borderRadius, currentState) : borderRadius;
   let parsedWidgetVisibility = widgetVisibility;
 
   try {
@@ -33,7 +35,8 @@ export const Button = function Button({ width, height, component, currentState, 
   const computedStyles = {
     backgroundColor,
     color,
-    width,
+    width: '100%',
+    borderRadius: `${parsedBorderRadius}px`,
     height,
     display: parsedWidgetVisibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),

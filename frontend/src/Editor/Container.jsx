@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
+import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
@@ -6,6 +7,11 @@ import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
+import useRouter from '@/_hooks/use-router';
+import Comments from './Comments';
+import { commentsService } from '@/_services';
+import config from 'config';
+import Spinner from '@/_ui/Spinner';
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -14,6 +20,7 @@ function uuidv4() {
 }
 
 export const Container = ({
+  canvasWidth,
   mode,
   snapToGrid,
   onComponentClick,
@@ -29,14 +36,18 @@ export const Container = ({
   currentLayout,
   removeComponent,
   deviceWindowWidth,
-  scaleValue,
   selectedComponent,
   darkMode,
+  showComments,
+  appVersionsId,
+  socket,
 }) => {
   const styles = {
-    width: currentLayout === 'mobile' ? deviceWindowWidth : 1292,
+    width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     height: 2400,
+    maxWidth: '1292px',
     position: 'absolute',
+    backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
   const components = appDefinition.components;
@@ -44,6 +55,9 @@ export const Container = ({
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [commentsPreviewList, setCommentsPreviewList] = useState([]);
+  const [newThread, addNewThread] = useState({});
+  const router = useRouter();
 
   useEffect(() => {
     setBoxes(components);
@@ -81,16 +95,41 @@ export const Container = ({
     }
   });
 
+  function convertXToPercentage(x, canvasWidth) {
+    return (x * 100) / canvasWidth;
+  }
+
+  function convertXFromPercentage(x, canvasWidth) {
+    return (x * canvasWidth) / 100;
+  }
+
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
 
   const [, drop] = useDrop(
     () => ({
-      accept: ItemTypes.BOX,
-      drop(item, monitor) {
+      accept: [ItemTypes.BOX, ItemTypes.COMMENT],
+      async drop(item, monitor) {
         if (item.parent) {
           return;
+        }
+
+        if (item.name === 'comment') {
+          const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+          const offsetFromTopOfWindow = canvasBoundingRect.top;
+          const offsetFromLeftOfWindow = canvasBoundingRect.left;
+          const currentOffset = monitor.getSourceClientOffset();
+
+          const xOffset = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+          const y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+
+          const x = (xOffset * 100) / canvasWidth;
+
+          const element = document.getElementById(`thread-${item.threadId}`);
+          element.style.transform = `translate(${xOffset}px, ${y}px)`;
+          commentsService.updateThread(item.threadId, { x, y });
+          return undefined;
         }
 
         let layouts = item['layouts'];
@@ -105,86 +144,90 @@ export const Container = ({
 
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
-        // Component already exists and this is just a reposition event
-        if (id) {
-          const delta = monitor.getDifferenceFromInitialOffset();
-          let deltaX = 0;
-          let deltaY = 0;
+        //  This is a new component
+        componentMeta = componentTypes.find((component) => component.component === item.component.component);
+        console.log('adding new component');
+        componentData = JSON.parse(JSON.stringify(componentMeta));
+        componentData.name = computeComponentName(componentData.component, boxes);
 
-          if (delta) {
-            deltaX = delta.x;
-            deltaY = delta.y;
-          }
+        const offsetFromTopOfWindow = canvasBoundingRect.top;
+        const offsetFromLeftOfWindow = canvasBoundingRect.left;
+        const currentOffset = monitor.getSourceClientOffset();
 
-          left = Math.round(currentLayoutOptions.left + deltaX);
-          top = Math.round(currentLayoutOptions.top + deltaY);
+        left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
+        top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
 
-          if (snapToGrid) {
-            [left, top] = doSnapToGrid(left, top);
-          }
+        id = uuidv4();
 
-          let newBoxes = {
-            ...boxes,
-            [id]: {
-              ...boxes[id],
-              layouts: {
-                ...boxes[id]['layouts'],
-                [item.currentLayout]: {
-                  ...boxes[id]['layouts'][item.currentLayout],
-                  top: top,
-                  left: left,
-                },
-              },
-            },
-          };
+        const bundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+        const canvasWidth = bundingRect?.width;
 
-          setBoxes(newBoxes);
-        } else {
-          //  This is a new component
-          componentMeta = componentTypes.find((component) => component.component === item.component.component);
-          console.log('adding new component');
-          componentData = JSON.parse(JSON.stringify(componentMeta));
-          componentData.name = computeComponentName(componentData.component, boxes);
-
-          const offsetFromTopOfWindow = canvasBoundingRect.top;
-          const offsetFromLeftOfWindow = canvasBoundingRect.left;
-          const currentOffset = monitor.getSourceClientOffset();
-
-          left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-          top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
-
-          id = uuidv4();
-
-          if (snapToGrid) {
-            [left, top] = doSnapToGrid(left, top);
-          }
-
-          if (item.currentLayout === 'mobile') {
-            componentData.definition.others.showOnDesktop.value = false;
-            componentData.definition.others.showOnMobile.value = true;
-          }
-
-          setBoxes({
-            ...boxes,
-            [id]: {
-              component: componentData,
-              layouts: {
-                [item.currentLayout]: {
-                  top: top,
-                  left: left,
-                  width: componentMeta.defaultSize.width,
-                  height: componentMeta.defaultSize.height,
-                },
-              },
-            },
-          });
+        if (snapToGrid) {
+          [left, top] = doSnapToGrid(canvasWidth, left, top);
         }
+
+        left = (left * 100) / canvasWidth;
+
+        if (item.currentLayout === 'mobile') {
+          componentData.definition.others.showOnDesktop.value = false;
+          componentData.definition.others.showOnMobile.value = true;
+        }
+
+        const width = componentMeta.defaultSize.width;
+
+        setBoxes({
+          ...boxes,
+          [id]: {
+            component: componentData,
+            layouts: {
+              [item.currentLayout]: {
+                top,
+                left,
+                width,
+                height: componentMeta.defaultSize.height,
+              },
+            },
+          },
+        });
 
         return undefined;
       },
     }),
     [moveBox]
   );
+
+  function onDragStop(e, componentId, direction, currentLayout) {
+    const id = componentId ? componentId : uuidv4();
+
+    // Get the width of the canvas
+    const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    const canvasWidth = canvasBounds?.width;
+    const nodeBounds = direction.node.getBoundingClientRect();
+
+    // Computing the left offset
+    const leftOffset = nodeBounds.x - canvasBounds.x;
+    const left = convertXToPercentage(leftOffset, canvasWidth);
+
+    // Computing the top offset
+    const top = nodeBounds.y - canvasBounds.y;
+
+    let newBoxes = {
+      ...boxes,
+      [id]: {
+        ...boxes[id],
+        layouts: {
+          ...boxes[id]['layouts'],
+          [currentLayout]: {
+            ...boxes[id]['layouts'][currentLayout],
+            top: top,
+            left: left,
+          },
+        },
+      },
+    };
+
+    setBoxes(newBoxes);
+  }
 
   function onResizeStop(id, e, direction, ref, d, position) {
     const deltaWidth = d.width;
@@ -201,13 +244,14 @@ export const Container = ({
 
     let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
-    top = y;
-    left = x;
+    const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    const canvasWidth = boundingRect?.width;
 
-    width = width + deltaWidth;
+    width = Math.round(width + (deltaWidth * 43) / canvasWidth); // convert the width delta to percentage
     height = height + deltaHeight;
 
-    // [width, height] = doSnapToGrid(width, height)
+    top = y;
+    left = (x * 100) / canvasWidth;
 
     let newBoxes = {
       ...boxes,
@@ -252,8 +296,130 @@ export const Container = ({
     }
   }
 
+  React.useEffect(() => {
+    console.log('current component => ', selectedComponent);
+  }, [selectedComponent]);
+
+  const handleAddThread = async (e) => {
+    e.stopPropogation && e.stopPropogation();
+
+    const x = (e.nativeEvent.offsetX) * 100 / canvasWidth;
+
+    const elementIndex = commentsPreviewList.length;
+    setCommentsPreviewList([
+      ...commentsPreviewList,
+      {
+        x: x,
+        y: e.nativeEvent.offsetY,
+      },
+    ]);
+
+    const { data } = await commentsService.createThread({
+      appId: router.query.id,
+      x: x,
+      y: e.nativeEvent.offsetY,
+      appVersionsId,
+    });
+
+    // Remove the temporary loader preview
+    const _commentsPreviewList = [...commentsPreviewList];
+    _commentsPreviewList.splice(elementIndex, 1);
+    setCommentsPreviewList(_commentsPreviewList);
+
+    // Update the threads on all connected clients using websocket
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: { message: 'threads', appId: router.query.id },
+      })
+    );
+
+    // Update the list of threads on the current users page
+    addNewThread(data);
+  };
+
+  const handleAddThreadOnComponent = async (_, __, e) => {
+    e.stopPropogation && e.stopPropogation();
+
+    const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    const offsetFromTopOfWindow = canvasBoundingRect.top;
+    const offsetFromLeftOfWindow = canvasBoundingRect.left;
+
+    let x = Math.round(e.screenX - 18 + e.screenX * (1 - zoomLevel) - offsetFromLeftOfWindow);
+    const y = Math.round(e.screenY + 18 + e.screenY * (1 - zoomLevel) - offsetFromTopOfWindow);
+
+    x = (x * 100) / canvasWidth;
+
+    const elementIndex = commentsPreviewList.length;
+    setCommentsPreviewList([
+      ...commentsPreviewList,
+      {
+        x,
+        y: y - 130,
+      },
+    ]);
+    const { data } = await commentsService.createThread({
+      appId: router.query.id,
+      x,
+      y: y - 130,
+      appVersionsId,
+    });
+
+    // Remove the temporary loader preview
+    const _commentsPreviewList = [...commentsPreviewList];
+    _commentsPreviewList.splice(elementIndex, 1);
+    setCommentsPreviewList(_commentsPreviewList);
+
+    // Update the threads on all connected clients using websocket
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: { message: 'threads', appId: router.query.id },
+      })
+    );
+
+    // Update the list of threads on the current users page
+    addNewThread(data);
+  };
+
+  if (showComments) {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const currentUserInitials = `${currentUser.first_name?.charAt(0)}${currentUser.last_name?.charAt(0)}`;
+    styles.cursor = `url("data:image/svg+xml,%3Csvg width='34' height='34' viewBox='0 0 34 34' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='17' cy='17' r='15.25' fill='white' stroke='%23FCAA0D' stroke-width='2.5' opacity='0.5' /%3E%3Ctext x='10' y='20' fill='%23000' opacity='0.5' font-family='inherit' font-size='11.2' font-weight='500' color='%23656d77'%3E%3C/text%3E%3C/svg%3E%0A"), text`;
+  }
+
   return (
-    <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? 'show-grid' : ''}`}>
+    <div
+      {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
+      ref={drop}
+      style={styles}
+      className={cx('real-canvas', {
+        'show-grid': isDragging || isResizing,
+      })}
+    >
+      {config.COMMENT_FEATURE_ENABLE && showComments && (
+        <>
+          <Comments socket={socket} newThread={newThread} appVersionsId={appVersionsId} canvasWidth={canvasWidth} />
+          {commentsPreviewList.map((previewComment, index) => (
+            <div
+              key={index}
+              style={{
+                transform: `translate(${previewComment.x * canvasWidth / 100}px, ${previewComment.y}px)`,
+              }}
+            >
+              <label className="form-selectgroup-item comment-preview-bubble">
+                <span
+                  className={cx(
+                    'comment comment-preview-bubble-border cursor-move avatar avatar-sm shadow-lg bg-white avatar-rounded'
+                  )}
+                >
+                  <Spinner />
+                </span>
+              </label>
+            </div>
+          ))}
+        </>
+      )}
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =
@@ -262,24 +428,28 @@ export const Container = ({
         if (!box.parent && canShowInCurrentLayout) {
           return (
             <DraggableBox
-              onComponentClick={onComponentClick}
+              canvasWidth={canvasWidth}
+              onComponentClick={
+                config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
+              }
               onEvent={onEvent}
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}
               key={key}
               currentState={currentState}
               onResizeStop={onResizeStop}
+              onDragStop={onDragStop}
               paramUpdated={paramUpdated}
               id={key}
               {...boxes[key]}
               mode={mode}
               resizingStatusChanged={(status) => setIsResizing(status)}
+              draggingStatusChanged={(status) => setIsDragging(status)}
               inCanvas={true}
               zoomLevel={zoomLevel}
               configHandleClicked={configHandleClicked}
               removeComponent={removeComponent}
               currentLayout={currentLayout}
-              scaleValue={scaleValue}
               deviceWindowWidth={deviceWindowWidth}
               isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
               darkMode={darkMode}
@@ -298,7 +468,6 @@ export const Container = ({
                 configHandleClicked,
                 removeComponent,
                 currentLayout,
-                scaleValue,
                 deviceWindowWidth,
                 selectedComponent,
                 darkMode,

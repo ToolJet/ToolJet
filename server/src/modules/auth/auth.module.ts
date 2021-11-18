@@ -13,13 +13,16 @@ import { OrganizationsService } from 'src/services/organizations.service';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '@services/email.service';
+import { OauthService, GoogleOAuthService } from '@ee/services/oauth';
+import { OauthController } from '@ee/controllers/oauth.controller';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { App } from 'src/entities/app.entity';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    TypeOrmModule.forFeature([User, Organization, OrganizationUser, GroupPermission]),
+    TypeOrmModule.forFeature([User, Organization, OrganizationUser, GroupPermission, App]),
     JwtModule.registerAsync({
       useFactory: (config: ConfigService) => {
         return {
@@ -32,7 +35,17 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy, UsersService, OrganizationsService, OrganizationUsersService, EmailService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    UsersService,
+    OrganizationsService,
+    OrganizationUsersService,
+    EmailService,
+    OauthService,
+    GoogleOAuthService,
+  ],
+  controllers: [OauthController],
   exports: [AuthService],
 })
 export class AuthModule {}

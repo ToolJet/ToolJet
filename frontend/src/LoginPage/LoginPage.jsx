@@ -3,6 +3,8 @@ import { authenticationService } from '@/_services';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
+import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
+import { validateEmail } from '../_helpers/utils';
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -15,11 +17,16 @@ class LoginPage extends React.Component {
 
     this.state = {
       isLoading: false,
+      showPassword: false,
     };
   }
 
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
+  };
+
+  handleOnCheck = () => {
+    this.setState((prev) => ({ showPassword: !prev.showPassword }));
   };
 
   authUser = (e) => {
@@ -29,22 +36,34 @@ class LoginPage extends React.Component {
 
     const { email, password } = this.state;
 
-    authenticationService.login(email, password).then(
-      () => {
-        const params = queryString.parse(this.props.location.search);
-        const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-        this.props.history.push(from);
-        this.setState({ isLoading: false });
-      },
-      () => {
-        toast.error('Invalid email or password', {
-          toastId: 'toast-login-auth-error',
-          hideProgressBar: true,
-          position: 'top-center',
-        });
-        this.setState({ isLoading: false });
-      }
-    );
+    if (!validateEmail(email) || !password || !password.trim()) {
+      toast.error('Invalid email or password', {
+        toastId: 'toast-login-auth-error',
+        hideProgressBar: true,
+        position: 'top-center',
+      });
+      this.setState({ isLoading: false });
+      return;
+    }
+
+    authenticationService.login(email, password).then(this.authSuccessHandler, this.authFailureHandler);
+  };
+
+  authSuccessHandler = () => {
+    const params = queryString.parse(this.props.location.search);
+    const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
+    const redirectPath = from.pathname === '/login' ? '/' : from;
+    this.props.history.push(redirectPath);
+    this.setState({ isLoading: false });
+  };
+
+  authFailureHandler = () => {
+    toast.error('Invalid email or password', {
+      toastId: 'toast-login-auth-error',
+      hideProgressBar: true,
+      position: 'top-center',
+    });
+    this.setState({ isLoading: false });
   };
 
   render() {
@@ -85,7 +104,7 @@ class LoginPage extends React.Component {
                   <input
                     onChange={this.handleChange}
                     name="password"
-                    type="password"
+                    type={this.state.showPassword ? 'text' : 'password'}
                     className="form-control"
                     placeholder="Password"
                     autoComplete="off"
@@ -94,7 +113,19 @@ class LoginPage extends React.Component {
                   <span className="input-group-text"></span>
                 </div>
               </div>
-              <div className="form-footer">
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="check-input"
+                  name="check-input"
+                  onChange={this.handleOnCheck}
+                />
+                <label className="form-check-label" htmlFor="check-input">
+                  show password
+                </label>
+              </div>
+              <div className="form-footer d-flex flex-column align-items-center">
                 <button
                   data-testid="loginButton"
                   className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
@@ -102,6 +133,12 @@ class LoginPage extends React.Component {
                 >
                   Sign in
                 </button>
+                {window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID && (
+                  <GoogleSSOLoginButton
+                    authSuccessHandler={this.authSuccessHandler}
+                    authFailureHandler={this.authFailureHandler}
+                  />
+                )}
               </div>
             </div>
           </form>

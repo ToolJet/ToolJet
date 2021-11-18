@@ -2,7 +2,7 @@
 module.exports = {
   title: 'ToolJet - Documentation',
   tagline: 'Build and deploy internal tools.',
-  url: 'https://tooljet.io',
+  url: 'https://docs.tooljet.com',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',

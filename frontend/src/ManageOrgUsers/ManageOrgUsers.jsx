@@ -299,13 +299,19 @@ class ManageOrgUsers extends React.Component {
                                 </span>
                               </td>
                               <td className="text-muted">
-                                <a href="#" className="text-reset user-email">
+                                <a className="text-reset user-email">
                                   {user.email}
                                 </a>
                               </td>
                               <td className="text-muted">
                                 <span
-                                  className={`badge bg-${user.status === 'invited' ? 'warning' : user.status === 'archived' ? 'danger' : 'success'} me-1 m-1`}
+                                  className={`badge bg-${
+                                    user.status === 'invited'
+                                      ? 'warning'
+                                      : user.status === 'archived'
+                                      ? 'danger'
+                                      : 'success'
+                                  } me-1 m-1`}
                                 ></span>
                                 <small className="user-status">{user.status}</small>
                                 {user.status === 'invited' && 'invitation_token' in user ? (
@@ -320,7 +326,7 @@ class ManageOrgUsers extends React.Component {
                                       width="15"
                                       height="15"
                                       style={{
-                                        cursor: 'pointer'
+                                        cursor: 'pointer',
                                       }}
                                     ></img>
                                   </CopyToClipboard>

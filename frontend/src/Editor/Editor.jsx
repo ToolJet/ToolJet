@@ -16,7 +16,6 @@ import { SaveAndPreview } from './SaveAndPreview';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
-  onComponentClick,
   onEvent,
   onQueryConfirm,
   onQueryCancel,
@@ -26,8 +25,10 @@ import {
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
+import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
+import config from 'config';
 import queryString from 'query-string';
 
 class Editor extends React.Component {
@@ -60,9 +61,9 @@ class Editor extends React.Component {
       loadingDataQueries: true,
       showQueryEditor: true,
       showLeftSidebar: true,
+      showComments: false,
       zoomLevel: 1.0,
       currentLayout: 'desktop',
-      scaleValue: 1,
       deviceWindowWidth: 450,
       appDefinition: {
         components: {},
@@ -82,39 +83,74 @@ class Editor extends React.Component {
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
+      socket: null,
     };
   }
 
   componentDidMount() {
-    const appId = this.props.match.params.id;
     this.fetchApps(0);
-
-    appService.getApp(appId).then((data) => {
-      const dataDefinition = data.definition || { components: {} };
-      this.setState(
-        {
-          app: data,
-          isLoading: false,
-          editingVersion: data.editing_version,
-          appDefinition: { ...this.state.appDefinition, ...dataDefinition },
-          slug: data.slug,
-        },
-        () => {
-          computeComponentState(this, this.state.appDefinition.components).then(() => {
-            console.log('Default component state computed and set');
-            this.runQueries(data.data_queries);
-          });
-        }
-      );
-    });
-
+    this.fetchApp();
     this.fetchDataSources();
     this.fetchDataQueries();
+    config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
     });
   }
+
+  componentWillUnmount() {
+    if (this.state.socket) {
+      this.state.socket?.close();
+    }
+  }
+
+  getWebsocketUrl = () => {
+    const re = /https?:\/\//g;
+    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '');
+
+    return window.location.host;
+  };
+
+  initWebSocket = () => {
+    // TODO: add retry policy
+    const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
+
+    const appId = this.props.match.params.id;
+
+    // Connection opened
+    socket.addEventListener('open', function (event) {
+      console.log('connection established', event);
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+      socket.send(
+        JSON.stringify({
+          event: 'authenticate',
+          data: currentUser.auth_token,
+        })
+      );
+      socket.send(
+        JSON.stringify({
+          event: 'subscribe',
+          data: appId,
+        })
+      );
+    });
+
+    // Connection closed
+    socket.addEventListener('close', function (event) {
+      console.log('connection closed', event);
+    });
+
+    // Listen for possible errors
+    socket.addEventListener('error', function (event) {
+      console.log('WebSocket error: ', event);
+    });
+
+    this.setState({
+      socket,
+    });
+  };
 
   fetchDataSources = () => {
     this.setState(
@@ -194,6 +230,29 @@ class Editor extends React.Component {
         isLoading: false,
       })
     );
+  };
+
+  fetchApp = () => {
+    const appId = this.props.match.params.id;
+
+    appService.getApp(appId).then((data) => {
+      const dataDefinition = data.definition || { components: {} };
+      this.setState(
+        {
+          app: data,
+          isLoading: false,
+          editingVersion: data.editing_version,
+          appDefinition: { ...this.state.appDefinition, ...dataDefinition },
+          slug: data.slug,
+        },
+        () => {
+          computeComponentState(this, this.state.appDefinition.components).then(() => {
+            console.log('Default component state computed and set');
+            this.runQueries(data.data_queries);
+          });
+        }
+      );
+    });
   };
 
   setAppDefinitionFromVersion = (version) => {
@@ -307,6 +366,22 @@ class Editor extends React.Component {
         toast.success('App saved sucessfully', { hideProgressBar: true, position: 'top-center' });
       }
     });
+  };
+
+  saveAppName = (id, name, notify = false) => {
+    if (!name.trim()) {
+      toast.warn("App name can't be empty or whitespace", {
+        hideProgressBar: true,
+        position: 'top-center',
+      });
+
+      this.setState({
+        app: { ...this.state.app, name: this.state.oldName },
+      });
+
+      return;
+    }
+    this.saveApp(id, { name }, notify);
   };
 
   renderDataSource = (dataSource) => {
@@ -445,13 +520,17 @@ class Editor extends React.Component {
   };
 
   toggleQueryEditor = () => {
-    this.setState({ showQueryEditor: !this.state.showQueryEditor });
+    this.setState((prev) => ({ showQueryEditor: !prev.showQueryEditor }));
     this.toolTipRefHide.current.style.display = this.state.showQueryEditor ? 'none' : 'flex';
     this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'flex' : 'none';
   };
 
   toggleLeftSidebar = () => {
     this.setState({ showLeftSidebar: !this.state.showLeftSidebar });
+  };
+
+  toggleComments = () => {
+    this.setState({ showComments: !this.state.showComments });
   };
 
   configHandleClicked = (id, component) => {
@@ -473,7 +552,7 @@ class Editor extends React.Component {
   };
 
   toggleQuerySearch = () => {
-    this.setState({ showQuerySearchField: !this.state.showQuerySearchField });
+    this.setState((prev) => ({ showQuerySearchField: !prev.showQuerySearchField }));
   };
 
   onVersionDeploy = (versionId) => {
@@ -491,8 +570,13 @@ class Editor extends React.Component {
     });
   };
 
-  toolTipRefHide = createRef(null);
-  toolTipRefShow = createRef(null);
+  toolTipRefHide = createRef();
+  toolTipRefShow = createRef();
+
+  getCanvasWidth = () => {
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    return canvasBoundingRect?.width;
+  };
 
   render() {
     const {
@@ -518,13 +602,13 @@ class Editor extends React.Component {
       zoomLevel,
       currentLayout,
       deviceWindowWidth,
-      scaleValue,
       dataQueriesDefaultText,
       showQuerySearchField,
       showDataQueryDeletionConfirmation,
       isDeletingDataQuery,
       apps,
       defaultComponentStateComputed,
+      showComments,
     } = this.state;
     const appLink = slug ? `/applications/${slug}` : '';
 
@@ -559,18 +643,18 @@ class Editor extends React.Component {
                 >
                   <span className="navbar-toggler-icon"></span>
                 </button>
-                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-                  <Link to={'/'} className="">
-                    <img src="/assets/images/logo.svg" width="99" height="30" className="navbar-brand-image" />
+                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+                  <Link to={'/'}>
+                    <img src="/assets/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
                   </Link>
-                  <a href="/"></a>
                 </h1>
                 {this.state.app && (
                   <input
                     type="text"
                     style={{ width: '200px', left: '80px', position: 'absolute' }}
+                    onFocus={(e) => this.setState({ oldName: e.target.value })}
                     onChange={(e) => this.onNameChanged(e.target.value)}
-                    onBlur={(e) => this.saveApp(this.state.app.id, { name: e.target.value })}
+                    onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
                     className="form-control-plaintext form-control-plaintext-sm"
                     value={this.state.app.name}
                   />
@@ -592,12 +676,12 @@ class Editor extends React.Component {
                     />
                   </span>
                   <span
-                    className={`btn btn-default mx-2`}
+                    className={`btn btn-light mx-2`}
                     onClick={this.toggleQueryEditor}
                     data-tip="Show query editor"
                     data-class="py-1 px-2"
                     ref={this.toolTipRefShow}
-                    style={{ display: 'none' }}
+                    style={{ display: 'none', opacity: 0.5 }}
                   >
                     <img
                       style={{ transform: 'rotate(-90deg)' }}
@@ -612,6 +696,7 @@ class Editor extends React.Component {
                     <button
                       type="button"
                       className="btn btn-light"
+                      data-tip="Desktop view"
                       onClick={() => this.setState({ currentLayout: 'desktop' })}
                       disabled={currentLayout === 'desktop'}
                     >
@@ -620,6 +705,7 @@ class Editor extends React.Component {
                     <button
                       type="button"
                       className="btn btn-light"
+                      data-tip="Mobile view"
                       onClick={() => this.setState({ currentLayout: 'mobile' })}
                       disabled={currentLayout === 'mobile'}
                     >
@@ -659,6 +745,7 @@ class Editor extends React.Component {
                         onVersionDeploy={this.onVersionDeploy}
                         editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null}
                         setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                        fetchApp={this.fetchApp}
                       />
                     )}
                   </div>
@@ -668,6 +755,7 @@ class Editor extends React.Component {
           </div>
           <div className="sub-section">
             <LeftSidebar
+              appVersionsId={this.state?.editingVersion?.id}
               errorLogs={currentState.errors}
               queries={currentState.queries}
               components={currentState.components}
@@ -677,6 +765,7 @@ class Editor extends React.Component {
               dataSources={this.state.dataSources}
               dataSourcesChanged={this.dataSourcesChanged}
               onZoomChanged={this.onZoomChanged}
+              toggleComments={this.toggleComments}
               switchDarkMode={this.props.switchDarkMode}
             />
             <div className="main">
@@ -685,38 +774,49 @@ class Editor extends React.Component {
                 style={{ transform: `scale(${zoomLevel})` }}
                 onClick={() => this.switchSidebarTab(2)}
               >
-                <div className="canvas-area" style={{ width: currentLayout === 'desktop' ? '1292px' : '450px' }}>
+                <div
+                  className="canvas-area"
+                  style={{ width: currentLayout === 'desktop' ? '100%' : '450px', maxWidth: '1292px' }}
+                >
                   {defaultComponentStateComputed && (
-                    <Container
-                      appDefinition={appDefinition}
-                      appDefinitionChanged={this.appDefinitionChanged}
-                      snapToGrid={true}
-                      darkMode={this.props.darkMode}
-                      mode={'edit'}
-                      zoomLevel={zoomLevel}
-                      currentLayout={currentLayout}
-                      deviceWindowWidth={deviceWindowWidth}
-                      selectedComponent={selectedComponent || {}}
-                      scaleValue={scaleValue}
-                      appLoading={isLoading}
-                      onEvent={(eventName, options) => onEvent(this, eventName, options)}
-                      onComponentOptionChanged={(component, optionName, value) =>
-                        onComponentOptionChanged(this, component, optionName, value)
-                      }
-                      onComponentOptionsChanged={(component, options) =>
-                        onComponentOptionsChanged(this, component, options)
-                      }
-                      currentState={this.state.currentState}
-                      configHandleClicked={this.configHandleClicked}
-                      removeComponent={this.removeComponent}
-                      onComponentClick={(id, component) => {
-                        this.setState({ selectedComponent: { id, component } });
-                        this.switchSidebarTab(1);
-                        onComponentClick(this, id, component);
-                      }}
-                    />
+                    <>
+                      <Container
+                        canvasWidth={this.getCanvasWidth()}
+                        socket={this.state.socket}
+                        showComments={showComments}
+                        appVersionsId={this.state?.editingVersion?.id}
+                        appDefinition={appDefinition}
+                        appDefinitionChanged={this.appDefinitionChanged}
+                        snapToGrid={true}
+                        darkMode={this.props.darkMode}
+                        mode={'edit'}
+                        zoomLevel={zoomLevel}
+                        currentLayout={currentLayout}
+                        deviceWindowWidth={deviceWindowWidth}
+                        selectedComponent={selectedComponent || {}}
+                        appLoading={isLoading}
+                        onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
+                        onComponentOptionChanged={(component, optionName, value) =>
+                          onComponentOptionChanged(this, component, optionName, value)
+                        }
+                        onComponentOptionsChanged={(component, options) =>
+                          onComponentOptionsChanged(this, component, options)
+                        }
+                        currentState={this.state.currentState}
+                        configHandleClicked={this.configHandleClicked}
+                        removeComponent={this.removeComponent}
+                        onComponentClick={(id, component) => {
+                          this.setState({ selectedComponent: { id, component } });
+                          this.switchSidebarTab(1);
+                        }}
+                      />
+                      <CustomDragLayer
+                        snapToGrid={true}
+                        currentLayout={currentLayout}
+                        canvasWidth={this.getCanvasWidth()}
+                      />
+                    </>
                   )}
-                  <CustomDragLayer snapToGrid={true} currentLayout={currentLayout} />
                 </div>
               </div>
               <div
@@ -868,6 +968,13 @@ class Editor extends React.Component {
                 ></WidgetManager>
               )}
             </div>
+            {config.COMMENT_FEATURE_ENABLE && showComments && (
+              <CommentNotifications
+                socket={this.state.socket}
+                appVersionsId={this.state?.editingVersion?.id}
+                toggleComments={this.toggleComments}
+              />
+            )}
           </div>
         </DndProvider>
       </div>

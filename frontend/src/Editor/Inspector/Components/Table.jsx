@@ -38,6 +38,7 @@ class Table extends React.Component {
       currentState,
       actionPopOverRootClose: true,
       showPopOver: false,
+      columnPopOverRootClose: true,
     };
   }
 
@@ -104,6 +105,21 @@ class Table extends React.Component {
     this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties');
   };
 
+  columnEventChanged = (columnForWhichEventsAreChanged, events) => {
+    const columns = this.props.component.component.definition.properties.columns.value;
+
+    const newColumns = columns.map((column) => {
+      if (column.id === columnForWhichEventsAreChanged.id) {
+        const newColumn = { ...column, events };
+        return newColumn;
+      } else {
+        return column;
+      }
+    });
+
+    this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
+  };
+
   columnPopover = (column, index) => {
     return (
       <Popover id="popover-basic-2" className="shadow">
@@ -148,15 +164,14 @@ class Table extends React.Component {
           </div>
           <div className="field mb-2">
             <label className="form-label">key</label>
-            <input
-              type="text"
-              className="form-control text-field"
-              onBlur={(e) => {
-                e.stopPropagation();
-                this.onColumnItemChange(index, 'key', e.target.value);
-              }}
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={column.key}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
               placeholder={column.name}
-              defaultValue={column.key}
+              onChange={(value) => this.onColumnItemChange(index, 'key', value)}
             />
           </div>
 
@@ -241,6 +256,24 @@ class Table extends React.Component {
                   onChange={(name, value, color) => this.onColumnItemChange(index, 'activeColor', color)}
                 />
               </div>
+              <EventManager
+                component={{
+                  component: {
+                    definition: {
+                      events: column.events ?? [],
+                    },
+                  },
+                }}
+                componentMeta={{ events: { onChange: { displayName: 'On change' } } }}
+                currentState={this.props.currentState}
+                dataQueries={this.props.dataQueries}
+                components={this.props.components}
+                eventsChanged={(events) => this.columnEventChanged(column, events)}
+                apps={this.props.apps}
+                popOverCallback={(showing) => {
+                  this.setState({ columnPopOverRootClose: !showing });
+                }}
+              />
             </div>
           )}
 
@@ -303,15 +336,14 @@ class Table extends React.Component {
             <div>
               <label className="form-label">Date Format</label>
               <div className="field mb-2">
-                <input
-                  type="text"
-                  className="form-control text-field"
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    this.onColumnItemChange(index, 'dateFormat', e.target.value);
-                  }}
-                  defaultValue={column.dateFormat}
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.dateFormat}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
                   placeholder={'DD-MM-YYYY'}
+                  onChange={(value) => this.onColumnItemChange(index, 'dateFormat', value)}
                 />
               </div>
               <div className="field mb-2">
@@ -553,7 +585,12 @@ class Table extends React.Component {
             <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
               {columns.value.map((item, index) => (
                 <div className={`card p-2 column-sort-row ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
-                  <OverlayTrigger trigger="click" placement="left" rootClose overlay={this.columnPopover(item, index)}>
+                  <OverlayTrigger
+                    trigger="click"
+                    placement="left"
+                    rootClose={this.state.columnPopOverRootClose}
+                    overlay={this.columnPopover(item, index)}
+                  >
                     <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
                       <div className="col-auto">
                         <SortableItem key={item.name}>

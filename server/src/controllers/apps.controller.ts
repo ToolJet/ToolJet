@@ -141,7 +141,10 @@ export class AppsController {
     }
 
     const app = await this.appImportExportService.export(req.user, params.id);
-    return app;
+    return {
+      ...app,
+      tooljetVersion: globalThis.TOOLJET_VERSION,
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -180,24 +183,24 @@ export class AppsController {
     const folderId = req.query.folder;
 
     let apps = [];
-    let folderCount = 0;
+    let totalFolderCount = 0;
 
     if (folderId) {
       const folder = await this.foldersService.findOne(folderId);
       apps = await this.foldersService.getAppsFor(req.user, folder, page);
-      folderCount = await this.foldersService.userAppCount(req.user, folder);
+      totalFolderCount = await this.foldersService.userAppCount(req.user, folder);
     } else {
       apps = await this.appsService.all(req.user, page);
     }
 
     const totalCount = await this.appsService.count(req.user);
 
-    const totalPageCount = folderId ? folderCount : totalCount;
+    const totalPageCount = folderId ? totalFolderCount : totalCount;
 
     const meta = {
       total_pages: Math.ceil(totalPageCount / 10),
       total_count: totalCount,
-      folder_count: folderCount,
+      folder_count: totalFolderCount,
       current_page: parseInt(page || 1),
     };
 

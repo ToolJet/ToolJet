@@ -37,9 +37,12 @@ export class OrganizationsService {
     const createdGroupPermissions = [];
 
     for (const group of defaultGroups) {
+      const isAdmin = group === 'admin';
       const groupPermission = this.groupPermissionsRepository.create({
         organizationId: organization.id,
         group: group,
+        appCreate: isAdmin,
+        appDelete: isAdmin,
       });
       await this.groupPermissionsRepository.save(groupPermission);
       createdGroupPermissions.push(groupPermission);
@@ -67,12 +70,17 @@ export class OrganizationsService {
         status: orgUser.status,
       };
 
-      if (await this.usersService.hasGroup(user, 'admin') && orgUser.user.invitationToken)
+      if ((await this.usersService.hasGroup(user, 'admin')) && orgUser.user.invitationToken)
         serializedUser['invitationToken'] = orgUser.user.invitationToken;
 
       serializedUsers.push(serializedUser);
     }
 
     return serializedUsers;
+  }
+
+  async findFirst(): Promise<Organization> {
+    const organizations = await this.organizationsRepository.find();
+    return organizations[0];
   }
 }

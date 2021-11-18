@@ -1,7 +1,3 @@
----
-sidebar_position: 17
----
-
 # Text
 
 Text widget can be used to display text.

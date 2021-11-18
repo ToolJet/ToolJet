@@ -21,6 +21,11 @@ import { ToggleSwitch } from './Components/Toggle';
 import { RadioButton } from './Components/RadioButton';
 import { StarRating } from './Components/StarRating';
 import { Divider } from './Components/Divider';
+import { FilePicker } from './Components/FilePicker';
+import { PasswordInput } from './Components/PasswordInput';
+import { Calendar } from './Components/Calendar';
+import { IFrame } from './Components/IFrame';
+import { CodeEditor } from './Components/CodeEditor';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -50,6 +55,11 @@ const AllComponents = {
   RadioButton,
   StarRating,
   Divider,
+  FilePicker,
+  PasswordInput,
+  Calendar,
+  IFrame,
+  CodeEditor,
 };
 
 export const Box = function Box({
@@ -70,6 +80,8 @@ export const Box = function Box({
   containerProps,
   darkMode,
   removeComponent,
+  canvasWidth,
+  mode,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -89,7 +101,12 @@ export const Box = function Box({
   const resolvedStyles = resolveStyles(component, currentState);
   const exposedVariables = currentState?.components[component.name] ?? {};
 
-  const fireEvent = (eventName, options) => onEvent(eventName, { ...options, component });
+  const fireEvent = (eventName, options) => {
+    if (mode === 'edit' && eventName === 'onClick') {
+      onComponentClick(id, component);
+    }
+    onEvent(eventName, { ...options, component });
+  };
   const validate = (value) =>
     validateWidget({
       ...{ widgetValue: value },
@@ -120,6 +137,7 @@ export const Box = function Box({
             containerProps={containerProps}
             darkMode={darkMode}
             removeComponent={removeComponent}
+            canvasWidth={canvasWidth}
             properties={resolvedProperties}
             exposedVariables={exposedVariables}
             styles={resolvedStyles}

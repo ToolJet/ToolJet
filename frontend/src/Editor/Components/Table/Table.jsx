@@ -38,6 +38,7 @@ export function Table({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   darkMode,
+  fireEvent,
 }) {
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
@@ -72,6 +73,8 @@ export function Table({
   const tableTypeProperty = component.definition.styles.tableType;
   let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
   tableType = tableType === '' ? 'table-bordered' : tableType;
+
+  const cellSizeType = component.definition.styles.cellSize?.value;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -148,7 +151,7 @@ export function Table({
     let newFilters = filters;
     newFilters.splice(index, 1);
     setFilters(newFilters);
-    setAllFilters(newFilters);
+    setAllFilters(newFilters.filter((filter) => filter.id !== ''));
   }
 
   function clearFilters() {
@@ -187,7 +190,7 @@ export function Table({
       [index]: { ...obj },
     };
 
-    onComponentOptionsChanged(component, [
+    return onComponentOptionsChanged(component, [
       ['dataUpdates', newDataUpdates],
       ['changeSet', newChangeset],
     ]);
@@ -321,7 +324,7 @@ export function Table({
           case 'string':
           case undefined:
           case 'default': {
-            const textColor = resolveReferences(column.textColor, currentState, { cellValue });
+            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue });
 
             const cellStyles = {
               color: textColor ?? '',
@@ -508,7 +511,15 @@ export function Table({
                   readOnly={!column.isEditable}
                   activeColor={column.activeColor}
                   onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original).then(
+                      () => {
+                        fireEvent('OnTableToggleCellChanged', {
+                          column: column,
+                          rowId: cell.row.id,
+                          row: cell.row.original,
+                        });
+                      }
+                    );
                   }}
                 />
               </div>
@@ -550,65 +561,65 @@ export function Table({
   const leftActionsCellData =
     leftActions().length > 0
       ? [
-          {
-            id: 'leftActions',
-            Header: 'Actions',
-            accessor: 'edit',
-            width: columnSizes.leftActions || defaultColumn.width,
-            Cell: (cell) => {
-              return leftActions().map((action) => (
-                <button
-                  key={action.name}
-                  className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', {
-                      component,
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
-                    });
-                  }}
-                >
-                  {action.buttonText}
-                </button>
-              ));
-            },
+        {
+          id: 'leftActions',
+          Header: 'Actions',
+          accessor: 'edit',
+          width: columnSizes.leftActions || defaultColumn.width,
+          Cell: (cell) => {
+            return leftActions().map((action) => (
+              <button
+                key={action.name}
+                className="btn btn-sm m-1 btn-light"
+                style={{ background: action.backgroundColor, color: action.textColor }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEvent('onTableActionButtonClicked', {
+                    component,
+                    data: cell.row.original,
+                    rowId: cell.row.id,
+                    action,
+                  });
+                }}
+              >
+                {action.buttonText}
+              </button>
+            ));
           },
-        ]
+        },
+      ]
       : [];
 
   const rightActionsCellData =
     rightActions().length > 0
       ? [
-          {
-            id: 'rightActions',
-            Header: 'Actions',
-            accessor: 'edit',
-            width: columnSizes.rightActions || defaultColumn.width,
-            Cell: (cell) => {
-              return rightActions().map((action) => (
-                <button
-                  key={action.name}
-                  className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEvent('onTableActionButtonClicked', {
-                      component,
-                      data: cell.row.original,
-                      rowId: cell.row.id,
-                      action,
-                    });
-                  }}
-                >
-                  {action.buttonText}
-                </button>
-              ));
-            },
+        {
+          id: 'rightActions',
+          Header: 'Actions',
+          accessor: 'edit',
+          width: columnSizes.rightActions || defaultColumn.width,
+          Cell: (cell) => {
+            return rightActions().map((action) => (
+              <button
+                key={action.name}
+                className="btn btn-sm m-1 btn-light"
+                style={{ background: action.backgroundColor, color: action.textColor }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEvent('onTableActionButtonClicked', {
+                    component,
+                    data: cell.row.original,
+                    rowId: cell.row.id,
+                    action,
+                  });
+                }}
+              >
+                {action.buttonText}
+              </button>
+            ));
           },
-        ]
+        },
+      ]
       : [];
 
   const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
@@ -655,7 +666,7 @@ export function Table({
   const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
 
   const computedStyles = {
-    width: `${width}px`,
+    // width: `${width}px`,
   };
 
   const {
@@ -754,14 +765,18 @@ export function Table({
     }
   }, [state.columnResizing.isResizingColumn]);
 
+  useEffect(() => {
+    if (pageCount <= pageIndex) gotoPage(pageCount - 1);
+  }, [pageCount]);
+
   return (
     <div
       data-disabled={parsedDisabledState}
       className="card jet-table"
-      style={{ width: `${width}px`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ width: `100%`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
@@ -820,9 +835,8 @@ export function Table({
                 return (
                   <tr
                     key={index}
-                    className={`table-row ${
-                      highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
-                    }`}
+                    className={`table-row ${highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
+                      }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -840,8 +854,8 @@ export function Table({
                             undefined
                           ) {
                             console.log('componentState.changeSet', componentState.changeSet);
-                            cellProps.style.backgroundColor = '#ffffde';
-                            cellProps.style['--tblr-table-accent-bg'] = '#ffffde';
+                            cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
+                            cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
                           }
                         }
                       }
@@ -857,6 +871,7 @@ export function Table({
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
+                            [cellSizeType]: true,
                           })}
                           {...cellProps}
                         >
@@ -883,67 +898,67 @@ export function Table({
         Object.keys(componentState.changeSet || {}).length > 0 ||
         showFilterButton ||
         showDownloadButton) && (
-        <div className="card-footer d-flex align-items-center jet-table-footer">
-          <div className="table-footer row">
-            <div className="col">
-              {(clientSidePagination || serverSidePagination) && (
-                <Pagination
-                  lastActivePageIndex={currentState.components[component.name]?.pageIndex ?? 1}
-                  serverSide={serverSidePagination}
-                  autoGotoPage={gotoPage}
-                  autoCanNextPage={canNextPage}
-                  autoPageCount={pageCount}
-                  autoPageOptions={pageOptions}
-                  onPageIndexChanged={onPageIndexChanged}
-                />
-              )}
-            </div>
-
-            {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 && (
+          <div className="card-footer d-flex align-items-center jet-table-footer">
+            <div className="table-footer row">
               <div className="col">
-                <button
-                  className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                  onClick={() =>
-                    onEvent('onBulkUpdate', { component }).then(() => {
-                      handleChangesSaved();
-                    })
-                  }
-                >
-                  Save Changes
-                </button>
-                <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
-                  Discard changes
-                </button>
+                {(clientSidePagination || serverSidePagination) && (
+                  <Pagination
+                    lastActivePageIndex={pageIndex}
+                    serverSide={serverSidePagination}
+                    autoGotoPage={gotoPage}
+                    autoCanNextPage={canNextPage}
+                    autoPageCount={pageCount}
+                    autoPageOptions={pageOptions}
+                    onPageIndexChanged={onPageIndexChanged}
+                  />
+                )}
               </div>
-            )}
 
-            <div className="col-auto">
-              {showFilterButton && (
-                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
-                  <img src="/assets/images/icons/filter.svg" width="13" height="13" />
-                  {filters.length > 0 && (
-                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                  )}
-                </span>
+              {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 && (
+                <div className="col">
+                  <button
+                    className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                    onClick={() =>
+                      onEvent('onBulkUpdate', { component }).then(() => {
+                        handleChangesSaved();
+                      })
+                    }
+                  >
+                    Save Changes
+                  </button>
+                  <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
+                    Discard changes
+                  </button>
+                </div>
               )}
-              {showDownloadButton && (
-                <span
-                  data-tip="Download as CSV"
-                  className="btn btn-light btn-sm p-1"
-                  onClick={() => exportData('csv', true)}
-                >
-                  <img src="/assets/images/icons/download.svg" width="13" height="13" />
-                </span>
-              )}
+
+              <div className="col-auto">
+                {showFilterButton && (
+                  <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
+                    <img src="/assets/images/icons/filter.svg" width="13" height="13" />
+                    {filters.length > 0 && (
+                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                    )}
+                  </span>
+                )}
+                {showDownloadButton && (
+                  <span
+                    data-tip="Download as CSV"
+                    className="btn btn-light btn-sm p-1"
+                    onClick={() => exportData('csv', true)}
+                  >
+                    <img src="/assets/images/icons/download.svg" width="13" height="13" />
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       {isFiltersVisible && (
         <div className="table-filters card">
           <div className="card-header row">
             <div className="col">
-              <h4 className="text-muted">Filters</h4>
+              <h4 className="font-weight-normal">Filters</h4>
             </div>
             <div className="col-auto">
               <button onClick={() => hideFilters()} className="btn btn-light btn-sm">
@@ -1001,7 +1016,10 @@ export function Table({
                   />
                 </div>
                 <div className="col-auto">
-                  <button onClick={() => removeFilter(index)} className="btn btn-light btn-sm p-2 text-danger">
+                  <button
+                    onClick={() => removeFilter(index)}
+                    className={`btn ${darkMode ? 'btn-dark' : 'btn-light'} btn-sm p-2 text-danger font-weight-bold`}
+                  >
                     x
                   </button>
                 </div>
@@ -1010,16 +1028,16 @@ export function Table({
             {filters.length === 0 && (
               <div>
                 <center>
-                  <span className="text-muted">no filters yet.</span>
+                  <span>no filters yet.</span>
                 </center>
               </div>
             )}
           </div>
           <div className="card-footer">
-            <button onClick={addFilter} className="btn btn-light btn-sm text-muted">
+            <button onClick={addFilter} className="btn btn-light btn-sm">
               + add filter
             </button>
-            <button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2 text-muted">
+            <button onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2">
               clear filters
             </button>
           </div>

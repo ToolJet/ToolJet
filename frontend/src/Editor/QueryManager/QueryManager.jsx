@@ -10,6 +10,7 @@ import { defaultOptions } from './constants';
 import ReactJson from 'react-json-view';
 import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
+import { CodeHinter } from '../CodeBuilder/CodeHinter';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [{ kind: 'restapi', id: 'null', name: 'REST API' }];
@@ -371,6 +372,7 @@ let QueryManager = class QueryManager extends React.Component {
                       selectedDataSource={this.state.selectedSource}
                       options={this.state.options}
                       optionsChanged={this.optionsChanged}
+                      optionchanged={this.optionchanged}
                       currentState={currentState}
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
@@ -453,13 +455,14 @@ let QueryManager = class QueryManager extends React.Component {
                         <label className="form-label p-2">Success Message</label>
                       </div>
                       <div className="col">
-                        <input
-                          type="text"
-                          disabled={!this.state.options.showSuccessNotification}
-                          onChange={(e) => this.optionchanged('successMessage', e.target.value)}
-                          placeholder="Query ran successfully"
+                        <CodeHinter
+                          currentState={this.props.currentState}
+                          initialValue={this.state.options.successMessage}
+                          height="36px"
                           className="form-control"
-                          value={this.state.options.successMessage}
+                          theme={'default'}
+                          onChange={(value) => this.optionchanged('successMessage', value)}
+                          placeholder="Query ran successfully"
                         />
                       </div>
                     </div>

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { App } from 'src/entities/app.entity';
 import { createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
@@ -19,7 +20,9 @@ export class UsersService {
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     @InjectRepository(Organization)
-    private organizationsRepository: Repository<Organization>
+    private organizationsRepository: Repository<Organization>,
+    @InjectRepository(App)
+    private appsRepository: Repository<App>
   ) {}
 
   async findOne(id: string): Promise<User> {
@@ -33,6 +36,12 @@ export class UsersService {
     });
   }
 
+  async findBySSOId(ssoId: string): Promise<User> {
+    return this.usersRepository.findOne({
+      where: { ssoId },
+    });
+  }
+
   async findByPasswordResetToken(token: string): Promise<User> {
     return this.usersRepository.findOne({
       where: { forgotPasswordToken: token },
@@ -43,7 +52,7 @@ export class UsersService {
     const password = uuid.v4();
     const invitationToken = uuid.v4();
 
-    const { email, firstName, lastName } = userParams;
+    const { email, firstName, lastName, ssoId } = userParams;
     let user: User;
 
     await getManager().transaction(async (manager) => {
@@ -53,6 +62,7 @@ export class UsersService {
         lastName,
         password,
         invitationToken,
+        ssoId,
         organizationId: organization.id,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -78,6 +88,29 @@ export class UsersService {
     });
 
     return user;
+  }
+
+  async findOrCreateBySSOIdOrEmail(
+    ssoId: string,
+    userParams: any,
+    organization: Organization
+  ): Promise<[User, boolean]> {
+    let user: User;
+    let newUserCreated = false;
+    try {
+      user = await this.findBySSOId(ssoId);
+      if (!user) user = await this.findByEmail(userParams.email);
+    } catch (e) {
+      console.log(e);
+    }
+
+    if (user === undefined) {
+      const groups = ['all_users'];
+      user = await this.create({ ...userParams, ...{ ssoId } }, organization, groups);
+      newUserCreated = true;
+    }
+
+    return [user, newUserCreated];
   }
 
   async setupAccountFromInvitationToken(params: any) {
@@ -229,19 +262,75 @@ export class UsersService {
   async userCan(user: User, action: string, entityName: string, resourceId?: string): Promise<boolean> {
     switch (entityName) {
       case 'App':
-        if (action == 'create') {
-          return await this.hasGroup(user, 'admin');
-        } else {
-          return this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, resourceId));
-        }
+        return await this.canUserPerformActionOnApp(user, action, resourceId);
+
+      case 'User':
+        return await this.hasGroup(user, 'admin');
+
+      case 'Thread':
+      case 'Comment':
+        return await this.canUserPerformActionOnApp(user, 'update', resourceId);
+
+      case 'Folder':
+        return await this.canUserPerformActionOnFolder(user, action, resourceId);
 
       default:
         return false;
     }
   }
 
-  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[]): boolean {
-    return permissions.some((p) => p[action.toLowerCase()]);
+  async canUserPerformActionOnApp(user: User, action: string, appId?: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('appCreate', await this.groupPermissions(user));
+        break;
+      case 'read':
+      case 'update':
+        permissionGrant =
+          this.canAnyGroupPerformAction(action, await this.appGroupPermissions(user, appId)) ||
+          (await this.isUserOwnerOfApp(user, appId));
+        break;
+      case 'delete':
+        permissionGrant =
+          this.canAnyGroupPerformAction('delete', await this.appGroupPermissions(user, appId)) ||
+          this.canAnyGroupPerformAction('appDelete', await this.groupPermissions(user)) ||
+          (await this.isUserOwnerOfApp(user, appId));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnFolder(user: User, action: string, folderId?: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('folderCreate', await this.groupPermissions(user));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async isUserOwnerOfApp(user, appId): Promise<boolean> {
+    const app = await this.appsRepository.findOne({
+      id: appId,
+      userId: user.id,
+    });
+    return !!app;
+  }
+
+  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
+    return permissions.some((p) => p[action]);
   }
 
   async groupPermissions(user: User, organizationId?: string): Promise<GroupPermission[]> {
@@ -258,15 +347,21 @@ export class UsersService {
     return await groupPermissionRepository.find({ organizationId });
   }
 
-  async appGroupPermissions(user: User, appId: string, organizationId?: string): Promise<AppGroupPermission[]> {
+  async appGroupPermissions(user: User, appId?: string, organizationId?: string): Promise<AppGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, organizationId);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
     const appGroupPermissionRepository = getRepository(AppGroupPermission);
 
-    return await appGroupPermissionRepository.find({
-      groupPermissionId: In(groupIds),
-      appId: appId,
-    });
+    if (appId) {
+      return await appGroupPermissionRepository.find({
+        groupPermissionId: In(groupIds),
+        appId: appId,
+      });
+    } else {
+      return await appGroupPermissionRepository.find({
+        groupPermissionId: In(groupIds),
+      });
+    }
   }
 
   async userGroupPermissions(user: User, organizationId?: string): Promise<UserGroupPermission[]> {

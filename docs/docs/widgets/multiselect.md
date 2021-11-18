@@ -1,7 +1,3 @@
----
-sidebar_position: 10
----
-
 # Multiselect
 
 Multiselect widget can be used to collect multiple user inputs from a list of options.

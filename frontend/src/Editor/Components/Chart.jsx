@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 // Use plotly basic bundle
@@ -8,7 +8,6 @@ const Plot = createPlotlyComponent(Plotly);
 
 export const Chart = function Chart({ id, width, height, component, onComponentClick, currentState, darkMode }) {
   const [loadingState, setLoadingState] = useState(false);
-  const [chartData, setChartData] = useState([]);
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -33,7 +32,7 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
   }, [currentState]);
 
   const computedStyles = {
-    width,
+    width: width - 4,
     height,
     display: parsedWidgetVisibility ? '' : 'none',
     background: darkMode ? '#1f2936' : 'white',
@@ -57,7 +56,7 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
   const fontColor = darkMode ? '#c3c3c3' : null;
 
   const layout = {
-    width,
+    width: width - 4,
     height,
     plot_bgcolor: darkMode ? '#1f2936' : null,
     paper_bgcolor: darkMode ? '#1f2936' : null,
@@ -87,8 +86,8 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
 
   const data = resolveReferences(dataString, currentState, []);
 
-  useEffect(() => {
-    let rawData = data || [];
+  const computeChartData = (data, dataString) => {
+    let rawData = data;
     if (typeof rawData === 'string') {
       try {
         rawData = JSON.parse(dataString);
@@ -122,9 +121,11 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
       ];
     }
 
-    setChartData(newData);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, chartType]);
+    return newData;
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoizedChartData = useMemo(() => computeChartData(data, dataString), [data, dataString]);
 
   return (
     <div
@@ -132,18 +133,18 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
       style={computedStyles}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component);
+        onComponentClick(id, component, event);
       }}
     >
       {loadingState === true ? (
-        <div style={{ width: '100%' }} className="p-2">
+        <div style={{ width }} className="p-2">
           <center>
             <div className="spinner-border mt-5" role="status"></div>
           </center>
         </div>
       ) : (
         <Plot
-          data={chartData}
+          data={memoizedChartData}
           layout={layout}
           config={{
             displayModeBar: false,
