@@ -32,6 +32,7 @@ export const SubContainer = ({
   selectedComponent,
   currentLayout,
   removeComponent,
+  darkMode
 }) => {
 
   zoomLevel = zoomLevel || 1;
@@ -366,6 +367,25 @@ export const SubContainer = ({
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
           removeComponent={removeComponent}
           canvasWidth={getContainerCanvasWidth()}
+          containerProps={{
+            mode,
+            snapToGrid,
+            onComponentClick,
+            onEvent,
+            appDefinition,
+            appDefinitionChanged,
+            currentState,
+            onComponentOptionChanged,
+            onComponentOptionsChanged,
+            appLoading,
+            zoomLevel,
+            configHandleClicked,
+            removeComponent,
+            currentLayout,
+            deviceWindowWidth,
+            selectedComponent,
+            darkMode,
+          }}
         />
       ))}
 
