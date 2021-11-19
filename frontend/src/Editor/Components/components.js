@@ -1365,10 +1365,11 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      tabCount: { type: 'code', displayName: 'Number of tabs' },
+      tabs: { type: 'code', displayName: 'Tabs' },
     },
     events: {},
     styles: {
+      highlightColor: { type: 'color', displayName: 'Highlight Color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -1379,10 +1380,12 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
+        tabs: { value: "{{[ \n\t\t{ title: 'Home' }, \n\t\t{ title: 'Profile' }, \n\t\t{ title: 'Settings' } \n ]}}" },
         visible: { value: true },
       },
       events: [],
       styles: {
+        highlightColor: { value: '#0565FE' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },

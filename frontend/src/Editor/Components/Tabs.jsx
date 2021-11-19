@@ -7,6 +7,16 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
+  // config for tabs. Includes title
+  const tabs = component.definition.properties?.tabs?.value ?? [];
+  let parsedTabs = tabs;
+  parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
+
+  // Highlight color - for active tab text and border
+  const highlightColor = component.definition.styles?.highlightColor?.value ?? '';
+  let parsedHighlightColor = highlightColor;
+  parsedHighlightColor = resolveWidgetFieldValue(highlightColor, currentState);
+
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
@@ -25,7 +35,7 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
 
   const parentRef = useRef(null);
 
-  const [currentTab, setCurrentTab] = useState(1);
+  const [currentTab, setCurrentTab] = useState(0);
 
   return (
     <div
@@ -35,12 +45,13 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
       style={computedStyles}
     >
       <ul class="nav nav-tabs" data-bs-toggle="tabs">
-        <li class="nav-item" onClick={() => setCurrentTab(1)}>
-          <a class={`nav-link ${currentTab === 1 ? 'active' : ''}`} data-bs-toggle="tab">Home</a>
-        </li>
-        <li class="nav-item" onClick={() => setCurrentTab(2)}>
-          <a class={`nav-link ${currentTab === 2 ? 'active' : ''}`} data-bs-toggle="tab">Profile</a>
-        </li>
+
+        {parsedTabs.map((tab, index) =>
+          <li class="nav-item" onClick={() => setCurrentTab(1)}>
+            <a class={`nav-link ${currentTab === index ? 'active' : ''}`} style={currentTab === index ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` } : {}}>{tab.title}</a>
+          </li>
+        )}
+
       </ul>
       <div class="tab-content" ref={parentRef} id={`${id}-${currentTab}`}>
         <div class="tab-pane active show">
