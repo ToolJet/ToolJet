@@ -47,7 +47,7 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
       <ul class="nav nav-tabs" data-bs-toggle="tabs">
 
         {parsedTabs.map((tab, index) =>
-          <li class="nav-item" onClick={() => setCurrentTab(1)}>
+          <li class="nav-item" onClick={() => setCurrentTab(index)}>
             <a class={`nav-link ${currentTab === index ? 'active' : ''}`} style={currentTab === index ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` } : {}}>{tab.title}</a>
           </li>
         )}
