@@ -6,6 +6,7 @@ import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 export const Tabs = function Tabs({ id, component, height, containerProps, currentState, removeComponent }) {
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
+  const defaultTab = component.definition.properties.defaultTab.value;
 
   // config for tabs. Includes title
   const tabs = component.definition.properties?.tabs?.value ?? [];
@@ -16,6 +17,10 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
   const highlightColor = component.definition.styles?.highlightColor?.value ?? '';
   let parsedHighlightColor = highlightColor;
   parsedHighlightColor = resolveWidgetFieldValue(highlightColor, currentState);
+
+  // Default tab
+  let parsedDefaultTab = defaultTab;
+  parsedDefaultTab = resolveWidgetFieldValue(parsedDefaultTab, currentState, 1);
 
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
@@ -35,7 +40,7 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
 
   const parentRef = useRef(null);
 
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
 
   return (
     <div
@@ -47,8 +52,8 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
       <ul class="nav nav-tabs" data-bs-toggle="tabs">
 
         {parsedTabs.map((tab, index) =>
-          <li class="nav-item" onClick={() => setCurrentTab(index)}>
-            <a class={`nav-link ${currentTab === index ? 'active' : ''}`} style={currentTab === index ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` } : {}}>{tab.title}</a>
+          <li class="nav-item" onClick={() => setCurrentTab(index + 1)}>
+            <a class={`nav-link ${currentTab === index + 1 ? 'active' : ''}`} style={currentTab === index + 1 ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` } : {}}>{tab.title}</a>
           </li>
         )}
 

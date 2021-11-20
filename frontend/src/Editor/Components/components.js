@@ -1366,6 +1366,7 @@ export const componentTypes = [
     },
     properties: {
       tabs: { type: 'code', displayName: 'Tabs' },
+      defaultTab: { type: 'code', displayName: 'Default tab' },
     },
     events: {},
     styles: {
@@ -1381,7 +1382,7 @@ export const componentTypes = [
       },
       properties: {
         tabs: { value: "{{[ \n\t\t{ title: 'Home' }, \n\t\t{ title: 'Profile' }, \n\t\t{ title: 'Settings' } \n ]}}" },
-        visible: { value: true },
+        defaultTab: { value: "{{1}}" },
       },
       events: [],
       styles: {
