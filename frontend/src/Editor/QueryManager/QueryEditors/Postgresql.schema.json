@@ -54,7 +54,8 @@
           "$label": "Records to update",
           "$key": "records",
           "type": "codehinter",
-          "description": "Enter records"
+          "description": "Enter records",
+          "placeholder": "{{ [ ] }}"
         }
       }
     }
