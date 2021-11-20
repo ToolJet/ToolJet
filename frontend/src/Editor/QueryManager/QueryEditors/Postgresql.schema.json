@@ -56,7 +56,8 @@
           "$key": "records",
           "type": "codehinter",
           "description": "Enter records",
-          "height": "150px"
+          "height": "150px",
+          "placeholder": "{{ [ ] }}"
         }
       }
     }
