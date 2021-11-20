@@ -3,7 +3,7 @@ FROM node:14.17.3-buster
 ENV NODE_ENV=production
 
 # Fix for JS heap limit allocation issue
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN apt update && apt install -y \
   build-essential  \
