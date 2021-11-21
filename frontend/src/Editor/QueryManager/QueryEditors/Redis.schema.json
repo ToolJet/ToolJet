@@ -9,7 +9,8 @@
       "$key": "query",
       "type": "codehinter",
       "description": "Enter query",
-      "placeholder": "PING"
+      "placeholder": "PING",
+      "height": "150px"
     }
   },
   "required": ["query"]

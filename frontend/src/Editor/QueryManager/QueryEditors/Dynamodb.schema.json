@@ -31,7 +31,8 @@
         "$key": "key",
         "type": "codehinter",
         "mode": "javascript",
-        "description": "Enter key name"
+        "description": "Enter key name",
+        "height": "150px"
       }
     },
     "query_table": {
@@ -40,7 +41,8 @@
         "$key": "query_condition",
         "type": "codehinter",
         "mode": "javascript",
-        "description": "Enter query condition"
+        "description": "Enter query condition",
+        "height": "150px"
       }
     },
     "scan_table": {
@@ -49,7 +51,8 @@
         "$key": "scan_condition",
         "type": "codehinter",
         "mode": "javascript",
-        "description": "Enter scan condition"
+        "description": "Enter scan condition",
+        "height": "150px"
       }
     },
     "delete_item": {
@@ -65,7 +68,8 @@
         "$key": "key",
         "type": "codehinter",
         "mode": "javascript",
-        "description": "Enter key name"
+        "description": "Enter key name",
+        "height": "150px"
       }
     }
   }

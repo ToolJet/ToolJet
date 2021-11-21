@@ -30,7 +30,8 @@
         "$key": "query",
         "type": "codehinter",
         "placeholder": "{ \"name\": \"\" }",
-        "description": "Enter query"
+        "description": "Enter query",
+        "height": "150px"
       }
     },
     "index_document": {
@@ -47,7 +48,8 @@
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ \"name\": \"The Hitchhikers Guide to the Galaxy\" }",
-        "description": "Enter body"
+        "description": "Enter body",
+        "height": "150px"
       }
     },
     "get": {
@@ -91,7 +93,8 @@
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ doc: { page_count: 225 } }",
-        "description": "Enter body"
+        "description": "Enter body",
+        "height": "150px"
       }
     }
   }
