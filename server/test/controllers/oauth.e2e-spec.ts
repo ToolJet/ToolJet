@@ -39,8 +39,8 @@ describe('oauth controller', () => {
       });
 
       expect(response.statusCode).toBe(201);
-      expect(new Set(Object.keys(response.body))).toEqual(
-        new Set([
+      expect(Object.keys(response.body).sort()).toEqual(
+        [
           'id',
           'email',
           'first_name',
@@ -49,7 +49,7 @@ describe('oauth controller', () => {
           'admin',
           'group_permissions',
           'app_group_permissions',
-        ])
+        ].sort()
       );
 
       const { email, first_name, last_name, admin, group_permissions, app_group_permissions } = response.body;
@@ -60,8 +60,17 @@ describe('oauth controller', () => {
       expect(admin).toBeFalsy();
       expect(group_permissions).toHaveLength(1);
       expect(group_permissions[0].group).toEqual('all_users');
-      expect(new Set(Object.keys(group_permissions[0]))).toEqual(
-        new Set(['id', 'organization_id', 'group', 'app_create', 'app_delete', 'updated_at', 'created_at'])
+      expect(Object.keys(group_permissions[0]).sort()).toEqual(
+        [
+          'id',
+          'organization_id',
+          'group',
+          'app_create',
+          'app_delete',
+          'updated_at',
+          'created_at',
+          'folder_create',
+        ].sort()
       );
       expect(app_group_permissions).toHaveLength(0);
     });
@@ -144,9 +153,18 @@ describe('oauth controller', () => {
       expect(last_name).toEqual('Name');
       expect(admin).toBeTruthy();
       expect(group_permissions).toHaveLength(2);
-      expect(new Set(group_permissions.map((p) => p.group))).toEqual(new Set(['all_users', 'admin']));
-      expect(new Set(Object.keys(group_permissions[0]))).toEqual(
-        new Set(['id', 'organization_id', 'group', 'app_create', 'app_delete', 'updated_at', 'created_at'])
+      expect(group_permissions.map((p) => p.group).sort()).toEqual(['all_users', 'admin'].sort());
+      expect(Object.keys(group_permissions[0]).sort()).toEqual(
+        [
+          'id',
+          'organization_id',
+          'group',
+          'app_create',
+          'app_delete',
+          'folder_create',
+          'updated_at',
+          'created_at',
+        ].sort()
       );
       expect(app_group_permissions).toHaveLength(0);
     });
