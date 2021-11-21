@@ -19,7 +19,8 @@
       "query": {
         "$key": "query",
         "type": "codehinter",
-        "description": "Enter query"
+        "description": "Enter query",
+        "height": "150px"
       }
     },
     "gui": {
@@ -55,6 +56,7 @@
           "$key": "records",
           "type": "codehinter",
           "description": "Enter records",
+          "height": "150px",
           "placeholder": "{{ [ ] }}"
         }
       }

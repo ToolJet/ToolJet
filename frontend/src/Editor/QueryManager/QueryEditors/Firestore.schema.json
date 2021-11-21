@@ -110,7 +110,8 @@
         "$label": "Body",
         "$key": "body",
         "type": "codehinter",
-        "description": "Enter body"
+        "description": "Enter body",
+        "height": "150px"
       }
     },
     "update_document": {
@@ -125,7 +126,8 @@
         "$label": "Body",
         "$key": "body",
         "type": "codehinter",
-        "description": "Enter body"
+        "description": "Enter body",
+        "height": "150px"
       }
     },
     "set_document": {
@@ -140,7 +142,8 @@
         "$label": "Body",
         "$key": "body",
         "type": "codehinter",
-        "description": "Enter body"
+        "description": "Enter body",
+        "height": "150px"
       }
     },
     "bulk_update": {
@@ -163,7 +166,8 @@
         "$key": "records",
         "type": "codehinter",
         "mode": "javascript",
-        "description": "Enter records"
+        "description": "Enter records",
+        "height": "150px"
       }
     },
     "delete_document": {
