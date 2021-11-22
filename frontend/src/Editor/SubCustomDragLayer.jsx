@@ -68,8 +68,11 @@ export const SubCustomDragLayer = ({ parentRef, parent, currentLayout }) => {
   let canvasWidth = 0;
 
   if (parentRef.current) {
-    const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-    canvasWidth = canvasBoundingRect.width;
+    const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
+    if (realCanvas) {
+      const canvasBoundingRect = realCanvas.getBoundingClientRect();
+      canvasWidth = canvasBoundingRect.width;
+    }
   }
 
   function renderItem() {

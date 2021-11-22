@@ -768,7 +768,7 @@ class Editor extends React.Component {
               toggleComments={this.toggleComments}
               switchDarkMode={this.props.switchDarkMode}
             />
-            <div className="main">
+            <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                 style={{ transform: `scale(${zoomLevel})` }}

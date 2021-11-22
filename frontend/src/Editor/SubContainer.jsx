@@ -32,8 +32,16 @@ export const SubContainer = ({
   selectedComponent,
   currentLayout,
   removeComponent,
-  darkMode
+  darkMode,
+  containerCanvasWidth
 }) => {
+
+  const [currentParentRef, setParentRef] = useState(parentRef);
+
+  useEffect(() => {
+    setParentRef(parentRef);
+  }, [parentRef]);
+
 
   zoomLevel = zoomLevel || 1;
 
@@ -224,11 +232,18 @@ export const SubContainer = ({
 
 
   function getContainerCanvasWidth() {
+    if (containerCanvasWidth !== undefined) {
+      return containerCanvasWidth;
+    }
     let width = 0;
     if (parentRef.current) {
-      const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-      width = canvasBoundingRect.width;
+      const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
+      if (realCanvas) {
+        const canvasBoundingRect = realCanvas.getBoundingClientRect();
+        width = canvasBoundingRect.width;
+      }
     }
+
     return width;
   }
 
