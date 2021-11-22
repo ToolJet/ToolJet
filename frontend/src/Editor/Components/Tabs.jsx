@@ -13,6 +13,9 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
   let parsedTabs = tabs;
   parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
 
+  // set index as id if id is not provided
+  parsedTabs = parsedTabs.map((parsedTab, index) => ({ ...parsedTab, id: parsedTab.id ? parsedTab.id : index }));
+
   // Highlight color - for active tab text and border
   const highlightColor = component.definition.styles?.highlightColor?.value ?? '';
   let parsedHighlightColor = highlightColor;
@@ -52,12 +55,12 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
       style={computedStyles}
     >
       <ul className="nav nav-tabs" data-bs-toggle="tabs">
-        {parsedTabs.map((tab, index) => (
-          <li className="nav-item" onClick={() => setCurrentTab(index + 1)} key={index}>
+        {parsedTabs.map((tab) => (
+          <li className="nav-item" onClick={() => setCurrentTab(tab.id)} key={tab.id}>
             <a
-              className={`nav-link ${currentTab === index + 1 ? 'active' : ''}`}
+              className={`nav-link ${currentTab === tab.id ? 'active' : ''}`}
               style={
-                currentTab === index + 1
+                currentTab === tab.id
                   ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` }
                   : {}
               }

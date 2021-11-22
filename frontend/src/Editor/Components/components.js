@@ -1381,8 +1381,11 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        tabs: { value: "{{[ \n\t\t{ title: 'Home' }, \n\t\t{ title: 'Profile' }, \n\t\t{ title: 'Settings' } \n ]}}" },
-        defaultTab: { value: "{{1}}" },
+        tabs: {
+          value:
+            "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
+        },
+        defaultTab: { value: '0' },
       },
       events: [],
       styles: {
