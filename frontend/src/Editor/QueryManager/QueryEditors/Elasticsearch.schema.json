@@ -4,6 +4,10 @@
   "title": "Elasticsearch datasource",
   "description": "A schema defining Elasticsearch datasource",
   "type": "object",
+  "defaults": {
+    "query": "",
+    "operation": "search"
+  },
   "properties": {
     "operation": {
       "$label": "Operation",

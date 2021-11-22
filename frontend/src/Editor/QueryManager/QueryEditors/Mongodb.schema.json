@@ -4,6 +4,9 @@
   "title": "Mongodb datasource",
   "description": "A schema defining Mongodb datasource",
   "type": "object",
+  "defaults": {
+    "document": "{ }"
+  },
   "properties": {
     "operation": {
       "$label": "Operation",
