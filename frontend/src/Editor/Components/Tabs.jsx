@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -46,25 +46,38 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
     <div
       data-disabled={parsedDisabledState}
       className="jet-tabs card"
-      onClick={(e) => { containerProps.onComponentClick(id, component) }}
+      onClick={() => {
+        containerProps.onComponentClick(id, component);
+      }}
       style={computedStyles}
     >
-      <ul class="nav nav-tabs" data-bs-toggle="tabs">
-
-        {parsedTabs.map((tab, index) =>
-          <li class="nav-item" onClick={() => setCurrentTab(index + 1)}>
-            <a class={`nav-link ${currentTab === index + 1 ? 'active' : ''}`} style={currentTab === index + 1 ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` } : {}}>{tab.title}</a>
+      <ul className="nav nav-tabs" data-bs-toggle="tabs">
+        {parsedTabs.map((tab, index) => (
+          <li className="nav-item" onClick={() => setCurrentTab(index + 1)} key={index}>
+            <a
+              className={`nav-link ${currentTab === index + 1 ? 'active' : ''}`}
+              style={
+                currentTab === index + 1
+                  ? { color: parsedHighlightColor, borderBottom: `1px solid ${parsedHighlightColor}` }
+                  : {}
+              }
+            >
+              {tab.title}
+            </a>
           </li>
-        )}
-
+        ))}
       </ul>
-      <div class="tab-content" ref={parentRef} id={`${id}-${currentTab}`}>
-        <div class="tab-pane active show">
-          <SubContainer parent={`${id}-${currentTab}`} {...containerProps} parentRef={parentRef} removeComponent={removeComponent} />
+      <div className="tab-content" ref={parentRef} id={`${id}-${currentTab}`}>
+        <div className="tab-pane active show">
+          <SubContainer
+            parent={`${id}-${currentTab}`}
+            {...containerProps}
+            parentRef={parentRef}
+            removeComponent={removeComponent}
+          />
           <SubCustomDragLayer parent={id} parentRef={parentRef} currentLayout={containerProps.currentLayout} />
         </div>
       </div>
-
     </div>
   );
 };
