@@ -31,6 +31,7 @@ export const Container = function Container({ id, component, height, containerPr
     <div
       data-disabled={parsedDisabledState}
       className="jet-container"
+      id={id}
       ref={parentRef}
       onClick={() => containerProps.onComponentClick(id, component)}
       style={computedStyles}

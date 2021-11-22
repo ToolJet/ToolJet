@@ -32,7 +32,9 @@ export const SubContainer = ({
   selectedComponent,
   currentLayout,
   removeComponent,
+  darkMode
 }) => {
+
   zoomLevel = zoomLevel || 1;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -202,7 +204,7 @@ export const SubContainer = ({
           ...boxes,
           [id]: {
             component: componentData,
-            parent: parent,
+            parent: parentRef.current.id,
             layouts: {
               [item.currentLayout]: {
                 top: top,
@@ -365,6 +367,25 @@ export const SubContainer = ({
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
           removeComponent={removeComponent}
           canvasWidth={getContainerCanvasWidth()}
+          containerProps={{
+            mode,
+            snapToGrid,
+            onComponentClick,
+            onEvent,
+            appDefinition,
+            appDefinitionChanged,
+            currentState,
+            onComponentOptionChanged,
+            onComponentOptionsChanged,
+            appLoading,
+            zoomLevel,
+            configHandleClicked,
+            removeComponent,
+            currentLayout,
+            deviceWindowWidth,
+            selectedComponent,
+            darkMode,
+          }}
         />
       ))}
 
