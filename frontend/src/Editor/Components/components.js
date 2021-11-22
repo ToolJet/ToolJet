@@ -1351,4 +1351,48 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Tabs',
+    displayName: 'Tabs',
+    description: 'Tabs component',
+    defaultSize: {
+      width: 30,
+      height: 200,
+    },
+    component: 'Tabs',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      tabs: { type: 'code', displayName: 'Tabs' },
+      defaultTab: { type: 'code', displayName: 'Default tab' },
+    },
+    events: {},
+    styles: {
+      highlightColor: { type: 'color', displayName: 'Highlight Color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        tabs: {
+          value:
+            "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
+        },
+        defaultTab: { value: '0' },
+      },
+      events: [],
+      styles: {
+        highlightColor: { value: '#0565FE' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];

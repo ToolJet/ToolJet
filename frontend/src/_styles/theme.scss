@@ -2382,7 +2382,7 @@ input[type='text'] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: #0565FE !important;
+  color: #0565FE;
 }
 
 .empty-title {
@@ -2513,6 +2513,7 @@ input[type='text'] {
 .nav-tabs .nav-link {
   font-weight: 400 !important;
   margin: 0 !important;
+  height: 100%;
 }
 
 .code-editor-widget {
