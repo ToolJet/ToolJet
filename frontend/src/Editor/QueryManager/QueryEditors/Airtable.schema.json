@@ -4,6 +4,7 @@
   "title": "Airtable datasource",
   "description": "A schema defining Airtable datasource",
   "type": "object",
+  "defaults": {},
   "properties": {
     "operation": {
       "$label": "Operation",

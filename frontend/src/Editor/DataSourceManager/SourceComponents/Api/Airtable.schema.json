@@ -17,6 +17,9 @@
     },
     "customTesting": true
   },
+  "defaults": {
+    "api_key": { "value": "" }
+  },
   "properties": {
     "api_key": {
       "$label": "API key",

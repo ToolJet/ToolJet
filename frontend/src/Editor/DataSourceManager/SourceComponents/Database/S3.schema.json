@@ -18,6 +18,11 @@
       "region": { "type": "string" }
     }
   },
+  "defaults": {
+    "access_key": { "value": "" },
+    "secret_key": { "value": "" },
+    "region": { "value": "" }
+  },
   "properties": {
     "access_key": {
       "$label": "Access key",
