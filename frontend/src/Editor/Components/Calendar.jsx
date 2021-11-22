@@ -3,7 +3,6 @@ import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
-import { CalExample } from './CalExample';
 
 const localizer = momentLocalizer(moment);
 
@@ -110,8 +109,6 @@ export const Calendar = function ({ id, height, width, properties, styles, fireE
         removeComponent={removeComponent}
         popoverClosed={popoverClosed}
       />
-
-      {/* <CalExample></CalExample> */}
     </div>
   );
 };
