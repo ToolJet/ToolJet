@@ -50,7 +50,7 @@ export const Multiselect = function Multiselect({
 
   useEffect(() => {
     setCurrentValue(newValue);
-  }, [newValue]);
+  }, [value]);
 
   useEffect(() => {
     onComponentOptionChanged(component, 'values', currentValue);
