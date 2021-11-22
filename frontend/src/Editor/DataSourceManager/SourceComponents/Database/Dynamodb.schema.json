@@ -18,6 +18,11 @@
       "secret_key": { "type": "string", "encrypted": true }
     }
   },
+  "defaults": {
+    "region": { "value": "" },
+    "access_key": { "value": "" },
+    "secret_key": { "value": "" }
+  },
   "properties": {
     "region": {
       "$label": "Region",

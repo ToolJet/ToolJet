@@ -4,12 +4,16 @@
   "title": "Redis data query schema",
   "description": "A schema defining redis data query",
   "type": "object",
+  "defaults": {
+    "query": "PING"
+  },
   "properties": {
     "query": {
       "$key": "query",
       "type": "codehinter",
       "description": "Enter query",
-      "placeholder": "PING"
+      "placeholder": "PING",
+      "height": "150px"
     }
   },
   "required": ["query"]

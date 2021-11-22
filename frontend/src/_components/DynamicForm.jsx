@@ -21,8 +21,16 @@ const DynamicForm = ({
   isSaving,
   selectedDataSource,
   currentState,
+  isEditMode,
+  optionsChanged,
 }) => {
   // if(schema.properties)  todo add empty check
+
+  React.useEffect(() => {
+    if (!isEditMode || isEmpty(options)) {
+      optionsChanged(schema?.defaults ?? {});
+    }
+  }, []);
 
   const getElement = (type) => {
     switch (type) {
@@ -62,9 +70,9 @@ const DynamicForm = ({
     mode = 'sql',
     lineNumbers = true,
     initialValue,
+    height = 'auto',
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
-
     switch (type) {
       case 'password':
       case 'text':
@@ -73,7 +81,7 @@ const DynamicForm = ({
           type,
           placeholder: description,
           className: 'form-control',
-          value: options[$key].value,
+          value: options[$key]?.value,
           ...(type === 'textarea' && { rows: $rows }),
           ...(helpText && { helpText }),
           onChange: (e) => optionchanged($key, e.target.value),
@@ -81,7 +89,7 @@ const DynamicForm = ({
       case 'toggle':
         return {
           defaultChecked: options[$key],
-          onChange: () => optionchanged($key, !options[$key].value),
+          onChange: () => optionchanged($key, !options[$key]?.value),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -94,7 +102,7 @@ const DynamicForm = ({
       case 'react-component-headers':
         return {
           getter: $key,
-          options: options[$key].value,
+          options: options[$key]?.value,
           optionchanged,
         };
       case 'react-component-oauth-authentication':
@@ -129,6 +137,7 @@ const DynamicForm = ({
           onChange: (value) => optionchanged($key, value),
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
+          height,
         };
       default:
         return {};

@@ -4,11 +4,13 @@
   "title": "Graphql data query schema",
   "description": "A schema defining graphql data query",
   "type": "object",
+  "defaults": {},
   "properties": {
     "query": {
       "$key": "query",
       "type": "codehinter",
-      "description": "Enter query"
+      "description": "Enter query",
+      "height": "150px"
     }
   },
   "required": ["query"]

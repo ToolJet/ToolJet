@@ -4,6 +4,7 @@
   "title": "Slack datasource",
   "description": "A schema defining Slack datasource",
   "type": "object",
+  "defaults": {},
   "properties": {
     "mode": {
       "$label": "",

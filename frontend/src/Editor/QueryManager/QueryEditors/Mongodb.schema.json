@@ -4,6 +4,9 @@
   "title": "Mongodb datasource",
   "description": "A schema defining Mongodb datasource",
   "type": "object",
+  "defaults": {
+    "document": "{ }"
+  },
   "properties": {
     "operation": {
       "$label": "Operation",
@@ -30,7 +33,8 @@
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ 'name': 'Steve', 'hobbies': [ 'hiking', 'tennis', 'fly fishing' ] }",
-        "description": "Enter document"
+        "description": "Enter document",
+        "height": "150px"
       }
     },
     "insert_many": {
@@ -47,7 +51,8 @@
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "[ { '_id': 1, 'name': 'Steve' }, { '_id': 2, 'name': 'Sally' } ]",
-        "description": "Enter document"
+        "description": "Enter document",
+        "height": "150px"
       }
     }
   }
