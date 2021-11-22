@@ -4,6 +4,7 @@
   "title": "S3 datasource",
   "description": "A schema defining S3 datasource",
   "type": "object",
+  "defaults": {},
   "properties": {
     "operation": {
       "$label": "Operation",

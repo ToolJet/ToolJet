@@ -4,6 +4,7 @@
   "title": "Graphql data query schema",
   "description": "A schema defining graphql data query",
   "type": "object",
+  "defaults": {},
   "properties": {
     "query": {
       "$key": "query",

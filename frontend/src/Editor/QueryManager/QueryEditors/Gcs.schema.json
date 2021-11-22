@@ -4,6 +4,7 @@
   "title": "GCS datasource",
   "description": "A schema defining GCS datasource",
   "type": "object",
+  "defaults": {},
   "properties": {
     "operation": {
       "$label": "Operation",
