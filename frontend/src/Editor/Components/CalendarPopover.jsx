@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 
@@ -6,21 +6,32 @@ export const CalendarEventPopover = function ({ show, offset, calenderWidgetId, 
 
   const parentRef = useRef(null);
   const [showPopover, setShow] = useState(show);
+  const [top, setTop] = useState(0);
+  const [left, setLeft] = useState(0);
+
+  const minHeight = 400;
+  let calendarBounds;
+  let canvasBounds;
+
+  const calendarElement = document.getElementById(calenderWidgetId);
 
   useEffect(() => {
     setShow(show);
   }, [show]);
 
-  const calendarElement = document.getElementById(calenderWidgetId);
+  useEffect(() => {
+    if (offset?.top && showPopover) {
+      const _left = offset.left - calendarBounds.x + offset.width;
+      const _top = (offset.top - calendarBounds.y) * 100 / calendarBounds.height;
+      setTop(_top);
+      setLeft(_left);
+    }
+  }, [offset?.top, showPopover]);
 
-  let left = 0, top = 0;
-  let calendarBounds;
-  let canvasBounds;
   if (calendarElement && showPopover) {
     calendarBounds = calendarElement.getBoundingClientRect();
-    canvasBounds = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
-    left = offset.left - calendarBounds.x + offset.width;
-    top = offset.top - calendarBounds.y - 60;
+    const canvasElement = document.getElementsByClassName('canvas-container')[0];
+    canvasBounds = canvasElement.getBoundingClientRect();
   }
 
   return (
@@ -42,7 +53,7 @@ export const CalendarEventPopover = function ({ show, offset, calenderWidgetId, 
         </div>
       }
       <div
-        style={{ position: 'fixed', zIndex: 100, width: '300px', maxWidth: '300px', minHeight: '400px', top, left, display: showPopover ? 'block' : 'none' }}
+        style={{ position: 'absolute', zIndex: 100, width: '300px', maxWidth: '300px', minHeight, top: `${top}%`, left, display: showPopover ? 'block' : 'none' }}
         role="tooltip"
         x-placement="left"
         className="popover bs-popover-left shadow-lg"
