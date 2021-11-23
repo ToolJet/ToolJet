@@ -521,7 +521,7 @@ export function Table({
             return (
               <div>
                 <Datepicker
-                  dateFormat={column.dateFormat}
+                  dateDisplayFormat={column.dateFormat}
                   isTimeChecked={column.isTimeChecked}
                   value={cellValue}
                   readOnly={column.isEditable}

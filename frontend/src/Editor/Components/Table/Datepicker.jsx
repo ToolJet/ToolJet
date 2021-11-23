@@ -8,7 +8,6 @@ import '@/_styles/custom.scss';
 const getDate = (value, parseDateFormat, displayFormat) => {
   const dateString = value;
   const momentObj = moment(dateString, parseDateFormat);
-  console.log('parsedDateObj', momentObj);
   const momentString = momentObj.format(displayFormat);
   return momentString;
 };
@@ -18,32 +17,24 @@ export const Datepicker = function Datepicker({
   onChange,
   readOnly,
   isTimeChecked,
-  dateFormat, //?Display date format
+  dateDisplayFormat, //?Display date format
   parseDateFormat, //?Parse date format
 }) {
-  const [date, setDate] = React.useState(() => getDate(value, parseDateFormat, dateFormat));
+  const [date, setDate] = React.useState(() => getDate(value, parseDateFormat, dateDisplayFormat));
 
   const dateChange = (event) => {
     const value = event._isAMomentObject ? event.format() : event;
-    let selectedDateFormat = isTimeChecked ? `${dateFormat} LT` : dateFormat;
+    let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
     const dateString = moment(value).format(selectedDateFormat);
     setDate(() => dateString);
   };
 
-  // React.useEffect(() => {
-  //   // const dateString = getDate(value, parseDateFormat, dateFormat);
-  //   console.log('__value__', value);
-  //   // setDate(() => dateString);
-  // }, [value]);
-
   React.useEffect(() => {
-    let selectedDateFormat = isTimeChecked ? `${dateFormat} LT` : dateFormat;
-    console.log('__value__', selectedDateFormat);
-    // const dateString = moment(value).format(selectedDateFormat);
+    let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
     const dateString = getDate(value, parseDateFormat, selectedDateFormat);
     setDate(() => dateString);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTimeChecked, readOnly, dateFormat]);
+  }, [isTimeChecked, readOnly, dateDisplayFormat]);
 
   const onDatepickerClose = () => {
     onChange(date);
@@ -59,7 +50,7 @@ export const Datepicker = function Datepicker({
         inputProps={inputProps}
         timeFormat={isTimeChecked}
         className="cell-type-datepicker"
-        dateFormat={dateFormat}
+        dateFormat={dateDisplayFormat}
         value={date}
         onChange={dateChange}
         closeOnSelect={true}
