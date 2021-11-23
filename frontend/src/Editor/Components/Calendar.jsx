@@ -71,6 +71,10 @@ export const Calendar = function ({
     ? properties.defaultView
     : allowedCalendarViews[0];
 
+  const components = {
+    timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>All day</div>,
+  };
+
   return (
     <div id={id}>
       <ReactCalendar
@@ -110,6 +114,7 @@ export const Calendar = function ({
         eventPropGetter={eventPropGetter}
         tooltipAccessor="tooltip"
         popup={true}
+        components={components}
       />
       <CalendarEventPopover
         calenderWidgetId={id}
