@@ -1,9 +1,15 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 
-export const CalendarEventPopover = function ({ show, offset, calenderWidgetId, containerProps, removeComponent, popoverClosed }) {
-
+export const CalendarEventPopover = function ({
+  show,
+  offset,
+  calenderWidgetId,
+  containerProps,
+  removeComponent,
+  popoverClosed,
+}) {
   const parentRef = useRef(null);
   const [showPopover, setShow] = useState(show);
   const [top, setTop] = useState(0);
@@ -22,10 +28,11 @@ export const CalendarEventPopover = function ({ show, offset, calenderWidgetId, 
   useEffect(() => {
     if (offset?.top && showPopover) {
       const _left = offset.left - calendarBounds.x + offset.width;
-      const _top = (offset.top - calendarBounds.y) * 100 / calendarBounds.height;
+      const _top = ((offset.top - calendarBounds.y) * 100) / calendarBounds.height;
       setTop(_top);
       setLeft(_left);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset?.top, showPopover]);
 
   if (calendarElement && showPopover) {
@@ -35,10 +42,8 @@ export const CalendarEventPopover = function ({ show, offset, calenderWidgetId, 
   }
 
   return (
-    <div
-
-    >
-      {showPopover &&
+    <div>
+      {showPopover && (
         <div
           style={{
             // backgroundColor: 'rgba(0, 0, 0, 0.6)', // This can be used for testing the overlay
@@ -47,34 +52,47 @@ export const CalendarEventPopover = function ({ show, offset, calenderWidgetId, 
             zIndex: 10,
             position: 'fixed',
             height: canvasBounds.height + top,
-            width: canvasBounds.width
+            width: canvasBounds.width,
           }}
-          onClick={() => popoverClosed()}>
-        </div>
-      }
+          onClick={() => popoverClosed()}
+        ></div>
+      )}
       <div
-        style={{ position: 'absolute', zIndex: 100, width: '300px', maxWidth: '300px', minHeight, top: `${top}%`, left, display: showPopover ? 'block' : 'none' }}
+        style={{
+          position: 'absolute',
+          zIndex: 100,
+          width: '300px',
+          maxWidth: '300px',
+          minHeight,
+          top: `${top}%`,
+          left,
+          display: showPopover ? 'block' : 'none',
+        }}
         role="tooltip"
         x-placement="left"
         className="popover bs-popover-left shadow-lg"
-        id="popover-basic"
         ref={parentRef}
         id={`${calenderWidgetId}-popover`}
       >
-        {(parentRef.current && showPopover) &&
-          <div
-            class="popover-body"
-            style={{ padding: 'unset', width: '100%', height: '100%', zIndex: 11 }}
-          >
+        {parentRef.current && showPopover && (
+          <div className="popover-body" style={{ padding: 'unset', width: '100%', height: '100%', zIndex: 11 }}>
             <>
-              <SubContainer containerCanvasWidth={300} parent={`${calenderWidgetId}-popover`} {...containerProps} parentRef={parentRef} removeComponent={removeComponent} />
-              <SubCustomDragLayer parent={calenderWidgetId} parentRef={parentRef} currentLayout={containerProps.currentLayout} />
+              <SubContainer
+                containerCanvasWidth={300}
+                parent={`${calenderWidgetId}-popover`}
+                {...containerProps}
+                parentRef={parentRef}
+                removeComponent={removeComponent}
+              />
+              <SubCustomDragLayer
+                parent={calenderWidgetId}
+                parentRef={parentRef}
+                currentLayout={containerProps.currentLayout}
+              />
             </>
-
           </div>
-        }
+        )}
       </div>
     </div>
-
   );
 };
