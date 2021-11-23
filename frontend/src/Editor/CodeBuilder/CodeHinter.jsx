@@ -42,7 +42,7 @@ export function CodeHinter({
     highlightSelectionMatches: true,
     placeholder,
   };
-
+  console.log('ignoreBraces', ignoreBraces);
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
   const [isFocused, setFocused] = useState(false);
@@ -82,7 +82,9 @@ export function CodeHinter({
   };
 
   const getPreview = () => {
-    const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
+    // const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
+    const previewValue = ignoreBraces ? `{{${currentValue}}}` : currentValue;
+    const [preview, error] = resolveReferences(previewValue, realState, null, {}, true);
 
     if (error) {
       return (

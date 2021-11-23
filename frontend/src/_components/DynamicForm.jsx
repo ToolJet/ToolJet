@@ -30,6 +30,7 @@ const DynamicForm = ({
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getElement = (type) => {
@@ -71,6 +72,8 @@ const DynamicForm = ({
     lineNumbers = true,
     initialValue,
     height = 'auto',
+    ignoreBraces = false,
+    customRule = null,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -134,10 +137,17 @@ const DynamicForm = ({
           mode,
           lineNumbers,
           className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
-          onChange: (value) => optionchanged($key, value),
+          onChange: (value) => {
+            if (customRule) {
+              // console.log('customRule', customRule);
+              eval(customRule);
+            }
+            optionchanged($key, value);
+          },
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
+          ignoreBraces,
         };
       default:
         return {};

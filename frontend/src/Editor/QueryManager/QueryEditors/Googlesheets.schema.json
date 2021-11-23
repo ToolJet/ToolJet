@@ -17,6 +17,7 @@
         { "value": "read", "name": "Read data from a spreadsheet" },
         { "value": "append", "name": "Append data to a spreadsheet" },
         { "value": "info", "name": "Get spreadsheet info" },
+        { "value": "update", "name": "Update data to a spreadsheet" },
         { "value": "delete_row", "name": "Delete row from a spreadsheet" }
       ]
     },
@@ -101,6 +102,54 @@
         "lineNumbers": false,
         "description": "Enter row number"
       }
+    },
+    "update": {
+      "spreadsheet_id": {
+        "$label": "Spreadsheet ID",
+        "$key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id"
+      },
+      "where_field": {
+        "$label": "Where",
+        "$key": "where_field",
+        "className": "col-4",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter field"
+      },
+      "where_operation": {
+        "$label": "Operator",
+        "$key": "where_operation",
+        "className": "col-4",
+        "type": "dropdown",
+        "description": "Single select dropdown for where operation",
+        "$options": [
+          { "value": "==", "name": "==" },
+          { "value": "", "name": "None" }
+        ]
+      },
+      "where_value": {
+        "$label": "Value",
+        "$key": "where_value",
+        "className": "col-4",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter value"
+      },
+        "body": {
+        "$label": "Body",
+        "$key": "body",
+        "type": "codehinter",
+        "description": "Enter body",
+        "height": "150px",
+        "ignoreBraces": true,
+        "lineNumbers": true
+        
+      }
     }
   }
 }
+
+
