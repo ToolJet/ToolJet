@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { CalendarEventPopover } from './CalendarPopover';
 
 const localizer = momentLocalizer(moment);
 
@@ -15,12 +16,23 @@ const parseDate = (date, dateFormat) => moment(date, dateFormat).toDate();
 
 const allowedCalendarViews = ['month', 'week', 'day'];
 
-export const Calendar = function ({ height, width, properties, styles, fireEvent, darkMode }) {
+export const Calendar = function ({
+  id,
+  height,
+  properties,
+  styles,
+  fireEvent,
+  darkMode,
+  containerProps,
+  removeComponent,
+}) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
 
   const events = properties.events ? properties.events.map((event) => prepareEvent(event, properties.dateFormat)) : [];
   const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
+
+  const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
 
   const eventPropGetter = (event) => {
     const backgroundColor = event.color;
@@ -48,12 +60,19 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
     fireEvent('onCalendarSlotSelect', { selectedSlots });
   };
 
+  function popoverClosed() {
+    setEventPopoverOptions({
+      ...eventPopoverOptions,
+      show: false,
+    });
+  }
+
   const defaultView = allowedCalendarViews.includes(properties.defaultView)
     ? properties.defaultView
     : allowedCalendarViews[0];
 
   return (
-    <div>
+    <div id={id}>
       <ReactCalendar
         className={`calendar-widget
         ${darkMode ? 'dark-mode' : ''}
@@ -71,13 +90,34 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"
-        onSelectEvent={(calendarEvent) => fireEvent('onCalendarEventSelect', { calendarEvent })}
+        onSelectEvent={(calendarEvent, e) => {
+          fireEvent('onCalendarEventSelect', { calendarEvent });
+          if (properties.showPopOverOnEventClick)
+            setEventPopoverOptions({
+              ...eventPopoverOptions,
+              show: true,
+              offset: {
+                left: e.target.getBoundingClientRect().x,
+                top: e.target.getBoundingClientRect().y,
+                width: e.target.getBoundingClientRect().width,
+                height: e.target.getBoundingClientRect().height,
+              },
+            });
+        }}
         selectable={true}
         onSelectSlot={slotSelectHandler}
         toolbar={properties.displayToolbar}
         eventPropGetter={eventPropGetter}
         tooltipAccessor="tooltip"
         popup={true}
+      />
+      <CalendarEventPopover
+        calenderWidgetId={id}
+        show={eventPopoverOptions.show}
+        offset={eventPopoverOptions.offset}
+        containerProps={containerProps}
+        removeComponent={removeComponent}
+        popoverClosed={popoverClosed}
       />
     </div>
   );
