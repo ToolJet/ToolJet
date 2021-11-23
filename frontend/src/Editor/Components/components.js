@@ -1211,6 +1211,7 @@ export const componentTypes = [
       displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
       displayViewSwitcher: { type: 'toggle', displayName: 'Show view switcher' },
       highlightToday: { type: 'toggle', displayName: 'Highlight today' },
+      showPopOverOnEventClick: { type: 'toggle', displayName: 'Show popover when event is clicked' },
     },
     events: {
       onCalendarEventSelect: { displayName: 'On Event Select' },
@@ -1261,6 +1262,9 @@ export const componentTypes = [
         },
         highlightToday: {
           value: true,
+        },
+        showPopOverOnEventClick: {
+          value: false,
         },
       },
       events: [],

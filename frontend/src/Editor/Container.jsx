@@ -396,6 +396,7 @@ export const Container = ({
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
       })}
+      id="real-canvas"
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
