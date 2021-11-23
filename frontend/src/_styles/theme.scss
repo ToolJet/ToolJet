@@ -2519,7 +2519,7 @@ input[type='text'] {
 .code-editor-widget {
   border-radius: 0;
   .CodeMirror {
-    border-radius: inherit;
+    border-radius: 0!important;
     margin-top: -1px!important;
   }
 }
@@ -2538,13 +2538,26 @@ input[type='text'] {
 }
 
 .modal-portal-wrapper {
-  // border: 1px solid #2fcc8b;
-  width: 100vmax;
+  overflow-x: hidden; 
   overflow-y: hidden;
-  // background-color: rgba(51, 51, 51, 0.3);
-  // backdrop-filter: blur(1px);
+  z-index: 10000000;
   justify-content: center;
   align-items: center;
-  top: 0px;
-  z-index: 10000000;
+  position: relative;
+
+  .modal-dialog {
+    margin-top: 4%;
+  }
+
+  .modal-header {
+    padding: 0;
+    font-size: 14px;
+  }
+
+  .CodeMirror {
+    height: 100%;
+    width: 100%;
+    border-radius: 0;
+    margin: 0;
+  }
 }

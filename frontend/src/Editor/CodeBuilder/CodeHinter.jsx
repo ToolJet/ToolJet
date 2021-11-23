@@ -122,6 +122,11 @@ export function CodeHinter({
 
   const [isOpen, setIsOpen] = React.useState(false);
 
+  // const togglePopup = () => {
+  //   setIsOpen(true);
+  //   // setFocused(true);
+  // };
+
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
       <CodeHinter.PopupIcon callback={setIsOpen} />
@@ -130,7 +135,13 @@ export function CodeHinter({
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >
-        <CodeHinter.HinterContainer name={componentName} isOpen={isOpen} callback={setIsOpen} preview={getPreview}>
+        <CodeHinter.HinterContainer
+          name={componentName}
+          isOpen={isOpen}
+          callback={setIsOpen}
+          preview={getPreview}
+          enablePreview={enablePreview}
+        >
           <CodeMirror
             value={initialValue}
             realState={realState}
@@ -186,7 +197,6 @@ const PopupIcon = ({ callback }) => {
           onClick={(e) => {
             e.stopPropagation();
             callback(true);
-            console.log('popup clicked');
           }}
         />
       </OverlayTrigger>
@@ -210,25 +220,42 @@ const CodeHinterPortal = ({ codeEditor, open, callback, name, codePreview }) => 
     };
   }, [open]);
 
+  const PortalHinterPreview = () => {
+    return (
+      <>
+        <div className="editor">{codeEditor}</div>
+        <div className="preview">{codePreview()}</div>
+      </>
+    );
+  };
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const portalStyle = {
+    background: 'transparent',
+    backgroundColor: darkMode ? '#232E3C' : '#fff',
+  };
+
   return (
     <React.Fragment>
       {open && (
         <Portal className="modal-portal-wrapper">
-          <div className="modal-dialog modal-portal-wrapper" role="document">
-            <div className="modal-content" style={{ background: 'tranparent' }}>
-              <div style={{ height: '24px', padding: '0px' }} className="modal-header">
-                <p className="modal-title mx-3">{name}</p>
-                <button
+          <div className="modal-dialog" role="document">
+            <div className="modal-content" style={{ ...portalStyle, borderRadius: '0px' }}>
+              <div className="modal-header" style={{ ...portalStyle }}>
+                <code className="mx-3 text-info">{name}</code>
+                <span
                   onClick={handleClose}
                   type="button"
                   className="btn-close"
                   data-bs-dismiss="modal"
                   aria-label="Close"
-                ></button>
+                ></span>
               </div>
               <div className="modal-body p-0">
-                <div className="editor">{codeEditor}</div>
-                <div className="preview">{codePreview()}</div>
+                {/* <div className="editor">{codeEditor}</div>
+                <div className="preview">{codePreview()}</div> */}
+                <PortalHinterPreview />
               </div>
             </div>
           </div>
