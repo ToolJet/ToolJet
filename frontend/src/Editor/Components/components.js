@@ -1235,6 +1235,7 @@ export const componentTypes = [
     exposedVariables: {
       selectedEvent: {},
       selectedSlots: {},
+      view: 'month',
     },
     definition: {
       others: {
