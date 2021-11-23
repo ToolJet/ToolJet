@@ -73,6 +73,9 @@ export const Calendar = function ({
 
   const components = {
     timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>All day</div>,
+    week: {
+      header: (props) => <div>{moment(props.date).format(styles.displayDayNamesInWeekView ? 'ddd' : 'DD MMM')}</div>,
+    },
   };
 
   return (
