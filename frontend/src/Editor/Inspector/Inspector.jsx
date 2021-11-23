@@ -6,8 +6,8 @@ import { renderElement } from './Utils';
 import { toast } from 'react-toastify';
 import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
 import { EventManager } from './EventManager';
-import useShortcuts from '@/_hooks/use-shortcuts';
 import { ConfirmDialog } from '@/_components';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 export const Inspector = ({
   selectedComponentId,
@@ -30,13 +30,7 @@ export const Inspector = ({
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   const [components, setComponents] = useState(allComponents);
 
-  useShortcuts(
-    ['Backspace'],
-    () => {
-      setWidgetDeleteConfirmation(true);
-    },
-    []
-  );
+  useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 

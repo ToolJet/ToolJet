@@ -49,6 +49,7 @@
     "react-easy-sort": "^0.2.1",
     "react-google-login": "^5.2.2",
     "react-hot-toast": "^2.1.1",
+    "react-hotkeys-hook": "^3.4.4",
     "react-json-view": "^1.21.3",
     "react-lazyload": "^3.2.0",
     "react-loading-skeleton": "^2.2.0",
