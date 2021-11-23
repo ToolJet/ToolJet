@@ -25,6 +25,7 @@ export const Calendar = function ({
   darkMode,
   containerProps,
   removeComponent,
+  setExposedVariable,
 }) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
@@ -95,6 +96,7 @@ export const Calendar = function ({
         style={style}
         views={allowedCalendarViews}
         defaultView={defaultView}
+        onView={(view) => setExposedVariable('currentView', view)}
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"
