@@ -76,7 +76,7 @@ If we specify the `resourceId` of any of the events as `1`, then that event will
 Determines whether the calendar would display a `day`, a `week` or a `month`.  
 Setting this property to anything other than these values will make the calendar default to `month` view.
 
-The view that is currently selected will be exposed as the variable `view`.
+The view that is currently selected will be exposed as the variable `currentView`.
 
 #### Show toolbar
 
