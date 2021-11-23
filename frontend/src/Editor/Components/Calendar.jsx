@@ -16,7 +16,16 @@ const parseDate = (date, dateFormat) => moment(date, dateFormat).toDate();
 
 const allowedCalendarViews = ['month', 'week', 'day'];
 
-export const Calendar = function ({ id, height, width, properties, styles, fireEvent, darkMode, containerProps, currentState, removeComponent }) {
+export const Calendar = function ({
+  id,
+  height,
+  properties,
+  styles,
+  fireEvent,
+  darkMode,
+  containerProps,
+  removeComponent,
+}) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
 
@@ -55,7 +64,7 @@ export const Calendar = function ({ id, height, width, properties, styles, fireE
     setEventPopoverOptions({
       ...eventPopoverOptions,
       show: false,
-    })
+    });
   }
 
   const defaultView = allowedCalendarViews.includes(properties.defaultView)
@@ -83,16 +92,17 @@ export const Calendar = function ({ id, height, width, properties, styles, fireE
         resourceTitleAccessor="title"
         onSelectEvent={(calendarEvent, e) => {
           fireEvent('onCalendarEventSelect', { calendarEvent });
-          setEventPopoverOptions({
-            ...eventPopoverOptions,
-            show: true,
-            offset: {
-              left: e.target.getBoundingClientRect().x,
-              top: e.target.getBoundingClientRect().y,
-              width: e.target.getBoundingClientRect().width,
-              height: e.target.getBoundingClientRect().height
-            }
-          })
+          if (properties.showPopOverOnEventClick)
+            setEventPopoverOptions({
+              ...eventPopoverOptions,
+              show: true,
+              offset: {
+                left: e.target.getBoundingClientRect().x,
+                top: e.target.getBoundingClientRect().y,
+                width: e.target.getBoundingClientRect().width,
+                height: e.target.getBoundingClientRect().height,
+              },
+            });
         }}
         selectable={true}
         onSelectSlot={slotSelectHandler}
