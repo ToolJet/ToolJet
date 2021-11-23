@@ -26,6 +26,7 @@ const useShortcuts = (keys, callback, deps) => {
     pressedKeys.add(event.key.toLowerCase());
     if (setsEqual(pressedKeys, targetKeys)) {
       memoizedCallback();
+      pressedKeys.clear();
     }
   }
   function onKeyUp(event) {
