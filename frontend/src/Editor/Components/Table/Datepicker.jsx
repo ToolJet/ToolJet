@@ -30,9 +30,17 @@ export const Datepicker = function Datepicker({
     setDate(() => dateString);
   };
 
+  // React.useEffect(() => {
+  //   // const dateString = getDate(value, parseDateFormat, dateFormat);
+  //   console.log('__value__', value);
+  //   // setDate(() => dateString);
+  // }, [value]);
+
   React.useEffect(() => {
     let selectedDateFormat = isTimeChecked ? `${dateFormat} LT` : dateFormat;
-    const dateString = moment(value).format(selectedDateFormat);
+    console.log('__value__', selectedDateFormat);
+    // const dateString = moment(value).format(selectedDateFormat);
+    const dateString = getDate(value, parseDateFormat, selectedDateFormat);
     setDate(() => dateString);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimeChecked, readOnly, dateFormat]);
