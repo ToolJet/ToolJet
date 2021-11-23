@@ -16,6 +16,9 @@
       "private_key": { "type": "string", "encrypted": true }
     }
   },
+  "defaults": {
+    "private_key": { "value": "" }
+  },
   "properties": {
     "private_key": {
       "$label": "Private key",

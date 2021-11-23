@@ -20,6 +20,14 @@
       "rawData": {}
     }
   },
+  "defaults": {
+    "host": { "value": "localhost" },
+    "port": { "value": 5432 },
+    "database": { "value": "" },
+    "username": { "value": "" },
+    "password": { "value": "" },
+    "ssl_enabled": { "value": true }
+  },
   "properties": {
     "host": {
       "$label": "Host",

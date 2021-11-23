@@ -6,6 +6,8 @@ import { renderElement } from './Utils';
 import { toast } from 'react-toastify';
 import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
 import { EventManager } from './EventManager';
+import useShortcuts from '@/_hooks/use-shortcuts';
+import { ConfirmDialog } from '@/_components';
 
 export const Inspector = ({
   selectedComponentId,
@@ -17,6 +19,7 @@ export const Inspector = ({
   apps,
   darkMode,
   switchSidebarTab,
+  removeComponent,
 }) => {
   const selectedComponent = {
     id: selectedComponentId,
@@ -24,8 +27,16 @@ export const Inspector = ({
     layouts: allComponents[selectedComponentId].layouts,
   };
   const [component, setComponent] = useState(selectedComponent);
-
+  const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   const [components, setComponents] = useState(allComponents);
+
+  useShortcuts(
+    ['Backspace'],
+    () => {
+      setWidgetDeleteConfirmation(true);
+    },
+    []
+  );
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
@@ -173,6 +184,15 @@ export const Inspector = ({
 
   return (
     <div className="inspector">
+      <ConfirmDialog
+        show={showWidgetDeleteConfirmation}
+        message={'Widget will be deleted, do you want to continue?'}
+        onConfirm={() => {
+          switchSidebarTab(2);
+          removeComponent(selectedComponent);
+        }}
+        onCancel={() => setWidgetDeleteConfirmation(false)}
+      />
       <div className="header px-2 py-1 row">
         <div className="col-auto">
           <div className="input-icon">
