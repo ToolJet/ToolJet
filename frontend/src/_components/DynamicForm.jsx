@@ -138,6 +138,7 @@ const DynamicForm = ({
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
+          componentName: `datasources/${selectedDataSource.name}`,
         };
       default:
         return {};

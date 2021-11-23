@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSpring, config, animated } from 'react-spring';
-
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/mode/handlebars/handlebars';
 import 'codemirror/mode/javascript/javascript';
@@ -15,6 +16,7 @@ import 'codemirror/theme/monokai.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
+import Portal from './Portal';
 
 export function CodeHinter({
   initialValue,
@@ -30,6 +32,7 @@ export function CodeHinter({
   height,
   minHeight,
   lineWrapping,
+  componentName = null,
 }) {
   const options = {
     lineNumbers: lineNumbers,
@@ -116,30 +119,124 @@ export function CodeHinter({
     );
   };
   enablePreview = enablePreview ?? true;
+
+  const [isOpen, setIsOpen] = React.useState(false);
+
   return (
-    <div style={{ width: '100%' }}>
+    <div className="code-hinter-wrapper" style={{ width: '100%' }}>
+      <CodeHinter.PopupIcon callback={setIsOpen} />
       <div
         className={`code-hinter ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >
-        <CodeMirror
-          value={initialValue}
-          realState={realState}
-          scrollbarStyle={null}
-          height={height}
-          onFocus={() => setFocused(true)}
-          onBlur={(editor) => {
-            const value = editor.getValue();
-            onChange(value);
-            setFocused(false);
-          }}
-          onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
-          onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
-          options={options}
-        />
+        <CodeHinter.HinterContainer name={componentName} isOpen={isOpen} callback={setIsOpen} preview={getPreview}>
+          <CodeMirror
+            value={initialValue}
+            realState={realState}
+            scrollbarStyle={null}
+            height={height}
+            onFocus={() => setFocused(true)}
+            onBlur={(editor) => {
+              const value = editor.getValue();
+              onChange(value);
+              setFocused(false);
+            }}
+            onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
+            onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+            options={options}
+          />
+        </CodeHinter.HinterContainer>
       </div>
-      {enablePreview && getPreview()}
+
+      {enablePreview && !isOpen && getPreview()}
     </div>
   );
 }
+
+const HinterContainer = ({ children, name, isOpen, callback, preview }) => {
+  return (
+    <React.Fragment>
+      {children}
+      <CodeHinter.CodeHinterPortal
+        codeEditor={children}
+        open={isOpen}
+        callback={callback}
+        name={name}
+        codePreview={preview}
+      />
+    </React.Fragment>
+  );
+};
+
+const PopupIcon = ({ callback }) => {
+  return (
+    <div className="d-flex justify-content-end">
+      <OverlayTrigger
+        trigger={['hover', 'focus']}
+        placement="top"
+        delay={{ show: 800, hide: 100 }}
+        overlay={<Tooltip id="button-tooltip">{'Pop out code editor into a new window'}</Tooltip>}
+      >
+        <img
+          className="svg-icon float m-2 popup-btn"
+          src="/assets/images/icons/expand.svg"
+          width="16"
+          height="16"
+          onClick={(e) => {
+            e.stopPropagation();
+            callback(true);
+            console.log('popup clicked');
+          }}
+        />
+      </OverlayTrigger>
+    </div>
+  );
+};
+
+const CodeHinterPortal = ({ codeEditor, open, callback, name, codePreview }) => {
+  const handleClose = (e) => {
+    e.stopPropagation();
+    callback(false);
+  };
+
+  React.useEffect(() => {
+    if (open) {
+      document.querySelector('#app').setAttribute('inert', 'true');
+    }
+
+    return () => {
+      document.querySelector('#app').removeAttribute('inert');
+    };
+  }, [open]);
+
+  return (
+    <React.Fragment>
+      {open && (
+        <Portal className="modal-portal-wrapper">
+          <div className="modal-dialog modal-portal-wrapper" role="document">
+            <div className="modal-content" style={{ background: 'tranparent' }}>
+              <div style={{ height: '24px', padding: '0px' }} className="modal-header">
+                <p className="modal-title mx-3">{name}</p>
+                <button
+                  onClick={handleClose}
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body p-0">
+                <div className="editor">{codeEditor}</div>
+                <div className="preview">{codePreview()}</div>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+    </React.Fragment>
+  );
+};
+CodeHinter.HinterContainer = HinterContainer;
+CodeHinter.PopupIcon = PopupIcon;
+CodeHinter.CodeHinterPortal = CodeHinterPortal;

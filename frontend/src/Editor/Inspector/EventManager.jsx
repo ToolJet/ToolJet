@@ -159,6 +159,7 @@ export const EventManager = ({
                       currentState={currentState}
                       initialValue={event.message}
                       onChange={(value) => handlerChanged(index, 'message', value)}
+                      componentName="Event"
                     />
                   </div>
                 </div>

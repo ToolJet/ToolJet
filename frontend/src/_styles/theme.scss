@@ -2523,3 +2523,28 @@ input[type='text'] {
     margin-top: -1px!important;
   }
 }
+
+.code-hinter-wrapper  .popup-btn {
+  position: absolute;
+  display: none;
+  cursor: pointer;
+}
+
+.code-hinter-wrapper:hover {
+  .popup-btn {
+    display: block!important;
+    z-index: 99999;
+  }
+}
+
+.modal-portal-wrapper {
+  // border: 1px solid #2fcc8b;
+  width: 100vmax;
+  overflow-y: hidden;
+  // background-color: rgba(51, 51, 51, 0.3);
+  // backdrop-filter: blur(1px);
+  justify-content: center;
+  align-items: center;
+  top: 0px;
+  z-index: 10000000;
+}

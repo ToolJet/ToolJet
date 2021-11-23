@@ -2,7 +2,16 @@ import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { ToolTip } from './Components/ToolTip';
 
-export const Code = ({ param, definition, onChange, paramType, componentMeta, currentState, darkMode }) => {
+export const Code = ({
+  param,
+  definition,
+  onChange,
+  paramType,
+  componentMeta,
+  currentState,
+  darkMode,
+  componentName,
+}) => {
   const initialValue = definition ? definition.value : '';
   const paramMeta = componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
@@ -25,6 +34,7 @@ export const Code = ({ param, definition, onChange, paramType, componentMeta, cu
         lineWrapping={true}
         className={options.className}
         onChange={(value) => handleCodeChanged(value)}
+        componentName={`widget/${componentName}`}
       />
     </div>
   );
