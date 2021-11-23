@@ -122,11 +122,6 @@ export function CodeHinter({
 
   const [isOpen, setIsOpen] = React.useState(false);
 
-  // const togglePopup = () => {
-  //   setIsOpen(true);
-  //   // setFocused(true);
-  // };
-
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
       <CodeHinter.PopupIcon callback={setIsOpen} />
@@ -141,12 +136,13 @@ export function CodeHinter({
           callback={setIsOpen}
           preview={getPreview}
           enablePreview={enablePreview}
+          height={height || 'auto'}
         >
           <CodeMirror
             value={initialValue}
             realState={realState}
             scrollbarStyle={null}
-            height={height}
+            height={height || 'auto'}
             onFocus={() => setFocused(true)}
             onBlur={(editor) => {
               const value = editor.getValue();
@@ -156,6 +152,8 @@ export function CodeHinter({
             onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
             onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
             options={options}
+            lineWrapping={true}
+            viewportMargin={Infinity}
           />
         </CodeHinter.HinterContainer>
       </div>
@@ -165,7 +163,7 @@ export function CodeHinter({
   );
 }
 
-const HinterContainer = ({ children, name, isOpen, callback, preview }) => {
+const HinterContainer = ({ children, name, isOpen, callback, preview, height }) => {
   return (
     <React.Fragment>
       {children}
@@ -175,6 +173,7 @@ const HinterContainer = ({ children, name, isOpen, callback, preview }) => {
         callback={callback}
         name={name}
         codePreview={preview}
+        height={height}
       />
     </React.Fragment>
   );
@@ -204,7 +203,7 @@ const PopupIcon = ({ callback }) => {
   );
 };
 
-const CodeHinterPortal = ({ codeEditor, open, callback, name, codePreview }) => {
+const CodeHinterPortal = ({ codeEditor, open, callback, name, codePreview, height }) => {
   const handleClose = (e) => {
     e.stopPropagation();
     callback(false);
@@ -252,7 +251,10 @@ const CodeHinterPortal = ({ codeEditor, open, callback, name, codePreview }) => 
                   aria-label="Close"
                 ></span>
               </div>
-              <div className="modal-body p-0">
+              <div
+                className="modal-body p-0"
+                style={{ background: 'transparent', backgroundColor: darkMode ? '#272822' : '#fff', height }}
+              >
                 {/* <div className="editor">{codeEditor}</div>
                 <div className="preview">{codePreview()}</div> */}
                 <PortalHinterPreview />
