@@ -9,7 +9,7 @@ import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
-import { toast } from 'react-toastify';
+// import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
 import { SaveAndPreview } from './SaveAndPreview';
@@ -30,6 +30,8 @@ import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
+import toast from 'react-hot-toast';
+import { cloneDeep } from 'lodash';
 
 class Editor extends React.Component {
   constructor(props) {
@@ -84,6 +86,7 @@ class Editor extends React.Component {
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
       socket: null,
+      removedComponents: [],
     };
   }
 
@@ -299,7 +302,7 @@ class Editor extends React.Component {
   };
 
   handleInspectorView = (component) => {
-    if (this.state.selectedComponent.hasOwnProperty('component')) {
+    if (this.state.selectedComponent?.hasOwnProperty('component')) {
       const { id: selectedComponentId } = this.state.selectedComponent;
       if (selectedComponentId === component.id) {
         this.setState({ selectedComponent: null });
@@ -314,18 +317,42 @@ class Editor extends React.Component {
 
   removeComponent = (component) => {
     let newDefinition = this.state.appDefinition;
+    this.setState(
+      {
+        removedComponents: this.state.removedComponents.concat(cloneDeep(newDefinition)),
+      },
+      () => {
+        // Delete child components when parent is deleted
+        const childComponents = Object.keys(newDefinition.components).filter(
+          (key) => newDefinition.components[key].parent === component.id
+        );
+        childComponents.forEach((componentId) => {
+          delete newDefinition.components[componentId];
+        });
 
-    // Delete child components when parent is deleted
-    const childComponents = Object.keys(newDefinition.components).filter(
-      (key) => newDefinition.components[key].parent === component.id
+        delete newDefinition.components[component.id];
+        toast('Component deleted! (⌘Z to undo)', {
+          icon: '🗑️',
+        });
+        this.appDefinitionChanged(newDefinition);
+        this.handleInspectorView(component);
+      }
     );
-    childComponents.forEach((componentId) => {
-      delete newDefinition.components[componentId];
-    });
+  };
 
-    delete newDefinition.components[component.id];
-    this.appDefinitionChanged(newDefinition);
-    this.handleInspectorView(component);
+  restoreComponent = () => {
+    const removedComponents = [...this.state.removedComponents];
+    const mostRecentAppDefination = removedComponents.pop();
+
+    if (mostRecentAppDefination) {
+      this.appDefinitionChanged(mostRecentAppDefination);
+      toast('Component restored!', {
+        icon: '✨',
+      });
+      this.setState({
+        removedComponents,
+      });
+    }
   };
 
   componentDefinitionChanged = (newDefinition) => {
@@ -804,6 +831,7 @@ class Editor extends React.Component {
                         }
                         currentState={this.state.currentState}
                         configHandleClicked={this.configHandleClicked}
+                        restoreComponent={this.restoreComponent}
                         removeComponent={this.removeComponent}
                         onComponentClick={(id, component) => {
                           this.setState({ selectedComponent: { id, component } });
