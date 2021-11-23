@@ -9,7 +9,6 @@ import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
-// import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
 import { SaveAndPreview } from './SaveAndPreview';
@@ -390,16 +389,15 @@ class Editor extends React.Component {
   saveApp = (id, attributes, notify = false) => {
     appService.saveApp(id, attributes).then(() => {
       if (notify) {
-        toast.success('App saved sucessfully', { hideProgressBar: true, position: 'top-center' });
+        toast.success('App saved sucessfully');
       }
     });
   };
 
   saveAppName = (id, name, notify = false) => {
     if (!name.trim()) {
-      toast.warn("App name can't be empty or whitespace", {
-        hideProgressBar: true,
-        position: 'top-center',
+      toast("App name can't be empty or whitespace", {
+        icon: '🚨',
       });
 
       this.setState({
@@ -446,13 +444,13 @@ class Editor extends React.Component {
     dataqueryService
       .del(this.state.selectedQuery.id)
       .then(() => {
-        toast.success('Query Deleted', { hideProgressBar: true, position: 'bottom-center' });
+        toast.success('Query Deleted');
         this.setState({ isDeletingDataQuery: false });
         this.dataQueriesChanged();
       })
       .catch(({ error }) => {
         this.setState({ isDeletingDataQuery: false });
-        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+        toast.error(error);
       });
   };
 
@@ -517,9 +515,8 @@ class Editor extends React.Component {
               className="btn badge bg-azure-lt"
               onClick={() => {
                 runQuery(this, dataQuery.id, dataQuery.name).then(() => {
-                  toast.info(`Query (${dataQuery.name}) completed.`, {
-                    hideProgressBar: true,
-                    position: 'bottom-center',
+                  toast(`Query (${dataQuery.name}) completed.`, {
+                    icon: '🚀',
                   });
                 });
               }}

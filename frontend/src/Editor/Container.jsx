@@ -65,8 +65,6 @@ export const Container = ({
     ['meta', 'z'],
     () => {
       restoreComponent();
-      console.log('hhh');
-      // setWidgetDeleteConfirmation(true);
     },
     []
   );
