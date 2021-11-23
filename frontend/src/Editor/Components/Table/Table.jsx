@@ -663,7 +663,10 @@ export function Table({
     ] // Hack: need to fix
   );
 
-  const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
+  const data = useMemo(
+    () => tableData,
+    [tableData.length, componentState.changeSet, component.definition.properties.data.value]
+  );
 
   const computedStyles = {
     // width: `${width}px`,
