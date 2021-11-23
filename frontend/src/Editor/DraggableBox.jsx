@@ -207,7 +207,7 @@ export const DraggableBox = function DraggableBox({
               setDragging(false)
               onDragStop(e, id, direction, currentLayout, currentLayoutOptions)
             }}
-            cancel={`div.table-responsive.jet-data-table > table > thead`}
+            cancel={`div.table-responsive.jet-data-table`}
             onDragStart={(e) => e.stopPropagation()}
             enableResizing={mode === 'edit'}
             onResizeStop={(e, direction, ref, d, position) => {
