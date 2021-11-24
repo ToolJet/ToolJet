@@ -30,8 +30,10 @@ import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
 import toast from 'react-hot-toast';
-import { cloneDeep } from 'lodash';
-import produce, { applyPatches } from 'immer';
+import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
+
+setAutoFreeze(false);
+enablePatches();
 
 class Editor extends React.Component {
   constructor(props) {
@@ -90,17 +92,12 @@ class Editor extends React.Component {
     };
   }
 
-  // undo = [];
-
-  // handleAddPatch = (_, inversePatches) => {
-  //   this.undo.push(inversePatches);
-  // };
-
   componentDidMount() {
     this.fetchApps(0);
     this.fetchApp();
     this.fetchDataSources();
     this.fetchDataQueries();
+    this.initComponentVersioning();
     config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
     this.setState({
       currentSidebarTab: 2,
@@ -159,6 +156,15 @@ class Editor extends React.Component {
     this.setState({
       socket,
     });
+  };
+
+  // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
+  // 2. Whenever you perform an undo – you can always redo and keep doing undo as long as we have a patch for it.
+  // 3. Whenever you redo – you can always undo and keep doing redo as long as we have a patch for it.
+  initComponentVersioning = () => {
+    this.currentVersion = -1;
+    this.currentVersionChanges = {};
+    this.noOfVersionsSupported = 100;
   };
 
   fetchDataSources = () => {
@@ -302,16 +308,63 @@ class Editor extends React.Component {
     this.setState({ componentTypes: filteredComponents });
   };
 
+  handleAddPatch = (patches, inversePatches) => {
+    this.currentVersion++;
+    this.currentVersionChanges[this.currentVersion] = {
+      redo: patches,
+      undo: inversePatches,
+    };
+
+    delete this.currentVersionChanges[this.currentVersion + 1];
+    delete this.currentVersionChanges[this.currentVersion - this.noOfVersionsSupported];
+  };
+
+  handleUndo = () => {
+    const appDefinition = applyPatches(
+      this.state.appDefinition,
+      this.currentVersionChanges[this.currentVersion--].undo
+    );
+
+    if (!appDefinition) return;
+    this.setState(
+      {
+        appDefinition,
+      },
+      () => {
+        toast('Undo action performed!', {
+          icon: '✨',
+        });
+      }
+    );
+  };
+
+  handleRedo = () => {
+    const appDefinition = applyPatches(
+      this.state.appDefinition,
+      this.currentVersionChanges[++this.currentVersion].redo
+    );
+    if (!appDefinition) return;
+    this.setState(
+      {
+        appDefinition,
+      },
+      () => {
+        toast('Redo action performed!', {
+          icon: '✨',
+        });
+      }
+    );
+  };
+
   appDefinitionChanged = (newDefinition) => {
-    this.setState({ appDefinition: newDefinition }, () => {
-      // const nextState = produce(
-      //   this.state.appDefinition,
-      //   (draft) => {
-      //     draft.items.push({ name: this.state.value });
-      //   },
-      //   this.handleAddPatch
-      // );
-    });
+    produce(
+      this.state.appDefinition,
+      (draft) => {
+        draft.components = newDefinition.components;
+      },
+      this.handleAddPatch
+    );
+    this.setState({ appDefinition: newDefinition });
     computeComponentState(this, newDefinition.components);
   };
 
@@ -331,42 +384,20 @@ class Editor extends React.Component {
 
   removeComponent = (component) => {
     let newDefinition = this.state.appDefinition;
-    this.setState(
-      {
-        removedComponents: this.state.removedComponents.concat(cloneDeep(newDefinition)),
-      },
-      () => {
-        // Delete child components when parent is deleted
-        const childComponents = Object.keys(newDefinition.components).filter(
-          (key) => newDefinition.components[key].parent === component.id
-        );
-        childComponents.forEach((componentId) => {
-          delete newDefinition.components[componentId];
-        });
-
-        delete newDefinition.components[component.id];
-        toast('Component deleted! (⌘Z to undo)', {
-          icon: '🗑️',
-        });
-        this.appDefinitionChanged(newDefinition);
-        this.handleInspectorView(component);
-      }
+    // Delete child components when parent is deleted
+    const childComponents = Object.keys(newDefinition.components).filter(
+      (key) => newDefinition.components[key].parent === component.id
     );
-  };
+    childComponents.forEach((componentId) => {
+      delete newDefinition.components[componentId];
+    });
 
-  restoreComponent = () => {
-    const removedComponents = [...this.state.removedComponents];
-    const mostRecentAppDefination = removedComponents.pop();
-
-    if (mostRecentAppDefination) {
-      this.appDefinitionChanged(mostRecentAppDefination);
-      toast('Component restored!', {
-        icon: '✨',
-      });
-      this.setState({
-        removedComponents,
-      });
-    }
+    delete newDefinition.components[component.id];
+    toast('Component deleted! (⌘Z to undo)', {
+      icon: '🗑️',
+    });
+    this.appDefinitionChanged(newDefinition);
+    this.handleInspectorView(component);
   };
 
   componentDefinitionChanged = (newDefinition) => {
@@ -843,7 +874,8 @@ class Editor extends React.Component {
                         }
                         currentState={this.state.currentState}
                         configHandleClicked={this.configHandleClicked}
-                        restoreComponent={this.restoreComponent}
+                        handleUndo={this.handleUndo}
+                        handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
                         onComponentClick={(id, component) => {
                           this.setState({ selectedComponent: { id, component } });

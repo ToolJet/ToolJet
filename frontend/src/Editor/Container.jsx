@@ -42,7 +42,8 @@ export const Container = ({
   showComments,
   appVersionsId,
   socket,
-  restoreComponent,
+  handleUndo,
+  // handleRedo,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -61,7 +62,8 @@ export const Container = ({
   const [newThread, addNewThread] = useState({});
   const router = useRouter();
 
-  useHotkeys('⌘+z, control+z', () => restoreComponent());
+  useHotkeys('⌘+z, control+z', () => handleUndo());
+  // useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
 
   useEffect(() => {
     setBoxes(components);
