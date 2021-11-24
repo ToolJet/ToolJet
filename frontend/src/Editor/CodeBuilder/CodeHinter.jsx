@@ -245,13 +245,6 @@ const CodeHinterPortal = ({ codeEditor, open, callback, name, codePreview, heigh
                 <div className=" w-100">
                   <code className="mx-3 text-info">{name}</code>
                 </div>
-                {/* <span
-                  onClick={handleClose}
-                  type="button"
-                  className="ms-2 btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></span> */}
 
                 <span
                   className={`btn btn-light mx-2 flex-shrink-1`}
