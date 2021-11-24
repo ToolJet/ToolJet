@@ -33,16 +33,23 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
   return await got.get(url, { headers: authHeader }).json();
 }
 
-export async function batchUpdateToSheet(spreadSheetId: string, requestBody: any, filterData: any, authHeader: any) {
+export async function batchUpdateToSheet(
+  spreadSheetId: string,
+  requestBody: any,
+  filterData: any,
+  filterOperator: string,
+  authHeader: any
+) {
+  if (!filterOperator) {
+    return new Error('filterOperator is required');
+  }
+
   const lookUpData = await lookUpSheetData(spreadSheetId, authHeader);
 
-  console.log('data', requestBody);
-
-  const updateBody = (requestBody, filterCondition, data) => {
-    const rowsIndexes = getRowsIndex(filterCondition, data) as any[];
+  const updateBody = (requestBody, filterCondition, filterOperator, data) => {
+    const rowsIndexes = getRowsIndex(filterCondition, filterOperator, data) as any[];
     const colIndexes = getInputKeys(requestBody, data);
-    // console.log('rowsIndexes', rowsIndexes);
-    // console.log('colIndexes', colIndexes);
+
     const updateCellIndexes = [];
     colIndexes.map((col) => {
       rowsIndexes.map((rowIndex) => updateCellIndexes.push({ ...col, cellIndex: `${col.colIndex}${rowIndex}` }));
@@ -69,12 +76,14 @@ export async function batchUpdateToSheet(spreadSheetId: string, requestBody: any
   };
 
   const reqBody = {
-    data: updateBody(requestBody, filterData, lookUpData),
+    data: updateBody(requestBody, filterData, filterOperator, lookUpData),
     valueInputOption: 'USER_ENTERED',
     includeValuesInResponse: true,
   };
-  // console.log('reqBody', reqBody);
+
+  if (!reqBody.data) return new Error('No data to update');
   const response = await makeRequestToBatchUpdateValues(spreadSheetId, reqBody, authHeader);
+
   return response;
 }
 
@@ -193,7 +202,15 @@ const getInputKeys = (inputBody, data) => {
   return arr;
 };
 
-const getRowsIndex = (inputFilter, response) => {
+const getRowsIndex = (inputFilter, filterOperator, response) => {
+  const filterWithOperator = (type, array, value) => {
+    switch (type) {
+      case '===':
+        return array === value;
+      default:
+        return false;
+    }
+  };
   const columnValues = response.filter((column) => column[0] === inputFilter.key).flat();
 
   if (columnValues.length === 0) {
@@ -203,10 +220,15 @@ const getRowsIndex = (inputFilter, response) => {
   const rowIndex = [];
 
   columnValues.forEach((col, index) => {
-    if (col === inputFilter.value) {
+    const inputValue = typeof inputFilter.value !== 'string' ? JSON.stringify(inputFilter.value) : inputFilter.value;
+    const isEqual = filterWithOperator(filterOperator, col, inputValue);
+    if (isEqual) {
       rowIndex.push(index + 1);
     }
   });
+  if (rowIndex.length === 0) {
+    return -1;
+  }
 
   return rowIndex;
 };

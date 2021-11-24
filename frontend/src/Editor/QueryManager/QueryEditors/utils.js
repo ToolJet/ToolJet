@@ -1,5 +1,4 @@
 export function changeOption(_ref, option, value) {
-  console.log('value ==>', value);
   _ref.setState(
     {
       options: {

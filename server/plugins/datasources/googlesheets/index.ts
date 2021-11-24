@@ -72,7 +72,6 @@ export default class GooglesheetsQueryService implements QueryService {
     const spreadsheetRange = queryOptions['spreadsheet_range'] ? queryOptions['spreadsheet_range'] : 'A1:Z500';
     const accessToken = sourceOptions['access_token'];
     const queryOptionFilter = { key: queryOptions['where_field'], value: queryOptions['where_value'] };
-    // console.log('test', queryOptions);
 
     try {
       switch (operation) {
@@ -103,6 +102,7 @@ export default class GooglesheetsQueryService implements QueryService {
             spreadsheetId,
             queryOptions['body'],
             queryOptionFilter,
+            queryOptions['where_operation'],
             this.authHeader(accessToken)
           );
           break;

@@ -141,7 +141,8 @@ const DynamicForm = ({
           className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => {
             if (customRule) {
-              eval(customRule);
+              const runCustomRule = eval(customRule);
+              value = runCustomRule(value);
             }
             optionchanged($key, value);
           },
