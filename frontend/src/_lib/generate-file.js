@@ -9,5 +9,6 @@ export default function generateFile(filename, data) {
     document.body.appendChild(elem);
     elem.click();
     document.body.removeChild(elem);
+    window.URL.revokeObjectURL(elem.href);
   }
 }
