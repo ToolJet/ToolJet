@@ -3,7 +3,7 @@ import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
 import { EventManager } from './EventManager';
 import { ConfirmDialog } from '@/_components';
@@ -50,9 +50,7 @@ export const Inspector = ({
       setComponent(newComponent);
       componentChanged(newComponent);
     } else {
-      toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.', {
-        hideProgressBar: true,
-      });
+      toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.');
     }
   }
 
