@@ -31,6 +31,7 @@ import config from 'config';
 import queryString from 'query-string';
 import toast from 'react-hot-toast';
 import { cloneDeep } from 'lodash';
+import produce, { applyPatches } from 'immer';
 
 class Editor extends React.Component {
   constructor(props) {
@@ -88,6 +89,12 @@ class Editor extends React.Component {
       removedComponents: [],
     };
   }
+
+  // undo = [];
+
+  // handleAddPatch = (_, inversePatches) => {
+  //   this.undo.push(inversePatches);
+  // };
 
   componentDidMount() {
     this.fetchApps(0);
@@ -296,7 +303,15 @@ class Editor extends React.Component {
   };
 
   appDefinitionChanged = (newDefinition) => {
-    this.setState({ appDefinition: newDefinition });
+    this.setState({ appDefinition: newDefinition }, () => {
+      // const nextState = produce(
+      //   this.state.appDefinition,
+      //   (draft) => {
+      //     draft.items.push({ name: this.state.value });
+      //   },
+      //   this.handleAddPatch
+      // );
+    });
     computeComponentState(this, newDefinition.components);
   };
 
