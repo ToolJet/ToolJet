@@ -191,8 +191,8 @@ const PopupIcon = ({ callback }) => {
         <img
           className="svg-icon float m-2 popup-btn"
           src="/assets/images/icons/expand.svg"
-          width="16"
-          height="16"
+          width="12"
+          height="12"
           onClick={(e) => {
             e.stopPropagation();
             callback(true);
@@ -241,15 +241,31 @@ const CodeHinterPortal = ({ codeEditor, open, callback, name, codePreview, heigh
         <Portal className="modal-portal-wrapper">
           <div className="modal-dialog" role="document">
             <div className="modal-content" style={{ ...portalStyle, borderRadius: '0px' }}>
-              <div className="modal-header" style={{ ...portalStyle }}>
-                <code className="mx-3 text-info">{name}</code>
-                <span
+              <div className="portal-header d-flex" style={{ ...portalStyle }}>
+                <div className=" w-100">
+                  <code className="mx-3 text-info">{name}</code>
+                </div>
+                {/* <span
                   onClick={handleClose}
                   type="button"
-                  className="btn-close"
+                  className="ms-2 btn-close"
                   data-bs-dismiss="modal"
                   aria-label="Close"
-                ></span>
+                ></span> */}
+
+                <span
+                  className={`btn btn-light mx-2 flex-shrink-1`}
+                  onClick={handleClose}
+                  data-tip="Hide query editor"
+                  data-class="py-1 px-2"
+                >
+                  <img
+                    style={{ transform: 'rotate(-90deg)' }}
+                    src="/assets/images/icons/portal-close.svg"
+                    width="12"
+                    height="12"
+                  />
+                </span>
               </div>
               <div
                 className="modal-body p-0"

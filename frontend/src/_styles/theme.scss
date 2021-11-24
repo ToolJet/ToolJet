@@ -2561,3 +2561,22 @@ input[type='text'] {
     margin: 0;
   }
 }
+
+
+.portal-header {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  color: #656d77;
+  background-color: #ffffffd9;
+  background-clip: padding-box;
+  border-bottom: 1px solid #0000000d;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  
+  .btn-close {
+    border: 1px solid red!important;
+    margin-top: -0px;
+    padding: 2px;
+  }
+}
