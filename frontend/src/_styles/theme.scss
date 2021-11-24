@@ -2538,12 +2538,25 @@ input[type='text'] {
 }
 
 .modal-portal-wrapper {
-  overflow-x: hidden; 
-  overflow-y: hidden;
+  // overflow-x: hidden; 
+  // overflow-y: hidden;
   z-index: 10000000;
   justify-content: center;
   align-items: center;
-  position: relative;
+  position: fixed;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid red;
+  height: 500px;
+  width: 500px;
+  padding: 0;
+
+  .modal-body {
+    width: 500px!important;
+    height: 400px!important;
+  }
 
   .modal-dialog {
     margin-top: 4%;
@@ -2573,10 +2586,4 @@ input[type='text'] {
   border-bottom: 1px solid #0000000d;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
-  
-  .btn-close {
-    border: 1px solid red!important;
-    margin-top: -0px;
-    padding: 2px;
-  }
 }

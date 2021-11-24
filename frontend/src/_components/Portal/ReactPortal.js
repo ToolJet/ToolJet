@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-export default function Portal({ children, parent, className }) {
+export function ReactPortal({ children, parent, className }) {
   const el = React.useMemo(() => document.createElement('div'), []);
 
   React.useEffect(() => {
@@ -9,7 +9,9 @@ export default function Portal({ children, parent, className }) {
     if (checkPortalExits.length > 0) {
       checkPortalExits[0].remove();
     }
+  }, []);
 
+  React.useEffect(() => {
     const target = parent && parent.appendChild ? parent : document.body;
     const classList = ['portal-container'];
     if (className) className.split(' ').forEach((item) => classList.push(item));
