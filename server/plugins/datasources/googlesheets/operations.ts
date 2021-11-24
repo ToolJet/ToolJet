@@ -186,8 +186,6 @@ async function lookUpSheetData(spreadSheetId: string, authHeader: any) {
 
 //* utils
 const getInputKeys = (inputBody, data) => {
-  console.log('inputBody', typeof inputBody);
-
   const keys = Object.keys(inputBody);
   const arr = [];
   keys.map((key) =>

@@ -145,8 +145,6 @@ export class DataQueriesController {
     try {
       result = await this.dataQueriesService.runQuery(req.user, dataQuery, options);
     } catch (error) {
-      console.log('backend', error);
-
       if (error instanceof QueryError) {
         result = {
           status: 'failed',
