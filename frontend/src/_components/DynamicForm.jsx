@@ -129,7 +129,9 @@ const DynamicForm = ({
       case 'codehinter':
         return {
           currentState,
-          initialValue: options[$key]
+          initialValue: customRule
+            ? initialValue
+            : options[$key]
             ? typeof options[$key] === 'string'
               ? options[$key]
               : JSON.stringify(options[$key])
@@ -139,7 +141,6 @@ const DynamicForm = ({
           className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => {
             if (customRule) {
-              // console.log('customRule', customRule);
               eval(customRule);
             }
             optionchanged($key, value);

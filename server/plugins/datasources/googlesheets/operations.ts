@@ -36,10 +36,13 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
 export async function batchUpdateToSheet(spreadSheetId: string, requestBody: any, filterData: any, authHeader: any) {
   const lookUpData = await lookUpSheetData(spreadSheetId, authHeader);
 
+  console.log('data', requestBody);
+
   const updateBody = (requestBody, filterCondition, data) => {
     const rowsIndexes = getRowsIndex(filterCondition, data) as any[];
     const colIndexes = getInputKeys(requestBody, data);
-
+    // console.log('rowsIndexes', rowsIndexes);
+    // console.log('colIndexes', colIndexes);
     const updateCellIndexes = [];
     colIndexes.map((col) => {
       rowsIndexes.map((rowIndex) => updateCellIndexes.push({ ...col, cellIndex: `${col.colIndex}${rowIndex}` }));
@@ -70,6 +73,7 @@ export async function batchUpdateToSheet(spreadSheetId: string, requestBody: any
     valueInputOption: 'USER_ENTERED',
     includeValuesInResponse: true,
   };
+  // console.log('reqBody', reqBody);
   const response = await makeRequestToBatchUpdateValues(spreadSheetId, reqBody, authHeader);
   return response;
 }
@@ -173,6 +177,8 @@ async function lookUpSheetData(spreadSheetId: string, authHeader: any) {
 
 //* utils
 const getInputKeys = (inputBody, data) => {
+  console.log('inputBody', typeof inputBody);
+
   const keys = Object.keys(inputBody);
   const arr = [];
   keys.map((key) =>
@@ -183,6 +189,7 @@ const getInputKeys = (inputBody, data) => {
       }
     })
   );
+  console.log('keys', keys);
   return arr;
 };
 

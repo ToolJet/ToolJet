@@ -126,8 +126,7 @@
         "type": "dropdown",
         "description": "Single select dropdown for where operation",
         "$options": [
-          { "value": "==", "name": "==" },
-          { "value": "", "name": "None" }
+          { "value": "==", "name": "==" }
         ]
       },
       "where_value": {
@@ -145,7 +144,8 @@
         "description": "Enter body",
         "height": "150px",
         "ignoreBraces": true,
-        "lineNumbers": true
+        "lineNumbers": true,
+        "customRule": "if (!(value.slice(0, 3) === '{{(' && value.slice(-3) === ')}}')) {value = '{{(' + value + ')}}';}"
         
       }
     }
