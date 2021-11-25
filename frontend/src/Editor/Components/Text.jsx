@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ id, height, component, onComponentClick, currentState }) {
+export const Text = function Text({ id, height, component, onComponentClick, currentState, customResolvables }) {
   const text = component.definition.properties.text.value;
   const color = component.definition.styles.textColor.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
@@ -28,7 +28,7 @@ export const Text = function Text({ id, height, component, onComponentClick, cur
 
     if (matchedParams) {
       for (const param of matchedParams) {
-        const resolvedParam = resolveReferences(param, currentState, '');
+        const resolvedParam = resolveReferences(param, currentState, '', customResolvables);
         console.log('resolved param', param, resolvedParam);
         data = data.replace(param, resolvedParam);
       }

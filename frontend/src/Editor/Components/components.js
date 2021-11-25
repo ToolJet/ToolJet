@@ -1405,4 +1405,49 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Listview',
+    displayName: 'List view',
+    description: 'Wrapper for multiple components',
+    defaultSize: {
+      width: 5,
+      height: 200,
+    },
+    component: 'Listview',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      data: { type: 'code', displayName: 'List data' },
+    },
+    events: {},
+    styles: {
+      backgroundColor: { type: 'color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      data: [{}]
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        data: {
+          value:
+            "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+        },
+        visible: { value: true },
+      },
+      events: [],
+      styles: {
+        backgroundColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  }
 ];

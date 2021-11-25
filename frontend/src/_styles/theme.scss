@@ -2523,3 +2523,16 @@ input[type='text'] {
     margin-top: -1px!important;
   }
 }
+
+.jet-listview {
+  overflow-y: overlay;
+  overflow-x: hidden;
+}
+
+.jet-listview::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.jet-listview::-webkit-scrollbar-thumb {
+  background: transparent;
+}

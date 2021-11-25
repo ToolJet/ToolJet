@@ -25,6 +25,7 @@ import { Divider } from './Components/Divider';
 import { FilePicker } from './Components/FilePicker';
 import { PasswordInput } from './Components/PasswordInput';
 import { Calendar } from './Components/Calendar';
+import { Listview } from './Components/Listview';
 import { IFrame } from './Components/IFrame';
 import { CodeEditor } from './Components/CodeEditor';
 import { renderTooltip } from '../_helpers/appUtils';
@@ -62,6 +63,7 @@ const AllComponents = {
   Calendar,
   IFrame,
   CodeEditor,
+  Listview
 };
 
 export const Box = function Box({
@@ -84,6 +86,8 @@ export const Box = function Box({
   removeComponent,
   canvasWidth,
   mode,
+  customResolvables,
+  parentId
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -99,9 +103,9 @@ export const Box = function Box({
   }
 
   const ComponentToRender = AllComponents[component.component];
-  const resolvedProperties = resolveProperties(component, currentState);
+  const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const resolvedStyles = resolveStyles(component, currentState);
-  const exposedVariables = currentState?.components[component.name] ?? {};
+  const exposedVariables = currentState?.components[parentId]?.data[component.name] ?? {};
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
@@ -146,6 +150,8 @@ export const Box = function Box({
             setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
             fireEvent={fireEvent}
             validate={validate}
+            parentId={parentId}
+            customResolvables={customResolvables}
           ></ComponentToRender>
         ) : (
           <div className="m-1" style={{ height: '100%' }}>

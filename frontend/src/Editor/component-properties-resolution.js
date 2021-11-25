@@ -1,11 +1,11 @@
 import { resolveReferences } from '@/_helpers/utils';
 
-export const resolveProperties = (component, currentState) => {
+export const resolveProperties = (component, currentState, defaultValue, customResolvables) => {
   if (currentState && currentState.components[component.name]) {
     return Object.entries(component.definition.properties).reduce(
       (properties, entry) => ({
         ...properties,
-        ...{ [entry[0]]: resolveReferences(entry[1].value, currentState) },
+        ...{ [entry[0]]: resolveReferences(entry[1].value, currentState, defaultValue, customResolvables) },
       }),
       {}
     );

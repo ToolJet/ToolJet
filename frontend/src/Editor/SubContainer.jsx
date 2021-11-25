@@ -33,7 +33,11 @@ export const SubContainer = ({
   currentLayout,
   removeComponent,
   darkMode,
-  containerCanvasWidth
+  containerCanvasWidth,
+  readOnly,
+  customResolvables,
+  parentComponent,
+  listViewItemOptions
 }) => {
 
   const [currentParentRef, setParentRef] = useState(parentRef);
@@ -355,13 +359,25 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
+  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
+    let newData = currentState.components[parent]?.data || [];
+    newData[listViewItemOptions.index] = {
+      [component.name]: {
+        ...newData[listViewItemOptions.index],
+        [optionName]: value
+      }
+    }
+    onComponentOptionChanged(parentComponent, 'data', newData)
+  }
+
   return (
-    <div ref={drop} style={styles} id={`canvas-${parent}`} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
-      {Object.keys(childComponents).map((key) => (
-        <DraggableBox
+    <div ref={drop} style={styles} id={`canvas-${parent}`} className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}>
+
+      {Object.keys(childComponents).map((key) => {
+        return <DraggableBox
           onComponentClick={onComponentClick}
           onEvent={onEvent}
-          onComponentOptionChanged={onComponentOptionChanged}
+          onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
           onComponentOptionsChanged={onComponentOptionsChanged}
           key={key}
           currentState={currentState}
@@ -369,7 +385,7 @@ export const SubContainer = ({
           onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
-          {...boxes[key]}
+          {...childComponents[key]}
           mode={mode}
           resizingStatusChanged={(status) => setIsResizing(status)}
           draggingStatusChanged={(status) => setIsDragging(status)}
@@ -382,6 +398,9 @@ export const SubContainer = ({
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
           removeComponent={removeComponent}
           canvasWidth={getContainerCanvasWidth()}
+          readOnly={readOnly}
+          customResolvables={customResolvables}
+          parentId={parentComponent.name}
           containerProps={{
             mode,
             snapToGrid,
@@ -400,9 +419,11 @@ export const SubContainer = ({
             deviceWindowWidth,
             selectedComponent,
             darkMode,
+            readOnly
           }}
         />
-      ))}
+      }
+      )}
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">

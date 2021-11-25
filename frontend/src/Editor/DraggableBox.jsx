@@ -90,6 +90,9 @@ export const DraggableBox = function DraggableBox({
   draggingStatusChanged,
   darkMode,
   canvasWidth,
+  readOnly,
+  customResolvables,
+  parentId
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -202,14 +205,14 @@ export const DraggableBox = function DraggableBox({
             }}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
-            disableDragging={mode !== 'edit'}
+            enableResizing={mode === 'edit' && !readOnly}
+            disableDragging={mode !== 'edit' || readOnly}
             onDragStop={(e, direction) => {
               setDragging(false)
               onDragStop(e, id, direction, currentLayout, currentLayoutOptions)
             }}
             cancel={`div.table-responsive.jet-data-table, div.calendar-widget`}
             onDragStart={(e) => e.stopPropagation()}
-            enableResizing={mode === 'edit'}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
               onResizeStop(id, e, direction, ref, d, position);
@@ -217,7 +220,7 @@ export const DraggableBox = function DraggableBox({
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && mouseOver && !isResizing && (
+              {mode === 'edit' && !readOnly && mouseOver && !isResizing && (
                 <ConfigHandle
                   id={id}
                   removeComponent={removeComponent}
@@ -243,6 +246,9 @@ export const DraggableBox = function DraggableBox({
                 darkMode={darkMode}
                 removeComponent={removeComponent}
                 canvasWidth={canvasWidth}
+                readOnly={readOnly}
+                customResolvables={customResolvables}
+                parentId={parentId}
               />
             </div>
           </Rnd>

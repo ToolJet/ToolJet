@@ -2,7 +2,7 @@ import React from 'react';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import LazyLoad from 'react-lazyload';
 
-export const Image = function Image({ id, height, component, onComponentClick, currentState }) {
+export const Image = function Image({ id, height, component, onComponentClick, currentState, customResolvables }) {
   const source = component.definition.properties.source.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -10,7 +10,7 @@ export const Image = function Image({ id, height, component, onComponentClick, c
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
-  let data = resolveReferences(source, currentState, null);
+  let data = resolveReferences(source, currentState, null, customResolvables);
 
   let parsedWidgetVisibility = widgetVisibility;
 
@@ -35,7 +35,7 @@ export const Image = function Image({ id, height, component, onComponentClick, c
       }}
     >
       <LazyLoad height={height} placeholder={<Placeholder />} debounce={500}>
-        <img style={{ objectFit: 'contain' }} src={data} height={height} />
+        <img className="rounded-circle" style={{ objectFit: 'contain' }} src={data} height={height} />
       </LazyLoad>
     </div>
   );
