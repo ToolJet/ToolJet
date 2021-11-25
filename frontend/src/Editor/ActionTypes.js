@@ -45,4 +45,13 @@ export const ActionTypes = [
       { name: 'value', type: 'code', default: '' },
     ],
   },
+  {
+    name: 'Generate file',
+    id: 'generate-file',
+    options: [
+      { name: 'fileType', type: 'text', default: '' },
+      { name: 'fileName', type: 'text', default: '' },
+      { name: 'data', type: 'code', default: '{{[]}}' },
+    ],
+  },
 ];

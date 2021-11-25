@@ -17,6 +17,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
   const parsedEnablePicker =
     typeof enablePicker !== 'boolean' ? resolveWidgetFieldValue(enablePicker, currentState) : true;
+
   const parsedMaxFileCount =
     typeof maxFileCount !== 'number' ? resolveWidgetFieldValue(maxFileCount, currentState) : maxFileCount;
   const parsedEnableMultiple =
@@ -50,7 +51,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     outline: 'none',
     transition: 'border .24s ease-in-out',
     display: parsedWidgetVisibility ? 'flex' : 'none',
-    width,
     height,
     backgroundColor: !parsedDisabledState && bgThemeColor,
   };
@@ -95,6 +95,47 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   const [showSelectdFiles, setShowSelectedFiles] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState([]);
 
+  /**
+   * *getFileData()
+   * @param {*} file
+   * @param {*} method: readAsDataURL, readAsText
+   */
+  const getFileData = (file = {}, method = 'readAsText') => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (result) => {
+        resolve([result, reader]);
+      };
+      reader[method](file);
+      reader.onerror = (error) => {
+        reject(error);
+        if (error.name == 'NotReadableError') {
+          toast.error(error.message, { hideProgressBar: true, autoClose: 3000 });
+        }
+      };
+    }).then((result) => {
+      if (method === 'readAsDataURL') {
+        return result[0].srcElement.result.split(',')[1];
+      }
+      return result[0].srcElement.result;
+    });
+  };
+
+  const fileReader = async (file) => {
+    // * readAsText
+    const readFileAsText = await getFileData(file);
+
+    // * readAsDataURL
+    const readFileAsDataURL = await getFileData(file, 'readAsDataURL');
+
+    return {
+      name: file.name,
+      type: file.type,
+      content: readFileAsText,
+      dataURL: readFileAsDataURL,
+    };
+  };
+
   useEffect(() => {
     if (acceptedFiles.length === 0) {
       onComponentOptionChanged(component, 'file', []);
@@ -103,23 +144,9 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     if (acceptedFiles.length !== 0) {
       const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
       acceptedFiles.map((acceptedFile) => {
-        return new Promise((resolve, reject) => {
-          let reader = new FileReader();
-          reader.onload = (result) => {
-            //* Resolve both the FileReader result and its original file.
-            resolve([result, acceptedFile]);
-          };
-          //* Reads contents of the file as a text string.
-          reader.readAsText(acceptedFile);
-        }).then((zippedResults) => {
-          //? Run the callback after all files have been read.
-          const fileSelected = {
-            name: zippedResults[1].name,
-            content: zippedResults[0].srcElement.result,
-            type: zippedResults[1].type,
-          };
-
-          fileData.push(fileSelected);
+        const acceptedFileData = fileReader(acceptedFile);
+        acceptedFileData.then((data) => {
+          fileData.push(data);
         });
       });
 

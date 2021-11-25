@@ -12,7 +12,7 @@ const layerStyles = {
   height: '100%',
 };
 
-function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent, currentLayout) {
+function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent, currentLayout, canvasWidth) {
   if (!initialOffset || !currentOffset || !parentRef.current) {
     return {
       display: 'none',
@@ -33,7 +33,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, par
 
   if (id) {
     // Dragging within the canvas
-    x = Math.round(item.layouts[currentLayout].left + delta.x);
+    x = Math.round((item.layouts[currentLayout].left * canvasWidth / 100) + delta.x);
     y = Math.round(item.layouts[currentLayout].top + delta.y);
   } else {
     // New component being dragged  from components sidebar
@@ -45,7 +45,9 @@ function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, par
     y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
   }
 
-  [x, y] = snapToGrid(x, y);
+  [x, y] = snapToGrid(canvasWidth, x, y);
+
+  console.log(`translate(${x}px, ${y}px)`)
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
@@ -62,10 +64,21 @@ export const SubCustomDragLayer = ({ parentRef, parent, currentLayout }) => {
     isDragging: monitor.isDragging(),
     delta: monitor.getDifferenceFromInitialOffset(),
   }));
+
+  let canvasWidth = 0;
+
+  if (parentRef.current) {
+    const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
+    if (realCanvas) {
+      const canvasBoundingRect = realCanvas.getBoundingClientRect();
+      canvasWidth = canvasBoundingRect.width;
+    }
+  }
+
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} currentLayout={currentLayout} />;
+        return <BoxDragPreview item={item} currentLayout={currentLayout} canvasWidth={canvasWidth} />;
       default:
         return null;
     }
@@ -76,7 +89,7 @@ export const SubCustomDragLayer = ({ parentRef, parent, currentLayout }) => {
 
   return (
     <div style={layerStyles} className="sub-custom-drag-layer">
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent, currentLayout)}>
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent, currentLayout, canvasWidth)}>
         {renderItem()}
       </div>
     </div>

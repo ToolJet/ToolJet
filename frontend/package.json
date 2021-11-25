@@ -48,6 +48,7 @@
     "react-dom": "^16.14.0",
     "react-dropzone": "^11.4.2",
     "react-easy-sort": "^0.2.1",
+    "react-google-login": "^5.2.2",
     "react-hot-toast": "^2.1.1",
     "react-json-view": "^1.21.3",
     "react-lazyload": "^3.2.0",

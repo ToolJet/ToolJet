@@ -17,7 +17,7 @@ appService
       const tracingOrigins = ['localhost', /^\//];
       const releaseVersion = window.public_config.RELEASE_VERSION
         ? `tooljet-${window.public_config.RELEASE_VERSION}`
-        : 'toojet';
+        : 'tooljet';
 
       if (tooljetServerUrl) tracingOrigins.push(tooljetServerUrl);
 
