@@ -22,7 +22,7 @@ describe('comment controller', () => {
   });
 
   it('should allow only authenticated users to list comments', async () => {
-    await request(app.getHttpServer()).get('/comment/1234/all').expect(401);
+    await request(app.getHttpServer()).get('/api/comments/1234/all').expect(401);
   });
 
   it('should list all comments in a thread', async () => {
@@ -47,24 +47,9 @@ describe('comment controller', () => {
     });
 
     const response = await request(app.getHttpServer())
-      .get(`/comment/${thread.id}/all`)
+      .get(`/api/comments/${thread.id}/all`)
       .set('Authorization', authHeaderForUser(user));
 
     expect(response.statusCode).toBe(200);
-  });
-
-  it('should list all comments in an organization', async () => {
-    const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const { user } = userData;
-
-    const response = await request(app.getHttpServer())
-      .get(`/comment/${user.organization.id}/all`)
-      .set('Authorization', authHeaderForUser(user));
-
-    expect(response.statusCode).toBe(200);
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 });
