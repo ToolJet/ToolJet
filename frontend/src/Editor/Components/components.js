@@ -1324,7 +1324,7 @@ export const componentTypes = [
     description: 'Code Editor',
     component: 'CodeEditor',
     defaultSize: {
-      width: 270,
+      width: 15,
       height: 120,
     },
     others: {
