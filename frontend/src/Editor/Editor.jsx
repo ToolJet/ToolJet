@@ -326,16 +326,9 @@ class Editor extends React.Component {
     );
 
     if (!appDefinition) return;
-    this.setState(
-      {
-        appDefinition,
-      },
-      () => {
-        toast('Undo action performed!', {
-          icon: '✨',
-        });
-      }
-    );
+    this.setState({
+      appDefinition,
+    });
   };
 
   handleRedo = () => {
@@ -344,16 +337,9 @@ class Editor extends React.Component {
       this.currentVersionChanges[++this.currentVersion].redo
     );
     if (!appDefinition) return;
-    this.setState(
-      {
-        appDefinition,
-      },
-      () => {
-        toast('Redo action performed!', {
-          icon: '✨',
-        });
-      }
-    );
+    this.setState({
+      appDefinition,
+    });
   };
 
   appDefinitionChanged = (newDefinition) => {
