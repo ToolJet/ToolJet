@@ -22,6 +22,10 @@ export const Code = ({
 
   const options = paramMeta.options || {};
 
+  const getfieldName = React.useMemo(() => {
+    return param.name;
+  }, [param]);
+
   return (
     <div className={`mb-2 field ${options.className}`}>
       <ToolTip label={displayName} meta={paramMeta} />
@@ -34,7 +38,7 @@ export const Code = ({
         lineWrapping={true}
         className={options.className}
         onChange={(value) => handleCodeChanged(value)}
-        componentName={`widget/${componentName}`}
+        componentName={`widget/${componentName}::${getfieldName}`}
       />
     </div>
   );
