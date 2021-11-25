@@ -30,6 +30,7 @@ import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
 import toast from 'react-hot-toast';
+import { cloneDeep, isEmpty } from 'lodash';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
 
 setAutoFreeze(false);
@@ -88,7 +89,6 @@ class Editor extends React.Component {
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
       socket: null,
-      removedComponents: [],
     };
   }
 
@@ -165,6 +165,8 @@ class Editor extends React.Component {
     this.currentVersion = -1;
     this.currentVersionChanges = {};
     this.noOfVersionsSupported = 100;
+    this.canUndo = true;
+    this.canRedo = false;
   };
 
   fetchDataSources = () => {
@@ -309,37 +311,51 @@ class Editor extends React.Component {
   };
 
   handleAddPatch = (patches, inversePatches) => {
+    if (isEmpty(patches) && isEmpty(inversePatches)) return;
     this.currentVersion++;
     this.currentVersionChanges[this.currentVersion] = {
       redo: patches,
       undo: inversePatches,
     };
 
+    this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion);
+
     delete this.currentVersionChanges[this.currentVersion + 1];
     delete this.currentVersionChanges[this.currentVersion - this.noOfVersionsSupported];
   };
 
   handleUndo = () => {
-    const appDefinition = applyPatches(
-      this.state.appDefinition,
-      this.currentVersionChanges[this.currentVersion--].undo
-    );
+    if (this.canUndo) {
+      const appDefinition = applyPatches(
+        this.state.appDefinition,
+        this.currentVersionChanges[this.currentVersion--].undo
+      );
 
-    if (!appDefinition) return;
-    this.setState({
-      appDefinition,
-    });
+      this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion);
+      this.canRedo = true;
+
+      if (!appDefinition) return;
+      this.setState({
+        appDefinition,
+      });
+    }
   };
 
   handleRedo = () => {
-    const appDefinition = applyPatches(
-      this.state.appDefinition,
-      this.currentVersionChanges[++this.currentVersion].redo
-    );
-    if (!appDefinition) return;
-    this.setState({
-      appDefinition,
-    });
+    if (this.canRedo) {
+      const appDefinition = applyPatches(
+        this.state.appDefinition,
+        this.currentVersionChanges[++this.currentVersion].redo
+      );
+
+      this.canUndo = true;
+      this.canRedo = this.currentVersionChanges.hasOwnProperty(this.currentVersion + 1);
+
+      if (!appDefinition) return;
+      this.setState({
+        appDefinition,
+      });
+    }
   };
 
   appDefinitionChanged = (newDefinition) => {
@@ -369,7 +385,7 @@ class Editor extends React.Component {
   };
 
   removeComponent = (component) => {
-    let newDefinition = this.state.appDefinition;
+    let newDefinition = cloneDeep(this.state.appDefinition);
     // Delete child components when parent is deleted
     const childComponents = Object.keys(newDefinition.components).filter(
       (key) => newDefinition.components[key].parent === component.id
