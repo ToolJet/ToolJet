@@ -903,8 +903,8 @@ body {
 }
 
 .jet-data-table:hover {
-  overflow-x: scroll;
-  overflow-y: scroll;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 .jet-data-table {
