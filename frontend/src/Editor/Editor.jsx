@@ -319,6 +319,7 @@ class Editor extends React.Component {
     };
 
     this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion);
+    this.canRedo = this.currentVersionChanges.hasOwnProperty(this.currentVersion + 1);
 
     delete this.currentVersionChanges[this.currentVersion + 1];
     delete this.currentVersionChanges[this.currentVersion - this.noOfVersionsSupported];
