@@ -15,7 +15,7 @@ export class OrganizationUsersService {
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
     private emailService: EmailService
-  ) { }
+  ) {}
 
   async findOne(id: string): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.findOne({ id: id });

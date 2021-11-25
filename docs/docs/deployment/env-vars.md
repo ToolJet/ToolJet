@@ -1,5 +1,5 @@
 ---
-sidebar_position: 8
+sidebar_position: 9
 ---
 
 # Environment variables
@@ -12,7 +12,7 @@ Both the ToolJet server and client requires some environment variables to start 
 
 | variable     | description                                                     |
 | ------------ | --------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.io ) |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
 
 #### Database configuration ( required )
 
@@ -114,7 +114,7 @@ This is used to set up for CSP headers and put trace info to be used with APM ve
 
 | variable           | description                                                 |
 | ------------------ | ----------------------------------------------------------- |
-| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.io ) |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
 
 #### RELEASE VERSION ( optional)
 
@@ -128,7 +128,7 @@ This is required when client is built separately.
 
 | variable           | description                                                 |
 | ------------------ | ----------------------------------------------------------- |
-| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.io ) |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
 
 
 #### Asset path ( optionally required )
@@ -138,4 +138,4 @@ This can be an absolute path, or relative to main HTML file.
 
 | variable           | description                                                   |
 | ------------------ | -----------------------------------------------------------   |
-| ASSET_PATH         | the asset path for the website ( eg: https://app.tooljet.io/) |
+| ASSET_PATH         | the asset path for the website ( eg: https://app.tooljet.com/) |

@@ -19,6 +19,13 @@
       "password": { "type": "string", "encrypted": true }
     }
   },
+  "defaults": {
+    "scheme": { "value": "https" },
+    "host": { "value": "localhost" },
+    "port": { "value": 9200 },
+    "username": { "value": "" },
+    "password": { "value": "" }
+  },
   "properties": {
     "host": {
       "$label": "Host",

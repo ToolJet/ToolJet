@@ -29,6 +29,10 @@
       "description": "Used by ToolJet server as the input secret to the application's key generator.",
       "value": ""
     },
+    "NODE_OPTIONS": {
+      "description": "Node options configured to increase node memory to support app build",
+      "value": "--max-old-space-size=4096"
+    },
     "SSO_GOOGLE_OAUTH2_CLIENT_ID": {
       "description": "Google OAuth2 client id to enable single sign-on",
       "value": ""
