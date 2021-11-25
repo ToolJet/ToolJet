@@ -9,7 +9,7 @@ import {
 } from '../test.helper';
 import { UsersService } from '../../src/services/users.service';
 import { INestApplication } from '@nestjs/common';
-import { getManager } from 'typeorm';
+import { getManager, In } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -164,17 +164,32 @@ describe('UsersService', () => {
       let groupPermissionIdsFromApp = (await service.appGroupPermissions(adminUser, app.id)).map(
         (x) => x.groupPermissionId
       );
-      const adminGroupPermissionIds = (await service.groupPermissions(adminUser))
-        .filter((x) => x.group == 'admin')
-        .map((x) => x.id);
 
-      expect(new Set(groupPermissionIdsFromApp)).toEqual(new Set(adminGroupPermissionIds));
+      let userGroupPermissionIds = (
+        await getManager().find(GroupPermission, {
+          where: {
+            group: In(['admin', 'all_users']),
+            organizationId: adminUser.organizationId,
+          },
+        })
+      ).map((gp) => gp.id);
+
+      expect(new Set(groupPermissionIdsFromApp)).toEqual(new Set(userGroupPermissionIds));
 
       groupPermissionIdsFromApp = (await service.appGroupPermissions(defaultUser, app.id)).map(
         (x) => x.groupPermissionId
       );
 
-      expect(groupPermissionIdsFromApp).toEqual([]);
+      userGroupPermissionIds = (
+        await getManager().find(GroupPermission, {
+          where: {
+            group: 'all_users',
+            organizationId: defaultUser.organizationId,
+          },
+        })
+      ).map((gp) => gp.id);
+
+      expect(groupPermissionIdsFromApp).toEqual(userGroupPermissionIds);
     });
   });
 
