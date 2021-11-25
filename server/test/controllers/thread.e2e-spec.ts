@@ -1,6 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createApplication, createUser, createNestAppInstance } from '../test.helper';
+import {
+  authHeaderForUser,
+  clearDB,
+  createApplication,
+  createUser,
+  createNestAppInstance,
+  createThread,
+  createApplicationVersion,
+} from '../test.helper';
 
 describe('thread controller', () => {
   let app: INestApplication;
@@ -14,33 +22,39 @@ describe('thread controller', () => {
   });
 
   it('should allow only authenticated users to list threads', async () => {
-    await request(app.getHttpServer()).get('/thread/1234/all').expect(401);
+    await request(app.getHttpServer()).get('/api/threads/1234/all').expect(401);
   });
 
   it('should list all threads in an application', async () => {
-    const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+    const userData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      role: 'admin',
+    });
     const application = await createApplication(app, {
-      name: 'App to clone',
+      name: 'App',
       user: userData.user,
     });
     const { user } = userData;
+    const version = await createApplicationVersion(app, application);
+    await createThread(app, {
+      appId: application.id,
+      x: 100,
+      y: 200,
+      userId: userData.user.id,
+      organizationId: user.organization.id,
+      appVersionsId: version.id,
+    });
 
     const response = await request(app.getHttpServer())
-      .get(`/thread/${application.id}/all`)
+      .get(`/api/threads/${application.id}/all`)
+      .query({ appVersionsId: version.id })
       .set('Authorization', authHeaderForUser(user));
 
     expect(response.statusCode).toBe(200);
-  });
-
-  it('should list all threads in an organization', async () => {
-    const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-    const { user } = userData;
-
-    const response = await request(app.getHttpServer())
-      .get(`/thread/${user.organization.id}/all`)
-      .set('Authorization', authHeaderForUser(user));
-
-    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(Object.keys(response.body[0]).sort()).toEqual(
+      ['id', 'x', 'y', 'appId', 'appVersionsId', 'userId', 'organizationId', 'isResolved', 'user'].sort()
+    );
   });
 
   afterAll(async () => {
