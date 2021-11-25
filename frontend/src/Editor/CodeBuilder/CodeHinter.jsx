@@ -122,26 +122,26 @@ export function CodeHinter({
 
   const [isOpen, setIsOpen] = React.useState(false);
 
-  const [portalOptions, setPortalOptions] = React.useState({});
-
-  const handleToggle = (bool) => {
+  const handleToggle = () => {
     if (!isOpen) {
-      setIsOpen(bool);
+      setIsOpen(true);
     }
 
-    setPortalOptions({ componentName: componentName });
-  };
+    return new Promise((resolve) => {
+      const element = document.getElementsByClassName('portal-container');
+      if (element) {
+        const checkPortalExits = element[0]?.classList.contains(componentName);
 
-  const portalOpt = {
-    lineNumbers: true,
-    lineWrapping: true,
-    singleLine: true,
-    mode: mode || 'handlebars',
-    tabSize: 2,
-    theme: 'duotone-light',
-    readOnly: false,
-    highlightSelectionMatches: true,
-    placeholder,
+        if (checkPortalExits === false) {
+          element[0].style.border = '2px solid red';
+          const parent = element[0].parentNode;
+          parent.removeChild(element[0]);
+          setIsOpen(false);
+
+          resolve();
+        }
+      }
+    }).then(() => setIsOpen(true));
   };
 
   return (
@@ -166,19 +166,34 @@ export function CodeHinter({
           onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
           onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
           options={options}
-          // lineWrapping={true}
-          // viewportMargin={Infinity}
         />
       </div>
 
       {enablePreview && !isOpen && getPreview()}
       <React.Fragment>
         {isOpen && (
-          <Portal className="modal-portal-wrapper" isOpen={isOpen} trigger={setIsOpen} dependencies={portalOptions}>
-            {/* <div className="w-100">
-              <code className="mx-2 text-info">{componentName}</code>
-            </div> */}
-            <CodeMirror options={portalOpt} />
+          <Portal className="modal-portal-wrapper" isOpen={isOpen} trigger={setIsOpen} componentName={componentName}>
+            <div className="editor-container" style={{ overflow: 'auto' }} key={suggestions.length}>
+              <CodeMirror
+                value={initialValue}
+                realState={realState}
+                scrollbarStyle={null}
+                height={300}
+                onFocus={() => setFocused(true)}
+                onBlur={(editor) => {
+                  const value = editor.getValue();
+                  onChange(value);
+                  setFocused(false);
+                }}
+                onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
+                onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+                options={options}
+                lineWrapping={true}
+                viewportMargin={Infinity}
+              />
+            </div>
+            <div className="preview-container"></div>
+            {enablePreview && getPreview()}
           </Portal>
         )}
       </React.Fragment>
@@ -202,7 +217,7 @@ const PopupIcon = ({ callback }) => {
           height="12"
           onClick={(e) => {
             e.stopPropagation();
-            callback(true);
+            callback();
           }}
         />
       </OverlayTrigger>

@@ -2546,33 +2546,37 @@ input[type='text'] {
   position: fixed;
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 40%;
   transform: translate(-50%, -50%);
-  border: 1px solid red;
   height: 500px;
   width: 500px;
   padding: 0;
-
+  
   .modal-body {
     width: 500px!important;
-    height: 400px!important;
+    height: 300px!important;
+    padding: 0px!important
   }
-
+  
   .modal-dialog {
     margin-top: 4%;
   }
-
+  
   .modal-header {
     padding: 0;
     font-size: 14px;
   }
-
-  .CodeMirror {
-    height: 100%;
-    width: 100%;
-    border-radius: 0;
-    margin: 0;
+  
+  
+  .editor-container{
+    padding: 0px;    
+    .CodeMirror {
+      border-radius: 0;
+      margin: 0;
+      width: 100%!important;
+    }
   }
+
 }
 
 
@@ -2586,4 +2590,8 @@ input[type='text'] {
   border-bottom: 1px solid #0000000d;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
+}
+
+.CodeMirror-hints {
+  z-index: 999990000!important;
 }

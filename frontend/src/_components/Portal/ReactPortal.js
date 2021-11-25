@@ -1,25 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-export function ReactPortal({ children, parent, className }) {
+export function ReactPortal({ children, parent, className, componentName }) {
   const el = React.useMemo(() => document.createElement('div'), []);
 
   React.useEffect(() => {
-    const checkPortalExits = document.getElementsByClassName('portal-container');
-    if (checkPortalExits.length > 0) {
-      checkPortalExits[0].remove();
-    }
-  }, []);
-
-  React.useEffect(() => {
+    console.log('portalOptions', componentName);
     const target = parent && parent.appendChild ? parent : document.body;
-    const classList = ['portal-container'];
+    const classList = ['portal-container', componentName];
     if (className) className.split(' ').forEach((item) => classList.push(item));
     classList.forEach((item) => el.classList.add(item));
     target.appendChild(el);
     return () => {
       el.remove();
     };
-  }, [el, parent, className]);
+  }, [el, parent, className, componentName]);
+
   return ReactDOM.createPortal(children, el);
 }

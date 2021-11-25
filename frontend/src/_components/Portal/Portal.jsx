@@ -2,17 +2,18 @@ import React from 'react';
 import { ReactPortal } from './ReactPortal.js';
 
 const Portal = ({ children, ...restProps }) => {
-  const { isOpen, trigger, styles, className, dependencies } = restProps;
+  const { isOpen, trigger, styles, className, componentName } = restProps;
+
+  const [name, setName] = React.useState(componentName);
+
   const handleClose = (e) => {
     e.stopPropagation();
     trigger(false);
   };
 
-  const [name, setName] = React.useState(dependencies.componentName);
-
   React.useEffect(() => {
-    setName(dependencies.componentName);
-  }, [dependencies]);
+    setName(componentName);
+  }, [componentName]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -30,6 +31,7 @@ const Portal = ({ children, ...restProps }) => {
     background: 'transparent',
     backgroundColor: darkMode ? '#232E3C' : '#fff',
     borderRadius: '0px',
+    width: '500px',
   };
 
   return (
@@ -53,9 +55,9 @@ const Container = ({ children, ...restProps }) => {
   return <ReactPortal {...restProps}>{children}</ReactPortal>;
 };
 
-const Modal = ({ children, handleClose, portalStyles, darkMode, styles, componentName }) => {
+const Modal = ({ children, handleClose, portalStyles, styles, componentName }) => {
   return (
-    <div className="modal-dialog" role="document">
+    <div className="modal-dialog shadow bg-black rounded" role="document">
       <div className="modal-content" style={{ ...portalStyles, ...styles }}>
         <div className="portal-header d-flex" style={{ ...portalStyles }}>
           <div className="w-100">
@@ -71,10 +73,7 @@ const Modal = ({ children, handleClose, portalStyles, darkMode, styles, componen
             />
           </button>
         </div>
-        <div
-          className="modal-body p-0"
-          style={{ background: 'transparent', backgroundColor: darkMode ? '#272822' : '#fff', height: 210 }}
-        >
+        <div className="modal-body" style={{ background: 'transparent', height: 300 }}>
           {children}
         </div>
       </div>
