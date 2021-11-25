@@ -36,6 +36,12 @@ export class UsersService {
     });
   }
 
+  async findBySSOId(ssoId: string): Promise<User> {
+    return this.usersRepository.findOne({
+      where: { ssoId },
+    });
+  }
+
   async findByPasswordResetToken(token: string): Promise<User> {
     return this.usersRepository.findOne({
       where: { forgotPasswordToken: token },
@@ -46,7 +52,7 @@ export class UsersService {
     const password = uuid.v4();
     const invitationToken = uuid.v4();
 
-    const { email, firstName, lastName } = userParams;
+    const { email, firstName, lastName, ssoId } = userParams;
     let user: User;
 
     await getManager().transaction(async (manager) => {
@@ -56,6 +62,7 @@ export class UsersService {
         lastName,
         password,
         invitationToken,
+        ssoId,
         organizationId: organization.id,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -81,6 +88,29 @@ export class UsersService {
     });
 
     return user;
+  }
+
+  async findOrCreateBySSOIdOrEmail(
+    ssoId: string,
+    userParams: any,
+    organization: Organization
+  ): Promise<[User, boolean]> {
+    let user: User;
+    let newUserCreated = false;
+    try {
+      user = await this.findBySSOId(ssoId);
+      if (!user) user = await this.findByEmail(userParams.email);
+    } catch (e) {
+      console.log(e);
+    }
+
+    if (user === undefined) {
+      const groups = ['all_users'];
+      user = await this.create({ ...userParams, ...{ ssoId } }, organization, groups);
+      newUserCreated = true;
+    }
+
+    return [user, newUserCreated];
   }
 
   async setupAccountFromInvitationToken(params: any) {
@@ -239,7 +269,10 @@ export class UsersService {
 
       case 'Thread':
       case 'Comment':
-        return this.canAnyGroupPerformAction('update', await this.appGroupPermissions(user, resourceId));
+        return await this.canUserPerformActionOnApp(user, 'update', resourceId);
+
+      case 'Folder':
+        return await this.canUserPerformActionOnFolder(user, action, resourceId);
 
       default:
         return false;
@@ -264,6 +297,21 @@ export class UsersService {
           this.canAnyGroupPerformAction('delete', await this.appGroupPermissions(user, appId)) ||
           this.canAnyGroupPerformAction('appDelete', await this.groupPermissions(user)) ||
           (await this.isUserOwnerOfApp(user, appId));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnFolder(user: User, action: string, folderId?: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('folderCreate', await this.groupPermissions(user));
         break;
       default:
         permissionGrant = false;

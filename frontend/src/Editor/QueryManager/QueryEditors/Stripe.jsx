@@ -3,6 +3,7 @@ import 'codemirror/theme/duotone-light.css';
 import DOMPurify from 'dompurify';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { openapiService } from '@/_services';
+import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
 const operationColorMapping = {
   get: 'azure',
@@ -186,21 +187,23 @@ class Stripe extends React.Component {
                   <div>
                     <h5 className="text-muted">PATH</h5>
                     {pathParams.map((param) => (
-                      <div className="input-group" key={param.name}>
-                        <input
-                          type="text"
-                          value={param.name}
-                          className="form-control form-control-sm"
-                          placeholder="key"
-                        />
-                        <input
-                          type="text"
-                          value={this.state.options.params.path[param.name]}
-                          className="form-control form-control-sm"
-                          placeholder="value"
-                          onChange={(e) => this.changeParam('path', param.name, e.target.value)}
-                        />
-                        <span className="input-group-text" role="button">
+                      <div className="row input-group my-1" key={param.name}>
+                        <div className="col-4 field">
+                          <input type="text" value={param.name} className="form-control" placeholder="key" />
+                        </div>
+                        <div className="col-6 field">
+                          <CodeHinter
+                            currentState={this.props.currentState}
+                            initialValue={this.state.options.params.path[param.name]}
+                            mode="text"
+                            placeholder={'value'}
+                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                            lineNumbers={false}
+                            className="form-control codehinter-query-editor-input"
+                            onChange={(value) => this.changeParam('path', param.name, value)}
+                          />
+                        </div>
+                        <span className="btn-sm col-2" role="button">
                           x
                         </span>
                       </div>
@@ -212,22 +215,23 @@ class Stripe extends React.Component {
                   <div>
                     <h5 className="text-muted">QUERY</h5>
                     {queryParams.map((param) => (
-                      <div className="input-group" key={param.name}>
-                        <input
-                          type="text"
-                          value={param.name}
-                          className="form-control form-control-sm"
-                          placeholder="key"
-                          disabled
-                        />
-                        <input
-                          type="text"
-                          value={this.state.options.params.query[param.name]}
-                          className="form-control form-control-sm"
-                          placeholder="value"
-                          onChange={(e) => this.changeParam('query', param.name, e.target.value)}
-                        />
-                        <span className="input-group-text" role="button">
+                      <div className="row input-group my-1" key={param.name}>
+                        <div className="col-4 field">
+                          <input type="text" value={param.name} className="form-control" placeholder="key" disabled />
+                        </div>
+                        <div className="col-6 field">
+                          <CodeHinter
+                            currentState={this.props.currentState}
+                            initialValue={this.state.options.params.query[param.name]}
+                            mode="text"
+                            placeholder={'value'}
+                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                            lineNumbers={false}
+                            className="form-control codehinter-query-editor-input"
+                            onChange={(value) => this.changeParam('query', param.name, value)}
+                          />
+                        </div>
+                        <span className="btn-sm col-2" role="button">
                           x
                         </span>
                       </div>
@@ -239,22 +243,23 @@ class Stripe extends React.Component {
                   <div>
                     <h5 className="text-muted">REQUEST BODY</h5>
                     {Object.keys(requestBody.schema.properties).map((param) => (
-                      <div className="input-group" key={param.name}>
-                        <input
-                          type="text"
-                          value={param}
-                          className="form-control form-control-sm"
-                          placeholder="key"
-                          disabled
-                        />
-                        <input
-                          type="text"
-                          value={this.state.options.params.request[param.name]}
-                          className="form-control form-control-sm"
-                          placeholder="value"
-                          onChange={(e) => this.changeParam('request', param.name, e.target.value)}
-                        />
-                        <span className="input-group-text" role="button">
+                      <div className="row input-group my-1" key={param.name}>
+                        <div className="col-4 field">
+                          <input type="text" value={param} className="form-control" placeholder="key" disabled />
+                        </div>
+                        <div className="col-6 field">
+                          <CodeHinter
+                            currentState={this.props.currentState}
+                            initialValue={this.state.options.params.request[param.name]}
+                            mode="text"
+                            placeholder={'value'}
+                            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+                            lineNumbers={false}
+                            className="form-control codehinter-query-editor-input"
+                            onChange={(value) => this.changeParam('request', param.name, value)}
+                          />
+                        </div>
+                        <span className="btn-sm col-2" role="button">
                           x
                         </span>
                       </div>

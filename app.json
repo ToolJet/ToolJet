@@ -5,7 +5,7 @@
   "repository": "https://github.com/tooljet/tooljet",
   "logo": "https://app.tooljet.io/assets/images/logo.svg",
   "success_url": "/",
-  "scripts":{
+  "scripts": {
     "predeploy": "npm install --prefix server && npm run build --prefix server"
   },
   "env": {
@@ -28,6 +28,18 @@
     "SECRET_KEY_BASE": {
       "description": "Used by ToolJet server as the input secret to the application's key generator.",
       "value": ""
+    },
+    "NODE_OPTIONS": {
+      "description": "Node options configured to increase node memory to support app build",
+      "value": "--max-old-space-size=4096"
+    },
+    "SSO_GOOGLE_OAUTH2_CLIENT_ID": {
+      "description": "Google OAuth2 client id to enable single sign-on",
+      "value": ""
+    },
+    "SSO_DISABLE_SIGNUP": {
+      "description": "Disable sign-up via SSO",
+      "value": ""
     }
   },
   "formation": {
@@ -36,7 +48,9 @@
     }
   },
   "image": "heroku/nodejs",
-  "addons": ["heroku-postgresql"],
+  "addons": [
+    "heroku-postgresql"
+  ],
   "buildpacks": [
     {
       "url": "heroku/nodejs"

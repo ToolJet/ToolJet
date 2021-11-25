@@ -9,10 +9,11 @@ import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { CaslModule } from '../casl/casl.module';
 
 @Module({
   controllers: [FoldersController],
-  imports: [TypeOrmModule.forFeature([App, Folder, FolderApp, User, OrganizationUser, Organization])],
+  imports: [TypeOrmModule.forFeature([App, Folder, FolderApp, User, OrganizationUser, Organization]), CaslModule],
   providers: [FoldersService, UsersService],
 })
 export class FoldersModule {}

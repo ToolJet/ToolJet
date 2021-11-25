@@ -6,6 +6,8 @@ import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '../Editor/Components/components';
+import generateCSV from '@/_lib/generate-csv';
+import generateFile from '@/_lib/generate-file';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -193,6 +195,18 @@ function executeAction(_ref, event, mode) {
         const key = resolveReferences(event.key, _ref.state.currentState);
         const value = resolveReferences(event.value, _ref.state.currentState);
         localStorage.setItem(key, value);
+
+        return Promise.resolve();
+      }
+
+      case 'generate-file': {
+        // const fileType = event.fileType;
+        const data = resolveReferences(event.data, _ref.state.currentState) ?? [];
+        const fileName = resolveReferences(event.fileName, _ref.state.currentState) ?? 'data.txt';
+
+        const csv = generateCSV(data);
+        generateFile(fileName, csv);
+        return Promise.resolve();
       }
     }
   }

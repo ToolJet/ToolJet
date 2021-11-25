@@ -2,10 +2,9 @@ import '@/_styles/left-sidebar.scss';
 
 import React, { useState } from 'react';
 
-import { LeftSidebarItem } from './sidebar-item';
-import { LeftSidebarInspector } from './sidebar-inspector';
-import { LeftSidebarDataSources } from './sidebar-datasources';
-import { LeftSidebarZoom } from './sidebar-zoom';
+import { LeftSidebarItem } from './SidebarItem';
+import { LeftSidebarInspector } from './SidebarInspector';
+import { LeftSidebarDataSources } from './SidebarDatasources';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
@@ -21,7 +20,6 @@ export const LeftSidebar = ({
   components,
   queries,
   toggleComments,
-  onZoomChanged,
   dataSources = [],
   dataSourcesChanged,
   errorLogs,
@@ -55,7 +53,7 @@ export const LeftSidebar = ({
         onCancel={() => setShowLeaveDialog(false)}
       />
       <div className="left-sidebar-stack-bottom">
-        <LeftSidebarZoom onZoomChanged={onZoomChanged} />
+        {/* <LeftSidebarZoom onZoomChanged={onZoomChanged} /> */}
         <div className="left-sidebar-item no-border">
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>

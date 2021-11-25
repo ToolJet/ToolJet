@@ -54,6 +54,7 @@
     "class-validator": "^0.13.1",
     "dotenv": "^10.0.0",
     "futoin-hkdf": "^1.4.2",
+    "google-auth-library": "^7.9.2",
     "got": "^11.8.2",
     "helmet": "^4.6.0",
     "humps": "^2.0.1",
