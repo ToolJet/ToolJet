@@ -363,7 +363,7 @@ export const componentTypes = [
     description: 'Password input field for forms',
     component: 'PasswordInput',
     defaultSize: {
-      width: 210,
+      width: 4,
       height: 30,
     },
     others: {
@@ -1285,7 +1285,7 @@ export const componentTypes = [
     displayName: 'Iframe',
     description: 'Display an Iframe',
     defaultSize: {
-      width: 560,
+      width: 10,
       height: 310,
     },
     component: 'IFrame',
@@ -1324,7 +1324,7 @@ export const componentTypes = [
     description: 'Code Editor',
     component: 'CodeEditor',
     defaultSize: {
-      width: 270,
+      width: 15,
       height: 120,
     },
     others: {

@@ -14,7 +14,7 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from 'src/services/data_sources.service';
 import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
-import { ThreadRepository } from '@repositories/thread.repository';
+import { ThreadRepository } from 'src/repositories/thread.repository';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
@@ -333,9 +333,8 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
   );
 }
 
-export async function createThread(nestInstance, { appId, x, y, userId, organizationId, appVersionsId }: any) {
-  let threadRepository: ThreadRepository;
-  threadRepository = nestInstance.get('ThreadRepository');
+export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {
+  const threadRepository = new ThreadRepository();
 
   return await threadRepository.createThread(
     {
