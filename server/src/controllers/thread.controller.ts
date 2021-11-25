@@ -1,7 +1,6 @@
 import {
   Controller,
   Request,
-  Req,
   Post,
   Body,
   Get,
@@ -43,13 +42,6 @@ export class ThreadController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const threads = await this.threadService.getThreads(appId, req.user.organization.id, query.appVersionsId);
-    return threads;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('/:orgId/all')
-  public async getOrganizationThreads(@Param('orgId') orgId: string, @Req() req: Request): Promise<Thread[]> {
-    const threads = await this.threadService.getOrganizationThreads(orgId);
     return threads;
   }
 
