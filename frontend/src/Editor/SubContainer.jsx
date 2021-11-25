@@ -7,12 +7,6 @@ import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
 
-const styles = {
-  width: '100%',
-  height: '100%',
-  position: 'absolute',
-};
-
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
     (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
@@ -35,11 +29,20 @@ export const SubContainer = ({
   parentRef,
   configHandleClicked,
   deviceWindowWidth,
-  scaleValue,
   selectedComponent,
   currentLayout,
   removeComponent,
+  darkMode,
+  containerCanvasWidth
 }) => {
+
+  const [currentParentRef, setParentRef] = useState(parentRef);
+
+  useEffect(() => {
+    setParentRef(parentRef);
+  }, [parentRef]);
+
+
   zoomLevel = zoomLevel || 1;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -119,6 +122,14 @@ export const SubContainer = ({
     setIsDragging(draggingState);
   }, [draggingState]);
 
+  function convertXToPercentage(x, canvasWidth) {
+    return (x * 100) / canvasWidth;
+  }
+
+  function convertXFromPercentage(x, canvasWidth) {
+    return (x * canvasWidth) / 100;
+  }
+
   const [, drop] = useDrop(
     () => ({
       accept: ItemTypes.BOX,
@@ -139,12 +150,14 @@ export const SubContainer = ({
         if (id) {
           const delta = monitor.getDifferenceFromInitialOffset();
           componentData = item.component;
-          left = Math.round(currentLayoutOptions.left + delta.x);
+          left = Math.round(convertXFromPercentage(currentLayoutOptions.left, canvasBoundingRect.width) + delta.x);
           top = Math.round(currentLayoutOptions.top + delta.y);
 
           if (snapToGrid) {
-            [left, top] = doSnapToGrid(left, top);
+            [left, top] = doSnapToGrid(canvasBoundingRect.width, left, top);
           }
+
+          left = convertXToPercentage(left, canvasBoundingRect.width);
 
           let newBoxes = {
             ...boxes,
@@ -180,8 +193,9 @@ export const SubContainer = ({
           id = uuidv4();
         }
 
+        const subContainerWidth = canvasBoundingRect.width;
         if (snapToGrid) {
-          [left, top] = doSnapToGrid(left, top);
+          [left, top] = doSnapToGrid(subContainerWidth, left, top);
         }
 
         if (item.currentLayout === 'mobile') {
@@ -189,16 +203,21 @@ export const SubContainer = ({
           componentData.definition.others.showOnMobile.value = true;
         }
 
+        // convert the left offset to percentage
+        left = (left * 100) / subContainerWidth;
+
+        const width = componentMeta.defaultSize.width * 100 / 43;
+
         setBoxes({
           ...boxes,
           [id]: {
             component: componentData,
-            parent: parent,
+            parent: parentRef.current.id,
             layouts: {
               [item.currentLayout]: {
                 top: top,
                 left: left,
-                width: componentMeta.defaultSize.width,
+                width: width,
                 height: componentMeta.defaultSize.height,
               },
             },
@@ -210,6 +229,57 @@ export const SubContainer = ({
     }),
     [moveBox]
   );
+
+
+  function getContainerCanvasWidth() {
+    if (containerCanvasWidth !== undefined) {
+      return containerCanvasWidth;
+    }
+    let width = 0;
+    if (parentRef.current) {
+      const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
+      if (realCanvas) {
+        const canvasBoundingRect = realCanvas.getBoundingClientRect();
+        width = canvasBoundingRect.width;
+      }
+    }
+
+    return width;
+  }
+
+  function onDragStop(e, componentId, direction, currentLayout) {
+    const id = componentId ? componentId : uuidv4();
+
+    // Get the width of the canvas
+    const canvasWidth = getContainerCanvasWidth();
+    const nodeBounds = direction.node.getBoundingClientRect();
+
+    const canvasBounds = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+
+    // Computing the left offset
+    const leftOffset = nodeBounds.x - canvasBounds.x;
+    const left = convertXToPercentage(leftOffset, canvasWidth);
+
+    // Computing the top offset
+    const top = nodeBounds.y - canvasBounds.y;
+
+    let newBoxes = {
+      ...boxes,
+      [id]: {
+        ...boxes[id],
+        layouts: {
+          ...boxes[id]['layouts'],
+          [currentLayout]: {
+            ...boxes[id]['layouts'][currentLayout],
+            top: top,
+            left: left,
+          },
+        },
+      },
+    };
+
+    setBoxes(newBoxes);
+  }
 
   function onResizeStop(id, e, direction, ref, d, position) {
     const deltaWidth = d.width;
@@ -226,10 +296,13 @@ export const SubContainer = ({
 
     let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
-    top = y;
-    left = x;
+    const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    const subContainerWidth = canvasBoundingRect.width;
 
-    width = width + deltaWidth;
+    top = y;
+    left = (x * 100) / subContainerWidth;
+
+    width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
 
     let newBoxes = {
@@ -275,8 +348,15 @@ export const SubContainer = ({
     }
   }
 
+  const styles = {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
+  };
+
   return (
-    <div ref={drop} style={styles} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
+    <div ref={drop} style={styles} id={`canvas-${parent}`} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
       {Object.keys(childComponents).map((key) => (
         <DraggableBox
           onComponentClick={onComponentClick}
@@ -286,20 +366,41 @@ export const SubContainer = ({
           key={key}
           currentState={currentState}
           onResizeStop={onResizeStop}
+          onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
           {...boxes[key]}
           mode={mode}
           resizingStatusChanged={(status) => setIsResizing(status)}
+          draggingStatusChanged={(status) => setIsDragging(status)}
           inCanvas={true}
           zoomLevel={zoomLevel}
           configHandleClicked={configHandleClicked}
           currentLayout={currentLayout}
-          scaleValue={scaleValue}
           selectedComponent={selectedComponent}
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
           removeComponent={removeComponent}
+          canvasWidth={getContainerCanvasWidth()}
+          containerProps={{
+            mode,
+            snapToGrid,
+            onComponentClick,
+            onEvent,
+            appDefinition,
+            appDefinitionChanged,
+            currentState,
+            onComponentOptionChanged,
+            onComponentOptionsChanged,
+            appLoading,
+            zoomLevel,
+            configHandleClicked,
+            removeComponent,
+            currentLayout,
+            deviceWindowWidth,
+            selectedComponent,
+            darkMode,
+          }}
         />
       ))}
 

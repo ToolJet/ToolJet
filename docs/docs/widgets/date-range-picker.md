@@ -1,7 +1,3 @@
----
-sidebar_position: 4
----
-
 # Date-range picker
 
 The date-range picker widget allows users to select a range of dates.

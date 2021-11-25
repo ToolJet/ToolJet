@@ -9,7 +9,7 @@ WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Fix for heap limit allocation issue
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # install app dependencies
 COPY ./frontend/package.json ./frontend/package-lock.json  ./
