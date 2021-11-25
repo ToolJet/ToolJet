@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { groupPermissionService } from '../_services/groupPermission.service';
 import 'react-toastify/dist/ReactToastify.css';
@@ -327,32 +328,26 @@ class ManageGroupPermissionResources extends React.Component {
           <div className="page-body">
             <div className="container-xl">
               <div className="card">
-                <ul className="nav nav-tabs">
-                  <li className="nav-item">
-                    <a
-                      className={`nav-link ${currentTab === 'apps' ? 'active' : ''}`}
-                      onClick={() => this.setState({ currentTab: 'apps' })}
-                    >
-                      Apps
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className={`nav-link ${currentTab === 'users' ? 'active' : ''}`}
-                      onClick={() => this.setState({ currentTab: 'users' })}
-                    >
-                      Users
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className={`nav-link ${currentTab === 'permissions' ? 'active' : ''}`}
-                      onClick={() => this.setState({ currentTab: 'permissions' })}
-                    >
-                      Permissions
-                    </a>
-                  </li>
-                </ul>
+                <nav className="nav nav-tabs">
+                  <a
+                    onClick={() => this.setState({ currentTab: 'apps' })}
+                    className={cx('nav-item nav-link', { active: currentTab === 'apps' })}
+                  >
+                    Apps
+                  </a>
+                  <a
+                    onClick={() => this.setState({ currentTab: 'users' })}
+                    className={cx('nav-item nav-link', { active: currentTab === 'users' })}
+                  >
+                    Users
+                  </a>
+                  <a
+                    onClick={() => this.setState({ currentTab: 'permissions' })}
+                    className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
+                  >
+                    Permissions
+                  </a>
+                </nav>
                 <div className="card-body">
                   <div className="tab-content">
                     {/* Apps Tab */}
@@ -568,42 +563,67 @@ class ManageGroupPermissionResources extends React.Component {
                                   </td>
                                 </tr>
                               ) : (
-                                <tr>
-                                  <td>Apps</td>
-                                  <td className="text-muted">
-                                    <div>
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          onChange={() => {
-                                            this.updateGroupPermission(groupPermission.id, {
-                                              app_create: !groupPermission.app_create,
-                                            });
-                                          }}
-                                          checked={groupPermission.app_create}
-                                          disabled={groupPermission.group === 'admin'}
-                                        />
-                                        <span className="form-check-label">Create</span>
-                                      </label>
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          onChange={() => {
-                                            this.updateGroupPermission(groupPermission.id, {
-                                              app_delete: !groupPermission.app_delete,
-                                            });
-                                          }}
-                                          checked={groupPermission.app_delete}
-                                          disabled={groupPermission.group === 'admin'}
-                                        />
-                                        <span className="form-check-label">Delete</span>
-                                      </label>
-                                    </div>
-                                  </td>
-                                  <td></td>
-                                </tr>
+                                <>
+                                  <tr>
+                                    <td>Apps</td>
+                                    <td className="text-muted">
+                                      <div>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                app_create: !groupPermission.app_create,
+                                              });
+                                            }}
+                                            checked={groupPermission.app_create}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Create</span>
+                                        </label>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                app_delete: !groupPermission.app_delete,
+                                              });
+                                            }}
+                                            checked={groupPermission.app_delete}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Delete</span>
+                                        </label>
+                                      </div>
+                                    </td>
+                                    <td></td>
+                                  </tr>
+
+                                  <tr>
+                                    <td>Folders</td>
+                                    <td className="text-muted">
+                                      <div>
+                                        <label className="form-check form-check-inline">
+                                          <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            onChange={() => {
+                                              this.updateGroupPermission(groupPermission.id, {
+                                                folder_create: !groupPermission.folder_create,
+                                              });
+                                            }}
+                                            checked={groupPermission.folder_create}
+                                            disabled={groupPermission.group === 'admin'}
+                                          />
+                                          <span className="form-check-label">Create</span>
+                                        </label>
+                                      </div>
+                                    </td>
+                                    <td></td>
+                                  </tr>
+                                </>
                               )}
                             </tbody>
                           </table>

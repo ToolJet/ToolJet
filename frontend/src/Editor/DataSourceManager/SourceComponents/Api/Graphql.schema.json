@@ -20,6 +20,11 @@
     },
     "customTesting": true
   },
+  "defaults": {
+    "url": { "value": "" },
+    "headers": { "value": [["", ""]] },
+    "url_params": { "value": [["", ""]] }
+  },
   "properties": {
     "url": {
       "$label": "URL",

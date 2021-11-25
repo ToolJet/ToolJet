@@ -27,3 +27,4 @@ Some of the actions that ToolJet Support are
    Close modal | Close any modal that you've added if its already open          |
    Copy to clipboard | Copy any available text that you see on the application to clipboard          |
    Set localStorage | Set a key and corresponding value to localStorage          |
+   Generate file | Construct file using data available in your application and let the user download it          |

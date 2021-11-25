@@ -99,7 +99,7 @@ class Restapi extends React.Component {
                 />
               </div>
 
-              <div className="col" style={{ display: 'flex' }}>
+              <div className="col field" style={{ display: 'flex' }}>
                 {dataSourceURL && (
                   <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
@@ -123,6 +123,7 @@ class Restapi extends React.Component {
             currentState={this.props.currentState}
             onChange={this.handleChange}
             removeKeyValuePair={this.removeKeyValuePair}
+            darkMode={this.props.darkMode}
           />
         </div>
       </div>

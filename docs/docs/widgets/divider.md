@@ -1,7 +1,3 @@
----
-sidebar_position: 6
----
-
 # Divider
 
 Divider widget is used to add separator between components. 
