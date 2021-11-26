@@ -34,18 +34,6 @@ export function CodeHinter({
   lineWrapping,
   componentName = null,
 }) {
-  const options = {
-    lineNumbers: lineNumbers,
-    lineWrapping: lineWrapping,
-    singleLine: true,
-    mode: mode || 'handlebars',
-    tabSize: 2,
-    theme: theme || 'default',
-    readOnly: false,
-    highlightSelectionMatches: true,
-    placeholder,
-  };
-
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
   const [isFocused, setFocused] = useState(false);
@@ -142,14 +130,23 @@ export function CodeHinter({
       }
     }).then(() => {
       setIsOpen(true);
-      handleClick();
+      forceUpdate();
     });
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
-  function handleClick() {
-    forceUpdate();
-  }
+  const options = {
+    lineNumbers: lineNumbers || false,
+    lineWrapping: lineWrapping || true,
+    singleLine: true,
+    mode: mode || 'handlebars',
+    tabSize: 2,
+    theme: theme || 'default',
+    readOnly: false,
+    highlightSelectionMatches: true,
+    placeholder,
+  };
+
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
       <CodeHinter.PopupIcon callback={handleToggle} />
@@ -158,52 +155,34 @@ export function CodeHinter({
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >
-        <CodeMirror
-          value={initialValue}
-          realState={realState}
-          scrollbarStyle={null}
-          height={height || 'auto'}
-          onFocus={() => setFocused(true)}
-          onBlur={(editor) => {
-            const value = editor.getValue();
-            onChange(value);
-            setFocused(false);
-          }}
-          onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
-          onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
-          options={options}
-        />
+        <CodeHinter.UsePortal
+          isOpen={isOpen}
+          callback={setIsOpen}
+          componentName={componentName}
+          key={suggestions.length}
+          theme={theme}
+          getPreview={enablePreview && getPreview}
+        >
+          <CodeMirror
+            value={initialValue}
+            realState={realState}
+            scrollbarStyle={null}
+            height={isOpen ? 300 : height || 'auto'}
+            onFocus={() => setFocused(true)}
+            onBlur={(editor) => {
+              const value = editor.getValue();
+              onChange(value);
+              setFocused(false);
+            }}
+            onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
+            onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+            options={options}
+            viewportMargin={Infinity}
+          />
+        </CodeHinter.UsePortal>
       </div>
 
       {enablePreview && !isOpen && getPreview()}
-      <React.Fragment>
-        {isOpen && (
-          <Portal className="modal-portal-wrapper" isOpen={isOpen} trigger={setIsOpen} componentName={componentName}>
-            <div className="editor-container" key={suggestions.length}>
-              <CodeMirror
-                value={initialValue}
-                realState={realState}
-                scrollbarStyle={null}
-                height={300}
-                onFocus={() => setFocused(true)}
-                onBlur={(editor) => {
-                  const value = editor.getValue();
-                  onChange(value);
-                  setFocused(false);
-                }}
-                onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
-                onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
-                options={options}
-                lineWrapping={true}
-                viewportMargin={Infinity}
-              />
-            </div>
-            <div style={{ backgroundColor: theme == 'monokai' ? '#232E3C' : '#fff' }} className="preview-container">
-              {enablePreview && getPreview()}
-            </div>
-          </Portal>
-        )}
-      </React.Fragment>
     </div>
   );
 }
@@ -232,4 +211,25 @@ const PopupIcon = ({ callback }) => {
   );
 };
 
+const UsePortal = ({ children, ...restProps }) => {
+  const { isOpen, callback, componentName, key, theme, getPreview } = restProps;
+  return (
+    <React.Fragment>
+      {isOpen ? (
+        <Portal className="modal-portal-wrapper" isOpen={isOpen} trigger={callback} componentName={componentName}>
+          <div className="editor-container" key={key}>
+            {children}
+          </div>
+          <div style={{ backgroundColor: theme == 'monokai' ? '#232E3C' : '#fff' }} className="preview-container">
+            {getPreview()}
+          </div>
+        </Portal>
+      ) : (
+        <>{children}</>
+      )}
+    </React.Fragment>
+  );
+};
+
 CodeHinter.PopupIcon = PopupIcon;
+CodeHinter.UsePortal = UsePortal;
