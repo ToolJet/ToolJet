@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/7828962/120930301-4ec3fe80-c70a-11eb-91b7-4bdbc31fd928.png" width="200" />
+  <img src="https://user-images.githubusercontent.com/7828962/143565889-f4c51c89-fc7e-471c-90b6-42ae697bca6b.png" width="200" />
   <br/>
-  Build and deploy internal tools
+  Low code framework for building business applications
 </p>
 
-ToolJet is an **open-source no-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources, such as databases (like PostgreSQL, MongoDB, Elasticsearch, etc), API endpoints (ToolJet supports importing OpenAPI spec & OAuth2 authorization), and external services (like Stripe, Slack, Google Sheets, Airtable) and use our pre-built UI widgets to build internal tools.
+ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources, such as databases (like PostgreSQL, MongoDB, Elasticsearch, etc), API endpoints (ToolJet supports importing OpenAPI spec & OAuth2 authorization), and external services (like Stripe, Slack, Google Sheets, Airtable) and use our pre-built UI widgets to build internal tools.
 
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/tooljet/tooljet-ce)
 ![GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)
@@ -20,7 +20,9 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/134216201-b2c65c48-547a-4e79-946c-60b7be54b70c.png" />
+<!--     <img src="https://user-images.githubusercontent.com/7828962/134216201-b2c65c48-547a-4e79-946c-60b7be54b70c.png" /> -->
+    <img src="https://user-images.githubusercontent.com/7828962/143566147-db65191f-a6ae-4e1e-8a59-43dcb3fc9043.png"/>
+
   </kbd>
 </p>
 
@@ -28,10 +30,11 @@ ToolJet is an **open-source no-code framework** to build and deploy internal too
 ## Features
 
 - Visual app builder with widgets, such as tables, charts, modals, buttons, dropdowns, and more.
+- All widgets are responsive
 - Mobile 📱 & desktop layouts 🖥
-- Dark mode 🌛
-- Connect to databases, APIs, and external services.
-- Deploy on-premise (supports docker, kubernetes, heroku, and more)
+- Dark mode
+- Connect to databases, cloud storages and APIs.
+- Deploy on-premise (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
 - Granular access control on organization-level and app-level.
 - Write JS code almost anywhere in the builder.
 - Query editors for all supported data sources.
@@ -52,7 +55,8 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
 
 ## Examples 
 
-[Building a GitHub contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
+[GitHub contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
+[Cryptocurrency dashboard using ToolJet](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)<br>
 
 ## Documentation
 Documentation is available at https://docs.tooljet.io.
