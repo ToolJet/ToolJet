@@ -162,6 +162,7 @@ export function CodeHinter({
           key={suggestions.length}
           theme={theme}
           getPreview={enablePreview && getPreview}
+          height={height}
         >
           <CodeMirror
             value={initialValue}
@@ -212,21 +213,21 @@ const PopupIcon = ({ callback }) => {
 };
 
 const UsePortal = ({ children, ...restProps }) => {
-  const { isOpen, callback, componentName, key, theme, getPreview } = restProps;
+  const { isOpen, callback, componentName, key, theme, getPreview, height } = restProps;
+
   return (
     <React.Fragment>
-      {isOpen ? (
+      {isOpen && (
         <Portal className="modal-portal-wrapper" isOpen={isOpen} trigger={callback} componentName={componentName}>
           <div className="editor-container" key={key}>
-            {children}
+            {React.cloneElement(children, { height: 300 })}
           </div>
           <div style={{ backgroundColor: theme == 'monokai' ? '#232E3C' : '#fff' }} className="preview-container">
             {getPreview()}
           </div>
         </Portal>
-      ) : (
-        <>{children}</>
       )}
+      <>{React.cloneElement(children, { height: height || 'auto' })}</>
     </React.Fragment>
   );
 };
