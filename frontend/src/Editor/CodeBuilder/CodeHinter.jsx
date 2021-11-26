@@ -168,7 +168,7 @@ export function CodeHinter({
             value={initialValue}
             realState={realState}
             scrollbarStyle={null}
-            height={isOpen ? 300 : height || 'auto'}
+            height={height || 'auto'}
             onFocus={() => setFocused(true)}
             onBlur={(editor) => {
               const value = editor.getValue();
@@ -213,7 +213,7 @@ const PopupIcon = ({ callback }) => {
 };
 
 const UsePortal = ({ children, ...restProps }) => {
-  const { isOpen, callback, componentName, key, theme, getPreview, height } = restProps;
+  const { isOpen, callback, componentName, key, theme, getPreview } = restProps;
 
   return (
     <React.Fragment>
@@ -227,7 +227,8 @@ const UsePortal = ({ children, ...restProps }) => {
           </div>
         </Portal>
       )}
-      <>{React.cloneElement(children, { height: height || 'auto' })}</>
+      {/* <>{React.cloneElement(children, { height: height || 'auto' })}</> */}
+      {children}
     </React.Fragment>
   );
 };
