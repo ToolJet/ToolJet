@@ -140,12 +140,10 @@ export function CodeHinter({
           resolve();
         }
       }
-    })
-      .then(() => {
-        setIsOpen(true);
-        handleClick();
-      })
-      .then(() => handleClick());
+    }).then(() => {
+      setIsOpen(true);
+      handleClick();
+    });
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
