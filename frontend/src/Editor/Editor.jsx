@@ -165,7 +165,7 @@ class Editor extends React.Component {
     this.currentVersion = -1;
     this.currentVersionChanges = {};
     this.noOfVersionsSupported = 100;
-    this.canUndo = true;
+    this.canUndo = false;
     this.canRedo = false;
   };
 
