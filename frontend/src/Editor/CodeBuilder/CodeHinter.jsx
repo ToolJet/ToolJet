@@ -191,7 +191,9 @@ export function CodeHinter({
                 viewportMargin={Infinity}
               />
             </div>
-            <div className="preview-container">{enablePreview && getPreview()}</div>
+            <div style={{ backgroundColor: theme == 'monokai' ? '#232E3C' : '#fff' }} className="preview-container">
+              {enablePreview && getPreview()}
+            </div>
           </Portal>
         )}
       </React.Fragment>
