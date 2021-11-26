@@ -105,7 +105,21 @@ export const Box = function Box({
   const ComponentToRender = AllComponents[component.component];
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const resolvedStyles = resolveStyles(component, currentState);
-  const exposedVariables = currentState?.components[parentId]?.data[component.name] ?? {};
+
+  let exposedVariables = {};
+
+  if (component.parent) {
+    const parentComponent = components[component.parent];
+    const isListView = parentComponent.component.component === 'Listview';
+
+    if (isListView) {
+      exposedVariables = currentState?.components[parentId]?.data[component.name];
+    } else {
+      eexposedVariables = currentState?.components[component.name];
+    }
+  } else {
+    exposedVariables = currentState?.components[component.name];
+  }
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {

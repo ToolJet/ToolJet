@@ -36,7 +36,7 @@ export const Container = function Container({ id, component, width, height, cont
       onClick={() => containerProps.onComponentClick(id, component)}
       style={computedStyles}
     >
-      <SubContainer containerCanvasWidth={width} parent={id} {...containerProps} parentRef={parentRef} removeComponent={removeComponent} />
+      <SubContainer parentComponent={component} containerCanvasWidth={width} parent={id} {...containerProps} parentRef={parentRef} removeComponent={removeComponent} />
       <SubCustomDragLayer containerCanvasWidth={width} parent={id} parentRef={parentRef} currentLayout={containerProps.currentLayout} />
     </div>
   );

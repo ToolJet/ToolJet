@@ -650,7 +650,12 @@ export function computeComponentState(_ref, components) {
 
     if (component.parent) {
       const parentComponent = components[component.parent];
-      const isListView = parentComponent.component.component === 'Listview';
+      let isListView = false;
+      try {
+        isListView = parentComponent.component.component === 'Listview';
+      } catch {
+
+      }
 
       if (isListView) {
       } else {
