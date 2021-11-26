@@ -61,7 +61,7 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName }) =
       <div className="modal-content" style={{ ...portalStyles, ...styles }}>
         <div className="portal-header d-flex" style={{ ...portalStyles }}>
           <div className="w-100">
-            <code className="mx-2 text-info">{componentName}</code>
+            <code className="mx-2 text-info">{componentName ?? 'Editor'}</code>
           </div>
 
           <button type="button" className={`btn btn-light mx-2 flex-shrink-1`} onClick={handleClose} data-tip="Hide">
