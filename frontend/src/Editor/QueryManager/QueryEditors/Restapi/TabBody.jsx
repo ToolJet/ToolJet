@@ -24,6 +24,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                     placeholder="key"
                     className="form-control codehinter-query-editor-input"
                     onChange={onChange('body', 0, index)}
+                    componentName={`datasources/restapi/body::key::${index}`}
                   />
                 </td>
                 <td>
@@ -34,6 +35,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                     theme={theme}
                     placeholder="value"
                     onChange={onChange('body', 1, index)}
+                    componentName={`datasources/restapi/body::value::${index}`}
                   />
                 </td>
                 {index > 0 && (
