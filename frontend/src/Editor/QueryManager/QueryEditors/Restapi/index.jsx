@@ -113,6 +113,7 @@ class Restapi extends React.Component {
                     changeOption(this, 'url', value);
                   }}
                   placeholder="Enter request URL"
+                  componentName="datasources/restapi::url"
                 />
               </div>
             </div>
