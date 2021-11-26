@@ -30,7 +30,7 @@ import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
 import toast from 'react-hot-toast';
-import { cloneDeep, isEmpty } from 'lodash';
+import { cloneDeep, isEqual, isEmpty } from 'lodash';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
 
 setAutoFreeze(false);
@@ -312,6 +312,7 @@ class Editor extends React.Component {
 
   handleAddPatch = (patches, inversePatches) => {
     if (isEmpty(patches) && isEmpty(inversePatches)) return;
+    if (isEqual(patches, inversePatches)) return;
     this.currentVersion++;
     this.currentVersionChanges[this.currentVersion] = {
       redo: patches,
@@ -332,7 +333,7 @@ class Editor extends React.Component {
         this.currentVersionChanges[this.currentVersion--].undo
       );
 
-      this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion);
+      this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion - 1);
       this.canRedo = true;
 
       if (!appDefinition) return;
@@ -403,21 +404,24 @@ class Editor extends React.Component {
     this.handleInspectorView(component);
   };
 
-  componentDefinitionChanged = (newDefinition) => {
+  componentDefinitionChanged = (componentDefinition) => {
     let _self = this;
 
-    return setStateAsync(_self, {
-      appDefinition: {
-        ...this.state.appDefinition,
-        components: {
-          ...this.state.appDefinition.components,
-          [newDefinition.id]: {
-            ...this.state.appDefinition.components[newDefinition.id],
-            component: newDefinition.component,
-          },
-        },
+    const newDefinition = {
+      appDefinition: produce(this.state.appDefinition, (draft) => {
+        draft.components[componentDefinition.id].component = componentDefinition.component;
+      }),
+    };
+
+    produce(
+      this.state.appDefinition,
+      (draft) => {
+        draft.components[componentDefinition.id].component = componentDefinition.component;
       },
-    });
+      this.handleAddPatch
+    );
+
+    return setStateAsync(_self, newDefinition);
   };
 
   componentChanged = (newComponent) => {
@@ -1022,7 +1026,7 @@ class Editor extends React.Component {
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
-                      allComponents={appDefinition.components}
+                      allComponents={cloneDeep(appDefinition.components)}
                       key={selectedComponent.id}
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
