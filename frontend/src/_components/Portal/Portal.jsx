@@ -3,9 +3,8 @@ import { ReactPortal } from './ReactPortal.js';
 
 const Portal = ({ children, ...restProps }) => {
   const { isOpen, trigger, styles, className, componentName } = restProps;
-
+  console.log('render-re', componentName);
   const [name, setName] = React.useState(componentName);
-
   const handleClose = (e) => {
     e.stopPropagation();
     trigger(false);

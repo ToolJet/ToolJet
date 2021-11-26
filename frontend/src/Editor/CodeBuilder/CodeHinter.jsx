@@ -140,9 +140,18 @@ export function CodeHinter({
           resolve();
         }
       }
-    }).then(() => setIsOpen(true));
+    })
+      .then(() => {
+        setIsOpen(true);
+        handleClick();
+      })
+      .then(() => handleClick());
   };
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
+  function handleClick() {
+    forceUpdate();
+  }
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
       <CodeHinter.PopupIcon callback={handleToggle} />
