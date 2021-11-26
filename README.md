@@ -46,7 +46,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 <hr>
 
 ## Quickstart 
-The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.io) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.io/docs/deployment/architecture).
+The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/deployment/architecture).
 
 You can deploy ToolJet on Heroku for free using the one-click-deployment button below.
 <p align="center">
@@ -59,12 +59,12 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
 [Cryptocurrency dashboard using ToolJet](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)<br>
 
 ## Documentation
-Documentation is available at https://docs.tooljet.io.
+Documentation is available at https://docs.tooljet.com.
 
-- [Getting Started](https://docs.tooljet.io)<br>
-- [Deploying](https://docs.tooljet.io/docs/deployment/architecture)<br>
-- [Datasource Reference](https://docs.tooljet.io/docs/data-sources/airtable/)<br>
-- [Widget Reference](https://docs.tooljet.io/docs/widgets/button)
+- [Getting Started](https://docs.tooljet.com)<br>
+- [Deploying](https://docs.tooljet.com/docs/deployment/architecture)<br>
+- [Datasource Reference](https://docs.tooljet.com/docs/data-sources/airtable/)<br>
+- [Widget Reference](https://docs.tooljet.com/docs/widgets/button)
 
 ## Branching model
 We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
