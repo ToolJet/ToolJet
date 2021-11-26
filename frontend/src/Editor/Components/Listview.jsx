@@ -7,9 +7,17 @@ export const Listview = function Listview({ id, component, width, height, contai
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
+  const heightProperty = component.definition.properties?.height?.value ?? 100;
+  const showBorderProperty = component.definition.properties?.showBorder?.value ?? false;
 
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+
+  const rowHeight =
+    resolveWidgetFieldValue(heightProperty, currentState);
+
+  const showBorder =
+    resolveWidgetFieldValue(showBorderProperty, currentState);
 
   let parsedWidgetVisibility = widgetVisibility;
 
@@ -47,7 +55,7 @@ export const Listview = function Listview({ id, component, width, height, contai
     >
       <div className="g-0 w-100">
         {listData.map((listItem, i) =>
-          <div className="w-100" style={{ position: 'relative', height: '100px', width: '100%' }} key={i}>
+          <div className={`w-100 ${showBorder ? 'border-bottom' : ''}`} style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }} key={i}>
             <SubContainer
               parentComponent={component}
               readOnly={i !== 0}

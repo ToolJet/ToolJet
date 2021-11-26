@@ -1420,6 +1420,8 @@ export const componentTypes = [
     },
     properties: {
       data: { type: 'code', displayName: 'List data' },
+      height: { type: 'code', displayName: 'Height' },
+      showBorder: { type: 'code', displayName: 'Show bottom border' },
     },
     events: {},
     styles: {
@@ -1440,7 +1442,11 @@ export const componentTypes = [
           value:
             "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
         },
+        height: {
+          value: '100'
+        },
         visible: { value: true },
+        showBorder: { value: '{{true}}' },
       },
       events: [],
       styles: {
