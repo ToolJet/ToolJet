@@ -5,7 +5,6 @@ export function ReactPortal({ children, parent, className, componentName }) {
   const el = React.useMemo(() => document.createElement('div'), []);
 
   React.useEffect(() => {
-    console.log('portalOptions', componentName);
     const target = parent && parent.appendChild ? parent : document.body;
     const classList = ['portal-container', componentName];
     if (className) className.split(' ').forEach((item) => classList.push(item));

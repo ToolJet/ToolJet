@@ -133,7 +133,6 @@ export function CodeHinter({
         const checkPortalExits = element[0]?.classList.contains(componentName);
 
         if (checkPortalExits === false) {
-          element[0].style.border = '2px solid red';
           const parent = element[0].parentNode;
           parent.removeChild(element[0]);
           setIsOpen(false);
@@ -173,7 +172,7 @@ export function CodeHinter({
       <React.Fragment>
         {isOpen && (
           <Portal className="modal-portal-wrapper" isOpen={isOpen} trigger={setIsOpen} componentName={componentName}>
-            <div className="editor-container" style={{ overflow: 'auto' }} key={suggestions.length}>
+            <div className="editor-container" key={suggestions.length}>
               <CodeMirror
                 value={initialValue}
                 realState={realState}
@@ -192,8 +191,7 @@ export function CodeHinter({
                 viewportMargin={Infinity}
               />
             </div>
-            <div className="preview-container"></div>
-            {enablePreview && getPreview()}
+            <div className="preview-container">{enablePreview && getPreview()}</div>
           </Portal>
         )}
       </React.Fragment>
