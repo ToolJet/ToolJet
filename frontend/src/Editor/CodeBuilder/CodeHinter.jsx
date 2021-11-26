@@ -163,6 +163,7 @@ export function CodeHinter({
           theme={theme}
           getPreview={enablePreview && getPreview}
           height={height}
+          forceUpdate={forceUpdate}
         >
           <CodeMirror
             value={initialValue}
@@ -213,7 +214,14 @@ const PopupIcon = ({ callback }) => {
 };
 
 const UsePortal = ({ children, ...restProps }) => {
-  const { isOpen, callback, componentName, key, theme, getPreview } = restProps;
+  const { isOpen, callback, componentName, key, theme, getPreview, forceUpdate } = restProps;
+
+  React.useEffect(() => {
+    if (isOpen) {
+      forceUpdate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [componentName, isOpen]);
 
   return (
     <React.Fragment>
@@ -227,7 +235,6 @@ const UsePortal = ({ children, ...restProps }) => {
           </div>
         </Portal>
       )}
-      {/* <>{React.cloneElement(children, { height: height || 'auto' })}</> */}
       {children}
     </React.Fragment>
   );
