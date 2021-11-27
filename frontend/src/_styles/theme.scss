@@ -23,6 +23,10 @@ body {
   display: none;
 }
 
+.accordion-item, .accordion-button {
+  background-color: #fff;
+}
+
 .editor {
   .header-container {
     max-width: 100%;

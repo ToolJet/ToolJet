@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Tabs from 'react-bootstrap/Tabs';
+import Tab from 'react-bootstrap/Tab';
 import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
@@ -8,6 +10,7 @@ import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
 import { EventManager } from './EventManager';
 import useShortcuts from '@/_hooks/use-shortcuts';
 import { ConfirmDialog } from '@/_components';
+import Accordion from '@/_ui/Accordion';
 
 export const Inspector = ({
   selectedComponentId,
@@ -29,6 +32,7 @@ export const Inspector = ({
   const [component, setComponent] = useState(selectedComponent);
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   const [components, setComponents] = useState(allComponents);
+  const [key, setKey] = React.useState('properties');
 
   useShortcuts(
     ['Backspace'],
@@ -182,6 +186,171 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
+  function getAccordionItems(componentName) {
+    switch (componentName) {
+      case 'Table':
+        return (
+          <Table
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            eventUpdated={eventUpdated}
+            eventOptionUpdated={eventOptionUpdated}
+            components={components}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+          />
+        );
+
+      case 'Chart':
+        return (
+          <Chart
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            eventUpdated={eventUpdated}
+            eventOptionUpdated={eventOptionUpdated}
+            components={components}
+            currentState={currentState}
+            darkMode={darkMode}
+          />
+        );
+
+      default: {
+        const properties = Object.keys(componentMeta.properties);
+        const events = Object.keys(componentMeta.events);
+        const validations = Object.keys(componentMeta.validation || {});
+        let items = [];
+        items.push({
+          title: 'Basic fields',
+          children: properties.map((property) =>
+            renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              property,
+              'properties',
+              currentState,
+              components,
+              darkMode
+            )
+          ),
+        });
+
+        if (events.length > 0) {
+          items.push({
+            title: 'Events',
+            children: (
+              <EventManager
+                component={component}
+                componentMeta={componentMeta}
+                currentState={currentState}
+                dataQueries={dataQueries}
+                components={components}
+                eventsChanged={eventsChanged}
+                apps={apps}
+                darkMode={darkMode}
+              />
+            ),
+          });
+        }
+
+        if (validations.length > 0) {
+          items.push({
+            title: 'Validation',
+            children: validations.map((property) =>
+              renderElement(
+                component,
+                componentMeta,
+                paramUpdated,
+                dataQueries,
+                property,
+                'validation',
+                currentState,
+                components,
+                darkMode
+              )
+            ),
+          });
+        }
+        return items;
+      }
+
+      // default:
+      //   return (
+      //     <div className="properties-container p-2">
+      //       {Object.keys(componentMeta.properties).map((property) =>
+      //         renderElement(
+      //           component,
+      //           componentMeta,
+      //           paramUpdated,
+      //           dataQueries,
+      //           property,
+      //           'properties',
+      //           currentState,
+      //           components,
+      //           darkMode
+      //         )
+      //       )}
+
+      //       {Object.keys(componentMeta.styles).length > 0 && <div className="hr-text">Style</div>}
+      //       {Object.keys(componentMeta.styles).map((style) =>
+      //         renderElement(
+      //           component,
+      //           componentMeta,
+      //           paramUpdated,
+      //           dataQueries,
+      //           style,
+      //           'styles',
+      //           currentState,
+      //           components
+      //         )
+      //       )}
+
+      //       {Object.keys(componentMeta.events).length > 0 && (
+      //         <div>
+      //           {Object.keys(componentMeta.events).length > 0 && <div className="hr-text">Events</div>}
+      //           <EventManager
+      //             component={component}
+      //             componentMeta={componentMeta}
+      //             currentState={currentState}
+      //             dataQueries={dataQueries}
+      //             components={components}
+      //             eventsChanged={eventsChanged}
+      //             apps={apps}
+      //             darkMode={darkMode}
+      //           />
+      //         </div>
+      //       )}
+
+      //       {Object.keys(componentMeta.validation || {}).length > 0 && (
+      //         <div>
+      //           <div className="hr-text">Validation</div>
+      //           {Object.keys(componentMeta.validation).map((property) =>
+      //             renderElement(
+      //               component,
+      //               componentMeta,
+      //               paramUpdated,
+      //               dataQueries,
+      //               property,
+      //               'validation',
+      //               currentState,
+      //               components,
+      //               darkMode
+      //             )
+      //           )}
+      //         </div>
+      //       )}
+      //     </div>
+      //   );
+    }
+  }
+
   return (
     <div className="inspector">
       <ConfirmDialog
@@ -213,54 +382,11 @@ export const Inspector = ({
           </button>
         </div>
       </div>
-
-      {componentMeta.component === 'Table' && (
-        <Table
-          component={component}
-          paramUpdated={paramUpdated}
-          dataQueries={dataQueries}
-          componentMeta={componentMeta}
-          eventUpdated={eventUpdated}
-          eventOptionUpdated={eventOptionUpdated}
-          components={components}
-          currentState={currentState}
-          darkMode={darkMode}
-          eventsChanged={eventsChanged}
-          apps={apps}
-        />
-      )}
-
-      {componentMeta.component === 'Chart' && (
-        <Chart
-          component={component}
-          paramUpdated={paramUpdated}
-          dataQueries={dataQueries}
-          componentMeta={componentMeta}
-          eventUpdated={eventUpdated}
-          eventOptionUpdated={eventOptionUpdated}
-          components={components}
-          currentState={currentState}
-          darkMode={darkMode}
-        />
-      )}
-
-      {!['Table', 'Chart'].includes(componentMeta.component) && (
-        <div className="properties-container p-2">
-          {Object.keys(componentMeta.properties).map((property) =>
-            renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              property,
-              'properties',
-              currentState,
-              components,
-              darkMode
-            )
-          )}
-
-          {Object.keys(componentMeta.styles).length > 0 && <div className="hr-text">Style</div>}
+      <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
+        <Tab eventKey="properties" title="Properties">
+          <Accordion items={getAccordionItems(componentMeta.component)} />
+        </Tab>
+        <Tab eventKey="styles" title="Styles">
           {Object.keys(componentMeta.styles).map((style) =>
             renderElement(
               component,
@@ -273,45 +399,8 @@ export const Inspector = ({
               components
             )
           )}
-
-          {Object.keys(componentMeta.events).length > 0 && (
-            <div>
-              {Object.keys(componentMeta.events).length > 0 && <div className="hr-text">Events</div>}
-
-              <EventManager
-                component={component}
-                componentMeta={componentMeta}
-                currentState={currentState}
-                dataQueries={dataQueries}
-                components={components}
-                eventsChanged={eventsChanged}
-                apps={apps}
-                darkMode={darkMode}
-              />
-            </div>
-          )}
-
-          {Object.keys(componentMeta.validation || {}).length > 0 && (
-            <div>
-              <div className="hr-text">Validation</div>
-              {Object.keys(componentMeta.validation).map((property) =>
-                renderElement(
-                  component,
-                  componentMeta,
-                  paramUpdated,
-                  dataQueries,
-                  property,
-                  'validation',
-                  currentState,
-                  components,
-                  darkMode
-                )
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
+        </Tab>
+      </Tabs>
       {/* Show on desktop & show on mobile params */}
       <div className="hr-text">Layout</div>
       <div className="properties-container p-2 pb-3 mb-5">
