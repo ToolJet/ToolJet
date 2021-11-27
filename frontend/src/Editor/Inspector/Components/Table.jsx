@@ -172,6 +172,7 @@ class Table extends React.Component {
               lineNumbers={false}
               placeholder={column.name}
               onChange={(value) => this.onColumnItemChange(index, 'key', value)}
+              componentName={this.getPopoverHeader(column.columnType, 'key')}
             />
           </div>
 
@@ -187,6 +188,7 @@ class Table extends React.Component {
                   lineNumbers={false}
                   placeholder={'Text color of the cell'}
                   onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
+                  componentName={this.getPopoverHeader(column.columnType, 'textColor')}
                 />
               </div>
               {column.isEditable && (
@@ -202,6 +204,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'regex', value)}
+                      componentName={this.getPopoverHeader(column.columnType, 'regex')}
                     />
                   </div>
                   <div className="field mb-2">
@@ -214,6 +217,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'minLength', value)}
+                      componentName={this.getPopoverHeader(column.columnType, 'minLength')}
                     />
                   </div>
                   <div className="field mb-2">
@@ -226,6 +230,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'maxLength', value)}
+                      componentName={this.getPopoverHeader(column.columnType, 'maxLength')}
                     />
                   </div>
                   <div className="field mb-2">
@@ -238,6 +243,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
+                      componentName={this.getPopoverHeader(column.columnType, 'customRule')}
                     />
                   </div>
                 </div>
@@ -293,6 +299,7 @@ class Table extends React.Component {
                   lineNumbers={false}
                   placeholder={'{{[1, 2, 3]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'values', value)}
+                  componentName={this.getPopoverHeader(column.columnType, 'values')}
                 />
               </div>
               <div className="field mb-2">
@@ -305,6 +312,7 @@ class Table extends React.Component {
                   lineNumbers={false}
                   placeholder={'{{["one", "two", "three"]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
+                  componentName={this.getPopoverHeader(column.columnType, 'labels')}
                 />
               </div>
             </div>
@@ -325,6 +333,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
+                      componentName={this.getPopoverHeader(column.columnType, 'customRule')}
                     />
                   </div>
                 </div>
@@ -344,6 +353,7 @@ class Table extends React.Component {
                   lineNumbers={false}
                   placeholder={'DD-MM-YYYY'}
                   onChange={(value) => this.onColumnItemChange(index, 'dateFormat', value)}
+                  componentName={this.getPopoverHeader(column.columnType, 'dateFormat')}
                 />
               </div>
               <div className="field mb-2">
@@ -545,6 +555,9 @@ class Table extends React.Component {
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
   };
 
+  getPopoverHeader = (column, field) =>
+    `widget/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
+
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
 
@@ -555,7 +568,7 @@ class Table extends React.Component {
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value ?? false;
-
+    console.log('Jinto =>', JSON.stringify(component.component.name));
     return (
       <div className="properties-container p-2 " key={this.props.component.id}>
         {renderElement(
@@ -588,7 +601,7 @@ class Table extends React.Component {
                   <OverlayTrigger
                     trigger="click"
                     placement="left"
-                    rootClose={this.state.columnPopOverRootClose}
+                    rootClose={false}
                     overlay={this.columnPopover(item, index)}
                   >
                     <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
