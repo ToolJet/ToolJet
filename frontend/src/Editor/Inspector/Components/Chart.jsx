@@ -93,6 +93,7 @@ class Chart extends React.Component {
             lineNumbers={false}
             className="chart-input pr-2"
             onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
+            componentName={`widget/${this.props.component.component.name}::${chartType}`}
           />
         </div>
         {Object.keys(componentMeta.styles).map((style) =>
