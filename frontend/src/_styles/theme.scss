@@ -31,7 +31,7 @@ body {
   }
 
   .resizer-active {
-    border: solid 1px rgb(70, 165, 253) !important;
+    border: dotted 1px rgb(70, 165, 253) !important;
 
     .top-right,
     .top-left,
@@ -298,7 +298,12 @@ body {
       -webkit-box-align: center;
       align-items: center;
 
+      .real-canvas {
+        outline: 1px dotted transparent
+      }
+
       .show-grid {
+        outline: 1px dotted #4D72DA;
         background-image: linear-gradient(to right, rgba(194, 191, 191, 0.2) 1px, transparent 1px),
           linear-gradient(to bottom, rgba(194, 191, 191, 0.2) 1px, transparent 1px);
       }
@@ -1547,6 +1552,7 @@ hr {
     top: -20px;
     position: fixed;
     max-height: 10px;
+    z-index: 100;
 
     .badge {
       font-size: 9px;
@@ -2527,6 +2533,13 @@ input[type='text'] {
 .jet-listview {
   overflow-y: overlay;
   overflow-x: hidden;
+
+  .rows {
+  }
+
+  .list-item { 
+
+  }
 }
 
 .jet-listview::-webkit-scrollbar-track {

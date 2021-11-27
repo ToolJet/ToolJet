@@ -16,28 +16,28 @@ const resizerClasses = {
 
 const resizerStyles = {
   topRight: {
-    width: '12px',
-    height: '12px',
-    right: '-6px',
-    top: '-6px',
+    width: '8px',
+    height: '8px',
+    right: '-4px',
+    top: '-4px',
   },
   bottomRight: {
-    width: '12px',
-    height: '12px',
-    right: '-6px',
-    bottom: '-6px',
+    width: '8px',
+    height: '8px',
+    right: '-4px',
+    bottom: '-4px',
   },
   bottomLeft: {
-    width: '12px',
-    height: '12px',
-    left: '-6px',
-    bottom: '-6px',
+    width: '8px',
+    height: '8px',
+    left: '-4px',
+    bottom: '-4px',
   },
   topLeft: {
-    width: '12px',
-    height: '12px',
-    left: '-6px',
-    top: '-6px',
+    width: '8px',
+    height: '8px',
+    left: '-4px',
+    top: '-4px',
   },
 };
 
@@ -179,7 +179,7 @@ export const DraggableBox = function DraggableBox({
     >
       {inCanvas ? (
         <div
-          className="draggable-box "
+          className={`draggable-box`}
           onMouseOver={() => setMouseOver(true)}
           onMouseLeave={() => setMouseOver(false)}
         >

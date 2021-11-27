@@ -53,9 +53,9 @@ export const Listview = function Listview({ id, component, width, height, contai
       onClick={() => containerProps.onComponentClick(id, component)}
       style={computedStyles}
     >
-      <div className="g-0 w-100">
+      <div className="rows w-100">
         {listData.map((listItem, i) =>
-          <div className={`w-100 ${showBorder ? 'border-bottom' : ''}`} style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }} key={i}>
+          <div className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`} style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }} key={i}>
             <SubContainer
               parentComponent={component}
               readOnly={i !== 0}
