@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AppMenu } from './AppMenu';
 // import { Link } from 'react-router-dom';
 // import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -8,9 +8,16 @@ import moment from 'moment';
 export default function AppCard(props) {
   const { app } = props;
 
+  const [focused, setFocused] = useState(false);
+
   return (
-    <div className="app-card m-2 p-2" key={app.id}>
-      <div className="row">
+    <div
+      className={`app-card m-2 p-2 ${focused ? 'highlight' : ''}`}
+      key={app.id}
+      onMouseEnter={() => setFocused(true)}
+      onMouseLeave={() => setFocused(false)}
+    >
+      <div className="row no-gutters">
         <div className="col-10">
           <span className="app-title mb-3">{app.name}</span>
           <br />
