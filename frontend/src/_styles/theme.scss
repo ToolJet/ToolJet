@@ -505,7 +505,7 @@ body {
 }
 
 .homepage-body {
-  overflow-y: scroll;
+  overflow-y: hidden;
   max-height: 100vh;
   a {
     color: inherit;
