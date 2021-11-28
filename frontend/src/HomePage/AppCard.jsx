@@ -1,8 +1,8 @@
 import React from 'react';
 import { AppMenu } from './AppMenu';
-import { Link } from 'react-router-dom';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { renderTooltip } from '@/_helpers/appUtils';
+// import { Link } from 'react-router-dom';
+// import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+// import { renderTooltip } from '@/_helpers/appUtils';
 import moment from 'moment';
 
 export default function AppCard(props) {
@@ -10,13 +10,31 @@ export default function AppCard(props) {
 
   return (
     <div className="app-card m-2 p-2" key={app.id}>
-      <span className="app-title mb-3">{app.name}</span>
-      <br />
+      <div className="row">
+        <div className="col-10">
+          <span className="app-title mb-3">{app.name}</span>
+          <br />
+        </div>
+        <div className="col-2">
+          {(props.canCreateApp(app) || props.canDeleteApp(app)) && (
+            <AppMenu
+              app={app}
+              canCreateApp={props.canCreateApp()}
+              canDeleteApp={props.canDeleteApp(app)}
+              folders={props.folders}
+              foldersChanged={props.foldersChanged}
+              deleteApp={() => props.deleteApp(app)}
+              cloneApp={() => props.cloneApp(app)}
+              exportApp={() => props.exportApp(app)}
+            />
+          )}
+        </div>
+      </div>
       <small className="pt-2 app-description">
         created {moment(app.created_at).fromNow(true)} ago by {app.user?.first_name} {app.user?.last_name}{' '}
       </small>
       <div className="text-muted">
-        {!props.isLoading && props.canUpdateApp(app) && (
+        {/* {!props.isLoading && props.canUpdateApp(app) && (
           <Link to={`/apps/${app.id}`} className="d-none d-lg-inline">
             <OverlayTrigger
               placement="top"
@@ -30,8 +48,8 @@ export default function AppCard(props) {
               <span className="badge bg-green-lt">Edit</span>
             </OverlayTrigger>
           </Link>
-        )}
-        <Link
+        )} */}
+        {/* <Link
           to={app?.current_version_id ? `/applications/${app.slug}` : ''}
           target={app?.current_version_id ? '_blank' : ''}
         >
@@ -78,20 +96,7 @@ export default function AppCard(props) {
               }
             </OverlayTrigger>
           )}
-        </Link>
-
-        {(props.canCreateApp(app) || props.canDeleteApp(app)) && (
-          <AppMenu
-            app={app}
-            canCreateApp={props.canCreateApp()}
-            canDeleteApp={props.canDeleteApp(app)}
-            folders={props.folders}
-            foldersChanged={props.foldersChanged}
-            deleteApp={() => props.deleteApp(app)}
-            cloneApp={() => props.cloneApp(app)}
-            exportApp={() => props.exportApp(app)}
-          />
-        )}
+        </Link> */}
       </div>
     </div>
   );
