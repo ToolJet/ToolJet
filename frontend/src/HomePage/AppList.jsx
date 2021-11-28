@@ -29,11 +29,11 @@ const AppList = (props) => {
           {Array.from(Array(3)).map((_, rowIndex) => (
             <div className="row" key={rowIndex}>
               {Array.from(Array(5)).map((_, index) =>
-                props.apps[rowIndex * 3 + index] ? (
+                props.apps[rowIndex * 5 + index] ? (
                   <div className="col">
                     <AppCard
-                      app={props.apps[rowIndex * 3 + index]}
-                      key={props.apps[rowIndex * 3 + index].id}
+                      app={props.apps[rowIndex * 5 + index]}
+                      key={props.apps[rowIndex * 5 + index].id}
                       canCreateApp={props.canCreateApp}
                       canDeleteApp={props.canDeleteApp}
                       canUpdateApp={props.canUpdateApp}
