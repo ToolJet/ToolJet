@@ -340,7 +340,7 @@ class HomePage extends React.Component {
                   <div className="w-100 mb-5">
                     <div className="row align-items-center">
                       <div className="col">
-                        <h2 className="page-title">
+                        <h2 className="page-title px-2">
                           {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
                         </h2>
                       </div>
