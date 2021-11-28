@@ -214,7 +214,7 @@ const PopupIcon = ({ callback }) => {
 };
 
 const UsePortal = ({ children, ...restProps }) => {
-  const { isOpen, callback, componentName, key, theme, getPreview, forceUpdate } = restProps;
+  const { isOpen, callback, componentName, key, getPreview, forceUpdate } = restProps;
 
   React.useEffect(() => {
     if (isOpen) {
@@ -230,9 +230,7 @@ const UsePortal = ({ children, ...restProps }) => {
           <div className="editor-container" key={key}>
             {React.cloneElement(children, { height: 300 })}
           </div>
-          <div style={{ backgroundColor: theme == 'monokai' ? '#232E3C' : '#fff' }} className="preview-container">
-            {getPreview()}
-          </div>
+          {getPreview()}
         </Portal>
       )}
       {children}
