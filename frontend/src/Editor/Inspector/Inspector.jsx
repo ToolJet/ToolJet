@@ -186,7 +186,7 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
-  function getAccordionItems(componentName) {
+  function getAccordion(componentName) {
     switch (componentName) {
       case 'Table':
         return (
@@ -278,76 +278,9 @@ export const Inspector = ({
             ),
           });
         }
-        return items;
+
+        return <Accordion items={items} />;
       }
-
-      // default:
-      //   return (
-      //     <div className="properties-container p-2">
-      //       {Object.keys(componentMeta.properties).map((property) =>
-      //         renderElement(
-      //           component,
-      //           componentMeta,
-      //           paramUpdated,
-      //           dataQueries,
-      //           property,
-      //           'properties',
-      //           currentState,
-      //           components,
-      //           darkMode
-      //         )
-      //       )}
-
-      //       {Object.keys(componentMeta.styles).length > 0 && <div className="hr-text">Style</div>}
-      //       {Object.keys(componentMeta.styles).map((style) =>
-      //         renderElement(
-      //           component,
-      //           componentMeta,
-      //           paramUpdated,
-      //           dataQueries,
-      //           style,
-      //           'styles',
-      //           currentState,
-      //           components
-      //         )
-      //       )}
-
-      //       {Object.keys(componentMeta.events).length > 0 && (
-      //         <div>
-      //           {Object.keys(componentMeta.events).length > 0 && <div className="hr-text">Events</div>}
-      //           <EventManager
-      //             component={component}
-      //             componentMeta={componentMeta}
-      //             currentState={currentState}
-      //             dataQueries={dataQueries}
-      //             components={components}
-      //             eventsChanged={eventsChanged}
-      //             apps={apps}
-      //             darkMode={darkMode}
-      //           />
-      //         </div>
-      //       )}
-
-      //       {Object.keys(componentMeta.validation || {}).length > 0 && (
-      //         <div>
-      //           <div className="hr-text">Validation</div>
-      //           {Object.keys(componentMeta.validation).map((property) =>
-      //             renderElement(
-      //               component,
-      //               componentMeta,
-      //               paramUpdated,
-      //               dataQueries,
-      //               property,
-      //               'validation',
-      //               currentState,
-      //               components,
-      //               darkMode
-      //             )
-      //           )}
-      //         </div>
-      //       )}
-      //     </div>
-      //   );
     }
   }
 
@@ -384,7 +317,7 @@ export const Inspector = ({
       </div>
       <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
         <Tab eventKey="properties" title="Properties">
-          <Accordion items={getAccordionItems(componentMeta.component)} />
+          {getAccordion(componentMeta.component)}
         </Tab>
         <Tab eventKey="styles" title="Styles">
           {Object.keys(componentMeta.styles).map((style) =>

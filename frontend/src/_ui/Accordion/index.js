@@ -3,7 +3,7 @@ import AccordionItem from './AccordionItem';
 
 const Accordion = ({ items }) => {
   return (
-    <div className="accordion" id="accordion-example">
+    <div className="accordion">
       {items.map(({ title, children }, index) => {
         // eslint-disable-next-line react/no-children-prop
         return <AccordionItem key={index} index={index} title={title} children={children} />;

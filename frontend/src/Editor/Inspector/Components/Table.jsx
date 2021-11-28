@@ -1,4 +1,6 @@
 import React from 'react';
+import Accordion from '@/_ui/Accordion';
+
 import { renderElement } from '../Utils';
 import { computeActionName } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
@@ -556,198 +558,144 @@ class Table extends React.Component {
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value ?? false;
 
-    return (
-      <div className="properties-container p-2 " key={this.props.component.id}>
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'data',
-          'properties',
-          currentState,
-          components,
-          darkMode
-        )}
+    const renderCustomElement = (param, paramType = 'properties') => {
+      return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
+    };
 
-        <div className="field mb-2 mt-3">
+    let items = [];
+
+    items.push({
+      title: 'Basic properties',
+      children: renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        'data',
+        'properties',
+        currentState,
+        components,
+        darkMode
+      ),
+    });
+
+    items.push({
+      title: 'Columns',
+      children: (
+        <div>
+          <div className="col-auto">
+            <button onClick={this.addNewColumn} className="btn btn-sm btn-outline-azure col-auto">
+              + Add column
+            </button>
+          </div>
+          <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
+            {columns.value.map((item, index) => (
+              <div className={`card p-2 column-sort-row ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
+                <OverlayTrigger
+                  trigger="click"
+                  placement="left"
+                  rootClose={this.state.columnPopOverRootClose}
+                  overlay={this.columnPopover(item, index)}
+                >
+                  <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
+                    <div className="col-auto">
+                      <SortableItem key={item.name}>
+                        <img
+                          style={{ cursor: 'move' }}
+                          className="svg-icon"
+                          src="/assets/images/icons/editor/rearrange.svg"
+                          width="10"
+                          height="10"
+                        />
+                      </SortableItem>
+                    </div>
+                    <div className="col">
+                      <div className="text">{item.name}</div>
+                    </div>
+                    <div className="col-auto">
+                      <img
+                        onClick={() => this.removeColumn(index)}
+                        className="svg-icon"
+                        src="/assets/images/icons/trash.svg"
+                        width="12"
+                        height="12"
+                      />
+                    </div>
+                  </div>
+                </OverlayTrigger>
+              </div>
+            ))}
+          </SortableList>
+        </div>
+      ),
+    });
+
+    items.push({
+      title: 'Action buttons',
+      children: (
+        <div className="field mb-2 mt-2">
           <div className="row g-2">
-            <div className="col">
-              <label className="form-label col pt-1">Columns</label>
-            </div>
             <div className="col-auto">
-              <button onClick={this.addNewColumn} className="btn btn-sm btn-outline-azure col-auto">
-                + Add column
+              <button onClick={this.addNewAction} className="btn btn-sm btn-outline-azure col-auto">
+                + Button
               </button>
             </div>
           </div>
-          <div>
-            <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
-              {columns.value.map((item, index) => (
-                <div className={`card p-2 column-sort-row ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
-                  <OverlayTrigger
-                    trigger="click"
-                    placement="left"
-                    rootClose={this.state.columnPopOverRootClose}
-                    overlay={this.columnPopover(item, index)}
-                  >
-                    <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
-                      <div className="col-auto">
-                        <SortableItem key={item.name}>
-                          <img
-                            style={{ cursor: 'move' }}
-                            className="svg-icon"
-                            src="/assets/images/icons/editor/rearrange.svg"
-                            width="10"
-                            height="10"
-                          />
-                        </SortableItem>
-                      </div>
-                      <div className="col">
-                        <div className="text">{item.name}</div>
-                      </div>
-                      <div className="col-auto">
-                        <img
-                          onClick={() => this.removeColumn(index)}
-                          className="svg-icon"
-                          src="/assets/images/icons/trash.svg"
-                          width="12"
-                          height="12"
-                        />
-                      </div>
-                    </div>
-                  </OverlayTrigger>
-                </div>
-              ))}
-            </SortableList>
-          </div>
-
-          <hr></hr>
-          <div className="field mb-2 mt-2">
-            <div className="row g-2">
-              <div className="col">
-                <label className="form-label col pt-1">Action buttons</label>
-              </div>
-              <div className="col-auto">
-                <button onClick={this.addNewAction} className="btn btn-sm btn-outline-azure col-auto">
-                  + Button
-                </button>
-              </div>
-            </div>
-            <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
-            {actions.value.length === 0 && (
-              <center>
-                <small>This table doesn&apos;t have any action buttons</small>
-              </center>
-            )}
-          </div>
-          <hr></hr>
-
-          {renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'serverSidePagination',
-            'properties',
-            currentState
+          <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
+          {actions.value.length === 0 && (
+            <center>
+              <small>This table doesn&apos;t have any action buttons</small>
+            </center>
           )}
-          {!serverSidePagination &&
-            renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              'clientSidePagination',
-              'properties',
-              currentState
-            )}
-          {renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'displaySearchBox',
-            'properties',
-            currentState
-          )}
-          {displaySearchBox &&
-            renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              'serverSideSearch',
-              'properties',
-              currentState
-            )}
-          {renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'showDownloadButton',
-            'properties',
-            currentState
-          )}
-          {renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'showFilterButton',
-            'properties',
-            currentState
-          )}
-          {renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'showBulkUpdateActions',
-            'properties',
-            currentState
-          )}
-          {renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'showBulkSelector',
-            'properties',
-            currentState
-          )}
-          {renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'highlightSelectedRow',
-            'properties',
-            currentState
-          )}
-
-          <div className="hr-text">Events</div>
-
-          <EventManager
-            component={component}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            dataQueries={dataQueries}
-            components={components}
-            eventsChanged={this.props.eventsChanged}
-            apps={this.props.apps}
-          />
-
-          <div className="hr-text">Style</div>
         </div>
+      ),
+    });
 
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
-        {Object.keys(componentMeta.styles).map((style) =>
-          renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components)
-        )}
-      </div>
-    );
+    const options = [
+      'serverSidePagination',
+      'serverSideSearch',
+      'showDownloadButton',
+      'showFilterButton',
+      'showBulkUpdateActions',
+      'showBulkSelector',
+      'highlightSelectedRow',
+      'loadingState',
+    ];
+
+    let renderOptions = [];
+
+    options.map((option) => renderOptions.push(renderCustomElement(option)));
+
+    const conditionalOptions = [
+      { name: 'clientSidePagination', condition: !serverSidePagination },
+      { name: 'displaySearchBox', condition: displaySearchBox },
+    ];
+
+    conditionalOptions.map(({ name, condition }) => {
+      if (condition) renderOptions.push(renderCustomElement(name));
+    });
+
+    items.push({
+      title: 'Options',
+      children: renderOptions,
+    });
+
+    items.push({
+      title: 'Events',
+      children: (
+        <EventManager
+          component={component}
+          componentMeta={componentMeta}
+          currentState={currentState}
+          dataQueries={dataQueries}
+          components={components}
+          eventsChanged={this.props.eventsChanged}
+          apps={this.props.apps}
+        />
+      ),
+    });
+
+    return <Accordion items={items} />;
   }
 }
 
