@@ -136,9 +136,7 @@ const DynamicForm = ({
           mode,
           lineNumbers,
           className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
-          onChange: (value) => {
-            optionchanged($key, value);
-          },
+          onChange: (value) => optionchanged($key, value),
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
