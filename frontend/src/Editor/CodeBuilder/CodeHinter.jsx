@@ -33,6 +33,7 @@ export function CodeHinter({
   minHeight,
   lineWrapping,
   componentName = null,
+  usePortalEditor = true,
 }) {
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
@@ -149,7 +150,7 @@ export function CodeHinter({
 
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
-      <CodeHinter.PopupIcon callback={handleToggle} />
+      {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
       <div
         className={`code-hinter ${className || 'codehinter-default-input'}`}
         key={suggestions.length}

@@ -159,7 +159,7 @@ export const EventManager = ({
                       currentState={currentState}
                       initialValue={event.message}
                       onChange={(value) => handlerChanged(index, 'message', value)}
-                      componentName="Event"
+                      usePortalEditor={false}
                     />
                   </div>
                 </div>
@@ -186,6 +186,7 @@ export const EventManager = ({
                   currentState={currentState}
                   initialValue={event.url}
                   onChange={(value) => handlerChanged(index, 'url', value)}
+                  usePortalEditor={false}
                 />
               </div>
             )}
@@ -242,6 +243,7 @@ export const EventManager = ({
                 <CodeHinter
                   currentState={currentState}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
+                  usePortalEditor={false}
                 />
               </div>
             )}
@@ -278,6 +280,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                      usePortalEditor={false}
                     />
                   </div>
                 </div>
@@ -289,6 +292,7 @@ export const EventManager = ({
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
+                      usePortalEditor={false}
                     />
                   </div>
                 </div>
