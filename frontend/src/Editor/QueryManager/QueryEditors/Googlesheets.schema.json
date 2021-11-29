@@ -137,15 +137,14 @@
         "lineNumbers": false,
         "description": "Enter value"
       },
-        "body": {
+      "body": {
         "$label": "Body",
         "$key": "body",
         "type": "codehinter",
         "description": "Enter body",
         "height": "150px",
         "ignoreBraces": true,
-        "lineNumbers": true,
-        "customRule": "(function (value) {if (!(value.slice(0, 3) === '{{(' && value.slice(-3) === ')}}')) {value = '{{(' + value + ')}}';}return value;})"
+        "lineNumbers": true
       }
     }
   }

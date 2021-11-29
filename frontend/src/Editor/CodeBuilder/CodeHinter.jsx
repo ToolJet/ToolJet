@@ -56,6 +56,7 @@ export function CodeHinter({
     },
   });
   useEffect(() => {
+    // console.log('currentState ==>', currentState);
     setRealState(currentState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
@@ -82,8 +83,7 @@ export function CodeHinter({
   };
 
   const getPreview = () => {
-    const previewValue = ignoreBraces ? `{{${currentValue}}}` : currentValue;
-    const [preview, error] = resolveReferences(previewValue, realState, null, {}, true);
+    const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
 
     if (error) {
       return (
