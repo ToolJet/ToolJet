@@ -548,6 +548,19 @@ body {
       border: 0.5px solid #B4BBC6;
       box-sizing: border-box;
       border-radius: 8px;
+
+      .app-creation-time {
+        font-size: 10px;
+        line-height: 12px;
+        color: #61656F;
+      }
+
+      .app-creator {
+        font-weight: 500;
+        font-size: 10px;
+        line-height: 12px;
+        color: #292D37;
+      }
     }
 
     .app-card.highlight {

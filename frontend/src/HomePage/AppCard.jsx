@@ -15,9 +15,8 @@ export default function AppCard(props) {
       onMouseEnter={() => setFocused(true)}
       onMouseLeave={() => setFocused(false)}
     >
-      <div className="row no-gutters">
+      <div className="row no-gutters mb-3">
         <div className="col-10">
-          <span className="app-title mb-3">{app.name}</span>
           <br />
         </div>
         <div className="col-2">
@@ -35,12 +34,17 @@ export default function AppCard(props) {
           )}
         </div>
       </div>
-      <small className="pt-2 app-description">
-        created {moment(app.created_at).fromNow(true)} ago by {app.user?.first_name} {app.user?.last_name}{' '}
-      </small>
+      <div className="ps-2">
+        <div className="app-title">{app.name}</div>
+        <span className="app-creator">
+          {app.user?.first_name} {app.user?.last_name}
+        </span>
+        <br />
+        <span className="pt app-creation-time">{moment(app.created_at).fromNow(true)} ago</span>
+      </div>
       {focused && (
         <>
-          <div className="container-fluid d-flex flex-column align-content-center px-0 mt-4">
+          <div className="container-fluid d-flex flex-column align-content-center px-0 mt-2">
             <div className="row">
               <div className="col-6 pe-1">
                 <button
