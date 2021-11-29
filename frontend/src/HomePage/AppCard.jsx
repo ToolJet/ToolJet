@@ -10,7 +10,7 @@ export default function AppCard(props) {
 
   return (
     <div
-      className={`app-card m-2 p-2 ${focused ? 'highlight' : ''}`}
+      className={`app-card mb-2 mx-2 p-2 ${focused ? 'highlight' : ''}`}
       key={app.id}
       onMouseEnter={() => setFocused(true)}
       onMouseLeave={() => setFocused(false)}
