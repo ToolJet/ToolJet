@@ -25,6 +25,7 @@ const DynamicForm = ({
   optionsChanged,
 }) => {
   // if(schema.properties)  todo add empty check
+
   React.useEffect(() => {
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});

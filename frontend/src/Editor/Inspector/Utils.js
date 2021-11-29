@@ -50,7 +50,7 @@ export function renderElement(
   const meta = componentMeta[paramType][param];
 
   const ElementToRender = AllElements[TypeMapping[meta.type]];
-  // console.log('componentName || __component__', JSON.stringify(component));
+
   return (
     <ElementToRender
       param={{ name: param, ...component.component.properties[param] }}
