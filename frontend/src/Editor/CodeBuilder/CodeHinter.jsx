@@ -56,7 +56,6 @@ export function CodeHinter({
     },
   });
   useEffect(() => {
-    // console.log('currentState ==>', currentState);
     setRealState(currentState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);

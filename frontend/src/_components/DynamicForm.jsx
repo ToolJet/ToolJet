@@ -73,7 +73,6 @@ const DynamicForm = ({
     initialValue,
     height = 'auto',
     ignoreBraces = false,
-    customRule = null,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -138,7 +137,6 @@ const DynamicForm = ({
           lineNumbers,
           className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => {
-            console.log('value ==>', value);
             optionchanged($key, value);
           },
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
