@@ -568,7 +568,6 @@ class Table extends React.Component {
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value ?? false;
-    console.log('Jinto =>', JSON.stringify(component.component.name));
     return (
       <div className="properties-container p-2 " key={this.props.component.id}>
         {renderElement(
