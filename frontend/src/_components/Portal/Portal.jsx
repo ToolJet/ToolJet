@@ -54,7 +54,7 @@ const Container = ({ children, ...restProps }) => {
   return <ReactPortal {...restProps}>{children}</ReactPortal>;
 };
 
-const Modal = ({ children, handleClose, portalStyles, styles, componentName }) => {
+const Modal = ({ children, handleClose, portalStyles, styles, componentName, darkMode }) => {
   return (
     <div className="modal-dialog shadow bg-black rounded" role="document">
       <div className="modal-content" style={{ ...portalStyles, ...styles }}>
@@ -63,9 +63,15 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName }) =
             <code className="mx-2 text-info">{componentName ?? 'Editor'}</code>
           </div>
 
-          <button type="button" className={`btn btn-light mx-2 flex-shrink-1`} onClick={handleClose} data-tip="Hide">
+          <button
+            type="button"
+            className="btn mx-2 btn-light"
+            onClick={handleClose}
+            data-tip="Hide code editor modal"
+            style={{ backgroundColor: darkMode && '#42546a' }}
+          >
             <img
-              style={{ transform: 'rotate(-90deg)' }}
+              style={{ transform: 'rotate(-90deg)', filter: darkMode && 'brightness(0) invert(1)' }}
               src="/assets/images/icons/portal-close.svg"
               width="12"
               height="12"
