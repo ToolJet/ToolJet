@@ -10,7 +10,7 @@ export default function AppCard(props) {
 
   return (
     <div
-      className={`app-card mb-2 mx-2 p-2 ${focused ? 'highlight' : ''}`}
+      className={`app-card mb-2 mx-1 p-2 ${focused ? 'highlight' : ''}`}
       key={app.id}
       onMouseEnter={() => setFocused(true)}
       onMouseLeave={() => setFocused(false)}
@@ -42,7 +42,7 @@ export default function AppCard(props) {
         <>
           <div className="container-fluid d-flex flex-column align-content-center px-0 mt-4">
             <div className="row">
-              <div className="col-6">
+              <div className="col-6 pe-1">
                 <button
                   type="button"
                   className="btn btn-sm btn-light edit-button"
@@ -56,7 +56,7 @@ export default function AppCard(props) {
                 </button>
               </div>
               <div
-                className="col-6"
+                className="col-6 ps-1"
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
                 title={app?.current_version_id === null ? 'App does not have a deployed version' : 'Open in app viewer'}
