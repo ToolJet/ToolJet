@@ -35,6 +35,18 @@ export function CodeHinter({
   componentName = null,
   usePortalEditor = true,
 }) {
+  const options = {
+    lineNumbers: lineNumbers || false,
+    lineWrapping: lineWrapping || true,
+    singleLine: true,
+    mode: mode || 'handlebars',
+    tabSize: 2,
+    theme: theme || 'default',
+    readOnly: false,
+    highlightSelectionMatches: true,
+    placeholder,
+  };
+
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
   const [isFocused, setFocused] = useState(false);
@@ -135,18 +147,6 @@ export function CodeHinter({
     });
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
-
-  const options = {
-    lineNumbers: lineNumbers || false,
-    lineWrapping: lineWrapping || true,
-    singleLine: true,
-    mode: mode || 'handlebars',
-    tabSize: 2,
-    theme: theme || 'default',
-    readOnly: false,
-    highlightSelectionMatches: true,
-    placeholder,
-  };
 
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
