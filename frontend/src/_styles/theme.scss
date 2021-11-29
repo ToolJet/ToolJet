@@ -552,6 +552,22 @@ body {
 
     .app-card.highlight {
       background-color: #F8F8F8;
+
+      button.edit-button {
+        background: #FFFFFF;
+        border: 1px solid #4D72FA;
+        box-sizing: border-box;
+        border-radius: 4px;
+        color: #4D72FA;
+      }
+
+      button.launch-button {
+        background: #4D72FA;
+        border: 1px solid #4D72FA;
+        box-sizing: border-box;
+        border-radius: 4px;
+        color: #FFFFFF;
+      }
     }
 
     .app-title {
