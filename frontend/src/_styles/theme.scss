@@ -516,31 +516,6 @@ body {
     text-decoration: none;
   }
 
-  // .app-action-buttons {
-  //   display: none;
-  // }
-
-  // .create-app {
-  //   background: #eefcfe7a;
-  //   border: 1px dashed #9d9d9d;
-  // }
-
-  // .create-app:hover {
-  //   background: #4ac4d600;
-  // }
-
-  // .app-card:hover {
-  //   background: #4ac4d600;
-
-  //   .app-action-buttons {
-  //     display: inline-flex;
-  //   }
-
-  //   .app-name {
-  //     display: none;
-  //   }
-  // }
-
   .app-list {
     .app-card {
       height: 155px;
@@ -587,6 +562,50 @@ body {
       line-height: 20px;
       font-size: 16px;
       font-weight: 500;
+    }
+  }
+}
+
+.theme-dark {
+
+  .user-avatar-nav-item {
+    border-radius: 4px;
+  }
+
+  .homepage-body {
+    .app-list {
+      .app-card {
+
+        .app-creation-time {
+          color: #61656F;
+        }
+
+        .app-creator {
+          color: #7c86a1;
+        }
+      }
+
+      .app-card.highlight {
+        background-color: #2c405c;
+
+        button.edit-button {
+          background: #FFFFFF;
+          border: 1px solid #4D72FA;
+          color: #4D72FA;
+        }
+
+        button.launch-button {
+          background: #4D72FA;
+          border: 1px solid #4D72FA;
+          color: #FFFFFF;
+        }
+      }
+
+      .app-title {
+        line-height: 20px;
+        font-size: 16px;
+        font-weight: 500;
+      }
     }
   }
 }
@@ -2224,6 +2243,10 @@ input:focus-visible {
   min-height: 100%;
   min-width: 100%;
   background-color: white;
+}
+
+.main-wrapper.theme-dark {
+  background-color: #2b394b;
 }
 
 .jet-table {
