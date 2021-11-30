@@ -328,8 +328,42 @@ class HomePage extends React.Component {
           <div className="page-body homepage-body">
             <div className="container-xl">
               <div className="row">
+                <div className="col-3"></div>
+                <div className="col-2">
+                  <h2 className="page-title px-2">
+                    {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
+                  </h2>
+                </div>
+                {this.canCreateApp() && (
+                  <>
+                    <div className="col-3 ms-auto d-print-none"></div>
+                    <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
+                      <button
+                        className={'btn btn-default d-none d-lg-inline mb-3 me-2'}
+                        onChange={this.handleImportApp}
+                      >
+                        <label>
+                          {isImportingApp && (
+                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                          )}
+                          Import
+                          <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                        </label>
+                      </button>
+                      <button
+                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${
+                          creatingApp ? 'btn-loading' : ''
+                        }`}
+                        onClick={this.createApp}
+                      >
+                        Create new application
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="row">
                 <div className="col-12 col-lg-3 mb-5">
-                  <br />
                   <Folders
                     foldersLoading={this.state.foldersLoading}
                     totalCount={this.state.meta.total_count}
@@ -343,46 +377,6 @@ class HomePage extends React.Component {
 
                 <div className="col-md-9">
                   <div className="w-100 mb-5">
-                    <div className="row align-items-center">
-                      <div className="col">
-                        <h2 className="page-title px-2">
-                          {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
-                        </h2>
-                      </div>
-                      {this.canCreateApp() && (
-                        <>
-                          <div className="col-auto ms-auto d-print-none">
-                            <div className="w-100 ">
-                              <button
-                                className={'btn btn-default d-none d-lg-inline mb-3'}
-                                onChange={this.handleImportApp}
-                              >
-                                <label>
-                                  {isImportingApp && (
-                                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                  )}
-                                  Import
-                                  <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
-                                </label>
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="col-auto ms-auto d-print-none">
-                            <div className="w-100 ">
-                              <button
-                                className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${
-                                  creatingApp ? 'btn-loading' : ''
-                                }`}
-                                onClick={this.createApp}
-                              >
-                                Create new application
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
                     <AppList
                       apps={apps}
                       canCreateApp={this.canCreateApp}

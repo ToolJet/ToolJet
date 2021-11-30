@@ -6,20 +6,17 @@ const AppList = (props) => {
     <div style={{ minHeight: '600px' }} className="app-list">
       {props.isLoading && (
         <>
-          {Array.from(Array(10)).map((index) => (
-            <tr className="row" key={index}>
-              <td className="col-3 p-3">
-                <div className="skeleton-line w-10"></div>
-                <div className="skeleton-line w-10"></div>
-              </td>
-              <td className="col p-3"></td>
-              <td className="text-muted col-auto col-1 pt-4">
-                <div className="skeleton-line"></div>
-              </td>
-              <td className="text-muted col-auto col-1 pt-4">
-                <div className="skeleton-line"></div>
-              </td>
-            </tr>
+          {Array.from(Array(2)).map((_, rowIndex) => (
+            <div className="row mb-4" key={rowIndex}>
+              {Array.from(Array(5)).map((_, index) => (
+                <div className="col" key={rowIndex * 5 + index}>
+                  <div className="skeleton-line"></div>
+                  <div className="skeleton-line"></div>
+                  <div className="skeleton-line"></div>
+                  <div className="skeleton-line"></div>
+                </div>
+              ))}
+            </div>
           ))}
         </>
       )}
