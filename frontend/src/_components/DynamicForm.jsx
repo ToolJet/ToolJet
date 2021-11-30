@@ -25,12 +25,11 @@ const DynamicForm = ({
   optionsChanged,
 }) => {
   // if(schema.properties)  todo add empty check
-  console.log('Test => One', createDataSource);
-  console.log('Test => Two', selectedDataSource);
   React.useEffect(() => {
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getElement = (type) => {
