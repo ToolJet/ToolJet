@@ -49,7 +49,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
                   className="form-check-input"
                   type="radio"
                   onClick={() => optionchanged('access_type', 'chat:write')}
-                  checked={options.access_type.value === 'chat:write'}
+                  checked={options.access_type?.value === 'chat:write'}
                   disabled={authStatus === 'waiting_for_token'}
                 />
                 <span className="form-check-label">

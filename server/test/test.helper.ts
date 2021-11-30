@@ -14,10 +14,12 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from 'src/services/data_sources.service';
 import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
-import { ThreadRepository } from '@repositories/thread.repository';
+import { ThreadRepository } from 'src/repositories/thread.repository';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { AllExceptionsFilter } from 'src/all-exceptions-filter';
+import { Logger } from 'nestjs-pino';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -29,6 +31,7 @@ export async function createNestAppInstance() {
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
+  app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   await app.init();
 
   return app;
@@ -88,7 +91,7 @@ export async function createApplicationVersion(nestApp, application) {
   );
 }
 
-export async function createUser(nestApp, { firstName, lastName, email, groups, organization, status }: any) {
+export async function createUser(nestApp, { firstName, lastName, email, groups, organization, ssoId, status }: any) {
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
   let organizationUsersRepository: Repository<OrganizationUser>;
@@ -114,6 +117,7 @@ export async function createUser(nestApp, { firstName, lastName, email, groups, 
       email: email || 'dev@tooljet.io',
       password: 'password',
       organization,
+      ssoId,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -218,6 +222,7 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         group: group,
         appCreate: group == 'admin',
         appDelete: group == 'admin',
+        folderCreate: group == 'admin',
       });
       await groupPermissionRepository.save(groupPermission);
     }
@@ -328,9 +333,8 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
   );
 }
 
-export async function createThread(nestInstance, { appId, x, y, userId, organizationId, appVersionsId }: any) {
-  let threadRepository: ThreadRepository;
-  threadRepository = nestInstance.get('ThreadRepository');
+export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {
+  const threadRepository = new ThreadRepository();
 
   return await threadRepository.createThread(
     {

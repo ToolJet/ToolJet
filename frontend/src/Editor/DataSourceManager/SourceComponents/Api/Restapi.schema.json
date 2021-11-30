@@ -29,6 +29,21 @@
     },
     "customTesting": true
   },
+  "defaults": {
+    "url": { "value": "" },
+    "auth_type": { "value": "none" },
+    "grant_type": { "value": "authorization_code" },
+    "add_token_to": { "value": "header" },
+    "header_prefix": { "value": "Bearer " },
+    "access_token_url": { "value": "" },
+    "client_id": { "value": "" },
+    "client_secret": { "value": "" },
+    "scopes": { "value": "read, write" },
+    "auth_url": { "value": "" },
+    "client_auth": { "value": "header" },
+    "headers": { "value": [["", ""]] },
+    "custom_auth_params": { "value": [["", ""]] }
+  },
   "properties": {
     "url": {
       "$label": "URL",

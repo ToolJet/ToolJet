@@ -19,14 +19,13 @@ async function bootstrap() {
   const host = new URL(process.env.TOOLJET_HOST);
   const domain = host.hostname;
 
-  app.setGlobalPrefix('api');
-  app.enableCors();
-
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
     app.useWebSocketAdapter(new WsAdapter(app));
   }
+  await app.setGlobalPrefix('api');
+  await app.enableCors();
 
   app.use(
     helmet.contentSecurityPolicy({
@@ -34,8 +33,23 @@ async function bootstrap() {
       directives: {
         upgradeInsecureRequests: null,
         'img-src': ['*', 'data:'],
-        'script-src': ['maps.googleapis.com', "'self'", "'unsafe-inline'", "'unsafe-eval'", 'blob:'],
-        'default-src': ['maps.googleapis.com', '*.sentry.io', "'self'", 'blob:'],
+        'script-src': [
+          'maps.googleapis.com',
+          'apis.google.com',
+          'accounts.google.com',
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          'blob:',
+        ],
+        'default-src': [
+          'maps.googleapis.com',
+          'apis.google.com',
+          'accounts.google.com',
+          '*.sentry.io',
+          "'self'",
+          'blob:',
+        ],
         'connect-src': ['ws://' + domain, "'self'", 'maps.googleapis.com', '*.sentry.io'],
       },
     })

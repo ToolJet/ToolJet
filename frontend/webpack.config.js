@@ -16,6 +16,7 @@ module.exports = {
     extensions: ['.js', '.jsx', '.png'],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
+      '@ee': path.resolve(__dirname, 'ee/'),
     },
   },
   ...(environment === 'development' && { devtool: 'inline-source-map' }),

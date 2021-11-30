@@ -252,6 +252,10 @@ class HomePage extends React.Component {
     return this.canUserPerform(this.state.currentUser, 'delete', app);
   };
 
+  canCreateFolder = () => {
+    return this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions);
+  };
+
   cancelDeleteAppDialog = () => {
     this.setState({
       isDeletingApp: false,
@@ -333,6 +337,7 @@ class HomePage extends React.Component {
                     currentFolder={currentFolder}
                     folderChanged={this.folderChanged}
                     foldersChanged={this.foldersChanged}
+                    canCreateFolder={this.canCreateFolder()}
                   />
                 </div>
 

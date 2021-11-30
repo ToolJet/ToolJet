@@ -13,7 +13,7 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
     setAuthStatus('waiting_for_url');
 
     const scope =
-      options.access_type.value === 'read'
+      options.access_type?.value === 'read'
         ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
         : 'https://www.googleapis.com/auth/spreadsheets';
 
@@ -49,14 +49,14 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
             <p>If you want your ToolJet apps to modify your Google sheets, make sure to select read and write access</p>
             <div>
               <Radio
-                checked={options.access_type.value === 'read'}
+                checked={options.access_type?.value === 'read'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'read')}
                 text="Read only"
                 helpText="Your ToolJet apps can only read data from Google sheets"
               />
               <Radio
-                checked={options.access_type.value === 'write'}
+                checked={options.access_type?.value === 'write'}
                 disabled={authStatus === 'waiting_for_token'}
                 onClick={() => optionchanged('access_type', 'write')}
                 text="Read and write"
