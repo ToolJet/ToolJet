@@ -19,7 +19,9 @@ export class SetLoadingStateToFalseForExistingTables1638255797809 implements Mig
           const component = components[componentId];
 
           if (component.component.component === 'Table') {
-            component.component.definition.properties.loadingState = { value: '{{false}}' };
+            component.component.definition.properties.loadingState = {
+              value: `{{${component.component.definition.properties.loadingState}}}`,
+            };
             components[componentId] = {
               ...component,
               component: {
