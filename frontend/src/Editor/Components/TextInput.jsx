@@ -4,7 +4,6 @@ export const TextInput = function TextInput({
   height,
   component,
   currentState,
-  onComponentOptionChanged,
   validate,
   properties,
   exposedVariables,
@@ -19,7 +18,7 @@ export const TextInput = function TextInput({
   const { isValid, validationError } = validationData;
 
   if (currentValidState !== isValid) {
-    onComponentOptionChanged(component, 'isValid', isValid);
+    setExposedVariable('isValid', isValid);
   }
 
   useEffect(() => {
