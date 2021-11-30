@@ -336,8 +336,6 @@ class Editor extends React.Component {
       this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion);
       this.canRedo = true;
 
-      console.log(this.currentVersion);
-
       if (!appDefinition) return;
       this.setState({
         appDefinition,
