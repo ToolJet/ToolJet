@@ -16,7 +16,7 @@ import 'codemirror/theme/monokai.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
-import { Portal } from '@/_components/Portal';
+import usePortal from '@/_hooks/use-portal';
 
 export function CodeHinter({
   initialValue,
@@ -156,15 +156,14 @@ export function CodeHinter({
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >
-        <CodeHinter.UsePortal
+        <CodeHinter.Portal
           isOpen={isOpen}
           callback={setIsOpen}
           componentName={componentName}
           key={suggestions.length}
-          theme={theme}
-          getPreview={enablePreview && getPreview}
-          height={height}
+          customComponent={getPreview}
           forceUpdate={forceUpdate}
+          optionalProps={{ height: 300 }}
         >
           <CodeMirror
             value={initialValue}
@@ -182,9 +181,8 @@ export function CodeHinter({
             options={options}
             viewportMargin={Infinity}
           />
-        </CodeHinter.UsePortal>
+        </CodeHinter.Portal>
       </div>
-
       {enablePreview && !isOpen && getPreview()}
     </div>
   );
@@ -214,30 +212,11 @@ const PopupIcon = ({ callback }) => {
   );
 };
 
-const UsePortal = ({ children, ...restProps }) => {
-  const { isOpen, callback, componentName, key, getPreview, forceUpdate } = restProps;
+const Portal = ({ children, ...restProps }) => {
+  const renderPortal = usePortal({ children, ...restProps });
 
-  React.useEffect(() => {
-    if (isOpen) {
-      forceUpdate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [componentName, isOpen]);
-
-  return (
-    <React.Fragment>
-      {isOpen && (
-        <Portal className="modal-portal-wrapper" isOpen={isOpen} trigger={callback} componentName={componentName}>
-          <div className="editor-container" key={key}>
-            {React.cloneElement(children, { height: 300 })}
-          </div>
-          {getPreview()}
-        </Portal>
-      )}
-      {children}
-    </React.Fragment>
-  );
+  return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
 CodeHinter.PopupIcon = PopupIcon;
-CodeHinter.UsePortal = UsePortal;
+CodeHinter.Portal = Portal;
