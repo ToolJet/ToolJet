@@ -147,6 +147,34 @@ class Chart extends React.Component {
       });
     }
 
+    items.push({
+      title: 'Layout',
+      children: (
+        <>
+          {renderElement(
+            component,
+            componentMeta,
+            this.props.layoutPropertyChanged,
+            dataQueries,
+            'showOnDesktop',
+            'others',
+            currentState,
+            components
+          )}
+          {renderElement(
+            component,
+            componentMeta,
+            this.props.layoutPropertyChanged,
+            dataQueries,
+            'showOnMobile',
+            'others',
+            currentState,
+            components
+          )}
+        </>
+      ),
+    });
+
     return <Accordion items={items} />;
   }
 }

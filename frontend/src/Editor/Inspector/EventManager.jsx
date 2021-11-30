@@ -365,7 +365,7 @@ export const EventManager = ({
             <div className={rowClassName} role="button">
               <div className="col">{componentMeta.events[event.eventId]['displayName']}</div>
               <div className="col">
-                <small className="event-action">{actionMeta.name}</small>
+                <small className="event-action font-weight-light">{actionMeta.name}</small>
               </div>
               <div className="col-auto">
                 <span
@@ -375,7 +375,12 @@ export const EventManager = ({
                     removeHandler(index);
                   }}
                 >
-                  <img className="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12" />
+                  <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
+                      fill="#8092AC"
+                    />
+                  </svg>
                 </span>
               </div>
             </div>
@@ -390,21 +395,24 @@ export const EventManager = ({
   if (events.length === 0) {
     return (
       <div>
-        <center>
-          <button className="btn btn-sm btn-outline-azure" onClick={addHandler}>
-            Add event handler
-          </button>
-        </center>
+        <button
+          className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary"
+          onClick={addHandler}
+        >
+          + Add event handler
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="card">
-      <div className="card-body p-0">{renderHandlers(events)}</div>
-      <button className="btn btn-sm btn-outline-azure" onClick={addHandler}>
-        Add handler
+    <>
+      <button className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary" onClick={addHandler}>
+        + Add handler
       </button>
-    </div>
+      <div className="card">
+        <div className="card-body p-0">{renderHandlers(events)}</div>
+      </div>
+    </>
   );
 };

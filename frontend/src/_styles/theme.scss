@@ -5,6 +5,18 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+.color-primary {
+  color: $primary;
+}
+
+.color-disabled {
+  color: $disabled;
+}
+
+.padding-0 {
+  padding: 0;
+}
+
 .navbar {
   max-height: 48px;
   min-height: auto;
@@ -28,14 +40,17 @@ body {
 }
 
 .accordion-button {
-  color: #000 !important;
+  font-weight: 400 !important;
   box-shadow: none !important;
+}
+
+.accordion-button:not(.collapsed) {
   padding-bottom: 0 !important;
 }
 
 .accordion-body {
   .form-label {
-    font-weight: 500;
+    font-weight: 400;
     font-size: 12px;
     color: #61656C;
   }
@@ -959,7 +974,7 @@ body {
 }
 
 .form-check-input:checked {
-  background-color: #3c92dc;
+  background-color: $primary;
   border-color: rgba(101, 109, 119, 0.24);
 }
 
@@ -1110,7 +1125,7 @@ tr:focus {
   outline: none;
   outline-width: thin;
   outline-style: solid;
-  outline-color: #3c92dc;
+  outline-color: $primary;
 }
 
 .form-control-plaintext:hover {
@@ -1371,32 +1386,32 @@ body {
 }
 
 .DateInput_input__focused {
-  border-bottom: 2px solid #3c92dc;
+  border-bottom: 2px solid $primary;
 }
 
 .CalendarDay__selected,
 .CalendarDay__selected:active,
 .CalendarDay__selected:hover {
-  background: #3c92dc;
-  border: 1px double #3c92dc;
+  background: $primary;
+  border: 1px double $primary;
 }
 
 .CalendarDay__selected_span {
-  background: #3c92dcc2;
-  border: #3c92dcc2;
+  background: $primary;
+  border: $primary;
 }
 
 .CalendarDay__selected_span:active,
 .CalendarDay__selected_span:hover {
-  background: #3c92dc;
-  border: 1px double #3c92dc;
+  background: $primary;
+  border: 1px double $primary;
   color: #fff;
 }
 
 .CalendarDay__hovered_span:active,
 .CalendarDay__hovered_span:hover {
-  background: #3c92dc;
-  border: 1px double #3c92dc;
+  background: $primary;
+  border: 1px double $primary;
   color: #fff;
 }
 
@@ -1477,7 +1492,7 @@ body {
   z-index: 10000;
 
   li.CodeMirror-hint-active {
-    background: #3c92dc;
+    background: $primary;
   }
 
   .CodeMirror-hint {
@@ -1727,7 +1742,7 @@ input:focus-visible {
 }
 
 .navbar-expand-md.navbar-light .nav-item.active:after {
-  border: 1px solid #3c92dc;
+  border: 1px solid $primary;
 }
 
 .org-users-page {
@@ -2399,7 +2414,7 @@ input[type='text'] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: #0565FE;
+  color: #0565FE !important;
 }
 
 .empty-title {
@@ -2539,4 +2554,19 @@ input[type='text'] {
     border-radius: inherit;
     margin-top: -1px!important;
   }
+}
+
+.tabs-inspector {
+  .nav-item {
+    width: 50%;
+    background-color: #fff !important;
+  }
+
+  .nav-item:not(.active) {
+    border-bottom: 1px solid #e7eaef;
+  }
+}
+
+.tabs-inspector.nav-tabs {
+  border: 0;
 }
