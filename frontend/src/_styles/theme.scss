@@ -516,6 +516,10 @@ body {
     text-decoration: none;
   }
 
+  button.create-new-app-button {
+    background-color: #4D72FA;
+  }
+
   .app-list {
     .app-card {
       height: 155px;
@@ -606,6 +610,14 @@ body {
         font-size: 16px;
         font-weight: 500;
       }
+    }
+  }
+}
+
+.pagination {
+  .page-item.active {
+    a.page-link {
+      background-color: #4D72FA;
     }
   }
 }
