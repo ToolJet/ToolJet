@@ -25,7 +25,8 @@ const DynamicForm = ({
   optionsChanged,
 }) => {
   // if(schema.properties)  todo add empty check
-
+  console.log('Test => One', createDataSource);
+  console.log('Test => Two', selectedDataSource);
   React.useEffect(() => {
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
@@ -138,7 +139,7 @@ const DynamicForm = ({
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
-          componentName: `datasources/${selectedDataSource?.kind}::${$key ?? ''}`,
+          componentName: selectedDataSource ? `${selectedDataSource?.kind}::${$key ?? ''}` : null,
         };
       default:
         return {};

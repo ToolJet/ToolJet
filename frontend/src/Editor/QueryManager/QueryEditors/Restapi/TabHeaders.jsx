@@ -29,7 +29,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                   placeholder="key"
                   className="form-control codehinter-query-editor-input"
                   onChange={onChange('headers', 0, index)}
-                  componentName={`datasources/restapi/headers::key::${index}`}
+                  componentName={`restapi/headers::key::${index}`}
                 />
               </div>
               <div className="col-6 field">
@@ -40,7 +40,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                   theme={theme}
                   placeholder="value"
                   onChange={onChange('headers', 1, index)}
-                  componentName={`datasources/restapi/headers::value::${index}`}
+                  componentName={`restapi/headers::value::${index}`}
                 />
               </div>
               {index > 0 && (

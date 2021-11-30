@@ -24,7 +24,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                     placeholder="key"
                     className="form-control codehinter-query-editor-input"
                     onChange={onChange('url_params', 0, index)}
-                    componentName={`datasources/restapi/params::key::${index}`}
+                    componentName={`restapi/params::key::${index}`}
                   />
                 </td>
                 <td>
@@ -35,7 +35,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                     theme={theme}
                     placeholder="value"
                     onChange={onChange('url_params', 1, index)}
-                    componentName={`datasources/restapi/params::value::${index}`}
+                    componentName={`restapi/params::value::${index}`}
                   />
                 </td>
                 {index > 0 && (
