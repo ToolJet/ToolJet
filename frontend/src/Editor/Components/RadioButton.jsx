@@ -1,94 +1,44 @@
 import React, { useEffect } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const RadioButton = function RadioButton({
   id,
   height,
   component,
-  onComponentClick,
   currentState,
-  onComponentOptionChanged,
-  onEvent,
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
 }) {
-  const label = component.definition.properties.label.value;
-  const textColorProperty = component.definition.styles.textColor;
-  const textColor = textColorProperty ? textColorProperty.value : '#000';
+  const { label, value, values, display_values } = properties;
+  const { visibility, disabledState, textColor } = styles;
 
-  const defaultValue = component.definition.properties.value.value;
-  const values = component.definition.properties.values.value;
-  const displayValues = component.definition.properties.display_values.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
-  let parsedValues = values;
-
-  try {
-    parsedValues = resolveReferences(values, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
-
-  let parsedDisplayValues = displayValues;
-
-  try {
-    parsedDisplayValues = resolveReferences(displayValues, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
-
-  let parsedDefaultValue = defaultValue;
-
-  try {
-    parsedDefaultValue = resolveReferences(defaultValue, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
-
-  const value = currentState?.components[component?.name]?.value ?? parsedDefaultValue;
+  const currentValue = currentState?.components[component?.name]?.value ?? value;
 
   let selectOptions = [];
 
   try {
     selectOptions = [
-      ...parsedValues.map((value, index) => {
-        return { name: parsedDisplayValues[index], value: value };
+      ...values.map((value, index) => {
+        return { name: display_values[index], value: value };
       }),
     ];
   } catch (err) {
     console.log(err);
   }
 
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
-
   function onSelect(selection) {
-    onComponentOptionChanged(component, 'value', selection);
-    onEvent('onSelectionChange', { component });
+    setExposedVariable('value', selection);
+    fireEvent('onSelectionChange');
   }
 
   useEffect(() => {
-    onComponentOptionChanged(component, 'value', parsedDefaultValue);
+    setExposedVariable('value', value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parsedDefaultValue]);
+  }, [value]);
 
   return (
-    <div
-      data-disabled={parsedDisabledState}
-      className="row py-1"
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
-    >
+    <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>
       <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
         {label}
       </span>
@@ -98,7 +48,7 @@ export const RadioButton = function RadioButton({
             <input
               style={{ marginTop: '1px' }}
               className="form-check-input"
-              checked={value === option.value}
+              checked={currentValue === option.value}
               type="radio"
               value={option.value}
               name={`${id}-radio-options`}
