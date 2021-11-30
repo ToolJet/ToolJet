@@ -2,13 +2,8 @@ import React from 'react';
 
 export const Checkbox = function Checkbox({ height, properties, styles, fireEvent, setExposedVariable }) {
   const [checked, setChecked] = React.useState(false);
-  const label = properties.label;
-  const textColorProperty = styles.textColor;
-  const textColor = textColorProperty ?? '#000';
-  const checkboxColorProperty = styles.checkboxColor;
-  const checkboxColor = checkboxColorProperty ?? '#3c92dc';
-  const widgetVisibility = styles.visibility ?? true;
-  const disabledState = styles.disabledState ?? false;
+  const { label } = properties;
+  const { visibility, disabledState, checkboxColor, textColor } = styles;
 
   function toggleValue(e) {
     const isChecked = e.target.checked;
@@ -22,7 +17,7 @@ export const Checkbox = function Checkbox({ height, properties, styles, fireEven
   }
 
   return (
-    <div data-disabled={disabledState} className="row py-1" style={{ height, display: widgetVisibility ? '' : 'none' }}>
+    <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>
       <div className="col px-1 py-0 mt-0">
         <label className="mx-1 form-check form-check-inline">
           <input
