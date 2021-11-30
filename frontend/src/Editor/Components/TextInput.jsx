@@ -26,10 +26,6 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
-  useEffect(() => {
-    console.log('isValid', isValid);
-  }, [isValid]);
-
   return (
     <div>
       <input
