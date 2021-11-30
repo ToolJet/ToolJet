@@ -36,8 +36,8 @@ export function CodeHinter({
   usePortalEditor = true,
 }) {
   const options = {
-    lineNumbers: lineNumbers || false,
-    lineWrapping: lineWrapping || true,
+    lineNumbers: lineNumbers ?? false,
+    lineWrapping: lineWrapping ?? true,
     singleLine: true,
     mode: mode || 'handlebars',
     tabSize: 2,
