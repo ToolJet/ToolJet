@@ -1,5 +1,6 @@
 @import './tabler.scss';
 @import './colors.scss';
+@import './z-index.scss';
 
 body {
   font-family: 'Roboto', sans-serif;
@@ -1457,7 +1458,7 @@ body {
   font-family: 'Roboto', sans-serif;
   font-size: 0.9rem;
   padding: 0px;
-  z-index: 10000;
+  z-index: $hints-z-index;
 
   li.CodeMirror-hint-active {
     background: #3c92dc;
@@ -2533,12 +2534,11 @@ input[type='text'] {
 .code-hinter-wrapper:hover {
   .popup-btn {
     display: block!important;
-    z-index: 99999;
+    z-index: 1;
   }
 }
 
 .modal-portal-wrapper {
-  z-index: 10000000;
   justify-content: center;
   align-items: center;
   position: fixed;
@@ -2588,8 +2588,4 @@ input[type='text'] {
   border-bottom: 1px solid #0000000d;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
-}
-
-.CodeMirror-hints {
-  z-index: 999990000!important;
 }
