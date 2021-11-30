@@ -27,6 +27,19 @@ body {
   background-color: #fff;
 }
 
+.accordion-button {
+  color: #000 !important;
+  box-shadow: none !important;
+  padding-bottom: 0 !important;
+}
+
+.accordion-body {
+  .form-label {
+    font-weight: 500;
+    font-size: 12px;
+    color: #61656C;
+  }
+}
 .editor {
   .header-container {
     max-width: 100%;
