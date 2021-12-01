@@ -228,7 +228,7 @@ export const Inspector = ({
         const validations = Object.keys(componentMeta.validation || {});
         let items = [];
         items.push({
-          title: 'Basic fields',
+          title: 'Properties',
           children: properties.map((property) =>
             renderElement(
               component,

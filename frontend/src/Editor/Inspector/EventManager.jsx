@@ -394,7 +394,7 @@ export const EventManager = ({
 
   if (events.length === 0) {
     return (
-      <div>
+      <div className="text-right">
         <button
           className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary"
           onClick={addHandler}
@@ -407,9 +407,14 @@ export const EventManager = ({
 
   return (
     <>
-      <button className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary" onClick={addHandler}>
-        + Add handler
-      </button>
+      <div className="text-right">
+        <button
+          className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary"
+          onClick={addHandler}
+        >
+          + Add handler
+        </button>
+      </div>
       <div className="card">
         <div className="card-body p-0">{renderHandlers(events)}</div>
       </div>

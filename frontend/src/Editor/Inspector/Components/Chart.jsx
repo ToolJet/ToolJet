@@ -78,7 +78,7 @@ class Chart extends React.Component {
     });
 
     items.push({
-      title: 'Basic properties',
+      title: 'Properties',
       children: renderElement(
         component,
         componentMeta,
