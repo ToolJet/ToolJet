@@ -14,11 +14,26 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "$options": [
-        { "value": "read", "name": "Read data from a spreadsheet" },
-        { "value": "append", "name": "Append data to a spreadsheet" },
-        { "value": "info", "name": "Get spreadsheet info" },
-        { "value": "update", "name": "Update data to a spreadsheet" },
-        { "value": "delete_row", "name": "Delete row from a spreadsheet" }
+        {
+          "value": "read",
+          "name": "Read data from a spreadsheet"
+        },
+        {
+          "value": "append",
+          "name": "Append data to a spreadsheet"
+        },
+        {
+          "value": "info",
+          "name": "Get spreadsheet info"
+        },
+        {
+          "value": "update",
+          "name": "Update data to a spreadsheet"
+        },
+        {
+          "value": "delete_row",
+          "name": "Delete row from a spreadsheet"
+        }
       ]
     },
     "read": {
@@ -126,7 +141,10 @@
         "type": "dropdown",
         "description": "Single select dropdown for where operation",
         "$options": [
-          { "value": "===", "name": "===" }
+          {
+            "value": "===",
+            "name": "==="
+          }
         ]
       },
       "where_value": {
@@ -142,9 +160,7 @@
         "$key": "body",
         "type": "codehinter",
         "description": "Enter body",
-        "height": "150px",
-        "ignoreBraces": true,
-        "lineNumbers": true
+        "lineNumbers": false
       }
     }
   }
