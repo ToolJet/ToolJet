@@ -24,7 +24,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         </button>
         <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
           <Link to={'/'}>
-            <img src="/assets/images/logo-text.svg" width="110" height="32" className="navbar-brand-image" />
+            <img src="/assets/images/logo-color.svg" className="navbar-brand-image" />
           </Link>
         </h1>
 
@@ -41,7 +41,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               data-testid="userAvatarHeader"
             >
               <div className="d-xl-block">
-                <span className="avatar bg-azure-lt">
+                <span className="avatar bg-secondary-lt">
                   {first_name ? first_name[0] : ''}
                   {last_name ? last_name[0] : ''}
                 </span>
