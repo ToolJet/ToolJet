@@ -645,7 +645,7 @@ class Editor extends React.Component {
                 </button>
                 <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                   <Link to={'/'}>
-                    <img src="/assets/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
+                    <img src="/assets/images/logo.svg" className="navbar-brand-image" style={{ height: '1.6rem' }} />
                   </Link>
                 </h1>
                 {this.state.app && (
