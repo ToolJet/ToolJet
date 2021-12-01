@@ -24,7 +24,7 @@ class SignupPage extends React.Component {
 
     const { email } = this.state;
 
-    if(!validateEmail(email)) {
+    if (!validateEmail(email)) {
       toast.error('Invalid email', {
         toastId: 'toast-login-auth-error',
         hideProgressBar: true,
@@ -55,7 +55,7 @@ class SignupPage extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href="." className="navbar-brand-autodark">
-              <img src="/assets/images/logo-text.svg" height="30" alt="" />
+              <img src="/assets/images/logo-color.svg" height="26" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
