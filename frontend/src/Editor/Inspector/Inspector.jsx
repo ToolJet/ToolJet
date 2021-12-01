@@ -247,6 +247,7 @@ export const Inspector = ({
         if (events.length > 0) {
           items.push({
             title: 'Events',
+            isOpen: false,
             children: (
               <EventManager
                 component={component}
@@ -283,6 +284,7 @@ export const Inspector = ({
 
         items.push({
           title: 'Layout',
+          isOpen: false,
           children: (
             <>
               {renderElement(

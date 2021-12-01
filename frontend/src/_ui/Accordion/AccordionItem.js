@@ -1,8 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
 
-const AccordionItem = ({ index, title, children }) => {
-  const [show, setShow] = React.useState(true);
+const AccordionItem = ({ open = true, index, title, children }) => {
+  const [show, setShow] = React.useState(open);
   return (
     <div className="accordion-item">
       <h2 onClick={() => setShow(!show)} className="accordion-header" id={`heading-${index}`}>

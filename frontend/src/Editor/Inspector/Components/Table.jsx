@@ -719,6 +719,7 @@ class Table extends React.Component {
 
     items.push({
       title: 'Events',
+      isOpen: false,
       children: (
         <EventManager
           component={component}
@@ -734,6 +735,7 @@ class Table extends React.Component {
 
     items.push({
       title: 'Layout',
+      isOpen: false,
       children: (
         <>
           {renderElement(
