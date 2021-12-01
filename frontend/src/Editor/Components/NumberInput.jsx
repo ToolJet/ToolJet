@@ -1,11 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 export const NumberInput = function NumberInput({ height, properties, exposedVariables, styles, setExposedVariable }) {
-  useEffect(() => {
-    setExposedVariable('value', parseInt(properties.value));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value]);
-
   return (
     <input
       disabled={styles.disabledState}

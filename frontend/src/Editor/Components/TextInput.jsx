@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 export const TextInput = function TextInput({
   height,
@@ -20,11 +20,6 @@ export const TextInput = function TextInput({
   if (currentValidState !== isValid) {
     setExposedVariable('isValid', isValid);
   }
-
-  useEffect(() => {
-    setExposedVariable('value', properties.value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value]);
 
   return (
     <div>
