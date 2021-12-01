@@ -680,7 +680,7 @@ class Table extends React.Component {
           </div>
           <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
           {actions.value.length === 0 && (
-            <div>
+            <div className="text-center">
               <small className="color-disabled">This table doesn&apos;t have any action buttons</small>
             </div>
           )}
