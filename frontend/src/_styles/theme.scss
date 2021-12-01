@@ -278,6 +278,7 @@ body {
 
     .canvas-container {
       scrollbar-width: none;
+      background-color: #eeeff6;
     }
 
     .canvas-container::-webkit-scrollbar {
@@ -506,7 +507,7 @@ body {
 }
 
 .homepage-body {
-  overflow-y: scroll;
+  overflow-y: hidden;
   max-height: 100vh;
   a {
     color: inherit;
@@ -517,38 +518,108 @@ body {
     text-decoration: none;
   }
 
-  .app-action-buttons {
-    display: none;
+  button.create-new-app-button {
+    background-color: #4D72FA;
   }
 
-  .app-name {
-    line-height: 20px;
-    font-size: 0.9rem;
-  }
+  .app-list {
+    .app-card {
+      height: 155px;
+      max-height: 155px;
+      border: 0.5px solid #B4BBC6;
+      box-sizing: border-box;
+      border-radius: 8px;
 
-  .app-card {
-    height: 155px;
-    max-height: 155px;
-  }
+      .app-creation-time {
+        font-size: 10px;
+        line-height: 12px;
+        color: #61656F;
+      }
 
-  .create-app {
-    background: #eefcfe7a;
-    border: 1px dashed #9d9d9d;
-  }
-
-  .create-app:hover {
-    background: #4ac4d600;
-  }
-
-  .app-card:hover {
-    background: #4ac4d600;
-
-    .app-action-buttons {
-      display: inline-flex;
+      .app-creator {
+        font-weight: 500;
+        font-size: 10px;
+        line-height: 12px;
+        color: #292D37;
+      }
     }
 
-    .app-name {
-      display: none;
+    .app-card.highlight {
+      background-color: #F8F8F8;
+
+      button.edit-button {
+        background: #FFFFFF;
+        border: 1px solid #4D72FA;
+        box-sizing: border-box;
+        border-radius: 4px;
+        color: #4D72FA;
+      }
+
+      button.launch-button {
+        background: #4D72FA;
+        border: 1px solid #4D72FA;
+        box-sizing: border-box;
+        border-radius: 4px;
+        color: #FFFFFF;
+      }
+    }
+
+    .app-title {
+      line-height: 20px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+}
+
+.theme-dark {
+
+  .user-avatar-nav-item {
+    border-radius: 4px;
+  }
+
+  .homepage-body {
+    .app-list {
+      .app-card {
+
+        .app-creation-time {
+          color: #61656F;
+        }
+
+        .app-creator {
+          color: #7c86a1;
+        }
+      }
+
+      .app-card.highlight {
+        background-color: #2c405c;
+
+        button.edit-button {
+          background: #FFFFFF;
+          border: 1px solid #4D72FA;
+          color: #4D72FA;
+        }
+
+        button.launch-button {
+          background: #4D72FA;
+          border: 1px solid #4D72FA;
+          color: #FFFFFF;
+        }
+      }
+
+      .app-title {
+        line-height: 20px;
+        font-size: 16px;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.pagination {
+  .page-item.active {
+    a.page-link {
+      background-color: #4D72FA;
     }
   }
 }
@@ -1199,6 +1270,7 @@ tr:focus {
 
 body {
   color: #3e525b;
+  overflow-y: hidden;
 }
 
 .RichEditor-root {
@@ -1897,6 +1969,10 @@ input:focus-visible {
     background: #2f3c4c;
   }
 
+  .main .canvas-container {
+    background-color: #2f3c4c;
+  }
+
   .rdtOpen .rdtPicker {
     color: black;
   }
@@ -2191,6 +2267,11 @@ input:focus-visible {
   position: fixed;
   min-height: 100%;
   min-width: 100%;
+  background-color: white;
+}
+
+.main-wrapper.theme-dark {
+  background-color: #2b394b;
 }
 
 .jet-table {
