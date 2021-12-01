@@ -49,7 +49,7 @@ export const Folders = function Folders({
   }
 
   return (
-    <div className="w-100 mt-4 px-3 card folder-list">
+    <div className="w-100 px-3 card folder-list">
       {isLoading && (
         <div className="px-1 py-2" style={{ minHeight: '200px' }}>
           {[1, 2, 3, 4, 5].map((element, index) => {
