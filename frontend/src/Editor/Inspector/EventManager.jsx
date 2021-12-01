@@ -394,14 +394,19 @@ export const EventManager = ({
 
   if (events.length === 0) {
     return (
-      <div className="text-right">
-        <button
-          className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary"
-          onClick={addHandler}
-        >
-          + Add event handler
-        </button>
-      </div>
+      <>
+        <div className="text-right">
+          <button
+            className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary"
+            onClick={addHandler}
+          >
+            + Add event handler
+          </button>
+        </div>
+        <div className="text-center">
+          <small className="color-disabled">This table doesn&apos;t have any events</small>
+        </div>
+      </>
     );
   }
 
