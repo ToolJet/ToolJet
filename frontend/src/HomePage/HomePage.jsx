@@ -329,14 +329,14 @@ class HomePage extends React.Component {
             <div className="container-xl">
               <div className="row">
                 <div className="col-3"></div>
-                <div className="col-2">
+                <div className="col-3">
                   <h2 className="page-title px-2">
                     {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
                   </h2>
                 </div>
                 {this.canCreateApp() && (
                   <>
-                    <div className="col-3 ms-auto d-print-none"></div>
+                    <div className="col-2 ms-auto d-print-none"></div>
                     <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
                       <button
                         className={'btn btn-default d-none d-lg-inline mb-3 me-2'}
@@ -351,9 +351,8 @@ class HomePage extends React.Component {
                         </label>
                       </button>
                       <button
-                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${
-                          creatingApp ? 'btn-loading' : ''
-                        }`}
+                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${creatingApp ? 'btn-loading' : ''
+                          }`}
                         onClick={this.createApp}
                       >
                         Create new application

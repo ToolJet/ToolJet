@@ -136,7 +136,7 @@ export const AppMenu = function AppMenu({
         </Popover>
       }
     >
-      <img className="svg-icon" src="/assets/images/icons/three-dots-svgrepo-com.svg" width="12" height="12" />
+      <img className="svg-icon" src="/assets/images/icons/three-dots.svg" width="12" height="12" />
     </OverlayTrigger>
   );
 };

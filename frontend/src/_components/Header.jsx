@@ -40,7 +40,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               aria-label="Open user menu"
               data-testid="userAvatarHeader"
             >
-              <div className="d-none d-xl-block">
+              <div className="d-xl-block">
                 <span className="avatar bg-azure-lt">
                   {first_name ? first_name[0] : ''}
                   {last_name ? last_name[0] : ''}
