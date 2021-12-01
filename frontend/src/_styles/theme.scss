@@ -973,9 +973,13 @@ body {
   background: transparent;
 }
 
+.jet-data-table::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .jet-data-table:hover {
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow-x: overlay;
+  overflow-y: overlay;
 }
 
 .jet-data-table {
