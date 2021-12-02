@@ -1,5 +1,4 @@
 import React from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 class Switch extends React.Component {
   render() {
@@ -21,58 +20,28 @@ class Switch extends React.Component {
   }
 }
 
-export const ToggleSwitch = ({
-  id,
-  height,
-  component,
-  onComponentClick,
-  currentState,
-  onComponentOptionChanged,
-  onEvent,
-}) => {
+export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposedVariable }) => {
   const [on, setOn] = React.useState(false);
-  const label = component.definition.properties.label.value;
-  const textColorProperty = component.definition.styles.textColor;
-  const toggleSwitchColorProperty = component.definition.styles.toggleSwitchColor;
-  const toggleSwitchColor = toggleSwitchColorProperty ? toggleSwitchColorProperty.value : '#3c92dc';
-  const textColor = textColorProperty ? textColorProperty.value : '#000';
-  const widgetVisibility = component.definition.styles.visibility?.value ?? true;
-  const disabledState = component.definition.styles.disabledState?.value ?? false;
-  
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const label = properties.label;
 
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  const { visibility, disabledState, toggleSwitchColor, textColor } = styles;
 
   function toggleValue(e) {
     const toggled = e.target.checked;
-    onComponentOptionChanged(component, 'value', toggled);
-    onEvent('onChange', { component });
+    setExposedVariable('value', toggled);
+    fireEvent('onChange');
   }
 
   const toggle = () => setOn(!on);
 
   return (
-    <div
-      className="row py-1"
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
-    >
+    <div className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>
       <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">
         <Switch
-          disabledState={parsedDisabledState}
+          disabledState={disabledState}
           on={on}
           onClick={toggle}
           onChange={toggleValue}
