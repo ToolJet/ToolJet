@@ -66,6 +66,8 @@ class App extends React.Component {
 
     return (
       <>
+      <ToastContainer />
+      
         <Router history={history}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
@@ -95,8 +97,6 @@ class App extends React.Component {
             )}
 
             {!onboarded && <OnboardingModal />}
-
-            <ToastContainer />
 
             <PrivateRoute
               exact
