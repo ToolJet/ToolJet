@@ -3,48 +3,37 @@ import 'react-datetime/css/react-datetime.css';
 import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const DaterangePicker = function DaterangePicker({
-  id,
   height,
-  component,
-  onComponentClick,
   currentState,
-  onComponentOptionChanged,
+  properties,
+  styles,
+  exposedVariables,
+  setExposedVariable,
 }) {
   console.log('currentState', currentState);
 
-  const startDateProp = component.definition.properties.startDate;
-  const endDateProp = component.definition.properties.endDate;
-  const formatProp = component.definition.properties.format;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const { visibility, disabledState } = styles;
+
+  const startDateProp = exposedVariables.startDate;
+  const endDateProp = exposedVariables.endDate;
+  const formatProp = properties.format;
 
   const [focusedInput, setFocusedInput] = useState(null);
-  const [startDate, setStartDate] = useState(startDateProp ? startDateProp.value : null);
-  const [endDate, setEndDate] = useState(endDateProp ? endDateProp.value : null);
-
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  const [startDate, setStartDate] = useState(startDateProp ?? null);
+  const [endDate, setEndDate] = useState(endDateProp ?? null);
 
   function onDateChange(dates) {
     const start = dates.startDate;
     const end = dates.endDate;
 
     if (start) {
-      onComponentOptionChanged(component, 'startDate', start.format(formatProp.value));
+      setExposedVariable('startDate', start.format(formatProp.value));
     }
 
     if (end) {
-      onComponentOptionChanged(component, 'endDate', end.format(formatProp.value));
+      setExposedVariable('endDate', end.format(formatProp.value));
     }
 
     setStartDate(start);
@@ -56,16 +45,9 @@ export const DaterangePicker = function DaterangePicker({
   }
 
   return (
-    <div
-      className="daterange-picker-widget p-0"
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
-    >
+    <div className="daterange-picker-widget p-0" style={{ height, display: visibility ? '' : 'none' }}>
       <DateRangePicker
-        disabled={parsedDisabledState}
+        disabled={disabledState}
         startDate={startDate}
         startDateId="startDate"
         isOutsideRange={() => false}
