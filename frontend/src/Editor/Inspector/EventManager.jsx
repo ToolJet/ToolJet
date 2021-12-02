@@ -395,9 +395,9 @@ export const EventManager = ({
   if (events.length === 0) {
     return (
       <>
-        <div className="text-right">
+        <div className="text-right m-1">
           <button
-            className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary"
+            className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
             onClick={addHandler}
           >
             + Add event handler
@@ -412,9 +412,9 @@ export const EventManager = ({
 
   return (
     <>
-      <div className="text-right">
+      <div className="text-right m-1">
         <button
-          className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary"
+          className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
           onClick={addHandler}
         >
           + Add handler

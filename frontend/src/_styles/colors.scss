@@ -1,6 +1,23 @@
 $white: #fff !default;
 $grey: #eee !default;
+$black: #000 ;
 $light-green: #82bf99;
 $dark-green: #3b734f;
 $primary: #4D72FA;
 $disabled: #9E9EA8;
+
+.color-primary {
+  color: $primary;
+}
+
+.color-black {
+  color: $black;
+}
+
+.color-disabled {
+  color: $disabled;
+}
+
+.bg-light {
+  background: #EEF3F9;
+}

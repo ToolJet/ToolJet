@@ -583,17 +583,17 @@ class Table extends React.Component {
       title: 'Columns',
       children: (
         <div>
-          <div className="col-auto text-right">
+          <div className="col-auto text-right m-1">
             <button
               onClick={this.addNewColumn}
-              className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary"
+              className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
             >
               + Add column
             </button>
           </div>
           <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
             {columns.value.map((item, index) => (
-              <div className={`card p-2 column-sort-row ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
+              <div className={`card p-2 column-sort-row m-1 ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
                 <OverlayTrigger
                   trigger="click"
                   placement="left"
@@ -669,10 +669,10 @@ class Table extends React.Component {
       children: (
         <div className="field mb-2 mt-2">
           <div className="row g-2">
-            <div className="text-right">
+            <div className="text-right m-1">
               <button
                 onClick={this.addNewAction}
-                className="btn btn-sm border-0 font-weight-normal padding-0 col-auto color-primary"
+                className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
               >
                 + Add button
               </button>
