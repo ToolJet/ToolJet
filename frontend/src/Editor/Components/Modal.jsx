@@ -6,20 +6,24 @@ import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Modal = function Modal({ id, component, height, containerProps, currentState, darkMode }) {
+export const Modal = function Modal({
+  id,
+  component,
+  height,
+  containerProps,
+  currentState,
+  darkMode,
+  properties,
+  styles,
+  setExposedVariable,
+}) {
   const [show, showModal] = useState(false);
   const parentRef = useRef(null);
 
-  const titleProp = component.definition.properties.title;
-  const title = titleProp ? titleProp.value : '';
+  const title = properties.title ?? '';
+  const size = properties.size ?? 'lg';
 
-  const sizeProp = component.definition.properties.size;
-  const size = sizeProp ? sizeProp.value : 'lg';
-
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+  const { disabledState } = styles;
 
   useEffect(() => {
     const componentState = containerProps.currentState.components[component.name];
@@ -29,12 +33,12 @@ export const Modal = function Modal({ id, component, height, containerProps, cur
   }, [containerProps.currentState.components[component.name]]);
 
   function hideModal() {
-    containerProps.onComponentOptionChanged(component, 'show', false);
+    setExposedVariable('show', false);
     showModal(false);
   }
 
   return (
-    <div data-disabled={parsedDisabledState}>
+    <div data-disabled={disabledState}>
       <BootstrapModal
         contentClassName="modal-component"
         show={show}
