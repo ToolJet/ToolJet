@@ -4,14 +4,12 @@ import Button from 'react-bootstrap/Button';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 export const Modal = function Modal({
   id,
   component,
   height,
   containerProps,
-  currentState,
   darkMode,
   properties,
   styles,
@@ -54,7 +52,7 @@ export const Modal = function Modal({
           <ConfigHandle id={id} component={component} configHandleClicked={containerProps.onComponentClick} />
         )}
         <BootstrapModal.Header>
-          <BootstrapModal.Title>{resolveWidgetFieldValue(title, currentState)}</BootstrapModal.Title>
+          <BootstrapModal.Title>{title}</BootstrapModal.Title>
           <div>
             <Button variant={darkMode ? 'secondary' : 'light'} size="sm" onClick={hideModal}>
               x
