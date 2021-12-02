@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   useTable,
@@ -13,7 +11,7 @@ import {
   useRowSelect,
 } from 'react-table';
 import cx from 'classnames';
-import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
+import { resolveReferences, validateWidget } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
@@ -27,7 +25,6 @@ import { GlobalFilter } from './GlobalFilter';
 var _ = require('lodash');
 export function Table({
   id,
-  width,
   height,
   component,
   onComponentClick,
@@ -39,63 +36,36 @@ export function Table({
   onComponentOptionsChanged,
   darkMode,
   fireEvent,
+  properties,
+  styles,
+  exposedVariables,
+  setExposedVariable,
 }) {
-  const color = component.definition.styles.textColor.value;
-  const actions = component.definition.properties.actions || { value: [] };
-  const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
-  const serverSidePagination = serverSidePaginationProperty ? serverSidePaginationProperty.value : false;
-
-  const serverSideSearchProperty = component.definition.properties.serverSideSearch;
-  const serverSideSearch = serverSideSearchProperty ? serverSideSearchProperty.value : false;
-
-  const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
-  const displaySearchBox = displaySearchBoxProperty ? displaySearchBoxProperty.value : true;
-
-  const showDownloadButtonProperty = component.definition.properties.showDownloadButton?.value;
-  const showDownloadButton = resolveWidgetFieldValue(showDownloadButtonProperty, currentState) ?? true; // default is true for backward compatibility
-
-  const showFilterButtonProperty = component.definition.properties.showFilterButton?.value;
-  const showFilterButton = resolveWidgetFieldValue(showFilterButtonProperty, currentState) ?? true; // default is true for backward compatibility
-
-  const showBulkUpdateActionsProperty = component.definition.properties.showBulkUpdateActions?.value;
-  const showBulkUpdateActions = resolveWidgetFieldValue(showBulkUpdateActionsProperty, currentState) ?? true; // default is true for backward compatibility
-
-  const showBulkSelectorProperty = component.definition.properties.showBulkSelector?.value;
-  const showBulkSelector = resolveWidgetFieldValue(showBulkSelectorProperty, currentState) ?? false; // default is false for backward compatibility
-
-  const highlightSelectedRowProperty = component.definition.properties.highlightSelectedRow?.value;
-  const highlightSelectedRow = resolveWidgetFieldValue(highlightSelectedRowProperty, currentState) ?? false; // default is false for backward compatibility
-
-  const clientSidePaginationProperty = component.definition.properties.clientSidePagination?.value;
-  const clientSidePagination =
-    resolveWidgetFieldValue(clientSidePaginationProperty, currentState) ?? !serverSidePagination; // default is true for backward compatibility
-
-  const tableTypeProperty = component.definition.styles.tableType;
-  let tableType = tableTypeProperty ? tableTypeProperty.value : 'table-bordered';
+  let { textColor, tableType = 'table-bordered', cellSize, visibility, disabledState } = styles;
+  const color = textColor;
+  const cellSizeType = cellSize;
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
-  const cellSizeType = component.definition.styles.cellSize?.value;
-
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  //? default value for backward compatibility
+  const {
+    actions = [],
+    serverSidePagination,
+    serverSideSearch = true,
+    displaySearchBox,
+    showDownloadButton = true,
+    showFilterButton = true,
+    showBulkUpdateActions = true,
+    showBulkSelector = false,
+    highlightSelectedRow = false,
+    clientSidePagination = true,
+  } = properties;
 
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
-    const loadingStateProperty = component.definition.properties.loadingState;
-    if (loadingStateProperty && currentState) {
-      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
-      setLoadingState(newState);
+    const loadingStateProperty = properties.loadingState;
+    if (loadingStateProperty || currentState) {
+      setLoadingState(loadingStateProperty);
     }
   }, [currentState]);
 
@@ -203,8 +173,8 @@ export function Table({
   }
 
   function onPageIndexChanged(page) {
-    onComponentOptionChanged(component, 'pageIndex', page).then(() => {
-      onEvent('onPageChanged', { component, data: {} });
+    setExposedVariable('pageIndex', page).then(() => {
+      fireEvent('onPageChanged');
     });
   }
 
@@ -215,13 +185,13 @@ export function Table({
       };
     });
 
-    onComponentOptionChanged(component, 'changeSet', {});
-    onComponentOptionChanged(component, 'dataUpdates', []);
+    setExposedVariable('changeSet', {});
+    setExposedVariable('dataUpdates', []);
   }
 
   function handleChangesDiscarded() {
-    onComponentOptionChanged(component, 'changeSet', {});
-    onComponentOptionChanged(component, 'dataUpdates', []);
+    setExposedVariable('changeSet', {});
+    setExposedVariable('dataUpdates', []);
   }
 
   function customFilter(rows, columnIds, filterValue) {
@@ -555,71 +525,69 @@ export function Table({
 
   tableData = tableData || [];
 
-  const leftActions = () => actions.value.filter((action) => action.position === 'left');
-  const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
+  const leftActions = () => actions.filter((action) => action.position === 'left');
+  const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
 
   const leftActionsCellData =
     leftActions().length > 0
       ? [
-        {
-          id: 'leftActions',
-          Header: 'Actions',
-          accessor: 'edit',
-          width: columnSizes.leftActions || defaultColumn.width,
-          Cell: (cell) => {
-            return leftActions().map((action) => (
-              <button
-                key={action.name}
-                className="btn btn-sm m-1 btn-light"
-                style={{ background: action.backgroundColor, color: action.textColor }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEvent('onTableActionButtonClicked', {
-                    component,
-                    data: cell.row.original,
-                    rowId: cell.row.id,
-                    action,
-                  });
-                }}
-              >
-                {action.buttonText}
-              </button>
-            ));
+          {
+            id: 'leftActions',
+            Header: 'Actions',
+            accessor: 'edit',
+            width: columnSizes.leftActions || defaultColumn.width,
+            Cell: (cell) => {
+              return leftActions().map((action) => (
+                <button
+                  key={action.name}
+                  className="btn btn-sm m-1 btn-light"
+                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fireEvent('onTableActionButtonClicked', {
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                    });
+                  }}
+                >
+                  {action.buttonText}
+                </button>
+              ));
+            },
           },
-        },
-      ]
+        ]
       : [];
 
   const rightActionsCellData =
     rightActions().length > 0
       ? [
-        {
-          id: 'rightActions',
-          Header: 'Actions',
-          accessor: 'edit',
-          width: columnSizes.rightActions || defaultColumn.width,
-          Cell: (cell) => {
-            return rightActions().map((action) => (
-              <button
-                key={action.name}
-                className="btn btn-sm m-1 btn-light"
-                style={{ background: action.backgroundColor, color: action.textColor }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEvent('onTableActionButtonClicked', {
-                    component,
-                    data: cell.row.original,
-                    rowId: cell.row.id,
-                    action,
-                  });
-                }}
-              >
-                {action.buttonText}
-              </button>
-            ));
+          {
+            id: 'rightActions',
+            Header: 'Actions',
+            accessor: 'edit',
+            width: columnSizes.rightActions || defaultColumn.width,
+            Cell: (cell) => {
+              return rightActions().map((action) => (
+                <button
+                  key={action.name}
+                  className="btn btn-sm m-1 btn-light"
+                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fireEvent('onTableActionButtonClicked', {
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                    });
+                  }}
+                >
+                  {action.buttonText}
+                </button>
+              ));
+            },
           },
-        },
-      ]
+        ]
       : [];
 
   const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
@@ -735,7 +703,7 @@ export function Table({
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
-    onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);
+    setExposedVariable('selectedRows', selectedRowsOriginalData);
   }, [selectedFlatRows.length]);
 
   React.useEffect(() => {
@@ -771,9 +739,9 @@ export function Table({
 
   return (
     <div
-      data-disabled={parsedDisabledState}
+      data-disabled={disabledState}
       className="card jet-table"
-      style={{ width: `100%`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ width: `100%`, height: `${height}px`, display: visibility ? '' : 'none' }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);
@@ -835,8 +803,9 @@ export function Table({
                 return (
                   <tr
                     key={index}
-                    className={`table-row ${highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
-                      }`}
+                    className={`table-row ${
+                      highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
+                    }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -898,62 +867,62 @@ export function Table({
         Object.keys(componentState.changeSet || {}).length > 0 ||
         showFilterButton ||
         showDownloadButton) && (
-          <div className="card-footer d-flex align-items-center jet-table-footer">
-            <div className="table-footer row">
-              <div className="col">
-                {(clientSidePagination || serverSidePagination) && (
-                  <Pagination
-                    lastActivePageIndex={pageIndex}
-                    serverSide={serverSidePagination}
-                    autoGotoPage={gotoPage}
-                    autoCanNextPage={canNextPage}
-                    autoPageCount={pageCount}
-                    autoPageOptions={pageOptions}
-                    onPageIndexChanged={onPageIndexChanged}
-                  />
-                )}
-              </div>
-
-              {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 && (
-                <div className="col">
-                  <button
-                    className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                    onClick={() =>
-                      onEvent('onBulkUpdate', { component }).then(() => {
-                        handleChangesSaved();
-                      })
-                    }
-                  >
-                    Save Changes
-                  </button>
-                  <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
-                    Discard changes
-                  </button>
-                </div>
+        <div className="card-footer d-flex align-items-center jet-table-footer">
+          <div className="table-footer row">
+            <div className="col">
+              {(clientSidePagination || serverSidePagination) && (
+                <Pagination
+                  lastActivePageIndex={pageIndex}
+                  serverSide={serverSidePagination}
+                  autoGotoPage={gotoPage}
+                  autoCanNextPage={canNextPage}
+                  autoPageCount={pageCount}
+                  autoPageOptions={pageOptions}
+                  onPageIndexChanged={onPageIndexChanged}
+                />
               )}
+            </div>
 
-              <div className="col-auto">
-                {showFilterButton && (
-                  <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
-                    <img src="/assets/images/icons/filter.svg" width="13" height="13" />
-                    {filters.length > 0 && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                    )}
-                  </span>
-                )}
-                {showDownloadButton && (
-                  <span
-                    data-tip="Download as CSV"
-                    className="btn btn-light btn-sm p-1"
-                    onClick={() => exportData('csv', true)}
-                  >
-                    <img src="/assets/images/icons/download.svg" width="13" height="13" />
-                  </span>
-                )}
+            {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 && (
+              <div className="col">
+                <button
+                  className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                  onClick={() =>
+                    onEvent('onBulkUpdate', { component }).then(() => {
+                      handleChangesSaved();
+                    })
+                  }
+                >
+                  Save Changes
+                </button>
+                <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
+                  Discard changes
+                </button>
               </div>
+            )}
+
+            <div className="col-auto">
+              {showFilterButton && (
+                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
+                  <img src="/assets/images/icons/filter.svg" width="13" height="13" />
+                  {filters.length > 0 && (
+                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                  )}
+                </span>
+              )}
+              {showDownloadButton && (
+                <span
+                  data-tip="Download as CSV"
+                  className="btn btn-light btn-sm p-1"
+                  onClick={() => exportData('csv', true)}
+                >
+                  <img src="/assets/images/icons/download.svg" width="13" height="13" />
+                </span>
+              )}
             </div>
           </div>
-        )}
+        </div>
+      )}
       {isFiltersVisible && (
         <div className="table-filters card">
           <div className="card-header row">
