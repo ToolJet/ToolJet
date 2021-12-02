@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ id, height, component, onComponentClick, currentState }) {
-  const text = component.definition.properties.text.value;
-  const color = component.definition.styles.textColor.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
+export const Text = function Text({ height, currentState, properties, styles }) {
   const [loadingState, setLoadingState] = useState(false);
 
+  const { textColor, visibility, disabledState } = styles;
+  const text = properties.text ?? '';
+  const color = textColor;
+
   useEffect(() => {
-    const loadingStateProperty = component.definition.properties.loadingState;
+    const loadingStateProperty = properties.loadingState;
     if (loadingStateProperty && currentState) {
-      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
-      setLoadingState(newState);
+      setLoadingState(loadingStateProperty);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState]);
@@ -35,31 +30,15 @@ export const Text = function Text({ id, height, component, onComponentClick, cur
     }
   }
 
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
-
   const computedStyles = {
     color,
     height,
-    display: parsedWidgetVisibility ? 'flex' : 'none',
+    display: visibility ? 'flex' : 'none',
     alignItems: 'center',
   };
 
   return (
-    <div
-      data-disabled={parsedDisabledState}
-      className="text-widget"
-      style={computedStyles}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
-    >
+    <div data-disabled={disabledState} className="text-widget" style={computedStyles}>
       {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />}
       {loadingState === true && (
         <div>
