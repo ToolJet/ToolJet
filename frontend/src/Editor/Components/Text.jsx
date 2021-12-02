@@ -11,7 +11,7 @@ export const Text = function Text({ height, currentState, properties, styles }) 
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
-    if (loadingStateProperty && currentState) {
+    if (loadingStateProperty || currentState) {
       setLoadingState(loadingStateProperty);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
