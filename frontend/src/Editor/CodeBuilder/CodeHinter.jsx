@@ -190,7 +190,7 @@ export function CodeHinter({
 
 const PopupIcon = ({ callback }) => {
   return (
-    <div className="d-flex justify-content-end">
+    <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"
