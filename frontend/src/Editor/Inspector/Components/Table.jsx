@@ -301,7 +301,7 @@ class Table extends React.Component {
 
           {column.columnType === 'datepicker' && (
             <div>
-              <label className="form-label">Date Format</label>
+              <label className="form-label">Date Display Format</label>
               <div className="field mb-2">
                 <input
                   type="text"
