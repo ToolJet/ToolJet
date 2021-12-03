@@ -62,9 +62,19 @@ class Viewer extends React.Component {
         lastName: currentUser.last_name,
       };
     }
+
+    let mobileLayoutHasWidgets = false;
+
+
+    if (this.state.currentLayout === 'mobile') {
+      mobileLayoutHasWidgets = Object.keys(data.definition.components).filter(componentId => data.definition.components[componentId]['layouts']['mobile']).length > 0;
+    }
+
     this.setState(
       {
         currentSidebarTab: 2,
+        currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
+        canvasWidth: this.state.currentLayout === 'desktop' ? '100%' : mobileLayoutHasWidgets ? `${deviceWindowWidth}px` : '1292px',
         selectedComponent: null,
         currentState: {
           queries: {},
@@ -136,6 +146,7 @@ class Viewer extends React.Component {
       currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
+      canvasWidth
     } = this.state;
 
     return (
@@ -153,7 +164,7 @@ class Viewer extends React.Component {
               <div className="container-xl header-container">
                 <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                   <a href="/">
-                    <img src="/assets/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
+                    <img src="/assets/images/logo.svg" style={{ height: '1.6rem' }} className="navbar-brand-image" />
                   </a>
                 </h1>
                 {this.state.app && <span>{this.state.app.name}</span>}
@@ -169,7 +180,7 @@ class Viewer extends React.Component {
                 <div
                   className="canvas-area"
                   style={{
-                    width: currentLayout === 'desktop' ? '100%' : `${deviceWindowWidth}px`,
+                    width: canvasWidth,
                     maxWidth: '1292px'
                   }}
                 >
