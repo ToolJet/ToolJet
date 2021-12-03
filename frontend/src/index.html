@@ -1,37 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ToolJet - Dashboard</title>
 
-    <style>
-      a {
-        cursor: pointer;
-      }
-    </style>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolJet - Dashboard</title>
 
-    <link rel="icon" href="/assets/images/logo.svg" sizes="any" type="image/svg+xml" />
+  <style>
+    a {
+      cursor: pointer;
+    }
+  </style>
 
-    <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="app"></div>
-  </body>
+  <link rel="icon" href="/assets/images/logo.svg" sizes="any" type="image/svg+xml" />
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div id="app"></div>
+</body>
+
 </html>
 <script>
-  (function(d,t) {
-    var BASE_URL="https://app.chatwoot.com";
-    var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-    g.src=BASE_URL+"/packs/js/sdk.js";
-    s.parentNode.insertBefore(g,s);
-    g.onload=function(){
+  (function (d, t) {
+    window.chatwootSettings = {
+      hideMessageBubble: true,
+    };
+    var BASE_URL = "https://app.chatwoot.com";
+    var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+    g.src = BASE_URL + "/packs/js/sdk.js";
+    s.parentNode.insertBefore(g, s);
+    g.onload = function () {
       window.chatwootSDK.run({
         websiteToken: 'oAsegzy6uDzhxJjm75Yg7P5S',
         baseUrl: BASE_URL
       })
     }
-  })(document,"script");
+  })(document, "script");
 </script>

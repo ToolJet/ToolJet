@@ -58,10 +58,6 @@ class App extends React.Component {
         { name: `${x.first_name} ${x.last_name}` }
       );
     });
-
-    window.chatwootSettings = {
-      hideMessageBubble: true,
-    };
   }
 
   logout = () => {
@@ -191,13 +187,13 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-           <PrivateRoute
-             exact
-             path="/library"
-             component={Library}
-             switchDarkMode={this.switchDarkMode}
-             darkMode={darkMode}
-           />
+            <PrivateRoute
+              exact
+              path="/library"
+              component={Library}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
             <PrivateRoute
               exact
               path="/settings"
