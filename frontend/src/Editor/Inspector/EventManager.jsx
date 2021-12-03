@@ -298,6 +298,47 @@ export const EventManager = ({
                 </div>
               </>
             )}
+            {event.actionId === 'generate-file' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">Type</div>
+                  <div className="col-9">
+                    <SelectSearch
+                      options={[{ name: 'CSV', value: 'csv' }]}
+                      value={'csv'}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'fileType', value);
+                      }}
+                      filterOptions={fuzzySearch}
+                      placeholder="Select.."
+                    />
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">File name</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.fileName}
+                      onChange={(value) => handlerChanged(index, 'fileName', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">Data</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.data}
+                      onChange={(value) => handlerChanged(index, 'data', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </Popover.Content>
       </Popover>

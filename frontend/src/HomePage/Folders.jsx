@@ -49,7 +49,7 @@ export const Folders = function Folders({
   }
 
   return (
-    <div className="w-100 mt-4 px-3 card folder-list">
+    <div className="w-100 px-3 card folder-list">
       {isLoading && (
         <div className="px-1 py-2" style={{ minHeight: '200px' }}>
           {[1, 2, 3, 4, 5].map((element, index) => {
@@ -70,14 +70,13 @@ export const Folders = function Folders({
       {!isLoading && (
         <div data-testid="applicationFoldersList" className="list-group list-group-transparent mb-3">
           <a
-            className={`list-group-item list-group-item-action d-flex align-items-center ${
-              !activeFolder.id ? 'active' : ''
-            }`}
+            className={`list-group-item list-group-item-action d-flex align-items-center ${!activeFolder.id ? 'active' : ''
+              }`}
             onClick={() => handleFolderChange({})}
           >
             All applications
             <small className="text-muted ms-auto">
-              <span className="badge bg-azure-lt" data-testid="allApplicationsCount">
+              <span className="badge bg-blue-lt" data-testid="allApplicationsCount">
                 {totalCount}
               </span>
             </small>
@@ -85,9 +84,8 @@ export const Folders = function Folders({
           {folders.map((folder, index) => (
             <a
               key={index}
-              className={`list-group-item list-group-item-action d-flex align-items-center ${
-                activeFolder.id === folder.id ? 'active' : ''
-              }`}
+              className={`list-group-item list-group-item-action d-flex align-items-center ${activeFolder.id === folder.id ? 'active' : ''
+                }`}
               onClick={() => handleFolderChange(folder)}
             >
               {folder.name}

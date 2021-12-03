@@ -645,7 +645,7 @@ class Editor extends React.Component {
                 </button>
                 <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                   <Link to={'/'}>
-                    <img src="/assets/images/logo.svg" width="110" height="32" className="navbar-brand-image" />
+                    <img src="/assets/images/logo.svg" className="navbar-brand-image" style={{ height: '1.6rem' }} />
                   </Link>
                 </h1>
                 {this.state.app && (
@@ -768,7 +768,7 @@ class Editor extends React.Component {
               toggleComments={this.toggleComments}
               switchDarkMode={this.props.switchDarkMode}
             />
-            <div className="main">
+            <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                 style={{ transform: `scale(${zoomLevel})` }}

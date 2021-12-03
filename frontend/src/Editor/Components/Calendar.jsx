@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { CalendarEventPopover } from './CalendarPopover';
 
 const localizer = momentLocalizer(moment);
 
@@ -15,18 +16,31 @@ const parseDate = (date, dateFormat) => moment(date, dateFormat).toDate();
 
 const allowedCalendarViews = ['month', 'week', 'day'];
 
-export const Calendar = function ({ height, width, properties, styles, fireEvent, darkMode }) {
+export const Calendar = function ({
+  id,
+  height,
+  properties,
+  styles,
+  fireEvent,
+  darkMode,
+  containerProps,
+  removeComponent,
+  setExposedVariable,
+}) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
 
   const events = properties.events ? properties.events.map((event) => prepareEvent(event, properties.dateFormat)) : [];
   const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
 
+  const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
+
   const eventPropGetter = (event) => {
     const backgroundColor = event.color;
     const textStyle =
       event.textOrientation === 'vertical' ? { writingMode: 'vertical-rl', textOrientation: 'mixed' } : {};
-    const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5 };
+    const color = event.textColor ?? 'white';
+    const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5, color };
 
     return { style };
   };
@@ -48,12 +62,26 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
     fireEvent('onCalendarSlotSelect', { selectedSlots });
   };
 
+  function popoverClosed() {
+    setEventPopoverOptions({
+      ...eventPopoverOptions,
+      show: false,
+    });
+  }
+
   const defaultView = allowedCalendarViews.includes(properties.defaultView)
     ? properties.defaultView
     : allowedCalendarViews[0];
 
+  const components = {
+    timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>All day</div>,
+    week: {
+      header: (props) => <div>{moment(props.date).format(styles.displayDayNamesInWeekView ? 'ddd' : 'DD MMM')}</div>,
+    },
+  };
+
   return (
-    <div>
+    <div id={id}>
       <ReactCalendar
         className={`calendar-widget
         ${darkMode ? 'dark-mode' : ''}
@@ -68,16 +96,39 @@ export const Calendar = function ({ height, width, properties, styles, fireEvent
         style={style}
         views={allowedCalendarViews}
         defaultView={defaultView}
+        onView={(view) => setExposedVariable('currentView', view)}
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"
-        onSelectEvent={(calendarEvent) => fireEvent('onCalendarEventSelect', { calendarEvent })}
+        onSelectEvent={(calendarEvent, e) => {
+          fireEvent('onCalendarEventSelect', { calendarEvent });
+          if (properties.showPopOverOnEventClick)
+            setEventPopoverOptions({
+              ...eventPopoverOptions,
+              show: true,
+              offset: {
+                left: e.target.getBoundingClientRect().x,
+                top: e.target.getBoundingClientRect().y,
+                width: e.target.getBoundingClientRect().width,
+                height: e.target.getBoundingClientRect().height,
+              },
+            });
+        }}
         selectable={true}
         onSelectSlot={slotSelectHandler}
         toolbar={properties.displayToolbar}
         eventPropGetter={eventPropGetter}
         tooltipAccessor="tooltip"
         popup={true}
+        components={components}
+      />
+      <CalendarEventPopover
+        calenderWidgetId={id}
+        show={eventPopoverOptions.show}
+        offset={eventPopoverOptions.offset}
+        containerProps={containerProps}
+        removeComponent={removeComponent}
+        popoverClosed={popoverClosed}
       />
     </div>
   );

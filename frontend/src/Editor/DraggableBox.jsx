@@ -45,18 +45,13 @@ function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
 }
 
-function getStyles(left, top, isDragging, component, isSelectedComponent, currentLayoutOptions) {
-  // const transform = `translate3d(${left}px, ${top}px, 0)`;
+function getStyles(isDragging, isSelectedComponent) {
   return {
     position: 'absolute',
-    // transform,
-    // WebkitTransform: transform,
     zIndex: isSelectedComponent ? 2 : 1,
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
-    height: isDragging ? 0 : '100%',
-    width: computeWidth(currentLayoutOptions),
   };
 }
 
@@ -179,6 +174,7 @@ export const DraggableBox = function DraggableBox({
           className="draggable-box "
           onMouseOver={() => setMouseOver(true)}
           onMouseLeave={() => setMouseOver(false)}
+          style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd
             style={{ ...style }}
@@ -207,6 +203,7 @@ export const DraggableBox = function DraggableBox({
               setDragging(false)
               onDragStop(e, id, direction, currentLayout, currentLayoutOptions)
             }}
+            cancel={`div.table-responsive.jet-data-table, div.calendar-widget`}
             onDragStart={(e) => e.stopPropagation()}
             enableResizing={mode === 'edit'}
             onResizeStop={(e, direction, ref, d, position) => {

@@ -343,7 +343,7 @@ class Table extends React.Component {
 
           {column.columnType === 'datepicker' && (
             <div>
-              <label className="form-label">Date Format</label>
+              <label className="form-label">Date Display Format</label>
               <div className="field mb-2">
                 <CodeHinter
                   currentState={this.props.currentState}
@@ -354,6 +354,19 @@ class Table extends React.Component {
                   placeholder={'DD-MM-YYYY'}
                   onChange={(value) => this.onColumnItemChange(index, 'dateFormat', value)}
                   componentName={this.getPopoverFieldSource(column.columnType, 'dateFormat')}
+                />
+              </div>
+              <label className="form-label">Date Parse Format</label>
+              <div className="field mb-2">
+                <input
+                  type="text"
+                  className="form-control text-field"
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    this.onColumnItemChange(index, 'parseDateFormat', e.target.value);
+                  }}
+                  defaultValue={column.parseDateFormat}
+                  placeholder={'DD-MM-YYYY'}
                 />
               </div>
               <div className="field mb-2">

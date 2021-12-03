@@ -303,6 +303,7 @@ export function Table({
     if (columnType === 'datepicker') {
       column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
       column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
+      column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
     }
 
     const width = columnSize || defaultColumn.width;
@@ -529,10 +530,11 @@ export function Table({
             return (
               <div>
                 <Datepicker
-                  dateFormat={column.dateFormat}
+                  dateDisplayFormat={column.dateFormat}
                   isTimeChecked={column.isTimeChecked}
                   value={cellValue}
                   readOnly={column.isEditable}
+                  parseDateFormat={column.parseDateFormat}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
@@ -561,65 +563,65 @@ export function Table({
   const leftActionsCellData =
     leftActions().length > 0
       ? [
-        {
-          id: 'leftActions',
-          Header: 'Actions',
-          accessor: 'edit',
-          width: columnSizes.leftActions || defaultColumn.width,
-          Cell: (cell) => {
-            return leftActions().map((action) => (
-              <button
-                key={action.name}
-                className="btn btn-sm m-1 btn-light"
-                style={{ background: action.backgroundColor, color: action.textColor }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEvent('onTableActionButtonClicked', {
-                    component,
-                    data: cell.row.original,
-                    rowId: cell.row.id,
-                    action,
-                  });
-                }}
-              >
-                {action.buttonText}
-              </button>
-            ));
+          {
+            id: 'leftActions',
+            Header: 'Actions',
+            accessor: 'edit',
+            width: columnSizes.leftActions || defaultColumn.width,
+            Cell: (cell) => {
+              return leftActions().map((action) => (
+                <button
+                  key={action.name}
+                  className="btn btn-sm m-1 btn-light"
+                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEvent('onTableActionButtonClicked', {
+                      component,
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                    });
+                  }}
+                >
+                  {action.buttonText}
+                </button>
+              ));
+            },
           },
-        },
-      ]
+        ]
       : [];
 
   const rightActionsCellData =
     rightActions().length > 0
       ? [
-        {
-          id: 'rightActions',
-          Header: 'Actions',
-          accessor: 'edit',
-          width: columnSizes.rightActions || defaultColumn.width,
-          Cell: (cell) => {
-            return rightActions().map((action) => (
-              <button
-                key={action.name}
-                className="btn btn-sm m-1 btn-light"
-                style={{ background: action.backgroundColor, color: action.textColor }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEvent('onTableActionButtonClicked', {
-                    component,
-                    data: cell.row.original,
-                    rowId: cell.row.id,
-                    action,
-                  });
-                }}
-              >
-                {action.buttonText}
-              </button>
-            ));
+          {
+            id: 'rightActions',
+            Header: 'Actions',
+            accessor: 'edit',
+            width: columnSizes.rightActions || defaultColumn.width,
+            Cell: (cell) => {
+              return rightActions().map((action) => (
+                <button
+                  key={action.name}
+                  className="btn btn-sm m-1 btn-light"
+                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEvent('onTableActionButtonClicked', {
+                      component,
+                      data: cell.row.original,
+                      rowId: cell.row.id,
+                      action,
+                    });
+                  }}
+                >
+                  {action.buttonText}
+                </button>
+              ));
+            },
           },
-        },
-      ]
+        ]
       : [];
 
   const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
@@ -663,7 +665,10 @@ export function Table({
     ] // Hack: need to fix
   );
 
-  const data = useMemo(() => tableData, [tableData.length, componentState.changeSet]);
+  const data = useMemo(
+    () => tableData,
+    [tableData.length, componentState.changeSet, component.definition.properties.data.value]
+  );
 
   const computedStyles = {
     // width: `${width}px`,
@@ -835,8 +840,9 @@ export function Table({
                 return (
                   <tr
                     key={index}
-                    className={`table-row ${highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
-                      }`}
+                    className={`table-row ${
+                      highlightSelectedRow && row.id === componentState.selectedRowId ? 'selected' : ''
+                    }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -898,62 +904,62 @@ export function Table({
         Object.keys(componentState.changeSet || {}).length > 0 ||
         showFilterButton ||
         showDownloadButton) && (
-          <div className="card-footer d-flex align-items-center jet-table-footer">
-            <div className="table-footer row">
-              <div className="col">
-                {(clientSidePagination || serverSidePagination) && (
-                  <Pagination
-                    lastActivePageIndex={pageIndex}
-                    serverSide={serverSidePagination}
-                    autoGotoPage={gotoPage}
-                    autoCanNextPage={canNextPage}
-                    autoPageCount={pageCount}
-                    autoPageOptions={pageOptions}
-                    onPageIndexChanged={onPageIndexChanged}
-                  />
-                )}
-              </div>
-
-              {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 && (
-                <div className="col">
-                  <button
-                    className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
-                    onClick={() =>
-                      onEvent('onBulkUpdate', { component }).then(() => {
-                        handleChangesSaved();
-                      })
-                    }
-                  >
-                    Save Changes
-                  </button>
-                  <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
-                    Discard changes
-                  </button>
-                </div>
+        <div className="card-footer d-flex align-items-center jet-table-footer">
+          <div className="table-footer row">
+            <div className="col">
+              {(clientSidePagination || serverSidePagination) && (
+                <Pagination
+                  lastActivePageIndex={pageIndex}
+                  serverSide={serverSidePagination}
+                  autoGotoPage={gotoPage}
+                  autoCanNextPage={canNextPage}
+                  autoPageCount={pageCount}
+                  autoPageOptions={pageOptions}
+                  onPageIndexChanged={onPageIndexChanged}
+                />
               )}
+            </div>
 
-              <div className="col-auto">
-                {showFilterButton && (
-                  <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
-                    <img src="/assets/images/icons/filter.svg" width="13" height="13" />
-                    {filters.length > 0 && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                    )}
-                  </span>
-                )}
-                {showDownloadButton && (
-                  <span
-                    data-tip="Download as CSV"
-                    className="btn btn-light btn-sm p-1"
-                    onClick={() => exportData('csv', true)}
-                  >
-                    <img src="/assets/images/icons/download.svg" width="13" height="13" />
-                  </span>
-                )}
+            {showBulkUpdateActions && Object.keys(componentState.changeSet || {}).length > 0 && (
+              <div className="col">
+                <button
+                  className={`btn btn-primary btn-sm ${componentState.isSavingChanges ? 'btn-loading' : ''}`}
+                  onClick={() =>
+                    onEvent('onBulkUpdate', { component }).then(() => {
+                      handleChangesSaved();
+                    })
+                  }
+                >
+                  Save Changes
+                </button>
+                <button className="btn btn-light btn-sm mx-2" onClick={() => handleChangesDiscarded()}>
+                  Discard changes
+                </button>
               </div>
+            )}
+
+            <div className="col-auto">
+              {showFilterButton && (
+                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-2" onClick={() => showFilters()}>
+                  <img src="/assets/images/icons/filter.svg" width="13" height="13" />
+                  {filters.length > 0 && (
+                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                  )}
+                </span>
+              )}
+              {showDownloadButton && (
+                <span
+                  data-tip="Download as CSV"
+                  className="btn btn-light btn-sm p-1"
+                  onClick={() => exportData('csv', true)}
+                >
+                  <img src="/assets/images/icons/download.svg" width="13" height="13" />
+                </span>
+              )}
             </div>
           </div>
-        )}
+        </div>
+      )}
       {isFiltersVisible && (
         <div className="table-filters card">
           <div className="card-header row">
