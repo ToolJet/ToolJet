@@ -65,7 +65,6 @@ class Viewer extends React.Component {
 
     let mobileLayoutHasWidgets = false;
 
-
     if (this.state.currentLayout === 'mobile') {
       mobileLayoutHasWidgets = Object.keys(data.definition.components).filter(componentId => data.definition.components[componentId]['layouts']['mobile']).length > 0;
     }
