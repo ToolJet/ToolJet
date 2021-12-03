@@ -73,7 +73,7 @@ class Viewer extends React.Component {
       {
         currentSidebarTab: 2,
         currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
-        canvasWidth: this.state.currentLayout === 'desktop' ? '100%' : mobileLayoutHasWidgets ? `${deviceWindowWidth}px` : '1292px',
+        canvasWidth: this.state.currentLayout === 'desktop' ? '100%' : mobileLayoutHasWidgets ? `${this.state.deviceWindowWidth}px` : '1292px',
         selectedComponent: null,
         currentState: {
           queries: {},
