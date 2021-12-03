@@ -745,7 +745,7 @@ export function Table({
     if (!serverSidePagination && clientSidePagination) {
       setPageSize(10);
     }
-  }, [clientSidePagination, serverSidePagination]);
+  }, [clientSidePagination, serverSidePagination, rows]);
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
