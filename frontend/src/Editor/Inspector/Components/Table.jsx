@@ -593,7 +593,7 @@ class Table extends React.Component {
           </div>
           <SortableList onSortEnd={this.onSortEnd} className="w-100" draggedItemClassName="dragged">
             {columns.value.map((item, index) => (
-              <div className={`card p-2 column-sort-row m-1 ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
+              <div className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`} key={index}>
                 <OverlayTrigger
                   trigger="click"
                   placement="left"
