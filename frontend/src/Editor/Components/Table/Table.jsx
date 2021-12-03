@@ -360,7 +360,7 @@ export function Table({
                 <div>
                   <input
                     type="text"
-                    style={cellStyles}
+                    style={{ ...cellStyles, maxWidth: width, minWidth: width - 10 }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
