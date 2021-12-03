@@ -1,6 +1,7 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/7828962/143565889-f4c51c89-fc7e-471c-90b6-42ae697bca6b.png" width="200" />
   <br/>
+
   Low code framework for building business applications
 </p>
 
@@ -20,9 +21,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 <p align="center">
   <kbd>
-<!--     <img src="https://user-images.githubusercontent.com/7828962/134216201-b2c65c48-547a-4e79-946c-60b7be54b70c.png" /> -->
-    <img src="https://user-images.githubusercontent.com/7828962/143566147-db65191f-a6ae-4e1e-8a59-43dcb3fc9043.png"/>
-
+    <img src="https://user-images.githubusercontent.com/7828962/144586771-c6d6cba5-8f79-4e0c-80b4-aa1a38657229.png"/>
   </kbd>
 </p>
 
