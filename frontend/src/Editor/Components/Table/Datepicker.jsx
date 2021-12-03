@@ -5,34 +5,43 @@ import moment from 'moment';
 import 'react-datetime/css/react-datetime.css';
 import '@/_styles/custom.scss';
 
-export const Datepicker = function Datepicker({ value, onChange, readOnly, isTimeChecked, dateFormat }) {
-  const [date, setDate] = React.useState(value);
+const getDate = (value, parseDateFormat, displayFormat) => {
+  const dateString = value;
+  const momentObj = moment(dateString, parseDateFormat);
+  const momentString = momentObj.format(displayFormat);
+  return momentString;
+};
 
-  const dateChange = (e) => {
-    if (isTimeChecked) {
-      setDate(e.format(`${dateFormat} LT`));
-    } else {
-      setDate(e.format(dateFormat));
-    }
+export const Datepicker = function Datepicker({
+  value,
+  onChange,
+  readOnly,
+  isTimeChecked,
+  dateDisplayFormat, //?Display date format
+  parseDateFormat, //?Parse date format
+}) {
+  const [date, setDate] = React.useState(() => getDate(value, parseDateFormat, dateDisplayFormat));
+
+  const dateChange = (event) => {
+    const value = event._isAMomentObject ? event.format() : event;
+    let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
+    const dateString = moment(value).format(selectedDateFormat);
+    setDate(() => dateString);
   };
 
   React.useEffect(() => {
-    if (!isTimeChecked) {
-      setDate(moment(value, 'DD-MM-YYYY').format(dateFormat));
-    }
-
-    if (isTimeChecked) {
-      setDate(moment(value, 'DD-MM-YYYY LT').format(`${dateFormat} LT`));
-    }
+    let selectedDateFormat = isTimeChecked ? `${dateDisplayFormat} LT` : dateDisplayFormat;
+    const dateString = getDate(value, parseDateFormat, selectedDateFormat);
+    setDate(() => dateString);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTimeChecked, readOnly, dateFormat]);
-
-  let inputProps = {
-    disabled: !readOnly,
-  };
+  }, [isTimeChecked, readOnly, dateDisplayFormat]);
 
   const onDatepickerClose = () => {
     onChange(date);
+  };
+
+  let inputProps = {
+    disabled: !readOnly,
   };
 
   return (
@@ -41,9 +50,10 @@ export const Datepicker = function Datepicker({ value, onChange, readOnly, isTim
         inputProps={inputProps}
         timeFormat={isTimeChecked}
         className="cell-type-datepicker"
-        dateFormat={dateFormat}
+        dateFormat={dateDisplayFormat}
         value={date}
         onChange={dateChange}
+        closeOnSelect={true}
         onClose={onDatepickerClose}
       />
     </>
