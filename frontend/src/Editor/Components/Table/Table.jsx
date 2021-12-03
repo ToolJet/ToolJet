@@ -400,7 +400,9 @@ export function Table({
                 readOnly={!column.isEditable}
                 style={{ maxWidth: width, minWidth: width - 10 }}
                 onBlur={(e) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  if (column.isEditable) {
+                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  }
                 }}
                 defaultValue={cellValue}
               ></textarea>
