@@ -464,7 +464,7 @@ class Table extends React.Component {
         overlay={this.actionPopOver(action, index)}
         onToggle={(showing) => this.setState({ showPopOver: showing })}
       >
-        <div className={`card p-2 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
+        <div className={`card p-2 mb-1 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
           <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`}>
             <div className="col-auto">
               <div className="text">{action.buttonText}</div>

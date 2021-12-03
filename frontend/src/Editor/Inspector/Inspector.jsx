@@ -329,7 +329,7 @@ export const Inspector = ({
       />
       <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="tabs-inspector">
         <Tab style={{ marginBottom: 100 }} eventKey="properties" title="Properties">
-          <div className="header px-2 py-1 row">
+          <div className="header py-1 row">
             <div>
               <div className="input-icon">
                 <input
