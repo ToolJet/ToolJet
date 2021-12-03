@@ -30,6 +30,7 @@ const DynamicForm = ({
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getElement = (type) => {
@@ -71,6 +72,7 @@ const DynamicForm = ({
     lineNumbers = true,
     initialValue,
     height = 'auto',
+    ignoreBraces = false,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -138,6 +140,7 @@ const DynamicForm = ({
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
+          ignoreBraces,
         };
       default:
         return {};
