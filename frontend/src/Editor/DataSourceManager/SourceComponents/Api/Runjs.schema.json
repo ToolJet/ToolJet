@@ -12,6 +12,7 @@
       "data": {},
       "rawData": {}
     },
-    "customTesting": true
+    "customTesting": true,
+    "disableTransformations": true
   }
 }
