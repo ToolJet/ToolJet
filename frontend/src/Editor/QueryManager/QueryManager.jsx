@@ -409,15 +409,17 @@ let QueryManager = class QueryManager extends React.Component {
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
                     />
-                    <hr></hr>
-                    {!dataSourceMeta.disableTransformations &&
-                      <div className="mb-3 mt-2">
-                        <Transformation
-                          changeOption={this.optionchanged}
-                          options={this.state.options}
-                          currentState={currentState}
-                          darkMode={this.props.darkMode}
-                        />
+                    {!dataSourceMeta?.disableTransformations &&
+                      <div>
+                        <hr></hr>
+                        <div className="mb-3 mt-2">
+                          <Transformation
+                            changeOption={this.optionchanged}
+                            options={this.state.options}
+                            currentState={currentState}
+                            darkMode={this.props.darkMode}
+                          />
+                        </div>
                       </div>
                     }
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>
