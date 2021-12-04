@@ -414,7 +414,7 @@ export function previewQuery(_ref, query) {
 
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code);
+      queryExecutionPromise = executeMultilineJS(_ref.state.currentState, query.options.code);
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options);
     }
@@ -507,7 +507,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
 
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code);
+        queryExecutionPromise = executeMultilineJS(_self.state.currentState, query.options.code);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options)
       }
