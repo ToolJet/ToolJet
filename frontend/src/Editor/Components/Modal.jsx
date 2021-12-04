@@ -58,7 +58,7 @@ export const Modal = function Modal({ id, component, height, containerProps, cur
           </div>
         </BootstrapModal.Header>
 
-        <BootstrapModal.Body style={{ height }} ref={parentRef}>
+        <BootstrapModal.Body style={{ height }} ref={parentRef} id={id}>
           <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
           <SubCustomDragLayer
             snapToGrid={true}

@@ -5,6 +5,14 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+.padding-0 {
+  padding: 0;
+}
+
+.text-right {
+  text-align: right;
+}
+
 .navbar {
   max-height: 48px;
   min-height: auto;
@@ -23,6 +31,26 @@ body {
   display: none;
 }
 
+.accordion-item, .accordion-button {
+  background-color: #fff;
+}
+
+.accordion-button {
+  font-weight: 400 !important;
+  box-shadow: none !important;
+}
+
+.accordion-button:not(.collapsed) {
+  padding-bottom: 0 !important;
+}
+
+.accordion-body {
+  .form-label {
+    font-weight: 400;
+    font-size: 12px;
+    color: #61656C;
+  }
+}
 .editor {
   .header-container {
     max-width: 100%;
@@ -169,10 +197,18 @@ body {
     }
 
     .inspector {
+      .inspector-add-button:hover {
+        color: $primary;
+        background: #EEF3F9;
+        border-radius: 4px;
+      }
+
       .form-control-plaintext {
         padding: 0;
       }
       .header {
+        padding-left: 20px;
+        padding-right: 20px;
         border: solid rgba(0, 0, 0, 0.125);
         border-width: 0px 0px 1px 0px;
         height: 40px;
@@ -278,6 +314,7 @@ body {
 
     .canvas-container {
       scrollbar-width: none;
+      background-color: #eeeff6;
     }
 
     .canvas-container::-webkit-scrollbar {
@@ -506,7 +543,7 @@ body {
 }
 
 .homepage-body {
-  overflow-y: scroll;
+  overflow-y: hidden;
   max-height: 100vh;
   a {
     color: inherit;
@@ -517,38 +554,111 @@ body {
     text-decoration: none;
   }
 
-  .app-action-buttons {
-    display: none;
+  button.create-new-app-button {
+    background-color: #4D72FA;
   }
 
-  .app-name {
-    line-height: 20px;
-    font-size: 0.9rem;
-  }
+  .app-list {
+    .app-card {
+      height: 155px;
+      max-height: 155px;
+      border: 0.5px solid #B4BBC6;
+      box-sizing: border-box;
+      border-radius: 8px;
 
-  .app-card {
-    height: 155px;
-    max-height: 155px;
-  }
+      .app-creation-time {
+        font-size: 10px;
+        line-height: 12px;
+        color: #61656F;
+      }
 
-  .create-app {
-    background: #eefcfe7a;
-    border: 1px dashed #9d9d9d;
-  }
-
-  .create-app:hover {
-    background: #4ac4d600;
-  }
-
-  .app-card:hover {
-    background: #4ac4d600;
-
-    .app-action-buttons {
-      display: inline-flex;
+      .app-creator {
+        font-weight: 500;
+        font-size: 10px;
+        line-height: 12px;
+        color: #292D37;
+      }
     }
 
-    .app-name {
-      display: none;
+    .app-card.highlight {
+      background-color: #F8F8F8;
+
+      button.edit-button {
+        background: #FFFFFF;
+        border: 1px solid #4D72FA;
+        box-sizing: border-box;
+        border-radius: 4px;
+        color: #4D72FA;
+      }
+
+      button.launch-button {
+        background: #4D72FA;
+        border: 1px solid #4D72FA;
+        box-sizing: border-box;
+        border-radius: 4px;
+        color: #FFFFFF;
+      }
+    }
+
+    .app-title {
+      line-height: 20px;
+      font-size: 16px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.theme-dark {
+
+  .user-avatar-nav-item {
+    border-radius: 4px;
+  }
+
+  .homepage-body {
+    .app-list {
+      .app-card {
+
+        .app-creation-time {
+          color: #61656F;
+        }
+
+        .app-creator {
+          color: #7c86a1;
+        }
+      }
+
+      .app-card.highlight {
+        background-color: #2c405c;
+
+        button.edit-button {
+          background: #FFFFFF;
+          border: 1px solid #4D72FA;
+          color: #4D72FA;
+        }
+
+        button.launch-button {
+          background: #4D72FA;
+          border: 1px solid #4D72FA;
+          color: #FFFFFF;
+        }
+      }
+
+      .app-title {
+        line-height: 20px;
+        font-size: 16px;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.pagination {
+  .page-item.active {
+    a.page-link {
+      background-color: #4D72FA;
     }
   }
 }
@@ -902,9 +1012,13 @@ body {
   background: transparent;
 }
 
+.jet-data-table::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .jet-data-table:hover {
-  overflow-x: scroll;
-  overflow-y: scroll;
+  overflow-x: overlay;
+  overflow-y: overlay;
 }
 
 .jet-data-table {
@@ -936,13 +1050,13 @@ body {
 }
 
 .btn-primary {
-  --tblr-btn-color: 60, 146, 220;
-  --tblr-btn-color-darker: 60, 133, 200;
+  --tblr-btn-color: 77, 114, 250;
+  --tblr-btn-color-darker:  77, 94, 240;
   border-color: none;
 }
 
 .form-check-input:checked {
-  background-color: #3c92dc;
+  background-color: $primary;
   border-color: rgba(101, 109, 119, 0.24);
 }
 
@@ -1093,7 +1207,7 @@ tr:focus {
   outline: none;
   outline-width: thin;
   outline-style: solid;
-  outline-color: #3c92dc;
+  outline-color: $primary;
 }
 
 .form-control-plaintext:hover {
@@ -1199,6 +1313,7 @@ tr:focus {
 
 body {
   color: #3e525b;
+  overflow-y: hidden;
 }
 
 .RichEditor-root {
@@ -1354,32 +1469,32 @@ body {
 }
 
 .DateInput_input__focused {
-  border-bottom: 2px solid #3c92dc;
+  border-bottom: 2px solid $primary;
 }
 
 .CalendarDay__selected,
 .CalendarDay__selected:active,
 .CalendarDay__selected:hover {
-  background: #3c92dc;
-  border: 1px double #3c92dc;
+  background: $primary;
+  border: 1px double $primary;
 }
 
 .CalendarDay__selected_span {
-  background: #3c92dcc2;
-  border: #3c92dcc2;
+  background: $primary;
+  border: $primary;
 }
 
 .CalendarDay__selected_span:active,
 .CalendarDay__selected_span:hover {
-  background: #3c92dc;
-  border: 1px double #3c92dc;
+  background: $primary;
+  border: 1px double $primary;
   color: #fff;
 }
 
 .CalendarDay__hovered_span:active,
 .CalendarDay__hovered_span:hover {
-  background: #3c92dc;
-  border: 1px double #3c92dc;
+  background: $primary;
+  border: 1px double $primary;
   color: #fff;
 }
 
@@ -1460,7 +1575,7 @@ body {
   z-index: 10000;
 
   li.CodeMirror-hint-active {
-    background: #3c92dc;
+    background: $primary;
   }
 
   .CodeMirror-hint {
@@ -1710,7 +1825,7 @@ input:focus-visible {
 }
 
 .navbar-expand-md.navbar-light .nav-item.active:after {
-  border: 1px solid #3c92dc;
+  border: 1px solid $primary;
 }
 
 .org-users-page {
@@ -1746,7 +1861,7 @@ input:focus-visible {
 }
 
 .column-sort-row {
-  border-radius: 0;
+  border-radius: 4px;
 }
 
 .jet-button {
@@ -1895,6 +2010,10 @@ input:focus-visible {
 
   .main .canvas-container .canvas-area {
     background: #2f3c4c;
+  }
+
+  .main .canvas-container {
+    background-color: #2f3c4c;
   }
 
   .rdtOpen .rdtPicker {
@@ -2191,6 +2310,11 @@ input:focus-visible {
   position: fixed;
   min-height: 100%;
   min-width: 100%;
+  background-color: white;
+}
+
+.main-wrapper.theme-dark {
+  background-color: #2b394b;
 }
 
 .jet-table {
@@ -2382,7 +2506,7 @@ input[type='text'] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: #0565FE;
+  color: #0565FE !important;
 }
 
 .empty-title {
@@ -2502,7 +2626,7 @@ input[type='text'] {
 }
 
 .navbar-brand-image {
-  height: 1.6rem;
+  height: 1.2rem;
 }
 
 .nav-tabs .nav-link.active {
@@ -2522,4 +2646,24 @@ input[type='text'] {
     border-radius: inherit;
     margin-top: -1px!important;
   }
+}
+
+.tabs-inspector {
+  .nav-item {
+    width: 50%;
+    background-color: #fff !important;
+  }
+
+  .nav-item:not(.active) {
+    border-bottom: 1px solid #e7eaef;
+  }
+}
+
+.tabs-inspector.nav-tabs {
+  border: 0;
+}
+
+.bg-primary-lt {
+  color: #fff !important;
+  background:#6383db !important;
 }

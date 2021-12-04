@@ -45,6 +45,7 @@ Assuming that you set the date format to `MM-DD-YYYY HH:mm:ss A Z`, setting the 
 | allDay | Optional. Qualifies the event as an 'All day event', which will pin it to date headers on `day` and `week` level views |
 | tooltip | Tooltip which will be display when the user hovers over the event |
 | color | Background color of the event, any css supported color name or hex code can be used |
+| textColor | Color of the event title, any css supported color name or hex code can be used |
 | textOrientation | Optional. If it is set to `vertical`, the title of the event will be oriented vertically. |
 | resourceId | Applicable only if you're using resource scheduling. This is the id of the resource to which this event correspond to. |
 
@@ -75,6 +76,8 @@ If we specify the `resourceId` of any of the events as `1`, then that event will
 
 Determines whether the calendar would display a `day`, a `week` or a `month`.  
 Setting this property to anything other than these values will make the calendar default to `month` view.
+
+The view that is currently selected will be exposed as the variable `currentView`.
 
 #### Show toolbar
 

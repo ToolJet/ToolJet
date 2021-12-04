@@ -24,7 +24,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         </button>
         <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
           <Link to={'/'}>
-            <img src="/assets/images/logo-text.svg" width="110" height="32" className="navbar-brand-image" />
+            <img src="/assets/images/logo-color.svg" className="navbar-brand-image" />
           </Link>
         </h1>
 
@@ -32,7 +32,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
           <div className="p-1 m-1 d-flex align-items-center">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
           </div>
-          <div className="nav-item dropdown">
+          <div className="nav-item dropdown ms-2 user-avatar-nav-item">
             <a
               href="#"
               className="nav-link d-flex lh-1 text-reset p-0"
@@ -40,8 +40,8 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               aria-label="Open user menu"
               data-testid="userAvatarHeader"
             >
-              <div className="d-none d-xl-block ps-2">
-                <span className="avatar bg-azure-lt">
+              <div className="d-xl-block">
+                <span className="avatar bg-secondary-lt">
                   {first_name ? first_name[0] : ''}
                   {last_name ? last_name[0] : ''}
                 </span>
