@@ -583,7 +583,7 @@ class Table extends React.Component {
       title: 'Columns',
       children: (
         <div>
-          <div className="col-auto text-right m-1">
+          <div className="col-auto text-right mb-3">
             <button
               onClick={this.addNewColumn}
               className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
@@ -669,7 +669,7 @@ class Table extends React.Component {
       children: (
         <div className="field mb-2 mt-2">
           <div className="row g-2">
-            <div className="text-right m-1">
+            <div className="text-right mb-3">
               <button
                 onClick={this.addNewAction}
                 className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"

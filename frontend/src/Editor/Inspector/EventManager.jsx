@@ -399,7 +399,7 @@ export const EventManager = ({
   if (events.length === 0) {
     return (
       <>
-        <div className="text-right m-1">
+        <div className="text-right mb-3">
           <button
             className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
             onClick={addHandler}
@@ -416,7 +416,7 @@ export const EventManager = ({
 
   return (
     <>
-      <div className="text-right m-1">
+      <div className="text-right mb-3">
         <button
           className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
           onClick={addHandler}
