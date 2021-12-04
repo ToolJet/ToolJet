@@ -16,8 +16,8 @@ import {
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
-  { kind: 'restapi', id: 'nulls', name: 'REST API' },
-  { kind: 'runjs', id: 'null', name: 'Run JavaScript code' }
+  { kind: 'restapi', id: 'null', name: 'REST API' },
+  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' }
 ];
 
 let QueryManager = class QueryManager extends React.Component {
@@ -68,6 +68,7 @@ let QueryManager = class QueryManager extends React.Component {
               source = { kind: 'runjs' };
             }
           }
+
           this.setState({
             options: selectedQuery.options,
             selectedDataSource: source,
