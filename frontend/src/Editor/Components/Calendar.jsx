@@ -26,6 +26,7 @@ export const Calendar = function ({
   containerProps,
   removeComponent,
   setExposedVariable,
+  exposedVariables,
 }) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
@@ -38,7 +39,9 @@ export const Calendar = function ({
   const eventPropGetter = (event) => {
     const backgroundColor = event.color;
     const textStyle =
-      event.textOrientation === 'vertical' ? { writingMode: 'vertical-rl', textOrientation: 'mixed' } : {};
+      event.textOrientation === 'vertical' && exposedVariables.currentView != 'month'
+        ? { writingMode: 'vertical-rl', textOrientation: 'mixed' }
+        : {};
     const color = event.textColor ?? 'white';
     const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5, color };
 
