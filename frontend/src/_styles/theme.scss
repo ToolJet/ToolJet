@@ -2657,6 +2657,11 @@ input[type='text'] {
   .nav-item:not(.active) {
     border-bottom: 1px solid #e7eaef;
   }
+
+  .nav-link.active {
+    border: 1px solid transparent;
+    border-bottom: 1px solid $primary;
+  }
 }
 
 .tabs-inspector.nav-tabs {
