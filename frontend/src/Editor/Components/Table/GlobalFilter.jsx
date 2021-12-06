@@ -5,10 +5,9 @@ export const GlobalFilter = ({
   globalFilter,
   useAsyncDebounce,
   setGlobalFilter,
-  onComponentOptionChanged,
-  component,
+  setExposedVariable,
   serverSideSearch,
-  onEvent,
+  fireEvent,
 }) => {
   const count = preGlobalFilteredRows.length;
   const [value, setValue] = React.useState(globalFilter);
@@ -20,9 +19,9 @@ export const GlobalFilter = ({
     setValue(text);
     onChange(text);
 
-    onComponentOptionChanged(component, 'searchText', text).then(() => {
+    setExposedVariable('searchText', text).then(() => {
       if (serverSideSearch === true) {
-        onEvent('onSearch', { component, data: {} });
+        fireEvent('onSearch');
       }
     });
   };
