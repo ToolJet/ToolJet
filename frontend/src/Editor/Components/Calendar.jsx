@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -72,6 +72,11 @@ export const Calendar = function ({
   const defaultView = allowedCalendarViews.includes(properties.defaultView)
     ? properties.defaultView
     : allowedCalendarViews[0];
+
+  useEffect(() => {
+    setExposedVariable('currentView', defaultView);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultView]);
 
   const components = {
     timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>All day</div>,
