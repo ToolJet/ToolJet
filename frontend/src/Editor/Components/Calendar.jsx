@@ -9,12 +9,17 @@ import { RRule } from 'rrule';
 const localizer = momentLocalizer(moment);
 
 const generateDates = (recurrencePattern, currentDate) => {
-  const rule = RRule.fromString(recurrencePattern);
-  if (!recurrencePattern.includes('DTSTART') && !recurrencePattern.includes('dtstart'))
-    rule.options.dtstart = currentDate;
-  if (rule.options.count === null) rule.options.count = 500;
-  const dates = rule.all();
-  return dates;
+  try {
+    const rule = RRule.fromString(recurrencePattern);
+    if (!recurrencePattern.includes('DTSTART') && !recurrencePattern.includes('dtstart'))
+      rule.options.dtstart = currentDate;
+    if (rule.options.count === null) rule.options.count = 500;
+    const dates = rule.all();
+    return dates;
+  } catch (exception) {
+    console.log('exception', exception);
+    return [];
+  }
 };
 
 const prepareEvent = (event, dateFormat, currentDate) => {
