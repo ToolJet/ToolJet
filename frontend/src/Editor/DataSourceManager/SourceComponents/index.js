@@ -63,9 +63,9 @@ export const ApiSources = [
   SlackSchema.source,
 ];
 
-export const OthetSources = [RunjsSchema.source];
+export const OtherSources = [RunjsSchema.source];
 export const CloudStorageSources = [S3Schema.source, GcsSchema.source];
-export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...OthetSources];
+export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...OtherSources];
 
 export const SourceComponents = {
   Elasticsearch,
