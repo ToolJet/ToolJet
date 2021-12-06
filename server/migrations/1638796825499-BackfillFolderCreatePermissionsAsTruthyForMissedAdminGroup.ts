@@ -8,7 +8,7 @@ export class BackfillFolderCreatePermissionsAsTruthyForMissedAdminGroup163879682
       entityManager.getRepository(GroupPermission);
 
     await GroupPermissionRepository.update(
-      { group: "admin" },
+      { group: "admin", folderCreate: false},
       { folderCreate: true }
     );
   }
