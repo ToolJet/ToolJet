@@ -3,7 +3,7 @@ sidebar_position: 7
 sidebar_label: Kubernetes (AKS)
 ---
 
-# Deploying ToolJet on Kubernetes (GKE)
+# Deploying ToolJet on Kubernetes (AKS)
 
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using Azure Database for PostgreSQL since this guide is for deploying using AKS.
@@ -26,7 +26,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
     curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/AKS/service.yaml
    ```
 
-6. Apply YAML configs
+4. Apply YAML configs
 
    ```bash
     kubectl apply -f deployment.yaml, service.yaml
