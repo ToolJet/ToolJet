@@ -3,14 +3,36 @@ import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
+import _ from 'lodash';
+import { RRule } from 'rrule';
 
 const localizer = momentLocalizer(moment);
 
-const prepareEvent = (event, dateFormat) => ({
-  ...event,
-  start: moment(event.start, dateFormat).toDate(),
-  end: moment(event.end, dateFormat).toDate(),
-});
+const generateDates = (recurrencePattern, currentDate) => {
+  const rule = RRule.fromString(recurrencePattern);
+  if (!recurrencePattern.includes('DTSTART') && !recurrencePattern.includes('dtstart'))
+    rule.options.dtstart = currentDate;
+  if (rule.options.count === null) rule.options.count = 500;
+  const dates = rule.all();
+  return dates;
+};
+
+const prepareEvent = (event, dateFormat, currentDate) => {
+  if (event.recurrencePattern) {
+    const dates = generateDates(event.recurrencePattern, currentDate);
+    return dates.map((date) => ({
+      ...event,
+      start: date,
+      end: moment(date).add(event.duration, 's').toDate(),
+    }));
+  } else {
+    return {
+      ...event,
+      start: moment(event.start, dateFormat).toDate(),
+      end: moment(event.end, dateFormat).toDate(),
+    };
+  }
+};
 
 const parseDate = (date, dateFormat) => moment(date, dateFormat).toDate();
 
@@ -30,8 +52,15 @@ export const Calendar = function ({
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
 
-  const events = properties.events ? properties.events.map((event) => prepareEvent(event, properties.dateFormat)) : [];
   const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
+  const [currentDate, setCurrentDate] = useState(defaultDate);
+
+  const additionalEvents = [];
+  const events = properties.events
+    ? _.flatten(
+        properties.events.map((event) => prepareEvent(event, properties.dateFormat, currentDate, additionalEvents.push))
+      )
+    : [];
 
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
 
@@ -90,6 +119,7 @@ export const Calendar = function ({
         ${properties.displayViewSwitcher ? '' : 'hide-view-switcher'}`}
         localizer={localizer}
         defaultDate={defaultDate}
+        onNavigate={setCurrentDate}
         events={events}
         startAccessor="start"
         endAccessor="end"
