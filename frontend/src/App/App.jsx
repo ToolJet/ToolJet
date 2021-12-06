@@ -133,6 +133,7 @@ class App extends React.Component {
                 component={Viewer}
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}
+                skipAuth={true}
               />
               :
               <PrivateRoute

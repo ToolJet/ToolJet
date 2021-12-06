@@ -3,12 +3,12 @@ import { Route, Redirect } from 'react-router-dom';
 
 import { authenticationService } from '@/_services';
 
-export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, ...rest }) => (
+export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, skipAuth = false, ...rest }) => (
   <Route
     {...rest}
     render={(props) => {
       const currentUser = authenticationService.currentUserValue;
-      if (!currentUser && !props.location.pathname.startsWith('/applications/') && !window.location.host === "apps.tooljet.com") {
+      if (!currentUser && !props.location.pathname.startsWith('/applications/') && !skipAuth) {
         // not logged in so redirect to login page with the return url
         return (
           <Redirect
