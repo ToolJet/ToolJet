@@ -8,7 +8,7 @@ export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, .
     {...rest}
     render={(props) => {
       const currentUser = authenticationService.currentUserValue;
-      if (!currentUser && !props.location.pathname.startsWith('/applications/')) {
+      if (!currentUser && !props.location.pathname.startsWith('/applications/') && !window.location.host === "apps.tooljet.com") {
         // not logged in so redirect to login page with the return url
         return (
           <Redirect

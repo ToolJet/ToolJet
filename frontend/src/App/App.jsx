@@ -126,13 +126,24 @@ class App extends React.Component {
 
             <ToastContainer />
 
-            <PrivateRoute
-              exact
-              path="/"
-              component={HomePage}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
+            {window.location.host === "apps.tooljet.com" ?
+              <PrivateRoute
+                exact
+                path="/:slug"
+                component={Viewer}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+              :
+              <PrivateRoute
+                exact
+                path="/"
+                component={HomePage}
+                switchDarkMode={this.switchDarkMode}
+                darkMode={darkMode}
+              />
+            }
+
             <Route path="/login" component={LoginPage} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
