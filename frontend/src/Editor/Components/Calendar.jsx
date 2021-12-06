@@ -23,7 +23,9 @@ const prepareEvent = (event, dateFormat, currentDate) => {
     return dates.map((date) => ({
       ...event,
       start: date,
-      end: moment(date).add(event.duration, 's').toDate(),
+      end: moment(date)
+        .add(event.duration ?? 0, 's')
+        .toDate(),
     }));
   } else {
     return {
