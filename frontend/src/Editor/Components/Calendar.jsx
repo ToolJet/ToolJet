@@ -8,11 +8,10 @@ import { RRule } from 'rrule';
 
 const localizer = momentLocalizer(moment);
 
-const generateDates = (recurrencePattern, currentDate) => {
+const generateDates = (recurrenceRule, currentDate) => {
   try {
-    const rule = RRule.fromString(recurrencePattern);
-    if (!recurrencePattern.includes('DTSTART') && !recurrencePattern.includes('dtstart'))
-      rule.options.dtstart = currentDate;
+    const rule = RRule.fromString(recurrenceRule);
+    if (!recurrenceRule.includes('DTSTART') && !recurrenceRule.includes('dtstart')) rule.options.dtstart = currentDate;
     if (rule.options.count === null) rule.options.count = 500;
     const dates = rule.all();
     return dates;
@@ -23,8 +22,8 @@ const generateDates = (recurrencePattern, currentDate) => {
 };
 
 const prepareEvent = (event, dateFormat, currentDate) => {
-  if (event.recurrencePattern) {
-    const dates = generateDates(event.recurrencePattern, currentDate);
+  if (event.recurrenceRule) {
+    const dates = generateDates(event.recurrenceRule, currentDate);
     return dates.map((date) => ({
       ...event,
       start: date,

@@ -64,7 +64,7 @@ For example, the following recurring event would be instantiated every week on M
 		 title: 'Sample event',
 		 allDay: false,
 		 color: '#4D72DA',
-         recurrencePattern:
+         recurrenceRule:
           'RRULE:FREQ=WEEKLY;BYDAY=MO,WE',
 	}
 ]}}
@@ -77,7 +77,7 @@ Every other week on Monday, Wednesday, and Friday until December 24, 1997, start
 		 title: 'Sample event',
 		 allDay: false,
 		 color: '#4D72DA',
-         recurrencePattern:
+         recurrenceRule:
           'DTSTART;TZID=America/New_York:19970901T090000;RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR',
 	}
 ]}}
