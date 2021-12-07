@@ -18,7 +18,11 @@ let QueryManager = class QueryManager extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      options: {},
+      selectedQuery: null,
+      selectedDataSource: null,
+    };
 
     this.previewPanelRef = React.createRef();
   }
@@ -27,7 +31,7 @@ let QueryManager = class QueryManager extends React.Component {
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
-    const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
+    // const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
 
     this.setState(
       {
@@ -56,13 +60,14 @@ let QueryManager = class QueryManager extends React.Component {
             selectedQuery,
             queryName: selectedQuery.name,
           });
-        } else {
-          this.setState({
-            options: {},
-            selectedQuery: null,
-            selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
-          });
         }
+        // } else {
+        // this.setState({
+        //   options: {},
+        //   selectedQuery: null,
+        //   selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
+        // });
+        // }
       }
     );
   };

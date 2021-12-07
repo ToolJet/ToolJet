@@ -28,6 +28,7 @@ function ControlledTabs({ options, currentState, theme, onChange, removeKeyValue
           options={options['url_params']}
           currentState={currentState}
           theme={theme}
+          darkMode={darkMode}
         />
       </Tab>
       <Tab eventKey="body" title="Body">
@@ -37,6 +38,7 @@ function ControlledTabs({ options, currentState, theme, onChange, removeKeyValue
           options={options['body']}
           currentState={currentState}
           theme={theme}
+          darkMode={darkMode}
         />
       </Tab>
     </Tabs>
