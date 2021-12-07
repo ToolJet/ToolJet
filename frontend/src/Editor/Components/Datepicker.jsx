@@ -27,7 +27,7 @@ export const Datepicker = function Datepicker({
     }
   };
 
-  const validationData = validate(currentState.value);
+  const validationData = validate(exposedVariables.value);
 
   const { isValid, validationError } = validationData;
 
