@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tooljet-ce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tooljet-ce
+  template:
+    metadata:
+      labels:
+        app: tooljet-ce
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+      - name: tooljet-ce
+        image: tooljet/tooljet-ce:latest
+        imagePullPolicy: Always
+        args: ["npm", "run", "start:prod"]
+        resources:
+          limits:
+            memory: "2000Mi"
+            cpu: "2000m"
+          requests:
+            memory: "1000Mi"
+            cpu: "1000m"
+        ports:
+          - containerPort: 3000
+        readinessProbe:
+          httpGet:
+            port: 3000
+            path: /api/health
+          successThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 6
+        env:
+          - name: PG_HOST
+            valueFrom:
+              secretKeyRef:
+                name: tooljet-secret
+                key: pg_host
+          - name: PG_USER
+            valueFrom:
+              secretKeyRef:
+                name: tooljet-secret
+                key: pg_user
+          - name: PG_PASS
+            valueFrom:
+              secretKeyRef:
+                name: tooljet-secret
+                key: pg_pass
+          - name: PG_DB
+            valueFrom:
+              secretKeyRef:
+                name: tooljet-secret
+                key: pg_db
+          - name: LOCKBOX_MASTER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: tooljet-secret
+                key: lockbox_master_key
+          - name: SECRET_KEY_BASE
+            valueFrom:
+              secretKeyRef:
+                name: tooljet-secret
+                key: secret_key_base
+          - name: TOOLJET_HOST
+            value: "https://tooljet.your-domain.com"
