@@ -3,12 +3,12 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const libraryAppService = {
   deploy,
-  templateManifests
+  templateManifests,
 };
 
 function deploy(identifier) {
   const body = {
-    identifier
+    identifier,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

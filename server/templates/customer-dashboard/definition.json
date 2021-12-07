@@ -1,16 +1,16 @@
 {
-  "id": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
+  "id": "449be022-7681-4466-b99b-ce575ac8e5f4",
   "name": "Customer Dashboard",
   "slug": null,
   "isPublic": false,
   "organizationId": "2871388a-3041-4f76-b531-e14b7a9d9ee9",
   "currentVersionId": null,
   "userId": "3852332b-4802-436d-9177-bdbf347a0278",
-  "createdAt": "2021-11-12T10:14:41.943Z",
-  "updatedAt": "2021-11-12T10:14:41.943Z",
+  "createdAt": "2021-12-07T11:13:00.396Z",
+  "updatedAt": "2021-12-07T11:13:00.396Z",
   "dataQueries": [
     {
-      "id": "6f13d390-774e-41ef-a3f9-978c2117cc15",
+      "id": "00538711-5183-4788-a3ab-253cb38a61da",
       "name": "chartData",
       "kind": "postgresql",
       "options": {
@@ -20,13 +20,13 @@
         "transformation": "return data.map(row => {\n  return { \"x\": row.created_at, \"y\": parseInt(row.count) } \n});",
         "runOnPageLoad": true
       },
-      "dataSourceId": "0901a027-9beb-4df8-b879-c7e8e63f3a84",
-      "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
-      "createdAt": "2021-11-12T10:14:41.943Z",
-      "updatedAt": "2021-11-12T10:14:41.943Z"
+      "dataSourceId": "229155fb-2f04-4577-91bb-89749c213e44",
+      "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
+      "createdAt": "2021-12-07T11:13:00.396Z",
+      "updatedAt": "2021-12-07T11:13:00.396Z"
     },
     {
-      "id": "ab657464-f571-45a9-b73b-d84d388360a7",
+      "id": "4c5bb347-5e68-41d8-b999-5c2b475b2eb4",
       "name": "fetchCustomers",
       "kind": "postgresql",
       "options": {
@@ -34,15 +34,15 @@
         "query": "SELECT * FROM customers;",
         "runOnPageLoad": true
       },
-      "dataSourceId": "0901a027-9beb-4df8-b879-c7e8e63f3a84",
-      "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
-      "createdAt": "2021-11-12T10:14:41.943Z",
-      "updatedAt": "2021-11-12T10:14:41.943Z"
+      "dataSourceId": "229155fb-2f04-4577-91bb-89749c213e44",
+      "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
+      "createdAt": "2021-12-07T11:13:00.396Z",
+      "updatedAt": "2021-12-07T11:13:00.396Z"
     }
   ],
   "dataSources": [
     {
-      "id": "0901a027-9beb-4df8-b879-c7e8e63f3a84",
+      "id": "229155fb-2f04-4577-91bb-89749c213e44",
       "name": "PostgreSQL",
       "kind": "postgresql",
       "options": {
@@ -59,14 +59,14 @@
         },
         "ssl_enabled": { "value": true, "encrypted": false }
       },
-      "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
-      "createdAt": "2021-11-12T10:14:41.943Z",
-      "updatedAt": "2021-11-12T10:14:41.943Z"
+      "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
+      "createdAt": "2021-12-07T11:13:00.396Z",
+      "updatedAt": "2021-12-07T11:13:00.396Z"
     }
   ],
   "appVersions": [
     {
-      "id": "c386bd54-7c8d-4d8f-8685-e87e9ac3a0d0",
+      "id": "2d93f9f0-6b5b-49ef-9e70-7ef72a979ec2",
       "name": "v0",
       "definition": {
         "components": {
@@ -146,7 +146,12 @@
               }
             },
             "layouts": {
-              "desktop": { "top": 510, "left": 30, "width": 714, "height": 658 }
+              "desktop": {
+                "top": 510,
+                "left": 2.321981424148607,
+                "width": 23.763157894736842,
+                "height": 658
+              }
             }
           },
           "ead4cb23-ae0b-4c8a-8875-13fa47643762": {
@@ -207,18 +212,23 @@
               }
             },
             "layouts": {
-              "desktop": { "top": 60, "left": 30, "width": 1220, "height": 400 }
+              "desktop": {
+                "top": 60,
+                "left": 2.321981424148607,
+                "width": 40.60371517027864,
+                "height": 400
+              }
             }
           }
         }
       },
-      "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
-      "createdAt": "2021-11-12T10:14:41.943Z",
-      "updatedAt": "2021-11-12T10:14:41.943Z"
+      "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
+      "createdAt": "2021-12-07T11:13:00.396Z",
+      "updatedAt": "2021-12-07T11:13:00.396Z"
     }
   ],
   "editingVersion": {
-    "id": "c386bd54-7c8d-4d8f-8685-e87e9ac3a0d0",
+    "id": "2d93f9f0-6b5b-49ef-9e70-7ef72a979ec2",
     "name": "v0",
     "definition": {
       "components": {
@@ -298,7 +308,12 @@
             }
           },
           "layouts": {
-            "desktop": { "top": 510, "left": 30, "width": 714, "height": 658 }
+            "desktop": {
+              "top": 510,
+              "left": 2.321981424148607,
+              "width": 23.763157894736842,
+              "height": 658
+            }
           }
         },
         "ead4cb23-ae0b-4c8a-8875-13fa47643762": {
@@ -356,14 +371,19 @@
             }
           },
           "layouts": {
-            "desktop": { "top": 60, "left": 30, "width": 1220, "height": 400 }
+            "desktop": {
+              "top": 60,
+              "left": 2.321981424148607,
+              "width": 40.60371517027864,
+              "height": 400
+            }
           }
         }
       }
     },
-    "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
-    "createdAt": "2021-11-12T10:14:41.943Z",
-    "updatedAt": "2021-11-12T10:14:41.943Z"
+    "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
+    "createdAt": "2021-12-07T11:13:00.396Z",
+    "updatedAt": "2021-12-07T11:13:00.396Z"
   },
-  "tooljetVersion": "0.9.0"
+  "tooljetVersion": "0.9.1"
 }

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { App } from '../entities/app.entity';
 import { User } from '../entities/user.entity';
 import { AppImportExportService } from './app_import_export.service';
-import { TemplateAppDefinitions } from '../../templates';
+import { readFileSync } from 'fs';
 
 @Injectable()
 export class LibraryAppCreationService {
@@ -15,7 +15,7 @@ export class LibraryAppCreationService {
   }
 
   findAppDefinition(identifier: string) {
-    const appDefinition = TemplateAppDefinitions[identifier];
+    const appDefinition = JSON.parse(readFileSync(`templates/${identifier}/definition.json`, 'utf-8'));
     if (!appDefinition) {
       throw new BadRequestException('App definition not found');
     }

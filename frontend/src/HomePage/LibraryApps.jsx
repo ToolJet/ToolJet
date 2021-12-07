@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { libraryAppService } from "@/_services";
-import { toast } from "react-toastify";
-import { history } from "@/_helpers";
+import React, { useState, useEffect } from 'react';
+import { libraryAppService } from '@/_services';
+import { toast } from 'react-toastify';
+import { history } from '@/_helpers';
 
-export const LibraryApps = function LibraryApps({}) {
+export const LibraryApps = function LibraryApps() {
   const [deployingId, setDeployingId] = useState(null);
   const [libraryApps, setLibraryApps] = useState([]);
 
@@ -13,16 +13,16 @@ export const LibraryApps = function LibraryApps({}) {
       .deploy(id)
       .then((data) => {
         setDeployingId(null);
-        toast.info("App created.", {
+        toast.info('App created.', {
           hideProgressBar: true,
-          position: "top-center",
+          position: 'top-center',
         });
         history.push(`/apps/${data.id}`);
       })
       .catch((e) => {
         toast.error(e.error, {
           hideProgressBar: true,
-          position: "top-center",
+          position: 'top-center',
         });
         setDeployingId(null);
       });
@@ -32,14 +32,14 @@ export const LibraryApps = function LibraryApps({}) {
     libraryAppService
       .templateManifests()
       .then((data) => {
-        if (data["template_app_manifests"]) {
-          setLibraryApps(data["template_app_manifests"]);
+        if (data['template_app_manifests']) {
+          setLibraryApps(data['template_app_manifests']);
         }
       })
       .catch(() => {
-        toast.error("Could not fetch library apps", {
+        toast.error('Could not fetch library apps', {
           hideProgressBar: true,
-          position: "top-center",
+          position: 'top-center',
         });
         setLibraryApps([]);
         history.push(`/`);
@@ -52,29 +52,31 @@ export const LibraryApps = function LibraryApps({}) {
       <div className="row">
         {libraryApps.map((app) => {
           return (
-            <div className="col-md-3">
-              <div class="card">
-                <div class="empty px-3 py-3">
-                  {/* <div class="empty-img">
+            <div className="col-md-3" key={app.id}>
+              <div className="card">
+                <div className="empty px-3 py-3">
+                  {/* <div className="empty-img">
                 </div> */}
                   <h3>{app.name}</h3>
-                  <p class="text-muted">{app.description}</p>
+                  <p className="text-muted">{app.description}</p>
                   <div className="flex">
                     {app.widgets.map((widget) => (
-                      <span class="badge bg-azure-lt mx-2">{widget}</span>
+                      <span className="badge bg-azure-lt mx-2" key={app.widget}>
+                        {widget}
+                      </span>
                     ))}
 
                     {app.sources.map((source) => (
-                      <span class="badge bg-green-lt mx-2">{source}</span>
+                      <span className="badge bg-green-lt mx-2" key={app.source}>
+                        {source}
+                      </span>
                     ))}
                   </div>
 
-                  <div class="empty-action">
+                  <div className="empty-action">
                     <a
                       onClick={() => deployApp(app.id)}
-                      class={`btn btn-primary ${
-                        deployingId === app.id ? "btn-loading" : ""
-                      }`}
+                      className={`btn btn-primary ${deployingId === app.id ? 'btn-loading' : ''}`}
                     >
                       {deployingId !== app.id && (
                         <img
