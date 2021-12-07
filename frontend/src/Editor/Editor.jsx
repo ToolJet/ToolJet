@@ -67,6 +67,11 @@ class Editor extends React.Component {
       deviceWindowWidth: 450,
       appDefinition: {
         components: {},
+        globalSettings: {
+          hideHeader: false,
+          canvasMaxWidth: 1292,
+          canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
+        },
       },
       currentState: {
         queries: {},
@@ -357,6 +362,15 @@ class Editor extends React.Component {
           },
         },
       },
+    });
+  };
+
+  globalSettingsChanged = (key, value) => {
+    const appDefinition = { ...this.state.appDefinition };
+
+    appDefinition.globalSettings[key] = value;
+    this.setState({
+      appDefinition,
     });
   };
 
@@ -776,7 +790,11 @@ class Editor extends React.Component {
               >
                 <div
                   className="canvas-area"
-                  style={{ width: currentLayout === 'desktop' ? '100%' : '450px', maxWidth: '1292px' }}
+                  style={{
+                    width: currentLayout === 'desktop' ? '100%' : '450px',
+                    maxWidth: this.state.appDefinition.globalSettings.canvasMaxWidth,
+                    backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
+                  }}
                 >
                   {defaultComponentStateComputed && (
                     <>
@@ -942,12 +960,14 @@ class Editor extends React.Component {
                   {selectedComponent ? (
                     <Inspector
                       componentDefinitionChanged={this.componentDefinitionChanged}
+                      globalSettingsChanged={this.globalSettingsChanged}
                       dataQueries={dataQueries}
                       componentChanged={this.componentChanged}
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
                       allComponents={appDefinition.components}
+                      globalSettings={appDefinition.globalSettings}
                       key={selectedComponent.id}
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}

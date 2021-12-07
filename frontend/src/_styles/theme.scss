@@ -2664,6 +2664,15 @@ input[type='text'] {
   }
 }
 
+.global-settings-popover {
+  border: 0.5px solid #E1E1E1 !important;
+  border-radius: 4px !important;
+  top: 25px !important;
+  right: -30px;
+  left: -260px !important;
+  padding: 12px;
+}
+
 .tabs-inspector.nav-tabs {
   border: 0;
 }
