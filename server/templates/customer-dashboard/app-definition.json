@@ -1,0 +1,369 @@
+{
+  "id": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
+  "name": "Customer Dashboard",
+  "slug": null,
+  "isPublic": false,
+  "organizationId": "2871388a-3041-4f76-b531-e14b7a9d9ee9",
+  "currentVersionId": null,
+  "userId": "3852332b-4802-436d-9177-bdbf347a0278",
+  "createdAt": "2021-11-12T10:14:41.943Z",
+  "updatedAt": "2021-11-12T10:14:41.943Z",
+  "dataQueries": [
+    {
+      "id": "6f13d390-774e-41ef-a3f9-978c2117cc15",
+      "name": "chartData",
+      "kind": "postgresql",
+      "options": {
+        "mode": "sql",
+        "query": "select created_at::date, COUNT(*) from customers GROUP BY created_at::date ORDER BY created_at::date ASC;",
+        "enableTransformation": true,
+        "transformation": "return data.map(row => {\n  return { \"x\": row.created_at, \"y\": parseInt(row.count) } \n});",
+        "runOnPageLoad": true
+      },
+      "dataSourceId": "0901a027-9beb-4df8-b879-c7e8e63f3a84",
+      "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
+      "createdAt": "2021-11-12T10:14:41.943Z",
+      "updatedAt": "2021-11-12T10:14:41.943Z"
+    },
+    {
+      "id": "ab657464-f571-45a9-b73b-d84d388360a7",
+      "name": "fetchCustomers",
+      "kind": "postgresql",
+      "options": {
+        "mode": "sql",
+        "query": "SELECT * FROM customers;",
+        "runOnPageLoad": true
+      },
+      "dataSourceId": "0901a027-9beb-4df8-b879-c7e8e63f3a84",
+      "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
+      "createdAt": "2021-11-12T10:14:41.943Z",
+      "updatedAt": "2021-11-12T10:14:41.943Z"
+    }
+  ],
+  "dataSources": [
+    {
+      "id": "0901a027-9beb-4df8-b879-c7e8e63f3a84",
+      "name": "PostgreSQL",
+      "kind": "postgresql",
+      "options": {
+        "host": {
+          "value": "sample-data.cye0quy9d2fs.us-east-2.rds.amazonaws.com",
+          "encrypted": null
+        },
+        "port": { "value": 5432, "encrypted": null },
+        "database": { "value": "postgres", "encrypted": null },
+        "username": { "value": "postgres", "encrypted": null },
+        "password": {
+          "credential_id": "75be3939-e7db-45fe-9f32-45e3b0a6a58c",
+          "encrypted": true
+        },
+        "ssl_enabled": { "value": true, "encrypted": false }
+      },
+      "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
+      "createdAt": "2021-11-12T10:14:41.943Z",
+      "updatedAt": "2021-11-12T10:14:41.943Z"
+    }
+  ],
+  "appVersions": [
+    {
+      "id": "c386bd54-7c8d-4d8f-8685-e87e9ac3a0d0",
+      "name": "v0",
+      "definition": {
+        "components": {
+          "b0319b2d-c580-4830-8ee4-d1920b944020": {
+            "top": 510,
+            "left": 30,
+            "width": 714,
+            "height": 658,
+            "component": {
+              "name": "table1",
+              "displayName": "Table",
+              "description": "Display paginated tabular data",
+              "component": "Table",
+              "properties": {
+                "title": { "type": "string", "displayName": "Title" },
+                "data": { "type": "code", "displayName": "Table data" },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Loading state"
+                },
+                "columns": { "type": "array", "displayName": "Table Columns" },
+                "serverSidePagination": {
+                  "type": "toggle",
+                  "displayName": "Server Side Pagination"
+                },
+                "actionButtonBackgroundColor": {
+                  "type": "color",
+                  "displayName": "Background Color"
+                },
+                "actionButtonTextColor": {
+                  "type": "color",
+                  "displayName": "Text Color"
+                }
+              },
+              "defaultSize": { "width": 810, "height": 300 },
+              "events": {
+                "onRowClicked": { "displayName": "On row clicked" },
+                "onBulkUpdate": { "displayName": "Bulk update query" },
+                "onPageChanged": { "displayName": "On page changed query" }
+              },
+              "styles": {
+                "textColor": { "type": "color", "displayName": "Text Color" }
+              },
+              "exposedVariables": {
+                "selectedRow": {},
+                "changeSet": {},
+                "dataUpdates": [],
+                "pageIndex": 0
+              },
+              "definition": {
+                "properties": {
+                  "title": { "value": "Table" },
+                  "visible": { "value": true },
+                  "loadingState": { "value": false },
+                  "data": { "value": "{{queries.fetchCustomers.data}}" },
+                  "serverSidePagination": { "value": true },
+                  "columns": {
+                    "value": [
+                      { "name": "id" },
+                      { "name": "name" },
+                      { "name": "email" }
+                    ]
+                  },
+                  "columnSizes": { "id": 167 },
+                  "showBulkSelector": { "value": false },
+                  "highlightSelectedRow": { "value": false }
+                },
+                "events": [],
+                "styles": {
+                  "textColor": { "value": "" },
+                  "cellSize": { "value": "compact" }
+                },
+                "others": {
+                  "showOnDesktop": { "value": true },
+                  "showOnMobile": { "value": false }
+                }
+              }
+            },
+            "layouts": {
+              "desktop": { "top": 510, "left": 30, "width": 714, "height": 658 }
+            }
+          },
+          "ead4cb23-ae0b-4c8a-8875-13fa47643762": {
+            "top": 60,
+            "left": 30,
+            "width": 1220,
+            "height": 400,
+            "component": {
+              "icon": "https://www.svgrepo.com/show/36266/chart.svg",
+              "name": "chart1",
+              "displayName": "Chart",
+              "description": "Display charts",
+              "component": "Chart",
+              "defaultSize": { "width": 600, "height": 400 },
+              "properties": {
+                "title": { "type": "string", "displayName": "Title" },
+                "data": { "type": "json", "displayName": "Data" },
+                "loadingState": {
+                  "type": "code",
+                  "displayName": "Loading State"
+                },
+                "markerColor": {
+                  "type": "color",
+                  "displayName": "Marker color"
+                },
+                "showGridLines": {
+                  "type": "toggle",
+                  "displayName": "Show grid lines"
+                },
+                "type": {
+                  "type": "select",
+                  "displayName": "Chart type",
+                  "options": [
+                    { "name": "Line", "value": "line" },
+                    { "name": "Bar", "value": "bar" },
+                    { "name": "Pie", "value": "pie" }
+                  ]
+                }
+              },
+              "events": {},
+              "styles": {},
+              "exposedVariables": { "show": null },
+              "definition": {
+                "properties": {
+                  "title": { "value": "Daily signups" },
+                  "markerColor": { "value": "#CDE1F8" },
+                  "showGridLines": { "value": true },
+                  "loadingState": { "value": "{{false}}" },
+                  "type": { "value": "bar" },
+                  "data": { "value": "{{queries.chartData.data}}" }
+                },
+                "events": [],
+                "styles": {},
+                "others": {
+                  "showOnDesktop": { "value": true },
+                  "showOnMobile": { "value": false }
+                }
+              }
+            },
+            "layouts": {
+              "desktop": { "top": 60, "left": 30, "width": 1220, "height": 400 }
+            }
+          }
+        }
+      },
+      "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
+      "createdAt": "2021-11-12T10:14:41.943Z",
+      "updatedAt": "2021-11-12T10:14:41.943Z"
+    }
+  ],
+  "editingVersion": {
+    "id": "c386bd54-7c8d-4d8f-8685-e87e9ac3a0d0",
+    "name": "v0",
+    "definition": {
+      "components": {
+        "b0319b2d-c580-4830-8ee4-d1920b944020": {
+          "top": 510,
+          "left": 30,
+          "width": 714,
+          "height": 658,
+          "component": {
+            "name": "table1",
+            "displayName": "Table",
+            "description": "Display paginated tabular data",
+            "component": "Table",
+            "properties": {
+              "title": { "type": "string", "displayName": "Title" },
+              "data": { "type": "code", "displayName": "Table data" },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading state"
+              },
+              "columns": { "type": "array", "displayName": "Table Columns" },
+              "serverSidePagination": {
+                "type": "toggle",
+                "displayName": "Server Side Pagination"
+              },
+              "actionButtonBackgroundColor": {
+                "type": "color",
+                "displayName": "Background Color"
+              },
+              "actionButtonTextColor": {
+                "type": "color",
+                "displayName": "Text Color"
+              }
+            },
+            "defaultSize": { "width": 810, "height": 300 },
+            "events": {
+              "onRowClicked": { "displayName": "On row clicked" },
+              "onBulkUpdate": { "displayName": "Bulk update query" },
+              "onPageChanged": { "displayName": "On page changed query" }
+            },
+            "styles": {
+              "textColor": { "type": "color", "displayName": "Text Color" }
+            },
+            "exposedVariables": {
+              "selectedRow": {},
+              "changeSet": {},
+              "dataUpdates": [],
+              "pageIndex": 0
+            },
+            "definition": {
+              "properties": {
+                "title": { "value": "Table" },
+                "visible": { "value": true },
+                "loadingState": { "value": false },
+                "data": { "value": "{{queries.fetchCustomers.data}}" },
+                "serverSidePagination": { "value": true },
+                "columns": {
+                  "value": [
+                    { "name": "id" },
+                    { "name": "name" },
+                    { "name": "email" }
+                  ]
+                },
+                "columnSizes": { "id": 167 },
+                "showBulkSelector": { "value": false },
+                "highlightSelectedRow": { "value": false }
+              },
+              "events": [],
+              "styles": {
+                "textColor": { "value": "" },
+                "cellSize": { "value": "compact" }
+              },
+              "others": {
+                "showOnDesktop": { "value": true },
+                "showOnMobile": { "value": false }
+              }
+            }
+          },
+          "layouts": {
+            "desktop": { "top": 510, "left": 30, "width": 714, "height": 658 }
+          }
+        },
+        "ead4cb23-ae0b-4c8a-8875-13fa47643762": {
+          "top": 60,
+          "left": 30,
+          "width": 1220,
+          "height": 400,
+          "component": {
+            "icon": "https://www.svgrepo.com/show/36266/chart.svg",
+            "name": "chart1",
+            "displayName": "Chart",
+            "description": "Display charts",
+            "component": "Chart",
+            "defaultSize": { "width": 600, "height": 400 },
+            "properties": {
+              "title": { "type": "string", "displayName": "Title" },
+              "data": { "type": "json", "displayName": "Data" },
+              "loadingState": {
+                "type": "code",
+                "displayName": "Loading State"
+              },
+              "markerColor": { "type": "color", "displayName": "Marker color" },
+              "showGridLines": {
+                "type": "toggle",
+                "displayName": "Show grid lines"
+              },
+              "type": {
+                "type": "select",
+                "displayName": "Chart type",
+                "options": [
+                  { "name": "Line", "value": "line" },
+                  { "name": "Bar", "value": "bar" },
+                  { "name": "Pie", "value": "pie" }
+                ]
+              }
+            },
+            "events": {},
+            "styles": {},
+            "exposedVariables": { "show": null },
+            "definition": {
+              "properties": {
+                "title": { "value": "Daily signups" },
+                "markerColor": { "value": "#CDE1F8" },
+                "showGridLines": { "value": true },
+                "loadingState": { "value": "{{false}}" },
+                "type": { "value": "bar" },
+                "data": { "value": "{{queries.chartData.data}}" }
+              },
+              "events": [],
+              "styles": {},
+              "others": {
+                "showOnDesktop": { "value": true },
+                "showOnMobile": { "value": false }
+              }
+            }
+          },
+          "layouts": {
+            "desktop": { "top": 60, "left": 30, "width": 1220, "height": 400 }
+          }
+        }
+      }
+    },
+    "appId": "d1a1884c-4cdc-4d38-b6a7-0d9b4ab4b0f3",
+    "createdAt": "2021-11-12T10:14:41.943Z",
+    "updatedAt": "2021-11-12T10:14:41.943Z"
+  },
+  "tooljetVersion": "0.9.0"
+}

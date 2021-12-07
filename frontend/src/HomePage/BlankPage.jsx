@@ -1,5 +1,5 @@
 import React from 'react';
-import { SampleApps } from './SampleApps';
+import { LibraryApps } from './LibraryApps';
 
 export const BlankPage = function BlankPage({ createApp, handleImportApp, isImportingApp, fileInput }) {
   return (
@@ -60,7 +60,7 @@ export const BlankPage = function BlankPage({ createApp, handleImportApp, isImpo
               </div>
             </div>
 
-            <SampleApps></SampleApps>
+            <LibraryApps></LibraryApps>
           </div>
         </div>
       </div>
