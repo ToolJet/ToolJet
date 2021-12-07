@@ -1,5 +1,6 @@
 import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { changeOption } from './utils';
 
 class Runjs extends React.Component {
   constructor(props) {
@@ -21,7 +22,7 @@ class Runjs extends React.Component {
           height={400}
           className="query-hinter"
           ignoreBraces={true}
-          onChange={(value) => this.props.optionsChanged({ code: value })}
+          onChange={(value) => changeOption(this, 'code', value)}
           isMultiLineJs={false}
           enablePreview={false}
         />
