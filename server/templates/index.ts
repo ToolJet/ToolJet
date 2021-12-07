@@ -1,15 +1,25 @@
-import * as GithubContributorsDefinition from "./github-contributors/app-definition.json";
-import * as GithubContributorsManifest from "./github-contributors/app-manifest.json";
+import { readdirSync, readFileSync } from 'fs';
 
-import * as CustomerDashboardDefinition from "./customer-dashboard/app-definition.json";
-import * as CustomerDashboardManifest from "./customer-dashboard/app-manifest.json";
+function getTemplates() {
+  const directories = readdirSync('./templates', { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
 
-export const TemplateAppDefinitions = {
-  [GithubContributorsManifest.id]: GithubContributorsDefinition,
-  [CustomerDashboardManifest.id]: CustomerDashboardDefinition,
-};
+  let templateAppDefinitions = {};
+  let templateAppManifests = []
 
-export const TemplateAppManifests = [
-  GithubContributorsManifest,
-  CustomerDashboardManifest,
-];
+  for (const directory of directories) {
+    const definition = JSON.parse(readFileSync(`templates/${directory}/definition.json`, 'utf-8'))
+    const manifest = JSON.parse(readFileSync(`templates/${directory}/manifest.json`, 'utf-8'))
+
+    templateAppDefinitions = {[manifest.id]: definition, ...templateAppDefinitions}
+    templateAppManifests = [manifest, ...templateAppManifests]
+  }
+
+  return {templateAppDefinitions, templateAppManifests}
+}
+
+const {templateAppDefinitions, templateAppManifests} =  getTemplates()
+
+export const TemplateAppDefinitions = templateAppDefinitions;
+export const TemplateAppManifests = templateAppManifests;
