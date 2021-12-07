@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   useTable,
@@ -44,7 +45,6 @@ export function Table({
   const cellSizeType = cellSize;
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
-  //? default value for backward compatibility
   const {
     actions = [],
     serverSidePagination = false,
@@ -642,13 +642,13 @@ export function Table({
     getTableBodyProps,
     headerGroups,
     page,
-    canPreviousPage,
+    // canPreviousPage,
     canNextPage,
     pageOptions,
     gotoPage,
     pageCount,
-    nextPage,
-    previousPage,
+    // nextPage,
+    // previousPage,
     setPageSize,
     state,
     rows,
@@ -656,7 +656,10 @@ export function Table({
     setAllFilters,
     preGlobalFilteredRows,
     setGlobalFilter,
-    state: { pageIndex, pageSize },
+    state: {
+      pageIndex,
+      // pageSize
+    },
     exportData,
     selectedFlatRows,
   } = useTable(
@@ -811,7 +814,7 @@ export function Table({
                       onEvent('onRowClicked', { component, data: row.original, rowId: row.id });
                     }}
                   >
-                    {row.cells.map((cell, index) => {
+                    {row.cells.map((cell) => {
                       let cellProps = cell.getCellProps();
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
