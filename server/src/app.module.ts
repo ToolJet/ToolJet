@@ -27,6 +27,7 @@ import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { CommentModule } from './modules/comments/comment.module';
 import { join } from 'path';
+import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
@@ -66,6 +67,7 @@ const imports = [
   OrganizationsModule,
   CaslModule,
   MetaModule,
+  LibraryAppModule,
   GroupPermissionsModule,
 ];
 

@@ -68,13 +68,13 @@ export const AppMenu = function AppMenu({
   return (
     <OverlayTrigger
       trigger="click"
-      placement="top"
+      placement="bottom"
       rootClose
       onToggle={(status) => handleToggle(status)}
       overlay={
         <Popover id="popover-basic">
           {/* <Popover.Title as="h3">brrr</Popover.Title> */}
-          <Popover.Content>
+          <Popover.Content bsPrefix="shadow popover-body">
             {!addToFolder && (
               <div>
                 {canCreateApp && (
@@ -136,9 +136,7 @@ export const AppMenu = function AppMenu({
         </Popover>
       }
     >
-      <span className="badge bg-blue-lt mx-2" role="button">
-        <img className="svg-icon" src="/assets/images/icons/app-menu.svg" width="12" height="12" />
-      </span>
+      <img className="svg-icon" src="/assets/images/icons/three-dots.svg" width="12" height="12" />
     </OverlayTrigger>
   );
 };

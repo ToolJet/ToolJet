@@ -8,7 +8,7 @@ export const Text = ({ param, definition, onChange, paramType, componentMeta }) 
 
   return (
     <div className="field mb-3">
-      <ToolTip label={displayName} meta={paramMeta} />
+      <ToolTip className="color-black" label={displayName} meta={paramMeta} />
       <input
         type="text"
         onBlur={(e) => onChange(param, 'value', e.target.value, paramType)}
