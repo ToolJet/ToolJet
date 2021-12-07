@@ -1,16 +1,16 @@
 {
-  "id": "2457a283-4e3e-436b-bad5-b8136a5dcfa1",
+  "id": "a49f1709-b260-408c-b84e-efc27167808c",
   "name": "GitHub Contributor Leaderboard",
   "slug": null,
   "isPublic": false,
   "organizationId": "2871388a-3041-4f76-b531-e14b7a9d9ee9",
   "currentVersionId": null,
   "userId": "3852332b-4802-436d-9177-bdbf347a0278",
-  "createdAt": "2021-11-12T10:11:30.201Z",
-  "updatedAt": "2021-11-12T10:11:30.201Z",
+  "createdAt": "2021-12-07T11:17:04.161Z",
+  "updatedAt": "2021-12-07T11:17:04.161Z",
   "dataQueries": [
     {
-      "id": "47e20dd9-5d82-4c97-8039-3452d0a2247e",
+      "id": "425e45a9-06af-47ae-a381-1ccd059ae28c",
       "name": "fetchGithubProfile",
       "kind": "restapi",
       "options": {
@@ -21,12 +21,12 @@
         "body": []
       },
       "dataSourceId": null,
-      "appId": "2457a283-4e3e-436b-bad5-b8136a5dcfa1",
-      "createdAt": "2021-11-12T10:11:30.201Z",
-      "updatedAt": "2021-11-12T10:11:30.201Z"
+      "appId": "a49f1709-b260-408c-b84e-efc27167808c",
+      "createdAt": "2021-12-07T11:17:04.161Z",
+      "updatedAt": "2021-12-07T11:17:04.161Z"
     },
     {
-      "id": "47da8217-741c-49a7-a8a8-4309c59bc357",
+      "id": "54f5ab01-eabd-4376-b6bb-ab2cee96443e",
       "name": "fetchContributors",
       "kind": "restapi",
       "options": {
@@ -40,15 +40,15 @@
         "body": []
       },
       "dataSourceId": null,
-      "appId": "2457a283-4e3e-436b-bad5-b8136a5dcfa1",
-      "createdAt": "2021-11-12T10:11:30.201Z",
-      "updatedAt": "2021-11-12T10:11:30.201Z"
+      "appId": "a49f1709-b260-408c-b84e-efc27167808c",
+      "createdAt": "2021-12-07T11:17:04.161Z",
+      "updatedAt": "2021-12-07T11:17:04.161Z"
     }
   ],
   "dataSources": [],
   "appVersions": [
     {
-      "id": "61f0a653-578a-465b-8208-d4bad4b90996",
+      "id": "debb9c7f-e8b9-4499-b527-1666ac13371a",
       "name": "v0",
       "definition": {
         "components": {
@@ -165,7 +165,12 @@
               }
             },
             "layouts": {
-              "desktop": { "top": 150, "left": 30, "width": 715, "height": 686 }
+              "desktop": {
+                "top": 150,
+                "left": 2.321981424148607,
+                "width": 23.796439628482972,
+                "height": 686
+              }
             }
           },
           "ad27f56c-8fda-4c21-a60d-0951ba0f46f8": {
@@ -197,8 +202,8 @@
             "layouts": {
               "desktop": {
                 "top": 150,
-                "left": 780,
-                "width": 476,
+                "left": 60.371517027863774,
+                "width": 15.842105263157896,
                 "height": 504
               }
             }
@@ -238,7 +243,12 @@
             },
             "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
             "layouts": {
-              "desktop": { "top": 30, "left": 150, "width": 200, "height": 200 }
+              "desktop": {
+                "top": 30,
+                "left": 31.51260504201681,
+                "width": 18.067226890756302,
+                "height": 200
+              }
             }
           },
           "2bf00d77-caf1-404d-a505-fec4d3ec6e7f": {
@@ -281,7 +291,12 @@
             },
             "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
             "layouts": {
-              "desktop": { "top": 300, "left": 30, "width": 114, "height": 24 }
+              "desktop": {
+                "top": 300,
+                "left": 6.302521008403361,
+                "width": 10.298319327731093,
+                "height": 24
+              }
             }
           },
           "a7cce90d-c3cd-40b3-9b7a-348e6f51da3e": {
@@ -324,7 +339,12 @@
             },
             "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
             "layouts": {
-              "desktop": { "top": 360, "left": 30, "width": 116, "height": 24 }
+              "desktop": {
+                "top": 360,
+                "left": 6.302521008403361,
+                "width": 10.478991596638656,
+                "height": 24
+              }
             }
           },
           "517f8c1d-1f4b-488a-8e42-f1d779e0ff09": {
@@ -367,7 +387,12 @@
             },
             "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
             "layouts": {
-              "desktop": { "top": 420, "left": 30, "width": 117, "height": 24 }
+              "desktop": {
+                "top": 420,
+                "left": 6.302521008403361,
+                "width": 10.569327731092438,
+                "height": 24
+              }
             }
           },
           "1a109bae-548f-48b5-a22a-683364a414b1": {
@@ -414,7 +439,12 @@
             },
             "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
             "layouts": {
-              "desktop": { "top": 300, "left": 180, "width": 210, "height": 24 }
+              "desktop": {
+                "top": 300,
+                "left": 37.81512605042017,
+                "width": 18.970588235294116,
+                "height": 24
+              }
             }
           },
           "49da9d80-21fa-4068-bfe7-d8189e286f2d": {
@@ -461,7 +491,12 @@
             },
             "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
             "layouts": {
-              "desktop": { "top": 360, "left": 180, "width": 210, "height": 24 }
+              "desktop": {
+                "top": 360,
+                "left": 37.81512605042017,
+                "width": 18.970588235294116,
+                "height": 24
+              }
             }
           },
           "b607d4c7-edf1-4d5f-b947-98845d0673b7": {
@@ -508,7 +543,12 @@
             },
             "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
             "layouts": {
-              "desktop": { "top": 420, "left": 180, "width": 210, "height": 24 }
+              "desktop": {
+                "top": 420,
+                "left": 37.81512605042017,
+                "width": 18.970588235294116,
+                "height": 24
+              }
             }
           },
           "0c28ef81-6cdf-4e12-8f21-de47b72b7bea": {
@@ -542,7 +582,12 @@
               }
             },
             "layouts": {
-              "desktop": { "top": 90, "left": 30, "width": 443, "height": 30 }
+              "desktop": {
+                "top": 90,
+                "left": 2.321981424148607,
+                "width": 14.743808049535604,
+                "height": 30
+              }
             }
           },
           "5dc58297-2a31-48eb-9eab-e80fe2e669a9": {
@@ -598,18 +643,23 @@
               }
             },
             "layouts": {
-              "desktop": { "top": 90, "left": 570, "width": 174, "height": 30 }
+              "desktop": {
+                "top": 90,
+                "left": 44.11764705882353,
+                "width": 5.791021671826625,
+                "height": 30
+              }
             }
           }
         }
       },
-      "appId": "2457a283-4e3e-436b-bad5-b8136a5dcfa1",
-      "createdAt": "2021-11-12T10:11:30.201Z",
-      "updatedAt": "2021-11-12T10:11:30.201Z"
+      "appId": "a49f1709-b260-408c-b84e-efc27167808c",
+      "createdAt": "2021-12-07T11:17:04.161Z",
+      "updatedAt": "2021-12-07T11:17:04.161Z"
     }
   ],
   "editingVersion": {
-    "id": "61f0a653-578a-465b-8208-d4bad4b90996",
+    "id": "debb9c7f-e8b9-4499-b527-1666ac13371a",
     "name": "v0",
     "definition": {
       "components": {
@@ -726,7 +776,12 @@
             }
           },
           "layouts": {
-            "desktop": { "top": 150, "left": 30, "width": 715, "height": 686 }
+            "desktop": {
+              "top": 150,
+              "left": 2.321981424148607,
+              "width": 23.796439628482972,
+              "height": 686
+            }
           }
         },
         "ad27f56c-8fda-4c21-a60d-0951ba0f46f8": {
@@ -756,7 +811,12 @@
             }
           },
           "layouts": {
-            "desktop": { "top": 150, "left": 780, "width": 476, "height": 504 }
+            "desktop": {
+              "top": 150,
+              "left": 60.371517027863774,
+              "width": 15.842105263157896,
+              "height": 504
+            }
           }
         },
         "6b3d8bce-bc34-42af-af46-24847cad360a": {
@@ -794,7 +854,12 @@
           },
           "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
           "layouts": {
-            "desktop": { "top": 30, "left": 150, "width": 200, "height": 200 }
+            "desktop": {
+              "top": 30,
+              "left": 31.51260504201681,
+              "width": 18.067226890756302,
+              "height": 200
+            }
           }
         },
         "2bf00d77-caf1-404d-a505-fec4d3ec6e7f": {
@@ -837,7 +902,12 @@
           },
           "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
           "layouts": {
-            "desktop": { "top": 300, "left": 30, "width": 114, "height": 24 }
+            "desktop": {
+              "top": 300,
+              "left": 6.302521008403361,
+              "width": 10.298319327731093,
+              "height": 24
+            }
           }
         },
         "a7cce90d-c3cd-40b3-9b7a-348e6f51da3e": {
@@ -880,7 +950,12 @@
           },
           "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
           "layouts": {
-            "desktop": { "top": 360, "left": 30, "width": 116, "height": 24 }
+            "desktop": {
+              "top": 360,
+              "left": 6.302521008403361,
+              "width": 10.478991596638656,
+              "height": 24
+            }
           }
         },
         "517f8c1d-1f4b-488a-8e42-f1d779e0ff09": {
@@ -923,7 +998,12 @@
           },
           "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
           "layouts": {
-            "desktop": { "top": 420, "left": 30, "width": 117, "height": 24 }
+            "desktop": {
+              "top": 420,
+              "left": 6.302521008403361,
+              "width": 10.569327731092438,
+              "height": 24
+            }
           }
         },
         "1a109bae-548f-48b5-a22a-683364a414b1": {
@@ -968,7 +1048,12 @@
           },
           "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
           "layouts": {
-            "desktop": { "top": 300, "left": 180, "width": 210, "height": 24 }
+            "desktop": {
+              "top": 300,
+              "left": 37.81512605042017,
+              "width": 18.970588235294116,
+              "height": 24
+            }
           }
         },
         "49da9d80-21fa-4068-bfe7-d8189e286f2d": {
@@ -1015,7 +1100,12 @@
           },
           "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
           "layouts": {
-            "desktop": { "top": 360, "left": 180, "width": 210, "height": 24 }
+            "desktop": {
+              "top": 360,
+              "left": 37.81512605042017,
+              "width": 18.970588235294116,
+              "height": 24
+            }
           }
         },
         "b607d4c7-edf1-4d5f-b947-98845d0673b7": {
@@ -1062,7 +1152,12 @@
           },
           "parent": "ad27f56c-8fda-4c21-a60d-0951ba0f46f8",
           "layouts": {
-            "desktop": { "top": 420, "left": 180, "width": 210, "height": 24 }
+            "desktop": {
+              "top": 420,
+              "left": 37.81512605042017,
+              "width": 18.970588235294116,
+              "height": 24
+            }
           }
         },
         "0c28ef81-6cdf-4e12-8f21-de47b72b7bea": {
@@ -1096,7 +1191,12 @@
             }
           },
           "layouts": {
-            "desktop": { "top": 90, "left": 30, "width": 443, "height": 30 }
+            "desktop": {
+              "top": 90,
+              "left": 2.321981424148607,
+              "width": 14.743808049535604,
+              "height": 30
+            }
           }
         },
         "5dc58297-2a31-48eb-9eab-e80fe2e669a9": {
@@ -1149,14 +1249,19 @@
             }
           },
           "layouts": {
-            "desktop": { "top": 90, "left": 570, "width": 174, "height": 30 }
+            "desktop": {
+              "top": 90,
+              "left": 44.11764705882353,
+              "width": 5.791021671826625,
+              "height": 30
+            }
           }
         }
       }
     },
-    "appId": "2457a283-4e3e-436b-bad5-b8136a5dcfa1",
-    "createdAt": "2021-11-12T10:11:30.201Z",
-    "updatedAt": "2021-11-12T10:11:30.201Z"
+    "appId": "a49f1709-b260-408c-b84e-efc27167808c",
+    "createdAt": "2021-12-07T11:17:04.161Z",
+    "updatedAt": "2021-12-07T11:17:04.161Z"
   },
-  "tooljetVersion": "0.9.0"
+  "tooljetVersion": "0.9.1"
 }
