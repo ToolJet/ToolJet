@@ -546,9 +546,12 @@ body {
   padding: 0 1.5rem 0 1.5rem;
 }
 
+.page-body, .homepage-body {
+  height: 100vh;
+}
+
 .homepage-body {
   overflow-y: hidden;
-  height: 100vh;
   a {
     color: inherit;
   }
