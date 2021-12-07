@@ -92,7 +92,7 @@ const DynamicForm = ({
         return {
           defaultChecked: options[$key],
           checked: options[$key]?.value,
-          onChange: (e) => optionchanged($key, e.target.value),
+          onChange: (e) => optionchanged($key, e.target.checked),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
