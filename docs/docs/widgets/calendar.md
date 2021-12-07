@@ -55,7 +55,7 @@ You may supply any other additional property to the event(s). These additional p
 exposes any of the events via its exposed variables.
 
 ##### Recurring events
-The Calendar component support recurring events based on [iCalendar RFC specification](https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html). The manner in which a recurring event will occur on the calendar will can be specified by the `recurrenceRule` property. Duration of each instance of the recurring event will be determined by the `duration` property, it is specified in seconds. The `start` and `end` property of event is not applicable for recurring events as their start date and end date are determined by `recurrenceRule`.
+The Calendar component supports recurring events based on [iCalendar RFC specification](https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html) with certain differences, as described [here on RRule.js GitHub repo](https://github.com/jakubroztocil/rrule#differences-from-icalendar-rfc). The manner in which a recurring event will occur on the calendar will can be specified by the `recurrenceRule` property. Duration of each instance of the recurring event will be determined by the `duration` property, it is specified in seconds. The `start` and `end` property of event is not applicable for recurring events as their start date and end date are determined by `recurrenceRule`.
 
 For example, the following recurring event would be instantiated every week on Monday, Wednesday:
 ```javascript
