@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
+import cx from 'classnames';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
+  const [pathName, setPathName] = useState(document.location.pathname);
+
+  useEffect(() => {
+    setPathName(document.location.pathname);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [document.location.pathname]);
+
   function logout() {
     authenticationService.logout();
     history.push('/login');
@@ -24,15 +32,35 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         </button>
         <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
           <Link to={'/'}>
-            <img src="/assets/images/logo-text.svg" width="110" height="32" className="navbar-brand-image" />
+            <img src="/assets/images/logo-color.svg" className="navbar-brand-image" />
           </Link>
         </h1>
+
+        <ul className="navbar-nav d-none d-lg-flex">
+          <li className={cx(`nav-item mx-3`, { active: pathName === '/' })}>
+            <Link to={'/'} className="nav-link">
+              <span className="nav-link-icon d-md-none d-lg-inline-block">
+                <img className="svg-icon" src="/assets/images/icons/apps.svg" width="15" height="15" />
+              </span>
+              <span className="nav-link-title">Apps</span>
+            </Link>
+          </li>
+
+          <li className={cx(`nav-item mx-3`, { active: pathName === '/library' })}>
+            <Link to={'/library'} className="nav-link mx-2">
+              <span className="nav-link-icon d-md-none d-lg-inline-block">
+                <img className="svg-icon" src="https://www.svgrepo.com/show/39547/gallery.svg" width="15" height="15" />
+              </span>
+              <span className="nav-link-title">Library</span>
+            </Link>
+          </li>
+        </ul>
 
         <div className="navbar-nav flex-row order-md-last">
           <div className="p-1 m-1 d-flex align-items-center">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />
           </div>
-          <div className="nav-item dropdown">
+          <div className="nav-item dropdown ms-2 user-avatar-nav-item">
             <a
               href="#"
               className="nav-link d-flex lh-1 text-reset p-0"
@@ -40,8 +68,8 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
               aria-label="Open user menu"
               data-testid="userAvatarHeader"
             >
-              <div className="d-none d-xl-block ps-2">
-                <span className="avatar bg-azure-lt">
+              <div className="d-xl-block">
+                <span className="avatar bg-secondary-lt">
                   {first_name ? first_name[0] : ''}
                   {last_name ? last_name[0] : ''}
                 </span>

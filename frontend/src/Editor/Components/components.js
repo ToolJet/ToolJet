@@ -145,7 +145,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#3c92dc' },
+        backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },

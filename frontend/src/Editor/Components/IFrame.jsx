@@ -27,7 +27,7 @@ export const IFrame = function IFrame({ id, width, height, component, onComponen
       }}
     >
       <iframe
-        width={width}
+        width={width - 4}
         height={height}
         src={source}
         title="IFrame Widget"
