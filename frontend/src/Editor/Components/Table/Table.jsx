@@ -32,13 +32,11 @@ export function Table({
   onEvent,
   paramUpdated,
   changeCanDrag,
-  onComponentOptionChanged,
   onComponentOptionsChanged,
   darkMode,
   fireEvent,
   properties,
   styles,
-  exposedVariables,
   setExposedVariable,
 }) {
   let { textColor, tableType = 'table-bordered', cellSize, visibility, disabledState } = styles;
@@ -49,17 +47,20 @@ export function Table({
   //? default value for backward compatibility
   const {
     actions = [],
-    serverSidePagination,
-    serverSideSearch = true,
+    serverSidePagination = false,
+    clientSidePagination = true,
     displaySearchBox,
     showDownloadButton = true,
+    serverSideSearch = true,
     showFilterButton = true,
     showBulkUpdateActions = true,
     showBulkSelector = false,
     highlightSelectedRow = false,
-    clientSidePagination = true,
   } = properties;
 
+  // console.log('__columns', columnValues);
+
+  const [componentState, setcomponentState] = useState(currentState.components[component.component] || {});
   const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
@@ -67,12 +68,12 @@ export function Table({
     if (loadingStateProperty || currentState) {
       setLoadingState(loadingStateProperty);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState]);
-
-  const [componentState, setcomponentState] = useState(currentState.components[component.component] || {});
 
   useEffect(() => {
     setcomponentState(currentState.components[component.name] || {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components[component.name]]);
 
   const [isFiltersVisible, setFiltersVisibility] = useState(false);
@@ -516,9 +517,8 @@ export function Table({
     };
   });
 
-  let tableData = [];
+  let tableData = properties.data;
   if (currentState) {
-    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
     if (!Array.isArray(tableData)) tableData = [];
     console.log('resolved param', tableData);
   }
@@ -757,10 +757,9 @@ export function Table({
                 globalFilter={state.globalFilter}
                 useAsyncDebounce={useAsyncDebounce}
                 setGlobalFilter={setGlobalFilter}
-                onComponentOptionChanged={onComponentOptionChanged}
-                component={component}
+                setExposedVariable={setExposedVariable}
                 serverSideSearch={serverSideSearch}
-                onEvent={onEvent}
+                fireEvent={fireEvent}
               />
             </div>
           </div>
