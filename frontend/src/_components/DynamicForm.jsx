@@ -91,6 +91,7 @@ const DynamicForm = ({
       case 'toggle':
         return {
           defaultChecked: options[$key],
+          checked: options[$key]?.value,
           onChange: () => optionchanged($key, !options[$key]?.value),
         };
       case 'dropdown':
