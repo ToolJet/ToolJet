@@ -4,7 +4,7 @@ import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 export default ({ options = [], currentState, theme, removeKeyValuePair, onChange, darkMode }) => {
   return (
     <>
-      <div className={`row py-2 border-bottom mb-1  mx-0`} style={{ background: darkMode ? '#1C252E' : '#F4F6FA' }}>
+      <div className={`row py-2 border-bottom mb-1  mx-0 ${!darkMode && 'bg-light'}`}>
         <div className="col-4">
           <span className=" col-4 text-uppercase small strong" style={{ fontSize: '10px' }}>
             Key
