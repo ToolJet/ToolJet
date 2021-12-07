@@ -89,7 +89,7 @@ export const Calendar = function ({
   };
 
   return (
-    <div id={id}>
+    <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }}>
       <ReactCalendar
         className={`calendar-widget
         ${darkMode ? 'dark-mode' : ''}
