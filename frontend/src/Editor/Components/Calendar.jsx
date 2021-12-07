@@ -62,11 +62,8 @@ export const Calendar = function ({
   const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
   const [currentDate, setCurrentDate] = useState(defaultDate);
 
-  const additionalEvents = [];
   const events = properties.events
-    ? _.flatten(
-        properties.events.map((event) => prepareEvent(event, properties.dateFormat, currentDate, additionalEvents.push))
-      )
+    ? _.flatten(properties.events.map((event) => prepareEvent(event, properties.dateFormat, currentDate)))
     : [];
 
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });

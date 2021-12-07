@@ -70,7 +70,7 @@ For example, the following recurring event would be instantiated every week on M
 ]}}
 ```
 
-Every other week on Monday, Wednesday, and Friday until December 24, 1997, starting on Monday, September 1, 1997:
+Every three days starting on September 1, 2020:
 ```javascript
 {{[
     {
@@ -78,7 +78,7 @@ Every other week on Monday, Wednesday, and Friday until December 24, 1997, start
 		 allDay: false,
 		 color: '#4D72DA',
          recurrenceRule:
-          'DTSTART;TZID=America/New_York:19970901T090000;RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR',
+          'RRULE:FREQ=DAILY;INTERVAL=3;DTSTART=20200901T090000',
 	}
 ]}}
 ```
