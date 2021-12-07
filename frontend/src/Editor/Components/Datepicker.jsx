@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 
 export const Datepicker = function Datepicker({
   height,
-  component,
-  currentState,
   properties,
   styles,
   exposedVariables,
@@ -27,15 +25,18 @@ export const Datepicker = function Datepicker({
     }
   };
 
+  useEffect(() => {
+    setExposedVariable('value', defaultValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValue]);
+
   const validationData = validate(exposedVariables.value);
 
   const { isValid, validationError } = validationData;
-
-  const currentValidState = currentState?.components[component?.name]?.isValid;
-
-  if (currentValidState !== isValid) {
+  useEffect(() => {
     setExposedVariable('isValid', isValid);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
   const isDateFormat = enableDate ? format : false;
 
