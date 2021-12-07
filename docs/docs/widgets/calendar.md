@@ -48,9 +48,40 @@ Assuming that you set the date format to `MM-DD-YYYY HH:mm:ss A Z`, setting the 
 | textColor | Color of the event title, any css supported color name or hex code can be used |
 | textOrientation | Optional. If it is set to `vertical`, the title of the event will be oriented vertically. |
 | resourceId | Applicable only if you're using resource scheduling. This is the id of the resource to which this event correspond to. |
+| recurrenceRule | Specified for recurring events. The value should be a string that follows the [iCalendar RFC specification](https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html). |
+| duration | (Applicable only for recurring events) This value specifies the duration of each recurrence of the event, in seconds |
 
 You may supply any other additional property to the event(s). These additional properties will available to you when the calendar widget
 exposes any of the events via its exposed variables.
+
+##### Recurring events
+The Calendar component support recurring events based on [iCalendar RFC specification](https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html). The manner in which a recurring event will occur on the calendar will can be specified by the `recurrenceRule` property. Duration of each instance of the recurring event will be determined by the `duration` property, it is specified in seconds. The `start` and `end` property of event is not applicable for recurring events as their start date and end date are determined by `recurrenceRule`.
+
+For example, the following recurring event would be instantiated every week on Monday, Wednesday:
+```javascript
+{{[
+    {
+		 title: 'Sample event',
+		 allDay: false,
+		 color: '#4D72DA',
+         recurrencePattern:
+          'RRULE:FREQ=WEEKLY;BYDAY=MO,WE',
+	}
+]}}
+```
+
+Every other week on Monday, Wednesday, and Friday until December 24, 1997, starting on Monday, September 1, 1997:
+```javascript
+{{[
+    {
+		 title: 'Sample event',
+		 allDay: false,
+		 color: '#4D72DA',
+         recurrencePattern:
+          'DTSTART;TZID=America/New_York:19970901T090000;RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;BYDAY=MO,WE,FR',
+	}
+]}}
+```
 
 #### Resources
 
