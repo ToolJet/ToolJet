@@ -1,10 +1,15 @@
 import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { changeOption } from './utils';
+import { defaults } from 'lodash';
 
 class Runjs extends React.Component {
   constructor(props) {
     super(props);
+    const options = defaults({ ...props.options }, { code: '//Type your JavaScript code here' });
+    this.state = {
+      options,
+    };
   }
 
   componentDidMount() {
