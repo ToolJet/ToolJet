@@ -8,6 +8,6 @@ export * from './appVersion.service';
 export * from './organization_user.service';
 export * from './openapi.service';
 export * from './folder.service';
-export * from './sample.service';
+export * from './library-app.service';
 export * from './tooljet.service';
 export * from './comments.service';

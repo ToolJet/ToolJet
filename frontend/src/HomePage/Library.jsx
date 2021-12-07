@@ -1,7 +1,7 @@
 import React from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
-import { SampleApps }  from './SampleApps';
+import { LibraryApps }  from './LibraryApps';
 
 class Library extends React.Component {
   constructor(props) {
@@ -19,13 +19,13 @@ class Library extends React.Component {
         <Header
           switchDarkMode={this.props.switchDarkMode}
           darkMode={this.props.darkMode}
-        />   
+        />
 
         <div className="page-wrapper">
 
           <div className="page-body">
               <div className="container-xl">
-                <SampleApps/>
+                <LibraryApps/>
               </div>
           </div>
         </div>
