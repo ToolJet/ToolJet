@@ -15,7 +15,7 @@ export const Datepicker = function Datepicker({
   const { format, enableTime, enableDate, defaultValue } = properties;
   const { visibility, disabledState } = styles;
 
-  const dateChange = (event) => {
+  const onDateChange = (event) => {
     if (enableDate) {
       const selectedDateFormat = enableTime ? `${format} LT` : format;
       const dateString = event.format(selectedDateFormat);
@@ -46,7 +46,7 @@ export const Datepicker = function Datepicker({
       style={{ height, display: visibility ? '' : 'none' }}
     >
       <Datetime
-        onChange={dateChange}
+        onChange={onDateChange}
         timeFormat={enableTime}
         closeOnSelect={true}
         dateFormat={isDateFormat}
