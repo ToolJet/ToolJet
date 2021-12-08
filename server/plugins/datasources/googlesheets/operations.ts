@@ -7,8 +7,9 @@ async function makeRequestToReadValues(spreadSheetId: string, sheet: string, ran
 }
 
 async function makeRequestToAppendValues(spreadSheetId: string, sheet: string, requestBody: any, authHeader: any) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${sheet || ''
-    }!A:Z:append?valueInputOption=USER_ENTERED`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${
+    sheet || ''
+  }!A:Z:append?valueInputOption=USER_ENTERED`;
 
   return await got.post(url, { headers: authHeader, json: requestBody }).json();
 }
@@ -51,7 +52,12 @@ export async function batchUpdateToSheet(
 
     const updateCellIndexes = [];
     colIndexes.map((col) => {
-      rowsIndexes.map((rowIndex) => updateCellIndexes.push({ ...col, cellIndex: `${col.colIndex}${rowIndex}` }));
+      rowsIndexes.map((rowIndex) =>
+        updateCellIndexes.push({
+          ...col,
+          cellIndex: `${col.colIndex}${rowIndex}`,
+        })
+      );
     });
 
     const body = [];
