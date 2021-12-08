@@ -5,13 +5,16 @@ import { OAuth2Client } from 'google-auth-library';
 
 describe('oauth controller', () => {
   let app: INestApplication;
+  const originalEnv = process.env;
 
   beforeEach(async () => {
     await clearDB();
   });
 
   beforeAll(async () => {
+    jest.resetModules();
     app = await createNestAppInstance();
+    process.env = { ...originalEnv, SSO_GOOGLE_OAUTH2_CLIENT_ID: 'apps.googleusercontent.com' };
   });
 
   describe('sign in via Google OAuth', () => {
@@ -172,5 +175,6 @@ describe('oauth controller', () => {
 
   afterAll(async () => {
     await app.close();
+    process.env = originalEnv;
   });
 });
