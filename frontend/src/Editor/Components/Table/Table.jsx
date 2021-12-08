@@ -361,7 +361,7 @@ export function Table({
                 <div>
                   <input
                     type="text"
-                    style={cellStyles}
+                    style={{ ...cellStyles, maxWidth: width, minWidth: width - 10 }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -401,7 +401,9 @@ export function Table({
                 readOnly={!column.isEditable}
                 style={{ maxWidth: width, minWidth: width - 10 }}
                 onBlur={(e) => {
-                  handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  if (column.isEditable) {
+                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  }
                 }}
                 defaultValue={cellValue}
               ></textarea>
@@ -750,7 +752,7 @@ export function Table({
     if (!serverSidePagination && clientSidePagination) {
       setPageSize(10);
     }
-  }, [clientSidePagination, serverSidePagination]);
+  }, [clientSidePagination, serverSidePagination, rows]);
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);

@@ -76,7 +76,7 @@ export const Folders = function Folders({
           >
             All applications
             <small className="text-muted ms-auto">
-              <span className="badge bg-blue-lt" data-testid="allApplicationsCount">
+              <span className="badge bg-primary-lt" data-testid="allApplicationsCount">
                 {totalCount}
               </span>
             </small>
@@ -90,7 +90,7 @@ export const Folders = function Folders({
             >
               {folder.name}
               <small className="text-muted ms-auto">
-                <span className="badge bg-azure-lt">{folder.count}</span>
+                <span className="badge bg-primary-lt">{folder.count}</span>
               </small>
             </a>
           ))}
