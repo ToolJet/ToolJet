@@ -5,21 +5,20 @@ on:
     branches: [ 'chore/setup-pipeline' ]
   pull_request:
     branches: [ develop ]
+env:
+  LOCKBOX_MASTER_KEY: lockbox-master-key
+  SECRET_KEY_BASE:  secrret-key-base
+  NODE_ENV: test
+  PG_HOST: postgres
+  PG_PORT: 5432
+  PG_USER: postgres
+  PG_PASS: postgres
+  PG_DB: tooljet_test
 
 jobs:
-
   unit-test:
       runs-on: ubuntu-latest
       container: node:14.17.3-buster
-      env:
-        LOCKBOX_MASTER_KEY: lockbox-master-key
-        SECRET_KEY_BASE:  secrret-key-base
-        NODE_ENV: test
-        PG_HOST: postgres
-        PG_PORT: 5432
-        PG_USER: postgres
-        PG_PASS: postgres
-        PG_DB: tooljet_test
       services:
         postgres:
           image: postgres
@@ -39,3 +38,26 @@ jobs:
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
       - run: npm --prefix server run test
+
+  e2e-test:
+      runs-on: ubuntu-latest
+      container: node:14.17.3-buster
+      services:
+        postgres:
+          image: postgres
+          env:
+            POSTGRES_PASSWORD: postgres
+          # Set health checks to wait until postgres has started
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+      steps:
+      - uses: actions/checkout@v2
+      - run: apt update && apt install -y postgresql
+      - run: npm i -g npm@7.20.0
+      - run: npm --prefix server ci
+      - run: npm --prefix server run db:create
+      - run: npm --prefix server run db:migrate
+      - run: npm --prefix server run test:e2e
