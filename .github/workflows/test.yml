@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [ develop ]
 env:
+  FORCE_COLOR: true
   LOCKBOX_MASTER_KEY: lockbox-master-key
   SECRET_KEY_BASE:  secrret-key-base
   NODE_ENV: test
