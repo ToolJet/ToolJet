@@ -1,4 +1,4 @@
-name: Build for ToolJet
+name: Build
 
 on:
   push:
