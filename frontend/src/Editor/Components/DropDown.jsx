@@ -13,9 +13,9 @@ export const DropDown = function DropDown({
 }) {
   console.log('currentState', currentState);
 
-  const [currentValue, setCurrentValue] = useState(() => value);
   const { label, value, display_values, values } = properties;
   const { visibility, disabledState } = styles;
+  const [currentValue, setCurrentValue] = useState(() => value);
 
   let selectOptions = [];
 
