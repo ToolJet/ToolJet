@@ -67,6 +67,11 @@ class Editor extends React.Component {
       deviceWindowWidth: 450,
       appDefinition: {
         components: {},
+        globalSettings: {
+          hideHeader: false,
+          canvasMaxWidth: 1292,
+          canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
+        },
       },
       currentState: {
         queries: {},
@@ -236,7 +241,7 @@ class Editor extends React.Component {
     const appId = this.props.match.params.id;
 
     appService.getApp(appId).then((data) => {
-      const dataDefinition = data.definition || { components: {} };
+      const dataDefinition = data.definition || {};
       this.setState(
         {
           app: data,
@@ -256,7 +261,7 @@ class Editor extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(version.definition || { components: {} });
+    this.appDefinitionChanged(version.definition || {});
     this.setState({
       editingVersion: version,
     });
@@ -357,6 +362,15 @@ class Editor extends React.Component {
           },
         },
       },
+    });
+  };
+
+  globalSettingsChanged = (key, value) => {
+    const appDefinition = { ...this.state.appDefinition };
+
+    appDefinition.globalSettings[key] = value;
+    this.setState({
+      appDefinition,
     });
   };
 
@@ -610,6 +624,7 @@ class Editor extends React.Component {
       defaultComponentStateComputed,
       showComments,
     } = this.state;
+
     const appLink = slug ? `/applications/${slug}` : '';
 
     return (
@@ -767,6 +782,8 @@ class Editor extends React.Component {
               onZoomChanged={this.onZoomChanged}
               toggleComments={this.toggleComments}
               switchDarkMode={this.props.switchDarkMode}
+              globalSettingsChanged={this.globalSettingsChanged}
+              globalSettings={appDefinition.globalSettings}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -776,7 +793,11 @@ class Editor extends React.Component {
               >
                 <div
                   className="canvas-area"
-                  style={{ width: currentLayout === 'desktop' ? '100%' : '450px', maxWidth: '1292px' }}
+                  style={{
+                    width: currentLayout === 'desktop' ? '100%' : '450px',
+                    maxWidth: +this.state.appDefinition.globalSettings.canvasMaxWidth,
+                    backgroundColor: this.state.appDefinition.globalSettings.canvasBackgroundColor,
+                  }}
                 >
                   {defaultComponentStateComputed && (
                     <>
