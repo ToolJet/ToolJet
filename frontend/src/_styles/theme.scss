@@ -2717,9 +2717,12 @@ input[type='text'] {
 
 .app-name {
   width: 325px;
-  background: $bg-light;
   left: 150px;
   position: absolute;
+}
+
+.app-name:hover {
+  background: $bg-light;
 }
 
 .layout-buttons {

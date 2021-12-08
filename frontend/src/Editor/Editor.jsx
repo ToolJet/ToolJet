@@ -745,9 +745,9 @@ class Editor extends React.Component {
                     </span>
                   </div>
                 )}
-                <small className="app-version-name">
-                  {this.state.editingVersion && `App version: ${this.state.editingVersion.name}`}
-                </small>
+                {this.state.editingVersion && (
+                  <small className="app-version-name">{`App version: ${this.state.editingVersion.name}`}</small>
+                )}
                 <div className="editor-buttons">
                   <span
                     className={`btn btn-light mx-2`}
@@ -765,7 +765,9 @@ class Editor extends React.Component {
                     />
                   </span>
                 </div>
-                <div className="layout-buttons">{this.renderLayoutIcon(currentLayout === 'desktop')}</div>
+                <div className="layout-buttons cursor-pointer">
+                  {this.renderLayoutIcon(currentLayout === 'desktop')}
+                </div>
                 <div className="navbar-nav flex-row order-md-last">
                   <div className="nav-item dropdown d-none d-md-flex me-2">
                     {app.id && (
