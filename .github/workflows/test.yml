@@ -10,6 +10,7 @@ jobs:
 
   unit-test:
       runs-on: ubuntu-latest
+      container: node:14.17.3-buster
       env:
         LOCKBOX_MASTER_KEY: lockbox-master-key
         SECRET_KEY_BASE:  secrret-key-base
