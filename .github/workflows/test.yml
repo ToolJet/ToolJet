@@ -33,10 +33,7 @@ jobs:
             --health-retries 5
       steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.17.3
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14.17.3
+      - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
