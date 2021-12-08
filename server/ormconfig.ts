@@ -49,6 +49,7 @@ function buildConnectionOptions(filePath: string, env: string | undefined): Type
 }
 
 function determineFilePathForEnv(env: string | undefined): string {
+  console.log(env);
   if (env === 'test') {
     return path.resolve(process.cwd(), '../.env.test');
   } else {

@@ -9,10 +9,12 @@ module.exports = {
     'plugin:prettier/recommended',
     'plugin:cypress/recommended',
   ],
+  ignorePatterns: ['.eslintrc.js'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
+    project: ['./tsconfig.json'],
   },
   overrides: [
     {
