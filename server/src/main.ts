@@ -51,6 +51,8 @@ async function bootstrap() {
           'blob:',
         ],
         'connect-src': ['ws://' + domain, "'self'", 'maps.googleapis.com', '*.sentry.io'],
+        'frame-ancestors': ['*'],
+        'frame-src': ['*'],
       },
     })
   );

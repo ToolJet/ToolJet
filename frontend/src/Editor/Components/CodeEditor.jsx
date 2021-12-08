@@ -38,7 +38,6 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
   }
 
   const styles = {
-    width: width,
     height: height,
     display: !parsedWidgetVisibility ? 'none' : 'block',
   };
