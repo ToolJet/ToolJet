@@ -10,14 +10,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [14.17.3]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
     steps:
     - uses: actions/checkout@v2
-    - name: Use node and npm versions from package.json
-      uses: skjnldsv/read-package-engines-version-actions@v1
+    - name: Use Node.js 14.17.3
+      uses: actions/setup-node@v2
       with:
-        fallbackNode: '14.17.3'
-        fallbackNpm: '7.20.0'
-      id: package-engines-versions
+        node-version: 14.17.3
 
     - name: Show node and npm version numbers
       run: echo "Node version is ${{steps.package-engines-versions.outputs.nodeVersion}} & NPM version is ${{steps.package-engines-versions.outputs.npmVersion}}"
@@ -28,7 +37,6 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    needs: build
 
     steps:
     - uses: actions/checkout@v2
