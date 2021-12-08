@@ -10,14 +10,12 @@ import ReactJson from 'react-json-view';
 import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import {
-  DataSourceTypes
-} from '../DataSourceManager/SourceComponents';
+import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
-  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' }
+  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
 ];
 
 let QueryManager = class QueryManager extends React.Component {
@@ -28,7 +26,7 @@ let QueryManager = class QueryManager extends React.Component {
       options: {},
       selectedQuery: null,
       selectedDataSource: null,
-      dataSourceMeta: {}
+      dataSourceMeta: {},
     };
 
     this.previewPanelRef = React.createRef();
@@ -53,7 +51,8 @@ let QueryManager = class QueryManager extends React.Component {
         queryPaneHeight: props.queryPaneHeight,
         currentState: props.currentState,
         selectedSource: source,
-        dataSourceMeta
+        dataSourceMeta,
+        selectedDataSource: props.selectedDataSource,
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -261,7 +260,7 @@ let QueryManager = class QueryManager extends React.Component {
       queryName,
       previewLoading,
       queryPreviewData,
-      dataSourceMeta
+      dataSourceMeta,
     } = this.state;
 
     let ElementToRender = '';
@@ -410,7 +409,7 @@ let QueryManager = class QueryManager extends React.Component {
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
                     />
-                    {!dataSourceMeta?.disableTransformations &&
+                    {!dataSourceMeta?.disableTransformations && (
                       <div>
                         <hr></hr>
                         <div className="mb-3 mt-2">
@@ -422,7 +421,7 @@ let QueryManager = class QueryManager extends React.Component {
                           />
                         </div>
                       </div>
-                    }
+                    )}
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>
                       <div className="py-2">Preview</div>
                     </div>
