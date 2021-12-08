@@ -16,6 +16,7 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: 14.17.3
+    - run: npm i -g npm@7.20.0
     - run: npm ci
     - run: npm run build
 
@@ -28,6 +29,7 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: 14.17.3
+    - run: npm i -g npm@7.20.0
     - run: npm --prefix frontend ci && npm --prefix server ci
     - name: Lint
       run: npm --prefix server run lint && npm --prefix frontend run lint
