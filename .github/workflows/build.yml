@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ 'chore/setup-pipeline' ]
+    branches: [ develop, main ]
   pull_request:
     branches: [ develop ]
 
