@@ -2,13 +2,12 @@ name: Build for ToolJet
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ 'chore/setup-pipeline' ]
   pull_request:
     branches: [ develop ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -19,10 +18,10 @@ jobs:
         fallbackNode: '14.17.3'
         fallbackNpm: '7.20.0'
       id: package-engines-versions
-    
+
     - name: Show node and npm version numbers
       run: echo "Node version is ${{steps.package-engines-versions.outputs.nodeVersion}} & NPM version is ${{steps.package-engines-versions.outputs.npmVersion}}"
-    
+
     - run: npm ci
     - run: npm run build
 
@@ -43,6 +42,3 @@ jobs:
     - run: npm --prefix frontend ci && npm --prefix server ci
     - name: Lint
       run: npm --prefix server run lint && npm --prefix frontend run lint
-
-
-
