@@ -30,6 +30,7 @@ const DynamicForm = ({
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getElement = (type) => {
@@ -71,6 +72,7 @@ const DynamicForm = ({
     lineNumbers = true,
     initialValue,
     height = 'auto',
+    ignoreBraces = false,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -89,7 +91,8 @@ const DynamicForm = ({
       case 'toggle':
         return {
           defaultChecked: options[$key],
-          onChange: () => optionchanged($key, !options[$key]?.value),
+          checked: options[$key]?.value,
+          onChange: (e) => optionchanged($key, e.target.checked),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -107,17 +110,17 @@ const DynamicForm = ({
         };
       case 'react-component-oauth-authentication':
         return {
-          grant_type: options.grant_type.value,
-          auth_type: options.auth_type.value,
-          add_token_to: options.add_token_to.value,
-          header_prefix: options.header_prefix.value,
-          access_token_url: options.access_token_url.value,
-          client_id: options.client_id.value,
-          client_secret: options.client_secret.value,
-          client_auth: options.client_auth.value,
-          scopes: options.scopes.value,
-          auth_url: options.auth_url.value,
-          custom_auth_params: options.custom_auth_params.value,
+          grant_type: options.grant_type?.value,
+          auth_type: options.auth_type?.value,
+          add_token_to: options.add_token_to?.value,
+          header_prefix: options.header_prefix?.value,
+          access_token_url: options.access_token_url?.value,
+          client_id: options.client_id?.value,
+          client_secret: options.client_secret?.value,
+          client_auth: options.client_auth?.value,
+          scopes: options.scopes?.value,
+          auth_url: options.auth_url?.value,
+          custom_auth_params: options.custom_auth_params?.value,
           optionchanged,
         };
       case 'react-component-google-sheets':
@@ -138,6 +141,7 @@ const DynamicForm = ({
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
+          ignoreBraces,
         };
       default:
         return {};

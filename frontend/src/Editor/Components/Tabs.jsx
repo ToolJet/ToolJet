@@ -3,7 +3,7 @@ import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Tabs = function Tabs({ id, component, height, containerProps, currentState, removeComponent }) {
+export const Tabs = function Tabs({ id, component, width, height, containerProps, currentState, removeComponent }) {
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
@@ -77,8 +77,14 @@ export const Tabs = function Tabs({ id, component, height, containerProps, curre
             {...containerProps}
             parentRef={parentRef}
             removeComponent={removeComponent}
+            containerCanvasWidth={width}
           />
-          <SubCustomDragLayer parent={id} parentRef={parentRef} currentLayout={containerProps.currentLayout} />
+          <SubCustomDragLayer
+            parent={id}
+            parentRef={parentRef}
+            currentLayout={containerProps.currentLayout}
+            containerCanvasWidth={width}
+          />
         </div>
       </div>
     </div>

@@ -1,14 +1,10 @@
 import React from 'react';
 import { appService, folderService, authenticationService } from '@/_services';
-import { Link } from 'react-router-dom';
 import { Pagination, Header, ConfirmDialog } from '@/_components';
 import { Folders } from './Folders';
-import { AppMenu } from './AppMenu';
 import { BlankPage } from './BlankPage';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { renderTooltip } from '@/_helpers/appUtils';
 import { toast } from 'react-toastify';
-import moment from 'moment';
+import AppList from './AppList';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -332,8 +328,41 @@ class HomePage extends React.Component {
           <div className="page-body homepage-body">
             <div className="container-xl">
               <div className="row">
+                <div className="col-3"></div>
+                <div className="col-3">
+                  <h2 className="page-title px-2">
+                    {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
+                  </h2>
+                </div>
+                {this.canCreateApp() && (
+                  <>
+                    <div className="col-2 ms-auto d-print-none"></div>
+                    <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
+                      <button
+                        className={'btn btn-default d-none d-lg-inline mb-3 me-2'}
+                        onChange={this.handleImportApp}
+                      >
+                        <label>
+                          {isImportingApp && (
+                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                          )}
+                          Import
+                          <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                        </label>
+                      </button>
+                      <button
+                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${creatingApp ? 'btn-loading' : ''
+                          }`}
+                        onClick={this.createApp}
+                      >
+                        Create new application
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="row">
                 <div className="col-12 col-lg-3 mb-5">
-                  <br />
                   <Folders
                     foldersLoading={this.state.foldersLoading}
                     totalCount={this.state.meta.total_count}
@@ -347,194 +376,21 @@ class HomePage extends React.Component {
 
                 <div className="col-md-9">
                   <div className="w-100 mb-5">
-                    <div className="row align-items-center">
-                      <div className="col">
-                        <h2 className="page-title">
-                          {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
-                        </h2>
-                      </div>
-                      {this.canCreateApp() && (
-                        <>
-                          <div className="col-auto ms-auto d-print-none">
-                            <div className="w-100 ">
-                              <button
-                                className={'btn btn-default d-none d-lg-inline mb-3'}
-                                onChange={this.handleImportApp}
-                              >
-                                <label>
-                                  {isImportingApp && (
-                                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                  )}
-                                  Import
-                                  <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
-                                </label>
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="col-auto ms-auto d-print-none">
-                            <div className="w-100 ">
-                              <button
-                                className={`btn btn-primary d-none d-lg-inline mb-3 ${
-                                  creatingApp ? 'btn-loading' : ''
-                                }`}
-                                onClick={this.createApp}
-                              >
-                                Create new application
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="table-responsive w-100 apps-table" style={{ minHeight: '600px' }}>
-                      <table
-                        data-testid="appsTable"
-                        className={`table table-vcenter ${this.props.darkMode ? 'bg-dark' : 'bg-white'}`}
-                      >
-                        <tbody>
-                          {isLoading && (
-                            <>
-                              {Array.from(Array(10)).map((index) => (
-                                <tr className="row" key={index}>
-                                  <td className="col-3 p-3">
-                                    <div className="skeleton-line w-10"></div>
-                                    <div className="skeleton-line w-10"></div>
-                                  </td>
-                                  <td className="col p-3"></td>
-                                  <td className="text-muted col-auto col-1 pt-4">
-                                    <div className="skeleton-line"></div>
-                                  </td>
-                                  <td className="text-muted col-auto col-1 pt-4">
-                                    <div className="skeleton-line"></div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </>
-                          )}
-
-                          {meta.total_count > 0 && (
-                            <>
-                              {apps.map((app, index) => (
-                                <tr className="row" key={index}>
-                                  <td className="col p-3">
-                                    <span className="app-title mb-3">{app.name}</span> <br />
-                                    <small className="pt-2 app-description">
-                                      created {moment(app.created_at).fromNow(true)} ago by {app.user?.first_name}{' '}
-                                      {app.user?.last_name}{' '}
-                                    </small>
-                                  </td>
-                                  <td className="text-muted col-auto pt-4">
-                                    {!isLoading && this.canUpdateApp(app) && (
-                                      <Link to={`/apps/${app.id}`} className="d-none d-lg-inline">
-                                        <OverlayTrigger
-                                          placement="top"
-                                          overlay={(props) =>
-                                            renderTooltip({
-                                              props,
-                                              text: 'Open in app builder',
-                                            })
-                                          }
-                                        >
-                                          <span className="badge bg-green-lt">Edit</span>
-                                        </OverlayTrigger>
-                                      </Link>
-                                    )}
-                                    <Link
-                                      to={app?.current_version_id ? `/applications/${app.slug}` : ''}
-                                      target={app?.current_version_id ? '_blank' : ''}
-                                    >
-                                      {!this.props.darkMode && (
-                                        <OverlayTrigger
-                                          placement="top"
-                                          overlay={(props) =>
-                                            renderTooltip({
-                                              props,
-                                              text:
-                                                app?.current_version_id === null
-                                                  ? 'App does not have a deployed version'
-                                                  : 'Open in app viewer',
-                                            })
-                                          }
-                                        >
-                                          {
-                                            <span
-                                              className={`${
-                                                app?.current_version_id
-                                                  ? 'badge bg-blue-lt mx-2 '
-                                                  : 'badge bg-light-grey mx-2'
-                                              }`}
-                                            >
-                                              launch{' '}
-                                            </span>
-                                          }
-                                        </OverlayTrigger>
-                                      )}
-                                      {this.props.darkMode && (
-                                        <OverlayTrigger
-                                          placement="top"
-                                          overlay={(props) =>
-                                            renderTooltip({
-                                              props,
-                                              text:
-                                                app?.current_version_id === null
-                                                  ? 'App does not have a deployed version'
-                                                  : 'Open in app viewer',
-                                            })
-                                          }
-                                        >
-                                          {
-                                            <span
-                                              className={`${
-                                                app?.current_version_id === null
-                                                  ? 'badge launch-btn mx-2 '
-                                                  : 'badge launch-btn bg-azure-lt mx-2'
-                                              }`}
-                                              style={{
-                                                filter:
-                                                  app?.current_version_id === null
-                                                    ? 'brightness(0.3)'
-                                                    : 'brightness(1) invert(1)',
-                                              }}
-                                            >
-                                              launch{' '}
-                                            </span>
-                                          }
-                                        </OverlayTrigger>
-                                      )}
-                                    </Link>
-
-                                    {(this.canCreateApp(app) || this.canDeleteApp(app)) && (
-                                      <AppMenu
-                                        app={app}
-                                        canCreateApp={this.canCreateApp()}
-                                        canDeleteApp={this.canDeleteApp(app)}
-                                        folders={this.state.folders}
-                                        foldersChanged={this.foldersChanged}
-                                        deleteApp={() => this.deleteApp(app)}
-                                        cloneApp={() => this.cloneApp(app)}
-                                        exportApp={() => this.exportApp(app)}
-                                      />
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </>
-                          )}
-                          {currentFolder.count === 0 && (
-                            <div>
-                              <img
-                                className="mx-auto d-block"
-                                src="assets/images/icons/empty-folder-svgrepo-com.svg"
-                                height="120px"
-                              />
-                              <span className="d-block text-center text-body">This folder is empty</span>
-                            </div>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                    <AppList
+                      apps={apps}
+                      canCreateApp={this.canCreateApp}
+                      canDeleteApp={this.canDeleteApp}
+                      canUpdateApp={this.canUpdateApp}
+                      folders={this.state.folders}
+                      foldersChanged={this.foldersChanged}
+                      deleteApp={this.deleteApp}
+                      cloneApp={this.cloneApp}
+                      exportApp={this.exportApp}
+                      meta={meta}
+                      currentFolder={currentFolder}
+                      isLoading={isLoading}
+                      darkMode={this.props.darkMode}
+                    />
                     {this.pageCount() > 10 && (
                       <Pagination
                         currentPage={meta.current_page}

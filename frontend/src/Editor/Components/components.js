@@ -145,7 +145,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#3c92dc' },
+        backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
@@ -363,7 +363,7 @@ export const componentTypes = [
     description: 'Password input field for forms',
     component: 'PasswordInput',
     defaultSize: {
-      width: 210,
+      width: 4,
       height: 30,
     },
     others: {
@@ -1210,6 +1210,7 @@ export const componentTypes = [
       displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
       displayViewSwitcher: { type: 'toggle', displayName: 'Show view switcher' },
       highlightToday: { type: 'toggle', displayName: 'Highlight today' },
+      showPopOverOnEventClick: { type: 'toggle', displayName: 'Show popover when event is clicked' },
     },
     events: {
       onCalendarEventSelect: { displayName: 'On Event Select' },
@@ -1225,10 +1226,15 @@ export const componentTypes = [
           { name: 'Spacious', value: 'spacious' },
         ],
       },
+      displayDayNamesInWeekView: {
+        type: 'toggle',
+        displayName: 'Display only names of days as headers on week view',
+      },
     },
     exposedVariables: {
       selectedEvent: {},
       selectedSlots: {},
+      currentView: 'month',
     },
     definition: {
       others: {
@@ -1261,11 +1267,15 @@ export const componentTypes = [
         highlightToday: {
           value: true,
         },
+        showPopOverOnEventClick: {
+          value: false,
+        },
       },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
         cellSizeInViewsClassifiedByResource: { value: 'spacious' },
+        displayDayNamesInWeekView: { value: true },
       },
     },
   },
@@ -1274,7 +1284,7 @@ export const componentTypes = [
     displayName: 'Iframe',
     description: 'Display an Iframe',
     defaultSize: {
-      width: 560,
+      width: 10,
       height: 310,
     },
     component: 'IFrame',
@@ -1313,7 +1323,7 @@ export const componentTypes = [
     description: 'Code Editor',
     component: 'CodeEditor',
     defaultSize: {
-      width: 270,
+      width: 15,
       height: 120,
     },
     others: {

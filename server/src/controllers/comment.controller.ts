@@ -55,16 +55,6 @@ export class CommentController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/:organizationId/all')
-  public async getOrganizationThreads(
-    @Param('organizationId') organizationId: string,
-    @Query() query
-  ): Promise<Comment[]> {
-    const threads = await this.commentService.getOrganizationComments(organizationId, query.appVersionsId);
-    return threads;
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Get('/:appId/notifications')
   public async getNotifications(@Request() req, @Param('appId') appId: string, @Query() query): Promise<Comment[]> {
     const ability = await this.commentsAbilityFactory.appsActions(req.user, { id: appId });
