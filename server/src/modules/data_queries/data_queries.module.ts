@@ -21,6 +21,8 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
+import { AuditLog } from 'src/entities/audit_log.entity';
+import { AuditLoggerService } from '@services/audit_logger.service';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
       User,
       OrganizationUser,
       Organization,
+      AuditLog,
     ]),
     CaslModule,
   ],
@@ -48,6 +51,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
     AppsService,
     UsersService,
     AppImportExportService,
+    AuditLoggerService,
   ],
   controllers: [DataQueriesController],
 })

@@ -8,6 +8,8 @@ import { allPlugins } from 'src/modules/data_sources/plugins';
 import { DataSource } from 'src/entities/data_source.entity';
 import RestapiQueryService from '@plugins/datasources/restapi';
 import { DataSourcesService } from './data_sources.service';
+import { AuditLoggerService } from './audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 
 @Injectable()
 export class DataQueriesService {
@@ -15,7 +17,8 @@ export class DataQueriesService {
     private credentialsService: CredentialsService,
     private dataSourcesService: DataSourcesService,
     @InjectRepository(DataQuery)
-    private dataQueriesRepository: Repository<DataQuery>
+    private dataQueriesRepository: Repository<DataQuery>,
+    private auditLoggerService: AuditLoggerService
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
@@ -69,7 +72,8 @@ export class DataQueriesService {
     return dataQuery;
   }
 
-  async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
+  async runQuery(request: any, dataQuery: any, queryOptions: object): Promise<object> {
+    const user = request.user;
     const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
@@ -79,6 +83,19 @@ export class DataQueriesService {
 
     const service = new pluginServiceClass();
     const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+
+    if (user) {
+      await this.auditLoggerService.perform({
+        request,
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: dataQuery?.id,
+        resourceName: dataQuery?.name,
+        resourceType: ResourceTypes.DATA_QUERY,
+        actionType: ActionTypes.DATA_QUERY_RUN,
+        metadata: { parsedQueryOptions },
+      });
+    }
 
     return result;
   }

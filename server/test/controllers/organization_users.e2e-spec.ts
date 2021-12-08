@@ -2,6 +2,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
+import { AuditLog } from 'src/entities/audit_log.entity';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -38,11 +39,23 @@ describe('organization users controller', () => {
       organization,
     });
 
-    await request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .post(`/api/organization_users`)
       .set('Authorization', authHeaderForUser(adminUserData.user))
       .send({ email: 'test@tooljet.io', groups: ['Viewer', 'all_users'] })
       .expect(201);
+
+    // should create audit log
+    const auditLog = await AuditLog.findOne({
+      order: { createdAt: 'DESC' },
+    });
+
+    expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
+    expect(auditLog.resourceId).toEqual(response.body.users.user.id);
+    expect(auditLog.resourceType).toEqual('USER');
+    expect(auditLog.resourceName).toEqual(response.body.users.user.email);
+    expect(auditLog.actionType).toEqual('USER_INVITE');
+    expect(auditLog.createdAt).toBeDefined();
 
     await request(app.getHttpServer())
       .post(`/api/organization_users`)

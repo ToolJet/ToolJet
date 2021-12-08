@@ -1,16 +1,23 @@
 import React from 'react';
 
-export const Pagination = function Pagination({ currentPage, count, totalPages, pageChanged }) {
+export const Pagination = function Pagination({
+  currentPage,
+  count,
+  totalPages,
+  pageChanged,
+  perPage = 10,
+  queryParams = {},
+}) {
   function renderPageItem(i) {
     return (
-      <li onClick={() => gotoPage(i + 1)} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+      <li onClick={() => gotoPage(i + 1)} key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
         <a className="page-link">{i + 1}</a>
       </li>
     );
   }
 
   function gotoPage(page) {
-    pageChanged(page);
+    pageChanged(page, perPage, queryParams);
   }
 
   function gotoNextPage() {
@@ -21,12 +28,12 @@ export const Pagination = function Pagination({ currentPage, count, totalPages, 
     gotoPage(currentPage - 1);
   }
 
-  function startingAppCount(currentPage) {
-    return (currentPage - 1) * 10 + 1;
+  function startingCount(currentPage) {
+    return (currentPage - 1) * perPage + 1;
   }
 
-  function endingAppCount(currentPage, totalCount) {
-    const num = currentPage * 10;
+  function endingCount(currentPage, totalCount) {
+    const num = currentPage * perPage;
 
     return num > totalCount ? totalCount : num;
   }
@@ -34,7 +41,7 @@ export const Pagination = function Pagination({ currentPage, count, totalPages, 
   return (
     <div className="card-footer d-flex align-items-center px-1">
       <p className="m-0 text-muted">
-        Showing <span>{startingAppCount(currentPage)}</span> to <span>{endingAppCount(currentPage, count)}</span> of{' '}
+        Showing <span>{startingCount(currentPage)}</span> to <span>{endingCount(currentPage, count)}</span> of{' '}
         <span>{count}</span>
       </p>
       <ul className="pagination m-0 ms-auto">

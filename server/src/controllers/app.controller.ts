@@ -7,12 +7,12 @@ export class AppController {
 
   @Post('authenticate')
   async login(@Request() req) {
-    return this.authService.login(req.body);
+    return this.authService.login(req);
   }
 
   @Post('signup')
   async signup(@Request() req) {
-    return this.authService.signup(req.body);
+    return this.authService.signup(req);
   }
 
   @Post('/forgot_password')

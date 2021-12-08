@@ -86,6 +86,11 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
                   Manage Groups
                 </Link>
               )}
+              {admin && (
+                <Link data-tesid="settingsBtn" to="/audit_logs" className="dropdown-item">
+                  Audit Logs
+                </Link>
+              )}
               <Link data-testid="settingsBtn" to="#" onClick={openSettings} className="dropdown-item">
                 Profile
               </Link>

@@ -16,7 +16,7 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Post()
   async create(@Request() req) {
-    const groupPermission = await this.groupPermissionsService.create(req.user, req.body.group);
+    const groupPermission = await this.groupPermissionsService.create(req, req.user, req.body.group);
 
     return decamelizeKeys(groupPermission);
   }
@@ -35,6 +35,7 @@ export class GroupPermissionsController {
   @Put(':id/app_group_permissions/:appGroupPermissionId')
   async updateAppGroupPermission(@Request() req, @Param() params) {
     const groupPermission = await this.groupPermissionsService.updateAppGroupPermission(
+      req,
       req.user,
       params.id,
       params.appGroupPermissionId,
@@ -48,7 +49,7 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Put(':id')
   async update(@Request() req, @Param() params) {
-    const groupPermission = await this.groupPermissionsService.update(req.user, params.id, req.body);
+    const groupPermission = await this.groupPermissionsService.update(req, req.user, params.id, req.body);
 
     return decamelizeKeys(groupPermission);
   }
@@ -66,7 +67,7 @@ export class GroupPermissionsController {
   @CheckPolicies((ability: AppAbility) => ability.can('accessGroupPermission', User))
   @Delete(':id')
   async destroy(@Request() req, @Param() params) {
-    const groupPermission = await this.groupPermissionsService.destroy(req.user, params.id);
+    const groupPermission = await this.groupPermissionsService.destroy(req, req.user, params.id);
 
     return decamelizeKeys(groupPermission);
   }

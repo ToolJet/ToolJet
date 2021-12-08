@@ -16,6 +16,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
+import { AuditLogs } from '@/AuditLogs';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
@@ -163,6 +164,13 @@ class App extends React.Component {
               exact
               path="/library"
               component={Library}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/audit_logs"
+              component={AuditLogs}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

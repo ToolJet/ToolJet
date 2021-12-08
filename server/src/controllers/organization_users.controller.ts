@@ -16,7 +16,7 @@ export class OrganizationUsersController {
   @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', User))
   @Post()
   async create(@Request() req, @Param() params) {
-    const result = await this.organizationUsersService.inviteNewUser(req.user, req.body);
+    const result = await this.organizationUsersService.inviteNewUser(req);
     return decamelizeKeys({ users: result });
   }
 
