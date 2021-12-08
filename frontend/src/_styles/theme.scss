@@ -9,6 +9,10 @@ input, button {
   border-radius: 4px;
 }
 
+.btn:hover {
+  border-color: $primary;
+}
+
 .btn-sm {
   padding: 4px 8px;
 }
@@ -450,6 +454,7 @@ input, button {
           background: white;
           z-index: 3;
           padding-top: 1px;
+          min-height: 41px;
         }
 
         .preview-header {

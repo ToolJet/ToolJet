@@ -881,7 +881,43 @@ class Editor extends React.Component {
               <div
                 className="query-pane"
                 style={{
-                  height: showQueryEditor ? this.state.queryPaneHeight : '0px',
+                  height: showQueryEditor ? 0 : 40,
+                  background: '#fff',
+                  padding: '8px 4px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <h5 className="mb-0">QUERIES</h5>
+                <span
+                  onClick={this.props.toggleQueryEditor}
+                  className="cursor-pointer m-1"
+                  data-tip="Show query editor"
+                >
+                  <svg
+                    style={{ transform: 'rotate(180deg)' }}
+                    onClick={this.toggleQueryEditor}
+                    width="18"
+                    height="10"
+                    viewBox="0 0 18 10"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M1 1L9 9L17 1"
+                      stroke="#61656F"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+              <div
+                className="query-pane"
+                style={{
+                  height: showQueryEditor ? this.state.queryPaneHeight : 0,
                   width: !showLeftSidebar ? '85%' : '',
                   left: !showLeftSidebar ? '0' : '',
                 }}
@@ -969,6 +1005,7 @@ class Editor extends React.Component {
                       <div className="query-definition-pane">
                         <div>
                           <QueryManager
+                            toggleQueryEditor={this.toggleQueryEditor}
                             dataSources={dataSources}
                             toggleQueryPaneHeight={this.toggleQueryPaneHeight}
                             dataQueries={dataQueries}
