@@ -45,6 +45,7 @@ let QueryManager = class QueryManager extends React.Component {
         queryPaneHeight: props.queryPaneHeight,
         currentState: props.currentState,
         selectedSource: source,
+        selectedDataSource: props.selectedDataSource,
       },
       () => {
         if (this.props.mode === 'edit') {
