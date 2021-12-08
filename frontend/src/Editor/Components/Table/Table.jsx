@@ -58,8 +58,6 @@ export function Table({
     highlightSelectedRow = false,
   } = properties;
 
-  // console.log('__columns', columnValues);
-
   const [componentState, setcomponentState] = useState(currentState.components[component.component] || {});
   const [loadingState, setLoadingState] = useState(false);
 
