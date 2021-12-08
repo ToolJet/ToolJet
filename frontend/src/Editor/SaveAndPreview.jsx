@@ -156,8 +156,13 @@ class SaveAndPreview extends React.Component {
                     onChange={(e) => this.setState({ newVersionName: e.target.value })}
                   />
                 </div>
-                <div className="col-auto">
-                  <Button variant="primary" onClick={() => this.createVersion()} disabled={creatingVersion}>
+                <div className="col-auto m-auto">
+                  <Button
+                    className="btn-sm"
+                    variant="primary"
+                    onClick={() => this.createVersion()}
+                    disabled={creatingVersion}
+                  >
                     {creatingVersion ? 'Creating...' : 'Create'}
                   </Button>
                 </div>
