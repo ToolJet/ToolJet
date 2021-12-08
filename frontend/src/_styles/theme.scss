@@ -2736,3 +2736,15 @@ input[type='text'] {
   border-radius: 4px;
   min-width: 100px;
 }
+
+.canvas-background-holder {
+  display: flex;
+  justify-content: space-between;
+  min-width: 120px;
+  margin: auto;
+  padding: 10px;
+}
+
+.canvas-background-picker {
+  position: fixed;
+}

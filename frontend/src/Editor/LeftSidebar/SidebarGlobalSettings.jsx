@@ -39,7 +39,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
             </div>
             <div className="d-flex mb-3">
               <span className="w-full">Max width of canvas</span>
-              <div className="ms-auto form-check form-switch position-relative">
+              <div className="position-relative">
                 <div className="input-with-icon">
                   <input
                     type="text"
@@ -61,6 +61,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                   <div>
                     <div style={coverStyles} onClick={() => setShowPicker(false)} />
                     <SketchPicker
+                      className="canvas-background-picker"
                       onFocus={() => setShowPicker(true)}
                       color={canvasBackgroundColor}
                       onChangeComplete={(color) => globalSettingsChanged('canvasBackgroundColor', color.hex)}
@@ -68,7 +69,10 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                   </div>
                 )}
 
-                <div className="row mx-0 form-control color-picker-input" onClick={() => setShowPicker(true)}>
+                <div
+                  className="row mx-0 form-control form-control-sm canvas-background-holder"
+                  onClick={() => setShowPicker(true)}
+                >
                   <div
                     className="col-auto"
                     style={{
@@ -83,15 +87,6 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
                   ></div>
                   <div className="col">{canvasBackgroundColor}</div>
                 </div>
-                <input
-                  type="text"
-                  className={`form-control form-control-sm`}
-                  placeholder={'Enter canvas background color'}
-                  onChange={(e) => {
-                    globalSettingsChanged('canvasBackgroundColor', e.target.value);
-                  }}
-                  value={canvasBackgroundColor}
-                />
               </div>
             </div>
           </div>
