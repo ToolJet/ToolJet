@@ -13,12 +13,17 @@
       "rawData": {}
     },
     "options": {
-      "api_key": { "type": "string", "encrypted": true }
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
     },
     "customTesting": true
   },
   "defaults": {
-    "api_key": { "value": "" }
+    "api_key": {
+      "value": ""
+    }
   },
   "properties": {
     "api_key": {
@@ -28,5 +33,7 @@
       "description": "Api key for stripe"
     }
   },
-  "required": ["api_key"]
+  "required": [
+    "api_key"
+  ]
 }
