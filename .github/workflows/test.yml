@@ -60,4 +60,4 @@ jobs:
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
-      - run: npm --prefix server run test:e2e
+      - run: npm --prefix server run test:e2e -- --silent
