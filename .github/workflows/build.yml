@@ -1,10 +1,5 @@
 name: Build
-
-on:
-  push:
-    branches: [ develop, main ]
-  pull_request:
-    branches: [ develop ]
+on: [push, pull_request]
 
 jobs:
   build:

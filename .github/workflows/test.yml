@@ -1,10 +1,6 @@
 name: Test
+on: [push, pull_request]
 
-on:
-  push:
-    branches: [ develop, main ]
-  pull_request:
-    branches: [ develop ]
 env:
   FORCE_COLOR: true
   LOCKBOX_MASTER_KEY: lockbox-master-key
