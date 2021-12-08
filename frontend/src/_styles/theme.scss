@@ -2758,3 +2758,7 @@ input[type='text'] {
   color: #fff !important;
   background:#6383db !important;
 }
+
+.tabbed-navbar .nav-item.active:after {
+  margin-bottom: -0.25rem;
+}
