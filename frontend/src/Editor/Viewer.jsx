@@ -80,7 +80,7 @@ class Viewer extends React.Component {
           this.state.currentLayout === 'desktop'
             ? '100%'
             : mobileLayoutHasWidgets
-            ? `${deviceWindowWidth}px`
+            ? `${this.state.deviceWindowWidth}px`
             : '1292px',
         selectedComponent: null,
         currentState: {

@@ -52,6 +52,7 @@ let QueryManager = class QueryManager extends React.Component {
         currentState: props.currentState,
         selectedSource: source,
         dataSourceMeta,
+        selectedDataSource: props.selectedDataSource,
       },
       () => {
         if (this.props.mode === 'edit') {
