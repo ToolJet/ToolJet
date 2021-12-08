@@ -1042,7 +1042,7 @@ class Editor extends React.Component {
 
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
-                  {selectedComponent ? (
+                  {selectedComponent && !isEmpty(appDefinition.components) ? (
                     <Inspector
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
