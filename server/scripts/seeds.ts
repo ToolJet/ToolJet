@@ -12,4 +12,4 @@ async function bootstrap() {
   await app.close();
 }
 
-bootstrap();
+await bootstrap();

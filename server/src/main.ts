@@ -24,8 +24,8 @@ async function bootstrap() {
   if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
     app.useWebSocketAdapter(new WsAdapter(app));
   }
-  await app.setGlobalPrefix('api');
-  await app.enableCors();
+  app.setGlobalPrefix('api');
+  app.enableCors();
 
   app.use(
     helmet.contentSecurityPolicy({
@@ -67,4 +67,4 @@ async function bootstrap() {
   });
 }
 
-bootstrap();
+await bootstrap();

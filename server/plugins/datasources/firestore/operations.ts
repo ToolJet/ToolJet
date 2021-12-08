@@ -81,7 +81,7 @@ export async function bulkUpdate(
 ): Promise<object> {
   for (const record of records) {
     const path = `${collection}/${record[documentIdKey]}`;
-    updateDocument(db, path, JSON.stringify(record));
+    await updateDocument(db, path, JSON.stringify(record));
   }
 
   return {};
