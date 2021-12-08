@@ -885,7 +885,7 @@ class Editor extends React.Component {
                 style={{
                   height: showQueryEditor ? 0 : 40,
                   background: '#fff',
-                  padding: '8px 4px',
+                  padding: '8px 16px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
