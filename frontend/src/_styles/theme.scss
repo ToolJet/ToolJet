@@ -5,8 +5,20 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+input, button {
+  border-radius: 4px;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+}
+
 .padding-0 {
   padding: 0;
+}
+
+.font-500 {
+  font-weight: 500;
 }
 
 .text-right {
@@ -2696,4 +2708,26 @@ input[type='text'] {
 
 .tabbed-navbar .nav-item.active:after {
   margin-bottom: -0.25rem;
+}
+
+.app-name {
+  width: 325px;
+  background: $bg-light;
+  left: 150px;
+  position: absolute;
+}
+
+.layout-buttons {
+  position: absolute;
+  left: 50%;
+}
+
+.app-version-name {
+  position: absolute;
+  right: 220px;
+  color: $light-gray;
+  border: 1px solid $light-gray;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 100px;
 }

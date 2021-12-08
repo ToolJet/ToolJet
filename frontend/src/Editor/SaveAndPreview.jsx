@@ -185,7 +185,7 @@ class SaveAndPreview extends React.Component {
                             </div>
                             <div className="col-auto">
                               <button
-                                className="btn btn-sm text-muted"
+                                className="btn text-muted font-500 color-primary"
                                 onClick={() => this.saveVersion(version.id)}
                                 disabled={
                                   savingVersionId === version.id ||

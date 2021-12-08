@@ -1,10 +1,20 @@
 import React from 'react';
 import usePopover from '@/_hooks/use-popover';
+import { SketchPicker } from 'react-color';
+
 import { LeftSidebarItem } from './SidebarItem';
 
 export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChanged }) => {
   const [open, trigger, content] = usePopover(false);
   const { hideHeader, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
+  const [showPicker, setShowPicker] = React.useState(false);
+  const coverStyles = {
+    position: 'fixed',
+    top: '0px',
+    right: '0px',
+    bottom: '0px',
+    left: '0px',
+  };
   return (
     <>
       <LeftSidebarItem
@@ -47,6 +57,32 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
             <div className="d-flex">
               <span className="w-full">Background color of canvas</span>
               <div>
+                {showPicker && (
+                  <div>
+                    <div style={coverStyles} onClick={() => setShowPicker(false)} />
+                    <SketchPicker
+                      onFocus={() => setShowPicker(true)}
+                      color={canvasBackgroundColor}
+                      onChangeComplete={(color) => globalSettingsChanged('canvasBackgroundColor', color.hex)}
+                    />
+                  </div>
+                )}
+
+                <div className="row mx-0 form-control color-picker-input" onClick={() => setShowPicker(true)}>
+                  <div
+                    className="col-auto"
+                    style={{
+                      float: 'right',
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: canvasBackgroundColor,
+                      border: `0.25px solid ${
+                        ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
+                      }`,
+                    }}
+                  ></div>
+                  <div className="col">{canvasBackgroundColor}</div>
+                </div>
                 <input
                   type="text"
                   className={`form-control form-control-sm`}

@@ -10,14 +10,12 @@ import ReactJson from 'react-json-view';
 import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import {
-  DataSourceTypes
-} from '../DataSourceManager/SourceComponents';
+import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
-  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' }
+  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
 ];
 
 let QueryManager = class QueryManager extends React.Component {
@@ -28,7 +26,7 @@ let QueryManager = class QueryManager extends React.Component {
       options: {},
       selectedQuery: null,
       selectedDataSource: null,
-      dataSourceMeta: {}
+      dataSourceMeta: {},
     };
 
     this.previewPanelRef = React.createRef();
@@ -53,7 +51,7 @@ let QueryManager = class QueryManager extends React.Component {
         queryPaneHeight: props.queryPaneHeight,
         currentState: props.currentState,
         selectedSource: source,
-        dataSourceMeta
+        dataSourceMeta,
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -261,7 +259,7 @@ let QueryManager = class QueryManager extends React.Component {
       queryName,
       previewLoading,
       queryPreviewData,
-      dataSourceMeta
+      dataSourceMeta,
     } = this.state;
 
     let ElementToRender = '';
@@ -353,23 +351,31 @@ let QueryManager = class QueryManager extends React.Component {
                 {buttonText}
               </button>
             )}
-            {queryPaneHeight === '30%' ? (
+            <>
               <span
-                className="btn btn-light m-1"
+                className="cursor-pointer m-3"
                 onClick={this.props.toggleQueryPaneHeight}
                 data-tip="Maximize query editor"
               >
-                <img src="/assets/images/icons/maximize.svg" width="12" height="12" />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M16 1C16 0.734784 15.8946 0.48043 15.7071 0.292893C15.5196 0.105357 15.2652 0 15 0H10C9.73478 0 9.48043 0.105357 9.29289 0.292893C9.10536 0.48043 9 0.734784 9 1C9 1.26522 9.10536 1.51957 9.29289 1.70711C9.48043 1.89464 9.73478 2 10 2H12.57L9.29 5.29C9.19627 5.38296 9.12188 5.49356 9.07111 5.61542C9.02034 5.73728 8.9942 5.86799 8.9942 6C8.9942 6.13201 9.02034 6.26272 9.07111 6.38458C9.12188 6.50644 9.19627 6.61704 9.29 6.71C9.38296 6.80373 9.49356 6.87812 9.61542 6.92889C9.73728 6.97966 9.86799 7.0058 10 7.0058C10.132 7.0058 10.2627 6.97966 10.3846 6.92889C10.5064 6.87812 10.617 6.80373 10.71 6.71L14 3.42V6C14 6.26522 14.1054 6.51957 14.2929 6.70711C14.4804 6.89464 14.7348 7 15 7C15.2652 7 15.5196 6.89464 15.7071 6.70711C15.8946 6.51957 16 6.26522 16 6V1ZM6.71 9.29C6.61704 9.19627 6.50644 9.12188 6.38458 9.07111C6.26272 9.02034 6.13201 8.9942 6 8.9942C5.86799 8.9942 5.73728 9.02034 5.61542 9.07111C5.49356 9.12188 5.38296 9.19627 5.29 9.29L2 12.57V10C2 9.73478 1.89464 9.48043 1.70711 9.29289C1.51957 9.10536 1.26522 9 1 9C0.734784 9 0.48043 9.10536 0.292893 9.29289C0.105357 9.48043 0 9.73478 0 10V15C0 15.2652 0.105357 15.5196 0.292893 15.7071C0.48043 15.8946 0.734784 16 1 16H6C6.26522 16 6.51957 15.8946 6.70711 15.7071C6.89464 15.5196 7 15.2652 7 15C7 14.7348 6.89464 14.4804 6.70711 14.2929C6.51957 14.1054 6.26522 14 6 14H3.42L6.71 10.71C6.80373 10.617 6.87812 10.5064 6.92889 10.3846C6.97966 10.2627 7.0058 10.132 7.0058 10C7.0058 9.86799 6.97966 9.73728 6.92889 9.61542C6.87812 9.49356 6.80373 9.38296 6.71 9.29Z"
+                    fill="#61656F"
+                  />
+                </svg>
               </span>
-            ) : (
-              <span
-                className="btn btn-light m-1"
-                onClick={this.props.toggleQueryPaneHeight}
-                data-tip="Minimize query editor"
-              >
-                <img src="/assets/images/icons/minimize.svg" width="12" height="12" />
+              <span className="cursor-pointer m-3" data-tip="Hide query editor">
+                <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M1 1L9 9L17 1"
+                    stroke="#61656F"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </span>
-            )}
+            </>
           </div>
         </div>
 
@@ -410,7 +416,7 @@ let QueryManager = class QueryManager extends React.Component {
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
                     />
-                    {!dataSourceMeta?.disableTransformations &&
+                    {!dataSourceMeta?.disableTransformations && (
                       <div>
                         <hr></hr>
                         <div className="mb-3 mt-2">
@@ -422,7 +428,7 @@ let QueryManager = class QueryManager extends React.Component {
                           />
                         </div>
                       </div>
-                    }
+                    )}
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>
                       <div className="py-2">Preview</div>
                     </div>
