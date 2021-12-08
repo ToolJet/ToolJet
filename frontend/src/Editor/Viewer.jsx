@@ -66,14 +66,22 @@ class Viewer extends React.Component {
     let mobileLayoutHasWidgets = false;
 
     if (this.state.currentLayout === 'mobile') {
-      mobileLayoutHasWidgets = Object.keys(data.definition.components).filter(componentId => data.definition.components[componentId]['layouts']['mobile']).length > 0;
+      mobileLayoutHasWidgets =
+        Object.keys(data.definition.components).filter(
+          (componentId) => data.definition.components[componentId]['layouts']['mobile']
+        ).length > 0;
     }
 
     this.setState(
       {
         currentSidebarTab: 2,
         currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
-        canvasWidth: this.state.currentLayout === 'desktop' ? '100%' : mobileLayoutHasWidgets ? `${deviceWindowWidth}px` : '1292px',
+        canvasWidth:
+          this.state.currentLayout === 'desktop'
+            ? '100%'
+            : mobileLayoutHasWidgets
+            ? `${this.state.deviceWindowWidthh}px`
+            : '1292px',
         selectedComponent: null,
         currentState: {
           queries: {},
@@ -135,7 +143,7 @@ class Viewer extends React.Component {
   getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     return canvasBoundingRect?.width;
-  }
+  };
 
   render() {
     const {
@@ -145,7 +153,7 @@ class Viewer extends React.Component {
       currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
-      canvasWidth
+      canvasWidth,
     } = this.state;
 
     return (
@@ -180,7 +188,7 @@ class Viewer extends React.Component {
                   className="canvas-area"
                   style={{
                     width: canvasWidth,
-                    maxWidth: '1292px'
+                    maxWidth: '1292px',
                   }}
                 >
                   {defaultComponentStateComputed && (
@@ -205,7 +213,9 @@ class Viewer extends React.Component {
                           currentState={this.state.currentState}
                           selectedComponent={this.state.selectedComponent}
                           onComponentClick={(id, component) => {
-                            this.setState({ selectedComponent: { id, component } });
+                            this.setState({
+                              selectedComponent: { id, component },
+                            });
                             onComponentClick(this, id, component, 'view');
                           }}
                           onComponentOptionChanged={(component, optionName, value) =>
