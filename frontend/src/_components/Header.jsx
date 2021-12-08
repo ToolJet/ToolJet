@@ -25,7 +25,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   const { first_name, last_name, admin } = authenticationService.currentUserValue;
 
   return (
-    <header className="navbar navbar-expand-md navbar-light d-print-none">
+    <header className="navbar tabbed-navbar navbar-expand-md navbar-light d-print-none">
       <div className="container-xl">
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
           {/* <span className="navbar-toggler-icon"></span> */}
