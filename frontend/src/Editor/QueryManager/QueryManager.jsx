@@ -10,9 +10,15 @@ import ReactJson from 'react-json-view';
 import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
+import {
+  DataSourceTypes
+} from '../DataSourceManager/SourceComponents';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
-const staticDataSources = [{ kind: 'restapi', id: 'null', name: 'REST API' }];
+const staticDataSources = [
+  { kind: 'restapi', id: 'null', name: 'REST API' },
+  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' }
+];
 
 let QueryManager = class QueryManager extends React.Component {
   constructor(props) {
@@ -22,6 +28,7 @@ let QueryManager = class QueryManager extends React.Component {
       options: {},
       selectedQuery: null,
       selectedDataSource: null,
+      dataSourceMeta: {}
     };
 
     this.previewPanelRef = React.createRef();
@@ -31,6 +38,7 @@ let QueryManager = class QueryManager extends React.Component {
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
+    let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     // const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
 
     this.setState(
@@ -45,6 +53,7 @@ let QueryManager = class QueryManager extends React.Component {
         queryPaneHeight: props.queryPaneHeight,
         currentState: props.currentState,
         selectedSource: source,
+        dataSourceMeta
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -54,6 +63,12 @@ let QueryManager = class QueryManager extends React.Component {
               source = { kind: 'restapi' };
             }
           }
+          if (selectedQuery.kind === 'runjs') {
+            if (!selectedQuery.data_source_id) {
+              source = { kind: 'runjs' };
+            }
+          }
+
           this.setState({
             options: selectedQuery.options,
             selectedDataSource: source,
@@ -83,7 +98,7 @@ let QueryManager = class QueryManager extends React.Component {
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
-    const isSchemaUnavailable = ['restapi', 'stripe'].includes(source.kind);
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
@@ -93,6 +108,7 @@ let QueryManager = class QueryManager extends React.Component {
         body: [],
       },
       stripe: {},
+      runjs: {},
     };
 
     this.setState({
@@ -245,6 +261,7 @@ let QueryManager = class QueryManager extends React.Component {
       queryName,
       previewLoading,
       queryPreviewData,
+      dataSourceMeta
     } = this.state;
 
     let ElementToRender = '';
@@ -393,15 +410,19 @@ let QueryManager = class QueryManager extends React.Component {
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
                     />
-                    <hr></hr>
-                    <div className="mb-3 mt-2">
-                      <Transformation
-                        changeOption={this.optionchanged}
-                        options={this.state.options}
-                        currentState={currentState}
-                        darkMode={this.props.darkMode}
-                      />
-                    </div>
+                    {!dataSourceMeta?.disableTransformations &&
+                      <div>
+                        <hr></hr>
+                        <div className="mb-3 mt-2">
+                          <Transformation
+                            changeOption={this.optionchanged}
+                            options={this.state.options}
+                            currentState={currentState}
+                            darkMode={this.props.darkMode}
+                          />
+                        </div>
+                      </div>
+                    }
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>
                       <div className="py-2">Preview</div>
                     </div>
