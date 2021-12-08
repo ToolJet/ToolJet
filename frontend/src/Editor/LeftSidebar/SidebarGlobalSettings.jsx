@@ -38,7 +38,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span className="w-full">Max width of canvas</span>
+              <span className="w-full m-auto">Max width of canvas</span>
               <div className="position-relative">
                 <div className="input-with-icon">
                   <input
@@ -55,7 +55,7 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
               </div>
             </div>
             <div className="d-flex">
-              <span className="w-full">Background color of canvas</span>
+              <span className="w-full m-auto">Background color of canvas</span>
               <div>
                 {showPicker && (
                   <div>
