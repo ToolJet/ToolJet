@@ -850,6 +850,8 @@ class Editor extends React.Component {
                             className="btn btn-sm btn-light btn-px-1 text-muted"
                             onClick={() =>
                               this.setState({
+                                options: {},
+                                selectedDataSource: null,
                                 selectedQuery: {},
                                 editingQuery: false,
                                 addingQuery: true,
@@ -915,6 +917,7 @@ class Editor extends React.Component {
                             dataQueries={dataQueries}
                             mode={editingQuery ? 'edit' : 'create'}
                             selectedQuery={selectedQuery}
+                            selectedDataSource={this.state.selectedDataSource}
                             dataQueriesChanged={this.dataQueriesChanged}
                             appId={appId}
                             addingQuery={addingQuery}
