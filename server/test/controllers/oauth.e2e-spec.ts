@@ -12,7 +12,6 @@ describe('oauth controller', () => {
   });
 
   beforeAll(async () => {
-    jest.resetModules();
     app = await createNestAppInstance();
     process.env = { ...originalEnv, SSO_GOOGLE_OAUTH2_CLIENT_ID: 'apps.googleusercontent.com' };
   });
