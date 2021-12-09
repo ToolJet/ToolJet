@@ -136,10 +136,10 @@ export function CodeHinter({
         if (checkPortalExits === false) {
           const parent = element[0].parentNode;
           parent.removeChild(element[0]);
-          setIsOpen(false);
-
-          resolve();
         }
+
+        setIsOpen(false);
+        resolve();
       }
     }).then(() => {
       setIsOpen(true);
