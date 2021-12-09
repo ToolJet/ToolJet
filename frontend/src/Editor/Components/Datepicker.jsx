@@ -38,7 +38,7 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  const isDateFormat = enableDate ? format : false;
+  const isDateFormat = enableDate === true ? format : enableDate;
 
   return (
     <div
