@@ -167,21 +167,23 @@ class Viewer extends React.Component {
           queryConfirmationData={this.state.queryConfirmationData}
         />
         <DndProvider backend={HTML5Backend}>
-          <div className="header">
-            <header className="navbar navbar-expand-md navbar-light d-print-none">
-              <div className="container-xl header-container">
-                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                  <a href="/">
-                    <LogoIcon />
-                  </a>
-                </h1>
-                {this.state.app && <span>{this.state.app.name}</span>}
-                <div className="d-flex align-items-center m-1 p-1">
-                  <DarkModeToggle switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+          {!appDefinition.globalSettings?.hideHeader && (
+            <div className="header">
+              <header className="navbar navbar-expand-md navbar-light d-print-none">
+                <div className="container-xl header-container">
+                  <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+                    <a href="/">
+                      <LogoIcon />
+                    </a>
+                  </h1>
+                  {this.state.app && <span>{this.state.app.name}</span>}
+                  <div className="d-flex align-items-center m-1 p-1">
+                    <DarkModeToggle switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+                  </div>
                 </div>
-              </div>
-            </header>
-          </div>
+              </header>
+            </div>
+          )}
           <div className="sub-section">
             <div className="main">
               <div className="canvas-container align-items-center">
@@ -189,7 +191,7 @@ class Viewer extends React.Component {
                   className="canvas-area"
                   style={{
                     width: canvasWidth,
-                    maxWidth: '1292px',
+                    maxWidth: appDefinition.globalSettings?.canvasMaxWidth,
                   }}
                 >
                   {defaultComponentStateComputed && (
