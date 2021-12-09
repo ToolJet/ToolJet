@@ -10,9 +10,15 @@ import ReactJson from 'react-json-view';
 import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
+import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
+import MaximizeIcon from '../Icons/maximize.svg';
+import MinimizeIcon from '../Icons/minimize.svg';
 
-const staticDataSources = [{ kind: 'restapi', id: 'null', name: 'REST API' }];
+const staticDataSources = [
+  { kind: 'restapi', id: 'null', name: 'REST API' },
+  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+];
 
 let QueryManager = class QueryManager extends React.Component {
   constructor(props) {
@@ -22,6 +28,7 @@ let QueryManager = class QueryManager extends React.Component {
       options: {},
       selectedQuery: null,
       selectedDataSource: null,
+      dataSourceMeta: {},
     };
 
     this.previewPanelRef = React.createRef();
@@ -31,7 +38,8 @@ let QueryManager = class QueryManager extends React.Component {
     const selectedQuery = props.selectedQuery;
     const dataSourceId = selectedQuery?.data_source_id;
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
-    // const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
+    let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
+    const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
 
     this.setState(
       {
@@ -45,7 +53,8 @@ let QueryManager = class QueryManager extends React.Component {
         queryPaneHeight: props.queryPaneHeight,
         currentState: props.currentState,
         selectedSource: source,
-        selectedDataSource: props.selectedDataSource,
+        dataSourceMeta,
+        selectedDataSource: paneHeightChanged ? this.state.selectedDataSource : props.selectedDataSource,
       },
       () => {
         if (this.props.mode === 'edit') {
@@ -55,6 +64,12 @@ let QueryManager = class QueryManager extends React.Component {
               source = { kind: 'restapi' };
             }
           }
+          if (selectedQuery.kind === 'runjs') {
+            if (!selectedQuery.data_source_id) {
+              source = { kind: 'runjs' };
+            }
+          }
+
           this.setState({
             options: selectedQuery.options,
             selectedDataSource: source,
@@ -84,7 +99,7 @@ let QueryManager = class QueryManager extends React.Component {
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
-    const isSchemaUnavailable = ['restapi', 'stripe'].includes(source.kind);
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
@@ -94,6 +109,7 @@ let QueryManager = class QueryManager extends React.Component {
         body: [],
       },
       stripe: {},
+      runjs: {},
     };
 
     this.setState({
@@ -229,6 +245,26 @@ let QueryManager = class QueryManager extends React.Component {
     this.optionchanged('events', events);
   };
 
+  renderQueryEditorIcon = () => {
+    if (this.state.queryPaneHeight === '30%') {
+      return (
+        <span
+          className="cursor-pointer m-3"
+          onClick={this.props.toggleQueryPaneHeight}
+          data-tip="Maximize query editor"
+        >
+          <MaximizeIcon />
+        </span>
+      );
+    }
+
+    return (
+      <span className="cursor-pointer m-3" onClick={this.props.toggleQueryPaneHeight} data-tip="Minimize query editor">
+        <MinimizeIcon />
+      </span>
+    );
+  };
+
   render() {
     const {
       dataSources,
@@ -241,11 +277,11 @@ let QueryManager = class QueryManager extends React.Component {
       addingQuery,
       editingQuery,
       selectedQuery,
-      queryPaneHeight,
       currentState,
       queryName,
       previewLoading,
       queryPreviewData,
+      dataSourceMeta,
     } = this.state;
 
     let ElementToRender = '';
@@ -304,7 +340,7 @@ let QueryManager = class QueryManager extends React.Component {
               </div>
             </div>
           )}
-          <div className="col-auto px-1">
+          <div className="col-auto px-1 m-auto">
             {(addingQuery || editingQuery) && (
               <span
                 onClick={() => {
@@ -337,23 +373,20 @@ let QueryManager = class QueryManager extends React.Component {
                 {buttonText}
               </button>
             )}
-            {queryPaneHeight === '30%' ? (
-              <span
-                className="btn btn-light m-1"
-                onClick={this.props.toggleQueryPaneHeight}
-                data-tip="Maximize query editor"
-              >
-                <img src="/assets/images/icons/maximize.svg" width="12" height="12" />
+            <>
+              {this.renderQueryEditorIcon()}
+              <span onClick={this.props.toggleQueryEditor} className="cursor-pointer m-3" data-tip="Hide query editor">
+                <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M1 1L9 9L17 1"
+                    stroke="#61656F"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </span>
-            ) : (
-              <span
-                className="btn btn-light m-1"
-                onClick={this.props.toggleQueryPaneHeight}
-                data-tip="Minimize query editor"
-              >
-                <img src="/assets/images/icons/minimize.svg" width="12" height="12" />
-              </span>
-            )}
+            </>
           </div>
         </div>
 
@@ -394,15 +427,19 @@ let QueryManager = class QueryManager extends React.Component {
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
                     />
-                    <hr></hr>
-                    <div className="mb-3 mt-2">
-                      <Transformation
-                        changeOption={this.optionchanged}
-                        options={this.state.options}
-                        currentState={currentState}
-                        darkMode={this.props.darkMode}
-                      />
-                    </div>
+                    {!dataSourceMeta?.disableTransformations && (
+                      <div>
+                        <hr></hr>
+                        <div className="mb-3 mt-2">
+                          <Transformation
+                            changeOption={this.optionchanged}
+                            options={this.state.options}
+                            currentState={currentState}
+                            darkMode={this.props.darkMode}
+                          />
+                        </div>
+                      </div>
+                    )}
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>
                       <div className="py-2">Preview</div>
                     </div>
