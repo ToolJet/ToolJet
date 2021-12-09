@@ -4,10 +4,10 @@
     "npm": "7.20.0"
   },
   "lint-staged": {
-    "./frontend/src/**/*.{js,jsx,json}": [
+    "./frontend/src/**/*.{js,jsx}": [
       "eslint --fix"
     ],
-    "./server/{src,libs,test,plugins,scripts}/**/*.ts": [
+    "./server/{src,test,plugins,scripts}/**/*.ts": [
       "eslint --fix"
     ]
   },
