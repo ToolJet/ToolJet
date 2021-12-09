@@ -139,7 +139,7 @@ class ManageAppUsers extends React.Component {
 
     return (
       <div>
-        <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}>
+        <button className="btn font-500 color-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
           Share
         </button>
 

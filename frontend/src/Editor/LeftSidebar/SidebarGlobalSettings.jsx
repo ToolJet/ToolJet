@@ -1,10 +1,20 @@
 import React from 'react';
 import usePopover from '@/_hooks/use-popover';
+import { SketchPicker } from 'react-color';
+
 import { LeftSidebarItem } from './SidebarItem';
 
 export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChanged }) => {
   const [open, trigger, content] = usePopover(false);
   const { hideHeader, canvasMaxWidth, canvasBackgroundColor } = globalSettings;
+  const [showPicker, setShowPicker] = React.useState(false);
+  const coverStyles = {
+    position: 'fixed',
+    top: '0px',
+    right: '0px',
+    bottom: '0px',
+    left: '0px',
+  };
   return (
     <>
       <LeftSidebarItem
@@ -28,8 +38,8 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span className="w-full">Max width of canvas</span>
-              <div className="ms-auto form-check form-switch position-relative">
+              <span className="w-full m-auto">Max width of canvas</span>
+              <div className="position-relative">
                 <div className="input-with-icon">
                   <input
                     type="text"
@@ -45,17 +55,38 @@ export const LeftSidebarGlobalSettings = ({ globalSettings, globalSettingsChange
               </div>
             </div>
             <div className="d-flex">
-              <span className="w-full">Background color of canvas</span>
+              <span className="w-full m-auto">Background color of canvas</span>
               <div>
-                <input
-                  type="text"
-                  className={`form-control form-control-sm`}
-                  placeholder={'Enter canvas background color'}
-                  onChange={(e) => {
-                    globalSettingsChanged('canvasBackgroundColor', e.target.value);
-                  }}
-                  value={canvasBackgroundColor}
-                />
+                {showPicker && (
+                  <div>
+                    <div style={coverStyles} onClick={() => setShowPicker(false)} />
+                    <SketchPicker
+                      className="canvas-background-picker"
+                      onFocus={() => setShowPicker(true)}
+                      color={canvasBackgroundColor}
+                      onChangeComplete={(color) => globalSettingsChanged('canvasBackgroundColor', color.hex)}
+                    />
+                  </div>
+                )}
+
+                <div
+                  className="row mx-0 form-control form-control-sm canvas-background-holder"
+                  onClick={() => setShowPicker(true)}
+                >
+                  <div
+                    className="col-auto"
+                    style={{
+                      float: 'right',
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: canvasBackgroundColor,
+                      border: `0.25px solid ${
+                        ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
+                      }`,
+                    }}
+                  ></div>
+                  <div className="col">{canvasBackgroundColor}</div>
+                </div>
               </div>
             </div>
           </div>
