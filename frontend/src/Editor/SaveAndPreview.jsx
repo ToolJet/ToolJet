@@ -74,7 +74,6 @@ class SaveAndPreview extends React.Component {
 
   editVersion = (version) => () => {
     this.props.setAppDefinitionFromVersion(version);
-    this.props.fetchApp();
   };
 
   saveVersion = (versionId) => {
@@ -156,8 +155,13 @@ class SaveAndPreview extends React.Component {
                     onChange={(e) => this.setState({ newVersionName: e.target.value })}
                   />
                 </div>
-                <div className="col-auto">
-                  <Button variant="primary" onClick={() => this.createVersion()} disabled={creatingVersion}>
+                <div className="col-auto m-auto">
+                  <Button
+                    className="btn-sm"
+                    variant="primary"
+                    onClick={() => this.createVersion()}
+                    disabled={creatingVersion}
+                  >
                     {creatingVersion ? 'Creating...' : 'Create'}
                   </Button>
                 </div>
@@ -185,7 +189,7 @@ class SaveAndPreview extends React.Component {
                             </div>
                             <div className="col-auto">
                               <button
-                                className="btn btn-sm text-muted"
+                                className="btn btn-sm color-primary font-500 color-primary"
                                 onClick={() => this.saveVersion(version.id)}
                                 disabled={
                                   savingVersionId === version.id ||
@@ -195,14 +199,14 @@ class SaveAndPreview extends React.Component {
                                 {savingVersionId === version.id ? 'saving...' : 'save'}
                               </button>
                               <button
-                                className="btn btn btn-sm mx-2 text-muted"
+                                className="btn btn btn-sm mx-2 color-primary"
                                 onClick={this.editVersion(version)}
                                 disabled={this.props.editingVersionId === version.id}
                               >
                                 edit
                               </button>
                               <a
-                                className="btn btn btn-sm mx text-muted"
+                                className="btn btn btn-sm mx color-primary"
                                 href={`/applications/${appId}/versions/${version.id}`}
                                 target="_blank"
                                 rel="noreferrer"
