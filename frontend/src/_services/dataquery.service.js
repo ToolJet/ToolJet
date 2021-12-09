@@ -21,7 +21,7 @@ function create(app_id, name, kind, options, data_source_id) {
     name,
     kind,
     options,
-    data_source_id,
+    data_source_id: kind === 'runjs' ? null : data_source_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
