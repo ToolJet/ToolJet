@@ -4,6 +4,7 @@ import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
 import cx from 'classnames';
+import LogoIcon from '../Editor/Icons/logo.svg';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
   const [pathName, setPathName] = useState(document.location.pathname);
@@ -32,7 +33,7 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
         </button>
         <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
           <Link to={'/'}>
-            <img src="/assets/images/logo-color.svg" className="navbar-brand-image" />
+            <LogoIcon />
           </Link>
         </h1>
 
