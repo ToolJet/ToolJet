@@ -17,6 +17,7 @@ import {
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
+import LogoIcon from './Icons/logo.svg';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -171,7 +172,7 @@ class Viewer extends React.Component {
               <div className="container-xl header-container">
                 <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                   <a href="/">
-                    <img src="/assets/images/logo.svg" style={{ height: '1.6rem' }} className="navbar-brand-image" />
+                    <LogoIcon />
                   </a>
                 </h1>
                 {this.state.app && <span>{this.state.app.name}</span>}

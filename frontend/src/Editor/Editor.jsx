@@ -32,10 +32,13 @@ import queryString from 'query-string';
 import toast from 'react-hot-toast';
 import { cloneDeep, isEqual, isEmpty } from 'lodash';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
+import Logo from './Icons/logo.svg';
+import EditIcon from './Icons/edit.svg';
+import MobileSelectedIcon from './Icons/mobile-selected.svg';
+import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 
 setAutoFreeze(false);
 enablePatches();
-
 class Editor extends React.Component {
   constructor(props) {
     super(props);
@@ -669,6 +672,21 @@ class Editor extends React.Component {
     return canvasBoundingRect?.width;
   };
 
+  renderLayoutIcon = (isDesktopSelected) => {
+    if (isDesktopSelected)
+      return (
+        <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+          <DesktopSelectedIcon />
+        </span>
+      );
+
+    return (
+      <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+        <MobileSelectedIcon />
+      </span>
+    );
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -737,36 +755,28 @@ class Editor extends React.Component {
                 </button>
                 <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                   <Link to={'/'}>
-                    <img src="/assets/images/logo.svg" className="navbar-brand-image" style={{ height: '1.6rem' }} />
+                    <Logo />
                   </Link>
                 </h1>
                 {this.state.app && (
-                  <input
-                    type="text"
-                    style={{ width: '200px', left: '80px', position: 'absolute' }}
-                    onFocus={(e) => this.setState({ oldName: e.target.value })}
-                    onChange={(e) => this.onNameChanged(e.target.value)}
-                    onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
-                    className="form-control-plaintext form-control-plaintext-sm"
-                    value={this.state.app.name}
-                  />
-                )}
-                <small>{this.state.editingVersion && `App version: ${this.state.editingVersion.name}`}</small>
-                <div className="editor-buttons">
-                  <span
-                    className={`btn btn-light mx-2`}
-                    onClick={this.toggleQueryEditor}
-                    data-tip="Hide query editor"
-                    data-class="py-1 px-2"
-                    ref={this.toolTipRefHide}
-                  >
-                    <img
-                      style={{ transform: 'rotate(-90deg)' }}
-                      src="/assets/images/icons/editor/sidebar-toggle.svg"
-                      width="12"
-                      height="12"
+                  <div className="app-name input-icon">
+                    <input
+                      type="text"
+                      onFocus={(e) => this.setState({ oldName: e.target.value })}
+                      onChange={(e) => this.onNameChanged(e.target.value)}
+                      onBlur={(e) => this.saveAppName(this.state.app.id, e.target.value)}
+                      className="form-control-plaintext form-control-plaintext-sm"
+                      value={this.state.app.name}
                     />
-                  </span>
+                    <span className="input-icon-addon">
+                      <EditIcon />
+                    </span>
+                  </div>
+                )}
+                {this.state.editingVersion && (
+                  <small className="app-version-name">{`App version: ${this.state.editingVersion.name}`}</small>
+                )}
+                <div className="editor-buttons">
                   <span
                     className={`btn btn-light mx-2`}
                     onClick={this.toggleQueryEditor}
@@ -783,27 +793,8 @@ class Editor extends React.Component {
                     />
                   </span>
                 </div>
-                <div className="layout-buttons">
-                  <div className="btn-group" role="group" aria-label="Basic example">
-                    <button
-                      type="button"
-                      className="btn btn-light"
-                      data-tip="Desktop view"
-                      onClick={() => this.setState({ currentLayout: 'desktop' })}
-                      disabled={currentLayout === 'desktop'}
-                    >
-                      <img src="/assets/images/icons/editor/desktop.svg" width="12" height="12" />
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-light"
-                      data-tip="Mobile view"
-                      onClick={() => this.setState({ currentLayout: 'mobile' })}
-                      disabled={currentLayout === 'mobile'}
-                    >
-                      <img src="/assets/images/icons/editor/mobile.svg" width="12" height="12" />
-                    </button>
-                  </div>
+                <div className="layout-buttons cursor-pointer">
+                  {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
                   <div className="nav-item dropdown d-none d-md-flex me-2">
@@ -820,7 +811,7 @@ class Editor extends React.Component {
                     <a
                       href={appLink}
                       target="_blank"
-                      className={`btn btn-sm ${app?.current_version_id ? '' : 'disabled'}`}
+                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
                       rel="noreferrer"
                     >
                       Launch
@@ -922,7 +913,43 @@ class Editor extends React.Component {
               <div
                 className="query-pane"
                 style={{
-                  height: showQueryEditor ? this.state.queryPaneHeight : '0px',
+                  height: showQueryEditor ? 0 : 40,
+                  background: '#fff',
+                  padding: '8px 16px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <h5 className="mb-0">QUERIES</h5>
+                <span
+                  onClick={this.props.toggleQueryEditor}
+                  className="cursor-pointer m-1"
+                  data-tip="Show query editor"
+                >
+                  <svg
+                    style={{ transform: 'rotate(180deg)' }}
+                    onClick={this.toggleQueryEditor}
+                    width="18"
+                    height="10"
+                    viewBox="0 0 18 10"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M1 1L9 9L17 1"
+                      stroke="#61656F"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+              <div
+                className="query-pane"
+                style={{
+                  height: showQueryEditor ? this.state.queryPaneHeight : 0,
                   width: !showLeftSidebar ? '85%' : '',
                   left: !showLeftSidebar ? '0' : '',
                 }}
@@ -1012,6 +1039,7 @@ class Editor extends React.Component {
                       <div className="query-definition-pane">
                         <div>
                           <QueryManager
+                            toggleQueryEditor={this.toggleQueryEditor}
                             dataSources={dataSources}
                             toggleQueryPaneHeight={this.toggleQueryPaneHeight}
                             dataQueries={dataQueries}
