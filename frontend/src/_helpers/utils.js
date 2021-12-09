@@ -1,5 +1,6 @@
 import moment from 'moment';
 import _ from 'lodash';
+import axios from 'axios';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -234,6 +235,24 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 }
 
 export function validateEmail(email) {
-  const emailRegex =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+  const emailRegex = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
   return emailRegex.test(email)
+}
+
+export async function executeMultilineJS(currentState, code) {
+  let result = {}, error = null;
+
+  try {
+
+    const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
+    var evalFn = new AsyncFunction('moment', '_', 'components', 'queries', 'globals', 'axios', code);
+    result = { status: 'ok', data: await evalFn(moment, _, currentState.components, currentState.queries, currentState.globals, axios) };
+
+  } catch (err) {
+    console.log('JS execution failed: ', err);
+    error = err.stack.split('\n')[0];
+    result = { status: 'failed', data: { message: error, description: error } };
+  }
+
+  return result;
 }
