@@ -1,6 +1,11 @@
 import React from 'react';
 import { toast } from 'react-toastify';
-import { getDynamicVariables, resolveReferences, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
+import {
+  getDynamicVariables,
+  resolveReferences,
+  executeMultilineJS,
+  serializeNestedObjectToQueryParams,
+} from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
@@ -411,8 +416,14 @@ export function previewQuery(_ref, query) {
   _ref.setState({ previewLoading: true });
 
   return new Promise(function (resolve, reject) {
-    dataqueryService
-      .preview(query, options)
+    let queryExecutionPromise = null;
+    if (query.kind === 'runjs') {
+      queryExecutionPromise = executeMultilineJS(_ref.state.currentState, query.options.code);
+    } else {
+      queryExecutionPromise = dataqueryService.preview(query, options);
+    }
+
+    queryExecutionPromise
       .then((data) => {
         let finalData = data.data;
 
@@ -497,8 +508,14 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
 
   return new Promise(function (resolve, reject) {
     _self.setState({ currentState: newState }, () => {
-      dataqueryService
-        .run(queryId, options)
+      let queryExecutionPromise = null;
+      if (query.kind === 'runjs') {
+        queryExecutionPromise = executeMultilineJS(_self.state.currentState, query.options.code);
+      } else {
+        queryExecutionPromise = dataqueryService.run(queryId, options);
+      }
+
+      queryExecutionPromise
         .then((data) => {
           if (data.status === 'needs_oauth') {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
