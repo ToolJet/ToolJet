@@ -191,7 +191,8 @@ class Viewer extends React.Component {
                   className="canvas-area"
                   style={{
                     width: canvasWidth,
-                    maxWidth: appDefinition.globalSettings?.canvasMaxWidth,
+                    maxWidth: +appDefinition.globalSettings?.canvasMaxWidth,
+                    backgroundColor: appDefinition.globalSettings?.canvasBackgroundColor,
                   }}
                 >
                   {defaultComponentStateComputed && (
