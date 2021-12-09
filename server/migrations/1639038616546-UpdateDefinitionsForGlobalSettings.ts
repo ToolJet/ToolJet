@@ -1,5 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
+import { isEmpty } from 'lodash';
 
 export class UpdateDefinitionsForGlobalSettings1639038616546 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -12,7 +13,7 @@ export class UpdateDefinitionsForGlobalSettings1639038616546 implements Migratio
     for (const version of appVersions) {
       const definition = version['definition'];
 
-      if (!definition.globalSettings) {
+      if (!isEmpty(definition) && !definition.globalSettings) {
         definition['globalSettings'] = {
           hideHeader: false,
           canvasMaxWidth: 1292,
