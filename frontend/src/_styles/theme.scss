@@ -6,8 +6,24 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+input, button {
+  border-radius: 4px;
+}
+
+.btn:hover {
+  border-color: $primary;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+}
+
 .padding-0 {
   padding: 0;
+}
+
+.font-500 {
+  font-weight: 500;
 }
 
 .text-right {
@@ -184,7 +200,7 @@ body {
     overflow-x: hidden;
     width: 300px;
     flex: 1 1 auto;
-    top: 48px;
+    top: 45px;
 
     background-color: #fff;
     background-clip: border-box;
@@ -329,7 +345,7 @@ body {
 
     .canvas-container {
       height: 100%;
-      top: 48px;
+      top: 45px;
       position: fixed;
       right: 300px;
       left: 3%;
@@ -439,6 +455,7 @@ body {
           background: white;
           z-index: 3;
           padding-top: 1px;
+          min-height: 41px;
         }
 
         .preview-header {
@@ -2761,4 +2778,41 @@ input[type='text'] {
 
 .tabbed-navbar .nav-item.active:after {
   margin-bottom: -0.25rem;
+}
+
+.app-name {
+  width: 325px;
+  left: 150px;
+  position: absolute;
+}
+
+.app-name:hover {
+  background: $bg-light;
+}
+
+.layout-buttons {
+  position: absolute;
+  left: 50%;
+}
+
+.app-version-name {
+  position: absolute;
+  right: 220px;
+  color: $light-gray;
+  border: 1px solid $light-gray;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 100px;
+}
+
+.canvas-background-holder {
+  display: flex;
+  justify-content: space-between;
+  min-width: 120px;
+  margin: auto;
+  padding: 10px;
+}
+
+.canvas-background-picker {
+  position: fixed;
 }

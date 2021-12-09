@@ -17,6 +17,7 @@ import {
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
+import LogoIcon from './Icons/logo.svg';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -66,14 +67,22 @@ class Viewer extends React.Component {
     let mobileLayoutHasWidgets = false;
 
     if (this.state.currentLayout === 'mobile') {
-      mobileLayoutHasWidgets = Object.keys(data.definition.components).filter(componentId => data.definition.components[componentId]['layouts']['mobile']).length > 0;
+      mobileLayoutHasWidgets =
+        Object.keys(data.definition.components).filter(
+          (componentId) => data.definition.components[componentId]['layouts']['mobile']
+        ).length > 0;
     }
 
     this.setState(
       {
         currentSidebarTab: 2,
         currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
-        canvasWidth: this.state.currentLayout === 'desktop' ? '100%' : mobileLayoutHasWidgets ? `${deviceWindowWidth}px` : '1292px',
+        canvasWidth:
+          this.state.currentLayout === 'desktop'
+            ? '100%'
+            : mobileLayoutHasWidgets
+            ? `${this.state.deviceWindowWidth}px`
+            : '1292px',
         selectedComponent: null,
         currentState: {
           queries: {},
@@ -135,7 +144,7 @@ class Viewer extends React.Component {
   getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     return canvasBoundingRect?.width;
-  }
+  };
 
   render() {
     const {
@@ -145,7 +154,7 @@ class Viewer extends React.Component {
       currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
-      canvasWidth
+      canvasWidth,
     } = this.state;
 
     return (
@@ -163,7 +172,7 @@ class Viewer extends React.Component {
               <div className="container-xl header-container">
                 <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
                   <a href="/">
-                    <img src="/assets/images/logo.svg" style={{ height: '1.6rem' }} className="navbar-brand-image" />
+                    <LogoIcon />
                   </a>
                 </h1>
                 {this.state.app && <span>{this.state.app.name}</span>}
@@ -180,7 +189,7 @@ class Viewer extends React.Component {
                   className="canvas-area"
                   style={{
                     width: canvasWidth,
-                    maxWidth: '1292px'
+                    maxWidth: '1292px',
                   }}
                 >
                   {defaultComponentStateComputed && (
