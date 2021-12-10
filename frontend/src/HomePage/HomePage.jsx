@@ -36,10 +36,11 @@ class HomePage extends React.Component {
     this.fetchFolders();
   }
 
-  fetchApps = (page, folder) => {
+  fetchApps = (page = 1, folder) => {
     this.setState({
       apps: [],
       isLoading: true,
+      currentPage: page,
     });
 
     appService.getAll(page, folder).then((data) =>
@@ -65,7 +66,6 @@ class HomePage extends React.Component {
   };
 
   pageChanged = (page) => {
-    this.setState({ currentPage: page });
     this.fetchApps(page, this.state.currentFolder.id);
   };
 
@@ -274,7 +274,8 @@ class HomePage extends React.Component {
           hideProgressBar: true,
           position: 'top-center',
         });
-        this.fetchApps(this.state.currentPage || 1, this.state.currentFolder.id);
+        this.fetchApps(this.state.currentPage ? (this.state.apps?.length === 1 ?
+          this.state.currentPage - 1 : this.state.currentPage) : 1, this.state.currentFolder.id);
         this.fetchFolders();
       })
       .catch(({ error }) => {
@@ -395,7 +396,6 @@ class HomePage extends React.Component {
                       <Pagination
                         currentPage={meta.current_page}
                         count={this.pageCount()}
-                        totalPages={meta.total_pages}
                         pageChanged={this.pageChanged}
                       />
                     )}
