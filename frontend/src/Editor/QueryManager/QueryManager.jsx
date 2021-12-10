@@ -1,7 +1,6 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast from 'react-hot-toast';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
@@ -164,10 +163,7 @@ let QueryManager = class QueryManager extends React.Component {
 
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
-      toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.', {
-        hideProgressBar: true,
-        position: 'bottom-center',
-      });
+      toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.');
       return;
     }
 
@@ -176,26 +172,26 @@ let QueryManager = class QueryManager extends React.Component {
       dataqueryService
         .update(this.state.selectedQuery.id, queryName, options)
         .then(() => {
-          toast.success('Query Updated', { hideProgressBar: true, position: 'bottom-center' });
+          toast.success('Query Updated');
           this.setState({ isUpdating: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
           this.setState({ isUpdating: false });
-          toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+          toast.error(error);
         });
     } else {
       this.setState({ isCreating: true });
       dataqueryService
         .create(appId, queryName, kind, options, dataSourceId)
         .then(() => {
-          toast.success('Query Added', { hideProgressBar: true, position: 'bottom-center' });
+          toast.success('Query Added');
           this.setState({ isCreating: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
           this.setState({ isCreating: false });
-          toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+          toast.error(error);
         });
     }
   };
