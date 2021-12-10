@@ -28,7 +28,6 @@ export const LeftSidebar = ({
   globalSettingsChanged,
   globalSettings,
 }) => {
-  console.log('11', globalSettings);
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   return (
