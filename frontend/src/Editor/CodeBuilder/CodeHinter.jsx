@@ -92,7 +92,7 @@ export function CodeHinter({
 
     if (error) {
       return (
-        <animated.div style={{ ...slideInStyles, overflow: 'hidden' }}>
+        <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
           <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
             <div>
               <div className="heading my-1">
