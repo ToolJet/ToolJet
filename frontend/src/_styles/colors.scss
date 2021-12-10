@@ -8,6 +8,7 @@ $primary: #4D72FA;
 $disabled: #9E9EA8;
 $dark-background: #1f2936;
 $bg-light: #EEF3F9;
+$bg-dark: #22272E;
 
 .color-primary {
   color: $primary !important;
@@ -23,4 +24,7 @@ $bg-light: #EEF3F9;
 
 .bg-light {
   background: $bg-light;
+}
+.bg-dark {
+  background: $bg-dark;
 }
