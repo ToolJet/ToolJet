@@ -2,6 +2,7 @@ import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { defaults } from 'lodash';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
@@ -56,6 +57,15 @@ class Editor extends React.Component {
       };
     }
 
+    this.defaultDefinition = {
+      components: {},
+      globalSettings: {
+        hideHeader: false,
+        canvasMaxWidth: 1292,
+        canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
+      },
+    };
+
     this.state = {
       currentUser: authenticationService.currentUserValue,
       app: {},
@@ -73,14 +83,7 @@ class Editor extends React.Component {
       zoomLevel: 1.0,
       currentLayout: 'desktop',
       deviceWindowWidth: 450,
-      appDefinition: {
-        components: {},
-        globalSettings: {
-          hideHeader: false,
-          canvasMaxWidth: 1292,
-          canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
-        },
-      },
+      appDefinition: this.defaultDefinition,
       currentState: {
         queries: {},
         components: {},
@@ -261,13 +264,13 @@ class Editor extends React.Component {
     const appId = this.props.match.params.id;
 
     appService.getApp(appId).then((data) => {
-      const dataDefinition = data.definition || {};
+      const dataDefinition = defaults(data.definition, this.defaultDefinition);
       this.setState(
         {
           app: data,
           isLoading: false,
           editingVersion: data.editing_version,
-          appDefinition: { ...this.state.appDefinition, ...dataDefinition },
+          appDefinition: dataDefinition,
           slug: data.slug,
         },
         () => {
@@ -281,7 +284,7 @@ class Editor extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(version.definition || {});
+    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition));
     this.setState({
       editingVersion: version,
     });
