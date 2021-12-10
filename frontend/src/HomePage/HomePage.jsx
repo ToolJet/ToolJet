@@ -351,8 +351,9 @@ class HomePage extends React.Component {
                         </label>
                       </button>
                       <button
-                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${creatingApp ? 'btn-loading' : ''
-                          }`}
+                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${
+                          creatingApp ? 'btn-loading' : ''
+                        }`}
                         onClick={this.createApp}
                       >
                         Create new application

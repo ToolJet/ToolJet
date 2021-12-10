@@ -23,7 +23,8 @@ export const Button = function Button({ width, height, component, currentState, 
 
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-  const parsedBorderRadius = typeof borderRadius !== 'number' ? resolveWidgetFieldValue(borderRadius, currentState) : borderRadius;
+  const parsedBorderRadius =
+    typeof borderRadius !== 'number' ? resolveWidgetFieldValue(borderRadius, currentState) : borderRadius;
   let parsedWidgetVisibility = widgetVisibility;
 
   try {

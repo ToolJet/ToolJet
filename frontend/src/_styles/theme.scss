@@ -1,5 +1,6 @@
 @import './tabler.scss';
 @import './colors.scss';
+@import './z-index.scss';
 
 body {
   font-family: 'Roboto', sans-serif;
@@ -199,7 +200,7 @@ input, button {
     overflow-x: hidden;
     width: 300px;
     flex: 1 1 auto;
-    top: 48px;
+    top: 45px;
 
     background-color: #fff;
     background-clip: border-box;
@@ -334,7 +335,6 @@ input, button {
 
     .canvas-container {
       scrollbar-width: none;
-      background-color: #eeeff6;
     }
 
     .canvas-container::-webkit-scrollbar {
@@ -344,7 +344,7 @@ input, button {
 
     .canvas-container {
       height: 100%;
-      top: 48px;
+      top: 45px;
       position: fixed;
       right: 300px;
       left: 3%;
@@ -1607,7 +1607,7 @@ body {
   font-family: 'Roboto', sans-serif;
   font-size: 0.9rem;
   padding: 0px;
-  z-index: 10000;
+  z-index: $hints-z-index;
 
   li.CodeMirror-hint-active {
     background: $primary;
@@ -2678,11 +2678,75 @@ input[type='text'] {
 .code-editor-widget {
   border-radius: 0;
   .CodeMirror {
-    border-radius: inherit;
+    border-radius: 0!important;
     margin-top: -1px!important;
   }
 }
 
+.code-hinter-wrapper  .popup-btn {
+  position: absolute;
+  display: none;
+  cursor: pointer;
+}
+
+.code-hinter-wrapper:hover {
+  .popup-btn {
+    display: block!important;
+    z-index: 1;
+  }
+}
+
+.modal-portal-wrapper {
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  height: 500px;
+  width: 500px;
+  padding: 0;
+  
+  .modal-body {
+    width: 500px!important;
+    height: 300px!important;
+    padding: 0px!important
+  }
+  
+  .modal-dialog {
+    margin-top: 4%;
+  }
+  
+  .modal-header {
+    padding: 0;
+    font-size: 14px;
+  }
+  
+  
+  .editor-container{
+    padding: 0px;    
+    .CodeMirror {
+      border-radius: 0;
+      margin: 0;
+      width: 100%!important;
+    }
+  }
+
+}
+
+
+.portal-header {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  color: #656d77;
+  background-color: #ffffffd9;
+  background-clip: padding-box;
+  border-bottom: 1px solid #0000000d;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
 .tabs-inspector {
   .nav-item {
     width: 50%;

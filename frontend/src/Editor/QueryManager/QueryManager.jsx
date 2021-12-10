@@ -422,6 +422,7 @@ let QueryManager = class QueryManager extends React.Component {
                       currentState={currentState}
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
+                      queryName={this.state.queryName}
                     />
                     {!dataSourceMeta?.disableTransformations && (
                       <div>

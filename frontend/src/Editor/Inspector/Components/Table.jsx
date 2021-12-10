@@ -174,6 +174,7 @@ class Table extends React.Component {
               lineNumbers={false}
               placeholder={column.name}
               onChange={(value) => this.onColumnItemChange(index, 'key', value)}
+              componentName={this.getPopoverFieldSource(column.columnType, 'key')}
             />
           </div>
 
@@ -189,6 +190,7 @@ class Table extends React.Component {
                   lineNumbers={false}
                   placeholder={'Text color of the cell'}
                   onChange={(value) => this.onColumnItemChange(index, 'textColor', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'textColor')}
                 />
               </div>
               {column.isEditable && (
@@ -204,6 +206,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'regex', value)}
+                      componentName={this.getPopoverFieldSource(column.columnType, 'regex')}
                     />
                   </div>
                   <div className="field mb-2">
@@ -216,6 +219,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'minLength', value)}
+                      componentName={this.getPopoverFieldSource(column.columnType, 'minLength')}
                     />
                   </div>
                   <div className="field mb-2">
@@ -228,6 +232,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'maxLength', value)}
+                      componentName={this.getPopoverFieldSource(column.columnType, 'maxLength')}
                     />
                   </div>
                   <div className="field mb-2">
@@ -240,6 +245,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
+                      componentName={this.getPopoverFieldSource(column.columnType, 'customRule')}
                     />
                   </div>
                 </div>
@@ -295,6 +301,7 @@ class Table extends React.Component {
                   lineNumbers={false}
                   placeholder={'{{[1, 2, 3]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'values', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'values')}
                 />
               </div>
               <div className="field mb-2">
@@ -307,6 +314,7 @@ class Table extends React.Component {
                   lineNumbers={false}
                   placeholder={'{{["one", "two", "three"]}}'}
                   onChange={(value) => this.onColumnItemChange(index, 'labels', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'labels')}
                 />
               </div>
             </div>
@@ -327,6 +335,7 @@ class Table extends React.Component {
                       lineNumbers={false}
                       placeholder={''}
                       onChange={(value) => this.onColumnItemChange(index, 'customRule', value)}
+                      componentName={this.getPopoverFieldSource(column.columnType, 'customRule')}
                     />
                   </div>
                 </div>
@@ -346,6 +355,7 @@ class Table extends React.Component {
                   lineNumbers={false}
                   placeholder={'DD-MM-YYYY'}
                   onChange={(value) => this.onColumnItemChange(index, 'dateFormat', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'dateFormat')}
                 />
               </div>
               <label className="form-label">Date Parse Format</label>
@@ -559,6 +569,9 @@ class Table extends React.Component {
     newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
   };
+
+  getPopoverFieldSource = (column, field) =>
+    `widget/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;

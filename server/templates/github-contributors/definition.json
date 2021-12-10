@@ -1,16 +1,16 @@
 {
-  "id": "a49f1709-b260-408c-b84e-efc27167808c",
+  "id": "1986f492-3a77-412a-b930-b4c97def943a",
   "name": "GitHub Contributor Leaderboard",
   "slug": null,
   "isPublic": false,
-  "organizationId": "2871388a-3041-4f76-b531-e14b7a9d9ee9",
+  "organizationId": "7471c14a-c11a-416a-94b2-863125bc69d7",
   "currentVersionId": null,
-  "userId": "3852332b-4802-436d-9177-bdbf347a0278",
-  "createdAt": "2021-12-07T11:17:04.161Z",
-  "updatedAt": "2021-12-07T11:17:04.161Z",
+  "userId": "319a2ca8-395e-4f77-8998-78358f78b716",
+  "createdAt": "2021-12-09T10:00:47.877Z",
+  "updatedAt": "2021-12-09T10:00:47.942Z",
   "dataQueries": [
     {
-      "id": "425e45a9-06af-47ae-a381-1ccd059ae28c",
+      "id": "acf2e546-d3e4-4b5b-b8c9-7e0e25675501",
       "name": "fetchGithubProfile",
       "kind": "restapi",
       "options": {
@@ -21,12 +21,12 @@
         "body": []
       },
       "dataSourceId": null,
-      "appId": "a49f1709-b260-408c-b84e-efc27167808c",
-      "createdAt": "2021-12-07T11:17:04.161Z",
-      "updatedAt": "2021-12-07T11:17:04.161Z"
+      "appId": "1986f492-3a77-412a-b930-b4c97def943a",
+      "createdAt": "2021-12-09T10:00:47.876Z",
+      "updatedAt": "2021-12-09T10:00:47.876Z"
     },
     {
-      "id": "54f5ab01-eabd-4376-b6bb-ab2cee96443e",
+      "id": "9630ba6f-1558-4a3a-8659-ec6a9554fc38",
       "name": "fetchContributors",
       "kind": "restapi",
       "options": {
@@ -40,15 +40,15 @@
         "body": []
       },
       "dataSourceId": null,
-      "appId": "a49f1709-b260-408c-b84e-efc27167808c",
-      "createdAt": "2021-12-07T11:17:04.161Z",
-      "updatedAt": "2021-12-07T11:17:04.161Z"
+      "appId": "1986f492-3a77-412a-b930-b4c97def943a",
+      "createdAt": "2021-12-09T10:00:47.876Z",
+      "updatedAt": "2021-12-09T10:00:47.876Z"
     }
   ],
   "dataSources": [],
   "appVersions": [
     {
-      "id": "debb9c7f-e8b9-4499-b527-1666ac13371a",
+      "id": "82726a42-6b45-497c-80b7-e9e69660e4ec",
       "name": "v0",
       "definition": {
         "components": {
@@ -142,13 +142,11 @@
                 },
                 "events": [
                   {
-                    "queryId": "097c150b-70a6-4555-8c6a-ed01f266e9e0",
                     "queryName": "fetchGithubProfile",
                     "actionId": "run-query",
                     "eventId": "onRowClicked"
                   },
                   {
-                    "queryId": "097c150b-70a6-4555-8c6a-ed01f266e9e0",
                     "queryName": "fetchGithubProfile",
                     "actionId": "run-query",
                     "eventId": "onPageChanged"
@@ -626,7 +624,6 @@
                 },
                 "events": [
                   {
-                    "queryId": "4b715216-1eb7-48ca-9fc6-1f68c7dc292c",
                     "queryName": "fetchContributors",
                     "actionId": "run-query",
                     "eventId": "onClick"
@@ -651,15 +648,20 @@
               }
             }
           }
+        },
+        "globalSettings": {
+          "hideHeader": false,
+          "canvasMaxWidth": 1292,
+          "canvasBackgroundColor": "#edeff5"
         }
       },
-      "appId": "a49f1709-b260-408c-b84e-efc27167808c",
-      "createdAt": "2021-12-07T11:17:04.161Z",
-      "updatedAt": "2021-12-07T11:17:04.161Z"
+      "appId": "1986f492-3a77-412a-b930-b4c97def943a",
+      "createdAt": "2021-12-09T10:00:47.905Z",
+      "updatedAt": "2021-12-09T10:01:17.080Z"
     }
   ],
   "editingVersion": {
-    "id": "debb9c7f-e8b9-4499-b527-1666ac13371a",
+    "id": "82726a42-6b45-497c-80b7-e9e69660e4ec",
     "name": "v0",
     "definition": {
       "components": {
@@ -753,13 +755,11 @@
               },
               "events": [
                 {
-                  "queryId": "097c150b-70a6-4555-8c6a-ed01f266e9e0",
                   "queryName": "fetchGithubProfile",
                   "actionId": "run-query",
                   "eventId": "onRowClicked"
                 },
                 {
-                  "queryId": "097c150b-70a6-4555-8c6a-ed01f266e9e0",
                   "queryName": "fetchGithubProfile",
                   "actionId": "run-query",
                   "eventId": "onPageChanged"
@@ -1232,7 +1232,6 @@
               },
               "events": [
                 {
-                  "queryId": "4b715216-1eb7-48ca-9fc6-1f68c7dc292c",
                   "queryName": "fetchContributors",
                   "actionId": "run-query",
                   "eventId": "onClick"
@@ -1257,11 +1256,16 @@
             }
           }
         }
+      },
+      "globalSettings": {
+        "hideHeader": false,
+        "canvasMaxWidth": 1292,
+        "canvasBackgroundColor": "#edeff5"
       }
     },
-    "appId": "a49f1709-b260-408c-b84e-efc27167808c",
-    "createdAt": "2021-12-07T11:17:04.161Z",
-    "updatedAt": "2021-12-07T11:17:04.161Z"
+    "appId": "1986f492-3a77-412a-b930-b4c97def943a",
+    "createdAt": "2021-12-09T10:00:47.905Z",
+    "updatedAt": "2021-12-09T10:01:17.080Z"
   },
-  "tooljetVersion": "0.9.1"
+  "tooljetVersion": "0.10.0"
 }
