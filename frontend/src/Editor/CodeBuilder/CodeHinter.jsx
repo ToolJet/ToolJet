@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSpring, config, animated } from 'react-spring';
-
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/mode/handlebars/handlebars';
 import 'codemirror/mode/javascript/javascript';
@@ -15,6 +16,7 @@ import 'codemirror/theme/monokai.css';
 import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
+import usePortal from '@/_hooks/use-portal';
 
 export function CodeHinter({
   initialValue,
@@ -30,10 +32,12 @@ export function CodeHinter({
   height,
   minHeight,
   lineWrapping,
+  componentName = null,
+  usePortalEditor = true,
 }) {
   const options = {
-    lineNumbers: lineNumbers,
-    lineWrapping: lineWrapping,
+    lineNumbers: lineNumbers ?? false,
+    lineWrapping: lineWrapping ?? true,
     singleLine: true,
     mode: mode || 'handlebars',
     tabSize: 2,
@@ -116,30 +120,103 @@ export function CodeHinter({
     );
   };
   enablePreview = enablePreview ?? true;
+
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const handleToggle = () => {
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+
+    return new Promise((resolve) => {
+      const element = document.getElementsByClassName('portal-container');
+      if (element) {
+        const checkPortalExits = element[0]?.classList.contains(componentName);
+
+        if (checkPortalExits === false) {
+          const parent = element[0].parentNode;
+          parent.removeChild(element[0]);
+        }
+
+        setIsOpen(false);
+        resolve();
+      }
+    }).then(() => {
+      setIsOpen(true);
+      forceUpdate();
+    });
+  };
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
+
   return (
-    <div style={{ width: '100%' }}>
+    <div className="code-hinter-wrapper" style={{ width: '100%' }}>
+      {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
       <div
         className={`code-hinter ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >
-        <CodeMirror
-          value={initialValue}
-          realState={realState}
-          scrollbarStyle={null}
-          height={height}
-          onFocus={() => setFocused(true)}
-          onBlur={(editor) => {
-            const value = editor.getValue();
-            onChange(value);
-            setFocused(false);
-          }}
-          onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
-          onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
-          options={options}
-        />
+        <CodeHinter.Portal
+          isOpen={isOpen}
+          callback={setIsOpen}
+          componentName={componentName}
+          key={suggestions.length}
+          customComponent={getPreview}
+          forceUpdate={forceUpdate}
+          optionalProps={{ height: 300 }}
+        >
+          <CodeMirror
+            value={initialValue}
+            realState={realState}
+            scrollbarStyle={null}
+            height={height || 'auto'}
+            onFocus={() => setFocused(true)}
+            onBlur={(editor) => {
+              const value = editor.getValue();
+              onChange(value);
+              setFocused(false);
+            }}
+            onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
+            onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+            options={options}
+            viewportMargin={Infinity}
+          />
+        </CodeHinter.Portal>
       </div>
-      {enablePreview && getPreview()}
+      {enablePreview && !isOpen && getPreview()}
     </div>
   );
 }
+
+const PopupIcon = ({ callback }) => {
+  return (
+    <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
+      <OverlayTrigger
+        trigger={['hover', 'focus']}
+        placement="top"
+        delay={{ show: 800, hide: 100 }}
+        overlay={<Tooltip id="button-tooltip">{'Pop out code editor into a new window'}</Tooltip>}
+      >
+        <img
+          className="svg-icon m-2 popup-btn"
+          src="/assets/images/icons/portal-open.svg"
+          width="12"
+          height="12"
+          onClick={(e) => {
+            e.stopPropagation();
+            callback();
+          }}
+        />
+      </OverlayTrigger>
+    </div>
+  );
+};
+
+const Portal = ({ children, ...restProps }) => {
+  const renderPortal = usePortal({ children, ...restProps });
+
+  return <React.Fragment>{renderPortal}</React.Fragment>;
+};
+
+CodeHinter.PopupIcon = PopupIcon;
+CodeHinter.Portal = Portal;
