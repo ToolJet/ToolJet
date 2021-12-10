@@ -685,8 +685,9 @@ class Editor extends React.Component {
                     <Logo />
                   </Link>
                 </h1>
+
                 {this.state.app && (
-                  <div className="app-name input-icon">
+                  <div className={`app-name input-icon ${this.props.darkMode ? 'dark' : ''}`}>
                     <input
                       type="text"
                       onFocus={(e) => this.setState({ oldName: e.target.value })}
