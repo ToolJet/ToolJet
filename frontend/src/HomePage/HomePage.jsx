@@ -274,8 +274,14 @@ class HomePage extends React.Component {
           hideProgressBar: true,
           position: 'top-center',
         });
-        this.fetchApps(this.state.currentPage ? (this.state.apps?.length === 1 ?
-          this.state.currentPage - 1 : this.state.currentPage) : 1, this.state.currentFolder.id);
+        this.fetchApps(
+          this.state.currentPage
+            ? this.state.apps?.length === 1
+              ? this.state.currentPage - 1
+              : this.state.currentPage
+            : 1,
+          this.state.currentFolder.id
+        );
         this.fetchFolders();
       })
       .catch(({ error }) => {
@@ -352,8 +358,9 @@ class HomePage extends React.Component {
                         </label>
                       </button>
                       <button
-                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${creatingApp ? 'btn-loading' : ''
-                          }`}
+                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${
+                          creatingApp ? 'btn-loading' : ''
+                        }`}
                         onClick={this.createApp}
                       >
                         Create new application
