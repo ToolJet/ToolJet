@@ -6,4 +6,4 @@ then
     TOOLJET_SERVER_URL="https://${HEROKU_APP_NAME}.herokuapp.com"
 fi
 
-npm --prefix frontend install && npm --prefix server install
+npm run build && npm run deploy
