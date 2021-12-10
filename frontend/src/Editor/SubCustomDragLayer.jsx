@@ -33,7 +33,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, par
 
   if (id) {
     // Dragging within the canvas
-    x = Math.round((item.layouts[currentLayout].left * canvasWidth / 100) + delta.x);
+    x = Math.round((item.layouts[currentLayout].left * canvasWidth) / 100 + delta.x);
     y = Math.round(item.layouts[currentLayout].top + delta.y);
   } else {
     // New component being dragged  from components sidebar
@@ -47,7 +47,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, par
 
   [x, y] = snapToGrid(canvasWidth, x, y);
 
-  console.log(`translate(${x}px, ${y}px)`)
+  console.log(`translate(${x}px, ${y}px)`);
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
@@ -89,7 +89,9 @@ export const SubCustomDragLayer = ({ parentRef, parent, currentLayout }) => {
 
   return (
     <div style={layerStyles} className="sub-custom-drag-layer">
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent, currentLayout, canvasWidth)}>
+      <div
+        style={getItemStyles(delta, item, initialOffset, currentOffset, parentRef, parent, currentLayout, canvasWidth)}
+      >
         {renderItem()}
       </div>
     </div>

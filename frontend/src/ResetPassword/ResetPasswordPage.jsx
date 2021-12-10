@@ -22,8 +22,8 @@ class ResetPassword extends React.Component {
   handleClick = (event) => {
     event.preventDefault();
     const { token, password, password_confirmation } = this.state;
-    if(!token || !password || !password_confirmation) {
-      toast.error("Please fill all field(s)");
+    if (!token || !password || !password_confirmation) {
+      toast.error('Please fill all field(s)');
     } else if (password !== password_confirmation) {
       toast.error("Password don't match");
       this.setState({

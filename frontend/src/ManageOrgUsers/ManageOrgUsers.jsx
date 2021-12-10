@@ -91,7 +91,10 @@ class ManageOrgUsers extends React.Component {
     organizationUserService
       .archive(id)
       .then(() => {
-        toast.success('The user has been archived', { hideProgressBar: true, position: 'top-center' });
+        toast.success('The user has been archived', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.setState({ archivingUser: null });
         this.fetchUsers();
       })
@@ -122,9 +125,16 @@ class ManageOrgUsers extends React.Component {
           this.state.fields.role
         )
         .then(() => {
-          toast.success('User has been created', { hideProgressBar: true, position: 'top-center' });
+          toast.success('User has been created', {
+            hideProgressBar: true,
+            position: 'top-center',
+          });
           this.fetchUsers();
-          this.setState({ creatingUser: false, showNewUserForm: false, fields: fields });
+          this.setState({
+            creatingUser: false,
+            showNewUserForm: false,
+            fields: fields,
+          });
         })
         .catch(({ error }) => {
           toast.error(error, { hideProgressBar: true, position: 'top-center' });
@@ -143,7 +153,10 @@ class ManageOrgUsers extends React.Component {
   generateInvitationURL = (user) => window.location.origin + '/invitations/' + user.invitation_token;
 
   invitationLinkCopyHandler = () => {
-    toast.info('Invitation URL copied', { hideProgressBar: true, position: 'bottom-right' });
+    toast.info('Invitation URL copied', {
+      hideProgressBar: true,
+      position: 'bottom-right',
+    });
   };
 
   render() {
@@ -226,7 +239,12 @@ class ManageOrgUsers extends React.Component {
                         <button
                           type="button"
                           className="btn btn-light mr-2"
-                          onClick={() => this.setState({ showNewUserForm: false, newUser: {} })}
+                          onClick={() =>
+                            this.setState({
+                              showNewUserForm: false,
+                              newUser: {},
+                            })
+                          }
                         >
                           Cancel
                         </button>
@@ -294,14 +312,18 @@ class ManageOrgUsers extends React.Component {
                                   {user.first_name ? user.first_name[0] : ''}
                                   {user.last_name ? user.last_name[0] : ''}
                                 </span>
-                                <span className="mx-3" style={{ display: 'inline-flex', marginBottom: '7px' }}>
+                                <span
+                                  className="mx-3"
+                                  style={{
+                                    display: 'inline-flex',
+                                    marginBottom: '7px',
+                                  }}
+                                >
                                   {user.name}
                                 </span>
                               </td>
                               <td className="text-muted">
-                                <a className="text-reset user-email">
-                                  {user.email}
-                                </a>
+                                <a className="text-reset user-email">{user.email}</a>
                               </td>
                               <td className="text-muted">
                                 <span

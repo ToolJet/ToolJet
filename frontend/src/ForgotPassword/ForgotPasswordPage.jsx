@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import config from 'config';
-import { validateEmail } from "../_helpers/utils"
+import { validateEmail } from '../_helpers/utils';
 
 class ForgotPassword extends React.Component {
   constructor(props) {
@@ -27,8 +27,10 @@ class ForgotPassword extends React.Component {
     event.preventDefault();
 
     if (!validateEmail(this.state.email)) {
-      toast.error('Invalid email', { toastId: 'toast-forgot-password-email-error' });
-      return
+      toast.error('Invalid email', {
+        toastId: 'toast-forgot-password-email-error',
+      });
+      return;
     }
 
     fetch(`${config.apiUrl}/forgot_password`, {
@@ -49,9 +51,13 @@ class ForgotPassword extends React.Component {
       })
       .then((res) => {
         if (res.error) {
-          toast.error(res.error, { toastId: 'toast-forgot-password-email-error' });
+          toast.error(res.error, {
+            toastId: 'toast-forgot-password-email-error',
+          });
         } else {
-          toast.success(res.message, { toastId: 'toast-forgot-password-confirmation-code' });
+          toast.success(res.message, {
+            toastId: 'toast-forgot-password-confirmation-code',
+          });
           this.props.history.push('/reset-password');
         }
       })

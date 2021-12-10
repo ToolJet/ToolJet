@@ -53,9 +53,12 @@ describe('library apps controller', () => {
         .send({ identifier: 'non-existent-template' })
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
-      expect(response.body).toEqual({
-        error: 'Bad Request',
+      const { timestamp, ...restBody } = response.body;
+
+      expect(timestamp).toBeDefined();
+      expect(restBody).toEqual({
         message: 'App definition not found',
+        path: '/api/library_apps',
         statusCode: 400,
       });
     });
