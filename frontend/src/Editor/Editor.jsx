@@ -10,7 +10,6 @@ import { componentTypes } from './Components/components';
 import { Inspector } from './Inspector/Inspector';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
-import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
 import { SaveAndPreview } from './SaveAndPreview';
@@ -31,11 +30,16 @@ import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
+import toast from 'react-hot-toast';
+import { cloneDeep, isEqual, isEmpty } from 'lodash';
+import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
 import Logo from './Icons/logo.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 
+setAutoFreeze(false);
+enablePatches();
 class Editor extends React.Component {
   constructor(props) {
     super(props);
@@ -104,6 +108,7 @@ class Editor extends React.Component {
     this.fetchApp();
     this.fetchDataSources();
     this.fetchDataQueries();
+    this.initComponentVersioning();
     config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
     this.setState({
       currentSidebarTab: 2,
@@ -162,6 +167,17 @@ class Editor extends React.Component {
     this.setState({
       socket,
     });
+  };
+
+  // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
+  // 2. Whenever you perform an undo – you can always redo and keep doing undo as long as we have a patch for it.
+  // 3. Whenever you redo – you can always undo and keep doing redo as long as we have a patch for it.
+  initComponentVersioning = () => {
+    this.currentVersion = -1;
+    this.currentVersionChanges = {};
+    this.noOfVersionsSupported = 100;
+    this.canUndo = false;
+    this.canRedo = false;
   };
 
   fetchDataSources = () => {
@@ -305,13 +321,70 @@ class Editor extends React.Component {
     this.setState({ componentTypes: filteredComponents });
   };
 
+  handleAddPatch = (patches, inversePatches) => {
+    if (isEmpty(patches) && isEmpty(inversePatches)) return;
+    if (isEqual(patches, inversePatches)) return;
+    this.currentVersion++;
+    this.currentVersionChanges[this.currentVersion] = {
+      redo: patches,
+      undo: inversePatches,
+    };
+
+    this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion);
+    this.canRedo = this.currentVersionChanges.hasOwnProperty(this.currentVersion + 1);
+
+    delete this.currentVersionChanges[this.currentVersion + 1];
+    delete this.currentVersionChanges[this.currentVersion - this.noOfVersionsSupported];
+  };
+
+  handleUndo = () => {
+    if (this.canUndo) {
+      const appDefinition = applyPatches(
+        this.state.appDefinition,
+        this.currentVersionChanges[this.currentVersion--].undo
+      );
+
+      this.canUndo = this.currentVersionChanges.hasOwnProperty(this.currentVersion);
+      this.canRedo = true;
+
+      if (!appDefinition) return;
+      this.setState({
+        appDefinition,
+      });
+    }
+  };
+
+  handleRedo = () => {
+    if (this.canRedo) {
+      const appDefinition = applyPatches(
+        this.state.appDefinition,
+        this.currentVersionChanges[++this.currentVersion].redo
+      );
+
+      this.canUndo = true;
+      this.canRedo = this.currentVersionChanges.hasOwnProperty(this.currentVersion + 1);
+
+      if (!appDefinition) return;
+      this.setState({
+        appDefinition,
+      });
+    }
+  };
+
   appDefinitionChanged = (newDefinition) => {
+    produce(
+      this.state.appDefinition,
+      (draft) => {
+        draft.components = newDefinition.components;
+      },
+      this.handleAddPatch
+    );
     this.setState({ appDefinition: newDefinition });
     computeComponentState(this, newDefinition.components);
   };
 
   handleInspectorView = (component) => {
-    if (this.state.selectedComponent.hasOwnProperty('component')) {
+    if (this.state.selectedComponent?.hasOwnProperty('component')) {
       const { id: selectedComponentId } = this.state.selectedComponent;
       if (selectedComponentId === component.id) {
         this.setState({ selectedComponent: null });
@@ -325,8 +398,7 @@ class Editor extends React.Component {
   };
 
   removeComponent = (component) => {
-    let newDefinition = this.state.appDefinition;
-
+    let newDefinition = cloneDeep(this.state.appDefinition);
     // Delete child components when parent is deleted
     const childComponents = Object.keys(newDefinition.components).filter(
       (key) => newDefinition.components[key].parent === component.id
@@ -336,25 +408,31 @@ class Editor extends React.Component {
     });
 
     delete newDefinition.components[component.id];
+    toast('Component deleted! (⌘Z to undo)', {
+      icon: '🗑️',
+    });
     this.appDefinitionChanged(newDefinition);
     this.handleInspectorView(component);
   };
 
-  componentDefinitionChanged = (newDefinition) => {
+  componentDefinitionChanged = (componentDefinition) => {
     let _self = this;
 
-    return setStateAsync(_self, {
-      appDefinition: {
-        ...this.state.appDefinition,
-        components: {
-          ...this.state.appDefinition.components,
-          [newDefinition.id]: {
-            ...this.state.appDefinition.components[newDefinition.id],
-            component: newDefinition.component,
-          },
-        },
+    const newDefinition = {
+      appDefinition: produce(this.state.appDefinition, (draft) => {
+        draft.components[componentDefinition.id].component = componentDefinition.component;
+      }),
+    };
+
+    produce(
+      this.state.appDefinition,
+      (draft) => {
+        draft.components[componentDefinition.id].component = componentDefinition.component;
       },
-    });
+      this.handleAddPatch
+    );
+
+    return setStateAsync(_self, newDefinition);
   };
 
   componentChanged = (newComponent) => {
@@ -384,16 +462,15 @@ class Editor extends React.Component {
   saveApp = (id, attributes, notify = false) => {
     appService.saveApp(id, attributes).then(() => {
       if (notify) {
-        toast.success('App saved sucessfully', { hideProgressBar: true, position: 'top-center' });
+        toast.success('App saved sucessfully');
       }
     });
   };
 
   saveAppName = (id, name, notify = false) => {
     if (!name.trim()) {
-      toast.warn("App name can't be empty or whitespace", {
-        hideProgressBar: true,
-        position: 'top-center',
+      toast("App name can't be empty or whitespace", {
+        icon: '🚨',
       });
 
       this.setState({
@@ -440,13 +517,13 @@ class Editor extends React.Component {
     dataqueryService
       .del(this.state.selectedQuery.id)
       .then(() => {
-        toast.success('Query Deleted', { hideProgressBar: true, position: 'bottom-center' });
+        toast.success('Query Deleted');
         this.setState({ isDeletingDataQuery: false });
         this.dataQueriesChanged();
       })
       .catch(({ error }) => {
         this.setState({ isDeletingDataQuery: false });
-        toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+        toast.error(error);
       });
   };
 
@@ -511,9 +588,8 @@ class Editor extends React.Component {
               className="btn badge bg-azure-lt"
               onClick={() => {
                 runQuery(this, dataQuery.id, dataQuery.name).then(() => {
-                  toast.info(`Query (${dataQuery.name}) completed.`, {
-                    hideProgressBar: true,
-                    position: 'bottom-center',
+                  toast(`Query (${dataQuery.name}) completed.`, {
+                    icon: '🚀',
                   });
                 });
               }}
@@ -821,6 +897,8 @@ class Editor extends React.Component {
                         }
                         currentState={this.state.currentState}
                         configHandleClicked={this.configHandleClicked}
+                        handleUndo={this.handleUndo}
+                        handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
                         onComponentClick={(id, component) => {
                           this.setState({ selectedComponent: { id, component } });
@@ -996,7 +1074,9 @@ class Editor extends React.Component {
 
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
-                  {selectedComponent ? (
+                  {selectedComponent &&
+                  !isEmpty(appDefinition.components) &&
+                  !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
@@ -1004,7 +1084,7 @@ class Editor extends React.Component {
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
-                      allComponents={appDefinition.components}
+                      allComponents={cloneDeep(appDefinition.components)}
                       key={selectedComponent.id}
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
