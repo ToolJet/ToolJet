@@ -303,7 +303,7 @@ export const Container = ({
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
 
-    const x = (e.nativeEvent.offsetX) * 100 / canvasWidth;
+    const x = (e.nativeEvent.offsetX * 100) / canvasWidth;
 
     const elementIndex = commentsPreviewList.length;
     setCommentsPreviewList([
@@ -405,7 +405,7 @@ export const Container = ({
             <div
               key={index}
               style={{
-                transform: `translate(${previewComment.x * canvasWidth / 100}px, ${previewComment.y}px)`,
+                transform: `translate(${(previewComment.x * canvasWidth) / 100}px, ${previewComment.y}px)`,
               }}
             >
               <label className="form-selectgroup-item comment-preview-bubble">
