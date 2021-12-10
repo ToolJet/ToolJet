@@ -150,12 +150,12 @@ export function CodeHinter({
 
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
-      {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
       <div
         className={`code-hinter ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >
+        {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
         <CodeHinter.Portal
           isOpen={isOpen}
           callback={setIsOpen}
