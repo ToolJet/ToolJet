@@ -279,7 +279,7 @@
                 "properties": {
                   "text": { "value": "Name:" },
                   "visible": { "value": true },
-                  "loadingState": { "value": false }
+                  "loadingState": { "value": "{{false}}" }
                 },
                 "events": [],
                 "styles": { "textColor": { "value": "#000" } },
@@ -327,7 +327,7 @@
                 "properties": {
                   "text": { "value": "Organization:" },
                   "visible": { "value": true },
-                  "loadingState": { "value": false }
+                  "loadingState": { "value": "{{false}}" }
                 },
                 "events": [],
                 "styles": { "textColor": { "value": "#000" } },
@@ -375,7 +375,7 @@
                 "properties": {
                   "text": { "value": "Followers:" },
                   "visible": { "value": true },
-                  "loadingState": { "value": "" }
+                  "loadingState": { "value": "{{false}}" }
                 },
                 "events": [],
                 "styles": { "textColor": { "value": "#000" } },
@@ -890,7 +890,7 @@
               "properties": {
                 "text": { "value": "Name:" },
                 "visible": { "value": true },
-                "loadingState": { "value": false }
+                "loadingState": { "value": "{{false}}" }
               },
               "events": [],
               "styles": { "textColor": { "value": "#000" } },
@@ -938,7 +938,7 @@
               "properties": {
                 "text": { "value": "Organization:" },
                 "visible": { "value": true },
-                "loadingState": { "value": false }
+                "loadingState": { "value": "{{false}}" }
               },
               "events": [],
               "styles": { "textColor": { "value": "#000" } },
@@ -986,7 +986,7 @@
               "properties": {
                 "text": { "value": "Followers:" },
                 "visible": { "value": true },
-                "loadingState": { "value": "" }
+                "loadingState": { "value": "{{false}}" }
               },
               "events": [],
               "styles": { "textColor": { "value": "#000" } },
