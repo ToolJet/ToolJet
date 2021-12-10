@@ -31,7 +31,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
   if (id) {
     // Dragging within the canvas
 
-    x = Math.round((item.layouts[currentLayout].left * canvasWidth / 100) + delta.x);
+    x = Math.round((item.layouts[currentLayout].left * canvasWidth) / 100 + delta.x);
     y = Math.round(item.layouts[currentLayout].top + delta.y);
   } else {
     // New component being dragged  from components sidebar
@@ -47,7 +47,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
 
   x += realCanvasDelta;
 
-  console.log('cvv', canvasWidth, x)
+  console.log('cvv', canvasWidth, x);
 
   // x = (x * canvasWidth) / 100;
 
@@ -83,7 +83,9 @@ export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
 
   return (
     <div style={layerStyles}>
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout, canvasWidth)}>{renderItem()}</div>
+      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout, canvasWidth)}>
+        {renderItem()}
+      </div>
     </div>
   );
 };

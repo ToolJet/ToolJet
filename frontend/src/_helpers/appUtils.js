@@ -1,6 +1,11 @@
 import React from 'react';
 import { toast } from 'react-toastify';
-import { getDynamicVariables, resolveReferences, executeMultilineJS, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
+import {
+  getDynamicVariables,
+  resolveReferences,
+  executeMultilineJS,
+  serializeNestedObjectToQueryParams,
+} from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
@@ -411,7 +416,6 @@ export function previewQuery(_ref, query) {
   _ref.setState({ previewLoading: true });
 
   return new Promise(function (resolve, reject) {
-
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref.state.currentState, query.options.code);
@@ -504,12 +508,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
 
   return new Promise(function (resolve, reject) {
     _self.setState({ currentState: newState }, () => {
-
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
         queryExecutionPromise = executeMultilineJS(_self.state.currentState, query.options.code);
       } else {
-        queryExecutionPromise = dataqueryService.run(queryId, options)
+        queryExecutionPromise = dataqueryService.run(queryId, options);
       }
 
       queryExecutionPromise

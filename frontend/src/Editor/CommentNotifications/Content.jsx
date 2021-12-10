@@ -4,7 +4,7 @@ import { isEmpty } from 'lodash';
 import { pluralize } from '@/_helpers/utils';
 import moment from 'moment';
 import usePopover from '@/_hooks/use-popover';
-import { useSpring, animated } from 'react-spring';
+import { useSpring } from 'react-spring';
 import useRouter from '@/_hooks/use-router';
 
 import Spinner from '@/_ui/Spinner';
@@ -12,8 +12,8 @@ import Spinner from '@/_ui/Spinner';
 const Content = ({ notifications, loading }) => {
   const router = useRouter();
   const [selectedCommentId, setSelectedCommentId] = React.useState(router.query.commentId);
-  const [open, trigger, content] = usePopover(false);
-  const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
+  const [open, _trigger, _content] = usePopover(false);
+  const _popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
 
   React.useEffect(() => {
     if (router.query?.commentId) setSelectedCommentId(router.query?.commentId);

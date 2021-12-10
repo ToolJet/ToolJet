@@ -27,7 +27,7 @@ export class OauthService {
 
     if (newUserCreated) {
       const organizationUser = await this.organizationUsersService.create(user, organization);
-      this.organizationUsersService.activate(organizationUser);
+      await this.organizationUsersService.activate(organizationUser);
     }
     return user;
   }

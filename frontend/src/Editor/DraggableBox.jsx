@@ -59,8 +59,8 @@ export const DraggableBox = function DraggableBox({
   id,
   mode,
   title,
-  left,
-  top,
+  _left,
+  _top,
   parent,
   component,
   index,
@@ -80,7 +80,7 @@ export const DraggableBox = function DraggableBox({
   removeComponent,
   currentLayout,
   layouts,
-  deviceWindowWidth,
+  _deviceWindowWidth,
   isSelectedComponent,
   draggingStatusChanged,
   darkMode,
@@ -134,10 +134,10 @@ export const DraggableBox = function DraggableBox({
     padding: '0px',
   };
 
-  let refProps = {};
+  let _refProps = {};
 
   if (mode === 'edit' && canDrag) {
-    refProps = {
+    _refProps = {
       ref: drag,
     };
   }
@@ -162,7 +162,7 @@ export const DraggableBox = function DraggableBox({
   }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top, currentLayout]);
 
   const gridWidth = canvasWidth / 43;
-  const width = (canvasWidth * currentLayoutOptions.width) / 43
+  const width = (canvasWidth * currentLayoutOptions.width) / 43;
 
   return (
     <div
@@ -194,14 +194,14 @@ export const DraggableBox = function DraggableBox({
             onDrag={(e) => {
               e.preventDefault();
               e.stopImmediatePropagation();
-              setDragging(true)
+              setDragging(true);
             }}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
             disableDragging={mode !== 'edit'}
             onDragStop={(e, direction) => {
-              setDragging(false)
-              onDragStop(e, id, direction, currentLayout, currentLayoutOptions)
+              setDragging(false);
+              onDragStop(e, id, direction, currentLayout, currentLayoutOptions);
             }}
             cancel={`div.table-responsive.jet-data-table, div.calendar-widget`}
             onDragStart={(e) => e.stopPropagation()}
