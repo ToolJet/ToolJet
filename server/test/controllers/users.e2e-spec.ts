@@ -13,7 +13,44 @@ describe('users controller', () => {
 
   beforeAll(async () => {
     app = await createNestAppInstance();
-    jest.setTimeout(10000);
+  });
+
+  describe('change password', () => {
+    it('should allow users to update their password', async () => {
+      const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+      const { user, orgUser } = userData;
+
+      const oldPassword = user.password;
+
+      const response = await request(app.getHttpServer())
+        .patch('/api/users/change_password')
+        .set('Authorization', authHeaderForUser(user))
+        .send({ currentPassword: 'password', newPassword: 'new password' });
+
+      expect(response.statusCode).toBe(200);
+
+      await user.reload();
+
+      expect(user.password).not.toEqual(oldPassword);
+    });
+
+    it('should not allow users to update their password if entered current password is wrong', async () => {
+      const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+      const { user, orgUser } = userData;
+
+      const oldPassword = user.password;
+
+      const response = await request(app.getHttpServer())
+        .patch('/api/users/change_password')
+        .set('Authorization', authHeaderForUser(user))
+        .send({ currentPassword: 'wrong password', newPassword: 'new password' });
+
+      expect(response.statusCode).toBe(403);
+
+      await user.reload();
+
+      expect(user.password).toEqual(oldPassword);
+    });
   });
 
   describe('update user', () => {
