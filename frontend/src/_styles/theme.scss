@@ -289,13 +289,16 @@ input, button {
       overflow-x: hidden;
 
       .component-image-holder {
-        background: rgb(244, 246, 250);
         border-radius: 0;
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: 1px solid #D2DDEC;
+        box-sizing: border-box;
+        border-radius: 4px;
 
         img {
           margin: 0 auto;
-          padding: 12px;
+          width: 18px;
+          height: 18px;
         }
 
         &:hover {

@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-browser" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <rect x="4" y="4" width="16" height="16" rx="1" />
-  <line x1="4" y1="8" x2="20" y2="8" />
-  <line x1="8" y1="4" x2="8" y2="8" />
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 1V19" stroke="#61656F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16 1V19" stroke="#61656F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M1 4H19" stroke="#61656F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M7.6 7H12.4C12.5591 7 12.7117 7.06321 12.8243 7.17574C12.9368 7.28826 13 7.44087 13 7.6V12.4C13 12.5591 12.9368 12.7117 12.8243 12.8243C12.7117 12.9368 12.5591 13 12.4 13H7.6C7.44087 13 7.28826 12.9368 7.17574 12.8243C7.06321 12.7117 7 12.5591 7 12.4V7.6C7 7.44087 7.06321 7.28826 7.17574 7.17574C7.28826 7.06321 7.44087 7 7.6 7V7Z" fill="#61656F"/>
+<path d="M1 16H19" stroke="#61656F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
-
-
