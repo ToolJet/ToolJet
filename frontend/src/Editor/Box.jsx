@@ -156,8 +156,8 @@ export const Box = function Box({
               <center>
                 <div
                   style={{
-                    width: '18px',
-                    height: '18px',
+                    width: '20px',
+                    height: '20px',
                     backgroundSize: 'contain',
                     backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
                     backgroundRepeat: 'no-repeat',
