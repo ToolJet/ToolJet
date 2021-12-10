@@ -2787,6 +2787,9 @@ input[type='text'] {
 
 .app-name:hover {
   background: $bg-light;
+  &.dark {
+    @extend .bg-dark;
+  }
 }
 
 .layout-buttons {
