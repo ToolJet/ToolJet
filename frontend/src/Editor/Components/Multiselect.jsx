@@ -10,8 +10,13 @@ export const Multiselect = function Multiselect({
   setExposedVariable,
   fireEvent,
 }) {
-  const { label, values, display_values } = properties;
+  const { label, value, values, display_values } = properties;
   const { visibility, disabledState } = styles;
+
+  useEffect(() => {
+    setExposedVariable('values', value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [currentValue, setCurrentValue] = useState(() => properties.value);
   let selectOptions = [];
