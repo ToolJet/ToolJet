@@ -1,5 +1,5 @@
 import React from 'react';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import {
   getDynamicVariables,
   resolveReferences,
@@ -98,7 +98,7 @@ export function onQueryCancel(_ref) {
 async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!', { hideProgressBar: true, autoClose: 3000 });
+    toast.success('Copied to clipboard!');
   } catch (err) {
     console.log('Failed to copy!', err);
   }
@@ -135,7 +135,20 @@ function executeAction(_ref, event, mode) {
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState);
-        toast(message, { hideProgressBar: true, type: event.alertType });
+        switch (event.alertType) {
+          case 'success':
+          case 'error':
+            toast[event.alertType](message);
+            break;
+          case 'info':
+            toast(message);
+            break;
+          case 'warning':
+            toast(message, {
+              icon: '⚠️',
+            });
+            break;
+        }
         return Promise.resolve();
       }
 
@@ -434,11 +447,7 @@ export function previewQuery(_ref, query) {
         _ref.setState({ previewLoading: false, queryPreviewData: finalData });
         switch (data.status) {
           case 'failed': {
-            toast.error(`${data.message}: ${data.description}`, {
-              position: 'bottom-center',
-              hideProgressBar: true,
-              autoClose: 10000,
-            });
+            toast.error(`${data.message}: ${data.description}`);
             break;
           }
           case 'needs_oauth': {
@@ -447,9 +456,8 @@ export function previewQuery(_ref, query) {
             break;
           }
           case 'ok': {
-            toast.info(`Query completed.`, {
-              hideProgressBar: true,
-              position: 'bottom-center',
+            toast(`Query completed.`, {
+              icon: '🚀',
             });
             break;
           }
@@ -459,7 +467,7 @@ export function previewQuery(_ref, query) {
       })
       .catch(({ error, data }) => {
         _ref.setState({ previewLoading: false, queryPreviewData: data });
-        toast.error(error, { hideProgressBar: true, autoClose: 3000 });
+        toast.error(error);
         reject({ error, data });
       });
   });
@@ -472,7 +480,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
-    toast.error('No query has been associated with the action.', { hideProgressBar: true, autoClose: 3000 });
+    toast.error('No query has been associated with the action.');
     return;
   }
 
@@ -589,18 +597,14 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           }
 
           if (dataQuery.options.showSuccessNotification) {
-            const notificationDuration = dataQuery.options.notificationDuration || 5;
+            const notificationDuration = dataQuery.options.notificationDuration || 5000;
             toast.success(dataQuery.options.successMessage, {
-              hideProgressBar: true,
-              autoClose: notificationDuration * 1000,
+              duration: notificationDuration,
             });
           }
 
           if (dataQuery.options.requestConfirmation) {
-            toast.info(`Query (${dataQuery.name}) completed.`, {
-              hideProgressBar: true,
-              position: 'bottom-center',
-            });
+            toast(`Query (${dataQuery.name}) completed.`);
           }
 
           _self.setState(
@@ -625,7 +629,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           );
         })
         .catch(({ error }) => {
-          toast.error(error, { hideProgressBar: true, autoClose: 3000 });
+          toast.error(error);
           _self.setState(
             {
               currentState: {
