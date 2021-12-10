@@ -2711,7 +2711,9 @@ input[type='text'] {
   .modal-body {
     width: 500px!important;
     height: 300px!important;
-    padding: 0px!important
+    padding: 0px!important;
+    margin: 0px!important;
+    margin-left: -1px!important; //fix the modal body code mirror margin
   }
   
   .modal-dialog {
@@ -2746,6 +2748,7 @@ input[type='text'] {
   border-bottom: 1px solid #0000000d;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
+  width: 499px!important;
 }
 .tabs-inspector {
   .nav-item {
