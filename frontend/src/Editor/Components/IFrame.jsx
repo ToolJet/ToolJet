@@ -1,31 +1,11 @@
 import React from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const IFrame = function IFrame({ id, width, height, component, onComponentClick, currentState }) {
-  const source = component.definition.properties.source.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+export const IFrame = function IFrame({ width, height, properties, styles }) {
+  const source = properties.source;
+  const { visibility, disabledState } = styles;
 
   return (
-    <div
-      data-disabled={parsedDisabledState}
-      style={{ display: parsedWidgetVisibility ? '' : 'none' }}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
-    >
+    <div data-disabled={disabledState} style={{ display: visibility ? '' : 'none' }}>
       <iframe
         width={width - 4}
         height={height}
