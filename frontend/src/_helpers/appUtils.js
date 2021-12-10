@@ -135,7 +135,20 @@ function executeAction(_ref, event, mode) {
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState);
-        toast(message);
+        switch (event.alertType) {
+          case 'success':
+          case 'error':
+            toast[event.alertType](message);
+            break;
+          case 'info':
+            toast(message);
+            break;
+          case 'warning':
+            toast(message, {
+              icon: '⚠️',
+            });
+            break;
+        }
         return Promise.resolve();
       }
 
