@@ -1,38 +1,33 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-export const TextInput = function TextInput({
-  height,
-  validate,
-  properties,
-  exposedVariables,
-  styles,
-  setExposedVariable,
-}) {
-  useEffect(() => {
-    setExposedVariable('value', properties.value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value]);
-
-  const validationData = validate(exposedVariables.value);
-  const { isValid, validationError } = validationData;
+export const TextInput = function TextInput({ height, validate, properties, styles, setExposedVariable }) {
+  const [value, setValue] = useState(properties.value);
+  const { isValid, validationError } = validate(value);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
+  useEffect(() => {
+    setValue(properties.value);
+    setExposedVariable('value', properties.value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.value]);
+
   return (
     <div>
       <input
         disabled={styles.disabledState}
         onChange={(e) => {
+          setValue(e.target.value);
           setExposedVariable('value', e.target.value);
         }}
         type="text"
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
         placeholder={properties.placeholder}
         style={{ height, display: styles.visibility ? '' : 'none' }}
-        value={exposedVariables.value}
+        value={value}
       />
       <div className="invalid-feedback">{validationError}</div>
     </div>
