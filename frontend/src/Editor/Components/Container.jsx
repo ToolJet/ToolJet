@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 
-export const Container = function Container({ id, component, width, height, containerProps, removeComponent, styles }) {
+export const Container = function Container({ id, width, height, containerProps, removeComponent, styles }) {
   const { backgroundColor, visibility, disabledState } = styles;
 
   const computedStyles = {
@@ -14,14 +14,7 @@ export const Container = function Container({ id, component, width, height, cont
   const parentRef = useRef(null);
 
   return (
-    <div
-      data-disabled={disabledState}
-      className="jet-container"
-      id={id}
-      ref={parentRef}
-      onClick={() => containerProps.onComponentClick(id, component)}
-      style={computedStyles}
-    >
+    <div data-disabled={disabledState} className="jet-container" id={id} ref={parentRef} style={computedStyles}>
       <SubContainer
         containerCanvasWidth={width}
         parent={id}
