@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
-export const DropDown = function DropDown({
-  height,
-  component,
-  currentState,
-  validate,
-  properties,
-  styles,
-  setExposedVariable,
-  fireEvent,
-}) {
-  console.log('currentState', currentState);
-
+export const DropDown = function DropDown({ height, validate, properties, styles, setExposedVariable, fireEvent }) {
   const { label, value, display_values, values } = properties;
   const { visibility, disabledState } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
@@ -32,11 +21,10 @@ export const DropDown = function DropDown({
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
-  const currentValidState = currentState?.components[component?.name]?.isValid;
-
-  if (currentValidState !== isValid) {
+  useEffect(() => {
     setExposedVariable('isValid', isValid);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
   useEffect(() => {
     setCurrentValue(value);
