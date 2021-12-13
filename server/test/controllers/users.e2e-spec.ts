@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
-import { getConnection } from 'typeorm';
+import { getManager } from 'typeorm';
+import { User } from 'src/entities/user.entity';
 
 describe('users controller', () => {
   let app: INestApplication;
@@ -18,7 +18,7 @@ describe('users controller', () => {
   describe('change password', () => {
     it('should allow users to update their password', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-      const { user, orgUser } = userData;
+      const { user } = userData;
 
       const oldPassword = user.password;
 
@@ -29,14 +29,13 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(200);
 
-      await user.reload();
-
-      expect(user.password).not.toEqual(oldPassword);
+      const updatedUser = await getManager().findOne(User, { email: user.email });
+      expect(updatedUser.password).not.toEqual(oldPassword);
     });
 
     it('should not allow users to update their password if entered current password is wrong', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
-      const { user, orgUser } = userData;
+      const { user } = userData;
 
       const oldPassword = user.password;
 
@@ -47,9 +46,8 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(403);
 
-      await user.reload();
-
-      expect(user.password).toEqual(oldPassword);
+      const updatedUser = await getManager().findOne(User, { email: user.email });
+      expect(updatedUser.password).toEqual(oldPassword);
     });
   });
 
@@ -67,10 +65,9 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(200);
 
-      await user.reload();
-
-      expect(user.firstName).toEqual(firstName);
-      expect(user.lastName).toEqual(lastName);
+      const updatedUser = await getManager().findOne(User, { email: user.email });
+      expect(updatedUser.firstName).toEqual(firstName);
+      expect(updatedUser.lastName).toEqual(lastName);
     });
   });
 
