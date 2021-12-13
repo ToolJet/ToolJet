@@ -27,9 +27,7 @@ export const Tabs = function Tabs({
   const [currentTab, setCurrentTab] = useState(() => properties.defaultTab);
 
   useEffect(() => {
-    if (!currentTab) {
-      setCurrentTab(properties.defaultTab);
-    }
+    setCurrentTab(properties.defaultTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.defaultTab]);
 
