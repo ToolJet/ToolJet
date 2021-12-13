@@ -23,7 +23,7 @@ const OAuth = ({
           { name: 'None', value: 'none' },
           { name: 'OAuth 2.0', value: 'oauth2' },
         ]}
-        value={grant_type}
+        value={auth_type}
         onChange={(value) => optionchanged('auth_type', value)}
       />
       <Authentication
