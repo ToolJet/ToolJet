@@ -3,17 +3,14 @@ import React, { useEffect } from 'react';
 export const RadioButton = function RadioButton({
   id,
   height,
-  component,
-  currentState,
   properties,
   styles,
   fireEvent,
+  exposedVariables,
   setExposedVariable,
 }) {
   const { label, value, values, display_values } = properties;
   const { visibility, disabledState, textColor } = styles;
-
-  const currentValue = currentState?.components[component?.name]?.value ?? value;
 
   let selectOptions = [];
 
@@ -48,7 +45,7 @@ export const RadioButton = function RadioButton({
             <input
               style={{ marginTop: '1px' }}
               className="form-check-input"
-              checked={currentValue === option.value}
+              checked={exposedVariables.value === option.value}
               type="radio"
               value={option.value}
               name={`${id}-radio-options`}
