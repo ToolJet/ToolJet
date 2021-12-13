@@ -5,6 +5,7 @@ import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-toastify';
 import AppList from './AppList';
+import { SearchBox } from '@/_components/SearchBox';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -21,6 +22,7 @@ class HomePage extends React.Component {
       isImportingApp: false,
       currentFolder: {},
       currentPage: 1,
+      appSearchKey: '',
       showAppDeletionConfirmation: false,
       apps: [],
       folders: [],
@@ -36,14 +38,16 @@ class HomePage extends React.Component {
     this.fetchFolders();
   }
 
-  fetchApps = (page = 1, folder) => {
+  fetchApps = (page = 1, folder, searchKey) => {
+    const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
     this.setState({
       apps: [],
       isLoading: true,
       currentPage: page,
+      appSearchKey,
     });
 
-    appService.getAll(page, folder).then((data) =>
+    appService.getAll(page, folder, appSearchKey).then((data) =>
       this.setState({
         apps: data.apps,
         meta: { ...this.state.meta, ...data.meta },
@@ -70,11 +74,12 @@ class HomePage extends React.Component {
   };
 
   folderChanged = (folder) => {
-    this.setState({ currentFolder: folder });
-    this.fetchApps(1, folder.id);
+    this.setState({ currentFolder: folder, appSearchKey: '' });
+    this.fetchApps(1, folder.id, '');
   };
 
   foldersChanged = () => {
+    this.setState({ appSearchKey: '' });
     this.fetchFolders();
   };
 
@@ -300,6 +305,10 @@ class HomePage extends React.Component {
     return this.state.currentFolder.id ? this.state.meta.folder_count : this.state.meta.total_count;
   };
 
+  onSearchSubmit = (key) => {
+    this.fetchApps(1, this.state.currentFolder.id, key || '');
+  };
+
   render() {
     const {
       apps,
@@ -345,6 +354,7 @@ class HomePage extends React.Component {
                   <>
                     <div className="col-2 ms-auto d-print-none"></div>
                     <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
+                      <SearchBox onSubmit={this.onSearchSubmit} initialValue={this.state.appSearchKey} />
                       <button
                         className={'btn btn-default d-none d-lg-inline mb-3 me-2'}
                         onChange={this.handleImportApp}

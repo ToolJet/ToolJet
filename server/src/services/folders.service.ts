@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { createQueryBuilder, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
 import { UsersService } from './users.service';
@@ -85,7 +85,7 @@ export class FoldersService {
     return await this.foldersRepository.findOneOrFail(folderId);
   }
 
-  async userAppCount(user: User, folder: Folder) {
+  async userAppCount(user: User, folder: Folder, searchKey: string) {
     const folderApps = await this.folderAppsRepository.find({
       where: {
         folderId: folder.id,
@@ -106,16 +106,21 @@ export class FoldersService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere(
-        '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
-          'OR viewable_apps.user_id = :userId',
-        {
-          value: true,
-          organizationId: user.organizationId,
-          userId: user.id,
-        }
+      .where('LOWER(viewable_apps.name) like :searchKey', { searchKey: `%${searchKey && searchKey.toLowerCase()}%` })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere(
+              '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
+                'OR viewable_apps.user_id = :userId',
+              {
+                value: true,
+                organizationId: user.organizationId,
+                userId: user.id,
+              }
+            );
+        })
       );
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
@@ -138,7 +143,7 @@ export class FoldersService {
       .getCount();
   }
 
-  async getAppsFor(user: User, folder: Folder, page: number): Promise<App[]> {
+  async getAppsFor(user: User, folder: Folder, page: number, searchKey: string): Promise<App[]> {
     const folderApps = await this.folderAppsRepository.find({
       where: {
         folderId: folder.id,
@@ -159,16 +164,21 @@ export class FoldersService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere(
-        '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
-          'OR viewable_apps.user_id = :userId',
-        {
-          value: true,
-          organizationId: user.organizationId,
-          userId: user.id,
-        }
+      .where('LOWER(viewable_apps.name) like :searchKey', { searchKey: `%${searchKey && searchKey.toLowerCase()}%` })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere(
+              '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
+                'OR viewable_apps.user_id = :userId',
+              {
+                value: true,
+                organizationId: user.organizationId,
+                userId: user.id,
+              }
+            );
+        })
       );
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
@@ -190,13 +200,9 @@ export class FoldersService {
       })
       .take(10)
       .skip(10 * (page - 1))
-      // .orderBy('apps.created_at', 'DESC')
+      .orderBy('apps.createdAt', 'DESC')
       .getMany();
 
-    // FIXME:
-    // TypeORM gives error when using query builder with order by
-    // https://github.com/typeorm/typeorm/issues/8213
-    // hence sorting results in memory
-    return viewableAppsInFolder.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return viewableAppsInFolder;
   }
 }
