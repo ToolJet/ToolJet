@@ -1,58 +1,34 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
 // Use plotly basic bundle
 import Plotly from 'plotly.js-basic-dist-min';
 import createPlotlyComponent from 'react-plotly.js/factory';
 const Plot = createPlotlyComponent(Plotly);
 
-export const Chart = function Chart({ id, width, height, component, onComponentClick, currentState, darkMode }) {
+export const Chart = function Chart({ width, height, darkMode, properties, styles }) {
   const [loadingState, setLoadingState] = useState(false);
 
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  let parsedWidgetVisibility = widgetVisibility;
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  const { visibility, disabledState } = styles;
+  const { title, markerColor, showGridLines, type, data } = properties;
 
   useEffect(() => {
-    const loadingStateProperty = component.definition.properties.loadingState;
-    if (loadingStateProperty && currentState) {
-      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
-      setLoadingState(newState);
+    const loadingStateProperty = properties.loadingState;
+    if (loadingStateProperty != undefined) {
+      setLoadingState(loadingStateProperty);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState]);
+  }, [properties.loadingState]);
 
   const computedStyles = {
     width: width - 4,
     height,
-    display: parsedWidgetVisibility ? '' : 'none',
+    display: visibility ? '' : 'none',
     background: darkMode ? '#1f2936' : 'white',
   };
 
-  // darkMode ? '#1f2936' : 'white'
-  const dataProperty = component.definition.properties.data;
-  const dataString = dataProperty ? dataProperty.value : [];
+  const dataString = data ?? [];
 
-  const titleProperty = component.definition.properties.title;
-  const title = titleProperty.value;
+  const chartType = type;
 
-  const typeProperty = component.definition.properties.type;
-  const chartType = typeProperty.value;
-
-  const markerColorProperty = component.definition.properties.markerColor;
-  const markerColor = markerColorProperty ? markerColorProperty.value : 'red';
-
-  const gridLinesProperty = component.definition.properties.showGridLines;
-  const showGridLines = gridLinesProperty ? gridLinesProperty.value : true;
   const fontColor = darkMode ? '#c3c3c3' : null;
 
   const layout = {
@@ -83,8 +59,6 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
       color: fontColor,
     },
   };
-
-  const data = resolveReferences(dataString, currentState, []);
 
   const computeChartData = (data, dataString) => {
     let rawData = data;
@@ -128,14 +102,7 @@ export const Chart = function Chart({ id, width, height, component, onComponentC
   const memoizedChartData = useMemo(() => computeChartData(data, dataString), [data, dataString]);
 
   return (
-    <div
-      data-disabled={parsedDisabledState}
-      style={computedStyles}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
-    >
+    <div data-disabled={disabledState} style={computedStyles}>
       {loadingState === true ? (
         <div style={{ width }} className="p-2">
           <center>
