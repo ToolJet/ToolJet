@@ -8,18 +8,18 @@ export const TextInput = function TextInput({
   styles,
   setExposedVariable,
 }) {
-  const validationData = validate(properties.value);
+  useEffect(() => {
+    setExposedVariable('value', properties.value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.value]);
+
+  const validationData = validate(exposedVariables.value);
   const { isValid, validationError } = validationData;
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
-
-  useEffect(() => {
-    setExposedVariable('value', properties.value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value]);
 
   return (
     <div>
