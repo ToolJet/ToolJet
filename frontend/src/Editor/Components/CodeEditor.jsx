@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/addon/comment/comment';
 import 'codemirror/addon/hint/show-hint';
@@ -10,26 +10,11 @@ import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
 import { onBeforeChange, handleChange } from '../CodeBuilder/utils';
 
-export const CodeEditor = ({
-  width,
-  height,
-  component,
-  currentState,
-  darkMode,
-  properties,
-  styles,
-  setExposedVariable,
-}) => {
+export const CodeEditor = ({ width, height, darkMode, properties, styles, exposedVariables, setExposedVariable }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const { visibility, disabledState } = styles;
 
-  const value = currentState?.components[component?.name]?.value;
-
-  const [editorValue, setEditorValue] = useState(value);
-  const [realState, setRealState] = useState(currentState);
-
   function codeChanged(code) {
-    setEditorValue(code);
     setExposedVariable('value', code);
   }
 
@@ -52,13 +37,7 @@ export const CodeEditor = ({
 
   function valueChanged(editor, onChange, ignoreBraces = false) {
     handleChange(editor, onChange, [], ignoreBraces);
-    setEditorValue(editor.getValue());
   }
-
-  useEffect(() => {
-    setRealState(currentState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components]);
 
   return (
     <div data-disabled={disabledState} style={editorStyles}>
@@ -67,8 +46,7 @@ export const CodeEditor = ({
         style={{ height: height || 'auto', minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }}
       >
         <CodeMirror
-          value={editorValue}
-          realState={realState}
+          value={exposedVariables.value}
           scrollbarStyle={null}
           height={height - 1}
           onBlur={(editor) => {
