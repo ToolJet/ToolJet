@@ -14,11 +14,18 @@ export const Multiselect = function Multiselect({
   const { visibility, disabledState } = styles;
 
   useEffect(() => {
-    setExposedVariable('values', value);
+    setExposedVariable('values', []);
+    setCurrentValue([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [JSON.stringify(properties.values)]);
 
-  const [currentValue, setCurrentValue] = useState(() => properties.value);
+  useEffect(() => {
+    setExposedVariable('values', value);
+    setCurrentValue(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(value)]);
+
+  const [currentValue, setCurrentValue] = useState(() => value);
   let selectOptions = [];
   try {
     selectOptions = [
@@ -31,7 +38,7 @@ export const Multiselect = function Multiselect({
   }
 
   useEffect(() => {
-    if (properties.value && !currentValue) {
+    if (value && !currentValue) {
       setCurrentValue(properties.value);
     }
 
@@ -39,7 +46,7 @@ export const Multiselect = function Multiselect({
       setCurrentValue(properties.value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value]);
+  }, [value]);
 
   const handleChange = (value) => {
     setCurrentValue(value);
