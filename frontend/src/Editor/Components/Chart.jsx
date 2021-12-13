@@ -5,7 +5,7 @@ import Plotly from 'plotly.js-basic-dist-min';
 import createPlotlyComponent from 'react-plotly.js/factory';
 const Plot = createPlotlyComponent(Plotly);
 
-export const Chart = function Chart({ width, height, currentState, darkMode, properties, styles }) {
+export const Chart = function Chart({ width, height, darkMode, properties, styles }) {
   const [loadingState, setLoadingState] = useState(false);
 
   const { visibility, disabledState } = styles;
@@ -13,10 +13,10 @@ export const Chart = function Chart({ width, height, currentState, darkMode, pro
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
-    if (loadingStateProperty || currentState) {
+    if (loadingStateProperty != undefined) {
       setLoadingState(loadingStateProperty);
     }
-  }, [currentState, properties.loadingState]);
+  }, [properties.loadingState]);
 
   const computedStyles = {
     width: width - 4,
