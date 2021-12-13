@@ -16,7 +16,7 @@ export const Modal = function Modal({
   exposedVariables,
   setExposedVariable,
 }) {
-  const [show, showModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const parentRef = useRef(null);
 
   const title = properties.title ?? '';
@@ -26,27 +26,27 @@ export const Modal = function Modal({
 
   useEffect(() => {
     const canShowModel = exposedVariables.show ?? false;
-    showModal(canShowModel);
+    setShowModal(canShowModel);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
   function hideModal() {
     setExposedVariable('show', false);
-    showModal(false);
+    setShowModal(false);
   }
 
   return (
     <div data-disabled={disabledState}>
       <BootstrapModal
         contentClassName="modal-component"
-        show={show}
+        show={showModal}
         container={document.getElementsByClassName('canvas-area')[0]}
         size={size}
         backdrop={true}
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onEscapeKeyDown={() => showModal(false)}
+        onEscapeKeyDown={() => setShowModal(false)}
       >
         {containerProps.mode === 'edit' && (
           <ConfigHandle id={id} component={component} configHandleClicked={containerProps.onComponentClick} />
