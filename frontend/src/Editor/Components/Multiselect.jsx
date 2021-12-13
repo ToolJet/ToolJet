@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
@@ -14,10 +15,14 @@ export const Multiselect = function Multiselect({
   const { visibility, disabledState } = styles;
 
   useEffect(() => {
-    setExposedVariable('values', []);
-    setCurrentValue([]);
+    let newValues = [];
+
+    if (_.intersection(values, value).length === value.length) newValues = value;
+
+    setExposedVariable('values', newValues);
+    setCurrentValue(newValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(properties.values)]);
+  }, [JSON.stringify(values)]);
 
   useEffect(() => {
     setExposedVariable('values', value);
