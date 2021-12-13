@@ -17,7 +17,7 @@ export const Multiselect = function Multiselect({
   useEffect(() => {
     let newValues = [];
 
-    if (_.intersection(values, value).length === value.length) newValues = value;
+    if (_.intersection(values, value)?.length === value?.length) newValues = value;
 
     setExposedVariable('values', newValues);
     setCurrentValue(newValues);
