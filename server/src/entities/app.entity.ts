@@ -88,10 +88,10 @@ export class App extends BaseEntity {
   public editingVersion;
 
   @AfterInsert()
-  updateSlug(): void {
+  async updateSlug(): Promise<void> {
     if (!this.slug) {
       const appRepository = getRepository(App);
-      appRepository.update(this.id, { slug: this.id });
+      await appRepository.update(this.id, { slug: this.id });
     }
   }
 

@@ -43,7 +43,12 @@ export const CodeEditor = ({ width, height, darkMode, properties, styles, expose
     <div data-disabled={disabledState} style={editorStyles}>
       <div
         className={`code-hinter codehinter-default-input code-editor-widget`}
-        style={{ height: height || 'auto', minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }}
+        style={{
+          height: height || 'auto',
+          minHeight: height - 1,
+          maxHeight: '320px',
+          overflow: 'auto',
+        }}
       >
         <CodeMirror
           value={exposedVariables.value}
