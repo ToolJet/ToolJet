@@ -28,12 +28,18 @@ export const DropDown = function DropDown({ height, validate, properties, styles
 
   useEffect(() => {
     setCurrentValue(value);
+    setExposedVariable('value', value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   useEffect(() => {
-    setExposedVariable('value', currentValue).then(() => fireEvent('onSelect'));
+    let newValue = undefined;
+    if (values?.includes(value)) newValue = value;
+
+    setCurrentValue(newValue);
+    setExposedVariable('value', newValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
+  }, [JSON.stringify(values)]);
 
   return (
     <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
@@ -50,6 +56,7 @@ export const DropDown = function DropDown({ height, validate, properties, styles
           search={true}
           onChange={(newVal) => {
             setCurrentValue(newVal);
+            setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
           }}
           filterOptions={fuzzySearch}
           placeholder="Select.."
