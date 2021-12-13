@@ -242,7 +242,6 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   renderQueryEditorIcon = () => {
-    console.log(this.props.queryPaneHeight);
     if (this.props.queryPaneHeight >= 80) {
       return (
         <span
