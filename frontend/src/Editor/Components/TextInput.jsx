@@ -1,25 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export const TextInput = function TextInput({
   height,
-  component,
-  currentState,
   validate,
   properties,
   exposedVariables,
   styles,
   setExposedVariable,
 }) {
-  const value = currentState?.components[component?.name]?.value;
-  const currentValidState = currentState?.components[component?.name]?.isValid;
-
-  const validationData = validate(value);
-
+  const validationData = validate(properties.value);
   const { isValid, validationError } = validationData;
 
-  if (currentValidState !== isValid) {
+  useEffect(() => {
     setExposedVariable('isValid', isValid);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
+
+  useEffect(() => {
+    setExposedVariable('value', properties.value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.value]);
 
   return (
     <div>
