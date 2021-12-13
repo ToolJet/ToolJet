@@ -6,14 +6,11 @@ import 'react-dates/initialize';
 
 export const DaterangePicker = function DaterangePicker({
   height,
-  currentState,
   properties,
   styles,
   exposedVariables,
   setExposedVariable,
 }) {
-  console.log('currentState', currentState);
-
   const { visibility, disabledState } = styles;
 
   const startDateProp = exposedVariables.startDate;
