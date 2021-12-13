@@ -24,23 +24,39 @@ class InvitationPage extends React.Component {
     const { password, organization, newSignup, firstName, lastName, password_confirmation } = this.state;
     this.setState({ isLoading: true });
 
-    if(!password || !password_confirmation || !password.trim() || !password_confirmation.trim()) {
+    if (!password || !password_confirmation || !password.trim() || !password_confirmation.trim()) {
       this.setState({ isLoading: false });
-      toast.error("Password shouldn't be empty or contain white space(s)", { hideProgressBar: true, position: 'top-center' });
+      toast.error("Password shouldn't be empty or contain white space(s)", {
+        hideProgressBar: true,
+        position: 'top-center',
+      });
       return;
     }
 
-    if(password !== password_confirmation) {
+    if (password !== password_confirmation) {
       this.setState({ isLoading: false });
-      toast.error("Passwords don't match", { hideProgressBar: true, position: 'top-center' });
+      toast.error("Passwords don't match", {
+        hideProgressBar: true,
+        position: 'top-center',
+      });
       return;
     }
 
     userService
-      .setPasswordFromToken({ token, password, organization, newSignup, firstName, lastName })
+      .setPasswordFromToken({
+        token,
+        password,
+        organization,
+        newSignup,
+        firstName,
+        lastName,
+      })
       .then(() => {
         this.setState({ isLoading: false });
-        toast.success('Password has been set successfully.', { hideProgressBar: true, position: 'top-center' });
+        toast.success('Password has been set successfully.', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
         this.props.history.push('/login');
       })
       .catch(({ error }) => {
@@ -57,7 +73,7 @@ class InvitationPage extends React.Component {
         <div className="container-tight py-2">
           <div className="text-center mb-4">
             <a href=".">
-              <img src="/assets/images/logo-text.svg" height="30" alt="" />
+              <img src="/assets/images/logo-color.svg" height="30" alt="" />
             </a>
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">

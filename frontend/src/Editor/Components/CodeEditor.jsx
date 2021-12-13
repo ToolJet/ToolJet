@@ -38,7 +38,6 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
   }
 
   const styles = {
-    width: width,
     height: height,
     display: !parsedWidgetVisibility ? 'none' : 'block',
   };
@@ -68,7 +67,12 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
     <div data-disabled={parsedDisabledState} style={styles}>
       <div
         className={`code-hinter codehinter-default-input code-editor-widget`}
-        style={{ height: height || 'auto', minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }}
+        style={{
+          height: height || 'auto',
+          minHeight: height - 1,
+          maxHeight: '320px',
+          overflow: 'auto',
+        }}
       >
         <CodeMirror
           value={editorValue}

@@ -8,7 +8,10 @@ class Switch extends React.Component {
     return (
       <label className="form-switch form-check-inline">
         <input
-          style={{ backgroundColor: on ? `${color}` : 'white', marginTop: '0px' }}
+          style={{
+            backgroundColor: on ? `${color}` : 'white',
+            marginTop: '0px',
+          }}
           disabled={disabledState}
           className="form-check-input"
           type="checkbox"
@@ -38,7 +41,7 @@ export const ToggleSwitch = ({
   const textColor = textColorProperty ? textColorProperty.value : '#000';
   const widgetVisibility = component.definition.styles.visibility?.value ?? true;
   const disabledState = component.definition.styles.disabledState?.value ?? false;
-  
+
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
