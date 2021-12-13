@@ -75,7 +75,6 @@ describe('users controller', () => {
   });
 
   afterAll(async () => {
-    await getConnection().close();
     await app.close();
   });
 });
