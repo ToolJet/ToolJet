@@ -13,6 +13,7 @@ export const Modal = function Modal({
   darkMode,
   properties,
   styles,
+  exposedVariables,
   setExposedVariable,
 }) {
   const [show, showModal] = useState(false);
@@ -24,11 +25,10 @@ export const Modal = function Modal({
   const { disabledState } = styles;
 
   useEffect(() => {
-    const componentState = containerProps.currentState.components[component.name];
-    const canShowModel = componentState ? componentState.show : false;
+    const canShowModel = exposedVariables.show ?? false;
     showModal(canShowModel);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerProps.currentState.components[component.name]]);
+  }, [exposedVariables.show]);
 
   function hideModal() {
     setExposedVariable('show', false);
