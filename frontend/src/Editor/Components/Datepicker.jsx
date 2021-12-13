@@ -11,7 +11,7 @@ export const Datepicker = function Datepicker({
   validate,
   onComponentClick,
   component,
-  id
+  id,
 }) {
   const { format, enableTime, enableDate, defaultValue } = properties;
   const { visibility, disabledState } = styles;
