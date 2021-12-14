@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { Portal } from '@/_components/Portal';
 
 const usePortal = ({ children, ...restProps }) => {

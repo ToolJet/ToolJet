@@ -110,7 +110,11 @@ export function CodeHinter({
 
     return (
       <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
-        <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
+        <div
+          onClick={() => setFocused(true)}
+          ref={heightRef}
+          className="dynamic-variable-preview bg-green-lt px-1 py-1"
+        >
           <div>
             <div className="heading my-1">
               <span>{previewType}</span>
