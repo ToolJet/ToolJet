@@ -576,7 +576,9 @@ export const componentTypes = [
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      value: false,
+    },
     definition: {
       others: {
         showOnDesktop: { value: true },
