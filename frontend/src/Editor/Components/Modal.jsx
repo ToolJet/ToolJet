@@ -25,8 +25,8 @@ export const Modal = function Modal({
   const { disabledState } = styles;
 
   useEffect(() => {
-    const canShowModel = exposedVariables.show ?? false;
-    setShowModal(canShowModel);
+    const canShowModal = exposedVariables.show ?? false;
+    setShowModal(canShowModal);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
