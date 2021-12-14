@@ -423,8 +423,7 @@ export const SubContainer = ({
             readOnly
           }}
         />
-      }
-      )}
+      ))}
 
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box">
