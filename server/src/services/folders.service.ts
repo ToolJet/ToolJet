@@ -31,8 +31,8 @@ export class FoldersService {
     );
   }
 
-  async all(user: User): Promise<Folder[]> {
-    if (await this.usersService.hasGroup(user, 'admin')) {
+  async all(user: User, searchKey: string): Promise<Folder[]> {
+    if (!searchKey && (await this.usersService.hasGroup(user, 'admin'))) {
       return await this.foldersRepository.find({
         where: {
           organizationId: user.organizationId,
@@ -53,14 +53,20 @@ export class FoldersService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
-        value: true,
-        organizationId: user.organizationId,
-        userId: user.id,
-      })
+      .where('LOWER(apps.name) like :searchKey', { searchKey: `%${searchKey && searchKey.toLowerCase()}%` })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
+              value: true,
+              organizationId: user.organizationId,
+              userId: user.id,
+            });
+        })
+      )
       .getMany();
+
     const allViewableAppIds = allViewableApps.map((app) => app.id);
 
     if (allViewableAppIds.length !== 0) {

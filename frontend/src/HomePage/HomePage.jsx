@@ -56,12 +56,14 @@ class HomePage extends React.Component {
     );
   };
 
-  fetchFolders = () => {
+  fetchFolders = (searchKey) => {
+    const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
     this.setState({
       foldersLoading: true,
+      appSearchKey: appSearchKey,
     });
 
-    folderService.getAll().then((data) =>
+    folderService.getAll(appSearchKey).then((data) =>
       this.setState({
         folders: data.folders,
         foldersLoading: false,
@@ -74,12 +76,11 @@ class HomePage extends React.Component {
   };
 
   folderChanged = (folder) => {
-    this.setState({ currentFolder: folder, appSearchKey: '' });
-    this.fetchApps(1, folder.id, '');
+    this.setState({ currentFolder: folder });
+    this.fetchApps(1, folder.id);
   };
 
   foldersChanged = () => {
-    this.setState({ appSearchKey: '' });
     this.fetchFolders();
   };
 
@@ -307,6 +308,7 @@ class HomePage extends React.Component {
 
   onSearchSubmit = (key) => {
     this.fetchApps(1, this.state.currentFolder.id, key || '');
+    this.fetchFolders(key || '');
   };
 
   render() {
@@ -340,7 +342,7 @@ class HomePage extends React.Component {
           />
         )}
 
-        {(isLoading || meta.total_count > 0) && (
+        {(isLoading || meta.total_count > 0 || currentFolder.id) && (
           <div className="page-body homepage-body">
             <div className="container-xl">
               <div className="row">
@@ -350,34 +352,31 @@ class HomePage extends React.Component {
                     {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
                   </h2>
                 </div>
-                {this.canCreateApp() && (
-                  <>
-                    <div className="col-2 ms-auto d-print-none"></div>
-                    <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
-                      <SearchBox onSubmit={this.onSearchSubmit} initialValue={this.state.appSearchKey} />
-                      <button
-                        className={'btn btn-default d-none d-lg-inline mb-3 me-2'}
-                        onChange={this.handleImportApp}
-                      >
-                        <label>
-                          {isImportingApp && (
-                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                          )}
-                          Import
-                          <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
-                        </label>
-                      </button>
-                      <button
-                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${
-                          creatingApp ? 'btn-loading' : ''
-                        }`}
-                        onClick={this.createApp}
-                      >
-                        Create new application
-                      </button>
-                    </div>
-                  </>
-                )}
+                {this.canCreateApp() && <div className="col-2 ms-auto d-print-none"></div>}
+                <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
+                  <SearchBox onSubmit={this.onSearchSubmit} initialValue={this.state.appSearchKey} />
+                  {this.canCreateApp() && (
+                    <button className={'btn btn-default d-none d-lg-inline mb-3 me-2'} onChange={this.handleImportApp}>
+                      <label>
+                        {isImportingApp && (
+                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                        )}
+                        Import
+                        <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                      </label>
+                    </button>
+                  )}
+                  {this.canCreateApp() && (
+                    <button
+                      className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${
+                        creatingApp ? 'btn-loading' : ''
+                      }`}
+                      onClick={this.createApp}
+                    >
+                      Create new application
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="row">
                 <div className="col-12 col-lg-3 mb-5">
