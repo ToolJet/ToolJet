@@ -1,4 +1,5 @@
 import React from 'react';
+import { LibraryApps } from './LibraryApps';
 
 export const BlankPage = function BlankPage({ createApp, handleImportApp, isImportingApp, fileInput }) {
   return (
@@ -11,7 +12,10 @@ export const BlankPage = function BlankPage({ createApp, handleImportApp, isImpo
               <div className="empty-img">
                 <img src="/assets/images/blank.svg" height="128" alt="" />
               </div>
-              <p className="empty-title">You haven&apos;t created any apps yet.</p>
+              <p className="empty-title">
+                Welcome to ToolJet ! You can get started by creating a new application or by creating an application
+                using a template in ToolJet Library.
+              </p>
               <div className="empty-action">
                 <a onClick={createApp} className="btn btn-primary text-light mx-1">
                   <svg
@@ -55,6 +59,8 @@ export const BlankPage = function BlankPage({ createApp, handleImportApp, isImpo
                 </a>
               </div>
             </div>
+
+            <LibraryApps></LibraryApps>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
-  const email=authenticationService.currentUserValue.email;
+  const email = authenticationService.currentUserValue.email;
   const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
@@ -24,7 +24,10 @@ function SettingsPage(props) {
     setUpdateInProgress(true);
     const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
     authenticationService.updateCurrentUserDetails(updatedDetails);
-    toast.success('Details updated!', { hideProgressBar: true, autoClose: 3000 });
+    toast.success('Details updated!', {
+      hideProgressBar: true,
+      autoClose: 3000,
+    });
     setUpdateInProgress(false);
   };
 
@@ -33,7 +36,10 @@ function SettingsPage(props) {
     const response = await userService.changePassword(currentpassword, newPassword);
     response
       .then(() => {
-        toast.success('Password updated successfully', { hideProgressBar: true, autoClose: 3000 });
+        toast.success('Password updated successfully', {
+          hideProgressBar: true,
+          autoClose: 3000,
+        });
         setCurrentPassword('');
         setNewPassword('');
       })
@@ -103,18 +109,11 @@ function SettingsPage(props) {
                     </div>
                   </div>
                   <div className="row">
-                  <div className="col-6">
-                    <div className="mb-3">
-                      <label className="form-label">Email </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="email"
-                        value={email}
-                         readonly
-                         disabled
-                      />
-                    </div>
+                    <div className="col-6">
+                      <div className="mb-3">
+                        <label className="form-label">Email </label>
+                        <input type="text" className="form-control" name="email" value={email} readOnly disabled />
+                      </div>
                     </div>
                   </div>
                 </div>

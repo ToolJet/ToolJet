@@ -12,4 +12,5 @@ async function bootstrap() {
   await app.close();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

@@ -83,7 +83,10 @@ class ManageGroupPermissions extends React.Component {
   };
 
   deleteGroup = (groupPermissionId) => {
-    this.setState({ showGroupDeletionConfirmation: true, groupToBeDeleted: groupPermissionId });
+    this.setState({
+      showGroupDeletionConfirmation: true,
+      groupToBeDeleted: groupPermissionId,
+    });
   };
 
   cancelDeleteGroupDialog = () => {
@@ -114,18 +117,13 @@ class ManageGroupPermissions extends React.Component {
   };
 
   render() {
-    const {
-      isLoading,
-      showNewGroupForm,
-      creatingGroup,
-      groups,
-      isDeletingGroup,
-      showGroupDeletionConfirmation } = this.state;
+    const { isLoading, showNewGroupForm, creatingGroup, groups, isDeletingGroup, showGroupDeletionConfirmation } =
+      this.state;
     return (
       <div className="wrapper org-users-page">
         <ConfirmDialog
           show={showGroupDeletionConfirmation}
-          message={"This group will be permanently deleted. Do you want to continue?"}
+          message={'This group will be permanently deleted. Do you want to continue?'}
           confirmButtonLoading={isDeletingGroup}
           onConfirm={() => this.executeGroupDeletion()}
           onCancel={() => this.cancelDeleteGroupDialog()}
