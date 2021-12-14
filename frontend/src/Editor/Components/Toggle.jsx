@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 class Switch extends React.Component {
   render() {
@@ -31,6 +31,13 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
     setExposedVariable('value', toggled);
     fireEvent('onChange');
   }
+
+  // Exposing the initially set false value once on load
+  useEffect(() => {
+    console.log('shashi');
+    setExposedVariable('value', false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggle = () => setOn(!on);
 
