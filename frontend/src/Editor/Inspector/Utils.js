@@ -62,6 +62,7 @@ export function renderElement(
       componentMeta={componentMeta}
       currentState={currentState}
       darkMode={darkMode}
+      componentName={component.component.name || null}
     />
   );
 }

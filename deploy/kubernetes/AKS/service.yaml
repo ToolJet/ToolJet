@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tooljet-lb
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: <replace-your-resource-group>
+    service.beta.kubernetes.io/azure-dns-label-name: tooljet
+spec:
+  type: LoadBalancer
+  loadBalancerIP: <replace-your-public-ip-here>
+  selector:
+    app: tooljet-ce
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000

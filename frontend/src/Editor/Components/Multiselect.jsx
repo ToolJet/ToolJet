@@ -1,66 +1,65 @@
+import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const Multiselect = function Multiselect({
-  id,
-  width,
   height,
-  component,
-  onComponentClick,
-  currentState,
-  onComponentOptionChanged,
+
+  properties,
+  styles,
+  exposedVariables,
+  setExposedVariable,
+  fireEvent,
 }) {
-  console.log('currentState', currentState);
+  const { label, value, values, display_values } = properties;
+  const { visibility, disabledState } = styles;
 
-  const label = component.definition.properties.label.value;
-  const values = component.definition.properties.option_values.value;
-  const displayValues = component.definition.properties.display_values.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
+  useEffect(() => {
+    let newValues = [];
 
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
+    if (_.intersection(values, value)?.length === value?.length) newValues = value;
 
-  const parsedValues = JSON.parse(values);
-  const parsedDisplayValues = JSON.parse(displayValues);
+    setExposedVariable('values', newValues);
+    setCurrentValue(newValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(values)]);
 
-  const selectOptions = [
-    ...parsedValues.map((value, index) => {
-      return { name: parsedDisplayValues[index], value: value };
-    }),
-  ];
+  useEffect(() => {
+    setExposedVariable('values', value);
+    setCurrentValue(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(value)]);
 
-  const currentValueProperty = component.definition.properties.values;
-  const value = currentValueProperty ? currentValueProperty.value : '';
-  const [currentValue, setCurrentValue] = useState(value);
-
-  let newValue = value;
-  if (currentValueProperty && currentState) {
-    newValue = resolveReferences(currentValueProperty.value, currentState, '');
-  }
-
-  let parsedWidgetVisibility = widgetVisibility;
-
+  const [currentValue, setCurrentValue] = useState(() => value);
+  let selectOptions = [];
   try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+    selectOptions = [
+      ...values.map((value, index) => {
+        return { name: display_values[index], value: value };
+      }),
+    ];
   } catch (err) {
     console.log(err);
   }
 
   useEffect(() => {
-    setCurrentValue(newValue);
-  }, [newValue]);
+    if (value && !currentValue) {
+      setCurrentValue(properties.value);
+    }
+
+    if (JSON.stringify(exposedVariables.values) === '{}') {
+      setCurrentValue(properties.value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  const handleChange = (value) => {
+    setCurrentValue(value);
+    setExposedVariable('values', value).then(() => fireEvent('onSelect'));
+  };
 
   return (
-    <div
-      className="multiselect-widget row g-0"
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
-    >
+    <div className="multiselect-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
       <div className="col-auto my-auto">
         <label style={{ marginRight: '1rem' }} className="form-label py-1">
           {label}
@@ -68,14 +67,14 @@ export const Multiselect = function Multiselect({
       </div>
       <div className="col px-0 h-100">
         <SelectSearch
-          disabled={parsedDisabledState}
+          disabled={disabledState}
           options={selectOptions}
           value={currentValue}
           search={true}
           multiple={true}
           printOptions="on-focus"
           onChange={(newValues) => {
-            onComponentOptionChanged(component, 'values', newValues);
+            handleChange(newValues);
           }}
           filterOptions={fuzzySearch}
           placeholder="Select.."

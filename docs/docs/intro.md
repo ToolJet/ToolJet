@@ -4,9 +4,9 @@ sidebar_position: 1
 
 # Introduction
 
-ToolJet is an **open-source no-code framework** to build and deploy custom internal tools. ToolJet can connect to your data sources such as databases ( PostgreSQL, MongoDB, MySQL, Elasticsearch, Firestore, DynamoDB, Redis and more ), API endpoints ( ToolJet supports OAuth2 authorization ) and external services ( Stripe, Slack, Google Sheets, airtable and more ). Once the data sources are connected, ToolJet can run queries on these data sources to fetch and update data. The data fetched from data sources can be visualised and modified using the UI widgets such as tables, charts, forms, etc. 
+ToolJet is an **open-source low-code framework** to build and deploy custom internal tools. ToolJet can connect to your data sources such as databases ( PostgreSQL, MongoDB, MySQL, Elasticsearch, Firestore, DynamoDB, Redis and more ), API endpoints ( ToolJet supports OAuth2 authorization ) and external services ( Stripe, Slack, Google Sheets, airtable and more ). Once the data sources are connected, ToolJet can run queries on these data sources to fetch and update data. The data fetched from data sources can be visualised and modified using the UI widgets such as tables, charts, forms, etc. 
 
-<img class="screenshot-full" src="/img/introduction.gif" alt="ToolJet - introduction" height="420"/>
+<img class="screenshot-full" src="https://user-images.githubusercontent.com/7828962/144586771-c6d6cba5-8f79-4e0c-80b4-aa1a38657229.png" alt="ToolJet - introduction" />
 
 ## How ToolJet works
 
@@ -29,6 +29,11 @@ The references for datasources and widgets:
 
 - **[Datasource Reference](/docs/data-sources/redis)**
 - **[Widget Reference](/docs/widgets/table)**
+
+## Complete tutorials
+- [Build a WhatsApp CRM](https://blog.tooljet.com/build-a-whatsapp-crm-using-tooljet-within-10-mins/)   
+- [Build a cryptocurrency dashboard](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)   
+- [Build a Redis GUI](https://blog.tooljet.com/building-a-redis-gui-using-tooljet-in-5-minutes/)   
 
 ## Help and Support
 We have extensively documented the features of ToolJet, but in case you are stuck, please feel to mail us: hello@tooljet.com.
