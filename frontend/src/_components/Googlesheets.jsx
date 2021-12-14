@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { datasourceService } from '@/_services';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
@@ -29,7 +29,7 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
         window.open(authUrl);
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error);
         setAuthStatus(null);
       });
   }

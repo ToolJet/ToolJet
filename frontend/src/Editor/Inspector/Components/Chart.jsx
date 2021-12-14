@@ -1,6 +1,7 @@
 import React from 'react';
 import { renderElement } from '../Utils';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import Accordion from '@/_ui/Accordion';
 
 class Chart extends React.Component {
   constructor(props) {
@@ -60,62 +61,123 @@ class Chart extends React.Component {
 
     const chartType = this.state.component.component.definition.properties.type.value;
 
-    return (
-      <div className="properties-container p-2">
-        {renderElement(
+    let items = [];
+
+    items.push({
+      title: 'Title',
+      children: renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        'title',
+        'properties',
+        currentState,
+        components
+      ),
+    });
+
+    items.push({
+      title: 'Properties',
+      children: renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        'type',
+        'properties',
+        currentState,
+        components
+      ),
+    });
+
+    items.push({
+      title: 'Chart data',
+      children: (
+        <CodeHinter
+          currentState={this.props.currentState}
+          initialValue={data.value}
+          theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+          mode="javascript"
+          lineNumbers={false}
+          className="chart-input pr-2"
+          onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
+          componentName={`widget/${this.props.component.component.name}::${chartType}`}
+        />
+      ),
+    });
+
+    items.push({
+      title: 'Loading state',
+      children: renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        'loadingState',
+        'properties',
+        currentState
+      ),
+    });
+
+    if (chartType !== 'pie') {
+      items.push({
+        title: 'Marker color',
+        children: renderElement(
           component,
           componentMeta,
           paramUpdated,
           dataQueries,
-          'title',
+          'markerColor',
           'properties',
-          currentState,
-          components
-        )}
-        {renderElement(
+          currentState
+        ),
+      });
+
+      items.push({
+        title: 'Show grid lines',
+        children: renderElement(
           component,
           componentMeta,
           paramUpdated,
           dataQueries,
-          'type',
+          'showGridLines',
           'properties',
-          currentState,
-          components
-        )}
+          currentState
+        ),
+      });
+    }
 
-        <div className="field mb-3 chart-data-input">
-          <label className="form-label">Chart data</label>
-          <CodeHinter
-            currentState={this.props.currentState}
-            initialValue={data.value}
-            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-            mode="javascript"
-            lineNumbers={false}
-            className="chart-input pr-2"
-            onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
-          />
-        </div>
-        {Object.keys(componentMeta.styles).map((style) =>
-          renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, components)
-        )}
-
-        {renderElement(component, componentMeta, paramUpdated, dataQueries, 'loadingState', 'properties', currentState)}
-
-        {chartType !== 'pie' &&
-          renderElement(component, componentMeta, paramUpdated, dataQueries, 'markerColor', 'properties', currentState)}
-
-        {chartType !== 'pie' &&
-          renderElement(
+    items.push({
+      title: 'Layout',
+      isOpen: false,
+      children: (
+        <>
+          {renderElement(
             component,
             componentMeta,
-            paramUpdated,
+            this.props.layoutPropertyChanged,
             dataQueries,
-            'showGridLines',
-            'properties',
-            currentState
+            'showOnDesktop',
+            'others',
+            currentState,
+            components
           )}
-      </div>
-    );
+          {renderElement(
+            component,
+            componentMeta,
+            this.props.layoutPropertyChanged,
+            dataQueries,
+            'showOnMobile',
+            'others',
+            currentState,
+            components
+          )}
+        </>
+      ),
+    });
+
+    return <Accordion items={items} />;
   }
 }
 

@@ -169,19 +169,19 @@ export class AppsService {
         value: true,
         organizationId: user.organizationId,
         userId: user.id,
-      });
+      })
+      .orderBy('apps.createdAt', 'DESC');
 
     // FIXME:
+    // Fixed based on https://github.com/typeorm/typeorm/issues/747#issuecomment-519553920
     // TypeORM gives error when using query builder with order by
     // https://github.com/typeorm/typeorm/issues/8213
     // hence sorting results in memory
     if (page) {
-      const viewableApps = await viewableAppsQb
+      return await viewableAppsQb
         .take(10)
         .skip(10 * (page - 1))
         .getMany();
-
-      return viewableApps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 
     return await viewableAppsQb.orderBy('apps.created_at', 'DESC').getMany();

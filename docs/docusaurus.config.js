@@ -13,7 +13,7 @@ module.exports = {
     announcementBar: {
       id: 'support_us',
       content:
-        '⭐️ If you like ToolJet, give it a star on GitHub <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/ToolJet">Twitter</a>',
+        '⭐️ If you like ToolJet, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/ToolJet">Twitter</a>',
       backgroundColor: '#4D72DA',
       textColor: '#ffffff',
       isCloseable: true,
@@ -115,6 +115,7 @@ module.exports = {
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
+        sitemap: {},
       },
     ],
   ],

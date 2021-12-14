@@ -1,105 +1,63 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
-import { resolveReferences, resolveWidgetFieldValue, validateWidget } from '@/_helpers/utils';
 
 export const Datepicker = function Datepicker({
-  id,
   height,
-  component,
-  onComponentClick,
-  currentState,
-  onComponentOptionChanged,
+  properties,
+  styles,
+  exposedVariables,
+  setExposedVariable,
+  validate,
 }) {
-  console.log('currentState', currentState);
+  const { format, enableTime, enableDate, defaultValue } = properties;
+  const { visibility, disabledState } = styles;
 
-  const formatProp = component.definition.properties.format;
-  const enableTimeProp = component.definition.properties.enableTime;
-  const enableDateProp = component.definition.properties.enableDate;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-  const defaultValue = component.definition.properties?.defaultValue?.value ?? '';
+  const onDateChange = (event) => {
+    if (enableDate) {
+      const selectedDateFormat = enableTime ? `${format} LT` : format;
+      const dateString = event.format(selectedDateFormat);
+      setExposedVariable('value', dateString);
+    }
 
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
-
-  const enableTime = resolveReferences(enableTimeProp.value, currentState, false);
-
-  let enableDate = true;
-  if (enableDateProp) {
-    // eslint-disable-next-line no-unused-vars
-    enableDate = resolveReferences(enableDateProp.value, currentState, true);
-  }
-
-  let dateFormat = formatProp;
-  try {
-    dateFormat = resolveReferences(formatProp, currentState);
-  } catch (err) {
-    console.log(err);
-  }
-
-  function onDateChange(event) {
-    const selectedDateFormat = enableTime ? `${dateFormat.value} LT` : dateFormat.value;
-    const value = event._isAMomentObject ? event.format(selectedDateFormat) : event;
-
-    setDateText(value);
-    onComponentOptionChanged(component, 'value', value);
-  }
-
-  let value = defaultValue;
-  if (value && currentState) value = resolveReferences(value, currentState, '');
-
-  const [dateText, setDateText] = useState(value);
+    if (!enableDate && enableTime) {
+      setExposedVariable('value', event.format('LT'));
+    }
+  };
 
   useEffect(() => {
-    setDateText(value);
-    onComponentOptionChanged(component, 'value', value);
+    setExposedVariable('value', defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [defaultValue]);
 
-  const validationData = validateWidget({
-    validationObject: component.definition.validation,
-    widgetValue: value,
-    currentState,
-  });
+  const validationData = validate(exposedVariables.value);
 
   const { isValid, validationError } = validationData;
+  useEffect(() => {
+    setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
-  const currentValidState = currentState?.components[component?.name]?.isValid;
-
-  if (currentValidState !== isValid) {
-    onComponentOptionChanged(component, 'isValid', isValid);
-  }
+  const isDateFormat = enableDate === true ? format : enableDate;
 
   return (
     <div
-      data-disabled={parsedDisabledState}
+      data-disabled={disabledState}
       className="datepicker-widget"
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
+      style={{ height, display: visibility ? '' : 'none' }}
     >
       <Datetime
         onChange={onDateChange}
         timeFormat={enableTime}
         closeOnSelect={true}
-        dateFormat={dateFormat.value}
-        value={dateText}
+        dateFormat={isDateFormat}
+        placeholderText={defaultValue}
+        inputProps={{ placeholder: defaultValue }}
         renderInput={(props) => {
           return (
             <input
               {...props}
-              value={dateText}
+              value={exposedVariables.value}
               className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2`}
             />
           );
