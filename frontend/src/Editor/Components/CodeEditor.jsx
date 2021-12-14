@@ -10,7 +10,7 @@ import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
 import { onBeforeChange, handleChange } from '../CodeBuilder/utils';
 
-export const CodeEditor = ({ width, height, darkMode, properties, styles, exposedVariables, setExposedVariable }) => {
+export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariables, setExposedVariable }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const { visibility, disabledState } = styles;
 
@@ -19,7 +19,6 @@ export const CodeEditor = ({ width, height, darkMode, properties, styles, expose
   }
 
   const editorStyles = {
-    width: width,
     height: height,
     display: !visibility ? 'none' : 'block',
   };
