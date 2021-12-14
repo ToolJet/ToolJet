@@ -644,7 +644,7 @@ export const componentTypes = [
     description: 'Select a date range',
     component: 'DaterangePicker',
     defaultSize: {
-      width: 8,
+      width: 10,
       height: 30,
     },
     others: {
