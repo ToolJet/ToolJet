@@ -34,7 +34,7 @@ export const PasswordInput = ({
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon rounded-0`}
         placeholder={placeholder}
         value={exposedVariables.value}
-        style={{ width, height, display: visibility ? '' : 'none' }}
+        style={{ height, display: visibility ? '' : 'none' }}
       />
 
       <div className="invalid-feedback">{validationError}</div>

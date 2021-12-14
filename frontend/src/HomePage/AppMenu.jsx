@@ -74,7 +74,7 @@ export const AppMenu = function AppMenu({
       overlay={
         <Popover id="popover-basic">
           {/* <Popover.Title as="h3">brrr</Popover.Title> */}
-          <Popover.Content>
+          <Popover.Content bsPrefix="shadow popover-body">
             {!addToFolder && (
               <div>
                 {canCreateApp && (

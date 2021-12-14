@@ -2,11 +2,11 @@ import React from 'react';
 import { appService, organizationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from 'react-loading-skeleton';
 import { debounce } from 'lodash';
+import Textarea from '@/_ui/Textarea';
 
 class ManageAppUsers extends React.Component {
   constructor(props) {
@@ -64,12 +64,12 @@ class ManageAppUsers extends React.Component {
       .createAppUser(this.state.app.id, organizationUserId, role)
       .then(() => {
         this.setState({ addingUser: false, newUser: {} });
-        toast.success('Added user successfully', { hideProgressBar: true, position: 'top-center' });
+        toast.success('Added user successfully');
         this.fetchAppUsers();
       })
       .catch(({ error }) => {
         this.setState({ addingUser: false });
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error);
       });
   };
 
@@ -90,15 +90,9 @@ class ManageAppUsers extends React.Component {
       });
 
       if (newState) {
-        toast.success('Application is now public.', {
-          hideProgressBar: true,
-          position: 'top-center',
-        });
+        toast.success('Application is now public.');
       } else {
-        toast.success('Application visibility set to private', {
-          hideProgressBar: true,
-          position: 'top-center',
-        });
+        toast.success('Application visibility set to private');
       }
     });
   };
@@ -134,10 +128,11 @@ class ManageAppUsers extends React.Component {
     const appLink = `${window.location.origin}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = isSlugVerificationInProgress ? '' : slugError !== null ? 'is-invalid' : 'is-valid';
+    const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     return (
       <div>
-        <button className="btn btn-sm" onClick={() => this.setState({ showModal: true })}>
+        <button className="btn font-500 color-primary btn-sm" onClick={() => this.setState({ showModal: true })}>
           Share
         </button>
 
@@ -204,8 +199,23 @@ class ManageAppUsers extends React.Component {
                       )}
                     </div>
                     <span className="input-group-text">
+                      <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
+                        <button className="btn btn-secondary btn-sm">Copy</button>
+                      </CopyToClipboard>
+                    </span>
+                    <div className="invalid-feedback">{slugError}</div>
+                  </div>
+                </div>
+                <hr />
+                <div className="shareable-link mb-3">
+                  <label className="form-label">
+                    <small>Get embeddable link for this application</small>
+                  </label>
+                  <div className="input-group">
+                    <Textarea disabled className="input-with-icon" rows={5} value={embeddableLink} />
+                    <span className="input-group-text">
                       <CopyToClipboard
-                        text={shareableLink}
+                        text={embeddableLink}
                         onCopy={() =>
                           toast.success('Link copied to clipboard', {
                             hideProgressBar: true,
@@ -216,10 +226,8 @@ class ManageAppUsers extends React.Component {
                         <button className="btn btn-secondary btn-sm">Copy</button>
                       </CopyToClipboard>
                     </span>
-                    <div className="invalid-feedback">{slugError}</div>
                   </div>
                 </div>
-                <hr />
                 {/* <div className="add-user mb-3">
                   <div className="row">
                     <div className="col">

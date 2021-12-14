@@ -43,6 +43,7 @@ export class OrganizationsService {
         group: group,
         appCreate: isAdmin,
         appDelete: isAdmin,
+        folderCreate: isAdmin,
       });
       await this.groupPermissionsRepository.save(groupPermission);
       createdGroupPermissions.push(groupPermission);

@@ -1,5 +1,7 @@
+/* eslint-disable no-useless-escape */
 import moment from 'moment';
 import _ from 'lodash';
+import axios from 'axios';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -33,8 +35,7 @@ export function resolve(data, state) {
 }
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
-
-  object = _.clone(object)
+  object = _.clone(object);
 
   const objectType = typeof object;
   let error;
@@ -207,18 +208,27 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   const re = new RegExp(validationRegex, 'g');
 
   if (!re.test(widgetValue)) {
-    return { isValid: false, validationError: 'The input should match pattern' };
+    return {
+      isValid: false,
+      validationError: 'The input should match pattern',
+    };
   }
 
   const resolvedMinLength = resolveWidgetFieldValue(minLength, currentState, 0, customResolveObjects);
   if ((widgetValue || '').length < parseInt(resolvedMinLength)) {
-    return { isValid: false, validationError: `Minimum ${resolvedMinLength} characters is needed` };
+    return {
+      isValid: false,
+      validationError: `Minimum ${resolvedMinLength} characters is needed`,
+    };
   }
 
   const resolvedMaxLength = resolveWidgetFieldValue(maxLength, currentState, undefined, customResolveObjects);
   if (resolvedMaxLength !== undefined) {
     if ((widgetValue || '').length > parseInt(resolvedMaxLength)) {
-      return { isValid: false, validationError: `Maximum ${resolvedMaxLength} characters is allowed` };
+      return {
+        isValid: false,
+        validationError: `Maximum ${resolvedMaxLength} characters is allowed`,
+      };
     }
   }
 
@@ -234,6 +244,27 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 }
 
 export function validateEmail(email) {
-  const emailRegex =  /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-  return emailRegex.test(email)
+  const emailRegex =
+    /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+  return emailRegex.test(email);
+}
+
+export async function executeMultilineJS(currentState, code) {
+  let result = {},
+    error = null;
+
+  try {
+    const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
+    var evalFn = new AsyncFunction('moment', '_', 'components', 'queries', 'globals', 'axios', code);
+    result = {
+      status: 'ok',
+      data: await evalFn(moment, _, currentState.components, currentState.queries, currentState.globals, axios),
+    };
+  } catch (err) {
+    console.log('JS execution failed: ', err);
+    error = err.stack.split('\n')[0];
+    result = { status: 'failed', data: { message: error, description: error } };
+  }
+
+  return result;
 }

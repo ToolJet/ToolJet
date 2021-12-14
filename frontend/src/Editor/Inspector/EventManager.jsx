@@ -109,6 +109,7 @@ export const EventManager = ({
       eventId: Object.keys(componentMeta.events)[0],
       actionId: 'show-alert',
       message: 'Hello world!',
+      alertType: 'info',
     });
     eventsChanged(newEvents);
   }
@@ -159,6 +160,7 @@ export const EventManager = ({
                       currentState={currentState}
                       initialValue={event.message}
                       onChange={(value) => handlerChanged(index, 'message', value)}
+                      usePortalEditor={false}
                     />
                   </div>
                 </div>
@@ -185,6 +187,7 @@ export const EventManager = ({
                   currentState={currentState}
                   initialValue={event.url}
                   onChange={(value) => handlerChanged(index, 'url', value)}
+                  usePortalEditor={false}
                 />
               </div>
             )}
@@ -241,6 +244,7 @@ export const EventManager = ({
                 <CodeHinter
                   currentState={currentState}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
+                  usePortalEditor={false}
                 />
               </div>
             )}
@@ -277,6 +281,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                      usePortalEditor={false}
                     />
                   </div>
                 </div>
@@ -288,6 +293,7 @@ export const EventManager = ({
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
+                      usePortalEditor={false}
                     />
                   </div>
                 </div>
@@ -362,21 +368,30 @@ export const EventManager = ({
               if (typeof popOverCallback === 'function') popOverCallback(showing);
             }}
           >
-            <div className={rowClassName} role="button">
-              <div className="col">{componentMeta.events[event.eventId]['displayName']}</div>
-              <div className="col">
-                <small className="event-action">{actionMeta.name}</small>
-              </div>
-              <div className="col-auto">
-                <span
-                  className="text-danger"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeHandler(index);
-                  }}
-                >
-                  <img className="svg-icon" src="/assets/images/icons/trash.svg" width="12" height="12" />
-                </span>
+            <div className="card mb-1">
+              <div className="card-body p-0">
+                <div className={rowClassName} role="button">
+                  <div className="col">{componentMeta.events[event.eventId]['displayName']}</div>
+                  <div className="col">
+                    <small className="event-action font-weight-light">{actionMeta.name}</small>
+                  </div>
+                  <div className="col-auto">
+                    <span
+                      className="text-danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeHandler(index);
+                      }}
+                    >
+                      <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
+                          fill="#8092AC"
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </OverlayTrigger>
@@ -389,22 +404,33 @@ export const EventManager = ({
 
   if (events.length === 0) {
     return (
-      <div>
-        <center>
-          <button className="btn btn-sm btn-outline-azure" onClick={addHandler}>
-            Add event handler
+      <>
+        <div className="text-right mb-3">
+          <button
+            className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
+            onClick={addHandler}
+          >
+            + Add event handler
           </button>
-        </center>
-      </div>
+        </div>
+        <div className="text-center">
+          <small className="color-disabled">This table doesn&apos;t have any events</small>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="card">
-      <div className="card-body p-0">{renderHandlers(events)}</div>
-      <button className="btn btn-sm btn-outline-azure" onClick={addHandler}>
-        Add handler
-      </button>
-    </div>
+    <>
+      <div className="text-right mb-3">
+        <button
+          className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
+          onClick={addHandler}
+        >
+          + Add handler
+        </button>
+      </div>
+      {renderHandlers(events)}
+    </>
   );
 };

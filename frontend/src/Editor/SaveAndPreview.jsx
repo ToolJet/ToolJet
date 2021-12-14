@@ -2,7 +2,7 @@ import React from 'react';
 import { appService, appVersionService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { toast, ToastContainer } from 'react-toastify';
+import toast from 'react-hot-toast';
 import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from 'react-loading-skeleton';
 
@@ -51,20 +51,13 @@ class SaveAndPreview extends React.Component {
       this.setState({ creatingVersion: true });
       appVersionService.create(appId, newVersionName).then(() => {
         this.setState({ showVersionForm: false, creatingVersion: false });
-        toast.success('Version Created', {
-          hideProgressBar: true,
-          position: 'top-center',
-          containerId: this.state.appId,
-        });
+        toast.success('Version Created');
         this.fetchVersions();
         // eslint-disable-next-line no-undef
         this.props.setAppDefinitionFromVersion(version);
       });
     } else {
-      toast.error('The name of version should not be empty', {
-        hideProgressBar: true,
-        position: 'top-center',
-      });
+      toast.error('The name of version should not be empty');
       this.fetchVersions();
       this.props.fetchApp();
       // eslint-disable-next-line no-undef
@@ -74,18 +67,13 @@ class SaveAndPreview extends React.Component {
 
   editVersion = (version) => () => {
     this.props.setAppDefinitionFromVersion(version);
-    this.props.fetchApp();
   };
 
   saveVersion = (versionId) => {
     this.setState({ savingVersionId: versionId });
     appVersionService.save(this.props.appId, versionId, this.props.appDefinition).then(() => {
       this.setState({ showVersionForm: false, savingVersionId: null });
-      toast.success('Version Saved', {
-        hideProgressBar: true,
-        position: 'top-center',
-        containerId: this.state.appId,
-      });
+      toast.success(`Version Saved`);
       this.fetchVersions();
     });
   };
@@ -94,10 +82,8 @@ class SaveAndPreview extends React.Component {
     this.setState({ deployingVersionId: versionId });
     appService.saveApp(this.props.appId, { name: this.props.appName, current_version_id: versionId }).then(() => {
       this.setState({ deployingVersionId: null });
-      toast.success('Version Deployed', {
-        hideProgressBar: true,
-        position: 'top-center',
-        containerId: this.state.appId,
+      toast(`Version Deployed`, {
+        icon: '🚀',
       });
 
       this.props.fetchApp();
@@ -126,7 +112,6 @@ class SaveAndPreview extends React.Component {
           onEscapeKeyDown={() => this.hideModal()}
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
         >
-          <ToastContainer containerId={appId} />
           <Modal.Header>
             <Modal.Title>Versions and deployments</Modal.Title>
             <div>
@@ -156,8 +141,13 @@ class SaveAndPreview extends React.Component {
                     onChange={(e) => this.setState({ newVersionName: e.target.value })}
                   />
                 </div>
-                <div className="col-auto">
-                  <Button variant="primary" onClick={() => this.createVersion()} disabled={creatingVersion}>
+                <div className="col-auto m-auto">
+                  <Button
+                    className="btn-sm"
+                    variant="primary"
+                    onClick={() => this.createVersion()}
+                    disabled={creatingVersion}
+                  >
                     {creatingVersion ? 'Creating...' : 'Create'}
                   </Button>
                 </div>
@@ -185,7 +175,7 @@ class SaveAndPreview extends React.Component {
                             </div>
                             <div className="col-auto">
                               <button
-                                className="btn btn-sm text-muted"
+                                className="btn btn-sm color-primary font-500 color-primary"
                                 onClick={() => this.saveVersion(version.id)}
                                 disabled={
                                   savingVersionId === version.id ||
@@ -195,14 +185,14 @@ class SaveAndPreview extends React.Component {
                                 {savingVersionId === version.id ? 'saving...' : 'save'}
                               </button>
                               <button
-                                className="btn btn btn-sm mx-2 text-muted"
+                                className="btn btn btn-sm mx-2 color-primary"
                                 onClick={this.editVersion(version)}
                                 disabled={this.props.editingVersionId === version.id}
                               >
                                 edit
                               </button>
                               <a
-                                className="btn btn btn-sm mx text-muted"
+                                className="btn btn btn-sm mx color-primary"
                                 href={`/applications/${appId}/versions/${version.id}`}
                                 target="_blank"
                                 rel="noreferrer"

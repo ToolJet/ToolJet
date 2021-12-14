@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 
 export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode }) => {
   //* properties definitions
@@ -110,7 +110,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
       reader.onerror = (error) => {
         reject(error);
         if (error.name == 'NotReadableError') {
-          toast.error(error.message, { hideProgressBar: true, autoClose: 3000 });
+          toast.error(error.message);
         }
       };
     }).then((result) => {
@@ -166,9 +166,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     }
 
     if (fileRejections.length > 0) {
-      fileRejections.map((rejectedFile) =>
-        toast.error(rejectedFile.errors[0].message, { hideProgressBar: true, autoClose: 3000 })
-      );
+      fileRejections.map((rejectedFile) => toast.error(rejectedFile.errors[0].message));
     }
 
     return () => {
