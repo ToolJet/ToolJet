@@ -167,6 +167,7 @@ export function CodeHinter({
           forceUpdate={forceUpdate}
           optionalProps={{ height: 300 }}
           darkMode={darkMode}
+          selectors={{ className: 'preview-block-portal' }}
         >
           <CodeMirror
             value={initialValue}

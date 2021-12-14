@@ -2703,17 +2703,40 @@ input[type='text'] {
   position: absolute;
   left: 50%;
   top: 40%;
-  transform: translate(-50%, -50%);
-  height: 500px;
-  width: 500px;
-  padding: 0;
+  transform: translate(-60%, -60%);
+  height: 350px;
+  width: auto;
+  max-height: 500px;
+  padding: 0px;
+
+  .modal-content {
+    border-radius: 5px!important;
+  }
   
   .modal-body {
     width: 500px!important;
-    height: 300px!important;
+    height: 310px!important;
     padding: 0px!important;
     margin: 0px!important;
     margin-left: -1px!important; //fix the modal body code mirror margin
+
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom: 0.75px solid $light-gray;
+    border-left: 0.75px solid $light-gray;
+    border-right: 0.75px solid $light-gray;
+  }
+
+  .dark-modal-body {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom: 0.75px solid $light-gray;
+    border-left: 0.75px solid $light-gray;
+    border-right: 0.75px solid $light-gray;
   }
   
   .modal-dialog {
@@ -2727,14 +2750,35 @@ input[type='text'] {
   
   
   .editor-container{
-    padding: 0px;    
+    padding: 0px;
+    
+    
     .CodeMirror {
       border-radius: 0;
       margin: 0;
       width: 100%!important;
     }
+
+    
   }
 
+}
+
+.preview-block-portal {
+  .bg-light{
+    border-radius: 0 0 5px 5px;
+    outline:0.75px solid $light-green;
+  }
+
+  .bg-dark {
+    margin-top: 1px;
+    border-radius: 0 0 5px 5px;
+    outline:0.75px solid $light-green;
+  }
+
+  .dynamic-variable-preview {
+    padding: 4px!important;
+  }
 }
 
 
@@ -2745,10 +2789,10 @@ input[type='text'] {
   color: #656d77;
   background-color: #ffffffd9;
   background-clip: padding-box;
-  border-bottom: 1px solid #0000000d;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
-  width: 499px!important;
+  outline: 0.75px solid $light-gray;
+  border-top-left-radius: 5px!important;
+  border-top-right-radius: 5px!important;
+  width: 498px!important;
 }
 .tabs-inspector {
   .nav-item {
