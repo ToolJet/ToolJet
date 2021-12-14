@@ -1,66 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ id, height, component, onComponentClick, currentState, customResolvables }) {
-  const text = component.definition.properties.text.value;
-  const color = component.definition.styles.textColor.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
+export const Text = function Text({ height, properties, styles }) {
   const [loadingState, setLoadingState] = useState(false);
 
+  const { textColor, visibility, disabledState } = styles;
+  const text = properties.text ?? '';
+  const color = textColor;
+
   useEffect(() => {
-    const loadingStateProperty = component.definition.properties.loadingState;
-    if (loadingStateProperty && currentState) {
-      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
-      setLoadingState(newState);
+    const loadingStateProperty = properties.loadingState;
+    if (loadingStateProperty) {
+      setLoadingState(loadingStateProperty);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState]);
-
-  let data = text;
-  if (currentState) {
-    const matchedParams = text.match(/\{\{(.*?)\}\}/g);
-
-    if (matchedParams) {
-      for (const param of matchedParams) {
-        const resolvedParam = resolveReferences(param, currentState, '', customResolvables);
-        console.log('resolved param', param, resolvedParam);
-        data = data.replace(param, resolvedParam);
-      }
-    }
-  }
-
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  }, [properties.loadingState]);
 
   const computedStyles = {
     color,
     height,
-    display: parsedWidgetVisibility ? 'flex' : 'none',
+    display: visibility ? 'flex' : 'none',
     alignItems: 'center',
   };
 
   return (
-    <div
-      data-disabled={parsedDisabledState}
-      className="text-widget"
-      style={computedStyles}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
-    >
-      {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />}
+    <div data-disabled={disabledState} className="text-widget" style={computedStyles}>
+      {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />}
       {loadingState === true && (
         <div>
           <div className="skeleton-line w-10"></div>

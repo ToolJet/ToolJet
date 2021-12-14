@@ -1,51 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import React from 'react';
 var tinycolor = require('tinycolor2');
 
-export const Button = function Button({ width, height, component, currentState, fireEvent }) {
-  const [loadingState, setLoadingState] = useState(false);
-
-  useEffect(() => {
-    const loadingStateProperty = component.definition.properties.loadingState;
-    if (loadingStateProperty && currentState) {
-      const newState = resolveReferences(loadingStateProperty.value, currentState, false);
-      setLoadingState(newState);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState]);
-
-  const text = component.definition.properties.text.value;
-  const backgroundColor = component.definition.styles.backgroundColor.value;
-  const color = component.definition.styles.textColor.value;
-  const borderRadius = component.definition.styles.borderRadius?.value ?? 3; // using 2 for backward compatibility
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-  const parsedBorderRadius =
-    typeof borderRadius !== 'number' ? resolveWidgetFieldValue(borderRadius, currentState) : borderRadius;
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+export const Button = function Button({ height, properties, styles, fireEvent }) {
+  const { loadingState, text } = properties;
+  const { backgroundColor, textColor, borderRadius, visibility, disabledState } = styles;
 
   const computedStyles = {
     backgroundColor,
-    color,
+    color: textColor,
     width: '100%',
-    borderRadius: `${parsedBorderRadius}px`,
+    borderRadius: `${borderRadius}px`,
     height,
-    display: parsedWidgetVisibility ? '' : 'none',
+    display: visibility ? '' : 'none',
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
   };
 
   return (
     <button
-      disabled={parsedDisabledState}
+      disabled={disabledState}
       className={`jet-button btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
       style={computedStyles}
       onClick={(event) => {
@@ -53,7 +25,7 @@ export const Button = function Button({ width, height, component, currentState, 
         fireEvent('onClick');
       }}
     >
-      {resolveReferences(text, currentState)}
+      {text}
     </button>
   );
 };

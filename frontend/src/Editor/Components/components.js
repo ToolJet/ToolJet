@@ -576,7 +576,9 @@ export const componentTypes = [
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      value: false,
+    },
     definition: {
       others: {
         showOnDesktop: { value: true },
@@ -644,7 +646,7 @@ export const componentTypes = [
     description: 'Select a date range',
     component: 'DaterangePicker',
     defaultSize: {
-      width: 8,
+      width: 10,
       height: 30,
     },
     others: {
@@ -887,9 +889,9 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        values: { value: '[]' },
-        option_values: { value: '[1,2,3]' },
-        display_values: { value: '["one", "two", "three"]' },
+        value: { value: '{{[2,3]}}' },
+        values: { value: '{{[1,2,3]}}' },
+        display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true },
       },
       events: [],

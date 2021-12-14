@@ -1,49 +1,20 @@
 import React, { useRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Container = function Container({
-  id,
-  component,
-  width,
-  height,
-  containerProps,
-  currentState,
-  removeComponent,
-}) {
-  const backgroundColor = component.definition.styles.backgroundColor.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+export const Container = function Container({ id, width, height, containerProps, removeComponent, styles }) {
+  const { backgroundColor, visibility, disabledState } = styles;
 
   const computedStyles = {
     backgroundColor,
     height,
-    display: parsedWidgetVisibility ? 'flex' : 'none',
+    display: visibility ? 'flex' : 'none',
   };
 
   const parentRef = useRef(null);
 
   return (
-    <div
-      data-disabled={parsedDisabledState}
-      className="jet-container"
-      id={id}
-      ref={parentRef}
-      onClick={() => containerProps.onComponentClick(id, component)}
-      style={computedStyles}
-    >
+    <div data-disabled={disabledState} className="jet-container" id={id} ref={parentRef} style={computedStyles}>
       <SubContainer
         parentComponent={component}
         containerCanvasWidth={width}

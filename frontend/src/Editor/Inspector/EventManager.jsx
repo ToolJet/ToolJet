@@ -109,6 +109,7 @@ export const EventManager = ({
       eventId: Object.keys(componentMeta.events)[0],
       actionId: 'show-alert',
       message: 'Hello world!',
+      alertType: 'info',
     });
     eventsChanged(newEvents);
   }
