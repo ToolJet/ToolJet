@@ -75,7 +75,7 @@ export const componentTypes = [
       properties: {
         title: { value: 'Table' },
         visible: { value: true },
-        loadingState: { value: false },
+        loadingState: { value: '{{false}}' },
         data: {
           value:
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
@@ -145,7 +145,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#3c92dc' },
+        backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
@@ -363,7 +363,7 @@ export const componentTypes = [
     description: 'Password input field for forms',
     component: 'PasswordInput',
     defaultSize: {
-      width: 210,
+      width: 4,
       height: 30,
     },
     others: {
@@ -1285,7 +1285,7 @@ export const componentTypes = [
     displayName: 'Iframe',
     description: 'Display an Iframe',
     defaultSize: {
-      width: 560,
+      width: 10,
       height: 310,
     },
     component: 'IFrame',

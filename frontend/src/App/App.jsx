@@ -3,7 +3,7 @@ import { Router, Route } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
-import { HomePage } from '@/HomePage';
+import { HomePage, Library } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
 import { InvitationPage } from '@/InvitationPage';
@@ -53,6 +53,17 @@ class App extends React.Component {
 
   render() {
     const { currentUser, fetchedMetadata, updateAvailable, onboarded, darkMode } = this.state;
+    let toastOptions = {};
+
+    if (darkMode) {
+      toastOptions = {
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      };
+    }
 
     if (currentUser && fetchedMetadata === false) {
       tooljetService.fetchMetaData().then((data) => {
@@ -66,6 +77,8 @@ class App extends React.Component {
 
     return (
       <>
+        <ToastContainer />
+
         <Router history={history}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
@@ -95,8 +108,6 @@ class App extends React.Component {
             )}
 
             {!onboarded && <OnboardingModal />}
-
-            <ToastContainer />
 
             <PrivateRoute
               exact
@@ -161,6 +172,13 @@ class App extends React.Component {
             />
             <PrivateRoute
               exact
+              path="/library"
+              component={Library}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
               path="/settings"
               component={SettingsPage}
               switchDarkMode={this.switchDarkMode}
@@ -168,15 +186,7 @@ class App extends React.Component {
             />
           </div>
         </Router>
-        <Toaster
-          toastOptions={{
-            style: {
-              borderRadius: '10px',
-              background: '#333',
-              color: '#fff',
-            },
-          }}
-        />
+        <Toaster toastOptions={toastOptions} />
       </>
     );
   }

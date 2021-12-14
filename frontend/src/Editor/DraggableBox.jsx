@@ -45,18 +45,13 @@ function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
 }
 
-function getStyles(left, top, isDragging, component, isSelectedComponent, currentLayoutOptions) {
-  // const transform = `translate3d(${left}px, ${top}px, 0)`;
+function getStyles(isDragging, isSelectedComponent) {
   return {
     position: 'absolute',
-    // transform,
-    // WebkitTransform: transform,
     zIndex: isSelectedComponent ? 2 : 1,
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
     opacity: isDragging ? 0 : 1,
-    height: isDragging ? 0 : '100%',
-    width: computeWidth(currentLayoutOptions),
   };
 }
 
@@ -64,8 +59,8 @@ export const DraggableBox = function DraggableBox({
   id,
   mode,
   title,
-  left,
-  top,
+  _left,
+  _top,
   parent,
   component,
   index,
@@ -85,7 +80,7 @@ export const DraggableBox = function DraggableBox({
   removeComponent,
   currentLayout,
   layouts,
-  deviceWindowWidth,
+  _deviceWindowWidth,
   isSelectedComponent,
   draggingStatusChanged,
   darkMode,
@@ -142,10 +137,10 @@ export const DraggableBox = function DraggableBox({
     padding: '0px',
   };
 
-  let refProps = {};
+  let _refProps = {};
 
   if (mode === 'edit' && canDrag) {
-    refProps = {
+    _refProps = {
       ref: drag,
     };
   }
@@ -170,7 +165,7 @@ export const DraggableBox = function DraggableBox({
   }, [layoutData.height, layoutData.width, layoutData.left, layoutData.top, currentLayout]);
 
   const gridWidth = canvasWidth / 43;
-  const width = (canvasWidth * currentLayoutOptions.width) / 43
+  const width = (canvasWidth * currentLayoutOptions.width) / 43;
 
   return (
     <div
@@ -182,6 +177,7 @@ export const DraggableBox = function DraggableBox({
           className={`draggable-box`}
           onMouseOver={() => setMouseOver(true)}
           onMouseLeave={() => setMouseOver(false)}
+          style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd
             style={{ ...style }}
@@ -201,15 +197,15 @@ export const DraggableBox = function DraggableBox({
             onDrag={(e) => {
               e.preventDefault();
               e.stopImmediatePropagation();
-              setDragging(true)
+              setDragging(true);
             }}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
             enableResizing={mode === 'edit' && !readOnly}
             disableDragging={mode !== 'edit' || readOnly}
             onDragStop={(e, direction) => {
-              setDragging(false)
-              onDragStop(e, id, direction, currentLayout, currentLayoutOptions)
+              setDragging(false);
+              onDragStop(e, id, direction, currentLayout, currentLayoutOptions);
             }}
             cancel={`div.table-responsive.jet-data-table, div.calendar-widget`}
             onDragStart={(e) => e.stopPropagation()}
