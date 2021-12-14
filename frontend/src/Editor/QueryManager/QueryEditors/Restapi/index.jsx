@@ -74,6 +74,8 @@ class Restapi extends React.Component {
   render() {
     const { options } = this.state;
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
+    const queryName = this.props.queryName;
+
     return (
       <div>
         <div className="mb-3 mt-2">
@@ -113,6 +115,7 @@ class Restapi extends React.Component {
                     changeOption(this, 'url', value);
                   }}
                   placeholder="Enter request URL"
+                  componentName={`${queryName}::url`}
                 />
               </div>
             </div>
@@ -124,6 +127,7 @@ class Restapi extends React.Component {
             onChange={this.handleChange}
             removeKeyValuePair={this.removeKeyValuePair}
             darkMode={this.props.darkMode}
+            componentName={queryName}
           />
         </div>
       </div>

@@ -23,9 +23,9 @@ const DynamicForm = ({
   currentState,
   isEditMode,
   optionsChanged,
+  queryName,
 }) => {
   // if(schema.properties)  todo add empty check
-
   React.useEffect(() => {
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
@@ -91,7 +91,8 @@ const DynamicForm = ({
       case 'toggle':
         return {
           defaultChecked: options[$key],
-          onChange: () => optionchanged($key, !options[$key]?.value),
+          checked: options[$key]?.value,
+          onChange: (e) => optionchanged($key, e.target.checked),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -140,6 +141,7 @@ const DynamicForm = ({
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
+          componentName: queryName ? `${queryName}::${$key ?? ''}` : null,
           ignoreBraces,
         };
       default:

@@ -75,7 +75,7 @@ export const componentTypes = [
       properties: {
         title: { value: 'Table' },
         visible: { value: true },
-        loadingState: { value: false },
+        loadingState: { value: '{{false}}' },
         data: {
           value:
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
@@ -145,7 +145,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#3c92dc' },
+        backgroundColor: { value: '#375FCF' },
         textColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         borderRadius: { value: '{{0}}' },
@@ -576,7 +576,9 @@ export const componentTypes = [
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      value: false,
+    },
     definition: {
       others: {
         showOnDesktop: { value: true },
@@ -644,7 +646,7 @@ export const componentTypes = [
     description: 'Select a date range',
     component: 'DaterangePicker',
     defaultSize: {
-      width: 8,
+      width: 10,
       height: 30,
     },
     others: {
@@ -887,9 +889,9 @@ export const componentTypes = [
       },
       properties: {
         label: { value: 'Select' },
-        values: { value: '[]' },
-        option_values: { value: '[1,2,3]' },
-        display_values: { value: '["one", "two", "three"]' },
+        value: { value: '{{[2,3]}}' },
+        values: { value: '{{[1,2,3]}}' },
+        display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true },
       },
       events: [],

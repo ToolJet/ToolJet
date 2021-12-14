@@ -12,6 +12,7 @@ import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
@@ -41,6 +42,8 @@ export const Container = ({
   showComments,
   appVersionsId,
   socket,
+  handleUndo,
+  handleRedo,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -58,6 +61,9 @@ export const Container = ({
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
   const router = useRouter();
+
+  useHotkeys('⌘+z, control+z', () => handleUndo());
+  useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
 
   useEffect(() => {
     setBoxes(components);
@@ -303,7 +309,7 @@ export const Container = ({
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
 
-    const x = (e.nativeEvent.offsetX) * 100 / canvasWidth;
+    const x = (e.nativeEvent.offsetX * 100) / canvasWidth;
 
     const elementIndex = commentsPreviewList.length;
     setCommentsPreviewList([
@@ -405,7 +411,7 @@ export const Container = ({
             <div
               key={index}
               style={{
-                transform: `translate(${previewComment.x * canvasWidth / 100}px, ${previewComment.y}px)`,
+                transform: `translate(${(previewComment.x * canvasWidth) / 100}px, ${previewComment.y}px)`,
               }}
             >
               <label className="form-selectgroup-item comment-preview-bubble">

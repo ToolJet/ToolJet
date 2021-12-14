@@ -3,6 +3,7 @@ import React from 'react';
 import DynamicForm from '@/_components/DynamicForm';
 
 import { Restapi } from './Restapi';
+import { Runjs } from './Runjs';
 import { Stripe } from './Stripe';
 
 import MysqlSchema from './Mysql.schema.json';
@@ -37,6 +38,7 @@ const Gcs = ({ ...rest }) => <DynamicForm schema={GcsSchema} {...rest} />;
 
 export const allSources = {
   Restapi,
+  Runjs,
   Stripe,
   Mysql,
   Postgresql,

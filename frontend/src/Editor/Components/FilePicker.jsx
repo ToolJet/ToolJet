@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 export const FilePicker = ({ width, height, darkMode, properties, styles, fireEvent, setExposedVariable }) => {
   const { enableDropzone, enablePicker, enableMultiple, maxFileCount, fileType, maxSize, minSize } = properties;
@@ -82,7 +82,7 @@ export const FilePicker = ({ width, height, darkMode, properties, styles, fireEv
       reader.onerror = (error) => {
         reject(error);
         if (error.name == 'NotReadableError') {
-          toast.error(error.message, { hideProgressBar: true, autoClose: 3000 });
+          toast.error(error.message);
         }
       };
     }).then((result) => {
@@ -125,7 +125,7 @@ export const FilePicker = ({ width, height, darkMode, properties, styles, fireEv
       setSelectedFiles(fileData);
       setExposedVariable('file', fileData).then(() => {
         setAccepted(true);
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
           setTimeout(() => {
             fireEvent('onFileSelected');
             setShowSelectedFiles(true);
@@ -137,9 +137,7 @@ export const FilePicker = ({ width, height, darkMode, properties, styles, fireEv
     }
 
     if (fileRejections.length > 0) {
-      fileRejections.map((rejectedFile) =>
-        toast.error(rejectedFile.errors[0].message, { hideProgressBar: true, autoClose: 3000 })
-      );
+      fileRejections.map((rejectedFile) => toast.error(rejectedFile.errors[0].message));
     }
 
     return () => {
