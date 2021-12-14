@@ -24,6 +24,9 @@ import MssqlSchema from './Database/Mssql.schema.json';
 import S3Schema from './Database/S3.schema.json';
 import GcsSchema from './Database/Gcs.schema.json';
 
+// Other sources
+import RunjsSchema from './Api/Runjs.schema.json';
+
 const Airtable = ({ ...rest }) => <DynamicForm schema={AirtableSchema} {...rest} />;
 const Restapi = ({ ...rest }) => <DynamicForm schema={RestapiSchema} {...rest} />;
 const Graphql = ({ ...rest }) => <DynamicForm schema={GraphqlSchema} {...rest} />;
@@ -59,8 +62,10 @@ export const ApiSources = [
   GooglesheetSchema.source,
   SlackSchema.source,
 ];
+
+export const OtherSources = [RunjsSchema.source];
 export const CloudStorageSources = [S3Schema.source, GcsSchema.source];
-export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources];
+export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...OtherSources];
 
 export const SourceComponents = {
   Elasticsearch,

@@ -33,7 +33,7 @@ export default class FirestoreQueryService implements QueryService {
             queryOptions.where_field,
             queryOptions.where_value,
             queryOptions.order_field,
-            queryOptions.order_type,
+            queryOptions.order_type
           );
           break;
         case 'get_document':

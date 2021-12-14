@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -26,6 +26,7 @@ export const Calendar = function ({
   containerProps,
   removeComponent,
   setExposedVariable,
+  exposedVariables,
 }) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
@@ -38,7 +39,9 @@ export const Calendar = function ({
   const eventPropGetter = (event) => {
     const backgroundColor = event.color;
     const textStyle =
-      event.textOrientation === 'vertical' ? { writingMode: 'vertical-rl', textOrientation: 'mixed' } : {};
+      event.textOrientation === 'vertical' && exposedVariables.currentView != 'month'
+        ? { writingMode: 'vertical-rl', textOrientation: 'mixed' }
+        : {};
     const color = event.textColor ?? 'white';
     const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5, color };
 
@@ -73,6 +76,11 @@ export const Calendar = function ({
     ? properties.defaultView
     : allowedCalendarViews[0];
 
+  useEffect(() => {
+    setExposedVariable('currentView', defaultView);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultView]);
+
   const components = {
     timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>All day</div>,
     week: {
@@ -81,7 +89,7 @@ export const Calendar = function ({
   };
 
   return (
-    <div id={id}>
+    <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }}>
       <ReactCalendar
         className={`calendar-widget
         ${darkMode ? 'dark-mode' : ''}
