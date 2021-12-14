@@ -17,6 +17,7 @@ import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
+import { toast } from 'react-hot-toast';
 
 export function CodeHinter({
   initialValue,
@@ -84,6 +85,7 @@ export function CodeHinter({
         return content;
     }
   };
+  // const [copySuccess, copyToClipboard] = useCopy();
 
   const getPreview = () => {
     const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
@@ -108,8 +110,14 @@ export function CodeHinter({
 
     return (
       <animated.div style={{ ...slideInStyles, overflow: 'hidden' }}>
-        <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
+        <div
+          onBlur={() => setFocused(false)}
+          onClick={() => setFocused(true)}
+          ref={heightRef}
+          className="dynamic-variable-preview bg-green-lt px-1 py-1"
+        >
           <div>
+            <PopupIcon callback={() => copyToClipboard(content)} icon="copy" />
             <div className="heading my-1">
               <span>{previewType}</span>
             </div>
@@ -150,7 +158,7 @@ export function CodeHinter({
 
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
-      {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
+      {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} icon="portal-open" />}
       <div
         className={`code-hinter ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
@@ -188,7 +196,7 @@ export function CodeHinter({
   );
 }
 
-const PopupIcon = ({ callback }) => {
+const PopupIcon = ({ callback, icon }) => {
   return (
     <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
       <OverlayTrigger
@@ -199,7 +207,7 @@ const PopupIcon = ({ callback }) => {
       >
         <img
           className="svg-icon m-2 popup-btn"
-          src="/assets/images/icons/portal-open.svg"
+          src={`/assets/images/icons/${icon}.svg`}
           width="12"
           height="12"
           onClick={(e) => {
@@ -220,3 +228,13 @@ const Portal = ({ children, ...restProps }) => {
 
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;
+
+const copyToClipboard = (text) => {
+  var textArea = document.createElement('textarea');
+  textArea.value = text;
+  document.body.appendChild(textArea);
+  textArea.select();
+  document.execCommand('copy');
+  toast.success('Text Copied');
+  textArea.remove();
+};
