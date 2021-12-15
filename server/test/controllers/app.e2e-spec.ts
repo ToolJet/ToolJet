@@ -8,6 +8,7 @@ import { clearDB, createUser, createNestAppInstance } from '../test.helper';
 describe('Authentication', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
+  const originalEnv = process.env;
 
   beforeEach(async () => {
     await clearDB();
@@ -59,6 +60,28 @@ describe('Authentication', () => {
       .post('/api/authenticate')
       .send({ email: 'amdin@tooljet.io', password: 'pwd' })
       .expect(401);
+  });
+
+  describe('if password login is disabled', () => {
+    beforeAll(async () => {
+      process.env = { ...originalEnv, DISABLE_PASSWORD_LOGIN: 'true' };
+    });
+
+    it('should not create new users', async () => {
+      const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('does authenticate if valid credentials', async () => {
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'admin@tooljet.io', password: 'password' })
+        .expect(403);
+    });
+
+    afterAll(async () => {
+      process.env = { ...originalEnv };
+    });
   });
 
   afterAll(async () => {
