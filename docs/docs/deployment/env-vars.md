@@ -48,6 +48,14 @@ If you want to restrict the signups and allow new users only by invitations, set
 You will still be able to see the signup page but won't be able to successfully submit the form.
 :::
 
+#### Disable login and signup using username and password
+
+:::info
+Use this feature only if you have configured other methods of authentication, such as SSO.
+:::
+
+If you want to restrict users from logging in using regular username and password, set the environment variable `DISABLE_PASSWORD_LOGIN` to `true`.
+
 #### Serve client as a server end-point ( optional )
 
 By default, the `SERVE_CLIENT` variable will be set to `false` and the server won't serve the client at its `/` end-point.
