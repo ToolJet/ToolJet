@@ -46,14 +46,7 @@ export const Tabs = function Tabs({ id, component, width, height, containerProps
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
 
   return (
-    <div
-      data-disabled={parsedDisabledState}
-      className="jet-tabs card"
-      onClick={() => {
-        containerProps.onComponentClick(id, component);
-      }}
-      style={computedStyles}
-    >
+    <div data-disabled={parsedDisabledState} className="jet-tabs card" style={computedStyles}>
       <ul className="nav nav-tabs" data-bs-toggle="tabs">
         {parsedTabs.map((tab) => (
           <li className="nav-item" onClick={() => setCurrentTab(tab.id)} key={tab.id}>
