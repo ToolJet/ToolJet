@@ -33,7 +33,7 @@ export const Container = function Container({ id, component, width, height, cont
       className="jet-container"
       id={id}
       ref={parentRef}
-      onClick={() => containerProps.onComponentClick(id, component)}
+      onClick={(e) => { if (e.target.className === 'real-canvas') containerProps.onComponentClick(id, component) }} //Hack, should find a better solution - to prevent losing z index when comtainer element is clicked
       style={computedStyles}
     >
       <SubContainer containerCanvasWidth={width} parent={id} {...containerProps} parentRef={parentRef} removeComponent={removeComponent} />

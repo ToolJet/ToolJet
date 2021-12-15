@@ -56,7 +56,7 @@ export const Datepicker = function Datepicker({
         dateFormat={isDateFormat}
         placeholderText={defaultValue}
         inputProps={{ placeholder: defaultValue }}
-        onOpen={(event) => onComponentClick(id, component, event)}
+        onOpen={(event) => { onComponentClick(id, component, event) }}
         renderInput={(props) => {
           return (
             <input
