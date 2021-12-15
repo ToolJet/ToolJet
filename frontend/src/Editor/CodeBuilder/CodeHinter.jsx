@@ -17,6 +17,7 @@ import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
+import { toast } from 'react-hot-toast';
 
 export function CodeHinter({
   initialValue,
@@ -110,11 +111,18 @@ export function CodeHinter({
 
     return (
       <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
-        <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
+        <div
+          onBlur={() => setFocused(false)}
+          onClick={() => setFocused(true)}
+          ref={heightRef}
+          className="dynamic-variable-preview bg-green-lt px-1 py-1"
+        >
           <div>
+            <PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="copy to clipboard" />
             <div className="heading my-1">
               <span>{previewType}</span>
             </div>
+
             {content}
           </div>
         </div>
@@ -157,7 +165,13 @@ export function CodeHinter({
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >
-        {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
+        {usePortalEditor && (
+          <CodeHinter.PopupIcon
+            callback={handleToggle}
+            icon="portal-open"
+            tip="Pop out code editor into a new window"
+          />
+        )}
         <CodeHinter.Portal
           isOpen={isOpen}
           callback={setIsOpen}
@@ -192,18 +206,18 @@ export function CodeHinter({
   );
 }
 
-const PopupIcon = ({ callback }) => {
+const PopupIcon = ({ callback, icon, tip }) => {
   return (
     <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"
         delay={{ show: 800, hide: 100 }}
-        overlay={<Tooltip id="button-tooltip">{'Pop out code editor into a new window'}</Tooltip>}
+        overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
       >
         <img
           className="svg-icon m-2 popup-btn"
-          src="/assets/images/icons/portal-open.svg"
+          src={`/assets/images/icons/${icon}.svg`}
           width="12"
           height="12"
           onClick={(e) => {
@@ -224,3 +238,13 @@ const Portal = ({ children, ...restProps }) => {
 
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;
+
+const copyToClipboard = (text) => {
+  var textArea = document.createElement('textarea');
+  textArea.value = text;
+  document.body.appendChild(textArea);
+  textArea.select();
+  document.execCommand('copy');
+  toast.success('Text Copied');
+  textArea.remove();
+};

@@ -2686,8 +2686,7 @@ input[type='text'] {
 
 .code-hinter-wrapper  .popup-btn {
   position: absolute;
-  display: none;
-  cursor: pointer;
+  display: none!important;
 }
 
 .code-hinter-wrapper:hover {
@@ -2695,6 +2694,11 @@ input[type='text'] {
     display: block!important;
     z-index: 1;
   }
+}
+
+.popup-btn {
+  cursor: pointer!important;
+  display: block;
 }
 
 .modal-portal-wrapper {
@@ -2768,6 +2772,10 @@ input[type='text'] {
 
   .dynamic-variable-preview {
     padding: 4px!important;
+
+    .heading {
+      margin-top: -1.4rem!important;
+    }
   }
 }
 
