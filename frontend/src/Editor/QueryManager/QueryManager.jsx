@@ -70,7 +70,7 @@ let QueryManager = class QueryManager extends React.Component {
           }
 
           this.setState({
-            options: selectedQuery.options,
+            options: paneHeightChanged ? this.state.options : selectedQuery.options,
             selectedDataSource: source,
             selectedQuery,
             queryName: selectedQuery.name,
@@ -242,7 +242,7 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   renderQueryEditorIcon = () => {
-    if (this.state.queryPaneHeight === '30%') {
+    if (this.props.queryPaneHeight >= 80) {
       return (
         <span
           className="cursor-pointer m-3"
