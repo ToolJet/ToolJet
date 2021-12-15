@@ -15,7 +15,7 @@
       "header_prefix": { "type": "string" },
       "access_token_url": { "type": "string" },
       "client_id": { "type": "string" },
-      "client_secret": { "type": "string", "encrypted": false },
+      "client_secret": { "type": "string", "encrypted": true },
       "scopes": { "type": "string" },
       "auth_url": { "type": "string" },
       "client_auth": { "type": "string" },
