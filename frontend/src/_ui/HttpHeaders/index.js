@@ -49,6 +49,7 @@ export default ({ getter, options = [], optionchanged }) => {
                 <td>
                   <input
                     type="text"
+                    value={option[1]}
                     className="form-control no-border"
                     placeholder="value"
                     autoComplete="off"
