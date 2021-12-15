@@ -35,6 +35,7 @@ export function CodeHinter({
   componentName = null,
   usePortalEditor = true,
 }) {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
     lineNumbers: lineNumbers ?? false,
     lineWrapping: lineWrapping ?? true,
@@ -87,10 +88,11 @@ export function CodeHinter({
 
   const getPreview = () => {
     const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
+    const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
     if (error) {
       return (
-        <animated.div style={{ ...slideInStyles, overflow: 'hidden' }}>
+        <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
           <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
             <div>
               <div className="heading my-1">
@@ -107,7 +109,7 @@ export function CodeHinter({
     const content = getPreviewContent(preview, previewType);
 
     return (
-      <animated.div style={{ ...slideInStyles, overflow: 'hidden' }}>
+      <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
         <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
           <div>
             <div className="heading my-1">
@@ -150,12 +152,12 @@ export function CodeHinter({
 
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
-      {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
       <div
         className={`code-hinter ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >
+        {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
         <CodeHinter.Portal
           isOpen={isOpen}
           callback={setIsOpen}
@@ -164,6 +166,8 @@ export function CodeHinter({
           customComponent={getPreview}
           forceUpdate={forceUpdate}
           optionalProps={{ height: 300 }}
+          darkMode={darkMode}
+          selectors={{ className: 'preview-block-portal' }}
         >
           <CodeMirror
             value={initialValue}
