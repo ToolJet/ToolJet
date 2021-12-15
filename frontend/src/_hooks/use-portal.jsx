@@ -10,9 +10,13 @@ const usePortal = ({ children, ...restProps }) => {
     customComponent = () => null,
     forceUpdate,
     optionalProps = {},
+    selectors = {},
   } = restProps;
 
-  const renderCustomComponent = customComponent && customComponent();
+  const renderCustomComponent = ({ component, ...restProps }) => {
+    const { selectors } = restProps;
+    return React.createElement('div', { ...selectors }, component);
+  };
 
   React.useEffect(() => {
     if (isOpen) {
@@ -28,7 +32,7 @@ const usePortal = ({ children, ...restProps }) => {
           <div className="editor-container" key={key}>
             {React.cloneElement(children, { ...optionalProps })}
           </div>
-          {renderCustomComponent}
+          {renderCustomComponent({ component: customComponent(), selectors: selectors })}
         </Portal>
       )}
       {children}
