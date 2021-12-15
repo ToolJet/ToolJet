@@ -1,7 +1,7 @@
 import { resolveReferences } from '@/_helpers/utils';
 
 export const resolveProperties = (component, currentState, defaultValue, customResolvables) => {
-  if (currentState && currentState.components[component.name]) {
+  if (currentState) {
     return Object.entries(component.definition.properties).reduce(
       (properties, entry) => ({
         ...properties,
@@ -12,12 +12,12 @@ export const resolveProperties = (component, currentState, defaultValue, customR
   } else return {};
 };
 
-export const resolveStyles = (component, currentState) => {
-  if (currentState && currentState.components[component.name]) {
+export const resolveStyles = (component, currentState, defaultValue, customResolvables) => {
+  if (currentState) {
     const styles = component.definition.styles;
     return Object.entries(styles).reduce((resolvedStyles, entry) => {
       const key = entry[0];
-      const value = resolveReferences(entry[1].value, currentState);
+      const value = resolveReferences(entry[1].value, currentState, defaultValue, customResolvables);
       return {
         ...resolvedStyles,
         ...{ [key]: value },

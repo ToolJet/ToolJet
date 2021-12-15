@@ -104,7 +104,7 @@ export const Box = function Box({
 
   const ComponentToRender = AllComponents[component.component];
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
-  const resolvedStyles = resolveStyles(component, currentState);
+  const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
 
   let exposedVariables = {};
 
