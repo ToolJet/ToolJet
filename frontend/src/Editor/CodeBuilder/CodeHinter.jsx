@@ -122,7 +122,6 @@ export function CodeHinter({
             <div className="heading my-1">
               <span>{previewType}</span>
             </div>
-
             {content}
           </div>
         </div>

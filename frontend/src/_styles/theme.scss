@@ -2772,7 +2772,6 @@ input[type='text'] {
 
   .dynamic-variable-preview {
     padding: 4px!important;
-
     .heading {
       margin-top: -1.4rem!important;
     }
@@ -2791,7 +2790,6 @@ input[type='text'] {
   border-top-right-radius: 5px!important;
   width: 498px!important;
   outline: 0.75px solid;
-
 
   @include theme-border($light-theme: true, $outline:true);
 
