@@ -789,7 +789,11 @@ class Editor extends React.Component {
               <div
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                 style={{ transform: `scale(${zoomLevel})` }}
-                onClick={() => this.switchSidebarTab(2)}
+                onClick={(e) => {
+                  if (['real-canvas', 'modal'].includes(e.target.className)) {
+                    this.switchSidebarTab(2);
+                  }
+                }}
               >
                 <div
                   className="canvas-area"
