@@ -34,6 +34,7 @@ export function CodeHinter({
   lineWrapping,
   componentName = null,
   usePortalEditor = true,
+  isScrollable = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -150,10 +151,11 @@ export function CodeHinter({
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
+  const defaultClassName = isScrollable ? '' : 'code-hinter';
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
       <div
-        className={`code-hinter ${className || 'codehinter-default-input'}`}
+        className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >

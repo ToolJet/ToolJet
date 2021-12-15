@@ -73,6 +73,7 @@ const DynamicForm = ({
     initialValue,
     height = 'auto',
     ignoreBraces = false,
+    isScrollable = false,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -143,6 +144,7 @@ const DynamicForm = ({
           height,
           componentName: queryName ? `${queryName}::${$key ?? ''}` : null,
           ignoreBraces,
+          isScrollable,
         };
       default:
         return {};
