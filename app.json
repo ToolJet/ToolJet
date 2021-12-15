@@ -40,6 +40,10 @@
     "SSO_DISABLE_SIGNUP": {
       "description": "Disable sign-up via SSO",
       "value": ""
+    },
+    "DISABLE_PASSWORD_LOGIN": {
+      "description": "Disable logging in with username and password. (Do not turn this on unless you've configured SSO and additional admins)",
+      "value": "false"
     }
   },
   "formation": {
