@@ -9,7 +9,6 @@
     "target": "es2019",
     "allowJs": true,
     "sourceMap": true,
-    "rootDirs": [".", "../plugins"],
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
