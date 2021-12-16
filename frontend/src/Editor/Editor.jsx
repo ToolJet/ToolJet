@@ -70,7 +70,7 @@ class Editor extends React.Component {
       app: {},
       allComponentTypes: componentTypes,
       isQueryPaneDragging: false,
-      queryPaneHeight: 30,
+      queryPaneHeight: 70,
       isLoading: true,
       users: null,
       appId,
