@@ -1,8 +1,14 @@
 {
   "name": "@tooljet/plugins",
   "private": true,
-  "main": "index.js",
+  "source": "index.js",
+  "main": "dist/index.js",
+  "scripts": {
+    "watch": "parcel watch",
+    "build": "parcel build"
+  },
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "lerna": "^4.0.0",
+    "parcel": "^2.0.1"
   }
 }

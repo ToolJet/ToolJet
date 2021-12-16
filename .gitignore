@@ -34,3 +34,4 @@
 /docs/.firebaserc
 /node_modules
 /frontend/cypress/videos
+.parcel-cache
