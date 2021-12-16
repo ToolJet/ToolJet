@@ -15,8 +15,9 @@ A Password Input widget provides a way for the users to securely enter a passwor
 | Validation      | description |
 | ----------- | ----------- |
 | Regex | Use this field to enter a Regular Expression that will validate the password constraints. |
-| Min length | Enter the number for minimum length of password allowed.|
-| Max length | Enter the number for maximum length of password allowed. |
+| Min length | Enter the number for a minimum length of password allowed.|
+| Max length | Enter the number for the maximum length of password allowed. |
+| Custom validation | If the condition results true, the validation passes, and if false, it will display the string. For example: `{{components.passwordInput1.value === 'something' ? true: 'value should be something'}}` |
 
 #### Layout
 
