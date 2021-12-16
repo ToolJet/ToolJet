@@ -11,8 +11,6 @@ import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
-import MaximizeIcon from '../Icons/maximize.svg';
-import MinimizeIcon from '../Icons/minimize.svg';
 
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
