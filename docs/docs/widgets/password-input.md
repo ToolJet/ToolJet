@@ -24,7 +24,7 @@ A Password Input widget provides a way for the users to securely enter a passwor
 | Layout      | description |
 | ----------- | ----------- |
 | Show on desktop | If enabled, the Password Input widget will display in the desktop view else it will not appear. This is enabled by default.|
-| Show on mobile | This property have toggle switch. If enabled, the Password Input wisget will display in the mobile view else it will not appear.|
+| Show on mobile | If enabled, the Password Input widget will display in the mobile view else it will not appear.|
 
 #### Styles
 
