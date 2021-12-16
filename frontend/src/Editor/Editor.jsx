@@ -643,12 +643,6 @@ class Editor extends React.Component {
     });
   };
 
-  toggleQueryPaneHeight = () => {
-    this.setState({
-      queryPaneHeight: this.state.queryPaneHeight >= 80 ? 30 : 80,
-    });
-  };
-
   toggleQueryEditor = () => {
     this.setState((prev) => ({
       showQueryEditor: !prev.showQueryEditor,
@@ -1088,7 +1082,6 @@ class Editor extends React.Component {
                           <QueryManager
                             toggleQueryEditor={this.toggleQueryEditor}
                             dataSources={dataSources}
-                            toggleQueryPaneHeight={this.toggleQueryPaneHeight}
                             dataQueries={dataQueries}
                             mode={editingQuery ? 'edit' : 'create'}
                             selectedQuery={selectedQuery}
