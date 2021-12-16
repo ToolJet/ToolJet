@@ -1,14 +1,13 @@
+import allPlugins from '@tooljet/plugins';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-const got = require('got');
 import { User } from 'src/entities/user.entity';
 import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
-// import { allPlugins } from 'src/modules/data_sources/plugins';
-import allPlugins from '@tooljet/plugins';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
+const got = require('got');
 
 @Injectable()
 export class DataQueriesService {
