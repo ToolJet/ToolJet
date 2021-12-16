@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+const got = require('got');
 import { User } from 'src/entities/user.entity';
 import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
-import { allPlugins } from 'src/modules/data_sources/plugins';
+// import { allPlugins } from 'src/modules/data_sources/plugins';
+import allPlugins from '@tooljet/plugins';
 import { DataSource } from 'src/entities/data_source.entity';
-import RestapiQueryService from '@plugins/datasources/restapi';
 import { DataSourcesService } from './data_sources.service';
 
 @Injectable()
@@ -83,11 +84,34 @@ export class DataQueriesService {
     return result;
   }
 
+  /* This function fetches the access token from the token url set in REST API (oauth) datasource */
+  async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
+    const tooljetHost = process.env.TOOLJET_HOST;
+    const accessTokenUrl = sourceOptions['access_token_url'];
+
+    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
+    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+
+    const response = await got(accessTokenUrl, {
+      method: 'post',
+      json: {
+        code,
+        client_id: sourceOptions['client_id'],
+        client_secret: sourceOptions['client_secret'],
+        grant_type: sourceOptions['grant_type'],
+        redirect_uri: `${tooljetHost}/oauth2/authorize`,
+        ...customParams,
+      },
+    });
+
+    const result = JSON.parse(response.body);
+    return { access_token: result['access_token'] };
+  }
+
   /* This function fetches access token from authorization code */
   async authorizeOauth2(dataSource: DataSource, code: string): Promise<any> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
-    const queryService = new RestapiQueryService();
-    const tokenData = await queryService.fetchOAuthToken(sourceOptions, code);
+    const tokenData = await this.fetchOAuthToken(sourceOptions, code);
 
     const tokenOptions = [
       {

@@ -110,27 +110,4 @@ export default class RestapiQueryService implements QueryService {
     };
   }
 
-  /* This function fetches the access token from the token url set in REST API (oauth) datasource */
-  async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
-    const tooljetHost = process.env.TOOLJET_HOST;
-    const accessTokenUrl = sourceOptions['access_token_url'];
-
-    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
-    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
-
-    const response = await got(accessTokenUrl, {
-      method: 'post',
-      json: {
-        code,
-        client_id: sourceOptions['client_id'],
-        client_secret: sourceOptions['client_secret'],
-        grant_type: sourceOptions['grant_type'],
-        redirect_uri: `${tooljetHost}/oauth2/authorize`,
-        ...customParams,
-      },
-    });
-
-    const result = JSON.parse(response.body);
-    return { access_token: result['access_token'] };
-  }
 }
