@@ -1,5 +1,4 @@
-const airtable = require('./packages/airtable/lib/airtable');
-
+import airtable from './packages/airtable/lib/airtable'
 export default {
   airtable
 }

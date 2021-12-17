@@ -82,8 +82,7 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const plugins = await allPlugins;
-      const serviceClass = plugins[kind];
+      const serviceClass = new allPlugins[kind]();
       const service = new serviceClass();
       result = await service.testConnection(sourceOptions);
     } catch (error) {
@@ -101,8 +100,7 @@ export class DataSourcesService {
       const provider = options.find((option) => option['key'] === 'provider')['value'];
       const authCode = options.find((option) => option['key'] === 'code')['value'];
 
-      const plugins = await allPlugins;
-      const queryService = new plugins[provider]();
+      const queryService = new allPlugins[provider]();
       const accessDetails = await queryService.accessDetailsFrom(authCode);
 
       for (const row of accessDetails) {
@@ -173,8 +171,7 @@ export class DataSourcesService {
   }
 
   async getAuthUrl(provider): Promise<object> {
-    const plugins = await allPlugins;
-    const service = new plugins[provider]();
+    const service = new allPlugins[provider]();
     return { url: service.authUrl() };
   }
 }

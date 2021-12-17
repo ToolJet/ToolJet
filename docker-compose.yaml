@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   client:
@@ -14,7 +14,7 @@ services:
     environment:
       - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
       - NODE_ENV=development
-    command: ['npm', 'start']
+    command: ["npm", "start"]
 
   server:
     build:
@@ -25,6 +25,7 @@ services:
       - postgres
     volumes:
       - ./server:/app:delegated
+      - ./plugins:/app/plugins:delegated
       - /app/node_modules/
     ports:
       - 3000:3000

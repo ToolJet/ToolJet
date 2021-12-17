@@ -9,6 +9,7 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 const got = require('got');
 
+console.log('faef', allPlugins);
 @Injectable()
 export class DataQueriesService {
   constructor(
@@ -74,8 +75,7 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
     const kind = dataQuery.kind;
-    const plugins = await allPlugins;
-    const pluginServiceClass = plugins[kind];
+    const pluginServiceClass = new allPlugins[kind]();
 
     const service = new pluginServiceClass();
     const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
