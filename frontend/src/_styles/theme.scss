@@ -2818,3 +2818,16 @@ input[type='text'] {
 .canvas-background-picker {
   position: fixed;
 }
+
+/**
+ * Search Box
+ */
+ .search-box-wrapper {
+  margin-right: 10px;
+  input {
+    width: 200px;
+  }
+  .input-icon .input-icon-addon {
+    display: flex;
+  }
+ }

@@ -44,7 +44,49 @@ export class FoldersService {
       });
     }
 
-    const allViewableApps = await createQueryBuilder(App, 'apps')
+    let allFolders: Folder[] = [];
+    let folders: Folder[] = [];
+
+    if (searchKey) {
+      const allViewableApps = await createQueryBuilder(App, 'apps')
+        .select('apps.id')
+        .innerJoin('apps.groupPermissions', 'group_permissions')
+        .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
+        .innerJoin(
+          UserGroupPermission,
+          'user_group_permissions',
+          'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+        )
+        .where('user_group_permissions.user_id = :userId', { userId: user.id })
+        .andWhere('app_group_permissions.read = :value', { value: true })
+        .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
+          value: true,
+          organizationId: user.organizationId,
+          userId: user.id,
+        })
+        .getMany();
+
+      const allViewableAppIds = allViewableApps.map((app) => app.id);
+
+      if (allViewableAppIds.length !== 0) {
+        allFolders = await createQueryBuilder(Folder, 'folders')
+          .leftJoinAndSelect('folders.folderApps', 'folder_apps')
+          .where('folder_apps.app_id IN(:...allViewableAppIds)', {
+            allViewableAppIds,
+          })
+          .andWhere('folders.organization_id = :organizationId', {
+            organizationId: user.organizationId,
+          })
+          .orWhere('folder_apps.app_id IS NULL')
+          .orderBy('folders.name', 'ASC')
+          .distinct()
+          .getMany();
+      }
+    }
+    if (searchKey && allFolders.length === 0) {
+      return [];
+    }
+    const allViewableAppsWithSearch = await createQueryBuilder(App, 'apps')
       .select('apps.id')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
@@ -67,13 +109,13 @@ export class FoldersService {
       )
       .getMany();
 
-    const allViewableAppIds = allViewableApps.map((app) => app.id);
+    const allViewableAppIdsWithSearch = allViewableAppsWithSearch.map((app) => app.id);
 
-    if (allViewableAppIds.length !== 0) {
-      return await createQueryBuilder(Folder, 'folders')
+    if (allViewableAppIdsWithSearch.length !== 0) {
+      folders = await createQueryBuilder(Folder, 'folders')
         .leftJoinAndSelect('folders.folderApps', 'folder_apps')
-        .where('folder_apps.app_id IN(:...allViewableAppIds)', {
-          allViewableAppIds,
+        .where('folder_apps.app_id IN(:...allViewableAppIdsWithSearch)', {
+          allViewableAppIdsWithSearch,
         })
         .andWhere('folders.organization_id = :organizationId', {
           organizationId: user.organizationId,
@@ -82,9 +124,20 @@ export class FoldersService {
         .orderBy('folders.name', 'ASC')
         .distinct()
         .getMany();
-    } else {
-      return [];
     }
+
+    if (searchKey) {
+      allFolders.forEach((folder, index) => {
+        const currentFolder = folders.filter((f) => f.id === folder.id);
+        if (currentFolder && currentFolder.length > 0) {
+          allFolders[index] = currentFolder[0];
+        } else {
+          allFolders[index].folderApps = [];
+          allFolders[index].generateCount();
+        }
+      });
+    }
+    return allFolders;
   }
 
   async findOne(folderId: string): Promise<Folder> {

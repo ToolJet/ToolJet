@@ -22,6 +22,10 @@ export const Folders = function Folders({
   const [newFolderName, setNewFolderName] = useState('');
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
 
+  useEffect(() => {
+    setActiveFolder(currentFolder);
+  }, [currentFolder, setActiveFolder]);
+
   function saveFolder() {
     if (!newFolderName || !newFolderName.trim()) {
       toast.warn("folder name can't be empty.", {

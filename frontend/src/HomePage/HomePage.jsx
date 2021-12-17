@@ -61,6 +61,7 @@ class HomePage extends React.Component {
     this.setState({
       foldersLoading: true,
       appSearchKey: appSearchKey,
+      currentFolder: {},
     });
 
     folderService.getAll(appSearchKey).then((data) =>
@@ -307,7 +308,7 @@ class HomePage extends React.Component {
   };
 
   onSearchSubmit = (key) => {
-    this.fetchApps(1, this.state.currentFolder.id, key || '');
+    this.fetchApps(1, null, key || '');
     this.fetchFolders(key || '');
   };
 
@@ -321,6 +322,7 @@ class HomePage extends React.Component {
       showAppDeletionConfirmation,
       isDeletingApp,
       isImportingApp,
+      appSearchKey,
     } = this.state;
     return (
       <div className="wrapper home-page">
@@ -333,7 +335,7 @@ class HomePage extends React.Component {
         />
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-        {!isLoading && meta.total_count === 0 && !currentFolder.id && (
+        {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
           <BlankPage
             createApp={this.createApp}
             isImportingApp={isImportingApp}
@@ -342,7 +344,7 @@ class HomePage extends React.Component {
           />
         )}
 
-        {(isLoading || meta.total_count > 0 || currentFolder.id) && (
+        {(isLoading || meta.total_count > 0 || currentFolder.id || appSearchKey) && (
           <div className="page-body homepage-body">
             <div className="container-xl">
               <div className="row">
