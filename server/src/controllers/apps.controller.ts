@@ -181,7 +181,7 @@ export class AppsController {
   async index(@Request() req, @Query() query) {
     const page = query.page;
     const folderId = query.folder;
-    const searchKey = query.searchKey;
+    const searchKey = query.searchKey || '';
 
     let apps = [];
     let totalFolderCount = 0;
