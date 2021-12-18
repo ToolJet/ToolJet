@@ -103,11 +103,10 @@
         "description": "Enter spreadsheet_id"
       },
       "sheet": {
-        "$label": "Sheet",
+        "$label": "GID",
         "$key": "sheet",
         "type": "codehinter",
         "lineNumbers": false,
-        "placeholder": "Leave blank to use first sheet",
         "description": "Enter sheet"
       },
       "row_index": {
