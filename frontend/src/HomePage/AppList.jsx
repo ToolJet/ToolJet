@@ -49,7 +49,7 @@ const AppList = (props) => {
           ))}
         </div>
       )}
-      {props.meta.total_count === 0 && !(props.currentFolder && props.currentFolder.id) && (
+      {!props.isLoading && props.meta.total_count === 0 && !(props.currentFolder && props.currentFolder.id) && (
         <div>
           <span className="d-block text-center text-body">No Applications found</span>
         </div>
