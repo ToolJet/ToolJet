@@ -8,5 +8,4 @@ Below steps need to be run from the root repository
 - npx lerna clean -y && npx lerna bootstrap --hoist // Hoisting dependencies to the root
 
 # TODO
-- used docker cp ./plugins tooljet_server_1:plugins to move plugins for local install
-- will have to move it to docker files
+- add prettier eslint etc

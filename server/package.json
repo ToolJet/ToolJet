@@ -79,7 +79,7 @@
     "typeorm": "^0.2.38",
     "typescript": "^4.3.5",
     "ws": "^7.5.5",
-    "@tooljet/plugins": "file:../plugins/"
+    // "@tooljet/plugins": "file:../plugins/"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

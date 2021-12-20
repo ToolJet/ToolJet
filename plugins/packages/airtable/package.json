@@ -5,7 +5,8 @@
   "keywords": [],
   "author": "gandharv <gandharvkumargarg@gmail.com>",
   "license": "ISC",
-  "main": "lib/airtable.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -18,7 +19,8 @@
     "url": "git+https://github.com/tooljet/tooljet.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "tsc -b"
   },
   "bugs": {
     "url": "https://github.com/tooljet/tooljet/issues"
