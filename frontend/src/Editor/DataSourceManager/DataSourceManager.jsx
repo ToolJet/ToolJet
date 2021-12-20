@@ -164,7 +164,6 @@ class DataSourceManager extends React.Component {
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError } = this.state;
-    console.log('selectedDataSource', options);
     return (
       <div>
         <Modal
