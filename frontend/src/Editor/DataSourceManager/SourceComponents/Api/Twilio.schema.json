@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/",
   "$id": "https://tooljet.io/Twilio.schema.json",
   "title": "Twilio datasource",
-  "description": "A schema defining twilio datasource",
+  "description": "A schema defining Twilio datasource",
   "type": "object",
   "source": {
     "name": "Twilio",
@@ -40,14 +40,14 @@
       "$label": "Account SID",
       "$key": "accountSid",
       "type": "text",
-      "description": "Account SID for twilio",
+      "description": "Account SID for Twilio",
       "helpText": "For generating Account SID, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"
     },
     "messagingServiceSid": {
       "$label": "Messaging Service SID",
       "$key": "messagingServiceSid",
       "type": "text",
-      "description": "Messaging Service SID for twilio",
+      "description": "Messaging Service SID for Twilio",
       "helpText": "For generating Messaging Service SID, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"
     }
   },
