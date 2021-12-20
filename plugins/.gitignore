@@ -1,11 +1,7 @@
 node_modules
-.parcel-cache
-node_modules
 lerna-debug.log
 npm-debug.log
-packages/*/lib
 packages/*/dist
-.idea
 packages/*/coverage
 .vscode/
 pip-wheel-metadata/
@@ -13,7 +9,7 @@ tsconfig.tsbuildinfo
 .DS_Store
 .idea
 .vs
-dist/
+dist
 .vscode
 *.tsbuildinfo
 *.tabl.json

@@ -6,15 +6,16 @@
     "declarationMap": true,
     "sourceMap": true,
 
-    "strict": true,
+    "strict": false,
 
     "skipLibCheck": true,
-
+    "outDir": "./dist",
     "esModuleInterop": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2015",
 
     "composite": true
-  }
+  },
+  "exclude": ["packages/*/__tests__/*"]
 }
