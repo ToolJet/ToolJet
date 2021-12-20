@@ -11,6 +11,7 @@ import postgresql from './packages/postgresql/lib/postgresql'
 import redis from './packages/redis/lib/redis'
 import restapi from './packages/restapi/lib/restapi'
 import s3 from './packages/s3/lib/s3'
+import slack from './packages/slack/lib/slack'
 export default {
   airtable,
   gcs,
@@ -24,5 +25,6 @@ export default {
   postgresql,
   redis,
   restapi,
-  s3
+  s3,
+  slack
 }
