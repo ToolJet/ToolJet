@@ -8,6 +8,7 @@ import mongodb from './packages/mongo/lib/mongo'
 import mssql from './packages/mssql/lib/mssql'
 import mysql from './packages/mysql/lib/mysql'
 import postgresql from './packages/postgresql/lib/postgresql'
+import redis from './packages/redis/lib/redis'
 export default {
   airtable,
   gcs,
@@ -18,5 +19,6 @@ export default {
   mongodb,
   mssql,
   mysql,
-  postgresql
+  postgresql,
+  redis
 }

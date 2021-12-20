@@ -1,13 +1,14 @@
-import { Injectable } from '@nestjs/common';
 import { HTTPError } from 'got';
-import { QueryError } from 'src/modules/data_sources/query.error';
-import { QueryResult } from 'src/modules/data_sources/query_result.type';
-import { QueryService } from 'src/modules/data_sources/query_service.interface';
-import { isEmpty } from 'lodash';
+import { QueryError } from 'common/lib/query.error';
+import { QueryResult } from 'common/lib/query_result.type';
+import { QueryService } from 'common/lib/query_service.interface';
 const urrl = require('url');
 const got = require('got');
 
-@Injectable()
+function isEmpty(value: number | null | undefined) {
+  return value === undefined || value === null || value === NaN || (typeof value === 'object' && Object.keys(value).length === 0) || (typeof value === 'string' && value.trim().length() === 0);
+}
+
 export default class RestapiQueryService implements QueryService {
   /* Headers of the source will be overridden by headers of the query */
   headers(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
