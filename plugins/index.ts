@@ -6,6 +6,7 @@ import firestore from './packages/firestore/lib/firestore'
 import googlesheets from './packages/googlesheets/lib/googlesheets'
 import mongodb from './packages/mongo/lib/mongo'
 import mssql from './packages/mssql/lib/mssql'
+import mysql from './packages/mysql/lib/mysql'
 export default {
   airtable,
   gcs,
@@ -14,5 +15,6 @@ export default {
   firestore,
   googlesheets,
   mongodb,
-  mssql
+  mssql,
+  mysql
 }
