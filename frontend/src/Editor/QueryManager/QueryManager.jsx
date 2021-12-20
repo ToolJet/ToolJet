@@ -11,8 +11,6 @@ import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
-import MaximizeIcon from '../Icons/maximize.svg';
-import MinimizeIcon from '../Icons/minimize.svg';
 
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
@@ -241,26 +239,6 @@ let QueryManager = class QueryManager extends React.Component {
     this.optionchanged('events', events);
   };
 
-  renderQueryEditorIcon = () => {
-    if (this.props.queryPaneHeight >= 80) {
-      return (
-        <span
-          className="cursor-pointer m-3"
-          onClick={this.props.toggleQueryPaneHeight}
-          data-tip="Maximize query editor"
-        >
-          <MaximizeIcon />
-        </span>
-      );
-    }
-
-    return (
-      <span className="cursor-pointer m-3" onClick={this.props.toggleQueryPaneHeight} data-tip="Minimize query editor">
-        <MinimizeIcon />
-      </span>
-    );
-  };
-
   render() {
     const {
       dataSources,
@@ -369,20 +347,11 @@ let QueryManager = class QueryManager extends React.Component {
                 {buttonText}
               </button>
             )}
-            <>
-              {this.renderQueryEditorIcon()}
-              <span onClick={this.props.toggleQueryEditor} className="cursor-pointer m-3" data-tip="Hide query editor">
-                <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M1 1L9 9L17 1"
-                    stroke="#61656F"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-            </>
+            <span onClick={this.props.toggleQueryEditor} className="cursor-pointer m-3" data-tip="Hide query editor">
+              <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L9 9L17 1" stroke="#61656F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
           </div>
         </div>
 
