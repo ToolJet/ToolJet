@@ -15,3 +15,7 @@ Below steps need to be run from the root repository
 - right now imported "all" packages from index.ts
 - in future add babel-plugin-import to get only required modules for a application where datasources are received from api
 - ex: ["gcs", "postgres"] this can be a form of response from api on the client and on the fly gotta import "only" these modules
+
+# Breaking changes
+- globalThis in mssql cacheConnection helper might not work fine
+- mongodb name changed to mongo as cannot have npm package name and package name as same
