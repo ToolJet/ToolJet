@@ -36,12 +36,12 @@ The dropdown will list all the apps present in your account. Choose an app to fi
 | USER_INVITE_REDEEM | This event is recorded whenever an invite is redeemed. |
 | APP_CREATE | This event is recorded when a user creates a new app. |
 | APP_UPDATE | This event is recorded whenever actions like renaming the app, making the app public, editing shareable link, or deploying the app are made. |
-| APP_VIEW |  |
+| APP_VIEW | This event is logged when someone views the launched app. (public apps isn't accounted for) |
 | APP_DELETE | This event is recorded whenever a user deletes an app from the dashboard. |
-| APP_IMPORT | This event is recorded whenever an user imports an app. |
+| APP_IMPORT | This event is recorded whenever a user imports an app. |
 | APP_EXPORT | This event is recorded whenever an app is exported. |
 | APP_CLONE | This event is recorded whenever a clone of the existing app is created. |
-| DATA_QUERY_RUN |  |
+| DATA_QUERY_RUN | This event is logged whenever a data source is added, a query is created, or a whenever a query is run either from the query editor or from the launched app. |
 | GROUP_PERMISSION_CREATE | This event is recorded whenever a group is created. |
 | GROUP_PERMISSION_UPDATE | This event is recorded whenever an app or user is added to or removed from a group, or the permissions for a group are updated. |
 | GROUP_PERMISSION_DELETE | This event is recorded whenever a user group is deleted from an account. |
