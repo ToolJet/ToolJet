@@ -13,6 +13,7 @@ import restapi from './packages/restapi/lib/restapi'
 import s3 from './packages/s3/lib/s3'
 import slack from './packages/slack/lib/slack'
 import stripe from './packages/stripe/lib/stripe'
+import twilio from './packages/stripe/lib/twilio'
 export default {
   airtable,
   gcs,
@@ -28,5 +29,6 @@ export default {
   restapi,
   s3,
   slack,
-  stripe
+  stripe,
+  twilio
 }
