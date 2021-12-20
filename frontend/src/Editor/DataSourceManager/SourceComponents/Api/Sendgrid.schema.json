@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Sendgrid.schema.json",
+  "title": "Sendgrid datasource",
+  "description": "A schema defining sendgrid datasource",
+  "type": "object",
+  "source": {
+    "name": "SendGrid",
+    "kind": "sendgrid",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": { "type": "string", "encrypted": true }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "api_key": { "value": "" }
+  },
+  "properties": {
+    "api_key": {
+      "$label": "API key",
+      "$key": "api_key",
+      "type": "password",
+      "description": "Api key for Sendgrid",
+      "helpText": "For generating API key, visit: <a href='https://airtable.com/account' target='_blank' rel='noreferrer'>Sendgrid account page</a>"
+    }
+  },
+  "required": ["api_key"]
+}
