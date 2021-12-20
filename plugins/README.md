@@ -19,3 +19,8 @@ Below steps need to be run from the root repository
 # Breaking changes
 - globalThis in mssql cacheConnection helper might not work fine
 - mongodb name changed to mongo as cannot have npm package name and package name as same
+
+# COMMON steps
+- npx lerna create mssql -y   
+- npx lerna add common 
+- npx lerna add knex --scope=mssql
