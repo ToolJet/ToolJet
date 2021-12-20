@@ -5,12 +5,10 @@
   "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "scripts": {
-    "watch": "parcel watch",
     "build": "tsc -b"
   },
   "devDependencies": {
     "lerna": "^4.0.0",
-    "parcel": "^2.0.1",
     "typescript": "^4.5.4"
   }
 }

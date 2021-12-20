@@ -8,3 +8,14 @@ packages/*/dist
 .idea
 packages/*/coverage
 .vscode/
+pip-wheel-metadata/
+tsconfig.tsbuildinfo
+.DS_Store
+.idea
+.vs
+dist/
+.vscode
+*.tsbuildinfo
+*.tabl.json
+*.swp
+*.snk
