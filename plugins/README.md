@@ -9,3 +9,7 @@ Below steps need to be run from the root repository
 
 # TODO
 - add prettier eslint etc
+- types are missing in some packages like gcs operations etc
+- right now imported "all" packages from index.ts
+- in future add babel-plugin-import to get only required modules for a application where datasources are received from api
+- ex: ["gcs", "postgres"] this can be a form of response from api on the client and on the fly gotta import "only" these modules
