@@ -26,7 +26,7 @@
       "$key": "api_key",
       "type": "password",
       "description": "Api key for SendGrid",
-      "helpText": "For generating API key, visit: <a href='https://app.sendgrid.com/settings/api_keys' target='_blank' rel='noreferrer'>Sendgrid Account</a>"
+      "helpText": "For generating API key, visit: <a href='https://app.sendgrid.com/settings/api_keys' target='_blank' rel='noreferrer'>SendGrid Account</a>"
     }
   },
   "required": ["api_key"]
