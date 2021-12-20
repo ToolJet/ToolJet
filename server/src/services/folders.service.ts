@@ -98,7 +98,7 @@ export class FoldersService {
     return allFloderList;
   }
   async allFoldersWithSearchKey(user: User, searchKey: string): Promise<Folder[]> {
-    const allViewableAppsWithSearch = await createQueryBuilder(App, 'apps')
+    const allViewableAppsWithSearchQb = createQueryBuilder(App, 'apps')
       .select('apps.id')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
@@ -107,8 +107,7 @@ export class FoldersService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('LOWER(apps.name) like :searchKey', { searchKey: `%${searchKey && searchKey.toLowerCase()}%` })
-      .andWhere(
+      .where(
         new Brackets((qb) => {
           qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
             .andWhere('app_group_permissions.read = :value', { value: true })
@@ -118,8 +117,12 @@ export class FoldersService {
               userId: user.id,
             });
         })
-      )
-      .getMany();
+      );
+    allViewableAppsWithSearchQb.andWhere('LOWER(apps.name) like :searchKey', {
+      searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+    });
+
+    const allViewableAppsWithSearch = await allViewableAppsWithSearchQb.getMany();
 
     const allViewableAppIdsWithSearch = allViewableAppsWithSearch.map((app) => app.id);
 
@@ -156,7 +159,7 @@ export class FoldersService {
       return 0;
     }
 
-    const viewableAppsQb = await createQueryBuilder(App, 'viewable_apps')
+    const viewableAppsQb = createQueryBuilder(App, 'viewable_apps')
       .innerJoin('viewable_apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('viewable_apps.appGroupPermissions', 'app_group_permissions')
       .innerJoinAndSelect('viewable_apps.user', 'user')
@@ -165,8 +168,7 @@ export class FoldersService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('LOWER(viewable_apps.name) like :searchKey', { searchKey: `%${searchKey && searchKey.toLowerCase()}%` })
-      .andWhere(
+      .where(
         new Brackets((qb) => {
           qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
             .andWhere('app_group_permissions.read = :value', { value: true })
@@ -181,6 +183,11 @@ export class FoldersService {
             );
         })
       );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(viewable_apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
@@ -214,7 +221,7 @@ export class FoldersService {
       return [];
     }
 
-    const viewableAppsQb = await createQueryBuilder(App, 'viewable_apps')
+    const viewableAppsQb = createQueryBuilder(App, 'viewable_apps')
       .innerJoin('viewable_apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('viewable_apps.appGroupPermissions', 'app_group_permissions')
       .innerJoinAndSelect('viewable_apps.user', 'user')
@@ -223,8 +230,7 @@ export class FoldersService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('LOWER(viewable_apps.name) like :searchKey', { searchKey: `%${searchKey && searchKey.toLowerCase()}%` })
-      .andWhere(
+      .where(
         new Brackets((qb) => {
           qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
             .andWhere('app_group_permissions.read = :value', { value: true })
@@ -239,6 +245,11 @@ export class FoldersService {
             );
         })
       );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(viewable_apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
