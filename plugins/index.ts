@@ -7,6 +7,7 @@ import googlesheets from './packages/googlesheets/lib/googlesheets'
 import mongodb from './packages/mongo/lib/mongo'
 import mssql from './packages/mssql/lib/mssql'
 import mysql from './packages/mysql/lib/mysql'
+import postgresql from './packages/postgresql/lib/postgresql'
 export default {
   airtable,
   gcs,
@@ -16,5 +17,6 @@ export default {
   googlesheets,
   mongodb,
   mssql,
-  mysql
+  mysql,
+  postgresql
 }
