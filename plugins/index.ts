@@ -9,6 +9,8 @@ import mssql from './packages/mssql/lib/mssql'
 import mysql from './packages/mysql/lib/mysql'
 import postgresql from './packages/postgresql/lib/postgresql'
 import redis from './packages/redis/lib/redis'
+import restapi from './packages/restapi/lib/restapi'
+import s3 from './packages/s3/lib/s3'
 export default {
   airtable,
   gcs,
@@ -20,5 +22,7 @@ export default {
   mssql,
   mysql,
   postgresql,
-  redis
+  redis,
+  restapi,
+  s3
 }
