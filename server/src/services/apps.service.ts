@@ -134,7 +134,7 @@ export class AppsService {
   }
 
   async count(user: User, searchKey): Promise<number> {
-    return await createQueryBuilder(App, 'apps')
+    const viewableAppsQb = createQueryBuilder(App, 'apps')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
       .innerJoin(
@@ -142,8 +142,7 @@ export class AppsService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('LOWER(apps.name) like :searchKey', { searchKey: `%${searchKey && searchKey.toLowerCase()}%` })
-      .andWhere(
+      .where(
         new Brackets((qb) => {
           qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
             .andWhere('app_group_permissions.read = :value', { value: true })
@@ -153,12 +152,17 @@ export class AppsService {
               userId: user.id,
             });
         })
-      )
-      .getCount();
+      );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
+    return await viewableAppsQb.getCount();
   }
 
   async all(user: User, page: number, searchKey: string): Promise<App[]> {
-    const viewableAppsQb = await createQueryBuilder(App, 'apps')
+    const viewableAppsQb = createQueryBuilder(App, 'apps')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
       .innerJoinAndSelect('apps.user', 'user')
@@ -167,8 +171,7 @@ export class AppsService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('LOWER(apps.name) like :searchKey', { searchKey: `%${searchKey && searchKey.toLowerCase()}%` })
-      .andWhere(
+      .where(
         new Brackets((qb) => {
           qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
             .andWhere('app_group_permissions.read = :value', { value: true })
@@ -178,8 +181,13 @@ export class AppsService {
               userId: user.id,
             });
         })
-      )
-      .orderBy('apps.createdAt', 'DESC');
+      );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
+    viewableAppsQb.orderBy('apps.createdAt', 'DESC');
 
     if (page) {
       return await viewableAppsQb
@@ -188,7 +196,7 @@ export class AppsService {
         .getMany();
     }
 
-    return await viewableAppsQb.orderBy('apps.created_at', 'DESC').getMany();
+    return await viewableAppsQb.getMany();
   }
 
   async update(user: User, appId: string, params: any) {

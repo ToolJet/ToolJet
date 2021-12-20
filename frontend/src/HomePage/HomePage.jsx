@@ -61,15 +61,21 @@ class HomePage extends React.Component {
     this.setState({
       foldersLoading: true,
       appSearchKey: appSearchKey,
-      currentFolder: {},
+      currentFolder: searchKey ? this.state.currentFolder : {},
     });
 
-    folderService.getAll(appSearchKey).then((data) =>
+    folderService.getAll(appSearchKey).then((data) => {
+      const currentFolder =
+        searchKey &&
+        data?.folders?.filter(
+          (folder) => this.state.currentFolder?.id && folder.id === this.state.currentFolder?.id
+        )?.[0];
       this.setState({
         folders: data.folders,
         foldersLoading: false,
-      })
-    );
+        currentFolder: currentFolder || {},
+      });
+    });
   };
 
   pageChanged = (page) => {
@@ -308,7 +314,7 @@ class HomePage extends React.Component {
   };
 
   onSearchSubmit = (key) => {
-    this.fetchApps(1, null, key || '');
+    this.fetchApps(1, this.state.currentFolder.id, key || '');
     this.fetchFolders(key || '');
   };
 
@@ -358,10 +364,10 @@ class HomePage extends React.Component {
                 <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
                   <SearchBox onSubmit={this.onSearchSubmit} initialValue={this.state.appSearchKey} />
                   {this.canCreateApp() && (
-                    <button className={'btn btn-default d-none d-lg-inline mb-3 me-2'} onChange={this.handleImportApp}>
+                    <button className={'btn btn-default d-none d-lg-inline mb-3 ms-2'} onChange={this.handleImportApp}>
                       <label>
                         {isImportingApp && (
-                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                          <span className="spinner-border spinner-border-sm ms-2" role="status"></span>
                         )}
                         Import
                         <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
@@ -370,7 +376,7 @@ class HomePage extends React.Component {
                   )}
                   {this.canCreateApp() && (
                     <button
-                      className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${
+                      className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 create-new-app-button ${
                         creatingApp ? 'btn-loading' : ''
                       }`}
                       onClick={this.createApp}
