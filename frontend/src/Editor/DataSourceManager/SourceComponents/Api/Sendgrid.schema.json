@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/",
   "$id": "https://tooljet.io/Sendgrid.schema.json",
   "title": "Sendgrid datasource",
-  "description": "A schema defining sendgrid datasource",
+  "description": "A schema defining SendGrid datasource",
   "type": "object",
   "source": {
     "name": "SendGrid",
@@ -25,7 +25,7 @@
       "$label": "API key",
       "$key": "api_key",
       "type": "password",
-      "description": "Api key for Sendgrid",
+      "description": "Api key for SendGrid",
       "helpText": "For generating API key, visit: <a href='https://app.sendgrid.com/settings/api_keys' target='_blank' rel='noreferrer'>Sendgrid Account</a>"
     }
   },
