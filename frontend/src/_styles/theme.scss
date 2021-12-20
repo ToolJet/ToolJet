@@ -72,8 +72,7 @@ input, button {
 .editor {
   .header-container {
     max-width: 100%;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding: 0 15px;
   }
 
   .resizer-active {
@@ -2849,6 +2848,7 @@ input[type='text'] {
   padding: 4px 8px;
   border-radius: 4px;
   min-width: 100px;
+  font-size: 10px;
 }
 
 .canvas-background-holder {
