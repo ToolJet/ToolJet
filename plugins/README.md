@@ -3,9 +3,11 @@
 Below steps need to be run from the root repository
 
 - npx lerna create <package-name> -y
-- npx lerna add <npm-page-name> // make sure we have the same version of the npm-package-name in each package by calling lerna add from the root of the repository.
-- npx lerna add <package-name> // this links <package-name> to all packages
+- npx lerna add <npm-page-name> // make sure we have the same version of the npm-package-name in each package by calling lerna add from the root of the repository. ex: npx lerna add aws-sdk
+- npx lerna add <package-name> // this links <package-name> to all packages ex: npx lerna add common
 - npx lerna clean -y && npx lerna bootstrap --hoist // Hoisting dependencies to the root
+- Adding a npm package to a single tooljet package can be done as: npx lerna add aws-sdk --scope=dynamodb
+- where aws-sdk is the npm package and dynamodb is a tooljet package name in lerna workspace
 
 # TODO
 - add prettier eslint etc
