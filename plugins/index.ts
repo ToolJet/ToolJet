@@ -12,6 +12,7 @@ import redis from './packages/redis/lib/redis'
 import restapi from './packages/restapi/lib/restapi'
 import s3 from './packages/s3/lib/s3'
 import slack from './packages/slack/lib/slack'
+import stripe from './packages/stripe/lib/stripe'
 export default {
   airtable,
   gcs,
@@ -26,5 +27,6 @@ export default {
   redis,
   restapi,
   s3,
-  slack
+  slack,
+  stripe
 }
