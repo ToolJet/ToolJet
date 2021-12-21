@@ -3,8 +3,6 @@
 const postgresql = require('../lib');
 
 describe('postgresql', () => {
-    it.todo('needs tests');
-
     it('should generate the query for bulk update operation', async () => {
         const queryOptions = {
           table: 'customers',

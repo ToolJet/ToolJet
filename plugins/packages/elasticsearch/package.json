@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
+    "@elastic/elasticsearch": "^7.16.0",
     "common": "^1.0.0"
   }
 }
