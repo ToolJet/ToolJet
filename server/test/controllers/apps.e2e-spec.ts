@@ -250,7 +250,7 @@ describe('apps controller', () => {
           total_pages: 0,
           total_count: 0,
           folder_count: 0,
-          current_page: 0,
+          current_page: 1,
         });
       });
     });
@@ -351,7 +351,7 @@ describe('apps controller', () => {
         });
 
         response = await request(app.getHttpServer())
-          .get(`/api/apps?searchKey=apps in`)
+          .get(`/api/apps?searchKey=app in`)
           .query({ folder: folder.id, page: 1 })
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
