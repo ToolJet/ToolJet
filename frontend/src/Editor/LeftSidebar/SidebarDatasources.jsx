@@ -4,7 +4,7 @@ import { LeftSidebarItem } from './SidebarItem';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 
-export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], dataSourcesChanged }) => {
+export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, dataSources = [], dataSourcesChanged }) => {
   const [open, trigger, content] = usePopover(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
@@ -67,6 +67,7 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], data
           setSelectedDataSource(null);
           toggleDataSourceManagerModal(false);
         }}
+        editingVersionId={editingVersionId}
         dataSourcesChanged={dataSourcesChanged}
         selectedDataSource={selectedDataSource}
       />

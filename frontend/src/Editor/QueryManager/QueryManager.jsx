@@ -158,8 +158,10 @@ let QueryManager = class QueryManager extends React.Component {
 
   createOrUpdateDataQuery = () => {
     const { appId, options, selectedDataSource, mode, queryName } = this.state;
+    const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
+    console.log({ state: this.state, props: this.props, appVersionId });
 
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
@@ -183,7 +185,7 @@ let QueryManager = class QueryManager extends React.Component {
     } else {
       this.setState({ isCreating: true });
       dataqueryService
-        .create(appId, queryName, kind, options, dataSourceId)
+        .create(appId, appVersionId, queryName, kind, options, dataSourceId)
         .then(() => {
           toast.success('Query Added');
           this.setState({ isCreating: false });
