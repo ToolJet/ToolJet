@@ -301,7 +301,7 @@ export async function addAllUsersGroupToUser(nestApp, user) {
   return user;
 }
 
-export async function createDataSource(nestApp, { name, application, kind, options }: any) {
+export async function createDataSource(nestApp, { name, application, kind, options, appVersion }: any) {
   let dataSourceRepository: Repository<DataSource>;
   dataSourceRepository = nestApp.get('DataSourceRepository');
 
@@ -313,13 +313,14 @@ export async function createDataSource(nestApp, { name, application, kind, optio
       options: await dataSourcesService.parseOptionsForCreate(options),
       app: application,
       kind,
+      appVersion,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
   );
 }
 
-export async function createDataQuery(nestApp, { application, kind, dataSource, options }: any) {
+export async function createDataQuery(nestApp, { application, kind, dataSource, options, appVersion }: any) {
   let dataQueryRepository: Repository<DataQuery>;
   dataQueryRepository = nestApp.get('DataQueryRepository');
 
@@ -329,6 +330,7 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
       app: application,
       kind,
       dataSource,
+      appVersion,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
