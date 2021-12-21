@@ -9,7 +9,6 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourcesService } from './data_sources.service';
 const got = require('got');
 
-console.log('faef', allPlugins);
 @Injectable()
 export class DataQueriesService {
   constructor(
