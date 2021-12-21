@@ -1,6 +1,6 @@
 'use strict';
 
-const restapi = require('..');
+const restapi = require('../lib');
 
 describe('restapi', () => {
     it('needs tests');

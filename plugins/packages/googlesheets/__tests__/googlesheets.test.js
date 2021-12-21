@@ -1,6 +1,6 @@
 'use strict';
 
-const googlesheets = require('..');
+const googlesheets = require('../lib');
 
 describe('googlesheets', () => {
     it('needs tests');

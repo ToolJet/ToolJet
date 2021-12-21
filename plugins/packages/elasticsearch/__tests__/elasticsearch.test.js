@@ -1,6 +1,6 @@
 'use strict';
 
-const elasticsearch = require('..');
+const elasticsearch = require('../lib');
 
 describe('elasticsearch', () => {
     it('needs tests');

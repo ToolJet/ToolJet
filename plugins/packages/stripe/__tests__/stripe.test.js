@@ -1,6 +1,6 @@
 'use strict';
 
-const stripe = require('..');
+const stripe = require('../lib');
 
 describe('stripe', () => {
     it('needs tests');

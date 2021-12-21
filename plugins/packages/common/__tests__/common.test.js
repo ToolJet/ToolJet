@@ -1,6 +1,6 @@
 'use strict';
 
-const common = require('..');
+const common = require('../lib');
 
 describe('common', () => {
     it('needs tests');

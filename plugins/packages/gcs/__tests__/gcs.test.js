@@ -1,6 +1,6 @@
 'use strict';
 
-const gcs = require('..');
+const gcs = require('../lib');
 
 describe('gcs', () => {
     it('needs tests');

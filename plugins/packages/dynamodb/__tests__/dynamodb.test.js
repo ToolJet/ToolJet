@@ -1,6 +1,6 @@
 'use strict';
 
-const dynamodb = require('..');
+const dynamodb = require('../lib');
 
 describe('dynamodb', () => {
     it('needs tests');

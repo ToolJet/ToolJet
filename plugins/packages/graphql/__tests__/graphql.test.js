@@ -1,6 +1,6 @@
 'use strict';
 
-const graphql = require('..');
+const graphql = require('../lib');
 
 describe('graphql', () => {
     it('needs tests');

@@ -1,6 +1,6 @@
 'use strict';
 
-const twilioapi = require('..');
+const twilioapi = require('../lib');
 
 describe('twilioapi', () => {
     it('needs tests');
