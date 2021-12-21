@@ -364,7 +364,7 @@ describe('apps controller', () => {
         expect(meta).toEqual({
           total_pages: 1,
           total_count: 1,
-          folder_count: 2,
+          folder_count: 1,
           current_page: 1,
         });
       });
