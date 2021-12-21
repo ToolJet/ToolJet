@@ -63,24 +63,62 @@ describe('folders controller', () => {
         organizationId: anotherUserData.organization.id,
       });
 
-      const response = await request(nestApp.getHttpServer())
+      let response = await request(nestApp.getHttpServer())
         .get(`/api/folders`)
         .set('Authorization', authHeaderForUser(user));
 
       expect(response.statusCode).toBe(200);
       expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
 
-      const { folders } = response.body;
+      let { folders } = response.body;
       expect(new Set(folders.map((folder) => folder.name))).toEqual(
         new Set(['Folder1', 'Folder2', 'Folder3', 'Folder4'])
       );
 
-      const folder1 = folders[0];
+      let folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
         new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(1);
+
+      response = await request(nestApp.getHttpServer())
+        .get(`/api/folders?searchKey=app in`)
+        .set('Authorization', authHeaderForUser(user));
+
+      expect(response.statusCode).toBe(200);
+      expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
+
+      ({ folders } = response.body);
+      expect(new Set(folders.map((folder) => folder.name))).toEqual(
+        new Set(['Folder1', 'Folder2', 'Folder3', 'Folder4'])
+      );
+
+      folder1 = folders[0];
+      expect(new Set(Object.keys(folder1))).toEqual(
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+      );
+      expect(folder1.organization_id).toEqual(user.organizationId);
+      expect(folder1.count).toEqual(1);
+
+      response = await request(nestApp.getHttpServer())
+        .get(`/api/folders?searchKey=some text`)
+        .set('Authorization', authHeaderForUser(user));
+
+      expect(response.statusCode).toBe(200);
+      expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
+
+      ({ folders } = response.body);
+      expect(new Set(folders.map((folder) => folder.name))).toEqual(
+        new Set(['Folder1', 'Folder2', 'Folder3', 'Folder4'])
+      );
+
+      folder1 = folders[0];
+      expect(new Set(Object.keys(folder1))).toEqual(
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+      );
+      expect(folder1.organization_id).toEqual(user.organizationId);
+      expect(folder1.count).toEqual(0);
     });
   });
 
