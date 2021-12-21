@@ -42,3 +42,12 @@ export async function updateDocument(client, collection: string, id: string, doc
     return { error: exception.message, status: 'failed' };
   }
 }
+
+export async function deleteDocument(client, collection: string, id: string): Promise<object> {
+  try {
+    const result = await client.collections(collection).documents(id).delete();
+    return result;
+  } catch (exception) {
+    return { error: exception.message, status: 'failed' };
+  }
+}

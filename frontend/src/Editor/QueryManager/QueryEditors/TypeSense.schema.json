@@ -19,7 +19,8 @@
           { "value": "search", "name": "Search" },
           { "value": "index_document", "name": "Index a document" },
           { "value": "get", "name": "Get a document" },
-          { "value": "update", "name": "Update a document" }
+          { "value": "update", "name": "Update a document" },
+          { "value": "delete", "name": "Delete a document" }
         ]
       },
       "create_collection": {
@@ -110,6 +111,24 @@
           "placeholder": "{ doc: { page_count: 225 } }",
           "description": "Enter body",
           "height": "150px"
+        }
+      },
+      "delete": {
+        "index": {
+          "$label": "Collection",
+          "$key": "collection",
+          "className": "col-6",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter collection"
+        },
+        "id": {
+          "$label": "Id",
+          "$key": "id",
+          "className": "col-6",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter id"
         }
       }
     }

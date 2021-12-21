@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
-import { createCollection, getDocument, updateDocument } from './operations';
+import { createCollection, getDocument, updateDocument, deleteDocument } from './operations';
 import { indexDocument, search } from './operations';
 import { Client } from 'typesense';
 
@@ -29,6 +29,9 @@ export default class TypeSenseService implements QueryService {
           break;
         case 'update':
           result = await updateDocument(client, queryOptions.collection, queryOptions.id, queryOptions.document);
+          break;
+        case 'delete':
+          result = await deleteDocument(client, queryOptions.collection, queryOptions.id);
           break;
       }
     } catch (err) {
