@@ -47,7 +47,11 @@
       "protocol": {
         "$label": "Protocol",
         "$key": "protocol",
-        "type": "text",
+        "type": "dropdown",
+        "$options": [
+          { "name": "HTTP", "value": "http" },
+          { "name": "HTTPS", "value": "https" }
+        ],
         "description": "Enter protocol"
       }
     },
