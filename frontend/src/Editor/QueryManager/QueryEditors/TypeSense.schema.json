@@ -23,13 +23,6 @@
         ]
       },
       "create_collection": {
-        "index": {
-          "$label": "Index",
-          "$key": "index",
-          "type": "codehinter",
-          "lineNumbers": false,
-          "description": "Enter index"
-        },
         "schema": {
           "$label": "Schema",
           "$key": "schema",

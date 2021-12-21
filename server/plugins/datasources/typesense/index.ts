@@ -59,7 +59,7 @@ export default class TypeSenseService implements QueryService {
           protocol: sourceOptions.protocol,
         },
       ],
-      apiKey: sourceOptions.apiKey,
+      apiKey: sourceOptions.api_key,
       connectionTimeoutSeconds: 2,
     });
 

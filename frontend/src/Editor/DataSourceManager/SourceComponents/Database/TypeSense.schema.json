@@ -15,14 +15,15 @@
       "options": {
         "host": { "type": "string" },
         "port": { "type": "string" },
-        "apiKey": { "type": "string "},
+        "api_key": { "type": "string ", "encrypted": true },
         "protocol": { "type": "string"}
       }
     },
     "defaults": {
       "scheme": { "value": "https" },
       "host": { "value": "localhost" },
-      "port": { "value": 8108 }
+      "port": { "value": 8108 },
+      "protocol": { "value": "http"}
     },
     "properties": {
       "host": {
@@ -37,9 +38,9 @@
         "type": "text",
         "description": "Enter port"
       },
-      "apiKey": {
+      "api_key": {
         "$label": "API Key",
-        "$key": "apiKey",
+        "$key": "api_key",
         "type": "text",
         "description": "Enter API key"
       },
@@ -50,6 +51,6 @@
         "description": "Enter protocol"
       }
     },
-    "required": ["host", "port", "apiKey", "protocol"]
+    "required": ["host", "port", "api_key", "protocol"]
   }
   
