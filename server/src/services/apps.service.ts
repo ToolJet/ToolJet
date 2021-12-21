@@ -66,7 +66,7 @@ export class AppsService {
 
   async findVersion(id: string): Promise<AppVersion> {
     return this.appVersionsRepository.findOne(id, {
-      relations: ['app'],
+      relations: ['app', 'dataQueries'],
     });
   }
 
