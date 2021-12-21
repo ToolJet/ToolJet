@@ -6,55 +6,65 @@
     "type": "object",
     "defaults": {},
     "properties": {
-      "multiple_recipients": {
-        "$label": "Multiple Recipients",
-        "$key": "multiple_recipients",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Send multiple individuals emails",
-        "placeholder": "{{false}}"
+      "operation": {
+        "$label": "Operation",
+        "$key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Single select dropdown for operation",
+        "$options": [
+          { "value": "mail_service", "name": "Email service" }
+        ]
       },
-      "send_mail_to": {
-        "$label": "Send Mail To",
-        "$key": "send_mail_to",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter email recipient(s)",
-        "placeholder": "{{['dev@tooljet.io']}}"
-      },
-      "send_mail_from": {
-        "$label": "Send Mail From",
-        "$key": "send_mail_from",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter email Sender"
-      },
-      
-      "subject": {
-        "$label": "Email Subject",
-        "$key": "subject",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter subject"
-      },
-      "text": {
-        "$label": "Body as Text",
-        "$key": "text",
-        "type": "codehinter",
-        "description": "Enter text",
-        "height": "150px",
-        "mode": "text"
-      },
-      "html": {
-        "$label": "Body as HTML",
-        "$key": "html",
-        "type": "codehinter",
-        "description": "Enter html",
-        "height": "150px",
-        "mode": "handlebars",
-        "lineNumbers": true
+      "mail_service": {
+        "multiple_recipients": {
+          "$label": "Multiple recipients",
+          "$key": "multiple_recipients",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Send multiple individuals emails",
+          "placeholder": "{{false}}"
+        },
+        "send_mail_to": {
+          "$label": "Send Mail To",
+          "$key": "send_mail_to",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter email recipient(s)",
+          "placeholder": "{{['dev@tooljet.io']}}"
+        },
+        "send_mail_from": {
+          "$label": "Send email from",
+          "$key": "send_mail_from",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter email Sender"
+        },
+        
+        "subject": {
+          "$label": "Email subject",
+          "$key": "subject",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter subject"
+        },
+        "text": {
+          "$label": "Body as text",
+          "$key": "text",
+          "type": "codehinter",
+          "description": "Enter text",
+          "height": "150px",
+          "mode": "text"
+        },
+        "html": {
+          "$label": "Body as HTML",
+          "$key": "html",
+          "type": "codehinter",
+          "description": "Enter html",
+          "height": "150px",
+          "mode": "handlebars",
+          "lineNumbers": true
+        }
       }
-
     }
 }
   
