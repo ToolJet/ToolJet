@@ -24,7 +24,7 @@
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",
-        "isScrollable": true
+        "className": ""
       }
     },
     "gui": {
