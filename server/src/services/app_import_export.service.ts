@@ -67,21 +67,39 @@ export class AppImportExportService {
   async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any) {
     const dataSourceMapping = {};
     const dataQueryMapping = {};
+    const appVersionMapping = {};
     let currentVersionId: string;
     const dataSources = appParams?.dataSources || [];
     const dataQueries = appParams?.dataQueries || [];
     const appVersions = appParams?.appVersions || [];
 
+    for (const appVersion of appVersions) {
+      const version = manager.create(AppVersion, {
+        app: importedApp,
+        definition: await this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping),
+        name: appVersion.name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await manager.save(version);
+
+      if (appVersion.id == appParams.currentVersionId) {
+        currentVersionId = version.id;
+        await manager.update(App, importedApp, { currentVersionId });
+      }
+
+      appVersionMapping[appVersion.id] = version.id;
+    }
+
     for (const source of dataSources) {
       const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
-      // FIXME: credentials if present is created outside this db transaction and
-      // will not be rolled back if import fails
-      const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions);
+      const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
 
       const newSource = manager.create(DataSource, {
         app: importedApp,
         name: source.name,
         kind: source.kind,
+        appVersionId: appVersionMapping[source.appVersionId],
         options: newOptions,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -98,6 +116,7 @@ export class AppImportExportService {
         name: query.name,
         options: query.options,
         kind: query.kind,
+        appVersionId: appVersionMapping[query.appVersionId],
         dataSourceId: dataSourceMapping[query.dataSourceId],
       });
       await manager.save(newQuery);
@@ -110,24 +129,6 @@ export class AppImportExportService {
       const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
       newQuery.options = newOptions;
       await manager.save(newQuery);
-    }
-
-    for (const appVersion of appVersions) {
-      const version = manager.create(AppVersion, {
-        app: importedApp,
-        definition: await this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping),
-        name: appVersion.name,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      await manager.save(version);
-
-      if (appVersion.id == appParams.currentVersionId) {
-        currentVersionId = version.id;
-
-        await manager.update(App, importedApp, { currentVersionId });
-      }
     }
   }
 
