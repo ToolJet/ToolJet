@@ -3,5 +3,5 @@
 const slack = require('../lib');
 
 describe('slack', () => {
-    it('needs tests');
+    it.todo('needs tests');
 });

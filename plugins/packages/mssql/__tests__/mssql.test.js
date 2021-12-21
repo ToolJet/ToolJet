@@ -3,5 +3,5 @@
 const mssql = require('../lib');
 
 describe('mssql', () => {
-    it('needs tests');
+    it.todo('needs tests');
 });

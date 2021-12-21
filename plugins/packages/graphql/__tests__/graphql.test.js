@@ -3,5 +3,5 @@
 const graphql = require('../lib');
 
 describe('graphql', () => {
-    it('needs tests');
+    it.todo('needs tests');
 });

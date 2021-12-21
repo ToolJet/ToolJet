@@ -3,5 +3,5 @@
 const redis = require('../lib');
 
 describe('redis', () => {
-    it('needs tests');
+    it.todo('needs tests');
 });

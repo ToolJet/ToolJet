@@ -3,5 +3,5 @@
 const stripe = require('../lib');
 
 describe('stripe', () => {
-    it('needs tests');
+    it.todo('needs tests');
 });

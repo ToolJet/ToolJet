@@ -3,5 +3,5 @@
 const mysql = require('../lib');
 
 describe('mysql', () => {
-    it('needs tests');
+    it.todo('needs tests');
 });
