@@ -351,7 +351,7 @@ describe('apps controller', () => {
         });
 
         response = await request(app.getHttpServer())
-          .get(`/api/apps?searchKey=app in`)
+          .get(`/api/apps?searchKey=public app in`)
           .query({ folder: folder.id, page: 1 })
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
@@ -360,7 +360,7 @@ describe('apps controller', () => {
         ({ meta, apps } = response.body);
         appNames = apps.map((app) => app.name);
 
-        expect(new Set(appNames)).toEqual(new Set([appInFolder.name]));
+        expect(new Set(appNames)).toEqual(new Set([publicAppInFolder.name]));
         expect(meta).toEqual({
           total_pages: 1,
           total_count: 1,
