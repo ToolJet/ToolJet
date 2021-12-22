@@ -4,8 +4,8 @@ import { Picker } from 'emoji-mart';
 
 import TextareaMentions from '@/_ui/Mentions';
 import Button from '@/_ui/Button';
-import useShortcuts from '@/_hooks/use-shortcuts';
 import usePopover from '@/_hooks/use-popover';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 function CommentFooter({ users, editComment = '', editCommentId, handleSubmit }) {
   const [comment, setComment] = React.useState(editComment);
@@ -28,7 +28,7 @@ function CommentFooter({ users, editComment = '', editCommentId, handleSubmit })
     setOpen(false);
   };
 
-  useShortcuts(['Meta', 'Enter'], () => handleClick(), [comment]);
+  useHotkeys('⌘+enter, control+enter', () => handleClick());
 
   return (
     <>

@@ -71,13 +71,18 @@ class App extends React.Component {
   };
 
   render() {
-    const {
-      currentUser,
-      fetchedMetadata,
-      updateAvailable,
-      onboarded,
-      darkMode,
-    } = this.state;
+    const { currentUser, fetchedMetadata, updateAvailable, onboarded, darkMode } = this.state;
+    let toastOptions = {};
+
+    if (darkMode) {
+      toastOptions = {
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      };
+    }
 
     if (currentUser && fetchedMetadata === false) {
       tooljetService.fetchMetaData().then((data) => {
@@ -217,15 +222,7 @@ class App extends React.Component {
             />
           </div>
         </Router>
-        <Toaster
-          toastOptions={{
-            style: {
-              borderRadius: '10px',
-              background: '#333',
-              color: '#fff',
-            },
-          }}
-        />
+        <Toaster toastOptions={toastOptions} />
       </>
     );
   }

@@ -39,7 +39,15 @@ const imports = [
   }),
   LoggerModule.forRoot({
     pinoHttp: {
-      level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+      level: (() => {
+        const logLevel = {
+          production: 'info',
+          development: 'debug',
+          test: 'error',
+        };
+
+        return logLevel[process.env.NODE_ENV] || 'info';
+      })(),
       autoLogging: {
         ignorePaths: ['/api/health'],
       },

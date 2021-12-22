@@ -217,7 +217,9 @@ class Viewer extends React.Component {
                           currentState={this.state.currentState}
                           selectedComponent={this.state.selectedComponent}
                           onComponentClick={(id, component) => {
-                            this.setState({ selectedComponent: { id, component } });
+                            this.setState({
+                              selectedComponent: { id, component },
+                            });
                             onComponentClick(this, id, component, 'view');
                           }}
                           onComponentOptionChanged={(component, optionName, value) =>

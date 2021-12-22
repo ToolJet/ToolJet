@@ -56,6 +56,7 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
 
 [GitHub contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
 [Cryptocurrency dashboard using ToolJet](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)<br>
+[WhatsApp CRM using ToolJet](https://blog.tooljet.com/build-a-whatsapp-crm-using-tooljet-within-10-mins/)<br>
 
 ## Documentation
 Documentation is available at https://docs.tooljet.com.

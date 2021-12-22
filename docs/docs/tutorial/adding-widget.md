@@ -15,6 +15,20 @@ To add a widget, drag and drop the widget to the canvas.
 The widgets can be resized and repositioned within the canvas.
 <img class="screenshot-full" src="/img/tutorial/adding-widget/resize-table.gif" alt="ToolJet - Table component" height="420"/>
 
+## Adding widgets to Modal
+To add a widget to Modal, we need to trigger [Show modal action](/docs/tutorial/actions#available-actions)
+
+:::info
+Before triggering `Show modal action` we need to add a modal widget to the canvas.
+:::
+
+- Add a `modal widget` to the app
+- Trigger the **Show modal action**
+- Click on the canvas area for the `Widget manager` sidebar
+- Navigate to the Widget manager on the right sidebar and Drag and drop a widget into the Modal 
+
+<img class="screenshot-full" src="/img/tutorial/adding-widget/adding-widget-to-modal.gif" alt="ToolJet - Adding widget to Modal" height="420"/>
+
 ## Resize table columns
 We can resize the column width using the resize handle of the column.
 

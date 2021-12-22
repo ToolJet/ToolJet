@@ -52,7 +52,12 @@ export async function batchUpdateToSheet(
 
     const updateCellIndexes = [];
     colIndexes.map((col) => {
-      rowsIndexes.map((rowIndex) => updateCellIndexes.push({ ...col, cellIndex: `${col.colIndex}${rowIndex}` }));
+      rowsIndexes.map((rowIndex) =>
+        updateCellIndexes.push({
+          ...col,
+          cellIndex: `${col.colIndex}${rowIndex}`,
+        })
+      );
     });
 
     const body = [];
