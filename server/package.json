@@ -68,7 +68,6 @@
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.2.38",
     "typescript": "^4.3.5",
-    "typesense": "^1.0.2",
     "ws": "^7.5.5"
   },
   "devDependencies": {
@@ -95,7 +94,7 @@
     "ts-loader": "^9.2.3"
   },
   "engines": {
-    "node": ">=14.17.0",
+    "node": ">=14.17.3",
     "npm": "<=7.20.0"
   }
 }

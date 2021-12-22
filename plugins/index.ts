@@ -14,6 +14,7 @@ import s3 from './packages/s3/lib'
 import slack from './packages/slack/lib'
 import stripe from './packages/stripe/lib'
 import twilio from './packages/twilioapi/lib'
+import typesense from './packages/typesenseapi/lib'
 export default {
   airtable,
   gcs,
@@ -30,5 +31,6 @@ export default {
   s3,
   slack,
   stripe,
-  twilio
+  twilio,
+  typesense
 }
