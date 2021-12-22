@@ -24,10 +24,14 @@ function getConfig() {
   return fetch(`${config.apiUrl}/config`, requestOptions).then(handleResponse);
 }
 
-function getAll(page, folder) {
+function getAll(page, folder, searchKey) {
   const requestOptions = { method: 'GET', headers: authHeader() };
   if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
-  else return fetch(`${config.apiUrl}/apps?page=${page}&folder=${folder || ''}`, requestOptions).then(handleResponse);
+  else
+    return fetch(
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
+      requestOptions
+    ).then(handleResponse);
 }
 
 function createApp() {

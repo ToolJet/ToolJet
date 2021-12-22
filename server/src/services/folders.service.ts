@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { createQueryBuilder, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
 import { UsersService } from './users.service';
@@ -31,7 +31,7 @@ export class FoldersService {
     );
   }
 
-  async all(user: User): Promise<Folder[]> {
+  async allFolders(user: User): Promise<Folder[]> {
     if (await this.usersService.hasGroup(user, 'admin')) {
       return await this.foldersRepository.find({
         where: {
@@ -80,12 +80,74 @@ export class FoldersService {
       return [];
     }
   }
+  async all(user: User, searchKey: string): Promise<Folder[]> {
+    const allFloderList = await this.allFolders(user);
+    if (!searchKey || !allFloderList || allFloderList.length === 0) {
+      return allFloderList;
+    }
+    const folders = await this.allFoldersWithSearchKey(user, searchKey);
+    allFloderList.forEach((folder, index) => {
+      const currentFolder = folders.filter((f) => f.id === folder.id);
+      if (currentFolder && currentFolder.length > 0) {
+        allFloderList[index] = currentFolder[0];
+      } else {
+        allFloderList[index].folderApps = [];
+        allFloderList[index].generateCount();
+      }
+    });
+    return allFloderList;
+  }
+  async allFoldersWithSearchKey(user: User, searchKey: string): Promise<Folder[]> {
+    const allViewableAppsWithSearchQb = createQueryBuilder(App, 'apps')
+      .select('apps.id')
+      .innerJoin('apps.groupPermissions', 'group_permissions')
+      .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
+      .innerJoin(
+        UserGroupPermission,
+        'user_group_permissions',
+        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+      )
+      .where(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
+              value: true,
+              organizationId: user.organizationId,
+              userId: user.id,
+            });
+        })
+      );
+    allViewableAppsWithSearchQb.andWhere('LOWER(apps.name) like :searchKey', {
+      searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+    });
+
+    const allViewableAppsWithSearch = await allViewableAppsWithSearchQb.getMany();
+
+    const allViewableAppIdsWithSearch = allViewableAppsWithSearch.map((app) => app.id);
+
+    if (allViewableAppIdsWithSearch.length !== 0) {
+      return await createQueryBuilder(Folder, 'folders')
+        .leftJoinAndSelect('folders.folderApps', 'folder_apps')
+        .where('folder_apps.app_id IN(:...allViewableAppIdsWithSearch)', {
+          allViewableAppIdsWithSearch,
+        })
+        .andWhere('folders.organization_id = :organizationId', {
+          organizationId: user.organizationId,
+        })
+        .orWhere('folder_apps.app_id IS NULL')
+        .orderBy('folders.name', 'ASC')
+        .distinct()
+        .getMany();
+    }
+    return [];
+  }
 
   async findOne(folderId: string): Promise<Folder> {
     return await this.foldersRepository.findOneOrFail(folderId);
   }
 
-  async userAppCount(user: User, folder: Folder) {
+  async userAppCount(user: User, folder: Folder, searchKey: string) {
     const folderApps = await this.folderAppsRepository.find({
       where: {
         folderId: folder.id,
@@ -97,7 +159,7 @@ export class FoldersService {
       return 0;
     }
 
-    const viewableAppsQb = await createQueryBuilder(App, 'viewable_apps')
+    const viewableAppsQb = createQueryBuilder(App, 'viewable_apps')
       .innerJoin('viewable_apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('viewable_apps.appGroupPermissions', 'app_group_permissions')
       .innerJoinAndSelect('viewable_apps.user', 'user')
@@ -106,17 +168,26 @@ export class FoldersService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere(
-        '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
-          'OR viewable_apps.user_id = :userId',
-        {
-          value: true,
-          organizationId: user.organizationId,
-          userId: user.id,
-        }
+      .where(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere(
+              '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
+                'OR viewable_apps.user_id = :userId',
+              {
+                value: true,
+                organizationId: user.organizationId,
+                userId: user.id,
+              }
+            );
+        })
       );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(viewable_apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
@@ -138,7 +209,7 @@ export class FoldersService {
       .getCount();
   }
 
-  async getAppsFor(user: User, folder: Folder, page: number): Promise<App[]> {
+  async getAppsFor(user: User, folder: Folder, page: number, searchKey: string): Promise<App[]> {
     const folderApps = await this.folderAppsRepository.find({
       where: {
         folderId: folder.id,
@@ -150,7 +221,7 @@ export class FoldersService {
       return [];
     }
 
-    const viewableAppsQb = await createQueryBuilder(App, 'viewable_apps')
+    const viewableAppsQb = createQueryBuilder(App, 'viewable_apps')
       .innerJoin('viewable_apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('viewable_apps.appGroupPermissions', 'app_group_permissions')
       .innerJoinAndSelect('viewable_apps.user', 'user')
@@ -159,17 +230,26 @@ export class FoldersService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere(
-        '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
-          'OR viewable_apps.user_id = :userId',
-        {
-          value: true,
-          organizationId: user.organizationId,
-          userId: user.id,
-        }
+      .where(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere(
+              '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
+                'OR viewable_apps.user_id = :userId',
+              {
+                value: true,
+                organizationId: user.organizationId,
+                userId: user.id,
+              }
+            );
+        })
       );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(viewable_apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
@@ -190,13 +270,9 @@ export class FoldersService {
       })
       .take(10)
       .skip(10 * (page - 1))
-      // .orderBy('apps.created_at', 'DESC')
+      .orderBy('apps.createdAt', 'DESC')
       .getMany();
 
-    // FIXME:
-    // TypeORM gives error when using query builder with order by
-    // https://github.com/typeorm/typeorm/issues/8213
-    // hence sorting results in memory
-    return viewableAppsInFolder.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return viewableAppsInFolder;
   }
 }
