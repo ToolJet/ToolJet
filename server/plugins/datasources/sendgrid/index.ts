@@ -3,7 +3,7 @@ import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import * as SendGrid from '@sendgrid/mail';
-import { EmailOptions } from './sendgrid.interfce';
+import { EmailOptions } from './sendgrid.interface';
 
 @Injectable()
 export default class SendGridQueryService implements QueryService {
