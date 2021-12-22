@@ -14,6 +14,7 @@ import AirtableSchema from './Airtable.schema.json';
 import DynamodbSchema from './Dynamodb.schema.json';
 import FirestoreSchema from './Firestore.schema.json';
 import ElasticsearchSchema from './Elasticsearch.schema.json';
+import TypesenseSchema from './TypeSense.schema.json';
 import MongodbSchema from './Mongodb.schema.json';
 import PostgresqlSchema from './Postgresql.schema.json';
 import SlackSchema from './Slack.schema.json';
@@ -30,6 +31,7 @@ const Airtable = ({ ...rest }) => <DynamicForm schema={AirtableSchema} {...rest}
 const Dynamodb = ({ ...rest }) => <DynamicForm schema={DynamodbSchema} {...rest} />;
 const Firestore = ({ ...rest }) => <DynamicForm schema={FirestoreSchema} {...rest} />;
 const Elasticsearch = ({ ...rest }) => <DynamicForm schema={ElasticsearchSchema} {...rest} />;
+const Typesense = ({ ...rest }) => <DynamicForm schema={TypesenseSchema} {...rest} />;
 const Mongodb = ({ ...rest }) => <DynamicForm schema={MongodbSchema} {...rest} />;
 const Postgresql = ({ ...rest }) => <DynamicForm schema={PostgresqlSchema} {...rest} />;
 const Slack = ({ ...rest }) => <DynamicForm schema={SlackSchema} {...rest} />;
@@ -48,6 +50,7 @@ export const allSources = {
   Redis,
   Googlesheets,
   Elasticsearch,
+  Typesense,
   Slack,
   Mongodb,
   Dynamodb,
