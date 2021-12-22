@@ -10,6 +10,7 @@ import StripeSchema from './Api/Stripe.schema.json';
 import GooglesheetSchema from './Api/Googlesheets.schema.json';
 import SlackSchema from './Api/Slack.schema.json';
 import TwilioSchema from './Api/Twilio.schema.json';
+import SendgridSchema from './Api/Sendgrid.schema.json';
 
 // Database sources
 import DynamodbSchema from './Database/Dynamodb.schema.json';
@@ -47,6 +48,7 @@ const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
 const S3 = ({ ...rest }) => <DynamicForm schema={S3Schema} {...rest} />;
 const Gcs = ({ ...rest }) => <DynamicForm schema={GcsSchema} {...rest} />;
 const Twilio = ({ ...rest }) => <DynamicForm schema={TwilioSchema} {...rest} />;
+const Sendgrid = ({ ...rest }) => <DynamicForm schema={SendgridSchema} {...rest} />;
 
 export const DataBaseSources = [
   DynamodbSchema.source,
@@ -67,6 +69,7 @@ export const ApiSources = [
   GooglesheetSchema.source,
   SlackSchema.source,
   TwilioSchema.source,
+  SendgridSchema.source,
 ];
 
 export const OtherSources = [RunjsSchema.source];
@@ -92,4 +95,5 @@ export const SourceComponents = {
   S3,
   Gcs,
   Twilio,
+  Sendgrid,
 };
