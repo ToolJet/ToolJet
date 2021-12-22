@@ -13,8 +13,7 @@ export class FoldersController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async index(@Request() req, @Query() query) {
-    const folders = await this.foldersService.all(req.user);
-
+    const folders = await this.foldersService.all(req.user, query.searchKey);
     return decamelizeKeys({ folders });
   }
 
