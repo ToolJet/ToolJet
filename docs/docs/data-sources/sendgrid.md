@@ -23,32 +23,33 @@ SendGrid API key is required to create an SendGrid datasource on ToolJet. You ca
 
 Click on the 'Save' button to save the datasource.
 
+## Supported operations
+1.  Email service
 
 
-
-## Sending Emails
+### Email service
 Required parameters: 
-- Send Mail To
-- Send Mail From 
-- Email Subject
-- Body as Text
+- Send email to
+- Send email from 
+- Subject
+- Body as text
 
 
 Optional parameters:
-- Body as Html
+- Body as HTML
 
 <img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query.jpg" alt="ToolJet - Query SendGrid" height="420"/>
 
 :::info
-**Send Mail To** - accepts a list of emails separated by comma.
+**Send mail to** - accepts a array/list of emails separated by comma.
 For example:
 `{{["dev@tooljet.io", "admin@tooljet.io"]}}`.
 :::
 
 :::tip
-**Send a Single email to Multiple Recipients** - The `Send Mail To` field can contain an array of recipients, which will send a single email with all of the recipients in the `Send Mail To` field. 
+**Send a single email to multiple recipients** - The `Send mail to` field can contain an array of recipients, which will send a single email with all of the recipients in the field. 
 
-**Send Multiple individual emails to Multiple Recipients** - set <b>Multiple Recipients</b> field to true and the `Send Mail to` field will be split into multiple emails and send to each recipient.
+**Send multiple individual emails to multiple recipients** - set <b>Multiple recipients</b> field to `{{true}}` and the `Send mail to` field will be split into multiple emails and send to each recipient.
 :::
 
 
