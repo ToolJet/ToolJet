@@ -1,9 +1,8 @@
-import { HTTPError } from 'got';
 import { QueryError } from 'common/lib/query.error';
 import { QueryResult } from 'common/lib/query_result.type';
 import { QueryService } from 'common/lib/query_service.interface';
 const urrl = require('url');
-import got from 'got'
+import got, { Headers, HTTPError } from 'got'
 
 function isEmpty(value: number | null | undefined | string) {
   return value === undefined || value === null || value === NaN || (typeof value === 'object' && Object.keys(value).length === 0) || (typeof value === 'string' && value.trim().length === 0);
@@ -11,7 +10,7 @@ function isEmpty(value: number | null | undefined | string) {
 
 export default class RestapiQueryService implements QueryService {
   /* Headers of the source will be overridden by headers of the query */
-  headers(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
+  headers(sourceOptions: any, queryOptions: any, hasDataSource: boolean): Headers {
     const _headers = (queryOptions.headers || []).filter((o) => {
       return o.some((e) => !isEmpty(e));
     });

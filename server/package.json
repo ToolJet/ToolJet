@@ -40,6 +40,7 @@
     "@nestjs/websockets": "^8.0.10",
     "@sentry/node": "^6.12.0",
     "@sentry/tracing": "^6.12.0",
+    "@tooljet/plugins": "https://gitpkg.now.sh/ToolJet/ToolJet/plugins?56c946f532cc094339abe3d091541d9bf9c2ac01",
     "@types/got": "^9.6.12",
     "@types/humps": "^2.0.1",
     "@types/nodemailer": "^6.4.4",
