@@ -25,7 +25,7 @@
           "placeholder": "{{false}}"
         },
         "send_mail_to": {
-          "$label": "Send Mail To",
+          "$label": "Send mail to",
           "$key": "send_mail_to",
           "type": "codehinter",
           "lineNumbers": false,
@@ -33,7 +33,7 @@
           "placeholder": "{{['dev@tooljet.io']}}"
         },
         "send_mail_from": {
-          "$label": "Send email from",
+          "$label": "Send mail from",
           "$key": "send_mail_from",
           "type": "codehinter",
           "lineNumbers": false,
@@ -41,7 +41,7 @@
         },
         
         "subject": {
-          "$label": "Email subject",
+          "$label": "Subject",
           "$key": "subject",
           "type": "codehinter",
           "lineNumbers": false,
