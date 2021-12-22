@@ -80,7 +80,7 @@ export class UsersService {
             groupPermissionId: orgGroupPermission.id,
             userId: user.id,
           });
-          manager.save(userGroupPermission);
+          await manager.save(userGroupPermission);
         } else {
           throw new BadRequestException(`${group} group does not exist for current organization`);
         }
@@ -133,12 +133,12 @@ export class UsersService {
       );
 
       const organizationUser = user.organizationUsers[0];
-      this.organizationUsersRepository.update(organizationUser.id, {
+      await this.organizationUsersRepository.update(organizationUser.id, {
         status: 'active',
       });
 
       if (newSignup) {
-        this.organizationsRepository.update(user.organizationId, {
+        await this.organizationsRepository.update(user.organizationId, {
           name: organization,
         });
       }
@@ -196,7 +196,7 @@ export class UsersService {
             groupPermissionId: orgGroupPermission.id,
             userId: user.id,
           });
-          manager.save(userGroupPermission);
+          await manager.save(userGroupPermission);
         } else {
           throw new BadRequestException(`${group} group does not exist for current organization`);
         }

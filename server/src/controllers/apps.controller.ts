@@ -179,21 +179,22 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async index(@Request() req, @Query() query) {
-    const page = req.query.page;
-    const folderId = req.query.folder;
+    const page = query.page;
+    const folderId = query.folder;
+    const searchKey = query.searchKey || '';
 
     let apps = [];
     let totalFolderCount = 0;
 
     if (folderId) {
       const folder = await this.foldersService.findOne(folderId);
-      apps = await this.foldersService.getAppsFor(req.user, folder, page);
-      totalFolderCount = await this.foldersService.userAppCount(req.user, folder);
+      apps = await this.foldersService.getAppsFor(req.user, folder, page, searchKey);
+      totalFolderCount = await this.foldersService.userAppCount(req.user, folder, searchKey);
     } else {
-      apps = await this.appsService.all(req.user, page);
+      apps = await this.appsService.all(req.user, page, searchKey);
     }
 
-    const totalCount = await this.appsService.count(req.user);
+    const totalCount = await this.appsService.count(req.user, searchKey);
 
     const totalPageCount = folderId ? totalFolderCount : totalCount;
 

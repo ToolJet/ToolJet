@@ -2,12 +2,15 @@ $white: #fff !default;
 $grey: #eee !default;
 $black: #000 ;
 $light-gray: #8092AB;
+$border-grey-light: #D9DCDE;
+$border-grey-dark: #333C48;
 $light-green: #82bf99;
 $dark-green: #3b734f;
 $primary: #4D72FA;
 $disabled: #9E9EA8;
 $dark-background: #1f2936;
 $bg-light: #EEF3F9;
+$bg-dark: #22272E;
 
 .color-primary {
   color: $primary !important;
@@ -23,4 +26,7 @@ $bg-light: #EEF3F9;
 
 .bg-light {
   background: $bg-light;
+}
+.bg-dark {
+  background: $dark-background;
 }

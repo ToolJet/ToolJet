@@ -53,7 +53,7 @@ const HEADINGS = [
   { label: 'H4', style: 'header-four' },
   { label: 'H5', style: 'header-five' },
   { label: 'H6', style: 'header-six' },
-]
+];
 
 const BLOCK_TYPES = [
   {
@@ -86,19 +86,17 @@ const BlockStyleControls = (props) => {
           Heading
         </button>
         <div className="dropdown-content bg-white">
-          {
-            HEADINGS.map((type) => (
-              <a className="dropitem m-0 p-0" href="#" key={type.label}>
-                <StyleButton
-                  key={type.label}
-                  active={type.style === blockType}
-                  label={type.label}
-                  onToggle={props.onToggle}
-                  style={type.style}
-                />
-              </a>
-            ))
-          }
+          {HEADINGS.map((type) => (
+            <a className="dropitem m-0 p-0" href="#" key={type.label}>
+              <StyleButton
+                key={type.label}
+                active={type.style === blockType}
+                label={type.label}
+                onToggle={props.onToggle}
+                style={type.style}
+              />
+            </a>
+          ))}
         </div>
       </div>
       {BLOCK_TYPES.map((type) => (
@@ -150,7 +148,9 @@ const InlineStyleControls = (props) => {
 class DraftEditor extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { editorState: EditorState.createWithContent(ContentState.createFromText(this.props.defaultValue)) };
+    this.state = {
+      editorState: EditorState.createWithContent(ContentState.createFromText(this.props.defaultValue)),
+    };
 
     this.focus = () => this.refs.editor.focus();
     this.onChange = (editorState) => {
@@ -224,7 +224,7 @@ class DraftEditor extends React.Component {
           <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
           <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
         </div>
-        <div className={className} style={{height: `${this.props.height-60}px`}} onClick={this.focus}>
+        <div className={className} style={{ height: `${this.props.height - 60}px` }} onClick={this.focus}>
           <Editor
             blockStyleFn={getBlockStyle}
             customStyleMap={styleMap}

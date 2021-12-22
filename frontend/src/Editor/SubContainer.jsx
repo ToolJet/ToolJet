@@ -33,15 +33,13 @@ export const SubContainer = ({
   currentLayout,
   removeComponent,
   darkMode,
-  containerCanvasWidth
+  containerCanvasWidth,
 }) => {
-
-  const [currentParentRef, setParentRef] = useState(parentRef);
+  const [_currentParentRef, setParentRef] = useState(parentRef);
 
   useEffect(() => {
     setParentRef(parentRef);
   }, [parentRef]);
-
 
   zoomLevel = zoomLevel || 1;
 
@@ -206,7 +204,7 @@ export const SubContainer = ({
         // convert the left offset to percentage
         left = (left * 100) / subContainerWidth;
 
-        const width = componentMeta.defaultSize.width * 100 / 43;
+        const width = (componentMeta.defaultSize.width * 100) / 43;
 
         setBoxes({
           ...boxes,
@@ -229,7 +227,6 @@ export const SubContainer = ({
     }),
     [moveBox]
   );
-
 
   function getContainerCanvasWidth() {
     if (containerCanvasWidth !== undefined) {
@@ -356,7 +353,12 @@ export const SubContainer = ({
   };
 
   return (
-    <div ref={drop} style={styles} id={`canvas-${parent}`} className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}>
+    <div
+      ref={drop}
+      style={styles}
+      id={`canvas-${parent}`}
+      className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}
+    >
       {Object.keys(childComponents).map((key) => (
         <DraggableBox
           onComponentClick={onComponentClick}
