@@ -1,11 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { QueryError } from 'src/modules/data_sources/query.error';
-import { QueryResult } from 'src/modules/data_sources/query_result.type';
-import { QueryService } from 'src/modules/data_sources/query_service.interface';
+import { QueryError } from 'common/lib/query.error';
+import { QueryResult } from 'common/lib/query_result.type';
+import { QueryService } from 'common/lib/query_service.interface';
 import * as SendGrid from '@sendgrid/mail';
-import { EmailOptions } from './sendgrid.interface';
+import { EmailOptions } from './types';
 
-@Injectable()
 export default class SendGridQueryService implements QueryService {
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     if (!(queryOptions && sourceOptions.api_key)) {

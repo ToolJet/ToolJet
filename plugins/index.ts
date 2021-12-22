@@ -15,6 +15,7 @@ import slack from './packages/slack/lib'
 import stripe from './packages/stripe/lib'
 import twilio from './packages/twilioapi/lib'
 import typesense from './packages/typesenseapi/lib'
+import sendgrid from './packages/sendgrid/lib'
 export default {
   airtable,
   gcs,
@@ -32,5 +33,6 @@ export default {
   slack,
   stripe,
   twilio,
-  typesense
+  typesense,
+  sendgrid
 }
