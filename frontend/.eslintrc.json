@@ -36,7 +36,10 @@
       ],
       "react/prop-types": 0,
       "react/display-name": "off",
-      "no-unused-vars": [2, { "args": "after-used", "argsIgnorePattern": "reject" }],
+      "no-unused-vars": ["warn", {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }],
       "react/no-deprecated": 0,
       "no-prototype-builtins": 0
     },
@@ -53,4 +56,3 @@
       "__dirname": true
     }
 }
-  

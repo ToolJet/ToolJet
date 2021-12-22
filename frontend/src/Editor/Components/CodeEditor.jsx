@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/addon/comment/comment';
 import 'codemirror/addon/hint/show-hint';
@@ -11,41 +10,23 @@ import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
 import { onBeforeChange, handleChange } from '../CodeBuilder/utils';
 
-export const CodeEditor = ({ width, height, component, currentState, onComponentOptionChanged, darkMode }) => {
-  const enableLineNumber = component.definition.properties?.enableLineNumber?.value ?? true;
-  const languageMode = component.definition.properties.mode.value;
-  const placeholder = component.definition.properties.placeholder.value;
-
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-  const parsedWidgetVisibility =
-    typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility, currentState) : widgetVisibility;
-
-  const parsedEnableLineNumber =
-    typeof enableLineNumber !== 'boolean' ? resolveWidgetFieldValue(enableLineNumber, currentState) : enableLineNumber;
-
-  const value = currentState?.components[component?.name]?.value;
-
-  const [editorValue, setEditorValue] = useState(value);
-  const [realState, setRealState] = useState(currentState);
+export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariables, setExposedVariable }) => {
+  const { enableLineNumber, mode, placeholder } = properties;
+  const { visibility, disabledState } = styles;
 
   function codeChanged(code) {
-    setEditorValue(code);
-    onComponentOptionChanged(component, 'value', code);
+    setExposedVariable('value', code);
   }
 
-  const styles = {
+  const editorStyles = {
     height: height,
-    display: !parsedWidgetVisibility ? 'none' : 'block',
+    display: !visibility ? 'none' : 'block',
   };
   const options = {
-    lineNumbers: parsedEnableLineNumber,
+    lineNumbers: enableLineNumber,
     lineWrapping: true,
     singleLine: true,
-    mode: languageMode,
+    mode: mode,
     tabSize: 2,
     theme: darkMode ? 'monokai' : 'duotone-light',
     readOnly: false,
@@ -55,23 +36,21 @@ export const CodeEditor = ({ width, height, component, currentState, onComponent
 
   function valueChanged(editor, onChange, ignoreBraces = false) {
     handleChange(editor, onChange, [], ignoreBraces);
-    setEditorValue(editor.getValue());
   }
 
-  useEffect(() => {
-    setRealState(currentState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components]);
-
   return (
-    <div data-disabled={parsedDisabledState} style={styles}>
+    <div data-disabled={disabledState} style={editorStyles}>
       <div
         className={`code-hinter codehinter-default-input code-editor-widget`}
-        style={{ height: height || 'auto', minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }}
+        style={{
+          height: height || 'auto',
+          minHeight: height - 1,
+          maxHeight: '320px',
+          overflow: 'auto',
+        }}
       >
         <CodeMirror
-          value={editorValue}
-          realState={realState}
+          value={exposedVariables.value}
           scrollbarStyle={null}
           height={height - 1}
           onBlur={(editor) => {
