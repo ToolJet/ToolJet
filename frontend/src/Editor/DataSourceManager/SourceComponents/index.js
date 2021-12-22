@@ -9,10 +9,13 @@ import GraphqlSchema from './Api/Graphql.schema.json';
 import StripeSchema from './Api/Stripe.schema.json';
 import GooglesheetSchema from './Api/Googlesheets.schema.json';
 import SlackSchema from './Api/Slack.schema.json';
+import TwilioSchema from './Api/Twilio.schema.json';
+import SendgridSchema from './Api/Sendgrid.schema.json';
 
 // Database sources
 import DynamodbSchema from './Database/Dynamodb.schema.json';
 import ElasticsearchSchema from './Database/Elasticsearch.schema.json';
+import TypeSenseSchema from './Database/TypeSense.schema.json';
 import RedisSchema from './Database/Redis.schema.json';
 import FirestoreSchema from './Database/Firestore.schema.json';
 import MongodbSchema from './Database/Mongodb.schema.json';
@@ -35,6 +38,7 @@ const Googlesheets = ({ ...rest }) => <DynamicForm schema={GooglesheetSchema} {.
 const Slack = ({ ...rest }) => <DynamicForm schema={SlackSchema} {...rest} />;
 const Dynamodb = ({ ...rest }) => <DynamicForm schema={DynamodbSchema} {...rest} />;
 const Elasticsearch = ({ ...rest }) => <DynamicForm schema={ElasticsearchSchema} {...rest} />;
+const Typesense = ({ ...rest }) => <DynamicForm schema={TypeSenseSchema} {...rest} />;
 const Redis = ({ ...rest }) => <DynamicForm schema={RedisSchema} {...rest} />;
 const Firestore = ({ ...rest }) => <DynamicForm schema={FirestoreSchema} {...rest} />;
 const Mongodb = ({ ...rest }) => <DynamicForm schema={MongodbSchema} {...rest} />;
@@ -43,10 +47,13 @@ const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
 const S3 = ({ ...rest }) => <DynamicForm schema={S3Schema} {...rest} />;
 const Gcs = ({ ...rest }) => <DynamicForm schema={GcsSchema} {...rest} />;
+const Twilio = ({ ...rest }) => <DynamicForm schema={TwilioSchema} {...rest} />;
+const Sendgrid = ({ ...rest }) => <DynamicForm schema={SendgridSchema} {...rest} />;
 
 export const DataBaseSources = [
   DynamodbSchema.source,
   ElasticsearchSchema.source,
+  TypeSenseSchema.source,
   RedisSchema.source,
   FirestoreSchema.source,
   MongodbSchema.source,
@@ -61,6 +68,8 @@ export const ApiSources = [
   StripeSchema.source,
   GooglesheetSchema.source,
   SlackSchema.source,
+  TwilioSchema.source,
+  SendgridSchema.source,
 ];
 
 export const OtherSources = [RunjsSchema.source];
@@ -69,6 +78,7 @@ export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStora
 
 export const SourceComponents = {
   Elasticsearch,
+  Typesense,
   Redis,
   Postgresql,
   Stripe,
@@ -84,4 +94,6 @@ export const SourceComponents = {
   Mssql,
   S3,
   Gcs,
+  Twilio,
+  Sendgrid,
 };

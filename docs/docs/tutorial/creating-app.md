@@ -14,7 +14,7 @@ This tutorial will walk you through building a simple app to fetch customer info
 To create a new ToolJet app, click on the **'Create App'** button on the ToolJet dashboard. 
 
 
-You will redirected to the visual app editor once the app has been created. The name of the app can be changed by clicking on the app name at top-left of the app builder.
+You will be redirected to the visual app editor once the app has been created. The name of the app can be changed by clicking on the app name at top-left of the app builder.
 
 The main components of an app: 
 

@@ -16,7 +16,7 @@ export class GoogleOAuthService {
 
     const words = payload.name?.split(' ');
     const firstName = words ? words[0] : '';
-    const lastName = (words && (words.length > 1)) ? words[words.length - 1] : '';
+    const lastName = words && words.length > 1 ? words[words.length - 1] : '';
     return { userSSOId, firstName, lastName, email, domain };
   }
 

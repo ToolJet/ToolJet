@@ -73,6 +73,13 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter bucket"
+      },
+      "prefix": {
+        "$label": "Prefix",
+        "$key": "prefix",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter prefix"
       }
     },
     "signed_url_for_get": {

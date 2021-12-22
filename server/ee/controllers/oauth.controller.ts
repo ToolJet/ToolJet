@@ -1,12 +1,9 @@
 import { Controller, Post, Request } from '@nestjs/common';
-import { OauthService } from '../services/oauth/oauth.service'
+import { OauthService } from '../services/oauth/oauth.service';
 
 @Controller('oauth')
 export class OauthController {
-
-  constructor(
-    private oauthService: OauthService
-  ) { }
+  constructor(private oauthService: OauthService) {}
 
   @Post('sign-in')
   async create(@Request() req) {
@@ -14,4 +11,3 @@ export class OauthController {
     return result;
   }
 }
-

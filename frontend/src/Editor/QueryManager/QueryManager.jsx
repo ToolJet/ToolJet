@@ -1,7 +1,6 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast from 'react-hot-toast';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
@@ -12,8 +11,6 @@ import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
-import MaximizeIcon from '../Icons/maximize.svg';
-import MinimizeIcon from '../Icons/minimize.svg';
 
 const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
@@ -71,7 +68,7 @@ let QueryManager = class QueryManager extends React.Component {
           }
 
           this.setState({
-            options: selectedQuery.options,
+            options: paneHeightChanged ? this.state.options : selectedQuery.options,
             selectedDataSource: source,
             selectedQuery,
             queryName: selectedQuery.name,
@@ -164,10 +161,7 @@ let QueryManager = class QueryManager extends React.Component {
 
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
-      toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.', {
-        hideProgressBar: true,
-        position: 'bottom-center',
-      });
+      toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.');
       return;
     }
 
@@ -176,26 +170,26 @@ let QueryManager = class QueryManager extends React.Component {
       dataqueryService
         .update(this.state.selectedQuery.id, queryName, options)
         .then(() => {
-          toast.success('Query Updated', { hideProgressBar: true, position: 'bottom-center' });
+          toast.success('Query Updated');
           this.setState({ isUpdating: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
           this.setState({ isUpdating: false });
-          toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+          toast.error(error);
         });
     } else {
       this.setState({ isCreating: true });
       dataqueryService
         .create(appId, queryName, kind, options, dataSourceId)
         .then(() => {
-          toast.success('Query Added', { hideProgressBar: true, position: 'bottom-center' });
+          toast.success('Query Added');
           this.setState({ isCreating: false });
           this.props.dataQueriesChanged();
         })
         .catch(({ error }) => {
           this.setState({ isCreating: false });
-          toast.error(error, { hideProgressBar: true, position: 'bottom-center' });
+          toast.error(error);
         });
     }
   };
@@ -243,26 +237,6 @@ let QueryManager = class QueryManager extends React.Component {
 
   eventsChanged = (events) => {
     this.optionchanged('events', events);
-  };
-
-  renderQueryEditorIcon = () => {
-    if (this.state.queryPaneHeight === '30%') {
-      return (
-        <span
-          className="cursor-pointer m-3"
-          onClick={this.props.toggleQueryPaneHeight}
-          data-tip="Maximize query editor"
-        >
-          <MaximizeIcon />
-        </span>
-      );
-    }
-
-    return (
-      <span className="cursor-pointer m-3" onClick={this.props.toggleQueryPaneHeight} data-tip="Minimize query editor">
-        <MinimizeIcon />
-      </span>
-    );
   };
 
   render() {
@@ -373,20 +347,11 @@ let QueryManager = class QueryManager extends React.Component {
                 {buttonText}
               </button>
             )}
-            <>
-              {this.renderQueryEditorIcon()}
-              <span onClick={this.props.toggleQueryEditor} className="cursor-pointer m-3" data-tip="Hide query editor">
-                <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M1 1L9 9L17 1"
-                    stroke="#61656F"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-            </>
+            <span onClick={this.props.toggleQueryEditor} className="cursor-pointer m-3" data-tip="Hide query editor">
+              <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L9 9L17 1" stroke="#61656F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
           </div>
         </div>
 
@@ -426,6 +391,7 @@ let QueryManager = class QueryManager extends React.Component {
                       currentState={currentState}
                       darkMode={this.props.darkMode}
                       isEditMode={this.props.mode === 'edit'}
+                      queryName={this.state.queryName}
                     />
                     {!dataSourceMeta?.disableTransformations && (
                       <div>
