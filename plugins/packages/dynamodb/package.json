@@ -5,7 +5,8 @@
   "keywords": [],
   "author": "gandharv <gandharvkumargarg@gmail.com>",
   "license": "ISC",
-  "main": "lib/dynamodb.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -18,7 +19,9 @@
     "url": "git+https://github.com/tooljet/tooljet.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "tsc -b",
+    "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "bugs": {
     "url": "https://github.com/tooljet/tooljet/issues"
@@ -26,6 +29,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "aws-sdk": "^2.1046.0",
-    "common": "^1.0.0"
+    "common": "^1.0.0",
+    "rimraf": "^3.0.2"
   }
 }

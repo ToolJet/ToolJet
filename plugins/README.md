@@ -25,6 +25,7 @@ Below steps need to be run from the root repository
 - npx lerna create mssql -y   
 - npx lerna add common 
 - npx lerna add knex --scope=mssql
+- npx lerna run build --stream [builds all packages]
 
 # Testing
 - NODE_OPTIONS=--experimental-vm-modules npx jest

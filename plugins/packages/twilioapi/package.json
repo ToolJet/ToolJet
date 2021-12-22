@@ -18,7 +18,9 @@
     "url": "git+https://github.com/tooljet/tooljet.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "tsc -b",
+    "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "bugs": {
     "url": "https://github.com/tooljet/tooljet/issues"
@@ -26,6 +28,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "common": "^1.0.0",
+    "rimraf": "^3.0.2",
     "twilio": "^3.72.0"
   }
 }
