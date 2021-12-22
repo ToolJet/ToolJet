@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export const TextInput = function TextInput({ height, validate, properties, styles, setExposedVariable }) {
+export const TextInput = function TextInput({ height, validate, properties, styles, setExposedVariable, fireEvent }) {
   const [value, setValue] = useState(properties.value);
   const { isValid, validationError } = validate(value);
 
@@ -22,6 +22,7 @@ export const TextInput = function TextInput({ height, validate, properties, styl
         onChange={(e) => {
           setValue(e.target.value);
           setExposedVariable('value', e.target.value);
+          fireEvent('onChange');
         }}
         type="text"
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
