@@ -12,6 +12,7 @@ RUN mkdir -p /app
 WORKDIR /app
 
 COPY ./server/package.json ./server/package-lock.json ./
+RUN npm install -g npm@7.2.0
 RUN npm install
 COPY ./server/ ./
 

@@ -6,6 +6,14 @@ ENV NODE_ENV=development
 # set working directory
 WORKDIR /app
 
+# --no-cache: download package index on-the-fly, no need to cleanup afterwards
+# --virtual: bundle packages, remove whole bundle at once, when done
+RUN apk --no-cache --virtual build-dependencies add \
+    python \
+    make \
+    g++ \
+    && apk del build-dependencies
+
 # add `/app/node_modules/.bin` to $PATH
 ENV PATH /app/node_modules/.bin:$PATH
 
@@ -15,6 +23,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # install app dependencies
 COPY package.json package-lock.json  ./
+RUN npm install -g npm@7.2.0
 RUN npm install
 RUN npm install react-scripts@3.4.1 -g --silent
 
