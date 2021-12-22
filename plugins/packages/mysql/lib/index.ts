@@ -5,6 +5,7 @@ import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
 import { cacheConnection, getCachedConnection } from 'common/lib/utils.helper';
 
 export default class MysqlQueryService implements QueryService {
+  constructor() {}
   async run(
     sourceOptions: any,
     queryOptions: any,

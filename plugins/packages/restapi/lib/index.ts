@@ -3,7 +3,7 @@ import { QueryError } from 'common/lib/query.error';
 import { QueryResult } from 'common/lib/query_result.type';
 import { QueryService } from 'common/lib/query_service.interface';
 const urrl = require('url');
-const got = require('got');
+import got from 'got'
 
 function isEmpty(value: number | null | undefined | string) {
   return value === undefined || value === null || value === NaN || (typeof value === 'object' && Object.keys(value).length === 0) || (typeof value === 'string' && value.trim().length === 0);

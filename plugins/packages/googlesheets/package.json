@@ -6,6 +6,7 @@
   "author": "gandharv <gandharvkumargarg@gmail.com>",
   "license": "ISC",
   "main": "lib/googlesheets.js",
+  "type": "commonjs",
   "directories": {
     "lib": "lib",
     "test": "__tests__"

@@ -2,7 +2,7 @@ import { QueryError } from 'common/lib/query.error';
 import { QueryResult } from 'common/lib/query_result.type';
 import { QueryService } from 'common/lib/query_service.interface';
 import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
-const got = require('got');
+import got from 'got'
 
 export default class GooglesheetsQueryService implements QueryService {
   authUrl(): string {

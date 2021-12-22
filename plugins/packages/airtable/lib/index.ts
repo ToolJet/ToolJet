@@ -1,7 +1,7 @@
 import { QueryError } from 'common/lib/query.error';
 import { QueryResult } from 'common/lib/query_result.type';
 import { QueryService } from 'common/lib/query_service.interface';
-const got = require('got');
+import got from 'got'
 
 export default class AirtableQueryService implements QueryService {
   authHeader(token: string): object {

@@ -1,7 +1,8 @@
 import { QueryError } from 'common/lib/query.error';
 import { QueryResult } from 'common/lib/query_result.type';
 import { QueryService } from 'common/lib/query_service.interface';
-const got = require('got');
+import got from 'got'
+import {Headers} from 'got'
 
 export default class SlackQueryService implements QueryService {
   authUrl(): string {
@@ -44,7 +45,7 @@ export default class SlackQueryService implements QueryService {
     return authDetails;
   }
 
-  authHeader(token: string): object {
+  authHeader(token: string): Headers {
     return { Authorization: `Bearer ${token}` };
   }
 
