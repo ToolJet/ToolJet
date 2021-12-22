@@ -7,6 +7,7 @@
   "license": "ISC",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -28,6 +29,6 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "common": "^1.0.0",
-    "got": "^12.0.0"
+    "got": "^11.8.2"
   }
 }

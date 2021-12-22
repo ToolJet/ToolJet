@@ -26,6 +26,6 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "common": "^1.0.0",
-    "got": "^12.0.0"
+    "got": "^11.8.2"
   }
 }

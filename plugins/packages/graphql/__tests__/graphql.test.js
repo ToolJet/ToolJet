@@ -11,8 +11,10 @@ describe('graphql', () => {
       };
   
       const queryOptions = { query: '{ launchesPast(limit: 10) { mission_name } }' };
+
+      const _graphql = new graphql.default()
   
-      const result = await graphql.run(sourceOptions, queryOptions, 'no-datasource-id');
+      const result = await _graphql.run(sourceOptions, queryOptions, 'no-datasource-id');
   
       expect(result.data['data']['launchesPast'].length).toBe(10);
     });
