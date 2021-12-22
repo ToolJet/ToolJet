@@ -25,7 +25,7 @@ services:
       - postgres
     volumes:
       - ./server:/app:delegated
-      # - ./plugins/dist:/app/node_modules/@tooljet/plugins/dist:cached
+      - ./plugins/:/plugins:cached
       - /app/node_modules/
     ports:
       - 3000:3000
