@@ -103,9 +103,11 @@ export class DataSourcesService {
   }
 
   async parseOptionsForOauthDataSource(options: Array<object>) {
-    if (options.find((option) => option['key'] === 'oauth2')) {
-      const provider = options.find((option) => option['key'] === 'provider')['value'];
-      const authCode = options.find((option) => option['key'] === 'code')['value'];
+    const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
+
+    if (findOption(options, 'oauth2') && findOption(options, 'code')) {
+      const provider = findOption(options, 'oauth2')['value'];
+      const authCode = findOption(options, 'code')['value'];
 
       const plugins = await allPlugins;
       const queryService = new plugins[provider]();
