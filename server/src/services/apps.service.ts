@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, EntityManager, getManager, Repository } from 'typeorm';
+import { createQueryBuilder, EntityManager, Brackets, getManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -147,7 +147,9 @@ export class AppsService {
       )
       .where(
         new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+          qb.where('user_group_permissions.user_id = :userId', {
+            userId: user.id,
+          })
             .andWhere('app_group_permissions.read = :value', { value: true })
             .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
               value: true,
@@ -176,7 +178,9 @@ export class AppsService {
       )
       .where(
         new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+          qb.where('user_group_permissions.user_id = :userId', {
+            userId: user.id,
+          })
             .andWhere('app_group_permissions.read = :value', { value: true })
             .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
               value: true,
