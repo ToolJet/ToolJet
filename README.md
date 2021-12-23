@@ -1,8 +1,6 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/7828962/143565889-f4c51c89-fc7e-471c-90b6-42ae697bca6b.png" width="200" />
   <br/>
-
-  Low-code framework for building internal tools.
 </p>
 
 ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources, such as databases (like PostgreSQL, MongoDB, Elasticsearch, etc), API endpoints (ToolJet supports importing OpenAPI spec & OAuth2 authorization), and external services (like Stripe, Slack, Google Sheets, Airtable) and use our pre-built UI widgets to build internal tools.
@@ -16,7 +14,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/tooljet/tooljet)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/tooljet/tooljet)
 [![GitHub license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
-
+[![Twitter Follow](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 
 <p align="center">
@@ -52,19 +50,40 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
 <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" /></a>
 </P>
 
-## Examples 
+## Tutorials and examples 
 
 [GitHub contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
 [Cryptocurrency dashboard using ToolJet](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)<br>
 [WhatsApp CRM using ToolJet](https://blog.tooljet.com/build-a-whatsapp-crm-using-tooljet-within-10-mins/)<br>
+[AWS S3 file explorer](https://blog.tooljet.com/building-an-app-to-view-and-upload-files-in-aws-s3-bucket/)<br>
 
 ## Documentation
 Documentation is available at https://docs.tooljet.com.
 
 - [Getting Started](https://docs.tooljet.com)<br>
-- [Deploying](https://docs.tooljet.com/docs/deployment/architecture)<br>
 - [Datasource Reference](https://docs.tooljet.com/docs/data-sources/airtable/)<br>
 - [Widget Reference](https://docs.tooljet.com/docs/widgets/button)
+
+## Self-hosted
+You can use ToolJet cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, Heroku and more.
+
+- [Deploy on AWS EC2](https://docs.tooljet.com/docs/deployment/ec2)
+- [Deploy on AWS EKS](https://docs.tooljet.com/docs/deployment/kubernetes)
+- [Deploy on GKE](https://docs.tooljet.com/docs/deployment/kubernetes-gke)
+- [Deploy on Azure AKS](https://docs.tooljet.com/docs/deployment/kubernetes-aks)
+- [Deploy on Heroku](https://docs.tooljet.com/docs/deployment/heroku)
+- [Deploy using Docker](https://docs.tooljet.com/docs/deployment/docker)
+- [Deploy on Google Cloud Run](https://docs.tooljet.com/docs/deployment/google-cloud-run)
+
+## Community support
+For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.com/docs/intro/). For additional help, you can use one of these channels to ask a question:
+
+- [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) - Discussions with the community and the team.
+- [GitHub](https://github.com/ToolJet/ToolJet/issues) - For bug reports and feature requests.
+- [Twitter](https://twitter.com/ToolJet) - Get the product updates easily.
+
+## Roadmap
+Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to get informed of the latest features released and the upcoming ones.
 
 ## Branching model
 We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.

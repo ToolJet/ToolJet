@@ -8,7 +8,6 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
@@ -137,8 +136,8 @@ export class AppsService {
     return clonedApp;
   }
 
-  async count(user: User): Promise<number> {
-    return await createQueryBuilder(App, 'apps')
+  async count(user: User, searchKey): Promise<number> {
+    const viewableAppsQb = createQueryBuilder(App, 'apps')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
       .innerJoin(
@@ -146,18 +145,27 @@ export class AppsService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
-        value: true,
-        organizationId: user.organizationId,
-        userId: user.id,
-      })
-      .getCount();
+      .where(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
+              value: true,
+              organizationId: user.organizationId,
+              userId: user.id,
+            });
+        })
+      );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
+    return await viewableAppsQb.getCount();
   }
 
-  async all(user: User, page: number): Promise<App[]> {
-    const viewableAppsQb = await createQueryBuilder(App, 'apps')
+  async all(user: User, page: number, searchKey: string): Promise<App[]> {
+    const viewableAppsQb = createQueryBuilder(App, 'apps')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
       .innerJoinAndSelect('apps.user', 'user')
@@ -166,20 +174,24 @@ export class AppsService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
-        value: true,
-        organizationId: user.organizationId,
-        userId: user.id,
-      })
-      .orderBy('apps.createdAt', 'DESC');
+      .where(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
+              value: true,
+              organizationId: user.organizationId,
+              userId: user.id,
+            });
+        })
+      );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
+    viewableAppsQb.orderBy('apps.createdAt', 'DESC');
 
-    // FIXME:
-    // Fixed based on https://github.com/typeorm/typeorm/issues/747#issuecomment-519553920
-    // TypeORM gives error when using query builder with order by
-    // https://github.com/typeorm/typeorm/issues/8213
-    // hence sorting results in memory
     if (page) {
       return await viewableAppsQb
         .take(10)
@@ -187,7 +199,7 @@ export class AppsService {
         .getMany();
     }
 
-    return await viewableAppsQb.orderBy('apps.created_at', 'DESC').getMany();
+    return await viewableAppsQb.getMany();
   }
 
   async update(user: User, appId: string, params: any) {

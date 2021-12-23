@@ -78,7 +78,9 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     const formItems = [
       'TextInput',
       'NumberInput',
+      'PasswordInput',
       'Textarea',
+      'ToggleSwitch',
       'Dropdown',
       'Multiselect',
       'RichTextEditor',
@@ -106,7 +108,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className="components-container m-1">
+    <div className="components-container mx-3 mt-3">
       <div className="input-icon">
         <input
           type="text"

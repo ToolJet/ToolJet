@@ -42,27 +42,29 @@ export const DropDown = function DropDown({ height, validate, properties, styles
   }, [JSON.stringify(values)]);
 
   return (
-    <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
-      <div className="col-auto my-auto">
-        <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
-          {label}
-        </label>
-      </div>
-      <div className="col px-0 h-100">
-        <SelectSearch
-          disabled={disabledState}
-          options={selectOptions}
-          value={currentValue}
-          search={true}
-          onChange={(newVal) => {
-            setCurrentValue(newVal);
-            setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
-          }}
-          filterOptions={fuzzySearch}
-          placeholder="Select.."
-        />
+    <>
+      <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
+        <div className="col-auto my-auto">
+          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
+            {label}
+          </label>
+        </div>
+        <div className="col px-0 h-100">
+          <SelectSearch
+            disabled={disabledState}
+            options={selectOptions}
+            value={currentValue}
+            search={true}
+            onChange={(newVal) => {
+              setCurrentValue(newVal);
+              setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
+            }}
+            filterOptions={fuzzySearch}
+            placeholder="Select.."
+          />
+        </div>
       </div>
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
-    </div>
+    </>
   );
 };
