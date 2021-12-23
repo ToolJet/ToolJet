@@ -23,6 +23,14 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
   </kbd>
 </p>
 
+## Connect your data sources
+
+<p align="center">
+  <kbd>
+    <img src="https://user-images.githubusercontent.com/7828962/147199804-a414f912-bd41-43e2-be95-bd6a6fd914cd.png"/>
+  </kbd>
+</p>
+
 
 ## Features
 
@@ -73,7 +81,7 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to learn and understand ab
 
 ## Contributors
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tooljet/tooljet" />
+  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=150" />
 </a>
 
 ## Licence
