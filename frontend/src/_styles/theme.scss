@@ -1,13 +1,7 @@
-<<<<<<< HEAD
 @import "./tabler.scss";
 @import "./colors.scss";
 @import "./z-index.scss";
-=======
-@import './tabler.scss';
-@import './colors.scss';
-@import './z-index.scss';
-@import './mixins.scss';
->>>>>>> develop
+@import "./mixins.scss";
 
 body {
   font-family: "Roboto", sans-serif;
@@ -1675,13 +1669,8 @@ hr {
 }
 
 .codehinter-query-editor-input {
-<<<<<<< HEAD
   font-family: "Roboto", sans-serif;
-  padding: 0.1775rem 0.75rem;
-=======
-  font-family: 'Roboto', sans-serif;
   padding: 0.1775rem 0rem;
->>>>>>> develop
   display: block;
   width: 100%;
   font-size: 0.875rem;
@@ -2715,19 +2704,6 @@ input[type="text"] {
   position: absolute;
   left: 50%;
   top: 40%;
-<<<<<<< HEAD
-  transform: translate(-50%, -50%);
-  height: 500px;
-  width: 500px;
-  padding: 0;
-
-  .modal-body {
-    width: 500px !important;
-    height: 300px !important;
-    padding: 0px !important;
-  }
-
-=======
   transform: translate(-60%, -60%);
   height: 350px;
   width: auto;
@@ -2735,15 +2711,15 @@ input[type="text"] {
   padding: 0px;
 
   .modal-content {
-    border-radius: 5px!important;
+    border-radius: 5px !important;
   }
-  
+
   .modal-body {
-    width: 500px!important;
-    height: 302px!important;
-    padding: 0px!important;
-    margin: 0px!important;
-    margin-left: -1px!important; //fix the modal body code mirror margin
+    width: 500px !important;
+    height: 302px !important;
+    padding: 0px !important;
+    margin: 0px !important;
+    margin-left: -1px !important; //fix the modal body code mirror margin
 
     border-top-left-radius: 0;
     border-top-right-radius: 0;
@@ -2759,7 +2735,6 @@ input[type="text"] {
       @include theme-border($light-theme: false);
     }
   }
->>>>>>> develop
   .modal-dialog {
     margin-top: 4%;
   }
@@ -2769,41 +2744,31 @@ input[type="text"] {
     font-size: 14px;
   }
 
-<<<<<<< HEAD
   .editor-container {
-=======
-  .editor-container{
->>>>>>> develop
     padding: 0px;
     .CodeMirror {
       border-radius: 0;
       margin: 0;
-<<<<<<< HEAD
       width: 100% !important;
     }
-  }
-=======
-      width: 100%!important;
-    } 
   }
 }
 
 .preview-block-portal {
-  .bg-light{
+  .bg-light {
     border-radius: 0 0 5px 5px;
-    outline:0.75px solid $light-green;
+    outline: 0.75px solid $light-green;
   }
 
   .bg-dark {
     margin-top: 1px;
     border-radius: 0 0 5px 5px;
-    outline:0.75px solid $light-green;
+    outline: 0.75px solid $light-green;
   }
 
   .dynamic-variable-preview {
-    padding: 4px!important;
+    padding: 4px !important;
   }
->>>>>>> develop
 }
 
 .portal-header {
@@ -2813,16 +2778,15 @@ input[type="text"] {
   color: #656d77;
   background-color: #ffffffd9;
   background-clip: padding-box;
-  border-top-left-radius: 5px!important;
-  border-top-right-radius: 5px!important;
-  width: 498px!important;
+  border-top-left-radius: 5px !important;
+  border-top-right-radius: 5px !important;
+  width: 498px !important;
   outline: 0.75px solid;
 
+  @include theme-border($light-theme: true, $outline: true);
 
-  @include theme-border($light-theme: true, $outline:true);
-
-  &.dark-mode-border  {
-    @include theme-border($light-theme: false, $outline:true);
+  &.dark-mode-border {
+    @include theme-border($light-theme: false, $outline: true);
   }
 }
 .tabs-inspector {
@@ -2901,11 +2865,11 @@ input[type="text"] {
 /**
  * Search Box
  */
- .search-box-wrapper {
+.search-box-wrapper {
   input {
     width: 200px;
   }
   .input-icon .input-icon-addon {
     display: flex;
   }
- }
+}
