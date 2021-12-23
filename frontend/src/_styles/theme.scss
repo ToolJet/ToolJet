@@ -1,12 +1,13 @@
-@import './tabler.scss';
-@import './colors.scss';
-@import './z-index.scss';
+@import "./tabler.scss";
+@import "./colors.scss";
+@import "./z-index.scss";
 
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
-input, button {
+input,
+button {
   border-radius: 4px;
 }
 
@@ -48,7 +49,8 @@ input, button {
   display: none;
 }
 
-.accordion-item, .accordion-button {
+.accordion-item,
+.accordion-button {
   background-color: inherit;
 }
 
@@ -65,7 +67,7 @@ input, button {
   .form-label {
     font-weight: 400;
     font-size: 12px;
-    color: #61656C;
+    color: #61656c;
   }
 }
 .editor {
@@ -220,7 +222,7 @@ input, button {
 
       .inspector-add-button:hover {
         color: $primary;
-        background: #EEF3F9;
+        background: #eef3f9;
         border-radius: 4px;
       }
 
@@ -291,14 +293,12 @@ input, button {
       .component-image-holder {
         border-radius: 0;
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        border: 1px solid #D2DDEC;
+        border: 1px solid #d2ddec;
         box-sizing: border-box;
         border-radius: 4px;
 
         img {
           margin: 0 auto;
-          width: 18px;
-          height: 18px;
         }
 
         &:hover {
@@ -308,14 +308,12 @@ input, button {
 
       .component-title {
         display: block;
-        font-weight: 400;
         margin-top: 10px;
         color: #3e525b;
-        white-space: nowrap;
         font-size: 10px;
-        line-height: 12px;
         max-width: 100%;
         text-align: center;
+        word-wrap: break-word;
       }
 
       .component-description {
@@ -566,7 +564,8 @@ input, button {
   padding: 0 1.5rem 0 1.5rem;
 }
 
-.page-body, .homepage-body {
+.page-body,
+.homepage-body {
   height: 100vh;
 }
 
@@ -582,48 +581,48 @@ input, button {
   }
 
   button.create-new-app-button {
-    background-color: #4D72FA;
+    background-color: #4d72fa;
   }
 
   .app-list {
     .app-card {
       height: 155px;
       max-height: 155px;
-      border: 0.5px solid #B4BBC6;
+      border: 0.5px solid #b4bbc6;
       box-sizing: border-box;
       border-radius: 8px;
 
       .app-creation-time {
         font-size: 10px;
         line-height: 12px;
-        color: #61656F;
+        color: #61656f;
       }
 
       .app-creator {
         font-weight: 500;
         font-size: 10px;
         line-height: 12px;
-        color: #292D37;
+        color: #292d37;
       }
     }
 
     .app-card.highlight {
-      background-color: #F8F8F8;
+      background-color: #f8f8f8;
 
       button.edit-button {
-        background: #FFFFFF;
-        border: 1px solid #4D72FA;
+        background: #ffffff;
+        border: 1px solid #4d72fa;
         box-sizing: border-box;
         border-radius: 4px;
-        color: #4D72FA;
+        color: #4d72fa;
       }
 
       button.launch-button {
-        background: #4D72FA;
-        border: 1px solid #4D72FA;
+        background: #4d72fa;
+        border: 1px solid #4d72fa;
         box-sizing: border-box;
         border-radius: 4px;
-        color: #FFFFFF;
+        color: #ffffff;
       }
     }
 
@@ -644,7 +643,7 @@ input, button {
   }
 
   .form-check-input:not(:checked) {
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2390b5e2'/%3e%3c/svg%3e") !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2390b5e2'/%3e%3c/svg%3e") !important;
   }
 
   .inspector {
@@ -658,9 +657,8 @@ input, button {
   .homepage-body {
     .app-list {
       .app-card {
-
         .app-creation-time {
-          color: #61656F;
+          color: #61656f;
         }
 
         .app-creator {
@@ -672,15 +670,15 @@ input, button {
         background-color: #2c405c;
 
         button.edit-button {
-          background: #FFFFFF;
-          border: 1px solid #4D72FA;
-          color: #4D72FA;
+          background: #ffffff;
+          border: 1px solid #4d72fa;
+          color: #4d72fa;
         }
 
         button.launch-button {
-          background: #4D72FA;
-          border: 1px solid #4D72FA;
-          color: #FFFFFF;
+          background: #4d72fa;
+          border: 1px solid #4d72fa;
+          color: #ffffff;
         }
       }
 
@@ -696,7 +694,7 @@ input, button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: #4D72FA;
+      background-color: #4d72fa;
     }
   }
 }
@@ -728,7 +726,7 @@ input, button {
 }
 
 .select-search__value::after {
-  content: '';
+  content: "";
   display: inline-block;
   position: absolute;
   top: calc(50% - 9px);
@@ -803,7 +801,7 @@ input, button {
   background: #fff;
   border: none;
   outline: none;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-size: 14px;
   text-align: left;
   cursor: pointer;
@@ -976,7 +974,7 @@ input, button {
       height: 100%;
     }
 
-    display: flex!important;
+    display: flex !important;
 
     .td-container {
       margin-top: auto;
@@ -1021,7 +1019,7 @@ input, button {
   }
 
   th:after {
-    content: ' ';
+    content: " ";
     position: relative;
     height: 0;
     width: 0;
@@ -1089,7 +1087,7 @@ input, button {
 
 .btn-primary {
   --tblr-btn-color: 77, 114, 250;
-  --tblr-btn-color-darker:  77, 94, 240;
+  --tblr-btn-color-darker: 77, 94, 240;
   border-color: none;
 }
 
@@ -1319,7 +1317,6 @@ tr:focus {
 }
 
 .mentions-popover {
-  
 }
 
 .input-icon {
@@ -1357,7 +1354,7 @@ body {
 .RichEditor-root {
   background: #fff;
   border: 1px solid #ddd;
-  font-family: 'Georgia', serif;
+  font-family: "Georgia", serif;
   font-size: 14px;
   padding: 15px;
   height: 100%;
@@ -1388,7 +1385,7 @@ body {
 .RichEditor-editor .RichEditor-blockquote {
   border-left: 5px solid #eee;
   color: #666;
-  font-family: 'Hoefler Text', 'Georgia', serif;
+  font-family: "Hoefler Text", "Georgia", serif;
   font-style: italic;
   margin: 16px 0;
   padding: 10px 20px;
@@ -1396,26 +1393,26 @@ body {
 
 .RichEditor-editor .public-DraftStyleDefault-pre {
   background-color: rgba(0, 0, 0, 0.05);
-  font-family: 'Inconsolata', 'Menlo', 'Consolas', monospace;
+  font-family: "Inconsolata", "Menlo", "Consolas", monospace;
   font-size: 16px;
   padding: 20px;
 }
 
 .RichEditor-controls {
-  font-family: 'Helvetica', sans-serif;
+  font-family: "Helvetica", sans-serif;
   font-size: 14px;
   margin-bottom: 5px;
   user-select: none;
 }
 
-.dropmenu{
+.dropmenu {
   position: relative;
   display: inline-block;
   margin-right: 16px;
 
-  .dropdownbtn{
+  .dropdownbtn {
     color: #999;
-    background:none;
+    background: none;
     cursor: pointer;
     outline: none;
     border: none;
@@ -1442,22 +1439,22 @@ body {
         width: 100%;
         text-align: center;
         padding: 3px 0px;
+      }
     }
   }
-  }
 }
-.dropmenu .dropdown-content a:hover{
+.dropmenu .dropdown-content a:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
 .dropmenu:hover {
-  .dropdownbtn{
+  .dropdownbtn {
     color: #5890ff;
     background-color: rgba(0, 0, 0, 0.05);
     border-radius: 4px;
   }
-  
-  .dropdown-content{
+
+  .dropdown-content {
     display: block;
   }
 }
@@ -1554,7 +1551,7 @@ body {
 
 .codehinter-query-editor-input {
   .CodeMirror {
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto", sans-serif;
     color: #263136;
     overflow: hidden;
     height: 50px !important;
@@ -1588,7 +1585,7 @@ body {
 
   .form-control {
     .CodeMirror {
-      font-family: 'Roboto', sans-serif;
+      font-family: "Roboto", sans-serif;
       height: 50px !important;
       max-height: 300px;
     }
@@ -1607,7 +1604,7 @@ body {
 }
 
 .CodeMirror-hints {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-size: 0.9rem;
   padding: 0px;
   z-index: $hints-z-index;
@@ -1649,7 +1646,7 @@ hr {
 }
 
 .codehinter-default-input {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   padding: 0.0475rem 0rem;
   display: block;
   width: 100%;
@@ -1667,12 +1664,12 @@ hr {
   height: 30px;
 
   .CodeMirror {
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto", sans-serif;
   }
 }
 
 .codehinter-query-editor-input {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   padding: 0.1775rem 0.75rem;
   display: block;
   width: 100%;
@@ -1821,7 +1818,7 @@ hr {
   }
 
   .toggle-icon:after {
-    content: '';
+    content: "";
     display: inline-block;
     vertical-align: 0.306em;
     width: 0.46em;
@@ -1965,7 +1962,7 @@ input:focus-visible {
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
   box-sizing: border-box;
-  font-family: 'Source Code Pro', monospace;
+  font-family: "Source Code Pro", monospace;
 
   .heading {
     font-weight: 700;
@@ -1987,13 +1984,13 @@ input:focus-visible {
   .theme-dark .navbar .navbar-nav .nav-link.active,
   .theme-dark .navbar .navbar-nav .nav-link.show,
   .theme-dark .navbar .navbar-nav .show > .nav-link {
-    color:#fff;
+    color: #fff;
   }
-  .form-check > .form-check-input:not(:checked){
-    background-color:#fff;
+  .form-check > .form-check-input:not(:checked) {
+    background-color: #fff;
   }
-  .form-check-label{
-    color:white;
+  .form-check-label {
+    color: white;
   }
   .left-sidebar .active {
     background: #333c48;
@@ -2022,7 +2019,7 @@ input:focus-visible {
   .card {
     background-color: #324156 !important;
   }
-  .card .table tbody td a{
+  .card .table tbody td a {
     color: inherit;
   }
 
@@ -2226,7 +2223,7 @@ input:focus-visible {
   .input-icon .input-icon-addon img {
     filter: invert(1);
   }
-  
+
   .svg-icon {
     filter: brightness(0) invert(1);
   }
@@ -2405,7 +2402,7 @@ input:focus-visible {
   border-radius: 0 !important;
 }
 
-input[type='text'] {
+input[type="text"] {
   border-radius: 0 !important;
   outline-color: #dadcde !important;
 }
@@ -2428,7 +2425,6 @@ input[type='text'] {
 
 .dropdown-widget,
 .multiselect-widget {
-
   .form-label {
     margin-bottom: 0px;
   }
@@ -2442,7 +2438,7 @@ input[type='text'] {
   }
 
   .select-search {
-    height: 100%
+    height: 100%;
   }
 
   .select-search__options {
@@ -2469,7 +2465,7 @@ input[type='text'] {
 .cursor-wait {
   cursor: wait;
 }
-.cursor-text{
+.cursor-text {
   cursor: text;
 }
 .cursor-none {
@@ -2479,7 +2475,7 @@ input[type='text'] {
   filter: brightness(0) invert(1);
 }
 
-.event-action{
+.event-action {
   filter: brightness(0) invert(0);
 }
 
@@ -2492,7 +2488,7 @@ input[type='text'] {
 }
 
 .datepicker-widget {
-  .input-field { 
+  .input-field {
     min-height: 26px;
     padding: 0;
     padding-left: 2px;
@@ -2524,7 +2520,7 @@ input[type='text'] {
 }
 
 .ligh-gray {
-  color: #656D77;
+  color: #656d77;
 }
 
 .nav-item {
@@ -2544,7 +2540,7 @@ input[type='text'] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: #0565FE !important;
+  color: #0565fe !important;
 }
 
 .empty-title {
@@ -2590,7 +2586,8 @@ input[type='text'] {
   padding: 10px;
   background-color: white;
 
-  .rbc-day-slot .rbc-event, .rbc-day-slot .rbc-background-event {
+  .rbc-day-slot .rbc-event,
+  .rbc-day-slot .rbc-background-event {
     border-left: 3px solid #26598533;
   }
 
@@ -2635,7 +2632,8 @@ input[type='text'] {
       color: white;
     }
 
-    button:hover, button.rbc-active {
+    button:hover,
+    button.rbc-active {
       color: black;
     }
   }
@@ -2681,12 +2679,12 @@ input[type='text'] {
 .code-editor-widget {
   border-radius: 0;
   .CodeMirror {
-    border-radius: 0!important;
-    margin-top: -1px!important;
+    border-radius: 0 !important;
+    margin-top: -1px !important;
   }
 }
 
-.code-hinter-wrapper  .popup-btn {
+.code-hinter-wrapper .popup-btn {
   position: absolute;
   display: none;
   cursor: pointer;
@@ -2694,7 +2692,7 @@ input[type='text'] {
 
 .code-hinter-wrapper:hover {
   .popup-btn {
-    display: block!important;
+    display: block !important;
     z-index: 1;
   }
 }
@@ -2710,34 +2708,31 @@ input[type='text'] {
   height: 500px;
   width: 500px;
   padding: 0;
-  
+
   .modal-body {
-    width: 500px!important;
-    height: 300px!important;
-    padding: 0px!important
+    width: 500px !important;
+    height: 300px !important;
+    padding: 0px !important;
   }
-  
+
   .modal-dialog {
     margin-top: 4%;
   }
-  
+
   .modal-header {
     padding: 0;
     font-size: 14px;
   }
-  
-  
-  .editor-container{
-    padding: 0px;    
+
+  .editor-container {
+    padding: 0px;
     .CodeMirror {
       border-radius: 0;
       margin: 0;
-      width: 100%!important;
+      width: 100% !important;
     }
   }
-
 }
-
 
 .portal-header {
   display: flex;
@@ -2775,7 +2770,7 @@ input[type='text'] {
 
 .bg-primary-lt {
   color: #fff !important;
-  background:#6383db !important;
+  background: #6383db !important;
 }
 
 .tabbed-navbar .nav-item.active:after {
