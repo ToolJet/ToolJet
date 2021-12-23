@@ -85,7 +85,7 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const organizationUser = await this.organizationUsersService.create(user, organization);
 
-    this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
+    await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
     this.auditLoggerService.perform({
       request,
@@ -103,8 +103,8 @@ export class AuthService {
   async forgotPassword(email: string) {
     const user = await this.usersService.findByEmail(email);
     const forgotPasswordToken = uuid.v4();
-    this.usersService.update(user.id, { forgotPasswordToken });
-    this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
+    await this.usersService.update(user.id, { forgotPasswordToken });
+    await this.emailService.sendPasswordResetEmail(email, forgotPasswordToken);
   }
 
   async resetPassword(token: string, password: string) {
@@ -112,7 +112,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Invalid token');
     } else {
-      this.usersService.update(user.id, {
+      await this.usersService.update(user.id, {
         password,
         forgotPasswordToken: null,
       });

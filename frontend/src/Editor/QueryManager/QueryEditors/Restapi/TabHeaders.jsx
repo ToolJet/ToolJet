@@ -1,7 +1,7 @@
 import React from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
-export default ({ options = [], currentState, theme, removeKeyValuePair, onChange, darkMode }) => {
+export default ({ options = [], currentState, theme, removeKeyValuePair, onChange, darkMode, componentName }) => {
   return (
     <>
       <div className={`row py-2 border-bottom mb-1  mx-0 ${!darkMode && 'bg-light'}`}>
@@ -29,6 +29,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                   placeholder="key"
                   className="form-control codehinter-query-editor-input"
                   onChange={onChange('headers', 0, index)}
+                  componentName={`${componentName}/headers::key::${index}`}
                 />
               </div>
               <div className="col-6 field">
@@ -39,6 +40,7 @@ export default ({ options = [], currentState, theme, removeKeyValuePair, onChang
                   theme={theme}
                   placeholder="value"
                   onChange={onChange('headers', 1, index)}
+                  componentName={`${componentName}/headers::value::${index}`}
                 />
               </div>
               {index > 0 && (

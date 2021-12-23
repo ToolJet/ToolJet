@@ -20,6 +20,7 @@ import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AllExceptionsFilter } from 'src/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -32,6 +33,7 @@ export async function createNestAppInstance() {
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
+  app.useWebSocketAdapter(new WsAdapter(app));
   await app.init();
 
   return app;
@@ -50,10 +52,8 @@ export function authHeaderForUser(user: any): string {
 export async function clearDB() {
   const entities = getConnection().entityMetadatas;
   for (const entity of entities) {
-    const repository = await getConnection().getRepository(entity.name);
-    await repository.query(
-      `TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`
-    );
+    const repository = getConnection().getRepository(entity.name);
+    await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
   }
 }
 

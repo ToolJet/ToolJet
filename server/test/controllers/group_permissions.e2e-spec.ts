@@ -310,6 +310,7 @@ describe('group permissions controller', () => {
       const manager = getManager();
       const adminGroupPermission = await manager.findOne(GroupPermission, {
         group: 'admin',
+        organizationId: adminUser.organizationId,
       });
 
       const response = await request(nestApp.getHttpServer())
@@ -329,10 +330,11 @@ describe('group permissions controller', () => {
       const manager = getManager();
       const adminGroupPermission = await manager.findOne(GroupPermission, {
         group: 'all_users',
+        organizationId: adminUser.organizationId,
       });
 
       const response = await request(nestApp.getHttpServer())
-        .put(`/api/group_permissions/${adminGroupPermission.id}`)
+        .put(`/api/group_permissions/${adminGroupPermission.id}/`)
         .set('Authorization', authHeaderForUser(adminUser))
         .send({ remove_users: [defaultUser.id] });
 

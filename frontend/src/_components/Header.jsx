@@ -4,6 +4,7 @@ import { authenticationService } from '@/_services';
 import { history } from '@/_helpers';
 import { DarkModeToggle } from './DarkModeToggle';
 import cx from 'classnames';
+import LogoIcon from '../Editor/Icons/logo.svg';
 
 export const Header = function Header({ switchDarkMode, darkMode }) {
   const [pathName, setPathName] = useState(document.location.pathname);
@@ -25,14 +26,14 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
   const { first_name, last_name, admin } = authenticationService.currentUserValue;
 
   return (
-    <header className="navbar navbar-expand-md navbar-light d-print-none">
+    <header className="navbar tabbed-navbar navbar-expand-md navbar-light d-print-none">
       <div className="container-xl">
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
           {/* <span className="navbar-toggler-icon"></span> */}
         </button>
         <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
           <Link to={'/'}>
-            <img src="/assets/images/logo-color.svg" className="navbar-brand-image" />
+            <LogoIcon />
           </Link>
         </h1>
 

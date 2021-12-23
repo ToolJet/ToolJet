@@ -41,7 +41,7 @@ export class OrganizationUsersService {
     const user = await this.usersService.create(userParams, currentUser.organization, ['all_users']);
     const organizationUser = await this.create(user, currentUser.organization);
 
-    this.emailService.sendOrganizationUserWelcomeEmail(
+    await this.emailService.sendOrganizationUserWelcomeEmail(
       user.email,
       user.firstName,
       currentUser.firstName,

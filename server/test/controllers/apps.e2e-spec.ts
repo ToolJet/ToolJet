@@ -193,6 +193,23 @@ describe('apps controller', () => {
         });
 
         response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public`)
+          .set('Authorization', authHeaderForUser(developerUserData.user));
+
+        expect(response.statusCode).toBe(200);
+
+        ({ meta, apps } = response.body);
+        appNames = apps.map((app) => app.name);
+
+        expect(new Set(appNames)).toEqual(new Set([publicApp.name]));
+        expect(meta).toEqual({
+          total_pages: 1,
+          total_count: 1,
+          folder_count: 0,
+          current_page: 1,
+        });
+
+        response = await request(app.getHttpServer())
           .get(`/api/apps`)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
@@ -205,6 +222,40 @@ describe('apps controller', () => {
         expect(meta).toEqual({
           total_pages: 1,
           total_count: 1,
+          folder_count: 0,
+          current_page: 1,
+        });
+
+        response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=another`)
+          .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
+
+        expect(response.statusCode).toBe(200);
+
+        ({ meta, apps } = response.body);
+        appNames = apps.map((app) => app.name);
+
+        expect(new Set(appNames)).toEqual(new Set([anotherApplication.name]));
+        expect(meta).toEqual({
+          total_pages: 1,
+          total_count: 1,
+          folder_count: 0,
+          current_page: 1,
+        });
+
+        response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public`)
+          .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
+
+        expect(response.statusCode).toBe(200);
+
+        ({ meta, apps } = response.body);
+        appNames = apps.map((app) => app.name);
+
+        expect(apps).toEqual([]);
+        expect(meta).toEqual({
+          total_pages: 0,
+          total_count: 0,
           folder_count: 0,
           current_page: 1,
         });
@@ -288,21 +339,39 @@ describe('apps controller', () => {
           folder: folder,
         });
 
-        const response = await request(app.getHttpServer())
+        let response = await request(app.getHttpServer())
           .get(`/api/apps`)
           .query({ folder: folder.id, page: 1 })
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
         expect(response.statusCode).toBe(200);
 
-        const { meta, apps } = response.body;
-        const appNames = apps.map((app) => app.name);
+        let { meta, apps } = response.body;
+        let appNames = apps.map((app) => app.name);
 
         expect(new Set(appNames)).toEqual(new Set([appInFolder.name, publicAppInFolder.name]));
         expect(meta).toEqual({
           total_pages: 1,
           total_count: 5,
           folder_count: 2,
+          current_page: 1,
+        });
+
+        response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public app in`)
+          .query({ folder: folder.id, page: 1 })
+          .set('Authorization', authHeaderForUser(developerUserData.user));
+
+        expect(response.statusCode).toBe(200);
+
+        ({ meta, apps } = response.body);
+        appNames = apps.map((app) => app.name);
+
+        expect(new Set(appNames)).toEqual(new Set([publicAppInFolder.name]));
+        expect(meta).toEqual({
+          total_pages: 1,
+          total_count: 1,
+          folder_count: 1,
           current_page: 1,
         });
       });

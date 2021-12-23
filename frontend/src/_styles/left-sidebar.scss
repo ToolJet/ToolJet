@@ -44,6 +44,11 @@
     top: 180px;
     cursor: pointer;
   }
+  .global-settings-popover {
+    top: 260px;
+    max-width: 350px;
+  }
+
   .queryData {
     &.close {
       max-height: 0;

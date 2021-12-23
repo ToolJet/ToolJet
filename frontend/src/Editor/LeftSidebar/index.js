@@ -9,6 +9,7 @@ import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
 import { LeftSidebarDebugger } from './SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
+import { LeftSidebarGlobalSettings } from './SidebarGlobalSettings';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
 
@@ -24,6 +25,8 @@ export const LeftSidebar = ({
   dataSourcesChanged,
   errorLogs,
   appVersionsId,
+  globalSettingsChanged,
+  globalSettings,
 }) => {
   const router = useRouter();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -40,6 +43,7 @@ export const LeftSidebar = ({
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment appVersionsId={appVersionsId} toggleComments={toggleComments} />
       )}
+      <LeftSidebarGlobalSettings globalSettingsChanged={globalSettingsChanged} globalSettings={globalSettings} />
       <LeftSidebarItem
         onClick={() => setShowLeaveDialog(true)}
         tip="Back to home"

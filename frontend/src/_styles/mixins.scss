@@ -1,0 +1,15 @@
+@mixin theme-border($light-theme: true, $outline:false) {
+    @if $light-theme{
+      @if($outline) {
+        outline-color: $border-grey-light;
+      } @else {
+        border-color: $border-grey-light;
+      }
+    } @else {
+      @if($outline) {
+        outline-color: $border-grey-dark;
+      } @else {
+        border-color: $border-grey-dark;
+      }
+    }
+}

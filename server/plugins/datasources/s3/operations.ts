@@ -14,7 +14,7 @@ export async function listBuckets(client: S3Client, options: object): Promise<ob
 }
 
 export async function listObjects(client: S3Client, options: object): Promise<object> {
-  const command = new ListObjectsCommand({ Bucket: options['bucket'] });
+  const command = new ListObjectsCommand({ Bucket: options['bucket'], Prefix: options['prefix'] });
   return client.send(command);
 }
 

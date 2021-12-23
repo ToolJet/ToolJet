@@ -1,56 +1,23 @@
 import React from 'react';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Checkbox = function Checkbox({
-  id,
-  height,
-  component,
-  onComponentClick,
-  currentState,
-  onComponentOptionChanged,
-  onEvent,
-}) {
+export const Checkbox = function Checkbox({ height, properties, styles, fireEvent, setExposedVariable }) {
   const [checked, setChecked] = React.useState(false);
-  const label = component.definition.properties.label.value;
-  const textColorProperty = component.definition.styles.textColor;
-  const textColor = textColorProperty ? textColorProperty.value : '#000';
-  const checkboxColorProperty = component.definition.styles.checkboxColor;
-  const checkboxColor = checkboxColorProperty ? checkboxColorProperty.value : '#3c92dc';
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  const { label } = properties;
+  const { visibility, disabledState, checkboxColor, textColor } = styles;
 
   function toggleValue(e) {
     const isChecked = e.target.checked;
     setChecked(isChecked);
-    onComponentOptionChanged(component, 'value', isChecked);
+    setExposedVariable('value', isChecked);
     if (isChecked) {
-      onEvent('onCheck', { component });
+      fireEvent('onCheck');
     } else {
-      onEvent('onUnCheck', { component });
+      fireEvent('onUnCheck');
     }
   }
 
   return (
-    <div
-      data-disabled={parsedDisabledState}
-      className="row py-1"
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
-      onClick={(event) => {
-        event.stopPropagation();
-        onComponentClick(id, component, event);
-      }}
-    >
+    <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>
       <div className="col px-1 py-0 mt-0">
         <label className="mx-1 form-check form-check-inline">
           <input
