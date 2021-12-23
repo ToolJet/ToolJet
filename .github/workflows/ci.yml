@@ -8,6 +8,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ (github.ref == 'refs/heads/develop' ||  github.ref == 'refs/heads/main') && github.run_number || github.ref }}
+  cancel-in-progress: true
+
 env:
   FORCE_COLOR: true
   NODE_OPTIONS: "--max-old-space-size=4096"
