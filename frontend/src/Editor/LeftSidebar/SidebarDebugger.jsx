@@ -23,7 +23,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
 
     setErrorLogs(() => []);
   };
-  console.log('__test__ || errors', errors);
+
   React.useEffect(() => {
     setErrorLogs((prev) => {
       let copy = JSON.parse(JSON.stringify(prev));
