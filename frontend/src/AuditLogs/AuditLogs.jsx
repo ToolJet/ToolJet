@@ -286,7 +286,7 @@ class AuditLogs extends React.Component {
                 <div className="card-header">
                   <h3 className="card-title">Audit Logs</h3>
                 </div>
-                <div className="card-body border-bottom py-3">
+                <div className="card-body border-bottom py-3 overflow-auto" style={{ height: '75vh' }}>
                   <div className="row">
                     <div className="col-3">
                       <Select
@@ -403,53 +403,59 @@ class AuditLogs extends React.Component {
                     </div>
                   </div>
 
-                  <br />
-
-                  <div className="card-table table-responsive table-bordered">
-                    <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
-                      {this.isLoading() ? (
-                        <tbody className="w-100" style={{ minHeight: '300px' }}>
-                          {Array.from(Array(2)).map((index) => (
-                            <tr key={index}>
-                              <td className="col-auto">
-                                <div className="row">
-                                  <div className="skeleton-line w-10 col mx-3"></div>
-                                </div>
-                              </td>
-                              <td className="col-auto">
-                                <div className="skeleton-line w-10"></div>
-                              </td>
-                              <td className="col-auto">
-                                <div className="skeleton-line w-10"></div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      ) : (
-                        <tbody>
-                          {auditLogs.map((auditLog) => (
-                            <tr key={auditLog.id}>
-                              <td>
-                                {this.humanizeLog(auditLog)}
-                                <ReactJson
-                                  src={auditLog}
-                                  theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                                  name={'log'}
-                                  style={{ fontSize: '0.7rem' }}
-                                  enableClipboard={false}
-                                  displayDataTypes={false}
-                                  collapsed={true}
-                                  displayObjectSize={false}
-                                  quotesOnKeys={false}
-                                  sortKeys={true}
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      )}
-                    </table>
+                  <div className="row mt-3">
+                    <div className="col-12">
+                      <div
+                        className="card-table table-responsive table-bordered overflow-auto"
+                        style={{ height: '55vh' }}
+                      >
+                        <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
+                          {this.isLoading() ? (
+                            <tbody className="w-100" style={{ minHeight: '300px' }}>
+                              {Array.from(Array(2)).map((index) => (
+                                <tr key={index}>
+                                  <td className="col-auto">
+                                    <div className="row">
+                                      <div className="skeleton-line w-10 col mx-3"></div>
+                                    </div>
+                                  </td>
+                                  <td className="col-auto">
+                                    <div className="skeleton-line w-10"></div>
+                                  </td>
+                                  <td className="col-auto">
+                                    <div className="skeleton-line w-10"></div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          ) : (
+                            <tbody>
+                              {auditLogs.map((auditLog) => (
+                                <tr key={auditLog.id}>
+                                  <td>
+                                    {this.humanizeLog(auditLog)}
+                                    <ReactJson
+                                      src={auditLog}
+                                      theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
+                                      name={'log'}
+                                      style={{ fontSize: '0.7rem' }}
+                                      enableClipboard={false}
+                                      displayDataTypes={false}
+                                      collapsed={true}
+                                      displayObjectSize={false}
+                                      quotesOnKeys={false}
+                                      sortKeys={true}
+                                    />
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          )}
+                        </table>
+                      </div>
+                    </div>
                   </div>
+
                   {!isLoadingAuditLogs && totalPages > 1 && (
                     <Pagination
                       currentPage={currentPage}
