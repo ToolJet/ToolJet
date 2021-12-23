@@ -461,7 +461,7 @@ class AuditLogs extends React.Component {
                       currentPage={currentPage}
                       count={totalCount}
                       totalPages={totalPages}
-                      perPage={perPage}
+                      itemsPerPage={perPage}
                       queryParams={selectedSearchOptions}
                       pageChanged={(page, perPage, queryParams) => this.searchAuditLog(page, perPage, queryParams)}
                     />
