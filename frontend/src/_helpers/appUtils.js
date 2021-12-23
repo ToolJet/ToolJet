@@ -611,19 +611,22 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           if (dataQuery.options.requestConfirmation) {
             toast(`Query (${dataQuery.name}) completed.`);
           }
-
+          console.log('__data__', data);
           _self.setState(
             {
               currentState: {
                 ..._self.state.currentState,
                 queries: {
                   ..._self.state.currentState.queries,
-                  [queryName]: {
-                    ..._self.state.currentState.queries[queryName],
-                    data: finalData,
-                    rawData,
-                    isLoading: false,
-                  },
+                  [queryName]: _.assign(
+                    {
+                      ..._self.state.currentState.queries[queryName],
+                      isLoading: false,
+                      data: finalData,
+                      rawData,
+                    },
+                    query.kind === 'restapi' ? { request: data.request, response: data.response } : {}
+                  ),
                 },
               },
             },
