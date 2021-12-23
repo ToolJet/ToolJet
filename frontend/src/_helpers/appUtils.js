@@ -611,7 +611,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
           if (dataQuery.options.requestConfirmation) {
             toast(`Query (${dataQuery.name}) completed.`);
           }
-          console.log('__data__', data);
+
           _self.setState(
             {
               currentState: {
