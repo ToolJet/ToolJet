@@ -302,7 +302,7 @@ export class AppsService {
     const dataSources = await manager.find(DataSource, {
       where: { appId: appVersion.appId },
     });
-    for (const dataSource of dataSources) {
+    for await (const dataSource of dataSources) {
       await manager.update(DataSource, dataSource.id, {
         appVersionId: appVersion.id,
       });
@@ -311,7 +311,7 @@ export class AppsService {
     const dataQueries = await manager.find(DataQuery, {
       where: { appId: appVersion.appId },
     });
-    for (const dataQuery of dataQueries) {
+    for await (const dataQuery of dataQueries) {
       await manager.update(DataQuery, dataQuery.id, {
         appVersionId: appVersion.id,
       });
@@ -327,7 +327,8 @@ export class AppsService {
     const dataSources = await manager.find(DataSource, {
       where: { appVersionId: lastVersion.id },
     });
-    for (const dataSource of dataSources) {
+
+    for await (const dataSource of dataSources) {
       const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSource.options);
       const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
       await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
@@ -346,7 +347,7 @@ export class AppsService {
     const dataQueries = await manager.find(DataQuery, {
       where: { appVersionId: lastVersion.id },
     });
-    for (const dataQuery of dataQueries) {
+    for await (const dataQuery of dataQueries) {
       const dataQueryParams = {
         name: dataQuery.name,
         kind: dataQuery.kind,
@@ -362,7 +363,7 @@ export class AppsService {
   async setNewCredentialValueFromOldValue(newOptions: any, oldOptions: any, manager: EntityManager) {
     const newOptionsWithCredentials = this.convertToArrayOfKeyValuePairs(newOptions).filter((opt) => opt['encrypted']);
 
-    for (const newOption of newOptionsWithCredentials) {
+    for await (const newOption of newOptionsWithCredentials) {
       const oldOption = oldOptions.find((oldOption) => oldOption['key'] == newOption['key']);
       const oldCredential = await manager.findOne(Credential, oldOption.credential_id);
       const newCredential = await manager.findOne(Credential, newOption['credential_id']);
