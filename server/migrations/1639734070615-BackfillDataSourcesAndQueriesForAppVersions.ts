@@ -40,10 +40,10 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
       order: { createdAt: 'ASC' },
     });
     const dataSources = await entityManager.find(DataSource, {
-      where: { appId: app.id },
+      where: { appId: app.id, appVersionId: null },
     });
     const dataQueries = await entityManager.find(DataQuery, {
-      where: { appId: app.id },
+      where: { appId: app.id, appVersionId: null },
     });
     const [firstAppVersion, ...restAppVersions] = appVersions;
 
