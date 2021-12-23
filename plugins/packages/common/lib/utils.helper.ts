@@ -1,5 +1,7 @@
 import { QueryError } from './query.error';
 
+const CACHED_CONNECTIONS: any = {};
+
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
     return JSON.parse(jsonString);
@@ -10,11 +12,11 @@ export function parseJson(jsonString: string, errorMessage?: string): object {
 
 export async function cacheConnection(dataSourceId: string, connection: any): Promise<any> {
   const updatedAt = new Date();
-  globalThis.CACHED_CONNECTIONS[dataSourceId] = { connection, updatedAt };
+  CACHED_CONNECTIONS[dataSourceId] = { connection, updatedAt };
 }
 
-export async function getCachedConnection(dataSourceId, dataSourceUpdatedAt): Promise<any> {
-  const cachedData = globalThis.CACHED_CONNECTIONS[dataSourceId] || {};
+export async function getCachedConnection(dataSourceId: string | number, dataSourceUpdatedAt: any): Promise<any> {
+  const cachedData = CACHED_CONNECTIONS[dataSourceId];
 
   if (cachedData) {
     const updatedAt = new Date(dataSourceUpdatedAt || null);

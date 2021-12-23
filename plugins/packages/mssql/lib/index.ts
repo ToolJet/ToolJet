@@ -3,6 +3,17 @@ import { Knex, knex } from 'knex';
 import { ConnectionTestResult, QueryError, QueryResult,  QueryService, cacheConnection, getCachedConnection } from 'common';
 
 export default class MssqlQueryService implements QueryService {
+  private static _instance: MssqlQueryService;
+
+  constructor() {
+    if (MssqlQueryService._instance) {
+      return MssqlQueryService._instance;
+    }
+  
+    MssqlQueryService._instance = this;
+    return MssqlQueryService._instance;
+  }
+
   async run(
     sourceOptions: any,
     queryOptions: any,

@@ -3,6 +3,17 @@ import { ConnectionTestResult, cacheConnection, getCachedConnection, QueryServic
 const { Pool } = require('pg');
 
 export default class PostgresqlQueryService implements QueryService {
+  private static _instance: PostgresqlQueryService;
+
+  constructor() {
+    if (PostgresqlQueryService._instance) {
+      return PostgresqlQueryService._instance;
+    }
+  
+    PostgresqlQueryService._instance = this;
+    return PostgresqlQueryService._instance;
+  }
+
   async run(
     sourceOptions: any,
     queryOptions: any,
@@ -43,7 +54,7 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   async buildConnection(sourceOptions: any) {
-    const poolConfig = {
+    const poolConfig: any = {
       user: sourceOptions.username,
       host: sourceOptions.host,
       database: sourceOptions.database,
@@ -62,7 +73,7 @@ export default class PostgresqlQueryService implements QueryService {
     sourceOptions: any,
     options: any,
     checkCache: boolean,
-    dataSourceId?: string,
+    dataSourceId: string,
     dataSourceUpdatedAt?: string
   ): Promise<any> {
     if (checkCache) {

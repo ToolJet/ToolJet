@@ -4,7 +4,17 @@ import { Knex, knex } from 'knex';
 import { cacheConnection, getCachedConnection, ConnectionTestResult, QueryService, QueryResult } from 'common';
 
 export default class MysqlQueryService implements QueryService {
-  constructor() {}
+  private static _instance: MysqlQueryService;
+
+  constructor() {
+    if (MysqlQueryService._instance) {
+      return MysqlQueryService._instance;
+    }
+  
+    MysqlQueryService._instance = this;
+    return MysqlQueryService._instance;
+  }
+
   async run(
     sourceOptions: any,
     queryOptions: any,

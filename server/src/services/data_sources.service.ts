@@ -82,8 +82,7 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const serviceClass = new allPlugins[kind]();
-      const service = new serviceClass();
+      const service = new allPlugins[kind]();
       result = await service.testConnection(sourceOptions);
     } catch (error) {
       result = {
