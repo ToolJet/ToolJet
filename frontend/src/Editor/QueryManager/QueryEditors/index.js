@@ -6,6 +6,8 @@ import { Restapi } from './Restapi';
 import { Runjs } from './Runjs';
 import { Stripe } from './Stripe';
 
+// import {allQueries} from '@tooljet/plugins'
+
 import MysqlSchema from './Mysql.schema.json';
 import MssqlSchema from './Mssql.schema.json';
 import GraphqlSchema from './Graphql.schema.json';
@@ -23,6 +25,10 @@ import GooglesheetsSchema from './Googlesheets.schema.json';
 import GcsSchema from './Gcs.schema.json';
 import TwilioSchema from './Twilio.schema.json';
 import SendgridSchema from './Sendgrid.schema.json';
+
+// const result = Object.keys(allQueries).reduce((accumulator, currentValue) => {
+//   return (accumulator[currentValue] = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />);
+// }, {});
 
 const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
