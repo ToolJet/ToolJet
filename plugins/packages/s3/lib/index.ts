@@ -1,9 +1,6 @@
-import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
 import { getObject, uploadObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
 import { S3Client } from '@aws-sdk/client-s3';
-import { QueryError } from 'common/lib/query.error';
+import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from 'common';
 
 export default class S3QueryService implements QueryService {
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {

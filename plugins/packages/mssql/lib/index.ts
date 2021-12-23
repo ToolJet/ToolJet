@@ -1,9 +1,6 @@
-import { QueryResult } from 'common/lib/query_result.type';
-import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
+
 import { Knex, knex } from 'knex';
-import { QueryError } from 'common/lib/query.error';
-import { cacheConnection, getCachedConnection } from 'common/lib/utils.helper';
+import { ConnectionTestResult, QueryError, QueryResult,  QueryService, cacheConnection, getCachedConnection } from 'common';
 
 export default class MssqlQueryService implements QueryService {
   async run(

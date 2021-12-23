@@ -1,6 +1,6 @@
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
-import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
+
+
+import { QueryResult, QueryService, ConnectionTestResult } from 'common';
 const { MongoClient } = require('mongodb');
 
 export default class MongodbService implements QueryService {

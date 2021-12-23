@@ -1,6 +1,5 @@
-import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
+import { ConnectionTestResult, QueryService, QueryResult } from 'common';
+
 import { createCollection, getDocument, updateDocument, deleteDocument, indexDocument, search } from './operations';
 import { Client } from 'typesense';
 

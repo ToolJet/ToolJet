@@ -1,9 +1,6 @@
 import { Storage } from '@google-cloud/storage';
 
-import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
-import { QueryError } from 'common/lib/query.error';
+import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from 'common';
 
 import { listBuckets, signedUrlForGet, signedUrlForPut, listFiles, getFile, uploadFile } from './operations';
 

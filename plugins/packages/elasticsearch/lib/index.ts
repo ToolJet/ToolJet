@@ -1,6 +1,5 @@
-import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
+import { ConnectionTestResult, QueryService, QueryResult } from 'common';
+
 import { getDocument, updateDocument } from './operations';
 import { indexDocument, search } from './operations';
 const { Client } = require('@elastic/elasticsearch');

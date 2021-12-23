@@ -1,6 +1,6 @@
-import { QueryError } from 'common/lib/query.error';
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
+import { QueryError, QueryResult,  QueryService} from 'common';
+
+
 import got, {Headers} from 'got'
 
 export default class AirtableQueryService implements QueryService {

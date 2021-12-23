@@ -1,8 +1,5 @@
-import { parseJson } from 'common/lib/utils.helper';
-import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
-import { QueryError } from 'common/lib/query.error';
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
+import { ConnectionTestResult, QueryError, QueryResult,  QueryService, parseJson } from 'common';
+
 import {
   addDocument,
   bulkUpdate,

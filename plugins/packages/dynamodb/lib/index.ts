@@ -1,6 +1,5 @@
-import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
+import { ConnectionTestResult, QueryService, QueryResult } from 'common';
+
 import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
 const AWS = require('aws-sdk');
 

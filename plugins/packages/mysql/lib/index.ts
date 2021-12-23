@@ -1,8 +1,7 @@
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
+
+
 import { Knex, knex } from 'knex';
-import { ConnectionTestResult } from 'common/lib/connection_test_result.type';
-import { cacheConnection, getCachedConnection } from 'common/lib/utils.helper';
+import { cacheConnection, getCachedConnection, ConnectionTestResult, QueryService, QueryResult } from 'common';
 
 export default class MysqlQueryService implements QueryService {
   constructor() {}

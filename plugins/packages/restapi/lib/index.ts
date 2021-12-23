@@ -1,6 +1,6 @@
-import { QueryError } from 'common/lib/query.error';
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
+import { QueryError, QueryResult,  QueryService} from 'common';
+
+
 const urrl = require('url');
 import got, { Headers, HTTPError } from 'got'
 

@@ -1,7 +1,7 @@
 import { HTTPError } from 'got';
-import { QueryError } from 'common/lib/query.error';
-import { QueryResult } from 'common/lib/query_result.type';
-import { QueryService } from 'common/lib/query_service.interface';
+import { QueryError, QueryResult,  QueryService} from 'common';
+
+
 import got from 'got'
 
 export default class GraphqlQueryService implements QueryService {
