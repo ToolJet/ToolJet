@@ -532,22 +532,27 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
 
           if (data.status === 'failed') {
             console.error(data.message);
-
             return _self.setState(
               {
                 currentState: {
                   ..._self.state.currentState,
                   queries: {
                     ..._self.state.currentState.queries,
-                    [queryName]: {
-                      ..._self.state.currentState.queries[queryName],
-                      isLoading: false,
-                    },
+                    [queryName]: _.assign(
+                      {
+                        ..._self.state.currentState.queries[queryName],
+                        isLoading: false,
+                      },
+                      query.kind === 'restapi'
+                        ? { request: data.data.requestObject, response: data.data.responseObject }
+                        : {}
+                    ),
                   },
                   errors: {
                     ..._self.state.currentState.errors,
                     [queryName]: {
                       type: 'query',
+                      kind: query.kind,
                       data: data,
                       options: options,
                     },
