@@ -102,6 +102,9 @@ export const Box = function Box({
   const ComponentToRender = AllComponents[component.component];
   const resolvedProperties = resolveProperties(component, currentState);
   const resolvedStyles = resolveStyles(component, currentState);
+
+  resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+
   const exposedVariables = currentState?.components[component.name] ?? {};
 
   const fireEvent = (eventName, options) => {
