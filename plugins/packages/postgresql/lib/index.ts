@@ -73,7 +73,7 @@ export default class PostgresqlQueryService implements QueryService {
     sourceOptions: any,
     options: any,
     checkCache: boolean,
-    dataSourceId: string,
+    dataSourceId?: string,
     dataSourceUpdatedAt?: string
   ): Promise<any> {
     if (checkCache) {
@@ -83,8 +83,7 @@ export default class PostgresqlQueryService implements QueryService {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);
-
-        await cacheConnection(dataSourceId, connection);
+        dataSourceId && cacheConnection(dataSourceId, connection);
         return connection;
       }
     } else {

@@ -75,7 +75,7 @@ export default class MssqlQueryService implements QueryService {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);
-        await cacheConnection(dataSourceId, connection);
+        dataSourceId && cacheConnection(dataSourceId, connection);
         return connection;
       }
     } else {

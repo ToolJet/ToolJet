@@ -10,12 +10,12 @@ export function parseJson(jsonString: string, errorMessage?: string): object {
   }
 }
 
-export async function cacheConnection(dataSourceId: string, connection: any): Promise<any> {
+export function cacheConnection(dataSourceId: string, connection: any): any {
   const updatedAt = new Date();
   CACHED_CONNECTIONS[dataSourceId] = { connection, updatedAt };
 }
 
-export async function getCachedConnection(dataSourceId: string | number, dataSourceUpdatedAt: any): Promise<any> {
+export function getCachedConnection(dataSourceId: string | number, dataSourceUpdatedAt: any): any {
   const cachedData = CACHED_CONNECTIONS[dataSourceId];
 
   if (cachedData) {
