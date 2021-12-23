@@ -10,7 +10,8 @@
     "build": "tsc -b",
     "prebuild:pkgs": "npm run clean:pkgs",
     "build:pkgs": "lerna run build --stream",
-    "clean:pkgs": "lerna run clean --parallel"
+    "clean:pkgs": "lerna run clean --parallel",
+    "bootstrap": "lerna clean -y && lerna bootstrap --hoist"
   },
   "devDependencies": {
     "jest": "^27.4.5",
