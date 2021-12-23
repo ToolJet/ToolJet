@@ -145,7 +145,7 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
       const oldOption = oldOptions.find((oldOption) => oldOption['key'] == newOption['key']);
       const oldCredential = await entityManager.findOne(Credential, oldOption.credential_id);
       const newCredential = await entityManager.findOne(Credential, newOption['credential_id']);
-      newCredential.valueCiphertext = oldCredential.valueCiphertext;
+      newCredential.valueCiphertext = oldCredential?.valueCiphertext;
 
       await entityManager.save(newCredential);
     }
