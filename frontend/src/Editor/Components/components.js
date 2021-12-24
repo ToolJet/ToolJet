@@ -1409,4 +1409,56 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Timer',
+    displayName: 'Timer',
+    description: 'timer',
+    component: 'Timer',
+    defaultSize: {
+      width: 9,
+      height: 128,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      value: { type: 'code', displayName: 'Default value' },
+      type: {
+        type: 'select',
+        displayName: 'Timer type',
+        options: [
+          { name: 'Count Down', value: 'countDown' },
+          { name: 'Count Up', value: 'countUp' },
+        ],
+      },
+    },
+    validation: {},
+    events: {
+      onReset: { displayName: 'On Reset' },
+      onResume: { displayName: 'On Resume' },
+      onPause: { displayName: 'On Pause' },
+      onCountDownFinish: { displayName: 'On Count Down Finish' },
+    },
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      value: '',
+    },
+    definition: {
+      validation: {},
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];
