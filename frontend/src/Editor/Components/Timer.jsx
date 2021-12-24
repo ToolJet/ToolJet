@@ -15,13 +15,6 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   const [intervalId, setIntervalId] = useState(0);
 
   useEffect(() => {
-    return () => {
-      intervalId && clearInterval(intervalId);
-    };
-  }, [intervalId]);
-
-  useEffect(() => {
-    setExposedVariable('value', time);
     if (
       properties.type === 'countDown' &&
       time.mSecond === 0 &&
@@ -29,10 +22,16 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
       time.minute === 0 &&
       time.hour === 0
     ) {
-      setState('initial');
+      intervalId && clearInterval(intervalId);
       fireEvent('onCountDownFinish');
     }
-  }, [time, properties.type, fireEvent, setExposedVariable]);
+  }, [time]);
+
+  useEffect(() => {
+    return () => {
+      intervalId && clearInterval(intervalId);
+    };
+  }, [intervalId]);
 
   useEffect(() => {
     const [HH, MM, SS, MS] = (properties.value && properties.value.split(':')) || [];
@@ -44,6 +43,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
     setTime(getTimeObj());
     fireEvent('onReset');
     setState('initial');
+    setExposedVariable('value', time);
   };
 
   const onStart = () => {
@@ -86,6 +86,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
                   HH--;
 
                   if (HH < 0) {
+                    setState('initial');
                     (MS = 0), (SS = 0), (MM = 0), (HH = 0);
                   }
                 }
@@ -99,18 +100,21 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
     );
     setState('running');
     fireEvent('onStart');
+    setExposedVariable('value', time);
   };
 
   const onPause = () => {
     intervalId && clearInterval(intervalId);
     setState('paused');
     fireEvent('onPause');
+    setExposedVariable('value', time);
   };
 
   const onResume = () => {
     onStart();
     setState('running');
     fireEvent('onResume');
+    setExposedVariable('value', time);
   };
 
   const prependZero = (value, count = 1) => {
@@ -134,21 +138,21 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
         </div>
         <div className="btn-list justify-content-end">
           {state === 'initial' && (
-            <a className="btn btn-primary" onClick={onStart}>
+            <a className={`btn btn-primary${styles.disabledState ? ' disabled' : ''}`} onClick={onStart}>
               Start
             </a>
           )}
           {state === 'running' && (
-            <a className="btn btn-outline-primary" onClick={onPause}>
+            <a className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`} onClick={onPause}>
               Pause
             </a>
           )}
           {state === 'paused' && (
-            <a className="btn btn-outline-primary" onClick={onResume}>
+            <a className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`} onClick={onResume}>
               Resume
             </a>
           )}
-          <a className="btn" onClick={onReset}>
+          <a className={`btn${styles.disabledState ? ' disabled' : ''}`} onClick={onReset}>
             Reset
           </a>
         </div>

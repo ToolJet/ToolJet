@@ -1415,7 +1415,7 @@ export const componentTypes = [
     description: 'timer',
     component: 'Timer',
     defaultSize: {
-      width: 9,
+      width: 11,
       height: 128,
     },
     others: {
@@ -1428,8 +1428,8 @@ export const componentTypes = [
         type: 'select',
         displayName: 'Timer type',
         options: [
-          { name: 'Count Down', value: 'countDown' },
           { name: 'Count Up', value: 'countUp' },
+          { name: 'Count Down', value: 'countDown' },
         ],
       },
     },
@@ -1453,7 +1453,14 @@ export const componentTypes = [
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
       },
-      properties: {},
+      properties: {
+        value: {
+          value: '00:00:00:000',
+        },
+        type: {
+          value: 'countUp',
+        },
+      },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
