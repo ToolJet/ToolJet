@@ -3,10 +3,10 @@ import React, { useEffect, useState } from 'react';
 export const Timer = function Timer({ height, properties = {}, styles, setExposedVariable, fireEvent }) {
   const getTimeObj = (HH, MM, SS, MS) => {
     return {
-      hour: isNaN(HH) ? 0 : HH,
-      minute: !isNaN(MM) && MM <= 59 ? MM : 0,
-      second: !isNaN(SS) && SS <= 59 ? SS : 0,
-      mSecond: !isNaN(MS) && MS <= 999 ? MS : 0,
+      hour: isNaN(HH) ? 0 : parseInt(HH, 10),
+      minute: !isNaN(MM) && MM <= 59 ? parseInt(MM, 10) : 0,
+      second: !isNaN(SS) && SS <= 59 ? parseInt(SS, 10) : 0,
+      mSecond: !isNaN(MS) && MS <= 999 ? parseInt(MS, 10) : 0,
     };
   };
   const [HH, MM, SS, MS] = (properties.value && properties.value.split(':')) || [];
@@ -95,8 +95,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
           }
           return getTimeObj(HH, MM, SS, MS);
         });
-      }),
-      15
+      }, 15)
     );
     setState('running');
     fireEvent('onStart');
