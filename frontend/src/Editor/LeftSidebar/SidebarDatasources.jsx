@@ -15,7 +15,14 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], data
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
     return (
       <div className="row py-1" key={idx}>
-        <div className="col">
+        <div
+          role="button"
+          onClick={() => {
+            setSelectedDataSource(dataSource);
+            toggleDataSourceManagerModal(true);
+          }}
+          className="col"
+        >
           <img
             className="svg-icon"
             src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
