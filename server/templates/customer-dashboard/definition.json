@@ -1,16 +1,16 @@
 {
-  "id": "449be022-7681-4466-b99b-ce575ac8e5f4",
+  "id": "78391197-8d81-40fe-ae2f-78a8b2c97e30",
   "name": "Customer Dashboard",
   "slug": null,
   "isPublic": false,
-  "organizationId": "2871388a-3041-4f76-b531-e14b7a9d9ee9",
+  "organizationId": "7471c14a-c11a-416a-94b2-863125bc69d7",
   "currentVersionId": null,
-  "userId": "3852332b-4802-436d-9177-bdbf347a0278",
-  "createdAt": "2021-12-07T11:13:00.396Z",
-  "updatedAt": "2021-12-07T11:13:00.396Z",
+  "userId": "319a2ca8-395e-4f77-8998-78358f78b716",
+  "createdAt": "2021-12-09T10:00:40.049Z",
+  "updatedAt": "2021-12-09T10:00:40.136Z",
   "dataQueries": [
     {
-      "id": "00538711-5183-4788-a3ab-253cb38a61da",
+      "id": "cd789375-9d88-4880-a941-301faff6844a",
       "name": "chartData",
       "kind": "postgresql",
       "options": {
@@ -20,13 +20,13 @@
         "transformation": "return data.map(row => {\n  return { \"x\": row.created_at, \"y\": parseInt(row.count) } \n});",
         "runOnPageLoad": true
       },
-      "dataSourceId": "229155fb-2f04-4577-91bb-89749c213e44",
-      "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
-      "createdAt": "2021-12-07T11:13:00.396Z",
-      "updatedAt": "2021-12-07T11:13:00.396Z"
+      "dataSourceId": "1258859c-9657-4e48-bf89-aaf1b1166979",
+      "appId": "78391197-8d81-40fe-ae2f-78a8b2c97e30",
+      "createdAt": "2021-12-09T10:00:40.047Z",
+      "updatedAt": "2021-12-09T10:00:40.047Z"
     },
     {
-      "id": "4c5bb347-5e68-41d8-b999-5c2b475b2eb4",
+      "id": "1c1dfc69-4048-4e81-8213-a6c436a0de30",
       "name": "fetchCustomers",
       "kind": "postgresql",
       "options": {
@@ -34,39 +34,39 @@
         "query": "SELECT * FROM customers;",
         "runOnPageLoad": true
       },
-      "dataSourceId": "229155fb-2f04-4577-91bb-89749c213e44",
-      "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
-      "createdAt": "2021-12-07T11:13:00.396Z",
-      "updatedAt": "2021-12-07T11:13:00.396Z"
+      "dataSourceId": "1258859c-9657-4e48-bf89-aaf1b1166979",
+      "appId": "78391197-8d81-40fe-ae2f-78a8b2c97e30",
+      "createdAt": "2021-12-09T10:00:40.047Z",
+      "updatedAt": "2021-12-09T10:00:40.047Z"
     }
   ],
   "dataSources": [
     {
-      "id": "229155fb-2f04-4577-91bb-89749c213e44",
+      "id": "1258859c-9657-4e48-bf89-aaf1b1166979",
       "name": "PostgreSQL",
       "kind": "postgresql",
       "options": {
         "host": {
           "value": "sample-data.cye0quy9d2fs.us-east-2.rds.amazonaws.com",
-          "encrypted": null
+          "encrypted": false
         },
-        "port": { "value": 5432, "encrypted": null },
-        "database": { "value": "postgres", "encrypted": null },
-        "username": { "value": "postgres", "encrypted": null },
+        "port": { "value": 5432, "encrypted": false },
+        "database": { "value": "postgres", "encrypted": false },
+        "username": { "value": "postgres", "encrypted": false },
         "password": {
-          "credential_id": "75be3939-e7db-45fe-9f32-45e3b0a6a58c",
+          "credential_id": "1e4f4085-d85f-452d-a458-863fb772ba46",
           "encrypted": true
         },
         "ssl_enabled": { "value": true, "encrypted": false }
       },
-      "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
-      "createdAt": "2021-12-07T11:13:00.396Z",
-      "updatedAt": "2021-12-07T11:13:00.396Z"
+      "appId": "78391197-8d81-40fe-ae2f-78a8b2c97e30",
+      "createdAt": "2021-12-09T10:00:40.099Z",
+      "updatedAt": "2021-12-09T10:00:40.099Z"
     }
   ],
   "appVersions": [
     {
-      "id": "2d93f9f0-6b5b-49ef-9e70-7ef72a979ec2",
+      "id": "f6f31f2f-0298-4f32-ace3-8aa8b668730a",
       "name": "v0",
       "definition": {
         "components": {
@@ -220,15 +220,20 @@
               }
             }
           }
+        },
+        "globalSettings": {
+          "hideHeader": false,
+          "canvasMaxWidth": 1292,
+          "canvasBackgroundColor": "#edeff5"
         }
       },
-      "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
-      "createdAt": "2021-12-07T11:13:00.396Z",
-      "updatedAt": "2021-12-07T11:13:00.396Z"
+      "appId": "78391197-8d81-40fe-ae2f-78a8b2c97e30",
+      "createdAt": "2021-12-09T10:00:40.121Z",
+      "updatedAt": "2021-12-09T10:01:17.071Z"
     }
   ],
   "editingVersion": {
-    "id": "2d93f9f0-6b5b-49ef-9e70-7ef72a979ec2",
+    "id": "f6f31f2f-0298-4f32-ace3-8aa8b668730a",
     "name": "v0",
     "definition": {
       "components": {
@@ -282,7 +287,7 @@
               "properties": {
                 "title": { "value": "Table" },
                 "visible": { "value": true },
-                "loadingState": { "value": false },
+                "loadingState": { "value": "{{false}}" },
                 "data": { "value": "{{queries.fetchCustomers.data}}" },
                 "serverSidePagination": { "value": true },
                 "columns": {
@@ -379,11 +384,16 @@
             }
           }
         }
+      },
+      "globalSettings": {
+        "hideHeader": false,
+        "canvasMaxWidth": 1292,
+        "canvasBackgroundColor": "#edeff5"
       }
     },
-    "appId": "449be022-7681-4466-b99b-ce575ac8e5f4",
-    "createdAt": "2021-12-07T11:13:00.396Z",
-    "updatedAt": "2021-12-07T11:13:00.396Z"
+    "appId": "78391197-8d81-40fe-ae2f-78a8b2c97e30",
+    "createdAt": "2021-12-09T10:00:40.121Z",
+    "updatedAt": "2021-12-09T10:01:17.071Z"
   },
-  "tooljetVersion": "0.9.1"
+  "tooljetVersion": "0.10.0"
 }

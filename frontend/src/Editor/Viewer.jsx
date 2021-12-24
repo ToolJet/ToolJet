@@ -17,6 +17,7 @@ import {
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
+import LogoIcon from './Icons/logo.svg';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -66,14 +67,22 @@ class Viewer extends React.Component {
     let mobileLayoutHasWidgets = false;
 
     if (this.state.currentLayout === 'mobile') {
-      mobileLayoutHasWidgets = Object.keys(data.definition.components).filter(componentId => data.definition.components[componentId]['layouts']['mobile']).length > 0;
+      mobileLayoutHasWidgets =
+        Object.keys(data.definition.components).filter(
+          (componentId) => data.definition.components[componentId]['layouts']['mobile']
+        ).length > 0;
     }
 
     this.setState(
       {
         currentSidebarTab: 2,
         currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
-        canvasWidth: this.state.currentLayout === 'desktop' ? '100%' : mobileLayoutHasWidgets ? `${deviceWindowWidth}px` : '1292px',
+        canvasWidth:
+          this.state.currentLayout === 'desktop'
+            ? '100%'
+            : mobileLayoutHasWidgets
+            ? `${this.state.deviceWindowWidth}px`
+            : '1292px',
         selectedComponent: null,
         currentState: {
           queries: {},
@@ -135,7 +144,7 @@ class Viewer extends React.Component {
   getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     return canvasBoundingRect?.width;
-  }
+  };
 
   render() {
     const {
@@ -145,7 +154,7 @@ class Viewer extends React.Component {
       currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
-      canvasWidth
+      canvasWidth,
     } = this.state;
 
     return (
@@ -158,21 +167,23 @@ class Viewer extends React.Component {
           queryConfirmationData={this.state.queryConfirmationData}
         />
         <DndProvider backend={HTML5Backend}>
-          <div className="header">
-            <header className="navbar navbar-expand-md navbar-light d-print-none">
-              <div className="container-xl header-container">
-                <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
-                  <a href="/">
-                    <img src="/assets/images/logo.svg" style={{ height: '1.6rem' }} className="navbar-brand-image" />
-                  </a>
-                </h1>
-                {this.state.app && <span>{this.state.app.name}</span>}
-                <div className="d-flex align-items-center m-1 p-1">
-                  <DarkModeToggle switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+          {!appDefinition.globalSettings?.hideHeader && (
+            <div className="header">
+              <header className="navbar navbar-expand-md navbar-light d-print-none">
+                <div className="container-xl header-container">
+                  <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0">
+                    <a href="/">
+                      <LogoIcon />
+                    </a>
+                  </h1>
+                  {this.state.app && <span>{this.state.app.name}</span>}
+                  <div className="d-flex align-items-center m-1 p-1">
+                    <DarkModeToggle switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
+                  </div>
                 </div>
-              </div>
-            </header>
-          </div>
+              </header>
+            </div>
+          )}
           <div className="sub-section">
             <div className="main">
               <div className="canvas-container align-items-center">
@@ -180,7 +191,8 @@ class Viewer extends React.Component {
                   className="canvas-area"
                   style={{
                     width: canvasWidth,
-                    maxWidth: '1292px'
+                    maxWidth: +appDefinition.globalSettings?.canvasMaxWidth || 1292,
+                    backgroundColor: appDefinition.globalSettings?.canvasBackgroundColor || '#edeff5',
                   }}
                 >
                   {defaultComponentStateComputed && (
@@ -205,7 +217,9 @@ class Viewer extends React.Component {
                           currentState={this.state.currentState}
                           selectedComponent={this.state.selectedComponent}
                           onComponentClick={(id, component) => {
-                            this.setState({ selectedComponent: { id, component } });
+                            this.setState({
+                              selectedComponent: { id, component },
+                            });
                             onComponentClick(this, id, component, 'view');
                           }}
                           onComponentOptionChanged={(component, optionName, value) =>

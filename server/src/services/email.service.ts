@@ -15,6 +15,8 @@ export class EmailService {
   }
 
   async sendEmail(to: string, subject: string, html: string) {
+    if (this.NODE_ENV === 'test') return;
+
     const port = +process.env.SMTP_PORT || 587;
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_DOMAIN,

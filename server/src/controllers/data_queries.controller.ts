@@ -26,7 +26,7 @@ export class DataQueriesController {
     private dataQueriesService: DataQueriesService,
     private dataSourcesService: DataSourcesService,
     private appsAbilityFactory: AppsAbilityFactory
-  ) { }
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()

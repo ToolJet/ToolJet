@@ -18,7 +18,7 @@
     "test:watch": "NODE_ENV=test jest --watch",
     "test:cov": "NODE_ENV=test jest --coverage",
     "test:debug": "NODE_ENV=test node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "NODE_ENV=test jest --runInBand --config ./test/jest-e2e.json ",
+    "test:e2e": "NODE_ENV=test jest --runInBand --config ./test/jest-e2e.json --detectOpenHandles",
     "db:create": "ts-node ./scripts/create-database.ts",
     "db:drop": "ts-node ./scripts/drop-database.ts",
     "db:migrate": "npm run typeorm migration:run",
@@ -43,6 +43,7 @@
     "@nestjs/serve-static": "^2.2.2",
     "@nestjs/typeorm": "^8.0.0",
     "@nestjs/websockets": "^8.0.10",
+    "@sendgrid/mail": "^7.6.0",
     "@sentry/node": "^6.12.0",
     "@sentry/tracing": "^6.12.0",
     "@types/got": "^9.6.12",
@@ -76,8 +77,10 @@
     "tedious": "^11.2.0",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
+    "twilio": "^3.72.0",
     "typeorm": "^0.2.38",
     "typescript": "^4.3.5",
+    "typesense": "^1.0.2",
     "ws": "^7.5.5"
   },
   "devDependencies": {
