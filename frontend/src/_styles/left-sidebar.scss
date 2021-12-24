@@ -40,9 +40,9 @@
   .datasources-popover {
     top: 100px;
     width: 180px;
-
-    span[data-tip]:hover {
-      z-index: 9999999;
+    .add-btn {
+      border: none;
+      margin-top: -4px;
     }
   }
   .debugger-popover {
