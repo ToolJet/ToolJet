@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { datasourceService } from '@/_services';
 
-export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
+export const TestConnection = ({ kind, options, onConnectionTestFailed, darkMode }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [buttonText, setButtonText] = useState('Test Connection');
@@ -51,7 +51,7 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
 
       {connectionStatus === 'unknown' && (
         <button
-          className="datasource-modal-button"
+          className={`datasource-modal-button ${darkMode && 'dark-button'}`}
           disabled={isTesting || connectionStatus === 'success'}
           onClick={testDataSource}
         >

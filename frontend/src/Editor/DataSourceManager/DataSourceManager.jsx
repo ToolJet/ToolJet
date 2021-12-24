@@ -328,7 +328,7 @@ class DataSourceManager extends React.Component {
                             this.setState({ isCopied: true });
                           }}
                         >
-                          <button type="button" className="btn copy-button">
+                          <button type="button" className={`btn copy-button ${this.props.darkMode && 'dark-button'}`}>
                             <svg
                               width="15"
                               height="18"
@@ -375,6 +375,7 @@ class DataSourceManager extends React.Component {
                   kind={selectedDataSource.kind}
                   options={options}
                   onConnectionTestFailed={this.onConnectionTestFailed}
+                  darkMode={this.props.darkMode}
                 />
               </div>
               <div className="col-auto">
