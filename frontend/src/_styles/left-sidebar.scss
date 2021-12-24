@@ -117,3 +117,32 @@
     right: 6px;
   }
 }
+
+.datasource-modal-button {
+  background: #ffffff;
+  border: 1px solid #4d72fa;
+  box-sizing: border-box;
+  border-radius: 4px;
+  color: #4d72fa;
+  height: 36px;
+  &:hover {
+    background: #4d72fa;
+    color: #FFFFFC;
+  }
+}
+
+.datasource-footer-info {
+  background: #FFFFFC;
+  border: 1px solid #A6B6CC!important;
+  box-sizing: border-box;
+  border-radius: 4px!important;
+  height: 68px;
+
+  button.copy-button {
+    @extend .datasource-modal-button;
+    svg {
+      margin-right: 0.5rem;
+    }
+  }  
+}
+

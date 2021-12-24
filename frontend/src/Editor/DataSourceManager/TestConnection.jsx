@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Button from 'react-bootstrap/Button';
 import { toast, ToastContainer } from 'react-toastify';
 import { datasourceService } from '@/_services';
 
@@ -51,14 +50,13 @@ export const TestConnection = ({ kind, options, onConnectionTestFailed }) => {
       {connectionStatus === 'success' && <span className="badge bg-green-lt">connection verified</span>}
 
       {connectionStatus === 'unknown' && (
-        <Button
-          className="m-2"
-          variant="success"
+        <button
+          className="datasource-modal-button"
           disabled={isTesting || connectionStatus === 'success'}
           onClick={testDataSource}
         >
           {buttonText}
-        </Button>
+        </button>
       )}
     </div>
   );
