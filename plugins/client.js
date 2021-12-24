@@ -19,6 +19,26 @@ import Stripe from './packages/stripe/lib/manifest.json'
 import Twilioapi from './packages/twilioapi/lib/manifest.json'
 import Typesenseapi from './packages/typesenseapi/lib/manifest.json' 
 
+import AirtableOperation from './packages/airtable/lib/operations.json'
+import DynamodbOperation from './packages/dynamodb/lib/operations.json'
+import ElasticsearchOperation from './packages/elasticsearch/lib/operations.json'
+import FirestoreOperation from './packages/firestore/lib/operations.json'
+import GcsOperation from './packages/gcs/lib/operations.json'
+import GooglesheetsOperation from './packages/googlesheets/lib/operations.json'
+import GraphqlOperation from './packages/graphql/lib/operations.json'
+import MongoOperation from './packages/mongo/lib/operations.json'
+import MssqlOperation from './packages/mssql/lib/operations.json'
+import MysqlOperation from './packages/mysql/lib/operations.json'
+import PostgresqlOperation from './packages/postgresql/lib/operations.json'
+import RedisOperation from './packages/redis/lib/operations.json'
+import RestapiOperation from './packages/restapi/lib/operations.json'
+import S3Operation from './packages/s3/lib/operations.json'
+import SendgridOperation from './packages/sendgrid/lib/operations.json'
+import SlackOperation from './packages/slack/lib/operations.json'
+import StripeOperation from './packages/stripe/lib/operations.json'
+import TwilioapiOperation from './packages/twilioapi/lib/operations.json'
+import TypesenseapiOperation from './packages/typesenseapi/lib/operations.json' 
+
 export const allManifests = {
  Airtable,
 Dynamodb,
@@ -39,5 +59,27 @@ Slack,
 Stripe,
 Twilioapi,
 Typesenseapi 
+ }
+
+export const allOperations = {
+ Airtable: AirtableOperation,
+Dynamodb: DynamodbOperation,
+Elasticsearch: ElasticsearchOperation,
+Firestore: FirestoreOperation,
+Gcs: GcsOperation,
+Googlesheets: GooglesheetsOperation,
+Graphql: GraphqlOperation,
+Mongo: MongoOperation,
+Mssql: MssqlOperation,
+Mysql: MysqlOperation,
+Postgresql: PostgresqlOperation,
+Redis: RedisOperation,
+Restapi: RestapiOperation,
+S3: S3Operation,
+Sendgrid: SendgridOperation,
+Slack: SlackOperation,
+Stripe: StripeOperation,
+Twilioapi: TwilioapiOperation,
+Typesenseapi: TypesenseapiOperation 
  }
 
