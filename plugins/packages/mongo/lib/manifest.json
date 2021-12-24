@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/Mongodb.schema.json",
   "title": "Mongodb datasource",
   "description": "A schema defining mongodb datasource",
-  "type": "object",
+  "type": "database",
   "source": {
     "name": "MongoDB",
     "kind": "mongodb",

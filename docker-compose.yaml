@@ -8,6 +8,7 @@ services:
     image: tooljet-client:development
     volumes:
       - ./frontend:/app:delegated
+      - ./plugins/:/plugins:cached
       - /app/node_modules/
     ports:
       - 8082:8082

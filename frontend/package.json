@@ -14,6 +14,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "@tooljet/plugins": "../plugins",
     "@uiw/react-codemirror": "^3.0.6",
     "array-move": "^3.0.1",
     "axios": "^0.24.0",

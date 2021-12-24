@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/Stripe.schema.json",
   "title": "Stripe datasource",
   "description": "A schema defining stripe datasource",
-  "type": "object",
+  "type": "api",
   "source": {
     "name": "Stripe",
     "kind": "stripe",

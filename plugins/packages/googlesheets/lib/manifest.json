@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/GoogleSheets.schema.json",
   "title": "Google Sheets datasource",
   "description": "A schema defining google sheets datasource",
-  "type": "object",
+  "type": "api",
   "source": {
     "name": "Google Sheets",
     "kind": "googlesheets",

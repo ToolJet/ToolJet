@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/Graphql.schema.json",
   "title": "Graphql datasource",
   "description": "A schema defining graphql datasource",
-  "type": "object",
+  "type": "api",
   "source": {
     "name": "GraphQL",
     "kind": "graphql",

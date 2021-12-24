@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/Mssql.schema.json",
   "title": "Mssql datasource",
   "description": "A schema defining mssql datasource",
-  "type": "object",
+  "type": "database",
   "source": {
     "name": "SQL Server",
     "kind": "mssql",

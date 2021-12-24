@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/Sendgrid.schema.json",
   "title": "Sendgrid datasource",
   "description": "A schema defining SendGrid datasource",
-  "type": "object",
+  "type": "api",
   "source": {
     "name": "SendGrid",
     "kind": "sendgrid",

@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/TypeSense.schema.json",
   "title": "TypeSense datasource",
   "description": "A schema defining TypeSense datasource",
-  "type": "object",
+  "type": "database",
   "source": {
     "name": "TypeSense",
     "kind": "typesense",

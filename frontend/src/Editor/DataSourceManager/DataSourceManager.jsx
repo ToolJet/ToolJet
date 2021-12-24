@@ -15,6 +15,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
 
+console.log('DataBaseSources', DataBaseSources);
 class DataSourceManager extends React.Component {
   constructor(props) {
     super(props);
