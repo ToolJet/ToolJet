@@ -37,6 +37,7 @@ class DataSourceManager extends React.Component {
       options,
       dataSourceMeta,
       isSaving: false,
+      isCopied: false,
     };
   }
 
@@ -79,6 +80,7 @@ class DataSourceManager extends React.Component {
       selectedDataSource: null,
       options: {},
       connectionTestError: null,
+      isCopied: false,
     });
   };
 
@@ -163,7 +165,7 @@ class DataSourceManager extends React.Component {
   };
 
   render() {
-    const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError } = this.state;
+    const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
 
     return (
       <div>
@@ -307,35 +309,42 @@ class DataSourceManager extends React.Component {
                         />
                       </svg>
                     </div>
-                    <div className="col">
+                    <div className="col" style={{ maxWidth: '480px' }}>
                       <p>Please white- list our IP address if your databases are not publicaly accessabile</p>
                     </div>
                     <div className="col-auto">
-                      <CopyToClipboard
-                        text={config.SERVER_IP}
-                        onCopy={() =>
-                          toast.success('IP copied to clipboard', {
-                            hideProgressBar: true,
-                            position: 'top-center',
-                          })
-                        }
-                      >
-                        <button type="button" className="btn copy-button">
-                          <svg
-                            width="15"
-                            height="18"
-                            viewBox="0 0 15 18"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M10.5 15.6667H2.16667V4.83334C2.16667 4.37501 1.79167 4.00001 1.33333 4.00001C0.875 4.00001 0.5 4.37501 0.5 4.83334V15.6667C0.5 16.5833 1.25 17.3333 2.16667 17.3333H10.5C10.9583 17.3333 11.3333 16.9583 11.3333 16.5C11.3333 16.0417 10.9583 15.6667 10.5 15.6667ZM14.6667 12.3333V2.33334C14.6667 1.41667 13.9167 0.666672 13 0.666672H5.5C4.58333 0.666672 3.83333 1.41667 3.83333 2.33334V12.3333C3.83333 13.25 4.58333 14 5.5 14H13C13.9167 14 14.6667 13.25 14.6667 12.3333ZM13 12.3333H5.5V2.33334H13V12.3333Z"
-                              fill="currentColor"
-                            />
-                          </svg>
-                          Copy
-                        </button>
-                      </CopyToClipboard>
+                      {isCopied ? (
+                        <center className="my-2">
+                          <span className="copied">Copied</span>
+                        </center>
+                      ) : (
+                        <CopyToClipboard
+                          text={config.SERVER_IP}
+                          onCopy={() => {
+                            toast.success('IP copied to clipboard', {
+                              hideProgressBar: true,
+                              position: 'top-center',
+                            });
+                            this.setState({ isCopied: true });
+                          }}
+                        >
+                          <button type="button" className="btn copy-button">
+                            <svg
+                              width="15"
+                              height="18"
+                              viewBox="0 0 15 18"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M10.5 15.6667H2.16667V4.83334C2.16667 4.37501 1.79167 4.00001 1.33333 4.00001C0.875 4.00001 0.5 4.37501 0.5 4.83334V15.6667C0.5 16.5833 1.25 17.3333 2.16667 17.3333H10.5C10.9583 17.3333 11.3333 16.9583 11.3333 16.5C11.3333 16.0417 10.9583 15.6667 10.5 15.6667ZM14.6667 12.3333V2.33334C14.6667 1.41667 13.9167 0.666672 13 0.666672H5.5C4.58333 0.666672 3.83333 1.41667 3.83333 2.33334V12.3333C3.83333 13.25 4.58333 14 5.5 14H13C13.9167 14 14.6667 13.25 14.6667 12.3333ZM13 12.3333H5.5V2.33334H13V12.3333Z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                            Copy
+                          </button>
+                        </CopyToClipboard>
+                      )}
                     </div>
                   </div>
                 </div>

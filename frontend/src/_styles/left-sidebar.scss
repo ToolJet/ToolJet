@@ -138,6 +138,11 @@
   border-radius: 4px!important;
   height: 68px;
 
+  .copied {
+    color: #7A95FB;
+    margin-left: 2rem;
+  }
+
   button.copy-button {
     @extend .datasource-modal-button;
     svg {
