@@ -7,6 +7,8 @@ import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
+import { AuditLoggerService } from './audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 
 @Injectable()
 export class OrganizationUsersService {
@@ -14,14 +16,18 @@ export class OrganizationUsersService {
     @InjectRepository(OrganizationUser)
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private auditLoggerService: AuditLoggerService
   ) {}
 
   async findOne(id: string): Promise<OrganizationUser> {
     return await this.organizationUsersRepository.findOne({ id: id });
   }
 
-  async inviteNewUser(currentUser: User, params: any): Promise<OrganizationUser> {
+  async inviteNewUser(request): Promise<OrganizationUser> {
+    const currentUser: User = request.user;
+    const params: any = request.body;
+
     const userParams = <User>{
       firstName: params['first_name'],
       lastName: params['last_name'],
@@ -41,6 +47,16 @@ export class OrganizationUsersService {
       currentUser.firstName,
       user.invitationToken
     );
+
+    await this.auditLoggerService.perform({
+      request,
+      userId: currentUser.id,
+      organizationId: user.organizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+      resourceType: ResourceTypes.USER,
+      actionType: ActionTypes.USER_INVITE,
+    });
 
     return organizationUser;
   }
@@ -86,7 +102,9 @@ export class OrganizationUsersService {
   }
 
   async activate(user: OrganizationUser) {
-    await this.organizationUsersRepository.update(user.id, { status: 'active' });
+    await this.organizationUsersRepository.update(user.id, {
+      status: 'active',
+    });
   }
 
   async lastActiveAdmin(organizationId: string): Promise<boolean> {

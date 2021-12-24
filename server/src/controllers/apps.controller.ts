@@ -18,6 +18,8 @@ import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { FoldersService } from '@services/folders.service';
 import { App } from 'src/entities/app.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
+import { AuditLoggerService } from '@services/audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 
 @Controller('apps')
 export class AppsController {
@@ -25,7 +27,8 @@ export class AppsController {
     private appsService: AppsService,
     private appImportExportService: AppImportExportService,
     private foldersService: FoldersService,
-    private appsAbilityFactory: AppsAbilityFactory
+    private appsAbilityFactory: AppsAbilityFactory,
+    private auditLoggerService: AuditLoggerService
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -40,6 +43,16 @@ export class AppsController {
 
     await this.appsService.update(req.user, app.id, {
       slug: app.id,
+    });
+
+    await this.auditLoggerService.perform({
+      request: req,
+      userId: req.user.id,
+      organizationId: req.user.organizationId,
+      resourceId: app.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: app.name,
+      actionType: ActionTypes.APP_CREATE,
     });
 
     return decamelizeKeys(app);
@@ -83,6 +96,16 @@ export class AppsController {
       if (!ability.can('viewApp', app)) {
         throw new ForbiddenException('You do not have permissions to perform this action');
       }
+
+      await this.auditLoggerService.perform({
+        request: req,
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        resourceId: app.id,
+        resourceType: ResourceTypes.APP,
+        resourceName: app.name,
+        actionType: ActionTypes.APP_VIEW,
+      });
     }
 
     const app = await this.appsService.findBySlug(params.slug);
@@ -109,6 +132,16 @@ export class AppsController {
     }
 
     const result = await this.appsService.update(req.user, params.id, req.body.app);
+    await this.auditLoggerService.perform({
+      request: req,
+      userId: req.user.id,
+      organizationId: req.user.organizationId,
+      resourceId: app.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: app.name,
+      actionType: ActionTypes.APP_UPDATE,
+      metadata: { updateParams: req.body },
+    });
     const response = decamelizeKeys(result);
 
     return response;
@@ -125,6 +158,15 @@ export class AppsController {
     }
 
     const result = await this.appsService.clone(existingApp, req.user);
+    await this.auditLoggerService.perform({
+      request: req,
+      userId: req.user.id,
+      organizationId: req.user.organizationId,
+      resourceId: result.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: result.name,
+      actionType: ActionTypes.APP_CLONE,
+    });
     const response = decamelizeKeys(result);
 
     return response;
@@ -141,6 +183,17 @@ export class AppsController {
     }
 
     const app = await this.appImportExportService.export(req.user, params.id);
+
+    await this.auditLoggerService.perform({
+      request: req,
+      userId: req.user.id,
+      organizationId: req.user.organizationId,
+      resourceId: app.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: app.name,
+      actionType: ActionTypes.APP_EXPORT,
+    });
+
     return {
       ...app,
       tooljetVersion: globalThis.TOOLJET_VERSION,
@@ -155,7 +208,17 @@ export class AppsController {
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    await this.appImportExportService.import(req.user, req.body);
+    const app = await this.appImportExportService.import(req.user, req.body);
+
+    await this.auditLoggerService.perform({
+      request: req,
+      userId: req.user.id,
+      organizationId: req.user.organizationId,
+      resourceId: app.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: app.name,
+      actionType: ActionTypes.APP_IMPORT,
+    });
 
     return;
   }
@@ -171,6 +234,17 @@ export class AppsController {
     }
 
     const result = await this.appsService.delete(params.id);
+
+    await this.auditLoggerService.perform({
+      request: req,
+      userId: req.user.id,
+      organizationId: req.user.organizationId,
+      resourceId: app.id,
+      resourceType: ResourceTypes.APP,
+      resourceName: app.name,
+      actionType: ActionTypes.APP_DELETE,
+    });
+
     const response = decamelizeKeys(result);
 
     return response;

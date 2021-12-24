@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, createQueryBuilder, getManager, In, Not } from 'typeorm';
+import { Repository, createQueryBuilder, getManager, In, Not, DeleteResult } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
+import { AuditLoggerService } from './audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 
 @Injectable()
 export class GroupPermissionsService {
@@ -26,20 +28,34 @@ export class GroupPermissionsService {
     @InjectRepository(App)
     private appRepository: Repository<App>,
 
-    private usersService: UsersService
+    private usersService: UsersService,
+
+    private auditLoggerService: AuditLoggerService
   ) {}
 
-  async create(user: User, group: string): Promise<GroupPermission> {
-    return this.groupPermissionsRepository.save(
+  async create(request: any, user: User, group: string): Promise<GroupPermission> {
+    const groupPermission = await this.groupPermissionsRepository.save(
       this.groupPermissionsRepository.create({
         organizationId: user.organizationId,
         group: group,
       })
     );
+
+    await this.auditLoggerService.perform({
+      request,
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: groupPermission.id,
+      resourceName: groupPermission.group,
+      resourceType: ResourceTypes.GROUP_PERMISSION,
+      actionType: ActionTypes.GROUP_PERMISSION_CREATE,
+    });
+
+    return groupPermission;
   }
 
-  async destroy(user: User, groupPermissionId: string) {
-    let result;
+  async destroy(request: any, user: User, groupPermissionId: string) {
+    let result: DeleteResult;
 
     const groupPermission = await this.groupPermissionsRepository.findOne({
       id: groupPermissionId,
@@ -66,10 +82,27 @@ export class GroupPermissionsService {
         id: groupPermissionId,
       });
     });
+
+    await this.auditLoggerService.perform({
+      request,
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: groupPermission.id,
+      resourceName: groupPermission.group,
+      resourceType: ResourceTypes.GROUP_PERMISSION,
+      actionType: ActionTypes.GROUP_PERMISSION_DELETE,
+    });
+
     return result;
   }
 
-  async updateAppGroupPermission(user: User, groupPermissionId: string, appGroupPermissionId: string, actions: any) {
+  async updateAppGroupPermission(
+    request: any,
+    user: User,
+    groupPermissionId: string,
+    appGroupPermissionId: string,
+    actions: any
+  ) {
     const appGroupPermission = await this.appGroupPermissionsRepository.findOne({
       id: appGroupPermissionId,
       groupPermissionId: groupPermissionId,
@@ -85,10 +118,23 @@ export class GroupPermissionsService {
       throw new BadRequestException('Cannot update admin group');
     }
 
-    return this.appGroupPermissionsRepository.update(appGroupPermissionId, actions);
+    const updatedGroupPermission = await this.appGroupPermissionsRepository.update(appGroupPermissionId, actions);
+
+    await this.auditLoggerService.perform({
+      request,
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: appGroupPermission.id,
+      resourceName: groupPermission.group,
+      resourceType: ResourceTypes.APP_GROUP_PERMISSION,
+      actionType: ActionTypes.APP_GROUP_PERMISSION_UPDATE,
+      metadata: { updateParams: actions },
+    });
+
+    return updatedGroupPermission;
   }
 
-  async update(user: User, groupPermissionId: string, body: any) {
+  async update(request: any, user: User, groupPermissionId: string, body: any) {
     const groupPermission = await this.groupPermissionsRepository.findOne({
       id: groupPermissionId,
       organizationId: user.organizationId,
@@ -101,7 +147,9 @@ export class GroupPermissionsService {
       const groupPermissionUpdateParams = {
         ...(typeof app_create === 'boolean' && { appCreate: app_create }),
         ...(typeof app_delete === 'boolean' && { appDelete: app_delete }),
-        ...(typeof folder_create === 'boolean' && { folderCreate: folder_create }),
+        ...(typeof folder_create === 'boolean' && {
+          folderCreate: folder_create,
+        }),
       };
       if (Object.keys(groupPermissionUpdateParams).length !== 0) {
         await manager.update(GroupPermission, groupPermissionId, groupPermissionUpdateParams);
@@ -154,6 +202,19 @@ export class GroupPermissionsService {
           await this.usersService.update(userId, params, manager);
         }
       }
+    });
+
+    await this.auditLoggerService.perform({
+      request,
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: groupPermission.id,
+      resourceName: groupPermission.group,
+      resourceType: ResourceTypes.GROUP_PERMISSION,
+      actionType: ActionTypes.GROUP_PERMISSION_UPDATE,
+      metadata: {
+        updateParams: body,
+      },
     });
 
     return this.groupPermissionsRepository.findOne({ id: groupPermissionId });

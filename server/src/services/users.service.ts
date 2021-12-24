@@ -9,6 +9,8 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
+import { AuditLoggerService } from './audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -22,8 +24,17 @@ export class UsersService {
     @InjectRepository(Organization)
     private organizationsRepository: Repository<Organization>,
     @InjectRepository(App)
-    private appsRepository: Repository<App>
+    private appsRepository: Repository<App>,
+    private auditLoggerService: AuditLoggerService
   ) {}
+
+  async findAll(organizationId: string): Promise<User[]> {
+    return this.usersRepository.find({
+      where: { organizationId },
+      select: ['id', 'email', 'firstName', 'lastName'],
+      relations: [],
+    });
+  }
 
   async findOne(id: string): Promise<User> {
     return this.usersRepository.findOne(id);
@@ -113,7 +124,8 @@ export class UsersService {
     return [user, newUserCreated];
   }
 
-  async setupAccountFromInvitationToken(params: any) {
+  async setupAccountFromInvitationToken(request: any): Promise<void> {
+    const params = request.body;
     const { organization, password, token } = params; // TODO: organization is the name of the organization, this should be changed
     const firstName = params['first_name'];
     const lastName = params['last_name'];
@@ -143,6 +155,16 @@ export class UsersService {
         });
       }
     }
+
+    this.auditLoggerService.perform({
+      request,
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: user.id,
+      resourceName: user.email,
+      resourceType: ResourceTypes.USER,
+      actionType: ActionTypes.USER_INVITE_REDEEM,
+    });
   }
 
   async update(userId: string, params: any, manager?: EntityManager) {

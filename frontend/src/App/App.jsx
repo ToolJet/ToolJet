@@ -1,27 +1,28 @@
-import React from "react";
-import { Router, Route } from "react-router-dom";
-import { history } from "@/_helpers";
-import { authenticationService, tooljetService } from "@/_services";
-import { PrivateRoute } from "@/_components";
-import { HomePage, Library } from "@/HomePage";
-import { LoginPage } from "@/LoginPage";
-import { SignupPage } from "@/SignupPage";
-import { InvitationPage } from "@/InvitationPage";
-import { Authorize } from "@/Oauth2";
-import { Editor, Viewer } from "@/Editor";
-import "@/_styles/theme.scss";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { ManageGroupPermissions } from "@/ManageGroupPermissions";
-import { ManageOrgUsers } from "@/ManageOrgUsers";
-import { ManageGroupPermissionResources } from "@/ManageGroupPermissionResources";
-import { SettingsPage } from "../SettingsPage/SettingsPage";
-import { OnboardingModal } from "@/Onboarding/OnboardingModal";
-import posthog from "posthog-js";
-import { ForgotPassword } from "@/ForgotPassword";
-import { ResetPassword } from "@/ResetPassword";
-import { lt } from "semver";
+import React from 'react';
+import { Router, Route } from 'react-router-dom';
+import { history } from '@/_helpers';
+import { authenticationService, tooljetService } from '@/_services';
+import { PrivateRoute } from '@/_components';
+import { HomePage, Library } from '@/HomePage';
+import { LoginPage } from '@/LoginPage';
+import { SignupPage } from '@/SignupPage';
+import { InvitationPage } from '@/InvitationPage';
+import { Authorize } from '@/Oauth2';
+import { Editor, Viewer } from '@/Editor';
+import '@/_styles/theme.scss';
+import { ToastContainer } from 'react-toastify';
+import { ManageGroupPermissions } from '@/ManageGroupPermissions';
+import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
+import { SettingsPage } from '../SettingsPage/SettingsPage';
+import { OnboardingModal } from '@/Onboarding/OnboardingModal';
+import posthog from 'posthog-js';
+import { ForgotPassword } from '@/ForgotPassword';
+import { ResetPassword } from '@/ResetPassword';
+import { lt } from 'semver';
 import 'emoji-mart/css/emoji-mart.css';
+import 'react-toastify/dist/ReactToastify.css';
+import { AuditLogs } from '@/AuditLogs';
 import { Toaster } from 'react-hot-toast';
 
 class App extends React.Component {
@@ -32,14 +33,14 @@ class App extends React.Component {
       currentUser: null,
       fetchedMetadata: false,
       onboarded: true,
-      darkMode: localStorage.getItem("darkMode") === "true",
+      darkMode: localStorage.getItem('darkMode') === 'true',
     };
   }
 
   componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x });
-      window.addEventListener("chatwoot:ready", function () {
+      window.addEventListener('chatwoot:ready', function () {
         try {
           window.$chatwoot.setUser(x.email, {
             email: x.email,
@@ -50,8 +51,8 @@ class App extends React.Component {
         }
       });
 
-      posthog.init("1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw", {
-        api_host: "https://app.posthog.com",
+      posthog.init('1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw', {
+        api_host: 'https://app.posthog.com',
       });
       posthog.identify(
         x.email, // distinct_id, required
@@ -62,12 +63,12 @@ class App extends React.Component {
 
   logout = () => {
     authenticationService.logout();
-    history.push("/login");
+    history.push('/login');
   };
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
-    localStorage.setItem("darkMode", newMode);
+    localStorage.setItem('darkMode', newMode);
   };
 
   render() {
@@ -88,10 +89,7 @@ class App extends React.Component {
       tooljetService.fetchMetaData().then((data) => {
         this.setState({ fetchedMetadata: true, onboarded: data.onboarded });
 
-        if (
-          lt(data.installed_version, data.latest_version) &&
-          data.version_ignored === false
-        ) {
+        if (lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
           this.setState({ updateAvailable: true });
         }
       });
@@ -133,7 +131,7 @@ class App extends React.Component {
 
             <ToastContainer />
 
-            {window.location.host === "apps.tooljet.com" ?
+            {window.location.host === 'apps.tooljet.com' ? (
               <PrivateRoute
                 exact
                 path="/:slug"
@@ -142,7 +140,7 @@ class App extends React.Component {
                 darkMode={darkMode}
                 skipAuth={true}
               />
-              :
+            ) : (
               <PrivateRoute
                 exact
                 path="/"
@@ -150,7 +148,7 @@ class App extends React.Component {
                 switchDarkMode={this.switchDarkMode}
                 darkMode={darkMode}
               />
-            }
+            )}
 
             <Route path="/login" component={LoginPage} />
             <Route path="/signup" component={SignupPage} />
@@ -210,6 +208,13 @@ class App extends React.Component {
               exact
               path="/library"
               component={Library}
+              switchDarkMode={this.switchDarkMode}
+              darkMode={darkMode}
+            />
+            <PrivateRoute
+              exact
+              path="/audit_logs"
+              component={AuditLogs}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

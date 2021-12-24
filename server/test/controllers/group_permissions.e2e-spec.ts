@@ -5,6 +5,7 @@ import { getManager } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AuditLog } from 'src/entities/audit_log.entity';
 
 describe('group permissions controller', () => {
   let nestApp: INestApplication;
@@ -45,6 +46,18 @@ describe('group permissions controller', () => {
       expect(response.body.id).toBeDefined();
       expect(response.body.created_at).toBeDefined();
       expect(response.body.updated_at).toBeDefined();
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        userId: adminUser.id,
+      });
+
+      expect(auditLog.organizationId).toEqual(adminUser.organizationId);
+      expect(auditLog.resourceId).toEqual(response.body.id);
+      expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
+      expect(auditLog.resourceName).toEqual(response.body.group);
+      expect(auditLog.actionType).toEqual('GROUP_PERMISSION_CREATE');
+      expect(auditLog.createdAt).toBeDefined();
     });
 
     it('should validate uniqueness of group permission group name', async () => {
@@ -193,6 +206,25 @@ describe('group permissions controller', () => {
       expect(addedApp.update).toBe(false);
       expect(addedApp.delete).toBe(false);
 
+      // should create audit log
+      let auditLog = await AuditLog.findOne({
+        where: {
+          userId: adminUser.id,
+        },
+        order: { createdAt: 'DESC' },
+      });
+      expect(auditLog.organizationId).toEqual(adminUser.organizationId);
+      expect(auditLog.resourceId).toEqual(response.body.id);
+      expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
+      expect(auditLog.resourceName).toEqual(response.body.group);
+      expect(auditLog.actionType).toEqual('GROUP_PERMISSION_UPDATE');
+      expect(auditLog.createdAt).toBeDefined();
+      expect(auditLog.metadata).toEqual({
+        updateParams: {
+          add_apps: [app.id],
+        },
+      });
+
       response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}`)
         .set('Authorization', authHeaderForUser(adminUser))
@@ -205,6 +237,25 @@ describe('group permissions controller', () => {
       });
 
       expect(appsInGroup).toHaveLength(0);
+
+      // should create audit log
+      auditLog = await AuditLog.findOne({
+        where: {
+          userId: adminUser.id,
+        },
+        order: { createdAt: 'DESC' },
+      });
+      expect(auditLog.organizationId).toEqual(adminUser.organizationId);
+      expect(auditLog.resourceId).toEqual(response.body.id);
+      expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
+      expect(auditLog.resourceName).toEqual(response.body.group);
+      expect(auditLog.actionType).toEqual('GROUP_PERMISSION_UPDATE');
+      expect(auditLog.createdAt).toBeDefined();
+      expect(auditLog.metadata).toEqual({
+        updateParams: {
+          remove_apps: [app.id],
+        },
+      });
     });
 
     it('should allow admin to add and remove users to group permission', async () => {
@@ -569,6 +620,18 @@ describe('group permissions controller', () => {
 
       expect(appGroupPermission.read).toBe(false);
       expect(appGroupPermission.update).toBe(true);
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        where: { actionType: 'APP_GROUP_PERMISSION_UPDATE' },
+      });
+
+      expect(auditLog.organizationId).toEqual(adminUser.organizationId);
+      expect(auditLog.resourceId).toEqual(appGroupPermissionId);
+      expect(auditLog.resourceType).toEqual('APP_GROUP_PERMISSION');
+      expect(auditLog.resourceName).toEqual(groupPermission.group);
+      expect(auditLog.actionType).toEqual('APP_GROUP_PERMISSION_UPDATE');
+      expect(auditLog.createdAt).toBeDefined();
     });
 
     it('should not allow admin to update app group permission of different organization', async () => {
@@ -599,6 +662,58 @@ describe('group permissions controller', () => {
         .send({ actions: { read: false, update: true } });
 
       expect(response.statusCode).toBe(400);
+    });
+  });
+
+  describe('DELETE /group_permissions/:id', () => {
+    it('should not allow unauthenicated admin', async () => {
+      const {
+        organization: { defaultUser },
+      } = await setupOrganizations(nestApp);
+      const response = await request(nestApp.getHttpServer())
+        .del('/api/group_permissions/id')
+        .set('Authorization', authHeaderForUser(defaultUser))
+        .send({ read: true });
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should allow admin to delete group', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/group_permissions')
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ group: 'avengers' });
+
+      const manager = getManager();
+      await manager.findOne(GroupPermission, {
+        where: {
+          organizationId: organization.id,
+          group: 'avengers',
+        },
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .del(`/api/group_permissions/${createResponse.body.id}`)
+        .set('Authorization', authHeaderForUser(adminUser))
+        .send({ group: 'avengers' });
+
+      expect(response.statusCode).toBe(200);
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        where: { actionType: 'GROUP_PERMISSION_DELETE' },
+      });
+
+      expect(auditLog.organizationId).toEqual(adminUser.organizationId);
+      expect(auditLog.resourceId).toEqual(createResponse.body.id);
+      expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
+      expect(auditLog.resourceName).toEqual(createResponse.body.group);
+      expect(auditLog.actionType).toEqual('GROUP_PERMISSION_DELETE');
+      expect(auditLog.createdAt).toBeDefined();
     });
   });
 

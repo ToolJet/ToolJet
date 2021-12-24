@@ -34,7 +34,7 @@ describe('users controller', () => {
     });
 
     it('should not allow users to update their password if entered current password is wrong', async () => {
-      const userData = await createUser(app, { email: 'admin@tooljet.io', role: 'admin' });
+      const userData = await createUser(app, { email: 'x.io', role: 'admin' });
       const { user } = userData;
 
       const oldPassword = user.password;
@@ -68,6 +68,42 @@ describe('users controller', () => {
       const updatedUser = await getManager().findOne(User, { email: user.email });
       expect(updatedUser.firstName).toEqual(firstName);
       expect(updatedUser.lastName).toEqual(lastName);
+    });
+  });
+
+  describe('GET /api/users', () => {
+    it('should allow admins to fetch all users in an organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const adminUser = adminUserData.user;
+      const organization = adminUserData.organization;
+      const defaultUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+      const defaultUser = defaultUserData.user;
+
+      let response = await request(app.getHttpServer())
+        .get('/api/users/')
+        .set('Authorization', authHeaderForUser(adminUser));
+
+      expect(response.statusCode).toBe(200);
+
+      const users = response.body.users;
+
+      expect(users).toHaveLength(2);
+      expect(Object.keys(users[0]).sort()).toEqual(
+        ['email', 'first_name', 'id', 'last_name', 'organization_users'].sort()
+      );
+
+      response = await request(app.getHttpServer())
+        .get('/api/users/')
+        .set('Authorization', authHeaderForUser(defaultUser));
+
+      expect(response.statusCode).toBe(403);
     });
   });
 

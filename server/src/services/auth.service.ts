@@ -6,6 +6,8 @@ import { User } from '../entities/user.entity';
 import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
+import { AuditLoggerService } from './audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -16,7 +18,8 @@ export class AuthService {
     private jwtService: JwtService,
     private organizationsService: OrganizationsService,
     private organizationUsersService: OrganizationUsersService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private auditLoggerService: AuditLoggerService
   ) {}
 
   verifyToken(token: string) {
@@ -37,10 +40,21 @@ export class AuthService {
     return isVerified ? user : null;
   }
 
-  async login(params: any) {
+  async login(request: any) {
+    const params = request.body;
     const user = await this.validateUser(params.email, params.password);
 
     if (user) {
+      this.auditLoggerService.perform({
+        request,
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: user.id,
+        resourceType: ResourceTypes.USER,
+        resourceName: user.email,
+        actionType: ActionTypes.USER_LOGIN,
+      });
+
       const payload = { username: user.id, sub: user.email };
 
       return decamelizeKeys({
@@ -58,7 +72,8 @@ export class AuthService {
     }
   }
 
-  async signup(params: any) {
+  async signup(request: any) {
+    const params = request.body;
     // Check if the installation allows user signups
     if (process.env.DISABLE_SIGNUPS === 'true') {
       return {};
@@ -71,6 +86,16 @@ export class AuthService {
     const organizationUser = await this.organizationUsersService.create(user, organization);
 
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
+
+    this.auditLoggerService.perform({
+      request,
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: user.id,
+      resourceType: ResourceTypes.USER,
+      resourceName: user.email,
+      actionType: ActionTypes.USER_SIGNUP,
+    });
 
     return user;
   }

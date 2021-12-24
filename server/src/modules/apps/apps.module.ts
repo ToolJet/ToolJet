@@ -25,6 +25,8 @@ import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
 import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
+import { AuditLog } from 'src/entities/audit_log.entity';
+import { AuditLoggerService } from '@services/audit_logger.service';
 
 @Module({
   imports: [
@@ -43,6 +45,7 @@ import { Credential } from 'src/entities/credential.entity';
       AppGroupPermission,
       UserGroupPermission,
       Credential,
+      AuditLog,
     ]),
     CaslModule,
   ],
@@ -55,6 +58,7 @@ import { Credential } from 'src/entities/credential.entity';
     DataSourcesService,
     CredentialsService,
     EncryptionService,
+    AuditLoggerService,
   ],
   controllers: [AppsController, AppUsersController],
 })

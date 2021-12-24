@@ -12,9 +12,11 @@ import { ThreadsAbilityFactory } from './abilities/threads-ability.factory';
 import { CommentsAbilityFactory } from './abilities/comments-ability.factory';
 import { CaslAbilityFactory } from './casl-ability.factory';
 import { FoldersAbilityFactory } from './abilities/folders-ability.factory';
+import { AuditLoggerService } from '@services/audit_logger.service';
+import { AuditLog } from 'src/entities/audit_log.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Organization, OrganizationUser, App])],
+  imports: [TypeOrmModule.forFeature([User, Organization, OrganizationUser, App, AuditLog])],
   providers: [
     CaslAbilityFactory,
     OrganizationUsersService,
@@ -24,6 +26,7 @@ import { FoldersAbilityFactory } from './abilities/folders-ability.factory';
     ThreadsAbilityFactory,
     CommentsAbilityFactory,
     FoldersAbilityFactory,
+    AuditLoggerService,
   ],
   exports: [
     CaslAbilityFactory,

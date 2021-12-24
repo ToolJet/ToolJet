@@ -143,7 +143,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(req.user, dataQuery, options);
+      result = await this.dataQueriesService.runQuery(req, dataQuery, options);
     } catch (error) {
       if (error instanceof QueryError) {
         result = {
@@ -188,7 +188,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(req.user, dataQueryEntity, options);
+      result = await this.dataQueriesService.runQuery(req, dataQueryEntity, options);
     } catch (error) {
       if (error instanceof QueryError) {
         result = {

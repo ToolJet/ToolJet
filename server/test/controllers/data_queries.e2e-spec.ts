@@ -12,6 +12,7 @@ import {
 } from '../test.helper';
 import { getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AuditLog } from 'src/entities/audit_log.entity';
 
 describe('data queries controller', () => {
   let app: INestApplication;
@@ -393,6 +394,7 @@ describe('data queries controller', () => {
 
     const dataQuery = await createDataQuery(app, {
       application,
+      name: 'rest-api',
       kind: 'restapi',
       options: {
         method: 'get',
@@ -430,6 +432,27 @@ describe('data queries controller', () => {
 
       expect(response.statusCode).toBe(201);
       expect(response.body.data.length).toBe(30);
+
+      // should create audit log
+      const auditLog = await AuditLog.findOne({
+        userId: userData.user.id,
+      });
+
+      expect(auditLog.organizationId).toEqual(userData.user.organizationId);
+      expect(auditLog.resourceId).toEqual(dataQuery.id);
+      expect(auditLog.resourceType).toEqual('DATA_QUERY');
+      expect(auditLog.resourceName).toEqual(dataQuery.name);
+      expect(auditLog.actionType).toEqual('DATA_QUERY_RUN');
+      expect(auditLog.metadata).toEqual({
+        parsedQueryOptions: {
+          body: [],
+          headers: [],
+          method: 'get',
+          url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
+          url_params: [],
+        },
+      });
+      expect(auditLog.createdAt).toBeDefined();
     }
   });
 

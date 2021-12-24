@@ -1,8 +1,6 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/7828962/143565889-f4c51c89-fc7e-471c-90b6-42ae697bca6b.png" width="200" />
   <br/>
-
-  Low-code framework for building internal tools.
 </p>
 
 ToolJet is an **open-source low-code framework** to build and deploy internal tools quickly without much effort from the engineering teams. You can connect to your data sources, such as databases (like PostgreSQL, MongoDB, Elasticsearch, etc), API endpoints (ToolJet supports importing OpenAPI spec & OAuth2 authorization), and external services (like Stripe, Slack, Google Sheets, Airtable) and use our pre-built UI widgets to build internal tools.
@@ -57,6 +55,7 @@ You can deploy ToolJet on Heroku for free using the one-click-deployment button 
 [GitHub contributor leaderboard using ToolJet](https://blog.tooljet.io/building-a-github-contributor-leaderboard-using-tooljet/)<br>
 [Cryptocurrency dashboard using ToolJet](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)<br>
 [WhatsApp CRM using ToolJet](https://blog.tooljet.com/build-a-whatsapp-crm-using-tooljet-within-10-mins/)<br>
+[AWS S3 file explorer](https://blog.tooljet.com/building-an-app-to-view-and-upload-files-in-aws-s3-bucket/)<br>
 
 ## Documentation
 Documentation is available at https://docs.tooljet.com.
