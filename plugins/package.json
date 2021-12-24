@@ -8,7 +8,7 @@
     "clean": "rimraf dist/",
     "prebuild": "npm run clean",
     "build": "tsc -b",
-    "prebuild:pkgs": "npm run clean:pkgs",
+    "prebuild:pkgs": "npm run clean:pkgs && node create-index-file",
     "build:pkgs": "lerna run build --stream",
     "clean:pkgs": "lerna run clean --parallel",
     "bootstrap": "lerna clean -y && lerna bootstrap --hoist"
