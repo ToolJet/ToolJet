@@ -15,5 +15,5 @@ dist
 *.tabl.json
 *.swp
 *.snk
-.client.js
-.index.ts
+client.js
+index.ts
