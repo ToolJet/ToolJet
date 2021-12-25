@@ -1,7 +1,7 @@
 import React from 'react';
 import LazyLoad from 'react-lazyload';
 
-export const Image = function Image({ height, properties, styles }) {
+export const Image = function Image({ height, properties, styles, fireEvent }) {
   const source = properties.source;
   const widgetVisibility = styles.visibility ?? true;
 
@@ -12,7 +12,7 @@ export const Image = function Image({ height, properties, styles }) {
   return (
     <div data-disabled={styles.disabledState} style={{ display: widgetVisibility ? '' : 'none' }}>
       <LazyLoad height={height} placeholder={<Placeholder />} debounce={500}>
-        <img src={source} height={height} />
+        <img src={source} height={height} onClick={() => fireEvent('onClick')} />
       </LazyLoad>
     </div>
   );
