@@ -102,6 +102,9 @@ export const Box = function Box({
   const ComponentToRender = AllComponents[component.component];
   const resolvedProperties = resolveProperties(component, currentState);
   const resolvedStyles = resolveStyles(component, currentState);
+
+  resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+
   const exposedVariables = currentState?.components[component.name] ?? {};
 
   const fireEvent = (eventName, options) => {
@@ -150,7 +153,7 @@ export const Box = function Box({
               validate={validate}
             ></ComponentToRender>
           ) : (
-            <div className="m-1" style={{ height: '100%' }}>
+            <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
               <div
                 className="component-image-holder p-2 d-flex flex-column justify-content-center"
                 style={{ height: '100%' }}
