@@ -27,8 +27,11 @@ export const DropDown = function DropDown({ height, validate, properties, styles
   }, [isValid]);
 
   useEffect(() => {
-    setCurrentValue(value);
-    setExposedVariable('value', value);
+    let newValue = undefined;
+    if (values?.includes(value)) newValue = value;
+
+    setCurrentValue(newValue);
+    setExposedVariable('value', newValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
