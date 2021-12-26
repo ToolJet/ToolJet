@@ -37,7 +37,8 @@ export const DropDown = function DropDown({ height, validate, properties, styles
 
   useEffect(() => {
     let newValue = undefined;
-    if (values?.includes(value)) newValue = value;
+    if (values?.includes(currentValue)) newValue = currentValue;
+    else if (values?.includes(value)) newValue = value;
 
     setCurrentValue(newValue);
     setExposedVariable('value', newValue);
