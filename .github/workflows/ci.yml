@@ -126,7 +126,7 @@ jobs:
 
   e2e-test:
     runs-on: ubuntu-latest
-    needs: build
+    # needs: build
     container: node:14.17.3-buster
     services:
       postgres:
@@ -155,11 +155,7 @@ jobs:
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
-      - run: |
-          mkdir ~/.npm-global
-          npm config set prefix '~/.npm-global'
-          PATH=~/.npm-global/bin:$PATH
-          npm run build:plugins
+      - run: npm --prefix plugins ci
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate

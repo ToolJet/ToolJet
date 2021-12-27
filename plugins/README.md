@@ -17,12 +17,6 @@ Below steps need to be run from the root repository
 - ex: ["gcs", "postgres"] this can be a form of response from api on the client and on the fly gotta import "only" these modules
 - boilerplate file generation is happening in .js format, need to add .gitignore plus file generation in .ts format 
 
-# Breaking changes
-- globalThis in mssql cacheConnection helper might not work fine
-- mongodb name changed to mongo as cannot have npm package name and package name as same, todo: rename mongo to mongodb
-- renamed twilio to twilioapi, todo: rename twilioapi to twilio in client.js
-- rest api and stripe have empty operations file, 
-
 # COMMON steps
 - npx lerna create mssql -y   
 - npx lerna add common 
