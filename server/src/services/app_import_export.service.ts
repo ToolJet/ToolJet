@@ -74,7 +74,7 @@ export class AppImportExportService {
     const appVersions = appParams?.appVersions || [];
 
     // create new app versions
-    for await (const appVersion of appVersions) {
+    for (const appVersion of appVersions) {
       const version = manager.create(AppVersion, {
         app: importedApp,
         definition: await this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping),
@@ -105,7 +105,7 @@ export class AppImportExportService {
           }
           appVersionId = appVersionMapping[appVersion.id];
         } else {
-          appVersionId = appVersionMapping[source.appVersionId] || appVersionMapping[appVersion.id];
+          appVersionId = appVersionMapping[appVersion.id];
         }
         const newSource = manager.create(DataSource, {
           app: importedApp,
@@ -119,7 +119,7 @@ export class AppImportExportService {
       }
 
       const newDataQueries = [];
-      for (const query of dataQueries) {
+      for await (const query of dataQueries) {
         let appVersionId: any;
 
         if (query.appVersionId) {
@@ -128,7 +128,7 @@ export class AppImportExportService {
           }
           appVersionId = appVersionMapping[query.appVersionId];
         } else {
-          appVersionId = appVersionMapping[query.appVersionId] || appVersionMapping[appVersion.id];
+          appVersionId = appVersionMapping[appVersion.id];
         }
 
         const newQuery = manager.create(DataQuery, {
@@ -144,7 +144,7 @@ export class AppImportExportService {
         newDataQueries.push(newQuery);
       }
 
-      for (const newQuery of newDataQueries) {
+      for await (const newQuery of newDataQueries) {
         const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
         newQuery.options = newOptions;
         await manager.save(newQuery);
@@ -166,7 +166,7 @@ export class AppImportExportService {
       delete: true,
     };
 
-    for (const groupPermission of orgDefaultGroupPermissions) {
+    for await (const groupPermission of orgDefaultGroupPermissions) {
       const appGroupPermission = manager.create(AppGroupPermission, {
         groupPermissionId: groupPermission.id,
         appId: app.id,
