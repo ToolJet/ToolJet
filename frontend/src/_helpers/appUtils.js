@@ -375,6 +375,11 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelect',
       'onClick',
       'onFileSelected',
+      'onStart',
+      'onResume',
+      'onReset',
+      'onPause',
+      'onCountDownFinish',
     ].includes(eventName)
   ) {
     const { component } = options;

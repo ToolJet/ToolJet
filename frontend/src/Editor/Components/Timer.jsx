@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export const Timer = function Timer({ height, properties = {}, styles, setExposedVariable, fireEvent }) {
-  const getTimeObj = (HH, MM, SS, MS) => {
+  const getTimeObj = ({ HH, MM, SS, MS }) => {
     return {
       hour: isNaN(HH) ? 0 : parseInt(HH, 10),
       minute: !isNaN(MM) && MM <= 59 ? parseInt(MM, 10) : 0,
@@ -9,8 +9,12 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
       mSecond: !isNaN(MS) && MS <= 999 ? parseInt(MS, 10) : 0,
     };
   };
-  const [HH, MM, SS, MS] = (properties.value && properties.value.split(':')) || [];
-  const [time, setTime] = useState(getTimeObj(HH, MM, SS, MS));
+  const getDefaultValue = useMemo(() => {
+    const [HH, MM, SS, MS] = (properties.value && properties.value.split(':')) || [];
+    return { HH, MM, SS, MS };
+  }, [properties.value]);
+
+  const [time, setTime] = useState(getTimeObj(getDefaultValue));
   const [state, setState] = useState('initial');
   const [intervalId, setIntervalId] = useState(0);
 
@@ -34,19 +38,22 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   }, [intervalId]);
 
   useEffect(() => {
-    const [HH, MM, SS, MS] = (properties.value && properties.value.split(':')) || [];
-    setTime(getTimeObj(HH, MM, SS, MS));
-  }, [properties.value]);
+    setTime(getTimeObj(getDefaultValue));
+  }, [getDefaultValue]);
 
   const onReset = () => {
     intervalId && clearInterval(intervalId);
-    setTime(getTimeObj());
+    if (properties.type === 'countDown') {
+      setTime(getTimeObj(getDefaultValue));
+    } else {
+      setTime(getTimeObj({}));
+    }
+    setExposedVariable('value', time);
     fireEvent('onReset');
     setState('initial');
-    setExposedVariable('value', time);
   };
 
-  const onStart = () => {
+  const onStart = (isResume) => {
     setIntervalId(
       setInterval(() => {
         setTime((previousTime) => {
@@ -93,27 +100,24 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
               }
             }
           }
-          return getTimeObj(HH, MM, SS, MS);
+          return getTimeObj({ HH, MM, SS, MS });
         });
       }, 15)
     );
-    setState('running');
-    fireEvent('onStart');
     setExposedVariable('value', time);
+    setState('running');
+    fireEvent(isResume ? 'onStart' : 'onResume');
   };
 
   const onPause = () => {
     intervalId && clearInterval(intervalId);
+    setExposedVariable('value', time);
     setState('paused');
     fireEvent('onPause');
-    setExposedVariable('value', time);
   };
 
   const onResume = () => {
-    onStart();
-    setState('running');
-    fireEvent('onResume');
-    setExposedVariable('value', time);
+    onStart(true);
   };
 
   const prependZero = (value, count = 1) => {

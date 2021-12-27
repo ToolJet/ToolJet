@@ -1435,10 +1435,11 @@ export const componentTypes = [
     },
     validation: {},
     events: {
-      onReset: { displayName: 'On Reset' },
+      onStart: { displayName: 'On Start' },
       onResume: { displayName: 'On Resume' },
       onPause: { displayName: 'On Pause' },
       onCountDownFinish: { displayName: 'On Count Down Finish' },
+      onReset: { displayName: 'On Reset' },
     },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
