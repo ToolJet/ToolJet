@@ -33,14 +33,20 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   }, [time]);
 
   useEffect(() => {
+    intervalId && clearInterval(intervalId);
+    setState('initial');
+    if (properties.type === 'countDown') {
+      setTime(getTimeObj(getDefaultValue));
+    } else {
+      setTime(getTimeObj({}));
+    }
+  }, [properties.type, getDefaultValue]);
+
+  useEffect(() => {
     return () => {
       intervalId && clearInterval(intervalId);
     };
   }, [intervalId]);
-
-  useEffect(() => {
-    setTime(getTimeObj(getDefaultValue));
-  }, [getDefaultValue]);
 
   const onReset = () => {
     intervalId && clearInterval(intervalId);
