@@ -115,7 +115,7 @@ export const Box = function Box({
     if (isListView) {
       exposedVariables = currentState?.components[parentId]?.data[component.name];
     } else {
-      eexposedVariables = currentState?.components[component.name];
+      exposedVariables = currentState?.components[component.name];
     }
   } else {
     exposedVariables = currentState?.components[component.name];
