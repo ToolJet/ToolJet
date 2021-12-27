@@ -1416,7 +1416,7 @@ export const componentTypes = [
     component: 'Timer',
     defaultSize: {
       width: 11,
-      height: 128,
+      height: 150,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
