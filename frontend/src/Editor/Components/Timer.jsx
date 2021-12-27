@@ -27,6 +27,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
       time.hour === 0
     ) {
       intervalId && clearInterval(intervalId);
+      setState('initial');
       fireEvent('onCountDownFinish');
     }
   }, [time]);
@@ -93,7 +94,6 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
                   HH--;
 
                   if (HH < 0) {
-                    setState('initial');
                     (MS = 0), (SS = 0), (MM = 0), (HH = 0);
                   }
                 }
@@ -141,7 +141,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
         </div>
         <div className="btn-list justify-content-end">
           {state === 'initial' && (
-            <a className={`btn btn-primary${styles.disabledState ? ' disabled' : ''}`} onClick={onStart}>
+            <a className={`btn btn-primary${styles.disabledState ? ' disabled' : ''}`} onClick={() => onStart()}>
               Start
             </a>
           )}

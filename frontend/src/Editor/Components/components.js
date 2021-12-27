@@ -1456,7 +1456,7 @@ export const componentTypes = [
       },
       properties: {
         value: {
-          value: '00:00:00:000',
+          value: 'HH:MM:SS:sss',
         },
         type: {
           value: 'countUp',
