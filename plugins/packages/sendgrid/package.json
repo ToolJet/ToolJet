@@ -1,7 +1,8 @@
 {
   "name": "sendgrid",
   "version": "1.0.0",
-  "main": "lib/sendgrid.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib",
     "test": "__tests__"

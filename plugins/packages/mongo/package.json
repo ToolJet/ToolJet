@@ -1,7 +1,8 @@
 {
   "name": "mongo",
   "version": "1.0.0",
-  "main": "lib/mongo.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib",
     "test": "__tests__"

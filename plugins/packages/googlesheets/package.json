@@ -1,7 +1,8 @@
 {
   "name": "googlesheets",
   "version": "1.0.0",
-  "main": "lib/googlesheets.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "commonjs",
   "directories": {
     "lib": "lib",

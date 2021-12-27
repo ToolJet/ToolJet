@@ -1,7 +1,8 @@
 {
   "name": "gcs",
   "version": "1.0.0",
-  "main": "lib/gcs.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -14,7 +15,6 @@
     "build": "tsc -b",
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
-  "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@google-cloud/storage": "^5.16.1",
     "common": "^1.0.0",
