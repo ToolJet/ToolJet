@@ -45,7 +45,7 @@ export class AuthService {
     const user = await this.validateUser(params.email, params.password);
 
     if (user) {
-      this.auditLoggerService.perform({
+      await this.auditLoggerService.perform({
         request,
         userId: user.id,
         organizationId: user.organizationId,
@@ -87,7 +87,7 @@ export class AuthService {
 
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
-    this.auditLoggerService.perform({
+    await this.auditLoggerService.perform({
       request,
       userId: user.id,
       organizationId: user.organizationId,

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 
 export const Pagination = function Pagination({
   currentPage,
@@ -19,7 +19,7 @@ export const Pagination = function Pagination({
         <li
           key={index}
           onClick={() => gotoPage(index)}
-          className={`page-item ${currentPage === index ? "active" : ""}`}
+          className={`page-item ${currentPage === index ? 'active' : ''}`}
         >
           <a className="page-link">{index}</a>
         </li>
@@ -60,16 +60,12 @@ export const Pagination = function Pagination({
   return (
     <div className="card-footer d-flex align-items-center px-1">
       <p className="m-0 text-muted">
-        Showing <span>{startingCount(currentPage)}</span> to <span>{endingCount(currentPage)}</span>{" "}
-        of <span>{count}</span>
+        Showing <span>{startingCount(currentPage)}</span> to <span>{endingCount(currentPage)}</span> of{' '}
+        <span>{count}</span>
       </p>
       <ul className="pagination m-0 ms-auto">
-        <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-          <a
-            style={{ cursor: "pointer" }}
-            className="page-link"
-            onClick={gotoFirstPage}
-          >
+        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoFirstPage}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -88,12 +84,8 @@ export const Pagination = function Pagination({
             </svg>
           </a>
         </li>
-        <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-          <a
-            style={{ cursor: "pointer" }}
-            className="page-link"
-            onClick={gotoPreviousPage}
-          >
+        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoPreviousPage}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -114,16 +106,8 @@ export const Pagination = function Pagination({
         {getPageLinks(currentPage - 1)}
         {getPageLinks(currentPage)}
         {getPageLinks(currentPage + 1)}
-        <li
-          className={`page-item ${
-            currentPage === totalPages ? "disabled" : ""
-          }`}
-        >
-          <a
-            style={{ cursor: "pointer" }}
-            className="page-link"
-            onClick={gotoNextPage}
-          >
+        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoNextPage}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
@@ -141,16 +125,8 @@ export const Pagination = function Pagination({
             </svg>
           </a>
         </li>
-        <li
-          className={`page-item ${
-            currentPage === totalPages ? "disabled" : ""
-          }`}
-        >
-          <a
-            style={{ cursor: "pointer" }}
-            className="page-link"
-            onClick={gotoLastPage}
-          >
+        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+          <a style={{ cursor: 'pointer' }} className="page-link" onClick={gotoLastPage}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon"
