@@ -286,7 +286,9 @@ export const componentTypes = [
       maxLength: { type: 'code', displayName: 'Max length' },
       customRule: { type: 'code', displayName: 'Custom validation' },
     },
-    events: {},
+    events: {
+      onChange: { displayName: 'On change' },
+    },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },

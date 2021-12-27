@@ -69,7 +69,8 @@ class Editor extends React.Component {
       currentUser: authenticationService.currentUserValue,
       app: {},
       allComponentTypes: componentTypes,
-      queryPaneHeight: '30%',
+      isQueryPaneDragging: false,
+      queryPaneHeight: 70,
       isLoading: true,
       users: null,
       appId,
@@ -108,6 +109,7 @@ class Editor extends React.Component {
     this.fetchDataSources();
     this.fetchDataQueries();
     this.initComponentVersioning();
+    this.initEventListeners();
     config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
     this.setState({
       currentSidebarTab: 2,
@@ -115,7 +117,39 @@ class Editor extends React.Component {
     });
   }
 
+  onMouseMove = (e) => {
+    if (this.state.isQueryPaneDragging) {
+      let queryPaneHeight = (e.clientY / window.screen.height) * 100;
+
+      if (queryPaneHeight > 95) queryPaneHeight = 100;
+      if (queryPaneHeight < 4.5) queryPaneHeight = 4.5;
+
+      this.setState({
+        queryPaneHeight,
+      });
+    }
+  };
+
+  onMouseDown = () => {
+    this.setState({
+      isQueryPaneDragging: true,
+    });
+  };
+
+  onMouseUp = () => {
+    this.setState({
+      isQueryPaneDragging: false,
+    });
+  };
+
+  initEventListeners() {
+    document.addEventListener('mousemove', this.onMouseMove);
+    document.addEventListener('mouseup', this.onMouseUp);
+  }
+
   componentWillUnmount() {
+    document.removeEventListener('mousemove', this.onMouseMove);
+    document.removeEventListener('mouseup', this.onMouseUp);
     if (this.state.socket) {
       this.state.socket?.close();
     }
@@ -609,20 +643,11 @@ class Editor extends React.Component {
     });
   };
 
-  toggleQueryPaneHeight = () => {
-    this.setState({
-      queryPaneHeight: this.state.queryPaneHeight === '30%' ? '80%' : '30%',
-    });
-  };
-
   toggleQueryEditor = () => {
-    this.setState((prev) => ({ showQueryEditor: !prev.showQueryEditor }));
-    this.toolTipRefHide.current.style.display = this.state.showQueryEditor ? 'none' : 'flex';
-    this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'flex' : 'none';
-  };
-
-  toggleLeftSidebar = () => {
-    this.setState({ showLeftSidebar: !this.state.showLeftSidebar });
+    this.setState((prev) => ({
+      showQueryEditor: !prev.showQueryEditor,
+      queryPaneHeight: this.state.queryPaneHeight === 100 ? 30 : 100,
+    }));
   };
 
   toggleComments = () => {
@@ -640,7 +665,7 @@ class Editor extends React.Component {
       const results = fuse.search(value);
       this.setState({
         dataQueries: results.map((result) => result.item),
-        dataQueriesDefaultText: results.length || 'No Queries found.',
+        dataQueriesDefaultText: results.length ?? 'No Queries found.',
       });
     } else {
       this.fetchDataQueries();
@@ -666,8 +691,7 @@ class Editor extends React.Component {
     });
   };
 
-  toolTipRefHide = createRef();
-  toolTipRefShow = createRef();
+  queryPaneRef = createRef();
 
   getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
@@ -779,23 +803,6 @@ class Editor extends React.Component {
                 {this.state.editingVersion && (
                   <small className="app-version-name">{`App version: ${this.state.editingVersion.name}`}</small>
                 )}
-                <div className="editor-buttons">
-                  <span
-                    className={`btn btn-light mx-2`}
-                    onClick={this.toggleQueryEditor}
-                    data-tip="Show query editor"
-                    data-class="py-1 px-2"
-                    ref={this.toolTipRefShow}
-                    style={{ display: 'none', opacity: 0.5 }}
-                  >
-                    <img
-                      style={{ transform: 'rotate(-90deg)' }}
-                      src="/assets/images/icons/editor/sidebar-toggle.svg"
-                      width="12"
-                      height="12"
-                    />
-                  </span>
-                </div>
                 <div className="layout-buttons cursor-pointer">
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
@@ -860,7 +867,11 @@ class Editor extends React.Component {
               <div
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                 style={{ transform: `scale(${zoomLevel})` }}
-                onClick={() => this.switchSidebarTab(2)}
+                onClick={(e) => {
+                  if (['real-canvas', 'modal'].includes(e.target.className)) {
+                    this.switchSidebarTab(2);
+                  }
+                }}
               >
                 <div
                   className="canvas-area"
@@ -916,7 +927,7 @@ class Editor extends React.Component {
               <div
                 className="query-pane"
                 style={{
-                  height: showQueryEditor ? 0 : 40,
+                  height: 40,
                   background: '#fff',
                   padding: '8px 16px',
                   display: 'flex',
@@ -925,14 +936,9 @@ class Editor extends React.Component {
                 }}
               >
                 <h5 className="mb-0">QUERIES</h5>
-                <span
-                  onClick={this.props.toggleQueryEditor}
-                  className="cursor-pointer m-1"
-                  data-tip="Show query editor"
-                >
+                <span onClick={this.toggleQueryEditor} className="cursor-pointer m-1" data-tip="Show query editor">
                   <svg
                     style={{ transform: 'rotate(180deg)' }}
-                    onClick={this.toggleQueryEditor}
                     width="18"
                     height="10"
                     viewBox="0 0 18 10"
@@ -950,11 +956,24 @@ class Editor extends React.Component {
                 </span>
               </div>
               <div
+                ref={this.queryPaneRef}
+                onTouchEnd={this.onMouseUp}
+                onMouseDown={this.onMouseDown}
                 className="query-pane"
                 style={{
-                  height: showQueryEditor ? this.state.queryPaneHeight : 0,
+                  height: `calc(100% - ${this.state.queryPaneHeight - 1}%)`,
+                  background: 'transparent',
+                  border: 0,
+                  cursor: 'row-resize',
+                }}
+              ></div>
+              <div
+                className="query-pane"
+                style={{
+                  height: `calc(100% - ${this.state.queryPaneHeight}%)`,
                   width: !showLeftSidebar ? '85%' : '',
                   left: !showLeftSidebar ? '0' : '',
+                  cursor: this.state.isQueryPaneDragging ? 'row-resize' : 'default',
                 }}
               >
                 <div className="row main-row">
@@ -1044,7 +1063,6 @@ class Editor extends React.Component {
                           <QueryManager
                             toggleQueryEditor={this.toggleQueryEditor}
                             dataSources={dataSources}
-                            toggleQueryPaneHeight={this.toggleQueryPaneHeight}
                             dataQueries={dataQueries}
                             mode={editingQuery ? 'edit' : 'create'}
                             selectedQuery={selectedQuery}

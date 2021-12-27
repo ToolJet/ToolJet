@@ -33,6 +33,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
 import { validateWidget } from '@/_helpers/utils';
+import ErrorBoundary from './ErrorBoundary';
 
 const AllComponents = {
   Button,
@@ -103,6 +104,7 @@ export const Box = function Box({
   }
 
   const ComponentToRender = AllComponents[component.component];
+<<<<<<< HEAD
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
   const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
 
@@ -120,6 +122,14 @@ export const Box = function Box({
   } else {
     exposedVariables = currentState?.components[component.name];
   }
+=======
+  const resolvedProperties = resolveProperties(component, currentState);
+  const resolvedStyles = resolveStyles(component, currentState);
+
+  resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+
+  const exposedVariables = currentState?.components[component.name] ?? {};
+>>>>>>> develop
 
   const fireEvent = (eventName, options) => {
     if (mode === 'edit' && eventName === 'onClick') {
@@ -140,55 +150,103 @@ export const Box = function Box({
       trigger={!inCanvas ? ['hover', 'focus'] : null}
       overlay={(props) => renderTooltip({ props, text: `${component.description}` })}
     >
-      <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
-        {inCanvas ? (
-          <ComponentToRender
-            onComponentClick={onComponentClick}
-            onComponentOptionChanged={onComponentOptionChanged}
-            currentState={currentState}
-            onEvent={onEvent}
-            id={id}
-            paramUpdated={paramUpdated}
-            width={width}
-            changeCanDrag={changeCanDrag}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            height={height}
-            component={component}
-            containerProps={containerProps}
-            darkMode={darkMode}
-            removeComponent={removeComponent}
-            canvasWidth={canvasWidth}
-            properties={resolvedProperties}
-            exposedVariables={exposedVariables}
-            styles={resolvedStyles}
-            setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
-            fireEvent={fireEvent}
-            validate={validate}
-            parentId={parentId}
-            customResolvables={customResolvables}
-          ></ComponentToRender>
-        ) : (
-          <div className="m-1" style={{ height: '100%' }}>
-            <div
-              className="component-image-holder p-2 d-flex flex-column justify-content-center"
-              style={{ height: '100%' }}
-            >
-              <center>
+<<<<<<< HEAD
+<div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
+  {inCanvas ? (
+    <ComponentToRender
+      onComponentClick={onComponentClick}
+      onComponentOptionChanged={onComponentOptionChanged}
+      currentState={currentState}
+      onEvent={onEvent}
+      id={id}
+      paramUpdated={paramUpdated}
+      width={width}
+      changeCanDrag={changeCanDrag}
+      onComponentOptionsChanged={onComponentOptionsChanged}
+      height={height}
+      component={component}
+      containerProps={containerProps}
+      darkMode={darkMode}
+      removeComponent={removeComponent}
+      canvasWidth={canvasWidth}
+      properties={resolvedProperties}
+      exposedVariables={exposedVariables}
+      styles={resolvedStyles}
+      setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+      fireEvent={fireEvent}
+      validate={validate}
+      parentId={parentId}
+      customResolvables={customResolvables}
+    ></ComponentToRender>
+  ) : (
+    <div className="m-1" style={{ height: '100%' }}>
+      <div
+        className="component-image-holder p-2 d-flex flex-column justify-content-center"
+        style={{ height: '100%' }}
+      >
+        <center>
+          <div
+            style={{
+              width: '20px',
+              height: '20px',
+              backgroundSize: 'contain',
+              backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+              backgroundRepeat: 'no-repeat',
+            }}
+          ></div>
+        </center>
+        <span className="component-title">{component.displayName}</span>
+=======
+      <ErrorBoundary showFallback={mode === 'edit'}>
+          <div style={{ ...styles, backgroundColor }} role={preview ? 'BoxPreview' : 'Box'}>
+            {inCanvas ? (
+              <ComponentToRender
+                onComponentClick={onComponentClick}
+                onComponentOptionChanged={onComponentOptionChanged}
+                currentState={currentState}
+                onEvent={onEvent}
+                id={id}
+                paramUpdated={paramUpdated}
+                width={width}
+                changeCanDrag={changeCanDrag}
+                onComponentOptionsChanged={onComponentOptionsChanged}
+                height={height}
+                component={component}
+                containerProps={containerProps}
+                darkMode={darkMode}
+                removeComponent={removeComponent}
+                canvasWidth={canvasWidth}
+                properties={resolvedProperties}
+                exposedVariables={exposedVariables}
+                styles={resolvedStyles}
+                setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+                fireEvent={fireEvent}
+                validate={validate}
+              ></ComponentToRender>
+            ) : (
+              <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
                 <div
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    backgroundSize: 'contain',
-                    backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
-                    backgroundRepeat: 'no-repeat',
-                  }}
-                ></div>
-              </center>
-              <span className="component-title">{component.displayName}</span>
-            </div>
+                  className="component-image-holder p-2 d-flex flex-column justify-content-center"
+                  style={{ height: '100%' }}
+                >
+                  <center>
+                    <div
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundSize: 'contain',
+                        backgroundImage: `url(/assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                        backgroundRepeat: 'no-repeat',
+                      }}
+                    ></div>
+                  </center>
+                  <span className="component-title">{component.displayName}</span>
+                </div>
+>>>>>>> develop
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </OverlayTrigger>
-  );
+        </ErrorBoundary>
+      </OverlayTrigger>
+      );
 };

@@ -27,14 +27,18 @@ export const DropDown = function DropDown({ height, validate, properties, styles
   }, [isValid]);
 
   useEffect(() => {
-    setCurrentValue(value);
-    setExposedVariable('value', value);
+    let newValue = undefined;
+    if (values?.includes(value)) newValue = value;
+
+    setCurrentValue(newValue);
+    setExposedVariable('value', newValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   useEffect(() => {
     let newValue = undefined;
-    if (values?.includes(value)) newValue = value;
+    if (values?.includes(currentValue)) newValue = currentValue;
+    else if (values?.includes(value)) newValue = value;
 
     setCurrentValue(newValue);
     setExposedVariable('value', newValue);
@@ -42,27 +46,29 @@ export const DropDown = function DropDown({ height, validate, properties, styles
   }, [JSON.stringify(values)]);
 
   return (
-    <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
-      <div className="col-auto my-auto">
-        <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
-          {label}
-        </label>
-      </div>
-      <div className="col px-0 h-100">
-        <SelectSearch
-          disabled={disabledState}
-          options={selectOptions}
-          value={currentValue}
-          search={true}
-          onChange={(newVal) => {
-            setCurrentValue(newVal);
-            setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
-          }}
-          filterOptions={fuzzySearch}
-          placeholder="Select.."
-        />
+    <>
+      <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
+        <div className="col-auto my-auto">
+          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
+            {label}
+          </label>
+        </div>
+        <div className="col px-0 h-100">
+          <SelectSearch
+            disabled={disabledState}
+            options={selectOptions}
+            value={currentValue}
+            search={true}
+            onChange={(newVal) => {
+              setCurrentValue(newVal);
+              setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
+            }}
+            filterOptions={fuzzySearch}
+            placeholder="Select.."
+          />
+        </div>
       </div>
       <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
-    </div>
+    </>
   );
 };

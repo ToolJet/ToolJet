@@ -49,6 +49,11 @@ const AppList = (props) => {
           ))}
         </div>
       )}
+      {!props.isLoading && props.meta.total_count === 0 && !(props.currentFolder && props.currentFolder.id) && (
+        <div>
+          <span className="d-block text-center text-body">No Applications found</span>
+        </div>
+      )}
       {props.currentFolder.count === 0 && (
         <div>
           <img className="mx-auto d-block" src="assets/images/icons/empty-folder-svgrepo-com.svg" height="120px" />

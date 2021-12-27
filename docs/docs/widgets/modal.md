@@ -5,6 +5,9 @@ Modal widget renders in front of a backdrop, and it blocks interaction with the 
 
 <img class="screenshot-full" src="/img/widgets/modal/modal.gif" alt="ToolJet - Widget Reference - Modal" height="420"/>
 
+### Add widgets to Modal
+
+To add widgets to the Modals please refer to **[Tutorial - Adding a widget](/docs/tutorial/adding-widget#add-widgets-to-modal)**
 
 #### Properties
 
