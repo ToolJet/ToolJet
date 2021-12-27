@@ -321,10 +321,6 @@ class DataSourceManager extends React.Component {
                         <CopyToClipboard
                           text={config.SERVER_IP}
                           onCopy={() => {
-                            toast.success('IP copied to clipboard', {
-                              hideProgressBar: true,
-                              position: 'top-center',
-                            });
                             this.setState({ isCopied: true });
                           }}
                         >
