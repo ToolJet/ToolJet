@@ -79,6 +79,8 @@ export class AppImportExportService {
         app: importedApp,
         definition: await this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping),
         name: appVersion.name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
       await manager.save(version);
 
@@ -90,8 +92,8 @@ export class AppImportExportService {
     }
 
     // associate data sources and queries for each of the app versions
-    for await (const appVersion of appVersions) {
-      for await (const source of dataSources) {
+    for (const appVersion of appVersions) {
+      for (const source of dataSources) {
         const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
         const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
         let appVersionId: any;
@@ -119,7 +121,7 @@ export class AppImportExportService {
       }
 
       const newDataQueries = [];
-      for await (const query of dataQueries) {
+      for (const query of dataQueries) {
         let appVersionId: any;
 
         if (query.appVersionId) {
@@ -144,7 +146,7 @@ export class AppImportExportService {
         newDataQueries.push(newQuery);
       }
 
-      for await (const newQuery of newDataQueries) {
+      for (const newQuery of newDataQueries) {
         const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
         newQuery.options = newOptions;
         await manager.save(newQuery);
@@ -166,7 +168,7 @@ export class AppImportExportService {
       delete: true,
     };
 
-    for await (const groupPermission of orgDefaultGroupPermissions) {
+    for (const groupPermission of orgDefaultGroupPermissions) {
       const appGroupPermission = manager.create(AppGroupPermission, {
         groupPermissionId: groupPermission.id,
         appId: app.id,
