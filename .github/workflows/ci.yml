@@ -126,7 +126,7 @@ jobs:
 
   e2e-test:
     runs-on: ubuntu-latest
-    # needs: build
+    needs: build
     container: node:14.17.3-buster
     services:
       postgres:
