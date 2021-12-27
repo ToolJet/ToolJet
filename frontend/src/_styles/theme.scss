@@ -2867,6 +2867,12 @@ input[type="text"] {
  */
 .timer-wrapper {
   padding: 10px;
+  .timer-default {
+    color: #8d8d8d;
+    span {
+      margin-left: 0.5em;
+    }
+  }
   .counter-container {
     font-size: 3em;
     padding-bottom: 5px;
