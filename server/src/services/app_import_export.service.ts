@@ -67,35 +67,47 @@ export class AppImportExportService {
   async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any) {
     const dataSourceMapping = {};
     const dataQueryMapping = {};
+    const appVersionMapping = {};
     let currentVersionId: string;
     const dataSources = appParams?.dataSources || [];
     const dataQueries = appParams?.dataQueries || [];
     const appVersions = appParams?.appVersions || [];
 
+    // create new app versions
     for await (const appVersion of appVersions) {
-      const newAppVersion = manager.create(AppVersion, {
+      const version = manager.create(AppVersion, {
         app: importedApp,
         definition: await this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping),
         name: appVersion.name,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
-      await manager.save(newAppVersion);
+      await manager.save(version);
 
       if (appVersion.id == appParams.currentVersionId) {
-        currentVersionId = newAppVersion.id;
+        currentVersionId = version.id;
         await manager.update(App, importedApp, { currentVersionId });
       }
+      appVersionMapping[appVersion.id] = version.id;
+    }
 
+    console.log({ appVersionMapping });
+    // associate data sources and queries for each of the app versions
+    for await (const appVersion of appVersions) {
       for await (const source of dataSources) {
         const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
         const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
+        // If there are more variances in imports when tooljet version changes,
+        // we can split this service based on app export definition's tooljet version.
+        const appVersionId = source.appVersionId
+          ? appVersionMapping[source.appVersionId]
+          : appVersionMapping[appVersion.id];
 
+        console.log(appVersion.id);
+        console.log({ appVersionId });
         const newSource = manager.create(DataSource, {
           app: importedApp,
           name: source.name,
           kind: source.kind,
-          appVersionId: newAppVersion.id,
+          appVersionId,
           options: newOptions,
         });
 
@@ -104,13 +116,18 @@ export class AppImportExportService {
       }
 
       const newDataQueries = [];
-      for await (const query of dataQueries) {
+      for (const query of dataQueries) {
+        const appVersionId = query.appVersionId
+          ? appVersionMapping[query.appVersionId]
+          : appVersionMapping[appVersion.id];
+
+        console.log({ appVersionId });
         const newQuery = manager.create(DataQuery, {
           app: importedApp,
           name: query.name,
           options: query.options,
           kind: query.kind,
-          appVersionId: newAppVersion.id,
+          appVersionId,
           dataSourceId: dataSourceMapping[query.dataSourceId],
         });
         await manager.save(newQuery);
@@ -119,7 +136,7 @@ export class AppImportExportService {
         newDataQueries.push(newQuery);
       }
 
-      for await (const newQuery of newDataQueries) {
+      for (const newQuery of newDataQueries) {
         const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
         newQuery.options = newOptions;
         await manager.save(newQuery);
