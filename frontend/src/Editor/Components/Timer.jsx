@@ -35,11 +35,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   useEffect(() => {
     intervalId && clearInterval(intervalId);
     setState('initial');
-    if (properties.type === 'countDown') {
-      setTime(getTimeObj(getDefaultValue));
-    } else {
-      setTime(getTimeObj({}));
-    }
+    setTime(getTimeObj(getDefaultValue));
   }, [properties.type, getDefaultValue]);
 
   useEffect(() => {
@@ -50,11 +46,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
 
   const onReset = () => {
     intervalId && clearInterval(intervalId);
-    if (properties.type === 'countDown') {
-      setTime(getTimeObj(getDefaultValue));
-    } else {
-      setTime(getTimeObj({}));
-    }
+    setTime(getTimeObj(getDefaultValue));
     setExposedVariable('value', time);
     fireEvent('onReset');
     setState('initial');
