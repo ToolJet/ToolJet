@@ -89,7 +89,6 @@ export class AppImportExportService {
       appVersionMapping[appVersion.id] = version.id;
     }
 
-    console.log({ appVersionMapping });
     // associate data sources and queries for each of the app versions
     for await (const appVersion of appVersions) {
       for await (const source of dataSources) {
@@ -100,9 +99,6 @@ export class AppImportExportService {
         const appVersionId = source.appVersionId
           ? appVersionMapping[source.appVersionId]
           : appVersionMapping[appVersion.id];
-
-        console.log(appVersion.id);
-        console.log({ appVersionId });
         const newSource = manager.create(DataSource, {
           app: importedApp,
           name: source.name,
@@ -120,8 +116,6 @@ export class AppImportExportService {
         const appVersionId = query.appVersionId
           ? appVersionMapping[query.appVersionId]
           : appVersionMapping[appVersion.id];
-
-        console.log({ appVersionId });
         const newQuery = manager.create(DataQuery, {
           app: importedApp,
           name: query.name,

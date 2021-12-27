@@ -159,7 +159,6 @@ let QueryManager = class QueryManager extends React.Component {
     const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
-    console.log({ state: this.state, props: this.props, appVersionId });
 
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
