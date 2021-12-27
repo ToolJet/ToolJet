@@ -117,7 +117,7 @@ jobs:
       - run: |
           npm --prefix plugins ci
           npm --prefix plugins run bootstrap
-          npm run build:pkgs
+          npm run build:plugins
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
@@ -157,7 +157,7 @@ jobs:
       - run: |
           npm --prefix plugins ci
           npm --prefix plugins run bootstrap
-          npm run build:pkgs
+          npm run build:plugins
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
