@@ -129,40 +129,9 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
     }
   };
 
-  const getDefault = useMemo(() => {
-    const time = getTimeObj(getDefaultValue);
-    return (
-      <span>
-        {`${prependZero(time.hour)}:${prependZero(time.minute)}:${prependZero(time.second)}:${prependZero(
-          time.mSecond,
-          2
-        )}`}
-      </span>
-    );
-  }, [getDefaultValue]);
-
   return (
     <div className="card" style={{ height, display: styles.visibility ? '' : 'none' }}>
       <div className="timer-wrapper">
-        <div className="timer-default">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            stroke="currentColor"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <circle cx="12" cy="12" r="9" />
-            <polyline points="12 7 12 12 15 15" />
-          </svg>
-          {getDefault}
-        </div>
         <div className="counter-container">
           {`${prependZero(time.hour)}:${prependZero(time.minute)}:${prependZero(time.second)}:${prependZero(
             time.mSecond,

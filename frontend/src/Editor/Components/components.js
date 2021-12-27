@@ -1416,7 +1416,7 @@ export const componentTypes = [
     component: 'Timer',
     defaultSize: {
       width: 11,
-      height: 150,
+      height: 128,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -1456,7 +1456,7 @@ export const componentTypes = [
       },
       properties: {
         value: {
-          value: 'HH:MM:SS:sss',
+          value: '00:00:00:000',
         },
         type: {
           value: 'countUp',
