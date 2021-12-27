@@ -100,12 +100,12 @@ export class AppImportExportService {
         // If there are more variances in imports when tooljet version changes,
         // we can split this service based on app export definition's tooljet version.
         if (source.appVersionId) {
-          if (source.appVersionId === appVersion.id) {
+          if (source.appVersionId !== appVersion.id) {
             continue;
           }
           appVersionId = appVersionMapping[appVersion.id];
         } else {
-          appVersionId = appVersionMapping[source.appVersionId];
+          appVersionId = appVersionMapping[source.appVersionId] || appVersionMapping[appVersion.id];
         }
         const newSource = manager.create(DataSource, {
           app: importedApp,
@@ -123,12 +123,12 @@ export class AppImportExportService {
         let appVersionId: any;
 
         if (query.appVersionId) {
-          if (query.appVersionId === appVersion.id) {
+          if (query.appVersionId !== appVersion.id) {
             continue;
           }
           appVersionId = appVersionMapping[query.appVersionId];
         } else {
-          appVersionId = appVersionMapping[query.appVersionId];
+          appVersionId = appVersionMapping[query.appVersionId] || appVersionMapping[appVersion.id];
         }
 
         const newQuery = manager.create(DataQuery, {
