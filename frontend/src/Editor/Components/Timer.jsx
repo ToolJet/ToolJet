@@ -106,7 +106,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
     );
     setExposedVariable('value', time);
     setState('running');
-    fireEvent(isResume ? 'onStart' : 'onResume');
+    fireEvent(isResume ? 'onResume' : 'onStart');
   };
 
   const onPause = () => {
