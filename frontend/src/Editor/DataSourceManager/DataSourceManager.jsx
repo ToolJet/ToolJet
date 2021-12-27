@@ -328,7 +328,7 @@ class DataSourceManager extends React.Component {
                             this.setState({ isCopied: true });
                           }}
                         >
-                          <button type="button" className={`btn copy-button ${this.props.darkMode && 'dark-button'}`}>
+                          <button type="button" className={`copy-button ${this.props.darkMode && 'dark-button'}`}>
                             <svg
                               width="15"
                               height="18"

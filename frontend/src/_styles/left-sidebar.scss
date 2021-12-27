@@ -150,10 +150,12 @@
   .copied {
     color: #7A95FB;
     margin-left: 2rem;
+    font-weight: 200;
   }
 
   button.copy-button {
     @extend .datasource-modal-button;
+    width: 88px;
     svg {
       margin-right: 0.5rem;
     }
