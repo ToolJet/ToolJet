@@ -21,8 +21,8 @@ RUN NODE_ENV=production npm run-script build
 FROM openresty/openresty:1.19.9.1rc1-buster-fat
 
 RUN apt-get update && apt-get -y install --no-install-recommends wget \
-gnupg ca-certificates apt-utils curl luarocks \
-make build-essential g++ gcc autoconf
+    gnupg ca-certificates apt-utils curl luarocks \
+    make build-essential g++ gcc autoconf
 
 RUN luarocks install lua-resty-auto-ssl
 
