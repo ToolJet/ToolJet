@@ -114,7 +114,11 @@ jobs:
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
-      - run: npm run build:plugins
+      - run: |
+        mkdir ~/.npm-global
+        npm config set prefix '~/.npm-global'
+        PATH=~/.npm-global/bin:$PATH
+        npm run build:plugins
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
@@ -123,6 +127,7 @@ jobs:
   e2e-test:
     runs-on: ubuntu-latest
     needs: build
+    container: node:14.17.3-buster
     services:
       postgres:
         image: postgres
@@ -136,10 +141,6 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.17.3
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14.17.3
       - name: Cache node modules
         uses: actions/cache@v2
         env:
@@ -154,7 +155,11 @@ jobs:
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
-      - run: npm run build:plugins
+      - run: |
+        mkdir ~/.npm-global
+        npm config set prefix '~/.npm-global'
+        PATH=~/.npm-global/bin:$PATH
+        npm run build:plugins
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
