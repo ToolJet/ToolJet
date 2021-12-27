@@ -66,27 +66,6 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], data
 };
 
 const LeftSidebarDataSourcesContainer = ({ renderDataSource, dataSources = [], toggleDataSourceManagerModal }) => {
-  // if (dataSources.length === 0) {
-  //   return (
-  //     <div className="card-body">
-  //       <div className="table-responsive">
-  //         <table className="table table-vcenter table-nowrap">
-  //           <tbody>{dataSources?.map((source, idx) => renderDataSource(source, idx))}</tbody>
-  //         </table>
-  //         {dataSources?.length === 0 && (
-  //           <center className="p-2 text-muted">
-  //             You haven&apos;t added any datasources yet. <br />
-  //           </center>
-  //         )}
-  //         <center>
-  //           <button onClick={() => toggleDataSourceManagerModal(true)} className="btn btn-sm btn-outline-azure mt-3">
-  //             Add datasource
-  //           </button>
-  //         </center>
-  //       </div>
-  //     </div>
-  //   );
-  // }
   return (
     <div className="card-body">
       <div>
