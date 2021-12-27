@@ -115,10 +115,9 @@ jobs:
       - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
       - run: |
-          mkdir ~/.npm-global
-          npm config set prefix '~/.npm-global'
-          PATH=~/.npm-global/bin:$PATH
-          npm run build:plugins
+          npm --prefix plugins ci
+          npm --prefix plugins run bootstrap
+          npm run build:pkgs
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
@@ -155,7 +154,10 @@ jobs:
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
-      - run: npm --prefix plugins ci
+      - run: |
+          npm --prefix plugins ci
+          npm --prefix plugins run bootstrap
+          npm run build:pkgs
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
