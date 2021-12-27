@@ -231,6 +231,7 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
               displayObjectSize={false}
               quotesOnKeys={false}
               sortKeys={false}
+              collapseStringsAfterLength={1000}
             />
           </span>
         )}
