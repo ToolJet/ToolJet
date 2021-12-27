@@ -94,11 +94,19 @@ export class AppImportExportService {
       for await (const source of dataSources) {
         const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
         const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
+        let appVersionId: any;
+
+        // Handle exports prior to 0.12.0
         // If there are more variances in imports when tooljet version changes,
         // we can split this service based on app export definition's tooljet version.
-        const appVersionId = source.appVersionId
-          ? appVersionMapping[source.appVersionId]
-          : appVersionMapping[appVersion.id];
+        if (source.appVersionId) {
+          if (source.appVersionId === appVersion.id) {
+            continue;
+          }
+          appVersionId = appVersionMapping[appVersion.id];
+        } else {
+          appVersionId = appVersionMapping[source.appVersionId];
+        }
         const newSource = manager.create(DataSource, {
           app: importedApp,
           name: source.name,
@@ -106,16 +114,23 @@ export class AppImportExportService {
           appVersionId,
           options: newOptions,
         });
-
         await manager.save(newSource);
         dataSourceMapping[source.id] = newSource.id;
       }
 
       const newDataQueries = [];
       for (const query of dataQueries) {
-        const appVersionId = query.appVersionId
-          ? appVersionMapping[query.appVersionId]
-          : appVersionMapping[appVersion.id];
+        let appVersionId: any;
+
+        if (query.appVersionId) {
+          if (query.appVersionId === appVersion.id) {
+            continue;
+          }
+          appVersionId = appVersionMapping[query.appVersionId];
+        } else {
+          appVersionId = appVersionMapping[query.appVersionId];
+        }
+
         const newQuery = manager.create(DataQuery, {
           app: importedApp,
           name: query.name,
@@ -125,7 +140,6 @@ export class AppImportExportService {
           dataSourceId: dataSourceMapping[query.dataSourceId],
         });
         await manager.save(newQuery);
-
         dataQueryMapping[query.id] = newQuery.id;
         newDataQueries.push(newQuery);
       }
