@@ -34,7 +34,7 @@ You can rename the datasource by clicking on its default name `REST API`
 - Keep the default values for **Grant Type**, **Add Access Token To**, and **Header Prefix** i.e. `Authorization Code`, `Request Header`, and `Bearer` respectively.
 - Enter **Access Token URL**: `https://oauth2.googleapis.com/token`; this token allows users to verify their identity, and in return, receive a unique access token.
 - Enter the **Client ID** and **Client Secret** that we generated from the [Google Console](http://console.developers.google.com/).
-- In the **Scope** field, enter `[https://www.googleapis.com/auth/userinfo.profile](https://www.googleapis.com/auth/userinfo.profile)`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
+- In the **Scope** field, enter `https://www.googleapis.com/auth/userinfo.profile`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
 - Enter **Authorization URL:** `[https://accounts.google.com/o/oauth2/v2/auth](https://accounts.google.com/o/oauth2/v2/auth)` ; the Authorization URL requests authorization from the user.
 - Create three **Custom Authentication Parameters:**
     - response_type: code (`code` refers to the Authorization Code)
