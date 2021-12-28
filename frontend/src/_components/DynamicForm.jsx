@@ -26,7 +26,7 @@ const DynamicForm = ({
   queryName,
 }) => {
   // if(schema.properties)  todo add empty check
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
     }
@@ -62,7 +62,7 @@ const DynamicForm = ({
   const getElementProps = ({
     key,
     list,
-    $rows = 5,
+    rows = 5,
     helpText,
     description,
     type,
@@ -83,7 +83,7 @@ const DynamicForm = ({
           placeholder: description,
           className: 'form-control',
           value: options[key]?.value,
-          ...(type === 'textarea' && { rows: $rows }),
+          ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
           onChange: (e) => optionchanged(key, e.target.value),
         };

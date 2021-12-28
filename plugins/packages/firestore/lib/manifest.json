@@ -26,7 +26,7 @@
     "gcp_key": {
       "label": "Private key",
       "key": "gcp_key",
-      "$rows": 15,
+      "rows": 15,
       "encrypted": true,
       "type": "textarea",
       "description": "Enter private key"
