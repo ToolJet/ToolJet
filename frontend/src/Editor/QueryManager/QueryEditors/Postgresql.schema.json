@@ -23,8 +23,7 @@
         "$key": "query",
         "type": "codehinter",
         "description": "Enter query",
-        "height": "150px",
-        "className": ""
+        "height": "150px"
       }
     },
     "gui": {
