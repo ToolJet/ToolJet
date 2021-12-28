@@ -13,6 +13,7 @@ export class BackfillCalendarWeekDateFormat1640683693031
 
     for (const version of appVersions) {
       const definition = version["definition"];
+      let definitionUpdated = false;
 
       if (definition) {
         const components = definition["components"];
@@ -25,7 +26,10 @@ export class BackfillCalendarWeekDateFormat1640683693031
             this.determineDateFormatForBackfill(componentDefinition);
 
           components[componentId] = componentDefinition
+          definitionUpdated = true;
         }
+
+        if (!definitionUpdated) continue;
 
         definition["components"] = components;
         version.definition = definition;
