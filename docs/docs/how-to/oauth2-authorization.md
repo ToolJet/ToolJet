@@ -29,7 +29,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
 You can rename the datasource by clicking on its default name `REST API`
 :::
 
-- In the **URL** field, enter the base URL `[https://www.googleapis.com/oauth2/v1/userinfo](https://www.googleapis.com/oauth2/v1/userinfo)`; the base URL specifies the network address of the API service.
+- In the **URL** field, enter the base URL `https://www.googleapis.com/oauth2/v1/userinfo`; the base URL specifies the network address of the API service.
 - Select authentication type as `OAuth 2.0`
 - Keep the default values for **Grant Type**, **Add Access Token To**, and **Header Prefix** i.e. `Authorization Code`, `Request Header`, and `Bearer` respectively.
 - Enter **Access Token URL**: `https://oauth2.googleapis.com/token`; this token allows users to verify their identity, and in return, receive a unique access token.
