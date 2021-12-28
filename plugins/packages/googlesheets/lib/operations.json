@@ -9,11 +9,11 @@
   },
   "properties": {
     "operation": {
-      "$label": "Operation",
-      "$key": "operation",
+      "label": "Operation",
+      "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "$options": [
+      "options": [
         {
           "value": "read",
           "name": "Read data from a spreadsheet"
@@ -38,23 +38,23 @@
     },
     "read": {
       "spreadsheet_id": {
-        "$label": "Spreadsheet ID",
-        "$key": "spreadsheet_id",
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id"
       },
       "spreadsheet_range": {
-        "$label": "Range",
-        "$key": "spreadsheet_range",
+        "label": "Range",
+        "key": "spreadsheet_range",
         "type": "codehinter",
         "lineNumbers": false,
         "placeholder": "A1:Z500",
         "description": "Enter range"
       },
       "sheet": {
-        "$label": "Sheet",
-        "$key": "sheet",
+        "label": "Sheet",
+        "key": "sheet",
         "type": "codehinter",
         "lineNumbers": false,
         "placeholder": "Leave blank to use first sheet",
@@ -63,23 +63,23 @@
     },
     "append": {
       "spreadsheet_id": {
-        "$label": "Spreadsheet ID",
-        "$key": "spreadsheet_id",
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id"
       },
       "sheet": {
-        "$label": "Sheet",
-        "$key": "sheet",
+        "label": "Sheet",
+        "key": "sheet",
         "type": "codehinter",
         "lineNumbers": false,
         "placeholder": "Leave blank to use first sheet",
         "description": "Enter sheet"
       },
       "rows": {
-        "$label": "Rows",
-        "$key": "rows",
+        "label": "Rows",
+        "key": "rows",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter rows"
@@ -87,8 +87,8 @@
     },
     "info": {
       "spreadsheet_id": {
-        "$label": "Spreadsheet ID",
-        "$key": "spreadsheet_id",
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id"
@@ -96,22 +96,22 @@
     },
     "delete_row": {
       "spreadsheet_id": {
-        "$label": "Spreadsheet ID",
-        "$key": "spreadsheet_id",
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id"
       },
       "sheet": {
-        "$label": "GID",
-        "$key": "sheet",
+        "label": "GID",
+        "key": "sheet",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter sheet"
       },
       "row_index": {
-        "$label": "Delete row number",
-        "$key": "row_index",
+        "label": "Delete row number",
+        "key": "row_index",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter row number"
@@ -119,27 +119,27 @@
     },
     "update": {
       "spreadsheet_id": {
-        "$label": "Spreadsheet ID",
-        "$key": "spreadsheet_id",
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter spreadsheet_id"
       },
       "where_field": {
-        "$label": "Where",
-        "$key": "where_field",
+        "label": "Where",
+        "key": "where_field",
         "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter field"
       },
       "where_operation": {
-        "$label": "Operator",
-        "$key": "where_operation",
+        "label": "Operator",
+        "key": "where_operation",
         "className": "col-4",
         "type": "dropdown",
         "description": "Single select dropdown for where operation",
-        "$options": [
+        "options": [
           {
             "value": "===",
             "name": "==="
@@ -147,16 +147,16 @@
         ]
       },
       "where_value": {
-        "$label": "Value",
-        "$key": "where_value",
+        "label": "Value",
+        "key": "where_value",
         "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter value"
       },
       "body": {
-        "$label": "Body",
-        "$key": "body",
+        "label": "Body",
+        "key": "body",
         "type": "codehinter",
         "description": "Enter body",
         "lineNumbers": false

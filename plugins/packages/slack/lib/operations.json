@@ -7,25 +7,25 @@
   "defaults": {},
   "properties": {
     "mode": {
-      "$label": "",
-      "$key": "mode",
+      "label": "",
+      "key": "mode",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
-      "$options": [
+      "options": [
         { "name": "List members", "value": "list_users" },
         { "name": "Send message", "value": "send_message" }
       ]
     },
     "send_message": {
       "channel": {
-        "$label": "Channel",
-        "$key": "channel",
+        "label": "Channel",
+        "key": "channel",
         "type": "codehinter",
         "description": "Enter channel"
       },
       "message": {
-        "$label": "Message",
-        "$key": "message",
+        "label": "Message",
+        "key": "message",
         "type": "codehinter",
         "description": "Enter message"
       }

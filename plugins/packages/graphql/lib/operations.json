@@ -7,7 +7,7 @@
   "defaults": {},
   "properties": {
     "query": {
-      "$key": "query",
+      "key": "query",
       "type": "codehinter",
       "description": "Enter query",
       "height": "150px"

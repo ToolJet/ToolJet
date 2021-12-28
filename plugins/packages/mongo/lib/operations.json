@@ -9,11 +9,11 @@
   },
   "properties": {
     "operation": {
-      "$label": "Operation",
-      "$key": "operation",
+      "label": "Operation",
+      "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "$options": [
+      "options": [
         { "name": "List collections", "value": "list_collections" },
         { "name": "Insert one document", "value": "insert_one" },
         { "name": "Insert many documents", "value": "insert_many" }
@@ -21,15 +21,15 @@
     },
     "insert_one": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "document": {
-        "$label": "Document",
-        "$key": "document",
+        "label": "Document",
+        "key": "document",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ 'name': 'Steve', 'hobbies': [ 'hiking', 'tennis', 'fly fishing' ] }",
@@ -39,15 +39,15 @@
     },
     "insert_many": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "document": {
-        "$label": "Documents",
-        "$key": "documents",
+        "label": "Documents",
+        "key": "documents",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "[ { '_id': 1, 'name': 'Steve' }, { '_id': 2, 'name': 'Sally' } ]",

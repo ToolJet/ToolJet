@@ -30,22 +30,22 @@
   },
   "properties": {
     "authToken": {
-      "$label": "Auth Token",
-      "$key": "authToken",
+      "label": "Auth Token",
+      "key": "authToken",
       "type": "password",
       "description": "Auth Token for Twilio",
       "helpText": "For generating Auth Token, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"
     },
     "accountSid": {
-      "$label": "Account SID",
-      "$key": "accountSid",
+      "label": "Account SID",
+      "key": "accountSid",
       "type": "text",
       "description": "Account SID for Twilio",
       "helpText": "For generating Account SID, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"
     },
     "messagingServiceSid": {
-      "$label": "Messaging Service SID",
-      "$key": "messagingServiceSid",
+      "label": "Messaging Service SID",
+      "key": "messagingServiceSid",
       "type": "text",
       "description": "Messaging Service SID for Twilio",
       "helpText": "For generating Messaging Service SID, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"

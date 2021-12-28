@@ -21,8 +21,8 @@
   },
   "properties": {
     "private_key": {
-      "$label": "Private key",
-      "$key": "private_key",
+      "label": "Private key",
+      "key": "private_key",
       "type": "textarea",
       "description": "Enter JSON private key for service account"
     }

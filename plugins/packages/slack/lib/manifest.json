@@ -23,8 +23,8 @@
   },
   "properties": {
     "sheets": {
-      "$label": "",
-      "$key": "slack",
+      "label": "",
+      "key": "slack",
       "type": "react-component-slack",
       "description": "A component for slack"
     }

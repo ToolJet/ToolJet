@@ -11,11 +11,11 @@
   },
   "properties": {
     "operation": {
-      "$label": "Operation",
-      "$key": "operation",
+      "label": "Operation",
+      "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "$options": [
+      "options": [
         { "value": "get_document", "name": "Get Document" },
         { "value": "query_collection", "name": "Query collection" },
         { "value": "add_document", "name": "Add Document to Collection" },
@@ -27,8 +27,8 @@
     },
     "get_document": {
       "path": {
-        "$label": "Path",
-        "$key": "path",
+        "label": "Path",
+        "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter path"
@@ -36,53 +36,53 @@
     },
     "query_collection": {
       "path": {
-        "$label": "Path",
-        "$key": "path",
+        "label": "Path",
+        "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter path"
       },
       "order_field": {
-        "$label": "Order",
-        "$key": "order_field",
+        "label": "Order",
+        "key": "order_field",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter order"
       },
       "order_type": {
-        "$label": "Order type",
-        "$key": "order_type",
+        "label": "Order type",
+        "key": "order_type",
         "className": "col-6",
         "type": "dropdown",
         "description": "Single select dropdown for order type",
-        "$options": [
+        "options": [
           { "value": "asc", "name": "Ascending" },
           { "value": "desc", "name": "Descending" }
         ]
       },
       "limit": {
-        "$label": "Limit",
-        "$key": "limit",
+        "label": "Limit",
+        "key": "limit",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter limit"
       },
       "where_field": {
-        "$label": "Field",
-        "$key": "where_field",
+        "label": "Field",
+        "key": "where_field",
         "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter field"
       },
       "where_operation": {
-        "$label": "Operator",
-        "$key": "where_operation",
+        "label": "Operator",
+        "key": "where_operation",
         "className": "col-4",
         "type": "dropdown",
         "description": "Single select dropdown for where operation",
-        "$options": [
+        "options": [
           { "value": "==", "name": "==" },
           { "value": "<", "name": "<" },
           { "value": ">", "name": ">" },
@@ -95,8 +95,8 @@
         ]
       },
       "where_value": {
-        "$label": "Value",
-        "$key": "where_value",
+        "label": "Value",
+        "key": "where_value",
         "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
@@ -105,15 +105,15 @@
     },
     "add_document": {
       "path": {
-        "$label": "Collection",
-        "$key": "path",
+        "label": "Collection",
+        "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "body": {
-        "$label": "Body",
-        "$key": "body",
+        "label": "Body",
+        "key": "body",
         "type": "codehinter",
         "description": "Enter body",
         "height": "150px"
@@ -121,15 +121,15 @@
     },
     "update_document": {
       "path": {
-        "$label": "Path",
-        "$key": "path",
+        "label": "Path",
+        "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter path"
       },
       "body": {
-        "$label": "Body",
-        "$key": "body",
+        "label": "Body",
+        "key": "body",
         "type": "codehinter",
         "description": "Enter body",
         "height": "150px"
@@ -137,15 +137,15 @@
     },
     "set_document": {
       "path": {
-        "$label": "Path",
-        "$key": "path",
+        "label": "Path",
+        "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter path"
       },
       "body": {
-        "$label": "Body",
-        "$key": "body",
+        "label": "Body",
+        "key": "body",
         "type": "codehinter",
         "description": "Enter body",
         "height": "150px"
@@ -153,22 +153,22 @@
     },
     "bulk_update": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "document_id_key": {
-        "$label": "Key for document Id",
-        "$key": "document_id_key",
+        "label": "Key for document Id",
+        "key": "document_id_key",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter key for document Id"
       },
       "records": {
-        "$label": "Records",
-        "$key": "records",
+        "label": "Records",
+        "key": "records",
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter records",
@@ -177,8 +177,8 @@
     },
     "delete_document": {
       "path": {
-        "$label": "Path",
-        "$key": "path",
+        "label": "Path",
+        "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter path"

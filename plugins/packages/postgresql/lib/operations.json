@@ -9,18 +9,18 @@
   },
   "properties": {
     "mode": {
-      "$label": "",
-      "$key": "mode",
+      "label": "",
+      "key": "mode",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
-      "$options": [
+      "options": [
         { "name": "SQL mode", "value": "sql" },
         { "name": "GUI mode", "value": "gui" }
       ]
     },
     "sql": {
       "query": {
-        "$key": "query",
+        "key": "query",
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px"
@@ -28,11 +28,11 @@
     },
     "gui": {
       "operation": {
-        "$label": "Operation",
-        "$key": "operation",
+        "label": "Operation",
+        "key": "operation",
         "type": "dropdown-component-flip",
         "description": "Single select dropdown for mode",
-        "$options": [
+        "options": [
           {
             "name": "Bulk update using primary key",
             "value": "bulk_update_pkey"
@@ -41,22 +41,22 @@
       },
       "bulk_update_pkey": {
         "table": {
-          "$label": "Table",
-          "$key": "table",
+          "label": "Table",
+          "key": "table",
           "type": "codehinter",
           "lineNumbers": false,
           "description": "Enter table"
         },
         "primary_key_column": {
-          "$label": "Primary key column",
-          "$key": "primary_key_column",
+          "label": "Primary key column",
+          "key": "primary_key_column",
           "type": "codehinter",
           "lineNumbers": false,
           "description": "Enter primary key column"
         },
         "records": {
-          "$label": "Records to update",
-          "$key": "records",
+          "label": "Records to update",
+          "key": "records",
           "type": "codehinter",
           "description": "Enter records",
           "height": "150px",

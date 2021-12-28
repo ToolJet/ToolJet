@@ -27,28 +27,28 @@
   },
   "properties": {
     "host": {
-      "$label": "Host",
-      "$key": "host",
+      "label": "Host",
+      "key": "host",
       "type": "text",
       "description": "Enter host"
     },
     "port": {
-      "$label": "Port",
-      "$key": "port",
+      "label": "Port",
+      "key": "port",
       "type": "text",
       "description": "Enter port"
     },
     "api_key": {
-      "$label": "API Key",
-      "$key": "api_key",
+      "label": "API Key",
+      "key": "api_key",
       "type": "text",
       "description": "Enter API key"
     },
     "protocol": {
-      "$label": "Protocol",
-      "$key": "protocol",
+      "label": "Protocol",
+      "key": "protocol",
       "type": "dropdown",
-      "$options": [
+      "options": [
         { "name": "HTTP", "value": "http" },
         { "name": "HTTPS", "value": "https" }
       ],

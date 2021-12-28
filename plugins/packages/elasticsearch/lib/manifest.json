@@ -28,26 +28,26 @@
   },
   "properties": {
     "host": {
-      "$label": "Host",
-      "$key": "host",
+      "label": "Host",
+      "key": "host",
       "type": "text",
       "description": "Enter host"
     },
     "port": {
-      "$label": "Port",
-      "$key": "port",
+      "label": "Port",
+      "key": "port",
       "type": "text",
       "description": "Enter port"
     },
     "username": {
-      "$label": "Username",
-      "$key": "username",
+      "label": "Username",
+      "key": "username",
       "type": "text",
       "description": "Enter username"
     },
     "password": {
-      "$label": "Password",
-      "$key": "password",
+      "label": "Password",
+      "key": "password",
       "type": "password",
       "description": "Enter password"
     }

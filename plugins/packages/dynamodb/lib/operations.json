@@ -7,11 +7,11 @@
   "defaults": {},
   "properties": {
     "operation": {
-      "$label": "Operation",
-      "$key": "operation",
+      "label": "Operation",
+      "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "$options": [
+      "options": [
         { "value": "list_tables", "name": "List Tables" },
         { "value": "get_item", "name": "Get Item" },
         { "value": "query_table", "name": "Query Table" },
@@ -21,15 +21,15 @@
     },
     "get_item": {
       "table": {
-        "$label": "Table",
-        "$key": "table",
+        "label": "Table",
+        "key": "table",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter table"
       },
       "key": {
-        "$label": "Key name",
-        "$key": "key",
+        "label": "Key name",
+        "key": "key",
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter key name",
@@ -38,8 +38,8 @@
     },
     "query_table": {
       "query_condition": {
-        "$label": "Query condition",
-        "$key": "query_condition",
+        "label": "Query condition",
+        "key": "query_condition",
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter query condition",
@@ -48,8 +48,8 @@
     },
     "scan_table": {
       "scan_condition": {
-        "$label": "Scan condition",
-        "$key": "scan_condition",
+        "label": "Scan condition",
+        "key": "scan_condition",
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter scan condition",
@@ -58,15 +58,15 @@
     },
     "delete_item": {
       "table": {
-        "$label": "Table",
-        "$key": "get_item",
+        "label": "Table",
+        "key": "get_item",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter table"
       },
       "key": {
-        "$label": "Key name",
-        "$key": "key",
+        "label": "Key name",
+        "key": "key",
         "type": "codehinter",
         "mode": "javascript",
         "description": "Enter key name",

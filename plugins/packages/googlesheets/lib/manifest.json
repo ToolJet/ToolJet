@@ -23,8 +23,8 @@
   },
   "properties": {
     "sheets": {
-      "$label": "",
-      "$key": "sheets",
+      "label": "",
+      "key": "sheets",
       "type": "react-component-google-sheets",
       "description": "A component for google sheets"
     }

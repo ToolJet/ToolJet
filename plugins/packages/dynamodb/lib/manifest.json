@@ -25,11 +25,11 @@
   },
   "properties": {
     "region": {
-      "$label": "Region",
-      "$key": "region",
+      "label": "Region",
+      "key": "region",
       "type": "dropdown",
       "description": "Single select dropdown for region",
-      "$options": [
+      "options": [
         { "name": "US East (Ohio)", "value": "us-east-2" },
         { "name": "US East (N. Virginia)", "value": "us-east-1" },
         { "name": "US West (N. California)", "value": "us-west-1" },
@@ -58,14 +58,14 @@
       ]
     },
     "access_key": {
-      "$label": "Access key",
-      "$key": "access_key",
+      "label": "Access key",
+      "key": "access_key",
       "type": "text",
       "description": "Enter access key"
     },
     "secret_key": {
-      "$label": "Secret key",
-      "$key": "secret_key",
+      "label": "Secret key",
+      "key": "secret_key",
       "type": "password",
       "description": "Enter secret key"
     }

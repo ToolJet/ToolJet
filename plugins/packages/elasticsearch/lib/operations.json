@@ -10,11 +10,11 @@
   },
   "properties": {
     "operation": {
-      "$label": "Operation",
-      "$key": "operation",
+      "label": "Operation",
+      "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "$options": [
+      "options": [
         { "value": "search", "name": "Search" },
         { "value": "index_document", "name": "Index a document" },
         { "value": "get", "name": "Get a document" },
@@ -23,15 +23,15 @@
     },
     "search": {
       "index": {
-        "$label": "Index",
-        "$key": "index",
+        "label": "Index",
+        "key": "index",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter index"
       },
       "query": {
-        "$label": "Query",
-        "$key": "query",
+        "label": "Query",
+        "key": "query",
         "type": "codehinter",
         "placeholder": "{ \"name\": \"\" }",
         "description": "Enter query",
@@ -40,15 +40,15 @@
     },
     "index_document": {
       "index": {
-        "$label": "Index",
-        "$key": "index",
+        "label": "Index",
+        "key": "index",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter index"
       },
       "body": {
-        "$label": "Body",
-        "$key": "body",
+        "label": "Body",
+        "key": "body",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ \"name\": \"The Hitchhikers Guide to the Galaxy\" }",
@@ -58,16 +58,16 @@
     },
     "get": {
       "index": {
-        "$label": "Index",
-        "$key": "index",
+        "label": "Index",
+        "key": "index",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter index"
       },
       "id": {
-        "$label": "Id",
-        "$key": "id",
+        "label": "Id",
+        "key": "id",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
@@ -76,24 +76,24 @@
     },
     "update": {
       "index": {
-        "$label": "Index",
-        "$key": "index",
+        "label": "Index",
+        "key": "index",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter index"
       },
       "id": {
-        "$label": "Id",
-        "$key": "id",
+        "label": "Id",
+        "key": "id",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter id"
       },
       "body": {
-        "$label": "body",
-        "$key": "body",
+        "label": "body",
+        "key": "body",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ doc: { page_count: 225 } }",

@@ -27,8 +27,8 @@
   },
   "properties": {
     "api_key": {
-      "$label": "API key",
-      "$key": "api_key",
+      "label": "API key",
+      "key": "api_key",
       "type": "password",
       "description": "Api key for stripe"
     }

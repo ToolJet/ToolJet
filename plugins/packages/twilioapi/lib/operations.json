@@ -7,11 +7,11 @@
   "defaults": {},
   "properties": {
     "operation": {
-      "$label": "Operation",
-      "$key": "operation",
+      "label": "Operation",
+      "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "$options": [
+      "options": [
         {
           "value": "send_sms",
           "name": "Send SMS"
@@ -20,15 +20,15 @@
     },
     "send_sms": {
       "toNumber": {
-        "$label": "To Number",
-        "$key": "toNumber",
+        "label": "To Number",
+        "key": "toNumber",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter to number"
       },
       "body": {
-        "$label": "Body",
-        "$key": "body",
+        "label": "Body",
+        "key": "body",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter message body"

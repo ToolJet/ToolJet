@@ -10,11 +10,11 @@
   },
   "properties": {
     "operation": {
-      "$label": "Operation",
-      "$key": "operation",
+      "label": "Operation",
+      "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "$options": [
+      "options": [
         { "value": "create_collection", "name": "Create a collection" },
         { "value": "search", "name": "Search" },
         { "value": "index_document", "name": "Index a document" },
@@ -25,8 +25,8 @@
     },
     "create_collection": {
       "schema": {
-        "$label": "Schema",
-        "$key": "schema",
+        "label": "Schema",
+        "key": "schema",
         "type": "codehinter",
         "placeholder": "{ \"name\": \"\" }",
         "description": "Enter schema",
@@ -35,15 +35,15 @@
     },
     "search": {
       "index": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection name"
       },
       "query": {
-        "$label": "Search parameters",
-        "$key": "searchParams",
+        "label": "Search parameters",
+        "key": "searchParams",
         "type": "codehinter",
         "placeholder": "{ \"name\": \"\" }",
         "description": "Enter search parameters",
@@ -52,15 +52,15 @@
     },
     "index_document": {
       "index": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection name"
       },
       "document": {
-        "$label": "Document",
-        "$key": "document",
+        "label": "Document",
+        "key": "document",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ \"name\": \"The Hitchhikers Guide to the Galaxy\" }",
@@ -70,16 +70,16 @@
     },
     "get": {
       "index": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "id": {
-        "$label": "Id",
-        "$key": "id",
+        "label": "Id",
+        "key": "id",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
@@ -88,24 +88,24 @@
     },
     "update": {
       "index": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "id": {
-        "$label": "Id",
-        "$key": "id",
+        "label": "Id",
+        "key": "id",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter id"
       },
       "document": {
-        "$label": "Document",
-        "$key": "document",
+        "label": "Document",
+        "key": "document",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ doc: { page_count: 225 } }",
@@ -115,16 +115,16 @@
     },
     "delete": {
       "index": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "id": {
-        "$label": "Id",
-        "$key": "id",
+        "label": "Id",
+        "key": "id",
         "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,

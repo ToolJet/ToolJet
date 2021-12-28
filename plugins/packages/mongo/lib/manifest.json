@@ -32,51 +32,51 @@
   },
   "properties": {
     "connection_type": {
-      "$label": "",
-      "$key": "connection_type",
+      "label": "",
+      "key": "connection_type",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for connection_type",
-      "$options": [
+      "options": [
         { "name": "Manual connection", "value": "manual" },
         { "name": "Connect using connection string", "value": "string" }
       ]
     },
     "manual": {
       "host": {
-        "$label": "Host",
-        "$key": "host",
+        "label": "Host",
+        "key": "host",
         "type": "text",
         "description": "Enter host"
       },
       "port": {
-        "$label": "Port",
-        "$key": "port",
+        "label": "Port",
+        "key": "port",
         "type": "text",
         "description": "Enter port"
       },
       "database": {
-        "$label": "Database Name",
-        "$key": "database",
+        "label": "Database Name",
+        "key": "database",
         "type": "text",
         "description": "Name of the database"
       },
       "username": {
-        "$label": "Username",
-        "$key": "username",
+        "label": "Username",
+        "key": "username",
         "type": "text",
         "description": "Enter username"
       },
       "password": {
-        "$label": "Password",
-        "$key": "password",
+        "label": "Password",
+        "key": "password",
         "type": "password",
         "description": "Enter password"
       }
     },
     "string": {
       "connection_string": {
-        "$label": "Connection string",
-        "$key": "connection_string",
+        "label": "Connection string",
+        "key": "connection_string",
         "type": "text",
         "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority"
       }
