@@ -40,11 +40,16 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
         const variableNames = {
           options: '',
           response: '',
+          request: '',
         };
+
         switch (value.type) {
           case 'query':
             variableNames.options = 'substitutedVariables';
             variableNames.response = 'response';
+            if (value.kind === 'restapi') {
+              variableNames.request = 'request';
+            }
             break;
 
           case 'transformations':
@@ -56,10 +61,15 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
         errorData.push({
           type: value.type,
           key: key,
+          kind: value.kind,
           message: value.data.message,
           description: value.data.description,
           options: { name: variableNames.options, data: value.options },
-          response: { name: variableNames.response, data: value.data.data },
+          response: {
+            name: variableNames.response,
+            data: value.kind === 'restapi' ? value.data.data.responseObject : value.data.data,
+          },
+          request: { name: variableNames.request, data: value.data.data.requestObject },
           timestamp: moment(),
         });
       });
@@ -208,6 +218,23 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
             sortKeys={false}
           />
         </span>
+        {errorProps.kind === 'restapi' && (
+          <span>
+            <ReactJson
+              src={errorProps.request.data}
+              theme={darkMode ? 'shapeshifter' : 'rjv-default'}
+              name={errorProps.request.name}
+              style={{ fontSize: '0.7rem', paddingLeft: '0.17rem' }}
+              enableClipboard={false}
+              displayDataTypes={false}
+              collapsed={true}
+              displayObjectSize={false}
+              quotesOnKeys={false}
+              sortKeys={false}
+              collapseStringsAfterLength={1000}
+            />
+          </span>
+        )}
 
         <hr className="border-1 border-bottom bg-grey py-0" />
       </div>
