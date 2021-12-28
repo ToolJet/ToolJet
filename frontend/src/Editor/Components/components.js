@@ -1409,4 +1409,44 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Tags',
+    displayName: 'Tags',
+    description: 'Content can be shown as tags',
+    component: 'Tags',
+    defaultSize: {
+      width: 5,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      data: { type: 'code', displayName: 'Tags' },
+    },
+    events: {},
+    styles: {
+      textColor: { type: 'color', displayName: 'Text color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        data: {
+          value:
+            "{{ [ \n\t\t{ title: 'tag1', color: '#000' }, \n\t\t{ title: 'tag2', color: '#dedede' } ] }}",
+        },
+      },
+      events: [],
+      styles: {
+        textColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
 ];

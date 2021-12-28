@@ -33,6 +33,7 @@ import '@/_styles/custom.scss';
 import { resolveProperties, resolveStyles } from './component-properties-resolution';
 import { validateWidget } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
+import { Tags } from './Components/Tags'
 
 const AllComponents = {
   Button,
@@ -63,6 +64,7 @@ const AllComponents = {
   Calendar,
   IFrame,
   CodeEditor,
+  Tags
 };
 
 export const Box = function Box({
