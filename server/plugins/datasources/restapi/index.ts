@@ -117,12 +117,12 @@ export default class RestapiQueryService implements QueryService {
         result = {
           requestObject: {
             requestUrl: error.request.requestUrl,
-            request_headers: error.request.options.headers,
-            request_params: urrl.parse(error.request.requestUrl, true).query,
+            requestHeaders: error.request.options.headers,
+            requestParams: urrl.parse(error.request.requestUrl, true).query,
           },
           responseObject: {
-            status_code: error.response.statusCode,
-            response_body: error.response.body,
+            statusCode: error.response.statusCode,
+            responseBody: error.response.body,
           },
         };
       }
