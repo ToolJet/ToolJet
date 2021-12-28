@@ -375,6 +375,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelect',
       'onClick',
       'onFileSelected',
+      'onSearchTextChanged',
     ].includes(eventName)
   ) {
     const { component } = options;

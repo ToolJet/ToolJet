@@ -45,6 +45,11 @@ export const DropDown = function DropDown({ height, validate, properties, styles
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
+  const onSearchTextChange = (searchText) => {
+    setExposedVariable('searchText', searchText);
+    fireEvent('onSearchTextChanged');
+  };
+
   return (
     <>
       <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
@@ -65,6 +70,16 @@ export const DropDown = function DropDown({ height, validate, properties, styles
             }}
             filterOptions={fuzzySearch}
             placeholder="Select.."
+            renderValue={(valueProps) => (
+              <input
+                {...valueProps}
+                className="select-search__input"
+                onChange={(event) => {
+                  valueProps.onChange(event);
+                  onSearchTextChange(event.target.value);
+                }}
+              />
+            )}
           />
         </div>
       </div>

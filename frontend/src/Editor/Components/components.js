@@ -825,6 +825,7 @@ export const componentTypes = [
     },
     events: {
       onSelect: { displayName: 'On select' },
+      onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
@@ -832,6 +833,7 @@ export const componentTypes = [
     },
     exposedVariables: {
       value: null,
+      searchText: '',
     },
     definition: {
       others: {
