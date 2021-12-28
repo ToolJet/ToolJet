@@ -62,6 +62,7 @@ export const Datepicker = function Datepicker({
         renderInput={(props) => {
           return (
             <input
+              readOnly
               {...props}
               value={exposedVariables.value}
               className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2`}
