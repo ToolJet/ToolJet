@@ -61,9 +61,8 @@ const DynamicForm = ({
 
   const getElementProps = ({
     key,
-    options,
-    rows = 5,
-    hasSearch,
+    list,
+    $rows = 5,
     helpText,
     description,
     type,
@@ -73,7 +72,6 @@ const DynamicForm = ({
     initialValue,
     height = 'auto',
     ignoreBraces = false,
-    isScrollable = false,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -85,7 +83,7 @@ const DynamicForm = ({
           placeholder: description,
           className: 'form-control',
           value: options[key]?.value,
-          ...(type === 'textarea' && { rows: rows }),
+          ...(type === 'textarea' && { rows: $rows }),
           ...(helpText && { helpText }),
           onChange: (e) => optionchanged(key, e.target.value),
         };
@@ -98,9 +96,8 @@ const DynamicForm = ({
       case 'dropdown':
       case 'dropdown-component-flip':
         return {
-          options: options,
+          options: list,
           value: options[key]?.value || options[key],
-          hasSearch: hasSearch,
           onChange: (value) => optionchanged(key, value),
         };
       case 'react-component-headers':
@@ -144,7 +141,6 @@ const DynamicForm = ({
           height,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           ignoreBraces,
-          isScrollable,
         };
       default:
         return {};

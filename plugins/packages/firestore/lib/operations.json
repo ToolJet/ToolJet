@@ -15,7 +15,7 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "options": [
+      "list": [
         { "value": "get_document", "name": "Get Document" },
         { "value": "query_collection", "name": "Query collection" },
         { "value": "add_document", "name": "Add Document to Collection" },
@@ -56,7 +56,7 @@
         "className": "col-6",
         "type": "dropdown",
         "description": "Single select dropdown for order type",
-        "options": [
+        "list": [
           { "value": "asc", "name": "Ascending" },
           { "value": "desc", "name": "Descending" }
         ]
@@ -82,7 +82,7 @@
         "className": "col-4",
         "type": "dropdown",
         "description": "Single select dropdown for where operation",
-        "options": [
+        "list": [
           { "value": "==", "name": "==" },
           { "value": "<", "name": "<" },
           { "value": ">", "name": ">" },

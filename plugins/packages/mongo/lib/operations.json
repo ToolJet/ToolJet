@@ -13,7 +13,7 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "options": [
+      "list": [
         { "name": "List collections", "value": "list_collections" },
         { "name": "Insert one document", "value": "insert_one" },
         { "name": "Insert many documents", "value": "insert_many" }

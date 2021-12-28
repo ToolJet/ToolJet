@@ -11,7 +11,7 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "options": [
+      "list": [
         {
           "value": "send_sms",
           "name": "Send SMS"

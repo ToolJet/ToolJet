@@ -11,7 +11,7 @@
       "key": "mode",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
-      "options": [
+      "list": [
         { "name": "List members", "value": "list_users" },
         { "name": "Send message", "value": "send_message" }
       ]

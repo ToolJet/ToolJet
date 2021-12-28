@@ -14,7 +14,7 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "options": [
+      "list": [
         { "value": "search", "name": "Search" },
         { "value": "index_document", "name": "Index a document" },
         { "value": "get", "name": "Get a document" },

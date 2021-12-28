@@ -29,7 +29,7 @@
       "key": "region",
       "type": "dropdown",
       "description": "Single select dropdown for region",
-      "options": [
+      "list": [
         { "name": "US East (Ohio)", "value": "us-east-2" },
         { "name": "US East (N. Virginia)", "value": "us-east-1" },
         { "name": "US West (N. California)", "value": "us-west-1" },

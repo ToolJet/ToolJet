@@ -11,7 +11,7 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "options": [
+      "list": [
         { "value": "list_records", "name": "List records" },
         { "value": "retrieve_record", "name": "Retrieve record" },
         { "value": "update_record", "name": "Update record" },

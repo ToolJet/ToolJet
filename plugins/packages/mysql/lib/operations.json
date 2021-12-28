@@ -11,7 +11,7 @@
       "key": "mode",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
-      "options": [
+      "list": [
         { "name": "SQL mode", "value": "sql" },
         { "name": "GUI mode", "value": "gui" }
       ]
@@ -30,7 +30,7 @@
         "key": "operation",
         "type": "dropdown-component-flip",
         "description": "Single select dropdown for mode",
-        "options": [
+        "list": [
           {
             "name": "Bulk update using primary key",
             "value": "bulk_update_pkey"

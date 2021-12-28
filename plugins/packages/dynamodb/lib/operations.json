@@ -11,7 +11,7 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "options": [
+      "list": [
         { "value": "list_tables", "name": "List Tables" },
         { "value": "get_item", "name": "Get Item" },
         { "value": "query_table", "name": "Query Table" },

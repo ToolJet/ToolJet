@@ -13,7 +13,7 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "options": [
+      "list": [
         {
           "value": "read",
           "name": "Read data from a spreadsheet"
@@ -139,7 +139,7 @@
         "className": "col-4",
         "type": "dropdown",
         "description": "Single select dropdown for where operation",
-        "options": [
+        "list": [
           {
             "value": "===",
             "name": "==="

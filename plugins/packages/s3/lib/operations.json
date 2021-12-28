@@ -11,7 +11,7 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "options": [
+      "list": [
         { "value": "get_object", "name": "Read object" },
         { "value": "upload_object", "name": "Upload object" },
         { "value": "list_buckets", "name": "List buckets" },

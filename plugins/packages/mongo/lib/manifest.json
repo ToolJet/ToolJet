@@ -36,7 +36,7 @@
       "key": "connection_type",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for connection_type",
-      "options": [
+      "list": [
         { "name": "Manual connection", "value": "manual" },
         { "name": "Connect using connection string", "value": "string" }
       ]

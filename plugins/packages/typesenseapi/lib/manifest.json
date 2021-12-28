@@ -48,7 +48,7 @@
       "label": "Protocol",
       "key": "protocol",
       "type": "dropdown",
-      "options": [
+      "list": [
         { "name": "HTTP", "value": "http" },
         { "name": "HTTPS", "value": "https" }
       ],

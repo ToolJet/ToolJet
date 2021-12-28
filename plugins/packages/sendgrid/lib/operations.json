@@ -11,7 +11,7 @@
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "options": [{ "value": "mail_service", "name": "Email service" }]
+      "list": [{ "value": "mail_service", "name": "Email service" }]
     },
     "mail_service": {
       "multiple_recipients": {
