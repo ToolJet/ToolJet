@@ -37,11 +37,13 @@ You can rename the datasource by clicking on its default name `REST API`
 - In the **Scope** field, enter `https://www.googleapis.com/auth/userinfo.profile`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
 - Enter **Authorization URL:** `https://accounts.google.com/o/oauth2/v2/auth`; the Authorization URL requests authorization from the user and redirects to retrieve an authorization code from identity server.
 - Create three **Custom Authentication Parameters:**
+
     | params      | description |
     | ----------- | ----------- |
     | response_type | code ( `code` refers to the Authorization Code) |
     | client_id | **Client ID**  |
     | redirect_uri | `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.io/oauth2/authorize` if using ToolJet Cloud.  |
+    
 - Keep the default selection for **Client Authentication** and **Save** the datasource.
 
 <img class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0"/>
