@@ -34,6 +34,7 @@ export const LeftSidebarInspector = ({ darkMode, globals, components, queries })
             displayObjectSize={false}
             quotesOnKeys={false}
             sortKeys={true}
+            collapseStringsAfterLength={1000}
           />
           <ReactJson
             src={components}
