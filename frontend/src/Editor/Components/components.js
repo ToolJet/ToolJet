@@ -1231,10 +1231,7 @@ export const componentTypes = [
           { name: 'Spacious', value: 'spacious' },
         ],
       },
-      displayDayNamesInWeekView: {
-        type: 'toggle',
-        displayName: 'Display only names of days as headers on week view',
-      },
+      weekDateFormat: { type: 'code', displayName: 'Header date format on week view' },
     },
     exposedVariables: {
       selectedEvent: {},
@@ -1280,7 +1277,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         cellSizeInViewsClassifiedByResource: { value: 'spacious' },
-        displayDayNamesInWeekView: { value: true },
+        weekDateFormat: { value: 'DD MMM'}
       },
     },
   },
