@@ -88,6 +88,8 @@ export const Calendar = function ({
     },
   };
 
+  if (exposedVariables.currentDate === undefined) setExposedVariable('currentDate', properties.defaultDate);
+
   return (
     <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }}>
       <ReactCalendar
@@ -121,6 +123,10 @@ export const Calendar = function ({
                 height: e.target.getBoundingClientRect().height,
               },
             });
+        }}
+        onNavigate={(date) => {
+          fireEvent('onCalendarNavigate');
+          setExposedVariable('currentDate', moment(date).format(properties.dateFormat));
         }}
         selectable={true}
         onSelectSlot={slotSelectHandler}
