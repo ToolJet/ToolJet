@@ -16,6 +16,11 @@ Dropdown options can be referred to your query data with dynamic variables.
 
 On select event is triggered when an option is selected.
 
+## Event: On search text changed
+
+This event is triggered whenever the user searches through the options by typing on
+the dropdown's input box. The corresponding search text will be exposed as `searchText`.
+
 #### Properties
 
 | properties      | description |
