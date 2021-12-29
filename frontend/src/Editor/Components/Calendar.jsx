@@ -106,7 +106,10 @@ export const Calendar = function ({
         style={style}
         views={allowedCalendarViews}
         defaultView={defaultView}
-        onView={(view) => setExposedVariable('currentView', view)}
+        onView={(view) => {
+          setExposedVariable('currentView', view);
+          fireEvent('onCalendarViewChange');
+        }}
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"

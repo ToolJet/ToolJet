@@ -376,6 +376,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onClick',
       'onFileSelected',
       'onCalendarNavigate',
+      'onCalendarViewChange',
     ].includes(eventName)
   ) {
     const { component } = options;
