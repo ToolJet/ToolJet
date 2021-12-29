@@ -97,6 +97,7 @@ export const Calendar = function ({
         ${darkMode ? 'dark-mode' : ''}
         ${styles.cellSizeInViewsClassifiedByResource}
         ${properties.highlightToday ? '' : 'dont-highlight-today'}
+        ${exposedVariables.currentView === 'week' ? 'resources-week-cls' : ''}
         ${properties.displayViewSwitcher ? '' : 'hide-view-switcher'}`}
         localizer={localizer}
         defaultDate={defaultDate}
