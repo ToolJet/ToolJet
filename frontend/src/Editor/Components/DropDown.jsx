@@ -50,6 +50,34 @@ export const DropDown = function DropDown({ height, validate, properties, styles
     fireEvent('onSearchTextChanged');
   };
 
+  const customInputForSelect = (valueProps) => (
+    <input
+      {...valueProps}
+      className="select-search__input"
+      onChange={(event) => {
+        valueProps.onChange(event);
+        onSearchTextChange(event.target.value);
+      }}
+    />
+  );
+
+  const customOptionForSelect = (domProps, option, snapshot, className) => {
+    return (
+      <div
+        className={className}
+        {...domProps}
+        style={{ width: '100%', height: 30, margin: 0, paddingLeft: 14 }}
+        onMouseDown={(event) => {
+          event.stopPropagation();
+          setCurrentValue(option.value);
+          setExposedVariable('value', option.value).then(() => fireEvent('onSelect'));
+        }}
+      >
+        {option.name}
+      </div>
+    );
+  };
+
   return (
     <>
       <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
@@ -71,16 +99,8 @@ export const DropDown = function DropDown({ height, validate, properties, styles
               setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
             }}
             filterOptions={fuzzySearch}
-            renderValue={(valueProps) => (
-              <input
-                {...valueProps}
-                className="select-search__input"
-                onChange={(event) => {
-                  valueProps.onChange(event);
-                  onSearchTextChange(event.target.value);
-                }}
-              />
-            )}
+            renderValue={customInputForSelect}
+            renderOption={customOptionForSelect}
           />
         </div>
       </div>
