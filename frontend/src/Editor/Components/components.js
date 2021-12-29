@@ -822,6 +822,7 @@ export const componentTypes = [
       value: { type: 'code', displayName: 'Default value' },
       values: { type: 'code', displayName: 'Option values' },
       display_values: { type: 'code', displayName: 'Option labels' },
+      loadingState: { type: 'code', displayName: 'Options loading state' },
     },
     events: {
       onSelect: { displayName: 'On select' },
@@ -849,6 +850,7 @@ export const componentTypes = [
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: true },
+        loadingState: { value: '{{false}}' },
       },
       events: [],
       styles: {

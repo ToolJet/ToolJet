@@ -61,7 +61,9 @@ export const DropDown = function DropDown({ height, validate, properties, styles
         <div className="col px-0 h-100">
           <SelectSearch
             disabled={disabledState}
-            options={selectOptions}
+            options={properties.loadingState ? [] : selectOptions}
+            emptyMessage={properties.loadingState ? 'Loading options..' : 'There are no options'}
+            placeholder={'Select..'}
             value={currentValue}
             search={true}
             onChange={(newVal) => {
@@ -69,7 +71,6 @@ export const DropDown = function DropDown({ height, validate, properties, styles
               setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
             }}
             filterOptions={fuzzySearch}
-            placeholder="Select.."
             renderValue={(valueProps) => (
               <input
                 {...valueProps}
