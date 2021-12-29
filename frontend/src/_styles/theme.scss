@@ -2868,6 +2868,7 @@ input[type="text"] {
 .search-box-wrapper {
   input {
     width: 200px;
+    border-radius: 5px !important;
   }
   .input-icon .input-icon-addon {
     display: flex;
