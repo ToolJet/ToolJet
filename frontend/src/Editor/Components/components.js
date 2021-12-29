@@ -529,6 +529,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      radioButtonColor: { type: 'color', displayName: 'Radio Button Color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -548,6 +549,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        radioButtonColor: { value: '#375FCF' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
