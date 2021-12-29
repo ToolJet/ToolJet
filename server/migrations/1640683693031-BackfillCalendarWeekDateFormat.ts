@@ -45,7 +45,7 @@ export class BackfillCalendarWeekDateFormat1640683693031
 
   determineDateFormatForBackfill(componentDefinition) {
     const dateFormat = componentDefinition.component.definition.styles
-      .displayDayNamesInWeekView
+      .displayDayNamesInWeekView?.value
       ? "ddd"
       : "DD MMM";
 
