@@ -375,6 +375,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelect',
       'onClick',
       'onFileSelected',
+      'onCalendarNavigate',
+      'onCalendarViewChange',
       'onSearchTextChanged',
     ].includes(eventName)
   ) {

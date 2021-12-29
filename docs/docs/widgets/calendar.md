@@ -110,3 +110,13 @@ Last selected event is exposed as `selectedEvent`.
 This event is fired when the user either clicks on an calendar slot(empty cell or empty space of a cell with event) or when they click and drag to select multiple slots.  
   
 Last selected slot(s) are exposed as `selectedSlots`.
+
+#### On Date Navigate
+
+This event is fired when the user clicks on `Today`, `Next` or `Back` buttons on the calendar.
+The corresponding date to which the user navigated, will be exposed as `currentDate`.
+
+#### On View Change
+
+This event is fired when a different view is selected by the user. The current view is exposed as
+`currentView`.

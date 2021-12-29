@@ -1224,6 +1224,8 @@ export const componentTypes = [
     events: {
       onCalendarEventSelect: { displayName: 'On Event Select' },
       onCalendarSlotSelect: { displayName: 'On Slot Select' },
+      onCalendarNavigate: { displayName: 'On Date Navigate' },
+      onCalendarViewChange: { displayName: 'On View Change' },
     },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
@@ -1241,6 +1243,7 @@ export const componentTypes = [
       selectedEvent: {},
       selectedSlots: {},
       currentView: 'month',
+      currentDate: undefined,
     },
     definition: {
       others: {
