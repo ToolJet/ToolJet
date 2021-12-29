@@ -7,6 +7,11 @@ import { isEmpty } from 'lodash';
 const urrl = require('url');
 const got = require('got');
 
+interface RestAPIResult extends QueryResult {
+  request?: Array<object> | object;
+  response?: Array<object> | object;
+}
+
 @Injectable()
 export default class RestapiQueryService implements QueryService {
   /* Headers of the source will be overridden by headers of the query */
@@ -49,7 +54,7 @@ export default class RestapiQueryService implements QueryService {
     return Object.fromEntries(urlParams);
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
@@ -78,6 +83,8 @@ export default class RestapiQueryService implements QueryService {
     }
 
     let result = {};
+    let requestObject = {};
+    let responseObject = {};
 
     /* Prefixing the base url of datasouce if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url}${queryOptions.url || ''}` : queryOptions.url;
@@ -93,12 +100,30 @@ export default class RestapiQueryService implements QueryService {
         json,
       });
       result = JSON.parse(response.body);
+      requestObject = {
+        requestUrl: response.request.requestUrl,
+        method: response.request.options.method,
+        headers: response.request.options.headers,
+        params: urrl.parse(response.request.requestUrl, true).query,
+      };
+      responseObject = {
+        body: response.body,
+        statusCode: response.statusCode,
+      };
     } catch (error) {
       console.log(error);
 
       if (error instanceof HTTPError) {
         result = {
-          code: error.code,
+          requestObject: {
+            requestUrl: error.request.requestUrl,
+            requestHeaders: error.request.options.headers,
+            requestParams: urrl.parse(error.request.requestUrl, true).query,
+          },
+          responseObject: {
+            statusCode: error.response.statusCode,
+            responseBody: error.response.body,
+          },
         };
       }
       throw new QueryError('Query could not be completed', error.message, result);
@@ -107,6 +132,8 @@ export default class RestapiQueryService implements QueryService {
     return {
       status: 'ok',
       data: result,
+      request: requestObject,
+      response: responseObject,
     };
   }
 
