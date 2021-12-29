@@ -93,6 +93,10 @@ When `resources` are specified, the calendar could take up quite a lot of horizo
 
 If we set this property to `compact`, the cell sizes will be smaller in `week` and `day` views.
 
+#### Header date format on week view
+
+This format determines how the column header for each day in week view will be displayed. As with every other date format field in ToolJet, this follows the momentjs standard of date formatting.
+
 ### Events
 
 #### On Event selected

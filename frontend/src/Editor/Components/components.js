@@ -1231,7 +1231,7 @@ export const componentTypes = [
           { name: 'Spacious', value: 'spacious' },
         ],
       },
-      weekDateFormat: { type: 'code', displayName: 'Date format on week view' },
+      weekDateFormat: { type: 'code', displayName: 'Header date format on week view' },
     },
     exposedVariables: {
       selectedEvent: {},
