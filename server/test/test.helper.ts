@@ -21,6 +21,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AllExceptionsFilter } from 'src/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
+const uuid = require('uuid');
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -93,7 +94,10 @@ export async function createApplicationVersion(nestApp, application) {
   );
 }
 
-export async function createUser(nestApp, { firstName, lastName, email, groups, organization, ssoId, status }: any) {
+export async function createUser(
+  nestApp,
+  { firstName, lastName, email, groups, organization, ssoId, status, invitationToken }: any
+) {
   let userRepository: Repository<User>;
   let organizationRepository: Repository<Organization>;
   let organizationUsersRepository: Repository<OrganizationUser>;
@@ -118,6 +122,7 @@ export async function createUser(nestApp, { firstName, lastName, email, groups, 
       lastName: lastName || 'test',
       email: email || 'dev@tooljet.io',
       password: 'password',
+      invitationToken: invitationToken || uuid.v4(),
       organization,
       ssoId,
       createdAt: new Date(),
