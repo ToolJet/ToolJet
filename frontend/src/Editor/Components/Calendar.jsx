@@ -129,8 +129,8 @@ export const Calendar = function ({
             });
         }}
         onNavigate={(date) => {
-          fireEvent('onCalendarNavigate');
           setExposedVariable('currentDate', moment(date).format(properties.dateFormat));
+          fireEvent('onCalendarNavigate');
         }}
         selectable={true}
         onSelectSlot={slotSelectHandler}
