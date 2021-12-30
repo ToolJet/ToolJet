@@ -26,6 +26,7 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   }
   React.useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
@@ -33,6 +34,7 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
     socket?.addEventListener('message', function (event) {
       if (event.data === 'notifications') fetchData();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

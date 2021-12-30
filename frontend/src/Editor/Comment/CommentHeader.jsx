@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 import { commentsService } from '@/_services';
 

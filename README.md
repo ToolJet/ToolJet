@@ -67,13 +67,15 @@ Documentation is available at https://docs.tooljet.com.
 ## Self-hosted
 You can use ToolJet cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, Heroku and more.
 
-- [Deploy on AWS EC2](https://docs.tooljet.com/docs/deployment/ec2)
-- [Deploy on AWS EKS](https://docs.tooljet.com/docs/deployment/kubernetes)
-- [Deploy on GKE](https://docs.tooljet.com/docs/deployment/kubernetes-gke)
-- [Deploy on Azure AKS](https://docs.tooljet.com/docs/deployment/kubernetes-aks)
-- [Deploy on Heroku](https://docs.tooljet.com/docs/deployment/heroku)
-- [Deploy using Docker](https://docs.tooljet.com/docs/deployment/docker)
-- [Deploy on Google Cloud Run](https://docs.tooljet.com/docs/deployment/google-cloud-run)
+| Provider  | Documentation |
+| ------------- | ------------- |
+| AWS EC2 | [Link](https://docs.tooljet.com/docs/deployment/ec2)  |
+| AWS EKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/deployment/kubernetes)   |
+| GCP GKE (Kubernetes) | [Link](https://docs.tooljet.com/docs/deployment/kubernetes-gke)   |
+| Azure AKS (Kubernetes) | [Link](https://docs.tooljet.com/docs/deployment/kubernetes-aks)   |
+| Heroku  | [Link](https://docs.tooljet.com/docs/deployment/heroku)  |
+| Docker  | [Link](https://docs.tooljet.com/docs/deployment/docker)   |
+| Google Cloud Run  | [Link](https://docs.tooljet.com/docs/deployment/google-cloud-run)   |
 
 ## Community support
 For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.com/docs/intro/). For additional help, you can use one of these channels to ask a question:
