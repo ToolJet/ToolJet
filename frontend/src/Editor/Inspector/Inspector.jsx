@@ -24,34 +24,34 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
 }) => {
-  const selectedComponent = {
+  const component = {
     id: selectedComponentId,
     component: allComponents[selectedComponentId].component,
     layouts: allComponents[selectedComponentId].layouts,
   };
-  const [component, setComponent] = useState(selectedComponent);
+  // const [component, setComponent] = useState(selectedComponent);
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
-  const [components, setComponents] = useState(allComponents);
+  // const [components, setComponents] = useState(allComponents);
   const [key, setKey] = React.useState('properties');
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
-  useEffect(() => {
-    setComponent(selectedComponent);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedComponent.component.definition]);
+  // useEffect(() => {
+  //   setComponent(selectedComponent);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [selectedComponent.component.definition]);
 
-  useEffect(() => {
-    setComponents(allComponents);
-  }, [allComponents]);
+  // useEffect(() => {
+  //   setComponents(allComponents);
+  // }, [allComponents]);
 
   function handleComponentNameChange(newName) {
     if (validateQueryName(newName)) {
       let newComponent = { ...component };
       newComponent.component.name = newName;
-      setComponent(newComponent);
+
       componentChanged(newComponent);
     } else {
       toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.');
@@ -84,7 +84,6 @@ export const Inspector = ({
       },
     };
 
-    setComponent(newComponent);
     componentDefinitionChanged(newComponent);
   }
 
@@ -109,7 +108,6 @@ export const Inspector = ({
         },
       };
 
-      setComponent(newComponent);
       componentDefinitionChanged(newComponent).then(() => {
         //  Child componets should also have a mobile layout
         const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
@@ -146,7 +144,6 @@ export const Inspector = ({
       ...component,
     };
 
-    setComponent(newComponent);
     componentDefinitionChanged(newComponent);
   }
 
@@ -158,7 +155,6 @@ export const Inspector = ({
       ...component,
     };
 
-    setComponent(newComponent);
     componentDefinitionChanged(newComponent);
   }
 
@@ -174,7 +170,6 @@ export const Inspector = ({
       ...component,
     };
 
-    setComponent(newComponent);
     componentDefinitionChanged(newComponent);
   }
 
@@ -190,7 +185,7 @@ export const Inspector = ({
             componentMeta={componentMeta}
             eventUpdated={eventUpdated}
             eventOptionUpdated={eventOptionUpdated}
-            components={components}
+            components={allComponents}
             currentState={currentState}
             darkMode={darkMode}
             eventsChanged={eventsChanged}
@@ -208,7 +203,7 @@ export const Inspector = ({
             componentMeta={componentMeta}
             eventUpdated={eventUpdated}
             eventOptionUpdated={eventOptionUpdated}
-            components={components}
+            components={allComponents}
             currentState={currentState}
             darkMode={darkMode}
           />
@@ -230,7 +225,7 @@ export const Inspector = ({
               property,
               'properties',
               currentState,
-              components,
+              allComponents,
               darkMode
             )
           ),
@@ -246,7 +241,7 @@ export const Inspector = ({
                 componentMeta={componentMeta}
                 currentState={currentState}
                 dataQueries={dataQueries}
-                components={components}
+                components={allComponents}
                 eventsChanged={eventsChanged}
                 apps={apps}
                 darkMode={darkMode}
@@ -267,7 +262,7 @@ export const Inspector = ({
                 property,
                 'validation',
                 currentState,
-                components,
+                allComponents,
                 darkMode
               )
             ),
@@ -287,7 +282,7 @@ export const Inspector = ({
                 'showOnDesktop',
                 'others',
                 currentState,
-                components
+                allComponents
               )}
               {renderElement(
                 component,
@@ -297,7 +292,7 @@ export const Inspector = ({
                 'showOnMobile',
                 'others',
                 currentState,
-                components
+                allComponents
               )}
             </>
           ),
@@ -315,7 +310,7 @@ export const Inspector = ({
         message={'Widget will be deleted, do you want to continue?'}
         onConfirm={() => {
           switchSidebarTab(2);
-          removeComponent(selectedComponent);
+          removeComponent(component);
         }}
         onCancel={() => setWidgetDeleteConfirmation(false)}
       />
@@ -354,7 +349,7 @@ export const Inspector = ({
                 style,
                 'styles',
                 currentState,
-                components
+                allComponents
               )
             )}
           </div>
