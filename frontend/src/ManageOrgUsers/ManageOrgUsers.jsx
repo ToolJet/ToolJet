@@ -18,6 +18,7 @@ class ManageOrgUsers extends React.Component {
       creatingUser: false,
       newUser: {},
       archivingUser: null,
+      unarchivingUser: null,
       fields: {},
       errors: {},
     };
@@ -104,6 +105,25 @@ class ManageOrgUsers extends React.Component {
       });
   };
 
+  unarchiveOrgUser = (id) => {
+    this.setState({ unarchivingUser: id });
+
+    organizationUserService
+      .unarchive(id)
+      .then(() => {
+        toast.success('The user has been unarchived', {
+          hideProgressBar: true,
+          position: 'top-center',
+        });
+        this.setState({ unarchivingUser: null });
+        this.fetchUsers();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        this.setState({ unarchivingUser: null });
+      });
+  };
+
   createUser = (event) => {
     event.preventDefault();
 
@@ -160,7 +180,7 @@ class ManageOrgUsers extends React.Component {
   };
 
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, archivingUser } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -357,16 +377,17 @@ class ManageOrgUsers extends React.Component {
                                 )}
                               </td>
                               <td>
-                                {archivingUser === null && (
-                                  <a
-                                    onClick={() => {
-                                      this.archiveOrgUser(user.id);
-                                    }}
-                                  >
-                                    Archive
-                                  </a>
-                                )}
-                                {archivingUser === user.id && <small>Archiving user...</small>}
+                                <a
+                                  onClick={() => {
+                                    user.status === 'archived'
+                                      ? this.unarchiveOrgUser(user.id)
+                                      : this.archiveOrgUser(user.id);
+                                  }}
+                                >
+                                  {user.status === 'archived' ? 'Unarchive' : 'Archive'}
+
+                                  {unarchivingUser === user.id || archivingUser === user.id ? '...' : ''}
+                                </a>
                               </td>
                             </tr>
                           ))}
