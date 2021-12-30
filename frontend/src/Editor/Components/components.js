@@ -1284,7 +1284,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         cellSizeInViewsClassifiedByResource: { value: 'spacious' },
-        weekDateFormat: { value: 'DD MMM'}
+        weekDateFormat: { value: 'DD MMM' },
       },
     },
   },

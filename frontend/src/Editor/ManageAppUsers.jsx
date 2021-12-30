@@ -2,7 +2,7 @@ import React from 'react';
 import { appService, organizationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import { debounce } from 'lodash';
