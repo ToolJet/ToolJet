@@ -39,6 +39,11 @@
   }
   .datasources-popover {
     top: 100px;
+    width: 180px;
+    .add-btn {
+      border: none;
+      margin-top: -4px;
+    }
   }
   .debugger-popover {
     top: 180px;
@@ -112,3 +117,48 @@
     right: 6px;
   }
 }
+
+.datasource-modal-button {
+  background: #ffffff;
+  border: 1px solid #4d72fa;
+  box-sizing: border-box;
+  border-radius: 4px;
+  color: #4d72fa;
+  height: 36px;
+  &:hover {
+    background: #4d72fa;
+    color: #FFFFFC;
+  }
+}
+
+.dark-button {
+  @extend .datasource-modal-button;
+  background: transparent!important;
+  &:hover {
+    background: #4d72fa!important;
+    color: #FFFFFC!important;
+
+  }
+}
+
+.datasource-footer-info {
+  border: 1px solid #A6B6CC!important;
+  box-sizing: border-box;
+  border-radius: 4px!important;
+  height: 68px;
+
+  .copied {
+    color: #7A95FB;
+    margin-left: 2rem;
+    font-weight: 400;
+  }
+
+  button.copy-button {
+    @extend .datasource-modal-button;
+    width: 88px;
+    svg {
+      margin-right: 0.5rem;
+    }
+  }  
+}
+

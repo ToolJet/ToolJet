@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { Organization } from 'src/entities/organization.entity';
 import { UsersService } from 'src/services/users.service';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
@@ -9,6 +9,7 @@ import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+const uuid = require('uuid');
 
 @Injectable()
 export class OrganizationUsersService {
@@ -98,6 +99,29 @@ export class OrganizationUsersService {
     }
 
     await this.organizationUsersRepository.update(id, { status: 'archived' });
+    return true;
+  }
+
+  async unarchive(user: User, id: string) {
+    const organizationUser = await this.organizationUsersRepository.findOne(id);
+    if (organizationUser.status !== 'archived') return false;
+
+    await getManager().transaction(async (manager) => {
+      await manager.update(OrganizationUser, organizationUser.id, {
+        status: 'invited',
+      });
+      await manager.update(User, organizationUser.userId, { invitationToken: uuid.v4(), password: uuid.v4() });
+    });
+
+    const updatedUser = await this.usersService.findOne(organizationUser.userId);
+
+    await this.emailService.sendOrganizationUserWelcomeEmail(
+      updatedUser.email,
+      updatedUser.firstName,
+      user.firstName,
+      updatedUser.invitationToken
+    );
+
     return true;
   }
 

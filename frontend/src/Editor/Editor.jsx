@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
 import { DndProvider } from 'react-dnd';
@@ -730,7 +731,7 @@ class Editor extends React.Component {
       app,
       showQueryConfirmation,
       queryPaneHeight,
-      showQueryEditor,
+      // showQueryEditor,
       showLeftSidebar,
       currentState,
       isLoading,
@@ -1101,7 +1102,7 @@ class Editor extends React.Component {
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
-                      allComponents={cloneDeep(appDefinition.components)}
+                      allComponents={appDefinition.components}
                       key={selectedComponent.id}
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
