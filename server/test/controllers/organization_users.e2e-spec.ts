@@ -2,6 +2,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
+import Preview from 'twilio/lib/rest/Preview';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -101,6 +102,85 @@ describe('organization users controller', () => {
 
     await developerUserData.orgUser.reload();
     expect(developerUserData.orgUser.status).toBe('archived');
+  });
+
+  describe('POST /api/organization_users/:id/unarchive', () => {
+    it('should allow only authenticated users to unarchive org users', async () => {
+      await request(app.getHttpServer()).post('/api/organization_users/random-id/unarchive/').expect(401);
+    });
+
+    it('should allow only admin users to unarchive org users', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        status: 'active',
+        groups: ['admin', 'all_users'],
+      });
+      const organization = adminUserData.organization;
+      const developerUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        status: 'active',
+        groups: ['developer', 'all_users'],
+        organization,
+      });
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        status: 'archived',
+        invitationToken: 'old-token',
+        password: 'old-password',
+        groups: ['viewer', 'all_users'],
+        organization,
+      });
+
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .set('Authorization', authHeaderForUser(viewerUserData.user))
+        .expect(403);
+
+      await viewerUserData.orgUser.reload();
+      expect(viewerUserData.orgUser.status).toBe('archived');
+
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .set('Authorization', authHeaderForUser(developerUserData.user))
+        .expect(403);
+
+      await viewerUserData.orgUser.reload();
+      expect(viewerUserData.orgUser.status).toBe('archived');
+
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .expect(201);
+
+      await viewerUserData.orgUser.reload();
+      await viewerUserData.user.reload();
+      expect(viewerUserData.orgUser.status).toBe('invited');
+      expect(viewerUserData.user.invitationToken).not.toBe('old-token');
+      expect(viewerUserData.user.password).not.toBe('old-password');
+    });
+
+    it('should allow unarchive if user is already archived', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        status: 'active',
+        groups: ['admin', 'all_users'],
+      });
+      const organization = adminUserData.organization;
+      const developerUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        status: 'active',
+        groups: ['developer', 'all_users'],
+        organization,
+      });
+
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${developerUserData.orgUser.id}/unarchive/`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .expect(201);
+
+      await developerUserData.orgUser.reload();
+      expect(developerUserData.orgUser.status).toBe('active');
+    });
   });
 
   afterAll(async () => {
