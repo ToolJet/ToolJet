@@ -79,6 +79,18 @@ Setting this property to anything other than these values will make the calendar
 
 The view that is currently selected will be exposed as the variable `currentView`.
 
+#### Start time on week and day view
+
+This determines the time at which week view and day view cells begins. Keep in mind that this
+field accepts a date, but still only the time and timezone(if provided) are taken from this date.
+The date should be provided in the date format chosen by you in the first property field.
+
+#### End time on week and day view
+
+This determines the time at which week view and day view cells ends. Keep in mind that this
+field accepts a date, but still only the time and timezone(if provided) are taken from this date.
+The date should be provided in the date format chosen by you in the first property field.
+
 #### Show toolbar
 
 Determines whether the calendar toolbar should be displayed or not.
