@@ -33,6 +33,10 @@ export const Calendar = function ({
 
   const events = properties.events ? properties.events.map((event) => prepareEvent(event, properties.dateFormat)) : [];
   const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
+  const todayStartTime = moment().startOf('day').toDate();
+  const todayEndTime = moment().endOf('day').toDate();
+  const startTime = properties.startTime ? parseDate(properties.startTime, properties.dateFormat) : todayStartTime;
+  const endTime = properties.endTime ? parseDate(properties.endTime, properties.dateFormat) : todayEndTime;
 
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
 
@@ -88,6 +92,8 @@ export const Calendar = function ({
     },
   };
 
+  if (exposedVariables.currentDate === undefined) setExposedVariable('currentDate', properties.defaultDate);
+
   return (
     <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }}>
       <ReactCalendar
@@ -95,6 +101,7 @@ export const Calendar = function ({
         ${darkMode ? 'dark-mode' : ''}
         ${styles.cellSizeInViewsClassifiedByResource}
         ${properties.highlightToday ? '' : 'dont-highlight-today'}
+        ${exposedVariables.currentView === 'week' ? 'resources-week-cls' : ''}
         ${properties.displayViewSwitcher ? '' : 'hide-view-switcher'}`}
         localizer={localizer}
         defaultDate={defaultDate}
@@ -104,10 +111,15 @@ export const Calendar = function ({
         style={style}
         views={allowedCalendarViews}
         defaultView={defaultView}
-        onView={(view) => setExposedVariable('currentView', view)}
+        onView={(view) => {
+          setExposedVariable('currentView', view);
+          fireEvent('onCalendarViewChange');
+        }}
         {...resourcesParam}
         resourceIdAccessor="resourceId"
         resourceTitleAccessor="title"
+        min={startTime}
+        max={endTime}
         onSelectEvent={(calendarEvent, e) => {
           fireEvent('onCalendarEventSelect', { calendarEvent });
           if (properties.showPopOverOnEventClick)
@@ -121,6 +133,10 @@ export const Calendar = function ({
                 height: e.target.getBoundingClientRect().height,
               },
             });
+        }}
+        onNavigate={(date) => {
+          setExposedVariable('currentDate', moment(date).format(properties.dateFormat));
+          fireEvent('onCalendarNavigate');
         }}
         selectable={true}
         onSelectSlot={slotSelectHandler}

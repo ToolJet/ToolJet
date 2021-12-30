@@ -1,6 +1,6 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';

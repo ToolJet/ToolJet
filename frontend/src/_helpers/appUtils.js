@@ -1,5 +1,5 @@
 import React from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import {
   getDynamicVariables,
   resolveReferences,
@@ -375,6 +375,8 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelect',
       'onClick',
       'onFileSelected',
+      'onCalendarNavigate',
+      'onCalendarViewChange',
       'onSearchTextChanged',
     ].includes(eventName)
   ) {
@@ -515,6 +517,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
 
   let _self = _ref;
 
+  // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;

@@ -1216,6 +1216,8 @@ export const componentTypes = [
       events: { type: 'code', displayName: 'Events' },
       resources: { type: 'code', displayName: 'Resources' },
       defaultView: { type: 'code', displayName: 'Default view' },
+      startTime: { type: 'code', displayName: 'Start time on week and day view'},
+      endTime: { type: 'code', displayName: 'End time on week and day view'},
       displayToolbar: { type: 'toggle', displayName: 'Show toolbar' },
       displayViewSwitcher: { type: 'toggle', displayName: 'Show view switcher' },
       highlightToday: { type: 'toggle', displayName: 'Highlight today' },
@@ -1224,6 +1226,8 @@ export const componentTypes = [
     events: {
       onCalendarEventSelect: { displayName: 'On Event Select' },
       onCalendarSlotSelect: { displayName: 'On Slot Select' },
+      onCalendarNavigate: { displayName: 'On Date Navigate' },
+      onCalendarViewChange: { displayName: 'On View Change' },
     },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
@@ -1241,6 +1245,7 @@ export const componentTypes = [
       selectedEvent: {},
       selectedSlots: {},
       currentView: 'month',
+      currentDate: undefined,
     },
     definition: {
       others: {
@@ -1264,6 +1269,12 @@ export const componentTypes = [
         defaultView: {
           value: "{{'month'}}",
         },
+        startTime: {
+          value: "{{moment().startOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}}",
+        },
+        endTime: {
+          value: "{{moment().endOf('day').format('MM-DD-YYYY HH:mm:ss A Z')}}",
+        },
         displayToolbar: {
           value: true,
         },
@@ -1281,7 +1292,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         cellSizeInViewsClassifiedByResource: { value: 'spacious' },
-        weekDateFormat: { value: 'DD MMM'}
+        weekDateFormat: { value: 'DD MMM' },
       },
     },
   },
