@@ -1102,7 +1102,7 @@ class Editor extends React.Component {
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
-                      allComponents={cloneDeep(appDefinition.components)}
+                      allComponents={appDefinition.components}
                       key={selectedComponent.id}
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
