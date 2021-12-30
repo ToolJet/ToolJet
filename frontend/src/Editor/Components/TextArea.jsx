@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export const TextArea = function TextArea({ width, height, properties, exposedVariables, styles, setExposedVariable }) {
+export const TextArea = function TextArea({ height, properties, exposedVariables, styles, setExposedVariable }) {
   useEffect(() => {
     setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps

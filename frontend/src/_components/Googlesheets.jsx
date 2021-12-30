@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { datasourceService } from '@/_services';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';

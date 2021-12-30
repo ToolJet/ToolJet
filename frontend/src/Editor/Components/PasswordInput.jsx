@@ -1,14 +1,6 @@
 import React from 'react';
 
-export const PasswordInput = ({
-  width,
-  height,
-  validate,
-  properties,
-  styles,
-  exposedVariables,
-  setExposedVariable,
-}) => {
+export const PasswordInput = ({ height, validate, properties, styles, exposedVariables, setExposedVariable }) => {
   const value = exposedVariables.value;
   const { visibility, disabledState } = styles;
   const placeholder = properties.placeholder;
