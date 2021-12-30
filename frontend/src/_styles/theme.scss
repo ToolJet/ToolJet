@@ -2616,6 +2616,29 @@ input[type="text"] {
   }
 }
 
+//!for calendar widget week view with compact/spacious mode border fix
+.resources-week-cls .rbc-time-column:nth-last-child(7n) {
+  border-left: none!important;
+  .rbc-timeslot-group {
+    border-left: 2.5px solid #dadcde !important;
+  }
+}
+.resources-week-cls .rbc-allday-cell {
+ border: none !important;
+ .rbc-row {
+   border-left: 1.5px solid #dadcde;
+   border-right: 1.5px solid #dadcde;
+ }
+}
+.resources-week-cls .rbc-time-header-cell {
+  border: none!important;
+}
+.resources-week-cls .rbc-time-view-resources .rbc-header {
+ border-left: 1.5px solid #dadcde !important;
+ border-right: 1.5px solid #dadcde !important;
+
+}
+
 .calendar-widget.hide-view-switcher {
   .rbc-toolbar {
     .rbc-btn-group:nth-of-type(3) {
