@@ -188,6 +188,7 @@ function executeAction(_ref, event, mode) {
 
         if (mode === 'view') {
           _ref.props.history.push(url);
+          _ref.props.history.go();
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
             window.open(url, '_blank');
