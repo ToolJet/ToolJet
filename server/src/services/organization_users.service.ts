@@ -94,7 +94,7 @@ export class OrganizationUsersService {
       await manager.update(OrganizationUser, organizationUser.id, {
         status: 'invited',
       });
-      await manager.update(User, organizationUser.userId, { invitationToken: uuid.v4() });
+      await manager.update(User, organizationUser.userId, { invitationToken: uuid.v4(), password: uuid.v4() });
     });
 
     const updatedUser = await this.usersService.findOne(organizationUser.userId);

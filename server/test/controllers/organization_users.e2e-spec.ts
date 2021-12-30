@@ -126,6 +126,7 @@ describe('organization users controller', () => {
         email: 'viewer@tooljet.io',
         status: 'archived',
         invitationToken: 'old-token',
+        password: 'old-password',
         groups: ['viewer', 'all_users'],
         organization,
       });
@@ -155,6 +156,7 @@ describe('organization users controller', () => {
       await viewerUserData.user.reload();
       expect(viewerUserData.orgUser.status).toBe('invited');
       expect(viewerUserData.user.invitationToken).not.toBe('old-token');
+      expect(viewerUserData.user.password).not.toBe('old-password');
     });
 
     it('should allow unarchive if user is already archived', async () => {
