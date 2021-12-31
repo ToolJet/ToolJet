@@ -129,13 +129,17 @@ export function CodeHinter({
               <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
                 {previewType}
               </div>
-              <div className="preview-icons">
-                <PopupIcon callback={() => options.callback(!pinnedState)} icon={options.icon} tip={options.tip} />
-              </div>
-              {pinnedState && (
-                <div className="preview-icons">
-                  <PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="copy to clipboard" />
-                </div>
+              {isOpen && (
+                <>
+                  <div className="preview-icons">
+                    <PopupIcon callback={() => options.callback(!pinnedState)} icon={options.icon} tip={options.tip} />
+                  </div>
+                  {pinnedState && (
+                    <div className="preview-icons">
+                      <PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="copy to clipboard" />
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
