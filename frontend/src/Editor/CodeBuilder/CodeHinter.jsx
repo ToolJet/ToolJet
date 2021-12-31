@@ -87,6 +87,8 @@ export function CodeHinter({
     }
   };
 
+  const [pinnedState, setPinnedState] = useState(false);
+
   const getPreview = () => {
     const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
@@ -109,6 +111,16 @@ export function CodeHinter({
     const previewType = typeof preview;
     const content = getPreviewContent(preview, previewType);
 
+    const togglePinned = (bool) => {
+      setFocused(bool);
+      setPinnedState(bool);
+    };
+    const options = {
+      callback: (boolean) => togglePinned(boolean),
+      icon: pinnedState ? 'pinned-off' : 'pinned',
+      tip: !pinnedState ? 'Pin Preview' : 'Unpin Preview',
+    };
+
     return (
       <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
         <div
@@ -118,10 +130,20 @@ export function CodeHinter({
           className="dynamic-variable-preview bg-green-lt px-1 py-1"
         >
           <div>
-            <PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="copy to clipboard" />
-            <div className="heading my-1">
-              <span>{previewType}</span>
+            <div className="d-flex my-1">
+              <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
+                {previewType}
+              </div>
+              <div className="preview-icons">
+                <PopupIcon callback={() => options.callback(!pinnedState)} icon={options.icon} tip={options.tip} />
+              </div>
+              {pinnedState && (
+                <div className="preview-icons">
+                  <PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="copy to clipboard" />
+                </div>
+              )}
             </div>
+
             {content}
           </div>
         </div>
@@ -156,6 +178,18 @@ export function CodeHinter({
     });
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
+
+  useEffect(() => {
+    const element = document.getElementsByClassName('portal-container');
+    if (element) {
+      const checkPortalExits = element[0]?.classList.contains(componentName);
+      if (isOpen === true && (checkPortalExits === false || checkPortalExits === undefined)) {
+        setIsOpen(false);
+        setPinnedState(false);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFocused, getPreview]);
 
   const defaultClassName = className === 'query-hinter' || undefined ? '' : 'code-hinter';
 
