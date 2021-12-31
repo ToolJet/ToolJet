@@ -11,8 +11,6 @@ import { Authorize } from '@/Oauth2';
 import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
@@ -77,8 +75,6 @@ class App extends React.Component {
 
     return (
       <>
-        <ToastContainer />
-
         <Router history={history}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
