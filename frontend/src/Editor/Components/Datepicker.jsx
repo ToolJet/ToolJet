@@ -9,6 +9,9 @@ export const Datepicker = function Datepicker({
   exposedVariables,
   setExposedVariable,
   validate,
+  onComponentClick,
+  component,
+  id,
 }) {
   const { format, enableTime, enableDate, defaultValue } = properties;
   const { visibility, disabledState } = styles;
@@ -52,10 +55,14 @@ export const Datepicker = function Datepicker({
         closeOnSelect={true}
         dateFormat={isDateFormat}
         placeholderText={defaultValue}
-        inputProps={{ placeholder: defaultValue }}
+        inputProps={{ placeholder: defaultValue, style: { height } }}
+        onOpen={(event) => {
+          onComponentClick(id, component, event);
+        }}
         renderInput={(props) => {
           return (
             <input
+              readOnly
               {...props}
               value={exposedVariables.value}
               className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2`}

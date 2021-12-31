@@ -41,6 +41,7 @@ const Comment = ({
     socket?.addEventListener('message', function (event) {
       if (event.data === threadId) fetchData();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useLayoutEffect(() => {
@@ -63,6 +64,7 @@ const Comment = ({
       // resetting the query param
       router.push(window.location.pathname);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   React.useEffect(() => {
@@ -71,6 +73,7 @@ const Comment = ({
     } else {
       setOpen(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const handleSubmit = async (comment) => {

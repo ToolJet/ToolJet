@@ -7,9 +7,9 @@ export const folderService = {
   addToFolder,
 };
 
-function getAll() {
+function getAll(searchKey = '') {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/folders/`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/folders?searchKey=${searchKey}`, requestOptions).then(handleResponse);
 }
 
 function create(name) {

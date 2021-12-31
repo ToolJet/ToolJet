@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
 import { DndProvider } from 'react-dnd';
@@ -70,7 +71,7 @@ class Editor extends React.Component {
       app: {},
       allComponentTypes: componentTypes,
       isQueryPaneDragging: false,
-      queryPaneHeight: 30,
+      queryPaneHeight: 70,
       isLoading: true,
       users: null,
       appId,
@@ -643,18 +644,11 @@ class Editor extends React.Component {
     });
   };
 
-  toggleQueryPaneHeight = () => {
-    this.setState({
-      queryPaneHeight: this.state.queryPaneHeight >= 80 ? 30 : 80,
-    });
-  };
-
   toggleQueryEditor = () => {
     this.setState((prev) => ({
       showQueryEditor: !prev.showQueryEditor,
       queryPaneHeight: this.state.queryPaneHeight === 100 ? 30 : 100,
     }));
-    this.toolTipRefShow.current.style.display = this.state.showQueryEditor ? 'flex' : 'none';
   };
 
   toggleComments = () => {
@@ -698,7 +692,6 @@ class Editor extends React.Component {
     });
   };
 
-  toolTipRefShow = createRef();
   queryPaneRef = createRef();
 
   getCanvasWidth = () => {
@@ -738,7 +731,7 @@ class Editor extends React.Component {
       app,
       showQueryConfirmation,
       queryPaneHeight,
-      showQueryEditor,
+      // showQueryEditor,
       showLeftSidebar,
       currentState,
       isLoading,
@@ -811,23 +804,6 @@ class Editor extends React.Component {
                 {this.state.editingVersion && (
                   <small className="app-version-name">{`App version: ${this.state.editingVersion.name}`}</small>
                 )}
-                <div className="editor-buttons">
-                  <span
-                    className={`btn btn-light mx-2`}
-                    onClick={this.toggleQueryEditor}
-                    data-tip="Show query editor"
-                    data-class="py-1 px-2"
-                    ref={this.toolTipRefShow}
-                    style={{ display: 'none', opacity: 0.5 }}
-                  >
-                    <img
-                      style={{ transform: 'rotate(-90deg)' }}
-                      src="/assets/images/icons/editor/sidebar-toggle.svg"
-                      width="12"
-                      height="12"
-                    />
-                  </span>
-                </div>
                 <div className="layout-buttons cursor-pointer">
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
@@ -892,7 +868,11 @@ class Editor extends React.Component {
               <div
                 className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                 style={{ transform: `scale(${zoomLevel})` }}
-                onClick={() => this.switchSidebarTab(2)}
+                onClick={(e) => {
+                  if (['real-canvas', 'modal'].includes(e.target.className)) {
+                    this.switchSidebarTab(2);
+                  }
+                }}
               >
                 <div
                   className="canvas-area"
@@ -1084,7 +1064,6 @@ class Editor extends React.Component {
                           <QueryManager
                             toggleQueryEditor={this.toggleQueryEditor}
                             dataSources={dataSources}
-                            toggleQueryPaneHeight={this.toggleQueryPaneHeight}
                             dataQueries={dataQueries}
                             mode={editingQuery ? 'edit' : 'create'}
                             selectedQuery={selectedQuery}
@@ -1123,7 +1102,7 @@ class Editor extends React.Component {
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
-                      allComponents={cloneDeep(appDefinition.components)}
+                      allComponents={appDefinition.components}
                       key={selectedComponent.id}
                       switchSidebarTab={this.switchSidebarTab}
                       apps={apps}
