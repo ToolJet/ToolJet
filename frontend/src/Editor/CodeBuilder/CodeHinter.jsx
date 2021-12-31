@@ -123,12 +123,7 @@ export function CodeHinter({
 
     return (
       <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
-        <div
-          onBlur={() => setFocused(false)}
-          onClick={() => setFocused(true)}
-          ref={heightRef}
-          className="dynamic-variable-preview bg-green-lt px-1 py-1"
-        >
+        <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
           <div>
             <div className="d-flex my-1">
               <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
