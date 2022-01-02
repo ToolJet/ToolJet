@@ -86,8 +86,12 @@ export function CodeHinter({
         return content;
     }
   };
-
   const [pinnedState, setPinnedState] = useState(false);
+
+  const togglePinned = (bool) => {
+    setFocused(bool);
+    setPinnedState(bool);
+  };
 
   const getPreview = () => {
     const [preview, error] = resolveReferences(currentValue, realState, null, {}, true);
@@ -111,10 +115,6 @@ export function CodeHinter({
     const previewType = typeof preview;
     const content = getPreviewContent(preview, previewType);
 
-    const togglePinned = (bool) => {
-      setFocused(bool);
-      setPinnedState(bool);
-    };
     const options = {
       callback: (boolean) => togglePinned(boolean),
       icon: pinnedState ? 'pinned-off' : 'pinned',
@@ -130,16 +130,14 @@ export function CodeHinter({
                 {previewType}
               </div>
               {isOpen && (
-                <>
-                  <div className="preview-icons">
-                    <PopupIcon callback={() => options.callback(!pinnedState)} icon={options.icon} tip={options.tip} />
-                  </div>
-                  {pinnedState && (
-                    <div className="preview-icons">
-                      <PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="copy to clipboard" />
-                    </div>
-                  )}
-                </>
+                <div className="preview-icons">
+                  <PopupIcon callback={() => options.callback(!pinnedState)} icon={options.icon} tip={options.tip} />
+                </div>
+              )}
+              {isOpen && pinnedState && (
+                <div className="preview-icons">
+                  <PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="copy to clipboard" />
+                </div>
               )}
             </div>
 
@@ -169,6 +167,7 @@ export function CodeHinter({
         }
 
         setIsOpen(false);
+        togglePinned(false);
         resolve();
       }
     }).then(() => {
@@ -177,18 +176,6 @@ export function CodeHinter({
     });
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
-
-  useEffect(() => {
-    const element = document.getElementsByClassName('portal-container');
-    if (element) {
-      const checkPortalExits = element[0]?.classList.contains(componentName);
-      if (isOpen === true && (checkPortalExits === false || checkPortalExits === undefined)) {
-        setIsOpen(false);
-        setPinnedState(false);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFocused, getPreview]);
 
   const defaultClassName = className === 'query-hinter' || undefined ? '' : 'code-hinter';
 
