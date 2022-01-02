@@ -140,11 +140,11 @@ export default class MongodbService implements QueryService {
     };
   }
 
-  parseJSON(json?: string) {
+  parseJSON(json?: string): any {
     if (!json) {
       return {};
     }
-    return this.parseJSON(json);
+    return JSON.parse(json);
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
