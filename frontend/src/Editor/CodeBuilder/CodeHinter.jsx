@@ -131,12 +131,16 @@ export function CodeHinter({
               </div>
               {isOpen && (
                 <div className="preview-icons">
-                  <PopupIcon callback={() => options.callback(!pinnedState)} icon={options.icon} tip={options.tip} />
+                  <CodeHinter.PopupIcon
+                    callback={() => options.callback(!pinnedState)}
+                    icon={options.icon}
+                    tip={options.tip}
+                  />
                 </div>
               )}
               {isOpen && pinnedState && (
                 <div className="preview-icons">
-                  <PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="copy to clipboard" />
+                  <CodeHinter.PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="copy to clipboard" />
                 </div>
               )}
             </div>
