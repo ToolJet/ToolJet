@@ -105,7 +105,8 @@ export const DropDown = function DropDown({
         : {
             backgroundColor: state.value === currentValue ? '#4D72FA' : 'white',
             ':hover': {
-              backgroundColor: '#b7c2e9',
+              backgroundColor: '#d8dce9',
+              color: 'black',
             },
           };
       return {
