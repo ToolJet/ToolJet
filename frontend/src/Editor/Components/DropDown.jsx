@@ -61,18 +61,22 @@ export const DropDown = function DropDown({
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
-      // background: '#fff',
-      // borderColor: '#9e9e9e',
+      background: darkMode ? 'rgb(31,40,55)' : 'white',
       minHeight: height,
       height: height,
       boxShadow: state.isFocused ? null : null,
       borderRadius: 0,
     }),
 
-    valueContainer: (provided, state) => ({
+    valueContainer: (provided, _state) => ({
       ...provided,
       height: height,
       padding: '0 6px',
+    }),
+
+    singleValue: (provided, _state) => ({
+      ...provided,
+      color: darkMode ? 'white' : 'black',
     }),
 
     input: (provided, _state) => ({
@@ -138,6 +142,8 @@ export const DropDown = function DropDown({
             }}
             options={selectOptions}
             styles={customStyles}
+            isLoading={properties.loadingState}
+            onInputChange={onSearchTextChange}
           />
         </div>
       </div>
