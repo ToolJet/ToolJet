@@ -2,7 +2,7 @@ import React from 'react';
 import { datasourceService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { TestConnection } from './TestConnection';
 import {
   DataBaseSources,
@@ -124,7 +124,7 @@ class DataSourceManager extends React.Component {
         datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
-          toast.success('Datasource Saved', { hideProgressBar: true, position: 'top-center' });
+          toast.success('Datasource Saved', { position: 'top-center' });
           this.props.dataSourcesChanged();
         });
       } else {
@@ -132,12 +132,12 @@ class DataSourceManager extends React.Component {
         datasourceService.create(appId, name, kind, parsedOptions).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
-          toast.success('Datasource Added', { hideProgressBar: true, position: 'top-center' });
+          toast.success('Datasource Added', { position: 'top-center' });
           this.props.dataSourcesChanged();
         });
       }
     } else {
-      toast.error('The name of datasource should not be empty', { hideProgressBar: true, position: 'top-center' });
+      toast.error('The name of datasource should not be empty', { position: 'top-center' });
     }
   };
 

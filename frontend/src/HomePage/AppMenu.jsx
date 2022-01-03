@@ -4,7 +4,7 @@ import Popover from 'react-bootstrap/Popover';
 import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
 import { folderService } from '@/_services';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 export const AppMenu = function AppMenu({
   app,
@@ -25,8 +25,7 @@ export const AppMenu = function AppMenu({
     folderService
       .addToFolder(appId, folderId)
       .then(() => {
-        toast.info('Added to folder.', {
-          hideProgressBar: true,
+        toast.success('Added to folder.', {
           position: 'top-center',
         });
 
@@ -37,7 +36,7 @@ export const AppMenu = function AppMenu({
       .catch(({ error }) => {
         setIsAdding(false);
         setAddToFolder(false);
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
       });
   }
 

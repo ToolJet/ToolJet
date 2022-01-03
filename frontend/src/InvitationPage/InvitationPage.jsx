@@ -1,6 +1,6 @@
 import React from 'react';
 import { userService } from '@/_services';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import queryString from 'query-string';
 
 class InvitationPage extends React.Component {
@@ -27,7 +27,6 @@ class InvitationPage extends React.Component {
     if (!password || !password_confirmation || !password.trim() || !password_confirmation.trim()) {
       this.setState({ isLoading: false });
       toast.error("Password shouldn't be empty or contain white space(s)", {
-        hideProgressBar: true,
         position: 'top-center',
       });
       return;
@@ -36,7 +35,6 @@ class InvitationPage extends React.Component {
     if (password !== password_confirmation) {
       this.setState({ isLoading: false });
       toast.error("Passwords don't match", {
-        hideProgressBar: true,
         position: 'top-center',
       });
       return;
@@ -54,14 +52,13 @@ class InvitationPage extends React.Component {
       .then(() => {
         this.setState({ isLoading: false });
         toast.success('Password has been set successfully.', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.props.history.push('/login');
       })
       .catch(({ error }) => {
         this.setState({ isLoading: false });
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
       });
   };
 
