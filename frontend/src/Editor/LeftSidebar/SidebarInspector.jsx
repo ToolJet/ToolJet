@@ -47,6 +47,7 @@ export const LeftSidebarInspector = ({ darkMode, globals, components, queries })
             displayObjectSize={false}
             quotesOnKeys={false}
             sortKeys={true}
+            onSelect={console.log}
             // indentWidth={0.5}
           />
           <ReactJson

@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select';
 
-export const DropDown = function DropDown({ height, validate, properties, styles, setExposedVariable, fireEvent }) {
+export const DropDown = function DropDown({
+  height,
+  validate,
+  properties,
+  styles,
+  setExposedVariable,
+  fireEvent,
+  darkMode,
+}) {
   const { label, value, display_values, values } = properties;
   const { visibility, disabledState } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
@@ -11,7 +19,7 @@ export const DropDown = function DropDown({ height, validate, properties, styles
   try {
     selectOptions = [
       ...values.map((value, index) => {
-        return { name: display_values[index], value: value };
+        return { label: display_values[index], value: value };
       }),
     ];
   } catch (err) {
@@ -50,32 +58,66 @@ export const DropDown = function DropDown({ height, validate, properties, styles
     fireEvent('onSearchTextChanged');
   };
 
-  const customInputForSelect = (valueProps) => (
-    <input
-      {...valueProps}
-      className="select-search__input"
-      onChange={(event) => {
-        valueProps.onChange(event);
-        onSearchTextChange(event.target.value);
-      }}
-    />
-  );
+  const customStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      // background: '#fff',
+      // borderColor: '#9e9e9e',
+      minHeight: height,
+      height: height,
+      boxShadow: state.isFocused ? null : null,
+      borderRadius: 0,
+    }),
 
-  const customOptionForSelect = (domProps, option, snapshot, className) => {
-    return (
-      <div
-        className={className}
-        {...domProps}
-        style={{ width: '100%', height: 30, margin: 0, paddingLeft: 14 }}
-        onMouseDown={(event) => {
-          event.stopPropagation();
-          setCurrentValue(option.value);
-          setExposedVariable('value', option.value).then(() => fireEvent('onSelect'));
-        }}
-      >
-        {option.name}
-      </div>
-    );
+    valueContainer: (provided, state) => ({
+      ...provided,
+      height: height,
+      padding: '0 6px',
+    }),
+
+    input: (provided, _state) => ({
+      ...provided,
+      margin: '0px',
+    }),
+    indicatorSeparator: (_state) => ({
+      display: 'none',
+    }),
+    indicatorsContainer: (provided, _state) => ({
+      ...provided,
+      height: height,
+    }),
+    option: (provided, state) => {
+      const styles = darkMode
+        ? {
+            color: 'white',
+            backgroundColor: state.value === currentValue ? '#2585FE' : 'rgb(31,40,55)',
+            ':hover': {
+              backgroundColor: '#2F3C4C',
+            },
+            ':active': {
+              backgroundColor: '#2585FE',
+            },
+          }
+        : {
+            backgroundColor: state.value === currentValue ? '#2585FE' : 'white',
+          };
+      return {
+        ...provided,
+        height: height,
+        display: 'flex',
+        flexDirection: 'rows',
+        alignItems: 'center',
+        ...styles,
+      };
+    },
+    menu: (provided, _state) => ({
+      ...provided,
+      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+    }),
+    menuPortal: (provided, _state) => ({
+      ...provided,
+      // backgroundColor: '#4c67b3',
+    }),
   };
 
   return (
@@ -87,20 +129,15 @@ export const DropDown = function DropDown({ height, validate, properties, styles
           </label>
         </div>
         <div className="col px-0 h-100">
-          <SelectSearch
+          <Select
             disabled={disabledState}
-            options={properties.loadingState ? [] : selectOptions}
-            emptyMessage={properties.loadingState ? 'Loading options..' : 'There are no options'}
-            placeholder={'Select..'}
-            value={currentValue}
-            search={true}
-            onChange={(newVal) => {
-              setCurrentValue(newVal);
-              setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
+            value={selectOptions.filter((option) => option.value === currentValue)[0]}
+            onChange={(selectedOption) => {
+              setCurrentValue(selectedOption.value);
+              setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
             }}
-            filterOptions={fuzzySearch}
-            renderValue={customInputForSelect}
-            renderOption={customOptionForSelect}
+            options={selectOptions}
+            styles={customStyles}
           />
         </div>
       </div>
