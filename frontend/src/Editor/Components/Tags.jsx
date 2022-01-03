@@ -8,12 +8,13 @@ export const Tags = function Tags({ height, properties, styles }) {
     width: '100%',
     height,
     display: visibility ? '' : 'none',
+    color: textColor,
   };
 
   function renderTag(item, index) {
     const tagComputedStyles = {
       backgroundColor: item.color,
-      color: textColor,
+      color: item.textColor,
     };
 
     return (

@@ -1520,7 +1520,8 @@ export const componentTypes = [
       },
       properties: {
         data: {
-          value: "{{ [ \n\t\t{ title: 'tag1', color: '#000' }, \n\t\t{ title: 'tag2', color: '#dedede' } ] }}",
+          value:
+            "{{ [ \n\t\t{ title: 'success', color: '#4BB543', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#0000ff', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#FFFF00', textColor: '#000'  }, \n\t\t{ title: 'danger', color: '#ff0000', textColor: '#fff' } ] }}",
         },
       },
       events: [],
