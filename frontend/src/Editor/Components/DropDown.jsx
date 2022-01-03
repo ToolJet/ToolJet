@@ -94,33 +94,35 @@ export const DropDown = function DropDown({
       const styles = darkMode
         ? {
             color: 'white',
-            backgroundColor: state.value === currentValue ? '#2585FE' : 'rgb(31,40,55)',
+            backgroundColor: state.value === currentValue ? '#4D72FA' : 'rgb(31,40,55)',
             ':hover': {
               backgroundColor: '#2F3C4C',
             },
             ':active': {
-              backgroundColor: '#2585FE',
+              backgroundColor: '#4D72FA',
             },
           }
         : {
-            backgroundColor: state.value === currentValue ? '#2585FE' : 'white',
+            backgroundColor: state.value === currentValue ? '#4D72FA' : 'white',
+            ':hover': {
+              backgroundColor: '#b7c2e9',
+            },
           };
       return {
         ...provided,
-        height: height,
+        height: 'auto',
         display: 'flex',
         flexDirection: 'rows',
         alignItems: 'center',
+        ':hover': {
+          backgroundColor: '#2F3C4C',
+        },
         ...styles,
       };
     },
     menu: (provided, _state) => ({
       ...provided,
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
-    }),
-    menuPortal: (provided, _state) => ({
-      ...provided,
-      // backgroundColor: '#4c67b3',
     }),
   };
 
