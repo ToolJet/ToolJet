@@ -10,7 +10,7 @@ export const RadioButton = function RadioButton({
   setExposedVariable,
 }) {
   const { label, value, values, display_values } = properties;
-  const { visibility, disabledState, textColor, radioButtonColor } = styles;
+  const { visibility, disabledState, textColor, activeColor } = styles;
   let selectOptions = [];
 
   try {
@@ -44,7 +44,7 @@ export const RadioButton = function RadioButton({
             <input
               style={{
                 marginTop: '1px',
-                backgroundColor: exposedVariables.value === option.value ? `${radioButtonColor}` : 'white',
+                backgroundColor: exposedVariables.value === option.value ? `${activeColor}` : 'white',
               }}
               className="form-check-input"
               checked={exposedVariables.value === option.value}
