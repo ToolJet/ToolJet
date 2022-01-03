@@ -2886,6 +2886,18 @@ input[type="text"] {
 }
 
 /**
+ * Timer Widget
+ */
+.timer-wrapper {
+  padding: 10px;
+  .counter-container {
+    font-size: 3em;
+    padding-bottom: 5px;
+    text-align: center;
+  }
+}
+
+/**
  * Search Box
  */
 .search-box-wrapper {
