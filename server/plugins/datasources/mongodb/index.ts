@@ -3,6 +3,7 @@ import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
+const JSON5 = require('json5');
 const { MongoClient } = require('mongodb');
 
 @Injectable()
@@ -144,7 +145,7 @@ export default class MongodbService implements QueryService {
     if (!json) {
       return {};
     }
-    return JSON.parse(json);
+    return JSON5.parse(json);
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {

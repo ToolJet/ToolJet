@@ -101,7 +101,7 @@
         "$key": "document",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"name\": \"Steve\", \"hobbies\": [ \"hiking\", \"tennis\", \"fly fishing\" ] }",
+        "placeholder": "{ name: 'Steve', 'hobbies: [ 'hiking', 'tennis', 'fly fishing' ] }",
         "description": "Enter document",
         "height": "150px"
       },
@@ -110,7 +110,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"checkKeys\": true }",
+        "placeholder": "{ checkKeys: true }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -128,7 +128,7 @@
         "$key": "documents",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "[ { \"_id\": 1, \"name\": \"Steve\" }, { \"_id\": 2, \"name\": \"Sally\" } ]",
+        "placeholder": "[ { _id: 1, name: 'Steve' }, { _id: 2, name: 'Sally' } ]",
         "description": "Enter document",
         "height": "150px"
       },
@@ -137,7 +137,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"checkKeys\": true }",
+        "placeholder": "{ checkKeys: true }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -155,7 +155,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"birth\": { \"$lt\": new Date(\"01/01/1945\") }",
+        "placeholder": "{ birth: { $lt: new Date('01/01/1945') }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -164,7 +164,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"projections\": { \"_id\": 0, \"name.first\": 0, \"birth\": 1 }, \"sort\": { \"birth\": -1 }, \"limit\": 10, \"skip\": 2 }",
+        "placeholder": "{ projections: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
         "description": "Enter options",
         "height": "150px"
       }
@@ -182,7 +182,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"birth\": { \"$lt\": new Date(\"01/01/1945\") }",
+        "placeholder": "{ birth: { $lt: new Date('01/01/1945') }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -191,7 +191,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"projections\": { \"_id\": 0, \"name.first\": 0, \"birth\": 1 }, \"sort\": { \"birth\": -1 }, \"limit\": 10, \"skip\": 2 }",
+        "placeholder": "{ projections: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
         "description": "Enter options",
         "height": "150px"
       }
@@ -209,7 +209,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"fullResponse\": true }",
+        "placeholder": "{ fullResponse: true }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -227,7 +227,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"birth\": { \"$lt\": new Date(\"01/01/1945\") }",
+        "placeholder": "{ birth: { $lt: new Date('01/01/1945') }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -261,7 +261,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"directors\": \"Barbra Streisand\", }",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -270,7 +270,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"comment\": \"some comment\" }",
+        "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -288,7 +288,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"directors\": \"Barbra Streisand\", }",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -297,7 +297,7 @@
         "$key": "update",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"$set\": { \"status\": \"Modified\" } }",
+        "placeholder": "{ $set: { status: 'Modified' } }",
         "description": "Enter update",
         "height": "150px"
       },
@@ -306,7 +306,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"comment\": \"some comment\" }",
+        "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -324,7 +324,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"directors\": \"Barbra Streisand\", }",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -333,7 +333,7 @@
         "$key": "update",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"$set\": { \"status\": \"Modified\" } }",
+        "placeholder": "{ $set: { status: 'Modified' } }",
         "description": "Enter update",
         "height": "150px"
       },
@@ -342,7 +342,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{  \"comment\": \"some comment\" }",
+        "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -360,7 +360,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"title\": { \"$regex\": \"The Cat from\" } } }",
+        "placeholder": "{ title: { $regex: 'The Cat from' } } }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -369,7 +369,7 @@
         "$key": "replacement",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"title\": { \"$regex\": \"The Cat from some sector\" } }",
+        "placeholder": "{ title: { $regex: 'The Cat from some sector' } }",
         "description": "Enter replacement",
         "height": "150px"
       },
@@ -378,7 +378,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{  \"comment\": \"some comment\" }",
+        "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -396,7 +396,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"title\": { \"$regex\": \"The Cat from\" } } }",
+        "placeholder": "{ title: { $regex: 'The Cat from' } } }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -405,7 +405,7 @@
         "$key": "replacement",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"title\": { \"$regex\": \"The Cat from some sector\" } }",
+        "placeholder": "{ title: { $regex: 'The Cat from some sector' } }",
         "description": "Enter replacement",
         "height": "150px"
       },
@@ -414,7 +414,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{  \"comment\": \"some comment\" }",
+        "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -432,7 +432,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"directors\": \"Barbra Streisand\", }",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -441,7 +441,7 @@
         "$key": "update",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"$set\": { \"status\": \"Modified\" } }",
+        "placeholder": "{ $set: { status: 'Modified' } }",
         "description": "Enter update",
         "height": "150px"
       },
@@ -450,7 +450,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"upsert\": true }",
+        "placeholder": "{ upsert: true }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -468,7 +468,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"directors\": \"Barbra Streisand\", }",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -477,7 +477,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"sort\": { \"field\": -1 } }",
+        "placeholder": "{ sort: { field: -1 } }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -495,7 +495,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"directors\": \"Barbra Streisand\", }",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -504,7 +504,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{  \"comment\": \"some comment\" }",
+        "placeholder": "{  comment: 'some comment' }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -522,7 +522,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ \"directors\": \"Barbra Streisand\", }",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -531,7 +531,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{  \"comment\": \"some comment\" }",
+        "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -549,7 +549,7 @@
         "$key": "operations",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "[{ \"insertOne\": { \"document\": { \"directors\": \"Barbra Streisand\" } } }]",
+        "placeholder": "[{ insertOne: { document: { directors: 'Barbra Streisand' } } }]",
         "description": "Enter operations",
         "height": "150px"
       },
@@ -558,7 +558,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{  \"comment\": \"some comment\" }",
+        "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
         "height": "50px"
       }
@@ -576,7 +576,7 @@
         "$key": "pipeline",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "[{ \"$match\": { \"categories\": \"Bakery\" } }, { \"$group\": { \"_id\": \"$stars\", \"count\": { \"$sum\": 1 } } }]",
+        "placeholder": "[{ $match: { categories: 'Bakery' } }, { $group: { _id: '$stars', count: { $sum: 1 } } }]",
         "description": "Enter pipeline",
         "height": "150px"
       },
@@ -585,7 +585,7 @@
         "$key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{  \"comment\": \"some comment\" }",
+        "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
         "height": "50px"
       }
