@@ -16,7 +16,7 @@ export const ApiSources = Object.keys(allManifests).reduce((accumulator, current
   return accumulator;
 }, []);
 export const CloudStorageSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (allManifests[currentValue].type === 'cloud') accumulator.push(allManifests[currentValue].source);
+  if (allManifests[currentValue].type === 'cloud-storage') accumulator.push(allManifests[currentValue].source);
   return accumulator;
 }, []);
 

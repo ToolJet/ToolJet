@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/Gcs.schema.json",
   "title": "Google Cloud Storage datasource",
   "description": "A schema defining GCS datasource",
-  "type": "cloud",
+  "type": "cloud-storage",
   "source": {
     "name": "GCS",
     "kind": "gcs",

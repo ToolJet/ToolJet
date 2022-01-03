@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/S3.schema.json",
   "title": "AWS S3 datasource",
   "description": "A schema defining AWS S3 datasource",
-  "type": "cloud",
+  "type": "cloud-storage",
   "source": {
     "name": "AWS S3",
     "kind": "s3",
