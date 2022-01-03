@@ -153,7 +153,7 @@ export const Box = function Box({
               validate={validate}
             ></ComponentToRender>
           ) : (
-            <div className="m-1" style={{ height: '100%' }}>
+            <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
               <div
                 className="component-image-holder p-2 d-flex flex-column justify-content-center"
                 style={{ height: '100%' }}

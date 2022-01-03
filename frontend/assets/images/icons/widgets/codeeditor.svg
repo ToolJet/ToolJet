@@ -1,6 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-   <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-   <polyline points="7 8 3 12 7 16"></polyline>
-   <polyline points="17 8 21 12 17 16"></polyline>
-   <line x1="14" y1="4" x2="10" y2="20"></line>
-</svg> 
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5.83333 6.66675L2.5 10.0001L5.83333 13.3334" stroke="#61656F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14.1667 6.66675L17.5001 10.0001L14.1667 13.3334" stroke="#61656F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M11.6667 3.33337L8.33337 16.6667" stroke="#61656F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

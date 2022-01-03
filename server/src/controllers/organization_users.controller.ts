@@ -21,10 +21,18 @@ export class OrganizationUsersController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('changeRole', User))
+  @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', User))
   @Post(':id/archive')
   async archive(@Request() req, @Param() params) {
     const result = await this.organizationUsersService.archive(params.id);
+    return decamelizeKeys({ result });
+  }
+
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', User))
+  @Post(':id/unarchive')
+  async unarchive(@Request() req, @Param() params) {
+    const result = await this.organizationUsersService.unarchive(req.user, params.id);
     return decamelizeKeys({ result });
   }
 
