@@ -2775,6 +2775,17 @@ input[type="text"] {
       width: 100% !important;
     }
   }
+
+  .query-hinter {
+    .CodeMirror-line  {
+      margin-left: 2rem !important;
+    }
+
+    .CodeMirror-cursors  .CodeMirror-cursor {
+      margin-left: 2rem !important;
+    }
+  }
+
 }
 
 .preview-block-portal {
