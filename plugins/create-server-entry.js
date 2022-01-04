@@ -19,4 +19,4 @@ ${imports.join('\n')} \n
 ${outs}\n
 `
 
- writeFileSync('index.ts', content)
+ writeFileSync('server.ts', content)
