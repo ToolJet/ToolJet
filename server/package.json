@@ -24,7 +24,7 @@
     "db:migrate": "npm run typeorm migration:run",
     "db:seed": "ts-node -r tsconfig-paths/register ./scripts/seeds.ts",
     "db:reset": "npm run db:drop && npm run db:create && npm run db:migrate",
-    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js --config ormconfig.ts"
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config ormconfig.ts"
   },
   "dependencies": {
     "@casl/ability": "^5.3.1",
@@ -75,10 +75,14 @@
     "@nestjs/schematics": "^8.0.0",
     "@nestjs/testing": "^8.0.0",
     "@types/express": "^4.17.13",
+    "@types/got": "^9.6.12",
+    "@types/humps": "^2.0.1",
     "@types/jest": "^26.0.24",
     "@types/node": "^16.0.0",
+    "@types/nodemailer": "^6.4.4",
     "@types/passport-jwt": "^3.0.6",
     "@types/supertest": "^2.0.11",
+    "@types/ws": "^8.2.2",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
     "eslint": "^7.32.0",

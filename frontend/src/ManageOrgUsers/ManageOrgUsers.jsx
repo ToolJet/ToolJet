@@ -1,8 +1,7 @@
 import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
-import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
@@ -18,6 +17,7 @@ class ManageOrgUsers extends React.Component {
       creatingUser: false,
       newUser: {},
       archivingUser: null,
+      unarchivingUser: null,
       fields: {},
       errors: {},
     };
@@ -92,15 +92,32 @@ class ManageOrgUsers extends React.Component {
       .archive(id)
       .then(() => {
         toast.success('The user has been archived', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.setState({ archivingUser: null });
         this.fetchUsers();
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
         this.setState({ archivingUser: null });
+      });
+  };
+
+  unarchiveOrgUser = (id) => {
+    this.setState({ unarchivingUser: id });
+
+    organizationUserService
+      .unarchive(id)
+      .then(() => {
+        toast.success('The user has been unarchived', {
+          position: 'top-center',
+        });
+        this.setState({ unarchivingUser: null });
+        this.fetchUsers();
+      })
+      .catch(({ error }) => {
+        toast.error(error, { position: 'top-center' });
+        this.setState({ unarchivingUser: null });
       });
   };
 
@@ -126,7 +143,6 @@ class ManageOrgUsers extends React.Component {
         )
         .then(() => {
           toast.success('User has been created', {
-            hideProgressBar: true,
             position: 'top-center',
           });
           this.fetchUsers();
@@ -137,7 +153,7 @@ class ManageOrgUsers extends React.Component {
           });
         })
         .catch(({ error }) => {
-          toast.error(error, { hideProgressBar: true, position: 'top-center' });
+          toast.error(error, { position: 'top-center' });
           this.setState({ creatingUser: false });
         });
     } else {
@@ -153,14 +169,13 @@ class ManageOrgUsers extends React.Component {
   generateInvitationURL = (user) => window.location.origin + '/invitations/' + user.invitation_token;
 
   invitationLinkCopyHandler = () => {
-    toast.info('Invitation URL copied', {
-      hideProgressBar: true,
+    toast.success('Invitation URL copied', {
       position: 'bottom-right',
     });
   };
 
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, archivingUser } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -357,16 +372,17 @@ class ManageOrgUsers extends React.Component {
                                 )}
                               </td>
                               <td>
-                                {archivingUser === null && (
-                                  <a
-                                    onClick={() => {
-                                      this.archiveOrgUser(user.id);
-                                    }}
-                                  >
-                                    Archive
-                                  </a>
-                                )}
-                                {archivingUser === user.id && <small>Archiving user...</small>}
+                                <a
+                                  onClick={() => {
+                                    user.status === 'archived'
+                                      ? this.unarchiveOrgUser(user.id)
+                                      : this.archiveOrgUser(user.id);
+                                  }}
+                                >
+                                  {user.status === 'archived' ? 'Unarchive' : 'Archive'}
+
+                                  {unarchivingUser === user.id || archivingUser === user.id ? '...' : ''}
+                                </a>
                               </td>
                             </tr>
                           ))}

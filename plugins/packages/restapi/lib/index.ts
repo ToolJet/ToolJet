@@ -1,4 +1,6 @@
 const urrl = require('url');
+import { readFileSync } from 'fs';
+import * as tls from 'tls';
 import { QueryError, QueryResult,  QueryService} from 'common';
 import got, { Headers, HTTPError } from 'got'
 
@@ -94,7 +96,11 @@ export default class RestapiQueryService implements QueryService {
       const response = await got(url, {
         method,
         headers,
-        searchParams: { ...paramsFromUrl, ...this.searchParams(sourceOptions, queryOptions, hasDataSource) },
+        ...this.fetchHttpsCertsForCustomCA(),
+        searchParams: {
+          ...paramsFromUrl,
+          ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
+        },
         json,
       });
       result = JSON.parse(response.body);
@@ -135,4 +141,38 @@ export default class RestapiQueryService implements QueryService {
     };
   }
 
+  /* This function fetches the access token from the token url set in REST API (oauth) datasource */
+  async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
+    const tooljetHost = process.env.TOOLJET_HOST;
+    const accessTokenUrl = sourceOptions['access_token_url'];
+
+    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
+    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+
+    const response = await got(accessTokenUrl, {
+      method: 'post',
+      json: {
+        code,
+        client_id: sourceOptions['client_id'],
+        client_secret: sourceOptions['client_secret'],
+        grant_type: sourceOptions['grant_type'],
+        redirect_uri: `${tooljetHost}/oauth2/authorize`,
+        ...this.fetchHttpsCertsForCustomCA(),
+        ...customParams,
+      },
+    });
+
+    const result = JSON.parse(response.body);
+    return { access_token: result['access_token'] };
+  }
+
+  fetchHttpsCertsForCustomCA() {
+    if (!process.env.NODE_EXTRA_CA_CERTS) return {};
+
+    return {
+      https: {
+        certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
+      },
+    };
+  }
 }

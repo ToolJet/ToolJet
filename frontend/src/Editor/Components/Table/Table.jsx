@@ -405,6 +405,12 @@ export function Table({
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
+                onChange={(e) => {
+                  if (column.isEditable) {
+                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  }
+                }}
+                value={cellValue}
                 defaultValue={cellValue}
               ></textarea>
             );

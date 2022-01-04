@@ -1,5 +1,5 @@
 import React from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import {
   getDynamicVariables,
   resolveReferences,
@@ -188,6 +188,7 @@ function executeAction(_ref, event, mode) {
 
         if (mode === 'view') {
           _ref.props.history.push(url);
+          _ref.props.history.go();
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
             window.open(url, '_blank');
@@ -375,6 +376,14 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelect',
       'onClick',
       'onFileSelected',
+      'onStart',
+      'onResume',
+      'onReset',
+      'onPause',
+      'onCountDownFinish',
+      'onCalendarNavigate',
+      'onCalendarViewChange',
+      'onSearchTextChanged',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -514,6 +523,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
 
   let _self = _ref;
 
+  // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;

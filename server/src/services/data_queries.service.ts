@@ -22,14 +22,13 @@ export class DataQueriesService {
     return await this.dataQueriesRepository.findOne({ id: dataQueryId }, { relations: ['dataSource', 'app'] });
   }
 
-  async all(user: User, appId: string): Promise<DataQuery[]> {
+  async all(user: User, query: object): Promise<DataQuery[]> {
+    const { app_id: appId, app_version_id: appVersionId }: any = query;
+    const whereClause = { appId, ...(appVersionId && { appVersionId }) };
+
     return await this.dataQueriesRepository.find({
-      where: {
-        appId,
-      },
-      order: {
-        name: 'ASC',
-      },
+      where: whereClause,
+      order: { name: 'ASC' },
     });
   }
 
@@ -39,7 +38,8 @@ export class DataQueriesService {
     kind: string,
     options: object,
     appId: string,
-    dataSourceId: string
+    dataSourceId: string,
+    appVersionId?: string // TODO: Make this non optional when autosave is implemented
   ): Promise<DataQuery> {
     const newDataQuery = this.dataQueriesRepository.create({
       name,
@@ -47,6 +47,7 @@ export class DataQueriesService {
       options,
       appId,
       dataSourceId,
+      appVersionId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

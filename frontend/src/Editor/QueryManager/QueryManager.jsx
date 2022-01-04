@@ -1,6 +1,6 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
@@ -156,6 +156,7 @@ let QueryManager = class QueryManager extends React.Component {
 
   createOrUpdateDataQuery = () => {
     const { appId, options, selectedDataSource, mode, queryName } = this.state;
+    const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
 
@@ -181,7 +182,7 @@ let QueryManager = class QueryManager extends React.Component {
     } else {
       this.setState({ isCreating: true });
       dataqueryService
-        .create(appId, queryName, kind, options, dataSourceId)
+        .create(appId, appVersionId, queryName, kind, options, dataSourceId)
         .then(() => {
           toast.success('Query Added');
           this.setState({ isCreating: false });
@@ -399,7 +400,7 @@ let QueryManager = class QueryManager extends React.Component {
                         <div className="mb-3 mt-2">
                           <Transformation
                             changeOption={this.optionchanged}
-                            options={this.state.options}
+                            options={this.props.selectedQuery.options ?? {}}
                             currentState={currentState}
                             darkMode={this.props.darkMode}
                           />
