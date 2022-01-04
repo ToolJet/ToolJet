@@ -133,7 +133,7 @@ export const DropDown = function DropDown({
         </div>
         <div className="col px-0 h-100">
           <Select
-            disabled={disabledState}
+            isDisabled={disabledState}
             value={
               selectOptions.filter((option) => option.value === currentValue)[0] ?? { label: '', value: undefined }
             }
