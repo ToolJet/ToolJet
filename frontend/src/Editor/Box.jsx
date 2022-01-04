@@ -87,7 +87,6 @@ export const Box = function Box({
   removeComponent,
   canvasWidth,
   mode,
-  offset,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -154,7 +153,6 @@ export const Box = function Box({
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
               fireEvent={fireEvent}
               validate={validate}
-              offset={offset}
             ></ComponentToRender>
           ) : (
             <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
