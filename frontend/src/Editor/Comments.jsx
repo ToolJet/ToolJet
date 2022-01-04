@@ -31,6 +31,7 @@ const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
 
   React.useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
@@ -38,10 +39,12 @@ const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
     socket?.addEventListener('message', function (event) {
       if (event.data === 'threads') fetchData();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
     !isEmpty(newThread) && setThreads([...threads, newThread]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newThread]);
 
   if (isEmpty(threads)) return null;

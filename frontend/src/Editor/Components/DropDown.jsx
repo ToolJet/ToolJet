@@ -45,6 +45,39 @@ export const DropDown = function DropDown({ height, validate, properties, styles
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
+  const onSearchTextChange = (searchText) => {
+    setExposedVariable('searchText', searchText);
+    fireEvent('onSearchTextChanged');
+  };
+
+  const customInputForSelect = (valueProps) => (
+    <input
+      {...valueProps}
+      className="select-search__input"
+      onChange={(event) => {
+        valueProps.onChange(event);
+        onSearchTextChange(event.target.value);
+      }}
+    />
+  );
+
+  const customOptionForSelect = (domProps, option, snapshot, className) => {
+    return (
+      <div
+        className={className}
+        {...domProps}
+        style={{ width: '100%', height: 30, margin: 0, paddingLeft: 14 }}
+        onMouseDown={(event) => {
+          event.stopPropagation();
+          setCurrentValue(option.value);
+          setExposedVariable('value', option.value).then(() => fireEvent('onSelect'));
+        }}
+      >
+        {option.name}
+      </div>
+    );
+  };
+
   return (
     <>
       <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
@@ -56,7 +89,9 @@ export const DropDown = function DropDown({ height, validate, properties, styles
         <div className="col px-0 h-100">
           <SelectSearch
             disabled={disabledState}
-            options={selectOptions}
+            options={properties.loadingState ? [] : selectOptions}
+            emptyMessage={properties.loadingState ? 'Loading options..' : 'There are no options'}
+            placeholder={'Select..'}
             value={currentValue}
             search={true}
             onChange={(newVal) => {
@@ -64,7 +99,8 @@ export const DropDown = function DropDown({ height, validate, properties, styles
               setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
             }}
             filterOptions={fuzzySearch}
-            placeholder="Select.."
+            renderValue={customInputForSelect}
+            renderOption={customOptionForSelect}
           />
         </div>
       </div>

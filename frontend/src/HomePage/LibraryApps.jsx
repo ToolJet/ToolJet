@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { libraryAppService } from '@/_services';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { history } from '@/_helpers';
 
 export const LibraryApps = function LibraryApps() {
@@ -13,15 +13,13 @@ export const LibraryApps = function LibraryApps() {
       .deploy(id)
       .then((data) => {
         setDeployingId(null);
-        toast.info('App created.', {
-          hideProgressBar: true,
+        toast.success('App created.', {
           position: 'top-center',
         });
         history.push(`/apps/${data.id}`);
       })
       .catch((e) => {
         toast.error(e.error, {
-          hideProgressBar: true,
           position: 'top-center',
         });
         setDeployingId(null);
@@ -38,7 +36,6 @@ export const LibraryApps = function LibraryApps() {
       })
       .catch(() => {
         toast.error('Could not fetch library apps', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         setLibraryApps([]);
