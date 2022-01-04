@@ -53,9 +53,11 @@ export const DropDown = function DropDown({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
-  const onSearchTextChange = (searchText) => {
-    setExposedVariable('searchText', searchText);
-    fireEvent('onSearchTextChanged');
+  const onSearchTextChange = (searchText, actionProps) => {
+    if (actionProps.action === 'input-change') {
+      setExposedVariable('searchText', searchText);
+      fireEvent('onSearchTextChanged');
+    }
   };
 
   const customStyles = {
@@ -81,7 +83,7 @@ export const DropDown = function DropDown({
 
     input: (provided, _state) => ({
       ...provided,
-      margin: '0px',
+      color: darkMode ? 'white' : 'black',
     }),
     indicatorSeparator: (_state) => ({
       display: 'none',
@@ -94,7 +96,7 @@ export const DropDown = function DropDown({
       const styles = darkMode
         ? {
             color: 'white',
-            backgroundColor: state.value === currentValue ? '#4D72FA' : 'rgb(31,40,55)',
+            backgroundColor: state.value === currentValue ? '#4D72FA' : state.isFocused ? '#2F3C4C' : 'rgb(31,40,55)',
             ':hover': {
               backgroundColor: '#2F3C4C',
             },
@@ -103,11 +105,8 @@ export const DropDown = function DropDown({
             },
           }
         : {
-            backgroundColor: state.value === currentValue ? '#4D72FA' : 'white',
-            ':hover': {
-              backgroundColor: '#d8dce9',
-              color: 'black',
-            },
+            backgroundColor: state.value === currentValue ? '#4D72FA' : state.isFocused ? '#d8dce9' : 'white',
+            color: 'black',
           };
       return {
         ...provided,
@@ -115,9 +114,6 @@ export const DropDown = function DropDown({
         display: 'flex',
         flexDirection: 'rows',
         alignItems: 'center',
-        ':hover': {
-          backgroundColor: '#2F3C4C',
-        },
         ...styles,
       };
     },
@@ -139,9 +135,11 @@ export const DropDown = function DropDown({
           <Select
             disabled={disabledState}
             value={selectOptions.filter((option) => option.value === currentValue)[0]}
-            onChange={(selectedOption) => {
-              setCurrentValue(selectedOption.value);
-              setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+            onChange={(selectedOption, actionProps) => {
+              if (actionProps.action === 'select-option') {
+                setCurrentValue(selectedOption.value);
+                setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+              }
             }}
             options={selectOptions}
             styles={customStyles}
