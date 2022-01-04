@@ -126,6 +126,19 @@ class Chart extends React.Component {
     });
 
     items.push({
+      title: 'Plot from json',
+      children: renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        'plotFromJson',
+        'properties',
+        currentState
+      ),
+    });
+
+    items.push({
       title: 'Loading state',
       children: renderElement(
         component,

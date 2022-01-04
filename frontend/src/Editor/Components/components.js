@@ -182,6 +182,7 @@ export const componentTypes = [
         ],
       },
       jsonDescription: { type: 'json', displayName: 'Json Description' },
+      plotFromJson: { type: 'toggle', displayName: 'Plot from json' },
     },
     events: {},
     styles: {
@@ -200,6 +201,7 @@ export const componentTypes = [
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
         showGridLines: { value: true },
+        plotFromJson: { value: false },
         loadingState: { value: `{{false}}` },
         jsonDescription: {
           value: `{

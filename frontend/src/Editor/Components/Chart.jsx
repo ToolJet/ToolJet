@@ -10,7 +10,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
   const [loadingState, setLoadingState] = useState(false);
 
   const { visibility, disabledState } = styles;
-  const { title, markerColor, showGridLines, type, data, jsonDescription } = properties;
+  const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson } = properties;
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
@@ -30,7 +30,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
 
   const chartType = type;
 
-  const jsonData = isJson(jsonDescription) ? JSON.parse(jsonDescription).data : undefined;
+  const jsonChartData = isJson(jsonDescription) ? JSON.parse(jsonDescription).data : [];
 
   const fontColor = darkMode ? '#c3c3c3' : null;
 
@@ -114,7 +114,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
         </div>
       ) : (
         <Plot
-          data={jsonData ? jsonData : memoizedChartData}
+          data={plotFromJson ? jsonChartData : memoizedChartData}
           layout={layout}
           config={{
             displayModeBar: false,
