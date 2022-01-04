@@ -59,6 +59,8 @@ class Chart extends React.Component {
 
     const data = this.state.component.component.definition.properties.data;
 
+    const jsonDescription = this.state.component.component.definition.properties.jsonDescription;
+
     const chartType = this.state.component.component.definition.properties.type.value;
 
     let items = [];
@@ -102,6 +104,22 @@ class Chart extends React.Component {
           lineNumbers={false}
           className="chart-input pr-2"
           onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
+          componentName={`widget/${this.props.component.component.name}::${chartType}`}
+        />
+      ),
+    });
+
+    items.push({
+      title: 'Json description',
+      children: (
+        <CodeHinter
+          currentState={this.props.currentState}
+          initialValue={jsonDescription.value}
+          theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+          mode="javascript"
+          lineNumbers={false}
+          className="chart-input pr-2"
+          onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
           componentName={`widget/${this.props.component.component.name}::${chartType}`}
         />
       ),

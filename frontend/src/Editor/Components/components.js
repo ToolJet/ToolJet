@@ -181,6 +181,7 @@ export const componentTypes = [
           { name: 'Pie', value: 'pie' },
         ],
       },
+      jsonDescription: { type: 'json', displayName: 'Json Description' },
     },
     events: {},
     styles: {
@@ -200,6 +201,25 @@ export const componentTypes = [
         markerColor: { value: '#CDE1F8' },
         showGridLines: { value: true },
         loadingState: { value: `{{false}}` },
+        jsonDescription: {
+          value: `{
+            "data": [
+                {
+                    "x": [
+                        "Jan",
+                        "Feb",
+                        "Mar"
+                    ],
+                    "y": [
+                        100,
+                        80,
+                        40
+                    ],
+                    "type": "bar"
+                }
+            ]
+        }`,
+        },
         type: { value: `line` },
         data: {
           value: `[
