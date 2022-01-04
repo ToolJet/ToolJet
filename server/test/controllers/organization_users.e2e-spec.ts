@@ -2,7 +2,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
-import Preview from 'twilio/lib/rest/Preview';
 
 describe('organization users controller', () => {
   let app: INestApplication;
