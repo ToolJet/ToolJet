@@ -1,4 +1,4 @@
-import allPlugins from '@tooljet/plugins/server';
+import allPlugins from '@tooljet/plugins/dist/server';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
