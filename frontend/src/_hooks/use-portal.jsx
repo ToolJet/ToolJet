@@ -25,12 +25,13 @@ const usePortal = ({ children, ...restProps }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [componentName, isOpen]);
 
+  const styleProps = optionalProps?.styles;
   return (
     <React.Fragment>
       {isOpen && (
         <Portal className="modal-portal-wrapper" isOpen={isOpen} trigger={callback} componentName={componentName}>
-          <div className="editor-container" key={key}>
-            {React.cloneElement(children, { ...optionalProps })}
+          <div className={`editor-container ${optionalProps.cls ?? ''}`} key={key}>
+            {React.cloneElement(children, { ...styleProps })}
           </div>
           {renderCustomComponent({ component: customComponent(), selectors: selectors })}
         </Portal>
