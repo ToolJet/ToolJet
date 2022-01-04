@@ -98,7 +98,7 @@ describe('organization users controller', () => {
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       expect(response.statusCode).toEqual(400);
-      expect(response.body.message).toEqual('Atleast one active admin is required');
+      expect(response.body.message).toEqual('Atleast one active admin is required.');
     });
 
     it('should allow only admin users to archive org users', async () => {
