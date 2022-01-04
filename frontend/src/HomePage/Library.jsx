@@ -1,5 +1,4 @@
 import React from 'react';
-import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
 import { LibraryApps } from './LibraryApps';
 

@@ -45,11 +45,15 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
    ```
    Read [environment variables reference](/docs/deployment/env-vars)
 
+   :::info
+   If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
+   :::
+
 8. `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your instance or a custom domain that you want to use.
 
-   Examples:   
-   `TOOLJET_HOST=http://12.34.56.78` or   
-   `TOOLJET_HOST=https://yourdomain.com` or   
+   Examples:
+   `TOOLJET_HOST=http://12.34.56.78` or
+   `TOOLJET_HOST=https://yourdomain.com` or
    `TOOLJET_HOST=https://tooljet.yourdomain.com`
 
    :::info

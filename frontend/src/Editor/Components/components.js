@@ -781,6 +781,7 @@ export const componentTypes = [
     events: {},
     styles: {
       backgroundColor: { type: 'color' },
+      borderRadius: { type: 'code', displayName: 'Border Radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -796,6 +797,7 @@ export const componentTypes = [
       events: [],
       styles: {
         backgroundColor: { value: '#fff' },
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -1416,6 +1418,66 @@ export const componentTypes = [
       events: [],
       styles: {
         highlightColor: { value: '#0565FE' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Timer',
+    displayName: 'Timer',
+    description: 'timer',
+    component: 'Timer',
+    defaultSize: {
+      width: 11,
+      height: 128,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      value: { type: 'code', displayName: 'Default value' },
+      type: {
+        type: 'select',
+        displayName: 'Timer type',
+        options: [
+          { name: 'Count Up', value: 'countUp' },
+          { name: 'Count Down', value: 'countDown' },
+        ],
+      },
+    },
+    validation: {},
+    events: {
+      onStart: { displayName: 'On Start' },
+      onResume: { displayName: 'On Resume' },
+      onPause: { displayName: 'On Pause' },
+      onCountDownFinish: { displayName: 'On Count Down Finish' },
+      onReset: { displayName: 'On Reset' },
+    },
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      value: '',
+    },
+    definition: {
+      validation: {},
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        value: {
+          value: '00:00:00:000',
+        },
+        type: {
+          value: 'countUp',
+        },
+      },
+      events: [],
+      styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },

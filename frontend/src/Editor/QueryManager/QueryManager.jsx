@@ -399,7 +399,7 @@ let QueryManager = class QueryManager extends React.Component {
                         <div className="mb-3 mt-2">
                           <Transformation
                             changeOption={this.optionchanged}
-                            options={this.state.options}
+                            options={this.props.selectedQuery.options ?? {}}
                             currentState={currentState}
                             darkMode={this.props.darkMode}
                           />

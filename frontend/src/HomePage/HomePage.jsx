@@ -3,7 +3,7 @@ import { appService, folderService, authenticationService } from '@/_services';
 import { Pagination, Header, ConfirmDialog } from '@/_components';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import AppList from './AppList';
 import { SearchBox } from '@/_components/SearchBox';
 class HomePage extends React.Component {
@@ -100,7 +100,7 @@ class HomePage extends React.Component {
         _self.props.history.push(`/apps/${data.id}`);
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
         _self.setState({ creatingApp: false });
       });
   };
@@ -114,8 +114,7 @@ class HomePage extends React.Component {
     appService
       .cloneApp(app.id)
       .then((data) => {
-        toast.info('App cloned successfully.', {
-          hideProgressBar: true,
+        toast.success('App cloned successfully.', {
           position: 'top-center',
         });
         this.setState({ isCloningApp: false });
@@ -123,7 +122,6 @@ class HomePage extends React.Component {
       })
       .catch(({ _error }) => {
         toast.error('Could not clone the app.', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.setState({ isCloningApp: false });
@@ -152,7 +150,6 @@ class HomePage extends React.Component {
       })
       .catch((error) => {
         toast.error('Could not export the app.', {
-          hideProgressBar: true,
           position: 'top-center',
         });
 
@@ -172,8 +169,7 @@ class HomePage extends React.Component {
         appService
           .importApp(requestBody)
           .then(() => {
-            toast.info('App imported successfully.', {
-              hideProgressBar: true,
+            toast.success('App imported successfully.', {
               position: 'top-center',
             });
             this.setState({
@@ -184,7 +180,6 @@ class HomePage extends React.Component {
           })
           .catch(({ error }) => {
             toast.error(`Could not import the app: ${error}`, {
-              hideProgressBar: true,
               position: 'top-center',
             });
             this.setState({
@@ -193,7 +188,6 @@ class HomePage extends React.Component {
           });
       } catch (error) {
         toast.error(`Could not import the app: ${error}`, {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.setState({
@@ -283,8 +277,7 @@ class HomePage extends React.Component {
       .deleteApp(this.state.appToBeDeleted.id)
       // eslint-disable-next-line no-unused-vars
       .then((data) => {
-        toast.info('App deleted successfully.', {
-          hideProgressBar: true,
+        toast.success('App deleted successfully.', {
           position: 'top-center',
         });
         this.fetchApps(
@@ -299,7 +292,6 @@ class HomePage extends React.Component {
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         console.log(error);

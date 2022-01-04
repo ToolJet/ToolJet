@@ -3,7 +3,6 @@ import { appService, authenticationService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
-import 'react-toastify/dist/ReactToastify.css';
 import { Confirm } from './Viewer/Confirm';
 import {
   onComponentOptionChanged,

@@ -2775,6 +2775,17 @@ input[type="text"] {
       width: 100% !important;
     }
   }
+
+  .query-hinter {
+    .CodeMirror-line  {
+      margin-left: 2rem !important;
+    }
+
+    .CodeMirror-cursors  .CodeMirror-cursor {
+      margin-left: 2rem !important;
+    }
+  }
+
 }
 
 .preview-block-portal {
@@ -2883,6 +2894,18 @@ input[type="text"] {
 
 .canvas-background-picker {
   position: fixed;
+}
+
+/**
+ * Timer Widget
+ */
+.timer-wrapper {
+  padding: 10px;
+  .counter-container {
+    font-size: 3em;
+    padding-bottom: 5px;
+    text-align: center;
+  }
 }
 
 /**
