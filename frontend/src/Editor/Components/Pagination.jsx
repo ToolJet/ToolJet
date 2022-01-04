@@ -49,7 +49,7 @@ export const Pagination = ({ height, properties, styles, setExposedVariable, fir
 
   return (
     <div data-disabled={disabledState} className="d-flex align-items-center px-1">
-      <ul className="pagination m-0 ms-auto" style={computedStyles}>
+      <ul className="pagination m-0" style={computedStyles}>
         <Pagination.Operator
           operator="<<"
           currentPage={currentPage}

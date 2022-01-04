@@ -1489,7 +1489,7 @@ export const componentTypes = [
     description: 'Pagination ',
     component: 'Pagination',
     defaultSize: {
-      width: 10,
+      width: 15,
       height: 30,
     },
     others: {
@@ -1520,7 +1520,7 @@ export const componentTypes = [
       },
       properties: {
         pageSize: {
-          value: '{{10}}',
+          value: '{{5}}',
         },
         defaultPageIndex: {
           value: '{{1}}',
