@@ -33,7 +33,7 @@ export function CodeHinter({
   lineWrapping,
   componentName = null,
   usePortalEditor = true,
-  className = 'code-hinter',
+  className,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -150,11 +150,12 @@ export function CodeHinter({
   };
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
-  // const defaultClassName = isScrollable ? '' : 'code-hinter';
+  const defaultClassName = className === 'query-hinter' || undefined ? '' : 'code-hinter';
+
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
       <div
-        className={`${className || 'codehinter-default-input'}`}
+        className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
         key={suggestions.length}
         style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
       >
@@ -166,7 +167,7 @@ export function CodeHinter({
           key={suggestions.length}
           customComponent={getPreview}
           forceUpdate={forceUpdate}
-          optionalProps={{ height: 300 }}
+          optionalProps={{ styles: { height: 300 }, cls: className }}
           darkMode={darkMode}
           selectors={{ className: 'preview-block-portal' }}
         >

@@ -55,7 +55,7 @@ export const Datepicker = function Datepicker({
         closeOnSelect={true}
         dateFormat={isDateFormat}
         placeholderText={defaultValue}
-        inputProps={{ placeholder: defaultValue }}
+        inputProps={{ placeholder: defaultValue, style: { height } }}
         onOpen={(event) => {
           onComponentClick(id, component, event);
         }}

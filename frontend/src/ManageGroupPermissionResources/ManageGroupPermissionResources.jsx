@@ -2,9 +2,8 @@ import React from 'react';
 import cx from 'classnames';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { groupPermissionService } from '../_services/groupPermission.service';
-import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
 class ManageGroupPermissionResources extends React.Component {
@@ -104,14 +103,13 @@ class ManageGroupPermissionResources extends React.Component {
       .update(groupPermissionId, params)
       .then(() => {
         toast.success('Group permissions updated', {
-          hideProgressBar: true,
           position: 'top-center',
         });
 
         this.fetchGroupPermission(groupPermissionId);
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
       });
   };
 
@@ -126,14 +124,13 @@ class ManageGroupPermissionResources extends React.Component {
       .updateAppGroupPermission(groupPermissionId, appGroupPermission.id, actionParams)
       .then(() => {
         toast.success('App permissions updated', {
-          hideProgressBar: true,
           position: 'top-center',
         });
 
         this.fetchAppsInGroup(groupPermissionId);
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
       });
   };
 
@@ -190,12 +187,11 @@ class ManageGroupPermissionResources extends React.Component {
       })
       .then(() => {
         toast.success('Apps added to the group', {
-          hideProgressBar: true,
           position: 'top-center',
         });
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
       });
   };
 
@@ -212,12 +208,11 @@ class ManageGroupPermissionResources extends React.Component {
       })
       .then(() => {
         toast.success('Apps removed from the group', {
-          hideProgressBar: true,
           position: 'top-center',
         });
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
       });
   };
 
@@ -239,12 +234,11 @@ class ManageGroupPermissionResources extends React.Component {
       })
       .then(() => {
         toast.success('Users added to the group', {
-          hideProgressBar: true,
           position: 'top-center',
         });
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
       });
   };
 
@@ -261,12 +255,11 @@ class ManageGroupPermissionResources extends React.Component {
       })
       .then(() => {
         toast.success('Users removed from the group', {
-          hideProgressBar: true,
           position: 'top-center',
         });
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
       });
   };
 
