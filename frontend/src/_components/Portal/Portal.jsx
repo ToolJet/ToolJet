@@ -55,9 +55,9 @@ const Container = ({ children, ...restProps }) => {
 
 const Modal = ({ children, handleClose, portalStyles, styles, componentName, darkMode }) => {
   return (
-    <div className="modal-dialog shadow bg-black rounded" role="document">
+    <div className="modal-dialog" role="document">
       <div className="modal-content" style={{ ...portalStyles, ...styles }}>
-        <div className="portal-header d-flex" style={{ ...portalStyles }}>
+        <div className={`portal-header d-flex ${darkMode ? 'dark-mode-border' : ''}`} style={{ ...portalStyles }}>
           <div className="w-100">
             <code className="mx-2 text-info">{componentName ?? 'Editor'}</code>
           </div>
@@ -77,7 +77,10 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
             />
           </button>
         </div>
-        <div className="modal-body" style={{ background: 'transparent', height: 300 }}>
+        <div
+          className={`modal-body ${darkMode ? 'dark-mode-border' : ''}`}
+          style={{ background: 'transparent', height: 300 }}
+        >
           {children}
         </div>
       </div>

@@ -8,6 +8,7 @@ import {
   createNestAppInstance,
   createDataSource,
   createAppGroupPermission,
+  createApplicationVersion,
 } from '../test.helper';
 import { Credential } from 'src/entities/credential.entity';
 import { getRepository } from 'typeorm';
@@ -47,6 +48,7 @@ describe('data sources controller', () => {
       name: 'name',
       user: adminUserData.user,
     });
+    const applicationVersion = await createApplicationVersion(app, application);
 
     const developerUserGroup = await getRepository(GroupPermission).findOne({
       group: 'developer',
@@ -62,6 +64,7 @@ describe('data sources controller', () => {
       options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
       kind: 'postgres',
       app_id: application.id,
+      app_version_id: applicationVersion.id,
     };
 
     for (const userData of [adminUserData, developerUserData]) {
@@ -71,6 +74,14 @@ describe('data sources controller', () => {
         .send(dataSourceParams);
 
       expect(response.statusCode).toBe(201);
+      expect(response.body.id).toBeDefined();
+      expect(response.body.app_id).toBe(application.id);
+      expect(response.body.app_version_id).toBe(applicationVersion.id);
+      expect(response.body.kind).toBe('postgres');
+      expect(response.body.name).toBe('name');
+      expect(response.body.options).toBeDefined();
+      expect(response.body.created_at).toBeDefined();
+      expect(response.body.updated_at).toBeDefined();
     }
 
     // encrypted data source options will create credentials
@@ -221,6 +232,39 @@ describe('data sources controller', () => {
       .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
     expect(response.statusCode).toBe(403);
+  });
+
+  it('should be able to search data sources with application version id', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      groups: ['all_users', 'admin'],
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+    const appVersion = await createApplicationVersion(app, application);
+    const dataSource = await createDataSource(app, {
+      name: 'name',
+      kind: 'postgres',
+      application: application,
+      user: adminUserData.user,
+      appVersion,
+    });
+
+    let response = await request(app.getHttpServer())
+      .get(`/api/data_sources?app_id=${dataSource.appId}&app_version_id=${dataSource.appVersionId}`)
+      .set('Authorization', authHeaderForUser(adminUserData.user));
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data_sources.length).toBe(1);
+
+    response = await request(app.getHttpServer())
+      .get(`/api/data_sources?app_id=${application.id}&app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
+      .set('Authorization', authHeaderForUser(adminUserData.user));
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data_sources.length).toBe(0);
   });
 
   it('should not be able to authorize OAuth code for a REST API source if user of another organization', async () => {

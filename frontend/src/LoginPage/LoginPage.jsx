@@ -1,6 +1,6 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
@@ -38,8 +38,7 @@ class LoginPage extends React.Component {
 
     if (!validateEmail(email) || !password || !password.trim()) {
       toast.error('Invalid email or password', {
-        toastId: 'toast-login-auth-error',
-        hideProgressBar: true,
+        id: 'toast-login-auth-error',
         position: 'top-center',
       });
       this.setState({ isLoading: false });
@@ -59,8 +58,7 @@ class LoginPage extends React.Component {
 
   authFailureHandler = () => {
     toast.error('Invalid email or password', {
-      toastId: 'toast-login-auth-error',
-      hideProgressBar: true,
+      id: 'toast-login-auth-error',
       position: 'top-center',
     });
     this.setState({ isLoading: false });
@@ -68,6 +66,7 @@ class LoginPage extends React.Component {
 
   render() {
     const { isLoading } = this.state;
+    const passwordLoginDisabled = window.public_config?.DISABLE_PASSWORD_LOGIN === 'true';
 
     return (
       <div className="page page-center">
@@ -79,60 +78,68 @@ class LoginPage extends React.Component {
           </div>
           <form className="card card-md" action="." method="get" autoComplete="off">
             <div className="card-body">
-              <h2 className="card-title text-center mb-4">Login to your account</h2>
-              <div className="mb-3">
-                <label className="form-label">Email address</label>
-                <input
-                  onChange={this.handleChange}
-                  name="email"
-                  type="email"
-                  className="form-control"
-                  placeholder="Email"
-                  data-testid="emailField"
-                />
-              </div>
-              <div className="mb-2">
-                <label className="form-label">
-                  Password
-                  <span className="form-label-description">
-                    <Link to={'/forgot-password'} tabIndex="-1">
-                      Forgot password
-                    </Link>
-                  </span>
-                </label>
-                <div className="input-group input-group-flat">
-                  <input
-                    onChange={this.handleChange}
-                    name="password"
-                    type={this.state.showPassword ? 'text' : 'password'}
-                    className="form-control"
-                    placeholder="Password"
-                    autoComplete="off"
-                    data-testid="passwordField"
-                  />
-                  <span className="input-group-text"></span>
+              {!passwordLoginDisabled && (
+                <div>
+                  <h2 className="card-title text-center mb-4">Login to your account</h2>
+                  <div className="mb-3">
+                    <label className="form-label">Email address</label>
+                    <input
+                      onChange={this.handleChange}
+                      name="email"
+                      type="email"
+                      className="form-control"
+                      placeholder="Email"
+                      data-testid="emailField"
+                    />
+                  </div>
+                  <div className="mb-2">
+                    <label className="form-label">
+                      Password
+                      <span className="form-label-description">
+                        <Link to={'/forgot-password'} tabIndex="-1">
+                          Forgot password
+                        </Link>
+                      </span>
+                    </label>
+                    <div className="input-group input-group-flat">
+                      <input
+                        onChange={this.handleChange}
+                        name="password"
+                        type={this.state.showPassword ? 'text' : 'password'}
+                        className="form-control"
+                        placeholder="Password"
+                        autoComplete="off"
+                        data-testid="passwordField"
+                      />
+                      <span className="input-group-text"></span>
+                    </div>
+                  </div>
+                  <div className="form-check">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id="check-input"
+                      name="check-input"
+                      onChange={this.handleOnCheck}
+                    />
+                    <label className="form-check-label" htmlFor="check-input">
+                      show password
+                    </label>
+                  </div>
                 </div>
-              </div>
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="check-input"
-                  name="check-input"
-                  onChange={this.handleOnCheck}
-                />
-                <label className="form-check-label" htmlFor="check-input">
-                  show password
-                </label>
-              </div>
-              <div className="form-footer d-flex flex-column align-items-center">
-                <button
-                  data-testid="loginButton"
-                  className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
-                  onClick={this.authUser}
-                >
-                  Sign in
-                </button>
+              )}
+              <div
+                className={`form-footer d-flex flex-column align-items-center ${passwordLoginDisabled ? 'mt-0' : ''}`}
+              >
+                {!passwordLoginDisabled && (
+                  <button
+                    data-testid="loginButton"
+                    className={`btn btn-primary w-100 ${isLoading ? 'btn-loading' : ''}`}
+                    onClick={this.authUser}
+                  >
+                    Sign in
+                  </button>
+                )}
                 {window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID && (
                   <GoogleSSOLoginButton
                     authSuccessHandler={this.authSuccessHandler}
@@ -142,12 +149,14 @@ class LoginPage extends React.Component {
               </div>
             </div>
           </form>
-          <div className="text-center text-muted mt-3">
-            Don&apos;t have account yet? &nbsp;
-            <Link to={'/signup'} tabIndex="-1">
-              Sign up
-            </Link>
-          </div>
+          {!passwordLoginDisabled && (
+            <div className="text-center text-muted mt-3">
+              Don&apos;t have account yet? &nbsp;
+              <Link to={'/signup'} tabIndex="-1">
+                Sign up
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     );

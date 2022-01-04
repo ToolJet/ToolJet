@@ -3,8 +3,9 @@ import { appService, folderService, authenticationService } from '@/_services';
 import { Pagination, Header, ConfirmDialog } from '@/_components';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import AppList from './AppList';
+import { SearchBox } from '@/_components/SearchBox';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -21,6 +22,7 @@ class HomePage extends React.Component {
       isImportingApp: false,
       currentFolder: {},
       currentPage: 1,
+      appSearchKey: '',
       showAppDeletionConfirmation: false,
       apps: [],
       folders: [],
@@ -36,14 +38,16 @@ class HomePage extends React.Component {
     this.fetchFolders();
   }
 
-  fetchApps = (page = 1, folder) => {
+  fetchApps = (page = 1, folder, searchKey) => {
+    const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
     this.setState({
       apps: [],
       isLoading: true,
       currentPage: page,
+      appSearchKey,
     });
 
-    appService.getAll(page, folder).then((data) =>
+    appService.getAll(page, folder, appSearchKey).then((data) =>
       this.setState({
         apps: data.apps,
         meta: { ...this.state.meta, ...data.meta },
@@ -52,17 +56,26 @@ class HomePage extends React.Component {
     );
   };
 
-  fetchFolders = () => {
+  fetchFolders = (searchKey) => {
+    const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
     this.setState({
       foldersLoading: true,
+      appSearchKey: appSearchKey,
+      currentFolder: searchKey ? this.state.currentFolder : {},
     });
 
-    folderService.getAll().then((data) =>
+    folderService.getAll(appSearchKey).then((data) => {
+      const currentFolder =
+        searchKey &&
+        data?.folders?.filter(
+          (folder) => this.state.currentFolder?.id && folder.id === this.state.currentFolder?.id
+        )?.[0];
       this.setState({
         folders: data.folders,
         foldersLoading: false,
-      })
-    );
+        currentFolder: currentFolder || {},
+      });
+    });
   };
 
   pageChanged = (page) => {
@@ -87,7 +100,7 @@ class HomePage extends React.Component {
         _self.props.history.push(`/apps/${data.id}`);
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
         _self.setState({ creatingApp: false });
       });
   };
@@ -101,8 +114,7 @@ class HomePage extends React.Component {
     appService
       .cloneApp(app.id)
       .then((data) => {
-        toast.info('App cloned successfully.', {
-          hideProgressBar: true,
+        toast.success('App cloned successfully.', {
           position: 'top-center',
         });
         this.setState({ isCloningApp: false });
@@ -110,7 +122,6 @@ class HomePage extends React.Component {
       })
       .catch(({ _error }) => {
         toast.error('Could not clone the app.', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.setState({ isCloningApp: false });
@@ -139,7 +150,6 @@ class HomePage extends React.Component {
       })
       .catch((error) => {
         toast.error('Could not export the app.', {
-          hideProgressBar: true,
           position: 'top-center',
         });
 
@@ -159,8 +169,7 @@ class HomePage extends React.Component {
         appService
           .importApp(requestBody)
           .then(() => {
-            toast.info('App imported successfully.', {
-              hideProgressBar: true,
+            toast.success('App imported successfully.', {
               position: 'top-center',
             });
             this.setState({
@@ -171,7 +180,6 @@ class HomePage extends React.Component {
           })
           .catch(({ error }) => {
             toast.error(`Could not import the app: ${error}`, {
-              hideProgressBar: true,
               position: 'top-center',
             });
             this.setState({
@@ -180,7 +188,6 @@ class HomePage extends React.Component {
           });
       } catch (error) {
         toast.error(`Could not import the app: ${error}`, {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.setState({
@@ -270,8 +277,7 @@ class HomePage extends React.Component {
       .deleteApp(this.state.appToBeDeleted.id)
       // eslint-disable-next-line no-unused-vars
       .then((data) => {
-        toast.info('App deleted successfully.', {
-          hideProgressBar: true,
+        toast.success('App deleted successfully.', {
           position: 'top-center',
         });
         this.fetchApps(
@@ -286,7 +292,6 @@ class HomePage extends React.Component {
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         console.log(error);
@@ -300,6 +305,11 @@ class HomePage extends React.Component {
     return this.state.currentFolder.id ? this.state.meta.folder_count : this.state.meta.total_count;
   };
 
+  onSearchSubmit = (key) => {
+    this.fetchApps(1, this.state.currentFolder.id, key || '');
+    this.fetchFolders(key || '');
+  };
+
   render() {
     const {
       apps,
@@ -310,6 +320,7 @@ class HomePage extends React.Component {
       showAppDeletionConfirmation,
       isDeletingApp,
       isImportingApp,
+      appSearchKey,
     } = this.state;
     return (
       <div className="wrapper home-page">
@@ -322,7 +333,7 @@ class HomePage extends React.Component {
         />
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
-        {!isLoading && meta.total_count === 0 && !currentFolder.id && (
+        {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
           <BlankPage
             createApp={this.createApp}
             isImportingApp={isImportingApp}
@@ -331,7 +342,7 @@ class HomePage extends React.Component {
           />
         )}
 
-        {(isLoading || meta.total_count > 0) && (
+        {(isLoading || meta.total_count > 0 || currentFolder.id || appSearchKey) && (
           <div className="page-body homepage-body">
             <div className="container-xl">
               <div className="row">
@@ -341,33 +352,31 @@ class HomePage extends React.Component {
                     {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
                   </h2>
                 </div>
-                {this.canCreateApp() && (
-                  <>
-                    <div className="col-2 ms-auto d-print-none"></div>
-                    <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
-                      <button
-                        className={'btn btn-default d-none d-lg-inline mb-3 me-2'}
-                        onChange={this.handleImportApp}
-                      >
-                        <label>
-                          {isImportingApp && (
-                            <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                          )}
-                          Import
-                          <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
-                        </label>
-                      </button>
-                      <button
-                        className={`btn btn-primary d-none d-lg-inline mb-3 create-new-app-button ${
-                          creatingApp ? 'btn-loading' : ''
-                        }`}
-                        onClick={this.createApp}
-                      >
-                        Create new application
-                      </button>
-                    </div>
-                  </>
-                )}
+                {this.canCreateApp() && <div className="col-2 ms-auto d-print-none"></div>}
+                <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
+                  <SearchBox onSubmit={this.onSearchSubmit} initialValue={this.state.appSearchKey} />
+                  {this.canCreateApp() && (
+                    <button className={'btn btn-default d-none d-lg-inline mb-3 ms-2'} onChange={this.handleImportApp}>
+                      <label>
+                        {isImportingApp && (
+                          <span className="spinner-border spinner-border-sm ms-2" role="status"></span>
+                        )}
+                        Import
+                        <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                      </label>
+                    </button>
+                  )}
+                  {this.canCreateApp() && (
+                    <button
+                      className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 create-new-app-button ${
+                        creatingApp ? 'btn-loading' : ''
+                      }`}
+                      onClick={this.createApp}
+                    >
+                      Create new application
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="row">
                 <div className="col-12 col-lg-3 mb-5">

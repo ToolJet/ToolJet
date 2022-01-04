@@ -4,8 +4,15 @@ import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import { isEmpty } from 'lodash';
+import { readFileSync } from 'fs';
+import * as tls from 'tls';
 const urrl = require('url');
 const got = require('got');
+
+interface RestAPIResult extends QueryResult {
+  request?: Array<object> | object;
+  response?: Array<object> | object;
+}
 
 @Injectable()
 export default class RestapiQueryService implements QueryService {
@@ -49,7 +56,7 @@ export default class RestapiQueryService implements QueryService {
     return Object.fromEntries(urlParams);
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
@@ -78,6 +85,8 @@ export default class RestapiQueryService implements QueryService {
     }
 
     let result = {};
+    let requestObject = {};
+    let responseObject = {};
 
     /* Prefixing the base url of datasouce if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url}${queryOptions.url || ''}` : queryOptions.url;
@@ -89,16 +98,38 @@ export default class RestapiQueryService implements QueryService {
       const response = await got(url, {
         method,
         headers,
-        searchParams: { ...paramsFromUrl, ...this.searchParams(sourceOptions, queryOptions, hasDataSource) },
+        ...this.fetchHttpsCertsForCustomCA(),
+        searchParams: {
+          ...paramsFromUrl,
+          ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
+        },
         json,
       });
       result = JSON.parse(response.body);
+      requestObject = {
+        requestUrl: response.request.requestUrl,
+        method: response.request.options.method,
+        headers: response.request.options.headers,
+        params: urrl.parse(response.request.requestUrl, true).query,
+      };
+      responseObject = {
+        body: response.body,
+        statusCode: response.statusCode,
+      };
     } catch (error) {
       console.log(error);
 
       if (error instanceof HTTPError) {
         result = {
-          code: error.code,
+          requestObject: {
+            requestUrl: error.request.requestUrl,
+            requestHeaders: error.request.options.headers,
+            requestParams: urrl.parse(error.request.requestUrl, true).query,
+          },
+          responseObject: {
+            statusCode: error.response.statusCode,
+            responseBody: error.response.body,
+          },
         };
       }
       throw new QueryError('Query could not be completed', error.message, result);
@@ -107,6 +138,8 @@ export default class RestapiQueryService implements QueryService {
     return {
       status: 'ok',
       data: result,
+      request: requestObject,
+      response: responseObject,
     };
   }
 
@@ -126,11 +159,22 @@ export default class RestapiQueryService implements QueryService {
         client_secret: sourceOptions['client_secret'],
         grant_type: sourceOptions['grant_type'],
         redirect_uri: `${tooljetHost}/oauth2/authorize`,
+        ...this.fetchHttpsCertsForCustomCA(),
         ...customParams,
       },
     });
 
     const result = JSON.parse(response.body);
     return { access_token: result['access_token'] };
+  }
+
+  fetchHttpsCertsForCustomCA() {
+    if (!process.env.NODE_EXTRA_CA_CERTS) return {};
+
+    return {
+      https: {
+        certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
+      },
+    };
   }
 }

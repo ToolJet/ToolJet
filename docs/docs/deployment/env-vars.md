@@ -48,6 +48,14 @@ If you want to restrict the signups and allow new users only by invitations, set
 You will still be able to see the signup page but won't be able to successfully submit the form.
 :::
 
+#### Disable login and signup using username and password
+
+:::info
+Use this feature only if you have configured other methods of authentication, such as SSO.
+:::
+
+If you want to restrict users from logging in using regular username and password, set the environment variable `DISABLE_PASSWORD_LOGIN` to `true`.
+
 #### Serve client as a server end-point ( optional )
 
 By default, the `SERVE_CLIENT` variable will be set to `false` and the server won't serve the client at its `/` end-point.
@@ -119,6 +127,14 @@ This is used to set up for CSP headers and put trace info to be used with APM ve
 #### RELEASE VERSION ( optional)
 
 Once set any APM provider that supports segregation with releases will track it.
+
+#### NODE_EXTRA_CA_CERTS (optional)
+
+Tooljet needs to be configured for custom CA certificate to be able to trust and establish connection over https. This requires you to configure an additional env var `NODE_EXTRA_CA_CERTS` to have absolute path to your CA certificates. This file named `cert.pem` needs to be in PEM format and can have more than one certificates.
+
+| variable            | description                                                       |
+| ------------------  | ----------------------------------------------------------------- |
+| NODE_EXTRA_CA_CERTS | absolute path to certifcate PEM file ( eg: /ToolJet/ca/cert.pem ) |
 
 ## ToolJet client
 

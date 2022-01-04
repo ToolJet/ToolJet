@@ -3,6 +3,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const organizationUserService = {
   archive,
+  unarchive,
   create,
   changeRole,
 };
@@ -31,4 +32,9 @@ function changeRole(id, role) {
 function archive(id) {
   const requestOptions = { method: 'POST', headers: authHeader() };
   return fetch(`${config.apiUrl}/organization_users/${id}/archive`, requestOptions).then(handleResponse);
+}
+
+function unarchive(id) {
+  const requestOptions = { method: 'POST', headers: authHeader() };
+  return fetch(`${config.apiUrl}/organization_users/${id}/unarchive`, requestOptions).then(handleResponse);
 }

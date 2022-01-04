@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 
 export const FilePicker = ({ width, height, darkMode, properties, styles, fireEvent, setExposedVariable }) => {

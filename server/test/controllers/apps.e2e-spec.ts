@@ -10,6 +10,7 @@ import {
   createDataQuery,
   createDataSource,
   createAppGroupPermission,
+  importAppFromTemplates,
 } from '../test.helper';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -21,6 +22,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
+import { Credential } from 'src/entities/credential.entity';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -186,6 +188,23 @@ describe('apps controller', () => {
         });
 
         response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public`)
+          .set('Authorization', authHeaderForUser(developerUserData.user));
+
+        expect(response.statusCode).toBe(200);
+
+        ({ meta, apps } = response.body);
+        appNames = apps.map((app) => app.name);
+
+        expect(new Set(appNames)).toEqual(new Set([publicApp.name]));
+        expect(meta).toEqual({
+          total_pages: 1,
+          total_count: 1,
+          folder_count: 0,
+          current_page: 1,
+        });
+
+        response = await request(app.getHttpServer())
           .get(`/api/apps`)
           .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
 
@@ -198,6 +217,40 @@ describe('apps controller', () => {
         expect(meta).toEqual({
           total_pages: 1,
           total_count: 1,
+          folder_count: 0,
+          current_page: 1,
+        });
+
+        response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=another`)
+          .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
+
+        expect(response.statusCode).toBe(200);
+
+        ({ meta, apps } = response.body);
+        appNames = apps.map((app) => app.name);
+
+        expect(new Set(appNames)).toEqual(new Set([anotherApplication.name]));
+        expect(meta).toEqual({
+          total_pages: 1,
+          total_count: 1,
+          folder_count: 0,
+          current_page: 1,
+        });
+
+        response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public`)
+          .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
+
+        expect(response.statusCode).toBe(200);
+
+        ({ meta, apps } = response.body);
+        appNames = apps.map((app) => app.name);
+
+        expect(apps).toEqual([]);
+        expect(meta).toEqual({
+          total_pages: 0,
+          total_count: 0,
           folder_count: 0,
           current_page: 1,
         });
@@ -281,21 +334,39 @@ describe('apps controller', () => {
           folder: folder,
         });
 
-        const response = await request(app.getHttpServer())
+        let response = await request(app.getHttpServer())
           .get(`/api/apps`)
           .query({ folder: folder.id, page: 1 })
           .set('Authorization', authHeaderForUser(developerUserData.user));
 
         expect(response.statusCode).toBe(200);
 
-        const { meta, apps } = response.body;
-        const appNames = apps.map((app) => app.name);
+        let { meta, apps } = response.body;
+        let appNames = apps.map((app) => app.name);
 
         expect(new Set(appNames)).toEqual(new Set([appInFolder.name, publicAppInFolder.name]));
         expect(meta).toEqual({
           total_pages: 1,
           total_count: 5,
           folder_count: 2,
+          current_page: 1,
+        });
+
+        response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public app in`)
+          .query({ folder: folder.id, page: 1 })
+          .set('Authorization', authHeaderForUser(developerUserData.user));
+
+        expect(response.statusCode).toBe(200);
+
+        ({ meta, apps } = response.body);
+        appNames = apps.map((app) => app.name);
+
+        expect(new Set(appNames)).toEqual(new Set([publicAppInFolder.name]));
+        expect(meta).toEqual({
+          total_pages: 1,
+          total_count: 1,
+          folder_count: 1,
           current_page: 1,
         });
       });
@@ -749,6 +820,121 @@ describe('apps controller', () => {
             });
 
           expect(response.statusCode).toBe(403);
+        });
+      });
+
+      describe('Data source and query versioning', () => {
+        it('should be able create data sources and queries for each version creation', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            groups: ['all_users', 'admin'],
+          });
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
+          const dataSource = await createDataSource(app, {
+            name: 'name',
+            kind: 'postgres',
+            application: application,
+            user: adminUserData.user,
+          });
+          await createDataQuery(app, {
+            application,
+            dataSource,
+            kind: 'restapi',
+            options: { method: 'get' },
+          });
+
+          const manager = getManager();
+          // data sources and queries without any version association
+          let dataSources = await manager.find(DataSource);
+          let dataQueries = await manager.find(DataQuery);
+
+          expect(dataSources).toHaveLength(1);
+          expect(dataQueries).toHaveLength(1);
+          expect([...new Set(dataSources.map((s) => s.appVersionId))]).toEqual([null]);
+          expect([...new Set(dataQueries.map((q) => q.appVersionId))]).toEqual([null]);
+
+          let response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v0',
+            });
+
+          expect(response.statusCode).toBe(201);
+
+          // first version creation associates existing data sources and queries to it
+          dataSources = await manager.find(DataSource);
+          dataQueries = await manager.find(DataQuery);
+          expect(dataSources).toHaveLength(1);
+          expect(dataQueries).toHaveLength(1);
+          expect(dataSources.map((s) => s.appVersionId).includes(response.body.id)).toBeTruthy();
+          expect(dataQueries.map((q) => q.appVersionId).includes(response.body.id)).toBeTruthy();
+
+          // subsequent version creation will copy and create new data sources and queries from previous version
+          response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v1',
+            });
+
+          dataSources = await manager.find(DataSource);
+          dataQueries = await manager.find(DataQuery);
+          expect(dataSources).toHaveLength(2);
+          expect(dataQueries).toHaveLength(2);
+          expect(dataSources.map((s) => s.appVersionId).includes(response.body.id)).toBeTruthy();
+          expect(dataQueries.map((q) => q.appVersionId).includes(response.body.id)).toBeTruthy();
+
+          response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v2',
+            });
+
+          dataSources = await manager.find(DataSource);
+          dataQueries = await manager.find(DataQuery);
+          expect(dataSources).toHaveLength(3);
+          expect(dataQueries).toHaveLength(3);
+          expect(dataSources.map((s) => s.appVersionId).includes(response.body.id)).toBeTruthy();
+          expect(dataQueries.map((q) => q.appVersionId).includes(response.body.id)).toBeTruthy();
+        });
+
+        it('creates new credentials and copies cipher text on data source', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+          });
+          const application = await importAppFromTemplates(app, adminUserData.user, 'customer-dashboard');
+          const dataSource = await getManager().findOne(DataSource, { where: { appId: application } });
+          const credential = await getManager().findOne(Credential, dataSource.options['password']['credentialId']);
+          credential.valueCiphertext = 'strongPassword';
+          await getManager().save(credential);
+
+          await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v1',
+            });
+
+          await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v2',
+            });
+
+          const dataSources = await getManager().find(DataSource);
+          const dataQueries = await getManager().find(DataQuery);
+
+          expect(dataSources).toHaveLength(3);
+          expect(dataQueries).toHaveLength(6);
+
+          const credentials = await getManager().find(Credential);
+          expect(dataSources).toHaveLength(3);
+          expect([...new Set(credentials.map((c) => c.valueCiphertext))]).toEqual(['strongPassword']);
         });
       });
 

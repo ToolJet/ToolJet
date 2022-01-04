@@ -79,6 +79,18 @@ Setting this property to anything other than these values will make the calendar
 
 The view that is currently selected will be exposed as the variable `currentView`.
 
+#### Start time on week and day view
+
+This determines the time at which week view and day view cells begins. Keep in mind that this
+field accepts a date, but still only the time and timezone(if provided) are taken from this date.
+The date should be provided in the date format chosen by you in the first property field.
+
+#### End time on week and day view
+
+This determines the time at which week view and day view cells ends. Keep in mind that this
+field accepts a date, but still only the time and timezone(if provided) are taken from this date.
+The date should be provided in the date format chosen by you in the first property field.
+
 #### Show toolbar
 
 Determines whether the calendar toolbar should be displayed or not.
@@ -93,6 +105,10 @@ When `resources` are specified, the calendar could take up quite a lot of horizo
 
 If we set this property to `compact`, the cell sizes will be smaller in `week` and `day` views.
 
+#### Header date format on week view
+
+This format determines how the column header for each day in week view will be displayed. As with every other date format field in ToolJet, this follows the momentjs standard of date formatting.
+
 ### Events
 
 #### On Event selected
@@ -106,3 +122,13 @@ Last selected event is exposed as `selectedEvent`.
 This event is fired when the user either clicks on an calendar slot(empty cell or empty space of a cell with event) or when they click and drag to select multiple slots.  
   
 Last selected slot(s) are exposed as `selectedSlots`.
+
+#### On Date Navigate
+
+This event is fired when the user clicks on `Today`, `Next` or `Back` buttons on the calendar.
+The corresponding date to which the user navigated, will be exposed as `currentDate`.
+
+#### On View Change
+
+This event is fired when a different view is selected by the user. The current view is exposed as
+`currentView`.
