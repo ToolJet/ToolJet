@@ -26,6 +26,7 @@ import MssqlSchema from './Database/Mssql.schema.json';
 // Cloud storage sources
 import S3Schema from './Database/S3.schema.json';
 import GcsSchema from './Database/Gcs.schema.json';
+import MinioSchema from './Database/Minio.schema.json';
 
 // Other sources
 import RunjsSchema from './Api/Runjs.schema.json';
@@ -47,6 +48,7 @@ const Mysql = ({ ...rest }) => <DynamicForm schema={MysqlSchema} {...rest} />;
 const Mssql = ({ ...rest }) => <DynamicForm schema={MssqlSchema} {...rest} />;
 const S3 = ({ ...rest }) => <DynamicForm schema={S3Schema} {...rest} />;
 const Gcs = ({ ...rest }) => <DynamicForm schema={GcsSchema} {...rest} />;
+const Minio = ({ ...rest }) => <DynamicForm schema={MinioSchema} {...rest} />;
 const Twilio = ({ ...rest }) => <DynamicForm schema={TwilioSchema} {...rest} />;
 const Sendgrid = ({ ...rest }) => <DynamicForm schema={SendgridSchema} {...rest} />;
 
@@ -73,7 +75,7 @@ export const ApiSources = [
 ];
 
 export const OtherSources = [RunjsSchema.source];
-export const CloudStorageSources = [S3Schema.source, GcsSchema.source];
+export const CloudStorageSources = [S3Schema.source, GcsSchema.source, MinioSchema.source];
 export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...OtherSources];
 
 export const SourceComponents = {
@@ -94,6 +96,7 @@ export const SourceComponents = {
   Mssql,
   S3,
   Gcs,
+  Minio,
   Twilio,
   Sendgrid,
 };
