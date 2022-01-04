@@ -260,7 +260,6 @@ export const DraggableBox = function DraggableBox({
             currentState={currentState}
             darkMode={darkMode}
             removeComponent={removeComponent}
-            offset={layoutHeightWithOffset - document.documentElement.clientHeight}
           />
         </div>
       )}

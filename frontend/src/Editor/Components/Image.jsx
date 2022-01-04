@@ -11,7 +11,7 @@ export const Image = function Image({ height, properties, styles, fireEvent, off
 
   return (
     <div data-disabled={styles.disabledState} style={{ display: widgetVisibility ? '' : 'none' }}>
-      <LazyLoad offset={offset > 0 && offset} height={height} placeholder={<Placeholder />} debounce={500}>
+      <LazyLoad offset={offset > 0 ? offset : 0} height={height} placeholder={<Placeholder />} debounce={500}>
         <img src={source} height={height} onClick={() => fireEvent('onClick')} />
       </LazyLoad>
     </div>
