@@ -83,7 +83,7 @@ export const DropDown = function DropDown({
 
     singleValue: (provided, _state) => ({
       ...provided,
-      color: darkMode ? 'white' : 'black',
+      color: disabledState ? 'grey' : darkMode ? 'white' : 'black',
     }),
 
     input: (provided, _state) => ({
