@@ -106,7 +106,7 @@ export const DropDown = function DropDown({
           }
         : {
             backgroundColor: state.value === currentValue ? '#4D72FA' : state.isFocused ? '#d8dce9' : 'white',
-            color: 'black',
+            color: state.value === currentValue ? 'white' : 'black',
           };
       return {
         ...provided,
@@ -134,7 +134,9 @@ export const DropDown = function DropDown({
         <div className="col px-0 h-100">
           <Select
             disabled={disabledState}
-            value={selectOptions.filter((option) => option.value === currentValue)[0]}
+            value={
+              selectOptions.filter((option) => option.value === currentValue)[0] ?? { label: '', value: undefined }
+            }
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'select-option') {
                 setCurrentValue(selectedOption.value);
