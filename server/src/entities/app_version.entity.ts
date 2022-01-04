@@ -7,8 +7,11 @@ import {
   ManyToOne,
   JoinColumn,
   BaseEntity,
+  OneToMany,
 } from 'typeorm';
 import { App } from './app.entity';
+import { DataQuery } from './data_query.entity';
+import { DataSource } from './data_source.entity';
 
 @Entity({ name: 'app_versions' })
 export class AppVersion extends BaseEntity {
@@ -33,4 +36,14 @@ export class AppVersion extends BaseEntity {
   @ManyToOne(() => App, (appVersion) => appVersion.id)
   @JoinColumn({ name: 'app_id' })
   app: App;
+
+  @OneToMany(() => DataSource, (dataSource) => dataSource.appVersion, {
+    onDelete: 'CASCADE',
+  })
+  dataSources: DataSource[];
+
+  @OneToMany(() => DataQuery, (dataQuery) => dataQuery.appVersion, {
+    onDelete: 'CASCADE',
+  })
+  dataQueries: DataQuery[];
 }

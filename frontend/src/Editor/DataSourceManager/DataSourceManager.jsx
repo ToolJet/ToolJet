@@ -109,6 +109,7 @@ class DataSourceManager extends React.Component {
     const { appId, options, selectedDataSource } = this.state;
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
+    const appVersionId = this.props.editingVersionId;
 
     const parsedOptions = Object.keys(options).map((key) => {
       const keyMeta = selectedDataSource.options[key];
@@ -129,7 +130,7 @@ class DataSourceManager extends React.Component {
         });
       } else {
         this.setState({ isSaving: true });
-        datasourceService.create(appId, name, kind, parsedOptions).then(() => {
+        datasourceService.create(appId, appVersionId, name, kind, parsedOptions).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
           toast.success('Datasource Added', { position: 'top-center' });

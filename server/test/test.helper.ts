@@ -21,6 +21,8 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AllExceptionsFilter } from 'src/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
+import { AppsModule } from 'src/modules/apps/apps.module';
+import { LibraryAppCreationService } from '@services/library_app_creation.service';
 
 export async function createNestAppInstance() {
   let app: INestApplication;
@@ -79,6 +81,12 @@ export async function createApplication(nestApp, { name, user, isPublic, slug }:
   await maybeCreateAllUsersAppGroupPermissions(nestApp, newApp);
 
   return newApp;
+}
+
+export async function importAppFromTemplates(nestApp, user, identifier) {
+  const service = nestApp.select(AppsModule).get(LibraryAppCreationService);
+
+  return service.perform(user, identifier);
 }
 
 export async function createApplicationVersion(nestApp, application) {
@@ -305,7 +313,7 @@ export async function addAllUsersGroupToUser(nestApp, user) {
   return user;
 }
 
-export async function createDataSource(nestApp, { name, application, kind, options }: any) {
+export async function createDataSource(nestApp, { name, application, kind, options, appVersion }: any) {
   let dataSourceRepository: Repository<DataSource>;
   dataSourceRepository = nestApp.get('DataSourceRepository');
 
@@ -317,13 +325,14 @@ export async function createDataSource(nestApp, { name, application, kind, optio
       options: await dataSourcesService.parseOptionsForCreate(options),
       app: application,
       kind,
+      appVersion,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
   );
 }
 
-export async function createDataQuery(nestApp, { application, kind, dataSource, options }: any) {
+export async function createDataQuery(nestApp, { application, kind, dataSource, options, appVersion }: any) {
   let dataQueryRepository: Repository<DataQuery>;
   dataQueryRepository = nestApp.get('DataQueryRepository');
 
@@ -333,6 +342,7 @@ export async function createDataQuery(nestApp, { application, kind, dataSource, 
       app: application,
       kind,
       dataSource,
+      appVersion,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
