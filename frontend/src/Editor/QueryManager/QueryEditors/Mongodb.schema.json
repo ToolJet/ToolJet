@@ -155,7 +155,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ birth: { $lt: new Date('01/01/1945') }",
+        "placeholder": "{ birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -182,7 +182,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ birth: { $lt: new Date('01/01/1945') }",
+        "placeholder": "{ birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }",
         "description": "Enter filter",
         "height": "150px"
       },
@@ -227,7 +227,7 @@
         "$key": "filter",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ birth: { $lt: new Date('01/01/1945') }",
+        "placeholder": "{ birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }",
         "description": "Enter filter",
         "height": "150px"
       },

@@ -145,7 +145,17 @@ export default class MongodbService implements QueryService {
     if (!json) {
       return {};
     }
-    return JSON5.parse(json);
+    return JSON5.parse(json, this.dateTimeReviver);
+  }
+
+  dateTimeReviver(key: string, value?: any): any {
+    if (typeof value === 'string') {
+      const a = /new Date\((-?\d*)\)/.exec(value);
+      if (a) {
+        return new Date(+a[1]);
+      }
+    }
+    return value;
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {

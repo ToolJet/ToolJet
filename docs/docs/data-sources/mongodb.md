@@ -92,3 +92,20 @@ Delete a record based on the filter. [Reference](https://docs.mongodb.com/driver
 Delete many records based on the filter. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/deleteMany/)
 #### Bulk Operations
 Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/bulkWrite/)
+
+### Dynamic Quries
+For dynanic queries make sure that you have wrapped inside quotes, if the value is not number boolean or object</br>
+example: 
+```javascript
+{ amount: { $lt: {{components.textinput1.value}} }} // Value is number or boolean
+```
+```javascript
+{ amount: { $lt: '{{ components.textinput1.value }}' }} // value is string
+```
+You can convert to various data types supported by mongo using [`$convert`](https://docs.mongodb.com/manual/reference/operator/aggregation/convert/).
+#### Date data type
+To convert and insert/query using `Date` data type
+```javascript
+{createDate: 'new Date({{ new Date('09/06/1990').getTime() }})' }
+```
+pass `'new Date(<Return value form getTime()>)'` as string.
