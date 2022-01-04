@@ -28,6 +28,8 @@ import { Calendar } from './Components/Calendar';
 import { IFrame } from './Components/IFrame';
 import { CodeEditor } from './Components/CodeEditor';
 import { Timer } from './Components/Timer';
+import { Pagination } from './Components/Pagination';
+
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -65,6 +67,7 @@ const AllComponents = {
   IFrame,
   CodeEditor,
   Timer,
+  Pagination,
 };
 
 export const Box = function Box({

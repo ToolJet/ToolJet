@@ -1483,4 +1483,54 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Pagination',
+    displayName: 'Pagination',
+    description: 'Pagination ',
+    component: 'Pagination',
+    defaultSize: {
+      width: 10,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      pageSize: { type: 'code', displayName: 'Page size' },
+      defaultPageIndex: { type: 'code', displayName: 'Default page index' },
+    },
+    validation: {},
+    events: {
+      onPageChange: { displayName: 'On Page Change' },
+    },
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      currentPageSize: null,
+      currentPageIndex: null,
+    },
+    definition: {
+      validation: {},
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        pageSize: {
+          value: '{{10}}',
+        },
+        defaultPageIndex: {
+          value: '{{1}}',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
 ];

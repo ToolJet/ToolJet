@@ -384,6 +384,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarNavigate',
       'onCalendarViewChange',
       'onSearchTextChanged',
+      'onPageChange',
     ].includes(eventName)
   ) {
     const { component } = options;
