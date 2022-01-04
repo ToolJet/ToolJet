@@ -744,6 +744,16 @@ export const componentTypes = [
       onClick: { displayName: 'On click' },
     },
     styles: {
+      borderType: {
+        type: 'select',
+        displayName: 'Border type',
+        options: [
+          { name: 'None', value: 'rounded-0' },
+          { name: 'Rounded', value: 'rounded' },
+          { name: 'Circle', value: 'rounded-circle' },
+          { name: 'Thumbnail', value: 'img-thumbnail' },
+        ],
+      },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -759,6 +769,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderType: { value: 'rounded-0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
