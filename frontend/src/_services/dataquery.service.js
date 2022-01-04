@@ -10,14 +10,19 @@ export const dataqueryService = {
   preview,
 };
 
-function getAll(appId) {
+function getAll(appId, appVersionId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/data_queries?app_id=${appId}`, requestOptions).then(handleResponse);
+
+  let searchParams = new URLSearchParams(`app_id=${appId}`);
+  appVersionId && searchParams.append('app_version_id', appVersionId);
+
+  return fetch(`${config.apiUrl}/data_queries?` + searchParams, requestOptions).then(handleResponse);
 }
 
-function create(app_id, name, kind, options, data_source_id) {
+function create(app_id, app_version_id, name, kind, options, data_source_id) {
   const body = {
     app_id,
+    app_version_id,
     name,
     kind,
     options,
