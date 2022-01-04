@@ -163,6 +163,7 @@ export const DraggableBox = function DraggableBox({
 
   const gridWidth = canvasWidth / 43;
   const width = (canvasWidth * currentLayoutOptions.width) / 43;
+  const layoutHeightWithOffset = currentLayoutOptions.top + currentLayoutOptions.height;
 
   return (
     <div
@@ -239,6 +240,7 @@ export const DraggableBox = function DraggableBox({
                 darkMode={darkMode}
                 removeComponent={removeComponent}
                 canvasWidth={canvasWidth}
+                offset={layoutHeightWithOffset - document.documentElement.clientHeight}
               />
             </div>
           </Rnd>
@@ -258,6 +260,7 @@ export const DraggableBox = function DraggableBox({
             currentState={currentState}
             darkMode={darkMode}
             removeComponent={removeComponent}
+            offset={layoutHeightWithOffset - document.documentElement.clientHeight}
           />
         </div>
       )}
