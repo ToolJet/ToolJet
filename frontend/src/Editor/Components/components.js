@@ -781,6 +781,7 @@ export const componentTypes = [
     events: {},
     styles: {
       backgroundColor: { type: 'color' },
+      borderRadius: { type: 'code', displayName: 'Border Radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -796,6 +797,7 @@ export const componentTypes = [
       events: [],
       styles: {
         backgroundColor: { value: '#fff' },
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
