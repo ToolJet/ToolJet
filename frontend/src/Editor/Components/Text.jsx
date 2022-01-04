@@ -10,9 +10,7 @@ export const Text = function Text({ height, properties, styles }) {
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
-    if (loadingStateProperty) {
-      setLoadingState(loadingStateProperty);
-    }
+    setLoadingState(loadingStateProperty);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
 
@@ -27,8 +25,10 @@ export const Text = function Text({ height, properties, styles }) {
     <div data-disabled={disabledState} className="text-widget" style={computedStyles}>
       {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />}
       {loadingState === true && (
-        <div>
-          <div className="skeleton-line w-10"></div>
+        <div style={{ width: '100%' }}>
+          <center>
+            <div className="spinner-border" role="status"></div>
+          </center>
         </div>
       )}
     </div>
