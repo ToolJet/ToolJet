@@ -30,7 +30,8 @@
     "eslint": "^7.25.0",
     "ts-node": "^10.1.0",
     "lerna": "^4.0.0",
-    "common": "./plugins/packages/common"
+    "common": "./plugins/packages/common",
+    "@tooljet/plugins": "./plugins"
   },
   "scripts": {
     "prebuild:plugins": "npm --prefix plugins install && npm --prefix plugins run bootstrap",
