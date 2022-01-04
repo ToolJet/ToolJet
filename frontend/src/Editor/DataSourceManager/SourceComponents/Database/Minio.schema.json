@@ -15,7 +15,7 @@
     "options": {
       "host": { "type": "string" },
       "port": { "type": "string" },
-      "ssl_emabled": { "type": "string" },
+      "ssl_enabled": { "type": "string" },
       "access_key": { "type": "string" },
       "secret_key": { "type": "string", "encrypted": true }
     }
