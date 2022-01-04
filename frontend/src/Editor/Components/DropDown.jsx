@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 
@@ -10,9 +11,13 @@ export const DropDown = function DropDown({
   fireEvent,
   darkMode,
 }) {
-  const { label, value, display_values, values } = properties;
+  let { label, value, display_values, values } = properties;
   const { visibility, disabledState } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
+
+  if (!_.isArray(values)) {
+    values = [];
+  }
 
   let selectOptions = [];
 
