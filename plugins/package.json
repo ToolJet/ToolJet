@@ -1,6 +1,6 @@
 {
   "name": "@gandharv99/tooljet-plugins",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "source": "server.ts",
   "types": "dist/server.d.ts",
   "main": "dist/server.js",
@@ -10,9 +10,9 @@
     "build": "tsc -b",
     "create:client": "node create-client-entry",
     "create:server": "node create-server-entry",
-    "prebuild:pkgs": "npm run clean:pkgs && npm run create:client && npm run create:server",
-    "build:pkgs": "lerna run build --stream",
-    "clean:pkgs": "lerna run clean --parallel",
+    "prebuild:packages": "npm run clean:packages && npm run create:client && npm run create:server",
+    "build:packages": "lerna run build --stream",
+    "clean:packages": "lerna run clean --parallel",
     "bootstrap": "lerna clean -y && lerna bootstrap --hoist"
   },
   "devDependencies": {

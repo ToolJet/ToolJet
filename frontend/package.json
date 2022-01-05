@@ -7,7 +7,7 @@
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-react": "^7.0.0",
-    "@gandharv99/tooljet-plugins": "^0.0.2",
+    "@gandharv99/tooljet-plugins": "^0.0.3",
     "@react-google-maps/api": "^2.1.1",
     "@sentry/react": "^6.12.0",
     "@sentry/tracing": "^6.12.0",
