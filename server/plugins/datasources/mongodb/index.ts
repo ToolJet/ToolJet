@@ -4,6 +4,7 @@ import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
 const { MongoClient } = require('mongodb');
+const JSON5 = require('json5');
 import { EJSON } from 'bson';
 
 @Injectable()
@@ -144,7 +145,7 @@ export default class MongodbService implements QueryService {
   parseEJSON(maybeEJSON?: string): any {
     if (!maybeEJSON) return {};
 
-    return EJSON.parse(maybeEJSON);
+    return EJSON.parse(JSON.stringify(JSON5.parse(maybeEJSON)));
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {

@@ -94,18 +94,13 @@ Delete many records based on the filter. [Reference](https://docs.mongodb.com/dr
 Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/bulkWrite/)
 
 ### Dynamic Quries
-For dynanic queries make sure that you have wrapped inside quotes, if the value is not number boolean or object</br>
-example: 
 ```javascript
-{ amount: { $lt: {{components.textinput1.value}} }} // Value is number or boolean
+{ amount: { $lt: '{{ components.textinput1.value }}' }}
+
+// Dates 
+// supported: Extended JSON syntax
+{ createdAt: { $date: '{{ new Date('01/10/2020') }}'} }
+// not supported: MongoDB classic syntax
+{ createdAt: new Date('01/10/2020') }
 ```
-```javascript
-{ amount: { $lt: '{{ components.textinput1.value }}' }} // value is string
-```
-You can convert to various data types supported by mongo using [`$convert`](https://docs.mongodb.com/manual/reference/operator/aggregation/convert/).
-#### Date data type
-To convert and insert/query using `Date` data type
-```javascript
-{createDate: 'new Date({{ new Date('09/06/1990').getTime() }})' }
-```
-pass `'new Date(<Return value form getTime()>)'` as string.
+Rererence on [mongodb extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) supported data types
