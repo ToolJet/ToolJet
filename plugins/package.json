@@ -1,6 +1,6 @@
 {
-  "name": "@tooljet/plugins",
-  "private": true,
+  "name": "@gandharv99/tooljet-plugins",
+  "version": "0.0.2",
   "source": "server.ts",
   "types": "dist/server.d.ts",
   "main": "dist/server.js",

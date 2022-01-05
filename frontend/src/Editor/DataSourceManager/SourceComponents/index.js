@@ -2,7 +2,7 @@ import React from 'react';
 
 import DynamicForm from '@/_components/DynamicForm';
 
-import { allManifests } from '@tooljet/plugins/client';
+import { allManifests } from '@gandharv99/tooljet-plugins/client';
 
 // Other sources
 import RunjsSchema from './Runjs.schema.json';

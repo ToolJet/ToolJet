@@ -33,13 +33,11 @@
     "common": "./plugins/packages/common"
   },
   "scripts": {
-    "prebuild:plugins": "npm --prefix plugins install && npm --prefix plugins run bootstrap",
-    "build:plugins": "NODE_ENV=production npm --prefix plugins run build:pkgs && NODE_ENV=production npm --prefix plugins run build",
     "prebuild:frontend": "npm --prefix frontend install",
     "build:frontend": "NODE_ENV=production npm --prefix frontend run build",
     "prebuild:server": "npm --prefix server install",
     "build:server": "NODE_ENV=production npm --prefix server run build",
-    "build": "npm run build:plugins && npm run build:frontend && npm run build:server",
+    "build": "npm run build:frontend && npm run build:server",
     "start:prod": "npm --prefix server run start:prod",
     "db:create": "npm --prefix server run db:create",
     "db:migrate": "npm --prefix server run db:migrate",
@@ -47,7 +45,6 @@
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "NODE_ENV=production ./heroku-postdeploy.sh",
-    "heroku-prebuild": "npm i -g lerna && npm --prefix plugins install",
     "cy:run": "cypress run --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
     "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
     "prepare": "husky install"
