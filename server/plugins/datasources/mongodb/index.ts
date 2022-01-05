@@ -3,8 +3,8 @@ import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import { ConnectionTestResult } from 'src/modules/data_sources/connection_test_result.type';
-const JSON5 = require('json5');
 const { MongoClient } = require('mongodb');
+import { EJSON } from 'bson';
 
 @Injectable()
 export default class MongodbService implements QueryService {
@@ -21,110 +21,110 @@ export default class MongodbService implements QueryService {
         case 'insert_one':
           result = await db
             .collection(queryOptions.collection)
-            .insertOne(this.parseJSON(queryOptions.document), this.parseJSON(queryOptions.options));
+            .insertOne(this.parseEJSON(queryOptions.document), this.parseEJSON(queryOptions.options));
           break;
         case 'insert_many':
           result = await db
             .collection(queryOptions.collection)
-            .insertMany(this.parseJSON(queryOptions.document), this.parseJSON(queryOptions.options));
+            .insertMany(this.parseEJSON(queryOptions.document), this.parseEJSON(queryOptions.options));
           break;
         case 'find_one':
           result = await db
             .collection(queryOptions.collection)
-            .findOne(this.parseJSON(queryOptions.filter), this.parseJSON(queryOptions.options));
+            .findOne(this.parseEJSON(queryOptions.filter), this.parseEJSON(queryOptions.options));
           break;
         case 'find_many':
           result = await db
             .collection(queryOptions.collection)
-            .find(this.parseJSON(queryOptions.filter), this.parseJSON(queryOptions.options))
+            .find(this.parseEJSON(queryOptions.filter), this.parseEJSON(queryOptions.options))
             .toArray();
           break;
         case 'count_total':
           result = await db
             .collection(queryOptions.collection)
-            .estimatedDocumentCount(this.parseJSON(queryOptions.options));
+            .estimatedDocumentCount(this.parseEJSON(queryOptions.options));
           result = { count: result };
           break;
         case 'count':
           result = await db
             .collection(queryOptions.collection)
-            .countDocuments(this.parseJSON(queryOptions.filter), this.parseJSON(queryOptions.options));
+            .countDocuments(this.parseEJSON(queryOptions.filter), this.parseEJSON(queryOptions.options));
           result = { count: result };
           break;
         case 'distinct':
           result = await db
             .collection(queryOptions.collection)
-            .distinct(queryOptions.field, this.parseJSON(queryOptions.filter), this.parseJSON(queryOptions.options));
+            .distinct(queryOptions.field, this.parseEJSON(queryOptions.filter), this.parseEJSON(queryOptions.options));
           break;
         case 'update_one':
           result = await db
             .collection(queryOptions.collection)
             .updateOne(
-              this.parseJSON(queryOptions.filter),
-              this.parseJSON(queryOptions.update),
-              this.parseJSON(queryOptions.options)
+              this.parseEJSON(queryOptions.filter),
+              this.parseEJSON(queryOptions.update),
+              this.parseEJSON(queryOptions.options)
             );
           break;
         case 'update_many':
           result = await db
             .collection(queryOptions.collection)
             .updateMany(
-              this.parseJSON(queryOptions.filter),
-              this.parseJSON(queryOptions.update),
-              this.parseJSON(queryOptions.options)
+              this.parseEJSON(queryOptions.filter),
+              this.parseEJSON(queryOptions.update),
+              this.parseEJSON(queryOptions.options)
             );
           break;
         case 'replace_one':
           result = await db
             .collection(queryOptions.collection)
             .replaceOne(
-              this.parseJSON(queryOptions.filter),
-              this.parseJSON(queryOptions.replacement),
-              this.parseJSON(queryOptions.options)
+              this.parseEJSON(queryOptions.filter),
+              this.parseEJSON(queryOptions.replacement),
+              this.parseEJSON(queryOptions.options)
             );
           break;
         case 'find_one_replace':
           result = await db
             .collection(queryOptions.collection)
             .findOneAndReplace(
-              this.parseJSON(queryOptions.filter),
-              this.parseJSON(queryOptions.replacement),
-              this.parseJSON(queryOptions.options)
+              this.parseEJSON(queryOptions.filter),
+              this.parseEJSON(queryOptions.replacement),
+              this.parseEJSON(queryOptions.options)
             );
           break;
         case 'find_one_update':
           result = await db
             .collection(queryOptions.collection)
             .findOneAndUpdate(
-              this.parseJSON(queryOptions.filter),
-              this.parseJSON(queryOptions.update),
-              this.parseJSON(queryOptions.options)
+              this.parseEJSON(queryOptions.filter),
+              this.parseEJSON(queryOptions.update),
+              this.parseEJSON(queryOptions.options)
             );
           break;
         case 'find_one_delete':
           result = await db
             .collection(queryOptions.collection)
-            .findOneAndDelete(this.parseJSON(queryOptions.filter), this.parseJSON(queryOptions.options));
+            .findOneAndDelete(this.parseEJSON(queryOptions.filter), this.parseEJSON(queryOptions.options));
           break;
         case 'delete_one':
           result = await db
             .collection(queryOptions.collection)
-            .deleteOne(this.parseJSON(queryOptions.filter), this.parseJSON(queryOptions.options));
+            .deleteOne(this.parseEJSON(queryOptions.filter), this.parseEJSON(queryOptions.options));
           break;
         case 'delete_many':
           result = await db
             .collection(queryOptions.collection)
-            .deleteMany(this.parseJSON(queryOptions.filter), this.parseJSON(queryOptions.options));
+            .deleteMany(this.parseEJSON(queryOptions.filter), this.parseEJSON(queryOptions.options));
           break;
         case 'bulk_write':
           result = await db
             .collection(queryOptions.collection)
-            .bulkWrite(this.parseJSON(queryOptions.operations), this.parseJSON(queryOptions.options));
+            .bulkWrite(this.parseEJSON(queryOptions.operations), this.parseEJSON(queryOptions.options));
           break;
         case 'aggregate':
           result = await db
             .collection(queryOptions.collection)
-            .aggregate(this.parseJSON(queryOptions.pipeline), this.parseJSON(queryOptions.options))
+            .aggregate(this.parseEJSON(queryOptions.pipeline), this.parseEJSON(queryOptions.options))
             .toArray();
           break;
       }
@@ -141,21 +141,11 @@ export default class MongodbService implements QueryService {
     };
   }
 
-  parseJSON(json?: string): any {
-    if (!json) {
-      return {};
-    }
-    return JSON5.parse(json, this.dateTimeReviver);
-  }
+  parseEJSON(maybeEJSON?: any): any {
+    if (!maybeEJSON) return {};
 
-  dateTimeReviver(key: string, value?: any): any {
-    if (typeof value === 'string') {
-      const a = /new Date\((-?\d*)\)/.exec(value);
-      if (a) {
-        return new Date(+a[1]);
-      }
-    }
-    return value;
+    const x = EJSON.parse(maybeEJSON);
+    return x;
   }
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
