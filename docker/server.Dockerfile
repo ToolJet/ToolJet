@@ -1,4 +1,4 @@
-FROM node:14.17.3-buster
+FROM node:14.17.3-alpine
 
 ENV NODE_ENV=production
 
@@ -10,6 +10,7 @@ RUN apt update && apt install -y \
   postgresql \
   freetds-dev
 
+RUN npm i -g npm@7.20.0
 RUN npm install -g @nestjs/cli
 
 RUN mkdir -p /app
