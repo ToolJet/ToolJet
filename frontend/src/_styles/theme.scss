@@ -2916,3 +2916,13 @@ input[type="text"] {
     display: flex;
   }
 }
+
+.fixedHeader {
+  table thead {
+    position: -webkit-sticky; // this is for all Safari (Desktop & iOS), not for Chrome
+    position: sticky;
+    top: 0;
+    border-top: 0;
+    z-index: 1; // any positive value, layer order is global
+  }
+}
