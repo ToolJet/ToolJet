@@ -63,6 +63,10 @@ class ManageOrgUsers extends React.Component {
     this.fetchUsers();
   }
 
+  socketSend = (event, data) => {
+    this.props.socket?.send(JSON.stringify({ event, data }));
+  };
+
   fetchUsers = () => {
     this.setState({
       isLoading: true,
@@ -85,17 +89,22 @@ class ManageOrgUsers extends React.Component {
     });
   };
 
-  archiveOrgUser = (id) => {
-    this.setState({ archivingUser: id });
+  archiveOrgUser = (user) => {
+    this.setState({ archivingUser: user.id });
 
     organizationUserService
-      .archive(id)
+      .archive(user.id)
       .then(() => {
         toast.success('The user has been archived', {
           position: 'top-center',
         });
         this.setState({ archivingUser: null });
         this.fetchUsers();
+        this.socketSend('events', {
+          message: 'force-logout',
+          userIds: [user.user_id],
+          toast: 'Your account has been archived',
+        });
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -376,7 +385,7 @@ class ManageOrgUsers extends React.Component {
                                   onClick={() => {
                                     user.status === 'archived'
                                       ? this.unarchiveOrgUser(user.id)
-                                      : this.archiveOrgUser(user.id);
+                                      : this.archiveOrgUser(user);
                                   }}
                                 >
                                   {user.status === 'archived' ? 'Unarchive' : 'Archive'}

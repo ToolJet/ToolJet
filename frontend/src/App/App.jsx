@@ -1,4 +1,5 @@
 import React from 'react';
+import config from 'config';
 import { Router, Route } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
@@ -19,7 +20,7 @@ import { OnboardingModal } from '@/Onboarding/OnboardingModal';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { lt } from 'semver';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 
 class App extends React.Component {
   constructor(props) {
@@ -27,6 +28,7 @@ class App extends React.Component {
 
     this.state = {
       currentUser: null,
+      socket: null,
       fetchedMetadata: false,
       onboarded: true,
       darkMode: localStorage.getItem('darkMode') === 'true',
@@ -34,8 +36,9 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    authenticationService.currentUser.subscribe((x) => {
-      this.setState({ currentUser: x });
+    authenticationService.currentUser.subscribe((currentUser) => {
+      this.setState({ currentUser });
+      this.initWebSocket(currentUser);
     });
   }
 
@@ -49,8 +52,60 @@ class App extends React.Component {
     localStorage.setItem('darkMode', newMode);
   };
 
+  getWebsocketUrl = () => {
+    const re = /https?:\/\//g;
+    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '');
+
+    return window.location.host;
+  };
+
+  initWebSocket = (currentUser) => {
+    // TODO: add retry policy
+    const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
+
+    // Connection opened
+    socket.addEventListener('open', function (event) {
+      console.log('connection established', event);
+
+      socket.send(
+        JSON.stringify({
+          event: 'authenticate',
+          data: {
+            authToken: currentUser.auth_token,
+            userId: currentUser.id,
+            organizationId: currentUser.organization_id,
+          },
+        })
+      );
+    });
+
+    socket.addEventListener('message', function (event) {
+      const data = JSON.parse(event.data);
+
+      if (data.message === 'force-logout') {
+        toast.error(data.toast);
+        authenticationService.logout();
+        history.push('/login');
+      }
+    });
+
+    // Connection closed
+    socket.addEventListener('close', function (event) {
+      console.log('connection closed', event);
+    });
+
+    // Listen for possible errors
+    socket.addEventListener('error', function (event) {
+      console.log('WebSocket error: ', event);
+    });
+
+    this.setState({
+      socket,
+    });
+  };
+
   render() {
-    const { currentUser, fetchedMetadata, updateAvailable, onboarded, darkMode } = this.state;
+    const { currentUser, fetchedMetadata, updateAvailable, onboarded, darkMode, socket } = this.state;
     let toastOptions = {};
 
     if (darkMode) {
@@ -112,7 +167,7 @@ class App extends React.Component {
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />
-            <Route path="/login" component={LoginPage} />
+            <Route path="/login" component={LoginPage} socket={socket} initWebSocket={this.initWebSocket} />
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPassword} />
             <Route path="/reset-password" component={ResetPassword} />
@@ -123,6 +178,7 @@ class App extends React.Component {
               component={Editor}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
+              socket={socket}
             />
             <PrivateRoute
               exact
@@ -144,6 +200,7 @@ class App extends React.Component {
               component={Authorize}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
+              socket={socket}
             />
             <PrivateRoute
               exact
@@ -151,6 +208,7 @@ class App extends React.Component {
               component={ManageOrgUsers}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
+              socket={socket}
             />
             <PrivateRoute
               exact
@@ -158,6 +216,7 @@ class App extends React.Component {
               component={ManageGroupPermissions}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
+              socket={socket}
             />
             <PrivateRoute
               exact
@@ -165,6 +224,7 @@ class App extends React.Component {
               component={ManageGroupPermissionResources}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
+              socket={socket}
             />
             <PrivateRoute
               exact

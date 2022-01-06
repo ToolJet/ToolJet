@@ -69,6 +69,7 @@ export class OrganizationsService {
         id: orgUser.id,
         role: orgUser.role,
         status: orgUser.status,
+        userId: orgUser.user.id,
       };
 
       if ((await this.usersService.hasGroup(user, 'admin')) && orgUser.user.invitationToken)

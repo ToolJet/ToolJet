@@ -32,7 +32,9 @@ const CommentNotifications = ({ socket, toggleComments, appVersionsId }) => {
   React.useEffect(() => {
     // Listen for messages
     socket?.addEventListener('message', function (event) {
-      if (event.data === 'notifications') fetchData();
+      const data = JSON.parse(event.data);
+
+      if (data.message === 'notifications') fetchData();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

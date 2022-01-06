@@ -100,7 +100,6 @@ class Editor extends React.Component {
       isDeletingDataQuery: false,
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
-      socket: null,
     };
   }
 
@@ -109,7 +108,9 @@ class Editor extends React.Component {
     this.fetchApp();
     this.initComponentVersioning();
     this.initEventListeners();
-    config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
+
+    config.COMMENT_FEATURE_ENABLE && this.socketSend('app-edit', { appId: this.props.match.params.id });
+
     this.setState({
       currentSidebarTab: 2,
       selectedComponent: null,
@@ -149,56 +150,10 @@ class Editor extends React.Component {
   componentWillUnmount() {
     document.removeEventListener('mousemove', this.onMouseMove);
     document.removeEventListener('mouseup', this.onMouseUp);
-    if (this.state.socket) {
-      this.state.socket?.close();
-    }
   }
 
-  getWebsocketUrl = () => {
-    const re = /https?:\/\//g;
-    if (re.test(config.apiUrl)) return config.apiUrl.replace(/(^\w+:|^)\/\//, '').replace('/api', '');
-
-    return window.location.host;
-  };
-
-  initWebSocket = () => {
-    // TODO: add retry policy
-    const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.getWebsocketUrl()}`);
-
-    const appId = this.props.match.params.id;
-
-    // Connection opened
-    socket.addEventListener('open', function (event) {
-      console.log('connection established', event);
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-      socket.send(
-        JSON.stringify({
-          event: 'authenticate',
-          data: currentUser.auth_token,
-        })
-      );
-      socket.send(
-        JSON.stringify({
-          event: 'subscribe',
-          data: appId,
-        })
-      );
-    });
-
-    // Connection closed
-    socket.addEventListener('close', function (event) {
-      console.log('connection closed', event);
-    });
-
-    // Listen for possible errors
-    socket.addEventListener('error', function (event) {
-      console.log('WebSocket error: ', event);
-    });
-
-    this.setState({
-      socket,
-    });
+  socketSend = (event, data) => {
+    this.props.socket?.send(JSON.stringify({ event, data }));
   };
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
@@ -527,7 +482,10 @@ class Editor extends React.Component {
         role="button"
         key={dataSource.name}
         onClick={() => {
-          this.setState({ selectedDataSource: dataSource, showDataSourceManagerModal: true });
+          this.setState({
+            selectedDataSource: dataSource,
+            showDataSourceManagerModal: true,
+          });
         }}
       >
         <td>
@@ -551,7 +509,10 @@ class Editor extends React.Component {
   };
 
   executeDataQueryDeletion = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true });
+    this.setState({
+      showDataQueryDeletionConfirmation: false,
+      isDeletingDataQuery: true,
+    });
     dataqueryService
       .del(this.state.selectedQuery.id)
       .then(() => {
@@ -608,7 +569,9 @@ class Editor extends React.Component {
             <button
               className="btn badge bg-azure-lt"
               onClick={this.deleteDataQuery}
-              style={{ display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none' }}
+              style={{
+                display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
+              }}
             >
               <div>
                 <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
@@ -678,7 +641,9 @@ class Editor extends React.Component {
   };
 
   toggleQuerySearch = () => {
-    this.setState((prev) => ({ showQuerySearchField: !prev.showQuerySearchField }));
+    this.setState((prev) => ({
+      showQuerySearchField: !prev.showQuerySearchField,
+    }));
   };
 
   onVersionDeploy = (versionId) => {
@@ -706,13 +671,25 @@ class Editor extends React.Component {
   renderLayoutIcon = (isDesktopSelected) => {
     if (isDesktopSelected)
       return (
-        <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+        <span
+          onClick={() =>
+            this.setState({
+              currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
+            })
+          }
+        >
           <DesktopSelectedIcon />
         </span>
       );
 
     return (
-      <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+      <span
+        onClick={() =>
+          this.setState({
+            currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
+          })
+        }
+      >
         <MobileSelectedIcon />
       </span>
     );
@@ -891,7 +868,7 @@ class Editor extends React.Component {
                     <>
                       <Container
                         canvasWidth={this.getCanvasWidth()}
-                        socket={this.state.socket}
+                        socket={this.props.socket}
                         showComments={showComments}
                         appVersionsId={this.state?.editingVersion?.id}
                         appDefinition={appDefinition}
@@ -917,7 +894,9 @@ class Editor extends React.Component {
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
                         onComponentClick={(id, component) => {
-                          this.setState({ selectedComponent: { id, component } });
+                          this.setState({
+                            selectedComponent: { id, component },
+                          });
                           this.switchSidebarTab(1);
                         }}
                       />
@@ -1050,7 +1029,11 @@ class Editor extends React.Component {
                                 <button
                                   className="btn btn-sm btn-outline-azure mt-3"
                                   onClick={() =>
-                                    this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
+                                    this.setState({
+                                      selectedQuery: {},
+                                      editingQuery: false,
+                                      addingQuery: true,
+                                    })
                                   }
                                 >
                                   create query
@@ -1131,7 +1114,7 @@ class Editor extends React.Component {
             </div>
             {config.COMMENT_FEATURE_ENABLE && showComments && (
               <CommentNotifications
-                socket={this.state.socket}
+                socket={this.props.socket}
                 appVersionsId={this.state?.editingVersion?.id}
                 toggleComments={this.toggleComments}
               />

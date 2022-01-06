@@ -52,8 +52,12 @@ class LoginPage extends React.Component {
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
     const redirectPath = from.pathname === '/login' ? '/' : from;
+
+    if (this.props.socket) this.props.socket.close();
+
     this.props.history.push(redirectPath);
     this.setState({ isLoading: false });
+    this.props.initWebSocket();
   };
 
   authFailureHandler = () => {

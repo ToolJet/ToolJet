@@ -44,6 +44,12 @@ const CommentHeader = ({ socket, count = 0, threadId, isResolved, isThreadOwner,
         data: { message: 'notifications', appId: router.query.id },
       })
     );
+    socket.send(
+      JSON.stringify({
+        event: 'events',
+        data: { message: 'threads', appId: router.query.id },
+      })
+    );
   };
 
   const getResolveIcon = () => {

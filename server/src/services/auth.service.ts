@@ -46,6 +46,7 @@ export class AuthService {
       return decamelizeKeys({
         id: user.id,
         auth_token: this.jwtService.sign(payload),
+        organization_id: user.organizationId,
         email: user.email,
         first_name: user.firstName,
         last_name: user.lastName,

@@ -37,7 +37,9 @@ const Comments = ({ newThread = {}, appVersionsId, socket, canvasWidth }) => {
   React.useEffect(() => {
     // Listen for messages
     socket?.addEventListener('message', function (event) {
-      if (event.data === 'threads') fetchData();
+      const data = JSON.parse(event.data);
+
+      if (data.message === 'threads') fetchData();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

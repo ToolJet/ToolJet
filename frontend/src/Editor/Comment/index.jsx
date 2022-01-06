@@ -39,10 +39,12 @@ const Comment = ({
     // Listen for messages
     // TODO: add check if user is the initiator of this event, don't fetch data
     socket?.addEventListener('message', function (event) {
-      if (event.data === threadId) fetchData();
+      const data = JSON.parse(event.data);
+
+      if (data.message === 'thread-update' && data.threadId === threadId) fetchData();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [socket]);
 
   React.useLayoutEffect(() => {
     const { left } = trigger?.ref?.current?.getBoundingClientRect();
@@ -85,7 +87,7 @@ const Comment = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: threadId, appId: router.query.id },
+        data: { message: 'thread-update', appId: router.query.id, threadId },
       })
     );
     socket.send(

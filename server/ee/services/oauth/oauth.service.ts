@@ -45,6 +45,7 @@ export class OauthService {
     return decamelizeKeys({
       id: user.id,
       auth_token: this.jwtService.sign(JWTPayload),
+      organizationId: user.organizationId,
       email: user.email,
       first_name: user.firstName,
       last_name: user.lastName,
