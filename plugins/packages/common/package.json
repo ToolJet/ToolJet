@@ -8,9 +8,6 @@
     "lib": "lib",
     "test": "__tests__"
   },
-  "files": [
-    "lib"
-  ],
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
     "build": "tsc -b",

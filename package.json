@@ -28,9 +28,7 @@
   "dependencies": {
     "@nestjs/cli": "^8.1.0",
     "eslint": "^7.25.0",
-    "ts-node": "^10.1.0",
-    "lerna": "^4.0.0",
-    "common": "./plugins/packages/common"
+    "ts-node": "^10.1.0"
   },
   "scripts": {
     "prebuild:frontend": "npm --prefix frontend install",

@@ -1,6 +1,6 @@
 {
   "name": "@gandharv99/tooljet-plugins",
-  "version": "0.0.3",
+  "version": "0.0.8",
   "source": "server.ts",
   "types": "dist/server.d.ts",
   "main": "dist/server.js",
@@ -21,6 +21,6 @@
     "jest": "^27.4.5",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.1.2",
-    "typescript": "^4.6.0-dev.20211222"
+    "typescript": "^4.5.4"
   }
 }
