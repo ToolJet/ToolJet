@@ -1,6 +1,6 @@
 {
   "name": "@gandharv99/tooljet-plugins",
-  "version": "0.0.8",
+  "version": "0.0.12",
   "source": "server.ts",
   "types": "dist/server.d.ts",
   "main": "dist/server.js",
@@ -13,7 +13,7 @@
     "prebuild:packages": "npm run clean:packages && npm run create:client && npm run create:server",
     "build:packages": "lerna run build --stream",
     "clean:packages": "lerna run clean --parallel",
-    "bootstrap": "lerna clean -y && lerna bootstrap --hoist"
+    "bootstrap": "lerna clean -y && lerna bootstrap --hoist --force-local"
   },
   "devDependencies": {
     "common": "./packages/common",
