@@ -1498,7 +1498,7 @@ export const componentTypes = [
     },
     properties: {
       data: { type: 'code', displayName: 'List data' },
-      height: { type: 'code', displayName: 'Height' },
+      rowHeight: { type: 'code', displayName: 'Row height' },
       showBorder: { type: 'code', displayName: 'Show bottom border' },
     },
     events: {},
@@ -1508,7 +1508,7 @@ export const componentTypes = [
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      data: [{}]
+      data: [{}],
     },
     definition: {
       others: {
@@ -1517,11 +1517,10 @@ export const componentTypes = [
       },
       properties: {
         data: {
-          value:
-            "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+          value: "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
         },
-        height: {
-          value: '100'
+        rowHeight: {
+          value: '100',
         },
         visible: { value: true },
         showBorder: { value: '{{true}}' },
@@ -1533,5 +1532,5 @@ export const componentTypes = [
         disabledState: { value: '{{false}}' },
       },
     },
-  }
+  },
 ];

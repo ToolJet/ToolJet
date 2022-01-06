@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { SubContainer } from '../SubContainer';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import _ from 'lodash';
 
 export const Listview = function Listview({
   id,
@@ -8,47 +8,27 @@ export const Listview = function Listview({
   width,
   height,
   containerProps,
-  currentState,
   removeComponent,
+  properties,
+  styles,
 }) {
-  const backgroundColor = component.definition.styles.backgroundColor.value;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-  const heightProperty = component.definition.properties?.height?.value ?? 100;
-  const showBorderProperty = component.definition.properties?.showBorder?.value ?? false;
+  const fallbackProperties = { height: 100, showBorder: false, data: [] };
+  const fallbackStyles = { visibility: true, disabledState: false };
 
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
-
-  const rowHeight = resolveWidgetFieldValue(heightProperty, currentState);
-
-  const showBorder = resolveWidgetFieldValue(showBorderProperty, currentState);
-
-  let parsedWidgetVisibility = widgetVisibility;
-
-  try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
-  } catch (err) {
-    console.log(err);
-  }
+  const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
+  const { backgroundColor, visibility, disabledState } = { ...fallbackStyles, ...styles };
 
   const computedStyles = {
     backgroundColor,
     height,
-    display: parsedWidgetVisibility ? 'flex' : 'none',
+    display: visibility ? 'flex' : 'none',
   };
 
   const parentRef = useRef(null);
 
-  let listData = [];
-  if (currentState) {
-    listData = resolveReferences(component.definition.properties.data.value, currentState, []);
-    if (!Array.isArray(listData)) listData = [];
-  }
-
   return (
     <div
-      data-disabled={parsedDisabledState}
+      data-disabled={disabledState}
       className="jet-listview"
       id={id}
       ref={parentRef}
@@ -56,7 +36,7 @@ export const Listview = function Listview({
       style={computedStyles}
     >
       <div className="rows w-100">
-        {listData.map((listItem, index) => (
+        {(_.isArray(data) ? data : []).map((listItem, index) => (
           <div
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
