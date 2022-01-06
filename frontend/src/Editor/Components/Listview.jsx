@@ -1,9 +1,16 @@
 import React, { useRef } from 'react';
-import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 
-export const Listview = function Listview({ id, component, width, height, containerProps, currentState, removeComponent }) {
+export const Listview = function Listview({
+  id,
+  component,
+  width,
+  height,
+  containerProps,
+  currentState,
+  removeComponent,
+}) {
   const backgroundColor = component.definition.styles.backgroundColor.value;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -13,11 +20,9 @@ export const Listview = function Listview({ id, component, width, height, contai
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState, currentState) : disabledState;
 
-  const rowHeight =
-    resolveWidgetFieldValue(heightProperty, currentState);
+  const rowHeight = resolveWidgetFieldValue(heightProperty, currentState);
 
-  const showBorder =
-    resolveWidgetFieldValue(showBorderProperty, currentState);
+  const showBorder = resolveWidgetFieldValue(showBorderProperty, currentState);
 
   let parsedWidgetVisibility = widgetVisibility;
 
@@ -39,10 +44,7 @@ export const Listview = function Listview({ id, component, width, height, contai
   if (currentState) {
     listData = resolveReferences(component.definition.properties.data.value, currentState, []);
     if (!Array.isArray(listData)) listData = [];
-    console.log('resolved param', listData);
   }
-
-  const numberOfRows = listData.length;
 
   return (
     <div
@@ -54,11 +56,15 @@ export const Listview = function Listview({ id, component, width, height, contai
       style={computedStyles}
     >
       <div className="rows w-100">
-        {listData.map((listItem, i) =>
-          <div className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`} style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }} key={i}>
+        {listData.map((listItem, index) => (
+          <div
+            className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
+            style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
+            key={index}
+          >
             <SubContainer
               parentComponent={component}
-              readOnly={i !== 0}
+              readOnly={index !== 0}
               containerCanvasWidth={width}
               parent={`${id}`}
               parentName={component.name}
@@ -66,13 +72,11 @@ export const Listview = function Listview({ id, component, width, height, contai
               customResolvables={{ listItem }}
               parentRef={parentRef}
               removeComponent={removeComponent}
-              listViewItemOptions={{ index: i }}
+              listViewItemOptions={{ index }}
             />
-            {i > 0 &&
-              <hr class="m-0"></hr>
-            }
+            {index > 0 && <hr className="m-0"></hr>}
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
