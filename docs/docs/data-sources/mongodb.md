@@ -103,4 +103,4 @@ Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/
 // not supported: MongoDB classic syntax
 { createdAt: new Date('01/10/2020') }
 ```
-Rererence on [mongodb extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) supported data types
+Reference on [mongodb extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) supported data types
