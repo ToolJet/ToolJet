@@ -224,7 +224,7 @@ export class UsersService {
     }
   }
 
-  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[]) {
+  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[] = ['admin']) {
     const removingAdmin = removeGroups.includes('admin');
     if (!removingAdmin) return;
 

@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
-import { INestApplication } from '@nestjs/common';
+import { BadRequestException, INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
 import Preview from 'twilio/lib/rest/Preview';
+import { response } from 'express';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -17,7 +18,10 @@ describe('organization users controller', () => {
 
   it('should allow only admin to be able to invite new users', async () => {
     // setup a pre existing user of different organization
-    await createUser(app, { email: 'someUser@tooljet.io', groups: ['admin', 'all_users'] });
+    await createUser(app, {
+      email: 'someUser@tooljet.io',
+      groups: ['admin', 'all_users'],
+    });
 
     // setup organization and user setup to test against
     const adminUserData = await createUser(app, {
@@ -58,50 +62,79 @@ describe('organization users controller', () => {
       .expect(403);
   });
 
-  it('should allow only authenticated users to archive org users', async () => {
-    await request(app.getHttpServer()).post('/api/organization_users/random-id/archive/').expect(401);
-  });
-
-  it('should allow only admin users to archive org users', async () => {
-    const adminUserData = await createUser(app, {
-      email: 'admin@tooljet.io',
-      groups: ['admin', 'all_users'],
-    });
-    const organization = adminUserData.organization;
-    const developerUserData = await createUser(app, {
-      email: 'developer@tooljet.io',
-      groups: ['developer', 'all_users'],
-      organization,
-    });
-    const viewerUserData = await createUser(app, {
-      email: 'viewer@tooljet.io',
-      groups: ['viewer', 'all_users'],
-      organization,
+  describe('POST /api/organization_users/:id/archive', () => {
+    it('should allow only authenticated users to archive org users', async () => {
+      await request(app.getHttpServer()).post('/api/organization_users/random-id/archive/').expect(401);
     });
 
-    await request(app.getHttpServer())
-      .post(`/api/organization_users/${adminUserData.orgUser.id}/archive/`)
-      .set('Authorization', authHeaderForUser(viewerUserData.user))
-      .expect(403);
+    it('should throw error when trying to remove last active admin', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['admin', 'all_users'],
+        status: 'active',
+      });
+      const organization = adminUserData.organization;
+      const anotherAdminUserData = await createUser(app, {
+        email: 'another-admin@tooljet.io',
+        groups: ['admin', 'all_users'],
+        status: 'active',
+        organization,
+      });
 
-    await adminUserData.orgUser.reload();
-    expect(adminUserData.orgUser.status).toBe('invited');
+      const _archivedAdmin = await createUser(app, {
+        email: 'archived-admin@tooljet.io',
+        groups: ['admin', 'all_users'],
+        status: 'archived',
+        organization,
+      });
 
-    await request(app.getHttpServer())
-      .post(`/api/organization_users/${adminUserData.orgUser.id}/archive/`)
-      .set('Authorization', authHeaderForUser(developerUserData.user))
-      .expect(403);
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${anotherAdminUserData.orgUser.id}/archive/`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .expect(201);
 
-    await adminUserData.orgUser.reload();
-    expect(adminUserData.orgUser.status).toBe('invited');
+      const response = await request(app.getHttpServer())
+        .post(`/api/organization_users/${adminUserData.orgUser.id}/archive/`)
+        .set('Authorization', authHeaderForUser(adminUserData.user));
 
-    await request(app.getHttpServer())
-      .post(`/api/organization_users/${developerUserData.orgUser.id}/archive/`)
-      .set('Authorization', authHeaderForUser(adminUserData.user))
-      .expect(201);
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.message).toEqual('Atleast one active admin is required.');
+    });
 
-    await developerUserData.orgUser.reload();
-    expect(developerUserData.orgUser.status).toBe('archived');
+    it('should allow only admin users to archive org users', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['admin', 'all_users'],
+        status: 'active',
+      });
+      const organization = adminUserData.organization;
+      const developerUserData = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['developer', 'all_users'],
+        organization,
+      });
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        groups: ['viewer', 'all_users'],
+        organization,
+      });
+
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .set('Authorization', authHeaderForUser(developerUserData.user))
+        .expect(403);
+
+      await viewerUserData.orgUser.reload();
+      expect(viewerUserData.orgUser.status).toBe('invited');
+
+      await request(app.getHttpServer())
+        .post(`/api/organization_users/${viewerUserData.orgUser.id}/archive/`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .expect(201);
+
+      await viewerUserData.orgUser.reload();
+      expect(viewerUserData.orgUser.status).toBe('archived');
+    });
   });
 
   describe('POST /api/organization_users/:id/unarchive', () => {
