@@ -39,6 +39,7 @@ describe('organizations controller', () => {
       name: `${user.firstName} ${user.lastName}`,
       role: orgUser.role,
       status: orgUser.status,
+      user_id: user.id,
     });
   });
 

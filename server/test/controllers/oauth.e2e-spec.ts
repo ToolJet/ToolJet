@@ -44,6 +44,7 @@ describe('oauth controller', () => {
       expect(Object.keys(response.body).sort()).toEqual(
         [
           'id',
+          'organization_id',
           'email',
           'first_name',
           'last_name',
@@ -138,6 +139,7 @@ describe('oauth controller', () => {
       expect(new Set(Object.keys(response.body))).toEqual(
         new Set([
           'id',
+          'organization_id',
           'email',
           'first_name',
           'last_name',
