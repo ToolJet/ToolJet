@@ -213,15 +213,10 @@ let QueryManager = class QueryManager extends React.Component {
       <button {...props} className={className} type="button">
         <div className="row">
           <div className="col-md-9">
-            
             <span className="text-muted mx-2">
-              {icon && <img
-                    src={icon}
-                    style={{ objectFit: 'contain' }}
-                    height="25"
-                    width="25"
-                    className="mt-1 col-md-2">
-              </img>}
+              {icon && (
+                <img src={icon} style={{ objectFit: 'contain' }} height="25" width="25" className="mt-1·col-md-2"></img>
+              )}
               {option.name}
             </span>
           </div>
