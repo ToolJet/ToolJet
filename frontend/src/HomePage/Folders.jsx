@@ -5,7 +5,6 @@ import { toast } from 'react-hot-toast';
 export const Folders = function Folders({
   folders,
   foldersLoading,
-  totalCount,
   currentFolder,
   folderChanged,
   foldersChanged,
@@ -47,7 +46,7 @@ export const Folders = function Folders({
   }
 
   return (
-    <div className="w-100 px-3 card folder-list">
+    <div className="w-100 px-3 pe-lg-4 folder-list">
       {isLoading && (
         <div className="px-1 py-2" style={{ minHeight: '200px' }}>
           {[1, 2, 3, 4, 5].map((element, index) => {
@@ -74,12 +73,16 @@ export const Folders = function Folders({
             onClick={() => handleFolderChange({})}
           >
             All applications
-            <small className="text-muted ms-auto">
-              <span className="badge bg-primary-lt" data-testid="allApplicationsCount">
-                {totalCount}
-              </span>
-            </small>
           </a>
+          <hr></hr>
+          <div className="d-flex justify-content-between mb-3">
+            <div className="folder-info">Folders</div>
+            {canCreateFolder && (
+              <div className="folder-create-btn" onClick={() => setShowForm(true)}>
+                + Create New Folder
+              </div>
+            )}
+          </div>
           {folders.map((folder, index) => (
             <a
               key={index}
@@ -88,18 +91,12 @@ export const Folders = function Folders({
               }`}
               onClick={() => handleFolderChange(folder)}
             >
-              {folder.name}
-              <small className="text-muted ms-auto">
-                <span className="badge bg-primary-lt">{folder.count}</span>
-              </small>
+              <span className="me-2">
+                <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
+              </span>
+              {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
             </a>
           ))}
-          <hr />
-          {!showForm && canCreateFolder && (
-            <a className="mx-3 fw-500" onClick={() => setShowForm(true)}>
-              + Folder
-            </a>
-          )}
           {showForm && (
             <div className="p-2 row">
               <div className="col">

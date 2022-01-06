@@ -2916,3 +2916,29 @@ input[type="text"] {
     display: flex;
   }
 }
+
+/**
+ * Folder List
+ */
+.folder-list {
+  color: #000000;
+  .list-group-transparent .list-group-item.active {
+    color: $primary;
+    background-color: #EDF1FF;
+    .folder-ico {
+      filter: invert(29%) sepia(84%) saturate(4047%) hue-rotate(215deg) brightness(98%) contrast(111%);
+    }
+  }
+  .list-group-item {
+    padding: 0.5rem 0.75rem;
+  }
+  .folder-info {
+    color: #8991A0;
+    font-size: 0.75rem;
+    display: contents;
+  }
+  .folder-create-btn {
+    color: #0565FF;
+    cursor: pointer;
+  }
+}
