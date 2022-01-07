@@ -67,7 +67,7 @@ export const Folders = function Folders({
       {!isLoading && (
         <div data-testid="applicationFoldersList" className="list-group list-group-transparent mb-3">
           <a
-            className={`list-group-item list-group-item-action d-flex align-items-center ${
+            className={`list-group-item list-group-item-action d-flex align-items-center all-apps-link ${
               !activeFolder.id ? 'active' : ''
             }`}
             onClick={() => handleFolderChange({})}
