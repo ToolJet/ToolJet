@@ -182,7 +182,7 @@ export const componentTypes = [
         ],
       },
       jsonDescription: { type: 'json', displayName: 'Json Description' },
-      plotFromJson: { type: 'toggle', displayName: 'Plot from json' },
+      plotFromJson: { type: 'toggle', displayName: 'Use Plotly JSON schema' },
     },
     events: {},
     styles: {

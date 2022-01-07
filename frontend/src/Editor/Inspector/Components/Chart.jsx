@@ -81,6 +81,19 @@ class Chart extends React.Component {
       ),
     });
 
+    items.push({
+      title: 'Plotly JSON chart schema',
+      children: renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        'plotFromJson',
+        'properties',
+        currentState
+      ),
+    });
+
     if (plotFromJson) {
       items.push({
         title: 'Json description',
@@ -128,19 +141,6 @@ class Chart extends React.Component {
         ),
       });
     }
-
-    items.push({
-      title: 'Plot from json',
-      children: renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        'plotFromJson',
-        'properties',
-        currentState
-      ),
-    });
 
     items.push({
       title: 'Loading state',
