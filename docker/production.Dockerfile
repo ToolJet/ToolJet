@@ -15,6 +15,8 @@ RUN apk --no-cache --virtual build-dependencies add \
     make \
     g++ 
     
+RUN npm i -g npm@7.20.0
+
 RUN mkdir -p /app
 WORKDIR /app
 ENV NODE_ENV=production
