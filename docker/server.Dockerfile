@@ -1,4 +1,4 @@
-FROM node:14.17.3-alpine
+FROM node:14.17.3-buster
 
 ENV NODE_ENV=production
 

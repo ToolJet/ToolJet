@@ -8,6 +8,13 @@ RUN apt update && apt install -y \
   postgresql \
   freetds-dev
 
+# --no-cache: download package index on-the-fly, no need to cleanup afterwards
+# --virtual: bundle packages, remove whole bundle at once, when done
+RUN apk --no-cache --virtual build-dependencies add \
+    python \
+    make \
+    g++ 
+    
 RUN mkdir -p /app
 WORKDIR /app
 ENV NODE_ENV=production
