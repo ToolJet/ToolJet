@@ -56,6 +56,10 @@ We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to crea
   Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
 :::
 
+:::info
+  If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
+:::
+
 6. Once you've populated the `.env` file, run
 
   ```bash

@@ -3,7 +3,6 @@ import { appService, appVersionService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-hot-toast';
-import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from 'react-loading-skeleton';
 
 class SaveAndPreview extends React.Component {

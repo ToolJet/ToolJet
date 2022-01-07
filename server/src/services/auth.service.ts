@@ -44,7 +44,7 @@ export class AuthService {
     const params = request.body;
     const user = await this.validateUser(params.email, params.password);
 
-    if (user) {
+    if (user && (await this.usersService.status(user)) !== 'archived') {
       await this.auditLoggerService.perform({
         request,
         userId: user.id,
@@ -54,7 +54,6 @@ export class AuthService {
         resourceName: user.email,
         actionType: ActionTypes.USER_LOGIN,
       });
-
       const payload = { username: user.id, sub: user.email };
 
       return decamelizeKeys({

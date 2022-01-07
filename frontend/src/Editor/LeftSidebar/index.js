@@ -36,6 +36,7 @@ export const LeftSidebar = ({
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}
+        editingVersionId={appVersionsId}
         dataSources={dataSources}
         dataSourcesChanged={dataSourcesChanged}
       />

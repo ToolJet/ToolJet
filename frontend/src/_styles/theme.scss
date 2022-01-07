@@ -2234,8 +2234,6 @@ input:focus-visible {
   }
 
   .badge {
-    filter: brightness(1) invert(1);
-
     .svg-icon {
       filter: brightness(1) invert(0);
     }
@@ -2775,6 +2773,17 @@ input[type="text"] {
       width: 100% !important;
     }
   }
+
+  .query-hinter {
+    .CodeMirror-line  {
+      margin-left: 2rem !important;
+    }
+
+    .CodeMirror-cursors  .CodeMirror-cursor {
+      margin-left: 2rem !important;
+    }
+  }
+
 }
 
 .preview-block-portal {
@@ -2819,10 +2828,6 @@ input[type="text"] {
 
   .nav-item:not(.active) {
     border-bottom: 1px solid #e7eaef;
-  }
-
-  .nav-link {
-    border-color: transparent !important;
   }
 
   .nav-link.active {
@@ -2886,6 +2891,18 @@ input[type="text"] {
 }
 
 /**
+ * Timer Widget
+ */
+.timer-wrapper {
+  padding: 10px;
+  .counter-container {
+    font-size: 3em;
+    padding-bottom: 5px;
+    text-align: center;
+  }
+}
+
+/**
  * Search Box
  */
 .search-box-wrapper {
@@ -2895,5 +2912,17 @@ input[type="text"] {
   }
   .input-icon .input-icon-addon {
     display: flex;
+  }
+}
+
+}
+
+.fixedHeader {
+  table thead {
+    position: -webkit-sticky; // this is for all Safari (Desktop & iOS), not for Chrome
+    position: sticky;
+    top: 0;
+    border-top: 0;
+    z-index: 1; // any positive value, layer order is global
   }
 }

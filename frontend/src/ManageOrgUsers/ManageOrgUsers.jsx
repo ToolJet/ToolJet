@@ -1,8 +1,7 @@
 import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
-import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { history } from '@/_helpers';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ReactTooltip from 'react-tooltip';
@@ -22,6 +21,8 @@ class ManageOrgUsers extends React.Component {
       fields: {},
       errors: {},
     };
+
+    this.tableRef = React.createRef(null);
   }
 
   validateEmail(email) {
@@ -64,6 +65,11 @@ class ManageOrgUsers extends React.Component {
     this.fetchUsers();
   }
 
+  calculateOffset() {
+    const elementHeight = this.tableRef.current.getBoundingClientRect().top;
+    return window.innerHeight - elementHeight;
+  }
+
   fetchUsers = () => {
     this.setState({
       isLoading: true,
@@ -93,14 +99,13 @@ class ManageOrgUsers extends React.Component {
       .archive(id)
       .then(() => {
         toast.success('The user has been archived', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.setState({ archivingUser: null });
         this.fetchUsers();
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
         this.setState({ archivingUser: null });
       });
   };
@@ -112,14 +117,13 @@ class ManageOrgUsers extends React.Component {
       .unarchive(id)
       .then(() => {
         toast.success('The user has been unarchived', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.setState({ unarchivingUser: null });
         this.fetchUsers();
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
         this.setState({ unarchivingUser: null });
       });
   };
@@ -146,7 +150,6 @@ class ManageOrgUsers extends React.Component {
         )
         .then(() => {
           toast.success('User has been created', {
-            hideProgressBar: true,
             position: 'top-center',
           });
           this.fetchUsers();
@@ -157,7 +160,7 @@ class ManageOrgUsers extends React.Component {
           });
         })
         .catch(({ error }) => {
-          toast.error(error, { hideProgressBar: true, position: 'top-center' });
+          toast.error(error, { position: 'top-center' });
           this.setState({ creatingUser: false });
         });
     } else {
@@ -173,8 +176,7 @@ class ManageOrgUsers extends React.Component {
   generateInvitationURL = (user) => window.location.origin + '/invitations/' + user.invitation_token;
 
   invitationLinkCopyHandler = () => {
-    toast.info('Invitation URL copied', {
-      hideProgressBar: true,
+    toast.success('Invitation URL copied', {
       position: 'bottom-right',
     });
   };
@@ -285,7 +287,11 @@ class ManageOrgUsers extends React.Component {
             {!showNewUserForm && (
               <div className="container-xl">
                 <div className="card">
-                  <div className="card-table table-responsive table-bordered">
+                  <div
+                    className="card-table fixedHeader table-responsive table-bordered"
+                    ref={this.tableRef}
+                    style={{ maxHeight: this.tableRef.current && this.calculateOffset() }}
+                  >
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>

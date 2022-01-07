@@ -4,6 +4,8 @@ import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryResult } from 'src/modules/data_sources/query_result.type';
 import { QueryService } from 'src/modules/data_sources/query_service.interface';
 import { isEmpty } from 'lodash';
+import { readFileSync } from 'fs';
+import * as tls from 'tls';
 const urrl = require('url');
 const got = require('got');
 
@@ -96,7 +98,11 @@ export default class RestapiQueryService implements QueryService {
       const response = await got(url, {
         method,
         headers,
-        searchParams: { ...paramsFromUrl, ...this.searchParams(sourceOptions, queryOptions, hasDataSource) },
+        ...this.fetchHttpsCertsForCustomCA(),
+        searchParams: {
+          ...paramsFromUrl,
+          ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
+        },
         json,
       });
       result = JSON.parse(response.body);
@@ -153,11 +159,22 @@ export default class RestapiQueryService implements QueryService {
         client_secret: sourceOptions['client_secret'],
         grant_type: sourceOptions['grant_type'],
         redirect_uri: `${tooljetHost}/oauth2/authorize`,
+        ...this.fetchHttpsCertsForCustomCA(),
         ...customParams,
       },
     });
 
     const result = JSON.parse(response.body);
     return { access_token: result['access_token'] };
+  }
+
+  fetchHttpsCertsForCustomCA() {
+    if (!process.env.NODE_EXTRA_CA_CERTS) return {};
+
+    return {
+      https: {
+        certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
+      },
+    };
   }
 }
