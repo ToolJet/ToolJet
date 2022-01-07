@@ -166,7 +166,7 @@ describe('organization users controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/organization_users/${viewerUserData.orgUser.id}/unarchive/`)
-        .set('Authorization', authHeaderForUser(viewerUserData.user))
+        .set('Authorization', authHeaderForUser(developerUserData.user))
         .expect(403);
 
       await viewerUserData.orgUser.reload();
