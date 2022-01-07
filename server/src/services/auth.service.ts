@@ -40,7 +40,7 @@ export class AuthService {
   async login(params: any) {
     const user = await this.validateUser(params.email, params.password);
 
-    if (user) {
+    if (user && (await this.usersService.status(user)) !== 'archived') {
       const payload = { username: user.id, sub: user.email };
 
       return decamelizeKeys({
