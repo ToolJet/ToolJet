@@ -1169,6 +1169,16 @@ export const componentTypes = [
       fileType: { type: 'code', displayName: 'Accept file types' },
       maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
       minSize: { type: 'code', displayName: 'Min size limit (Bytes)' },
+      parseContent: { type: 'toggle', displayName: 'Parse content' },
+      parseFileType: {
+        type: 'select',
+        displayName: 'File type',
+        options: [
+          { name: 'Autodetect from extension', value: 'auto-detect' },
+          { name: 'CSV', value: 'csv' },
+          { name: 'PDF', value: 'pdf' },
+        ],
+      },
     },
     events: { onFileSelected: { displayName: 'On File Selected' } },
     styles: {
@@ -1176,7 +1186,7 @@ export const componentTypes = [
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      file: [{ name: '', content: '', dataURL: '', type: '' }],
+      file: [{ name: '', content: '', dataURL: '', type: '', parsedData: '' }],
     },
     definition: {
       others: {
@@ -1191,6 +1201,8 @@ export const componentTypes = [
         fileType: { value: '{{"image/*"}}' },
         maxSize: { value: '{{1048576}}' },
         minSize: { value: '{{50}}' },
+        parseContent: { value: false },
+        parseFileType: { value: 'auto-detect' },
       },
       events: [],
       styles: {

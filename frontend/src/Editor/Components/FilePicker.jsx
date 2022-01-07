@@ -5,13 +5,15 @@ import { toast } from 'react-hot-toast';
 
 export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode }) => {
   //* properties definitions
-  const enableDropzone = component.definition.properties.enableDropzone?.value ?? true;
+  const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
   const enableMultiple = component.definition.properties.enableMultiple?.value ?? false;
   const fileType = component.definition.properties.fileType?.value ?? 'image/*';
   const maxSize = component.definition.properties.maxSize?.value ?? 1048576;
   const minSize = component.definition.properties.minSize?.value ?? 0;
+  const parseContent = component.definition.properties.parseContent?.value ?? false;
+  const fileTypeFromExtension = component.definition.properties.parseFileType?.value ?? 'auto-detect';
 
   const parsedEnableDropzone =
     typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
@@ -95,6 +97,42 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   const [showSelectdFiles, setShowSelectedFiles] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState([]);
 
+  const processCSV = (str, delim = ',') => {
+    const headers = str.slice(0, str.indexOf('\n')).split(delim);
+    const rows = str.slice(str.indexOf('\n') + 1).split('\n');
+
+    const newArray = rows.map((row) => {
+      const values = row.split(delim);
+      const eachObject = headers.reduce((obj, header, i) => {
+        obj[header] = values[i];
+        return obj;
+      }, {});
+      return eachObject;
+    });
+
+    return newArray;
+  };
+
+  //function to detect file type
+  const parseFileContent = (file, autoDetect = false, parseFileType) => {
+    const fileType = file.type.split('/')[1];
+
+    if (autoDetect) {
+      return detectParserFile(file);
+    } else {
+      return fileType === parseFileType;
+    }
+  };
+
+  //function to detect csv file type
+  const detectParserFile = (file) => {
+    return (
+      file.type === 'text/csv' ||
+      file.type === 'application/vnd.ms-excel' ||
+      file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+  };
+
   /**
    * *getFileData()
    * @param {*} file
@@ -127,12 +165,16 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
     // * readAsDataURL
     const readFileAsDataURL = await getFileData(file, 'readAsDataURL');
+    const autoDetectFileType = fileTypeFromExtension === 'auto-detect' ? true : false;
+
+    const parse = parseContent ? await parseFileContent(file, autoDetectFileType, fileTypeFromExtension) : false;
 
     return {
       name: file.name,
       type: file.type,
       content: readFileAsText,
       dataURL: readFileAsDataURL,
+      parsedData: parse ? await processCSV(readFileAsText) : null,
     };
   };
 
