@@ -62,6 +62,8 @@ export const DraggableBox = function DraggableBox({
   _left,
   _top,
   parent,
+  allComponents,
+  extraProps,
   component,
   index,
   inCanvas,
@@ -245,6 +247,8 @@ export const DraggableBox = function DraggableBox({
                 readOnly={readOnly}
                 customResolvables={customResolvables}
                 parentId={parentId}
+                allComponents={allComponents}
+                extraProps={extraProps}
               />
             </div>
           </Rnd>

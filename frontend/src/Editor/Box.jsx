@@ -90,7 +90,9 @@ export const Box = function Box({
   canvasWidth,
   mode,
   customResolvables,
-  parentId
+  parentId,
+  allComponents,
+  extraProps
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -113,11 +115,12 @@ export const Box = function Box({
   let exposedVariables = {};
 
   if (component.parent) {
-    const parentComponent = components[component.parent];
+    const parentComponent = allComponents[component.parent];
     const isListView = parentComponent.component.component === 'Listview';
 
     if (isListView) {
-      exposedVariables = currentState?.components[parentId]?.data[component.name] ?? {};
+      const itemsAtIndex = currentState?.components[parentId]?.data[extraProps.listviewItemIndex];
+      exposedVariables = itemsAtIndex ? itemsAtIndex[component.name] : {};
     } else {
       exposedVariables = currentState?.components[component.name] ?? {};
     }
@@ -166,7 +169,7 @@ export const Box = function Box({
               properties={resolvedProperties}
               exposedVariables={exposedVariables}
               styles={resolvedStyles}
-              setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+              setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, extraProps)}
               fireEvent={fireEvent}
               validate={validate}
               parentId={parentId}

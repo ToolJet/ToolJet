@@ -54,7 +54,7 @@ export const SubContainer = ({
 
   Object.keys(allComponents).forEach((key) => {
     if (allComponents[key].parent === parent) {
-      childComponents[key] = allComponents[key];
+      childComponents[key] = { ...allComponents[key], component: { ...allComponents[key]['component'], parent } };
     }
   });
 
@@ -356,11 +356,12 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
-  function onComponentOptionChangedForSubcontainer(component, optionName, value) {
-    let newData = currentState.components[parent]?.data || [];
+  function onComponentOptionChangedForSubcontainer(component, optionName, value, extraProps) {
+    let newData = currentState.components[parentComponent.name]?.data || [];
     newData[listViewItemOptions.index] = {
+      ...newData[listViewItemOptions.index],
       [component.name]: {
-        ...newData[listViewItemOptions.index],
+        ...(newData[listViewItemOptions.index] ? newData[listViewItemOptions.index][component.name] : {}),
         [optionName]: value
       }
     }
@@ -374,7 +375,7 @@ export const SubContainer = ({
       id={`canvas-${parent}`}
       className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {Object.keys(childComponents).map((key) => (
+      {Object.keys(childComponents).map((key, index) => (
         <DraggableBox
           onComponentClick={onComponentClick}
           onEvent={onEvent}
@@ -386,6 +387,8 @@ export const SubContainer = ({
           onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
+          extraProps={{ listviewItemIndex: index }}
+          allComponents={allComponents}
           {...childComponents[key]}
           mode={mode}
           resizingStatusChanged={(status) => setIsResizing(status)}
