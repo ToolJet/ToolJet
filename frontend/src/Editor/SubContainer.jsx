@@ -387,7 +387,7 @@ export const SubContainer = ({
           onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
-          extraProps={{ listviewItemIndex: index }}
+          extraProps={{ listviewItemIndex: listViewItemOptions?.index }}
           allComponents={allComponents}
           {...childComponents[key]}
           mode={mode}
