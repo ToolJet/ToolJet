@@ -2945,3 +2945,35 @@ input[type="text"] {
     cursor: pointer;
   }
 }
+
+/**
+ * Home page modal
+ */
+ .modal-content.home-modal-component {
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #FEFEFF;
+  color: #000000;
+  .modal-header {
+    border-bottom: 0px;
+  }
+  .btn-close {
+    width: 3.5rem;
+    height: 2.5rem;
+  }
+  .modal-body {
+    padding-top: 0px;
+  }
+  input {
+    border-radius: 5px !important;
+  }
+  .modal-main {
+    padding-bottom: 5rem;
+  }
+  .modal-footer-btn {
+    justify-content: end;
+    button {
+      margin-left: 16px;
+    }
+  }
+ }
