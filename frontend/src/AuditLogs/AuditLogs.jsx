@@ -1,6 +1,5 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
-import 'react-toastify/dist/ReactToastify.css';
 import ReactJson from 'react-json-view';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
