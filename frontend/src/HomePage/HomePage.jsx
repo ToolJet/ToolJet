@@ -356,13 +356,11 @@ class HomePage extends React.Component {
                 <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
                   <SearchBox onSubmit={this.onSearchSubmit} initialValue={this.state.appSearchKey} />
                   {this.canCreateApp() && (
-                      <label className={'btn btn-default d-none d-lg-inline mb-3 ms-2'} onChange={this.handleImportApp}>
-                        {isImportingApp && (
-                          <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
-                        )}
-                        Import
-                        <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
-                      </label>
+                    <label className={'btn btn-default d-none d-lg-inline mb-3 ms-2'} onChange={this.handleImportApp}>
+                      {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
+                      Import
+                      <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
+                    </label>
                   )}
                   {this.canCreateApp() && (
                     <button
