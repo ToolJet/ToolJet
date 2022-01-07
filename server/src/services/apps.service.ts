@@ -91,6 +91,7 @@ export class AppsService {
     );
 
     await this.createAppGroupPermissionsForAdmin(app);
+    await this.createVersion(user, app, 'default');
 
     return app;
   }

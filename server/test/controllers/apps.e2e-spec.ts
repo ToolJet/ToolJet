@@ -82,6 +82,9 @@ describe('apps controller', () => {
 
         expect(response.statusCode).toBe(201);
         expect(response.body.name).toBe('Untitled app');
+
+        const defaultVersion = await getManager().findOne(AppVersion, { name: 'default' });
+        expect(defaultVersion).toBeDefined();
       });
     });
 
@@ -103,6 +106,9 @@ describe('apps controller', () => {
 
       expect(application.name).toBe('Untitled app');
       expect(application.id).toBe(application.slug);
+
+      const defaultVersion = await getManager().findOne(AppVersion, { name: 'default' });
+      expect(defaultVersion).toBeDefined();
     });
   });
 
