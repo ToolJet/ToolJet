@@ -27,7 +27,7 @@ export default class MongodbService implements QueryService {
         case 'insert_many':
           result = await db
             .collection(queryOptions.collection)
-            .insertMany(this.parseEJSON(queryOptions.document), this.parseEJSON(queryOptions.options));
+            .insertMany(this.parseEJSON(queryOptions.documents), this.parseEJSON(queryOptions.options));
           break;
         case 'find_one':
           result = await db
