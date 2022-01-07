@@ -72,10 +72,15 @@ export class OrganizationUsersService {
   }
 
   async archive(id: string) {
-    const organizationUser = await this.organizationUsersRepository.findOne(id);
-    const user = await this.usersService.findOne(organizationUser.userId);
-    await this.usersService.throwErrorIfRemovingLastActiveAdmin(user);
-    await this.organizationUsersRepository.update(id, { status: 'archived' });
+    await getManager().transaction(async (manager) => {
+      const organizationUser = await manager.findOne(OrganizationUser, id);
+      const user = await manager.findOne(User, organizationUser.userId);
+
+      await this.usersService.throwErrorIfRemovingLastActiveAdmin(user);
+
+      await manager.update(User, user.id, { invitationToken: null });
+      await manager.update(OrganizationUser, id, { status: 'archived' });
+    });
 
     return true;
   }
