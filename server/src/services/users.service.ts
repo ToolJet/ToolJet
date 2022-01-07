@@ -101,6 +101,11 @@ export class UsersService {
     return user;
   }
 
+  async status(user: User) {
+    const orgUser = await this.organizationUsersRepository.findOne({ user });
+    return orgUser.status;
+  }
+
   async findOrCreateBySSOIdOrEmail(
     ssoId: string,
     userParams: any,
@@ -156,7 +161,7 @@ export class UsersService {
       }
     }
 
-    this.auditLoggerService.perform({
+    await this.auditLoggerService.perform({
       request,
       userId: user.id,
       organizationId: user.organizationId,
@@ -246,7 +251,7 @@ export class UsersService {
     }
   }
 
-  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[]) {
+  async throwErrorIfRemovingLastActiveAdmin(user: User, removeGroups: string[] = ['admin']) {
     const removingAdmin = removeGroups.includes('admin');
     if (!removingAdmin) return;
 

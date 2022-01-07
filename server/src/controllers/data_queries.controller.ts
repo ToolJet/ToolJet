@@ -40,7 +40,7 @@ export class DataQueriesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const queries = await this.dataQueriesService.all(req.user, query.app_id);
+    const queries = await this.dataQueriesService.all(req.user, query);
     const seralizedQueries = [];
 
     // serialize
@@ -59,8 +59,10 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Request() req) {
-    const { kind, name, options } = req.body;
-    const appId = req.body.app_id;
+    const { kind, name, options, app_id, app_version_id, data_source_id } = req.body;
+    const appId = app_id;
+    const appVersionId = app_version_id;
+    const dataSourceId = data_source_id;
 
     const app = await this.appsService.find(appId);
     const ability = await this.appsAbilityFactory.appsActions(req.user, {
@@ -71,8 +73,6 @@ export class DataQueriesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const dataSourceId = req.body.data_source_id;
-
     // Make sure that the data source belongs ot the app
     if (dataSourceId) {
       const dataSource = await this.dataSourcesService.findOne(dataSourceId);
@@ -81,7 +81,15 @@ export class DataQueriesController {
       }
     }
 
-    const dataQuery = await this.dataQueriesService.create(req.user, name, kind, options, appId, dataSourceId);
+    const dataQuery = await this.dataQueriesService.create(
+      req.user,
+      name,
+      kind,
+      options,
+      appId,
+      dataSourceId,
+      appVersionId
+    );
     return decamelizeKeys(dataQuery);
   }
 

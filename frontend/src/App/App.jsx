@@ -11,6 +11,7 @@ import { Authorize } from '@/Oauth2';
 import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
 import { ToastContainer } from 'react-toastify';
+import 'emoji-mart/css/emoji-mart.css';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
@@ -20,7 +21,6 @@ import posthog from 'posthog-js';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { lt } from 'semver';
-import 'emoji-mart/css/emoji-mart.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuditLogs } from '@/AuditLogs';
 import { Toaster } from 'react-hot-toast';
@@ -97,8 +97,6 @@ class App extends React.Component {
 
     return (
       <>
-        <ToastContainer />
-
         <Router history={history}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (

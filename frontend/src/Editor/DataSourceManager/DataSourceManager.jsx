@@ -2,7 +2,7 @@ import React from 'react';
 import { datasourceService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { TestConnection } from './TestConnection';
 import {
   DataBaseSources,
@@ -109,6 +109,7 @@ class DataSourceManager extends React.Component {
     const { appId, options, selectedDataSource } = this.state;
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
+    const appVersionId = this.props.editingVersionId;
 
     const parsedOptions = Object.keys(options).map((key) => {
       const keyMeta = selectedDataSource.options[key];
@@ -124,20 +125,20 @@ class DataSourceManager extends React.Component {
         datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
-          toast.success('Datasource Saved', { hideProgressBar: true, position: 'top-center' });
+          toast.success('Datasource Saved', { position: 'top-center' });
           this.props.dataSourcesChanged();
         });
       } else {
         this.setState({ isSaving: true });
-        datasourceService.create(appId, name, kind, parsedOptions).then(() => {
+        datasourceService.create(appId, appVersionId, name, kind, parsedOptions).then(() => {
           this.setState({ isSaving: false });
           this.hideModal();
-          toast.success('Datasource Added', { hideProgressBar: true, position: 'top-center' });
+          toast.success('Datasource Added', { position: 'top-center' });
           this.props.dataSourcesChanged();
         });
       }
     } else {
-      toast.error('The name of datasource should not be empty', { hideProgressBar: true, position: 'top-center' });
+      toast.error('The name of datasource should not be empty', { position: 'top-center' });
     }
   };
 

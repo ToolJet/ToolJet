@@ -111,8 +111,6 @@ class Editor extends React.Component {
   componentDidMount() {
     this.fetchApps(0);
     this.fetchApp();
-    this.fetchDataSources();
-    this.fetchDataQueries();
     this.initComponentVersioning();
     this.initEventListeners();
     config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
@@ -224,7 +222,7 @@ class Editor extends React.Component {
         loadingDataSources: true,
       },
       () => {
-        datasourceService.getAll(this.state.appId).then((data) =>
+        datasourceService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) =>
           this.setState({
             dataSources: data.data_sources,
             loadingDataSources: false,
@@ -240,7 +238,7 @@ class Editor extends React.Component {
         loadingDataQueries: true,
       },
       () => {
-        dataqueryService.getAll(this.state.appId).then((data) => {
+        dataqueryService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) => {
           this.setState(
             {
               dataQueries: data.data_queries,
@@ -318,6 +316,9 @@ class Editor extends React.Component {
           });
         }
       );
+
+      this.fetchDataSources();
+      this.fetchDataQueries();
     });
   };
 
@@ -326,6 +327,9 @@ class Editor extends React.Component {
     this.setState({
       editingVersion: version,
     });
+
+    this.fetchDataSources();
+    this.fetchDataQueries();
   };
 
   dataSourcesChanged = () => {
@@ -749,6 +753,7 @@ class Editor extends React.Component {
       apps,
       defaultComponentStateComputed,
       showComments,
+      editingVersion,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -1075,6 +1080,7 @@ class Editor extends React.Component {
                             selectedDataSource={this.state.selectedDataSource}
                             dataQueriesChanged={this.dataQueriesChanged}
                             appId={appId}
+                            editingVersionId={editingVersion?.id}
                             addingQuery={addingQuery}
                             editingQuery={editingQuery}
                             queryPaneHeight={queryPaneHeight}
