@@ -2939,6 +2939,7 @@ input[type="text"] {
   }
   .list-group-item {
     padding: 0.5rem 0.75rem;
+    overflow: hidden;
   }
   .list-group-item.all-apps-link {
     font-weight: 500;
