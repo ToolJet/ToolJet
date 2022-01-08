@@ -20,23 +20,21 @@ export default function Header({
       <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
         <SearchBox onSubmit={onSearchSubmit} />
         {canCreateApp() && (
-          <button className={'btn btn-default d-none d-lg-inline mb-3 ms-2'} onChange={handleImportApp}>
-            <label>
-              {isImportingApp && <span className="spinner-border spinner-border-sm ms-2" role="status"></span>}
+          <>
+            <label className="btn btn-default d-none d-lg-inline mb-3 ms-2" onChange={handleImportApp}>
+              {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
               Import
               <input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
             </label>
-          </button>
-        )}
-        {canCreateApp() && (
-          <button
-            className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 create-new-app-button ${
-              creatingApp ? 'btn-loading' : ''
-            }`}
-            onClick={createApp}
-          >
-            Create new application
-          </button>
+            <button
+              className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 create-new-app-button ${
+                creatingApp ? 'btn-loading' : ''
+              }`}
+              onClick={createApp}
+            >
+              Create new application
+            </button>
+          </>
         )}
       </div>
     </div>
