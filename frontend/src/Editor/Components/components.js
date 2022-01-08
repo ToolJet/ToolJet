@@ -333,6 +333,8 @@ export const componentTypes = [
     },
     properties: {
       value: { type: 'code', displayName: 'Default value' },
+      minValue: { type: 'code', displayName: 'Minimum value' },
+      maxValue: { type: 'code', displayName: 'Maximum value' },
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
@@ -350,6 +352,8 @@ export const componentTypes = [
       },
       properties: {
         value: { value: '99' },
+        maxValue: { value: '' },
+        minValue: { value: '' },
         placeholder: { value: '0' },
       },
       events: [],
