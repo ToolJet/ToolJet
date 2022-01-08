@@ -176,7 +176,6 @@ export const Inspector = ({
   }
 
   function getAccordion(componentName) {
-    console.log('componentName', componentName);
     switch (componentName) {
       case 'Table':
         return (

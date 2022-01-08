@@ -113,7 +113,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     return newArray;
   };
 
-  //function to detect file type
   const parseFileContent = (file, autoDetect = false, parseFileType) => {
     const fileType = file.type.split('/')[1];
 
@@ -124,7 +123,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     }
   };
 
-  //function to detect csv file type
   const detectParserFile = (file) => {
     return (
       file.type === 'text/csv' ||
