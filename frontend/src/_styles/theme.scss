@@ -2234,8 +2234,6 @@ input:focus-visible {
   }
 
   .badge {
-    filter: brightness(1) invert(1);
-
     .svg-icon {
       filter: brightness(1) invert(0);
     }
@@ -2914,6 +2912,16 @@ input[type="text"] {
   }
   .input-icon .input-icon-addon {
     display: flex;
+  }
+}
+
+.fixedHeader {
+  table thead {
+    position: -webkit-sticky; // this is for all Safari (Desktop & iOS), not for Chrome
+    position: sticky;
+    top: 0;
+    border-top: 0;
+    z-index: 1; // any positive value, layer order is global
   }
 }
 
