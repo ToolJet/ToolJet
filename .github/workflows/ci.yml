@@ -38,10 +38,13 @@ jobs:
       - name: Create Heroku App
         continue-on-error: true
         run: heroku create ${{ env.HEROKU_APP_NAME }}
+      - name: Create Postgresql addon
+        continue-on-error: true
+        run: heroku addons:create heroku-postgresql:hobby-dev -a ${{ env.HEROKU_APP_NAME }}
       - name: Login to Heroku Container registry
         run: heroku container:login
       - name: Build and tag image
-        run: docker build --file=docker/heroku.Dockerfile --rm=true -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
+        run: docker buildx build --file=docker/heroku.Dockerfile --rm=true -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
 
   lint:
     runs-on: ubuntu-latest
