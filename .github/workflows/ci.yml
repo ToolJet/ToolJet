@@ -36,7 +36,7 @@ jobs:
       - name: Install Heroku
         run: rm -rf /usr/local/bin/heroku && npm i -g heroku
       - name: Create Heroku App
-        run: heroku create - a ${{ env.HEROKU_APP_NAME }}
+        run: heroku create ${{ env.HEROKU_APP_NAME }}
       - name: Login to Heroku Container registry
         run: heroku container:login
       - name: Build and tag image
