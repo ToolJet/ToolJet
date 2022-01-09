@@ -38,8 +38,7 @@ COPY ./server/package.json ./server/package-lock.json ./
 RUN npm install --only=production
 RUN npm install pino-pretty
 COPY ./server/ ./
-COPY ./.env /.env
-COPY ./.env.test /.env.test
+COPY ./.env.example /.env
 RUN npm run db:create
 RUN npm run db:migrate
 RUN npm run db:seed
@@ -51,8 +50,7 @@ COPY --from=DATABASE_BUILD /app/package.json ./db/package.json
 COPY --from=FRONTEND_BUILD /app/build ./frontend/build
 COPY --from=FRONTEND_BUILD /app/node_modules ./frontend/node_modules
 
-COPY ./.env /.env
-COPY ./.env.test /.env.test
+COPY ./.env.example /.env
 COPY --from=SERVER_BUILD /app/.version ./server/.version
 COPY --from=SERVER_BUILD /app/dist ./server/dist
 COPY --from=SERVER_BUILD /app/templates ./server/templates
