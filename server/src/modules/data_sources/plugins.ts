@@ -3,7 +3,7 @@ const { readdirSync } = require('fs');
 async function getPluginClasses() {
   console.log('Loading plugins from the plugins directory 🔌');
 
-  const directories = readdirSync('./plugins/datasources', { withFileTypes: true })
+  const directories = readdirSync('../../../plugins/datasources', { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
     .map((dirent) => dirent.name);
 
