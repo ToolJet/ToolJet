@@ -28,24 +28,24 @@ RUN npm install --only=production
 COPY ./server/ ./
 RUN npm run build
 
-FROM node:14.17.3-buster AS DATABASE_BUILD
+# FROM node:14.17.3-buster AS DATABASE_BUILD
 
-RUN npm install -g @nestjs/cli npm@7.20.0
+# RUN npm install -g @nestjs/cli npm@7.20.0
 
-WORKDIR /app
+# WORKDIR /app
 
-COPY ./server/package.json ./server/package-lock.json ./
-RUN npm install --only=production
-RUN npm install pino-pretty
-COPY ./server/ ./
-COPY ./.env.example /.env
-RUN npm run db:create
-RUN npm run db:migrate
-RUN npm run db:seed
+# COPY ./server/package.json ./server/package-lock.json ./
+# RUN npm install --only=production
+# RUN npm install pino-pretty
+# COPY ./server/ ./
+# COPY ./.env.example /.env
+# RUN npm run db:create
+# RUN npm run db:migrate
+# RUN npm run db:seed
 
 FROM node:14.17.3-alpine AS run
 
-COPY --from=DATABASE_BUILD /app/package.json ./db/package.json
+# COPY --from=DATABASE_BUILD /app/package.json ./db/package.json
 
 COPY --from=FRONTEND_BUILD /app/build ./frontend/build
 COPY --from=FRONTEND_BUILD /app/node_modules ./frontend/node_modules
