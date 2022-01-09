@@ -1,9 +1,8 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
 import { groupPermissionService } from '../_services/groupPermission.service';
-import 'react-toastify/dist/ReactToastify.css';
 import { Header, ConfirmDialog } from '@/_components';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
 class ManageGroupPermissions extends React.Component {
@@ -67,13 +66,12 @@ class ManageGroupPermissions extends React.Component {
           newGroup: null,
         });
         toast.success('Group has been created', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.fetchGroups();
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
         this.setState({
           creatingGroup: false,
           showNewGroupForm: true,
@@ -103,13 +101,12 @@ class ManageGroupPermissions extends React.Component {
       .del(this.state.groupToBeDeleted)
       .then(() => {
         toast.success('Group deleted successfully', {
-          hideProgressBar: true,
           position: 'top-center',
         });
         this.fetchGroups();
       })
       .catch(({ error }) => {
-        toast.error(error, { hideProgressBar: true, position: 'top-center' });
+        toast.error(error, { position: 'top-center' });
       })
       .finally(() => {
         this.cancelDeleteGroupDialog();

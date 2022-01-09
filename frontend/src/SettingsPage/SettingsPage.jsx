@@ -1,8 +1,7 @@
 import React from 'react';
 import { authenticationService, userService } from '@/_services';
-import 'react-toastify/dist/ReactToastify.css';
 import { Header } from '@/_components';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
@@ -15,8 +14,7 @@ function SettingsPage(props) {
 
   const updateDetails = async () => {
     if (!firstName || !lastName) {
-      toast.warn("Name can't be empty!", {
-        hideProgressBar: true,
+      toast.error("Name can't be empty!", {
         position: 'top-left',
       });
       return;
@@ -25,8 +23,7 @@ function SettingsPage(props) {
     const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
     authenticationService.updateCurrentUserDetails(updatedDetails);
     toast.success('Details updated!', {
-      hideProgressBar: true,
-      autoClose: 3000,
+      duration: 3000,
     });
     setUpdateInProgress(false);
   };
@@ -37,16 +34,14 @@ function SettingsPage(props) {
     response
       .then(() => {
         toast.success('Password updated successfully', {
-          hideProgressBar: true,
-          autoClose: 3000,
+          duration: 3000,
         });
         setCurrentPassword('');
         setNewPassword('');
       })
       .catch(() => {
         toast.error('Please verify that you have entered the correct password', {
-          hideProgressBar: true,
-          autoClose: 3000,
+          duration: 3000,
         });
       });
     setPasswordChangeInProgress(false);

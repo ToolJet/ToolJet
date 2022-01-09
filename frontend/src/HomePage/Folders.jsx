@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { folderService } from '@/_services';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 export const Folders = function Folders({
   folders,
@@ -24,16 +24,14 @@ export const Folders = function Folders({
 
   function saveFolder() {
     if (!newFolderName || !newFolderName.trim()) {
-      toast.warn("folder name can't be empty.", {
-        hideProgressBar: true,
+      toast.error("folder name can't be empty.", {
         position: 'top-left',
       });
       return;
     }
     setCreationStatus(true);
     folderService.create(newFolderName).then(() => {
-      toast.info('folder created.', {
-        hideProgressBar: true,
+      toast.success('folder created.', {
         position: 'top-left',
       });
       setCreationStatus(false);

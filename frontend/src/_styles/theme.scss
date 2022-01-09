@@ -2234,8 +2234,6 @@ input:focus-visible {
   }
 
   .badge {
-    filter: brightness(1) invert(1);
-
     .svg-icon {
       filter: brightness(1) invert(0);
     }
@@ -2616,6 +2614,29 @@ input[type="text"] {
   }
 }
 
+//!for calendar widget week view with compact/spacious mode border fix
+.resources-week-cls .rbc-time-column:nth-last-child(7n) {
+  border-left: none!important;
+  .rbc-timeslot-group {
+    border-left: 2.5px solid #dadcde !important;
+  }
+}
+.resources-week-cls .rbc-allday-cell {
+ border: none !important;
+ .rbc-row {
+   border-left: 1.5px solid #dadcde;
+   border-right: 1.5px solid #dadcde;
+ }
+}
+.resources-week-cls .rbc-time-header-cell {
+  border: none!important;
+}
+.resources-week-cls .rbc-time-view-resources .rbc-header {
+ border-left: 1.5px solid #dadcde !important;
+ border-right: 1.5px solid #dadcde !important;
+
+}
+
 .calendar-widget.hide-view-switcher {
   .rbc-toolbar {
     .rbc-btn-group:nth-of-type(3) {
@@ -2752,6 +2773,17 @@ input[type="text"] {
       width: 100% !important;
     }
   }
+
+  .query-hinter {
+    .CodeMirror-line  {
+      margin-left: 2rem !important;
+    }
+
+    .CodeMirror-cursors  .CodeMirror-cursor {
+      margin-left: 2rem !important;
+    }
+  }
+
 }
 
 .preview-block-portal {
@@ -2796,10 +2828,6 @@ input[type="text"] {
 
   .nav-item:not(.active) {
     border-bottom: 1px solid #e7eaef;
-  }
-
-  .nav-link {
-    border-color: transparent !important;
   }
 
   .nav-link.active {
@@ -2863,13 +2891,36 @@ input[type="text"] {
 }
 
 /**
+ * Timer Widget
+ */
+.timer-wrapper {
+  padding: 10px;
+  .counter-container {
+    font-size: 3em;
+    padding-bottom: 5px;
+    text-align: center;
+  }
+}
+
+/**
  * Search Box
  */
 .search-box-wrapper {
   input {
     width: 200px;
+    border-radius: 5px !important;
   }
   .input-icon .input-icon-addon {
     display: flex;
+  }
+}
+
+.fixedHeader {
+  table thead {
+    position: -webkit-sticky; // this is for all Safari (Desktop & iOS), not for Chrome
+    position: sticky;
+    top: 0;
+    border-top: 0;
+    z-index: 1; // any positive value, layer order is global
   }
 }

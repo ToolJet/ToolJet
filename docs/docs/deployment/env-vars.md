@@ -128,6 +128,14 @@ This is used to set up for CSP headers and put trace info to be used with APM ve
 
 Once set any APM provider that supports segregation with releases will track it.
 
+#### NODE_EXTRA_CA_CERTS (optional)
+
+Tooljet needs to be configured for custom CA certificate to be able to trust and establish connection over https. This requires you to configure an additional env var `NODE_EXTRA_CA_CERTS` to have absolute path to your CA certificates. This file named `cert.pem` needs to be in PEM format and can have more than one certificates.
+
+| variable            | description                                                       |
+| ------------------  | ----------------------------------------------------------------- |
+| NODE_EXTRA_CA_CERTS | absolute path to certifcate PEM file ( eg: /ToolJet/ca/cert.pem ) |
+
 ## ToolJet client
 
 #### Server URL ( optionally required )
