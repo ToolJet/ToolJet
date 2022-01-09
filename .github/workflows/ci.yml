@@ -70,7 +70,7 @@ jobs:
         run: |
           docker load --input /tmp/tooljet_build.tar
           docker image ls -a
-      - run: docker exec -it tooljet_build npm --prefix server run lint && npm --prefix frontend run lint
+      - run: docker exec -it registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web npm --prefix server run lint && npm --prefix frontend run lint
 
   # unit-test:
   #   runs-on: ubuntu-latest
