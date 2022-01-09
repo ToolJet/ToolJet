@@ -55,7 +55,7 @@ export const LibraryApps = function LibraryApps() {
                   {/* <div className="empty-img">
                 </div> */}
                   <h3>{app.name}</h3>
-                  <p className="text-muted">{app.description}</p>
+                  <p>{app.description}</p>
                   <div className="flex">
                     {app.widgets.map((widget) => (
                       <span className="badge bg-azure-lt mx-2" key={app.widget}>
