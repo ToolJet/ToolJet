@@ -45,6 +45,8 @@ jobs:
         run: heroku container:login
       - name: Build and tag image
         run: docker buildx build --file=docker/heroku.Dockerfile --rm=true -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
+      - name: Push image to heroku registry
+        run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
 
   lint:
     runs-on: ubuntu-latest
@@ -154,9 +156,7 @@ jobs:
     steps:
       - name: Update Heroku
         run: rm -rf /usr/local/bin/heroku && npm i -g heroku
-      - name: Login to Heroku Container registry
+      - name: Login to Heroku container registry
         run: heroku container:login
-      - name: Push image to heroku registry
-        run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
       - name: Release
         run: heroku container:release web -a ${{ env.HEROKU_APP_NAME }}
