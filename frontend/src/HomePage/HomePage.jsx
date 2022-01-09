@@ -6,6 +6,7 @@ import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
 import AppList from './AppList';
 import { SearchBox } from '@/_components/SearchBox';
+import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -347,13 +348,12 @@ class HomePage extends React.Component {
             <div className="container-xl">
               <div className="row">
                 <div className="col-3"></div>
-                <div className="col-3">
+                <div className="col-2">
                   <h2 className="page-title px-2">
                     {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
                   </h2>
                 </div>
-                {this.canCreateApp() && <div className="col-2 ms-auto d-print-none"></div>}
-                <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
+                <div className="col-6 ms-auto d-print-none d-flex flex-row justify-content-end">
                   <SearchBox onSubmit={this.onSearchSubmit} initialValue={this.state.appSearchKey} />
                   {this.canCreateApp() && (
                     <button className={'btn btn-default d-none d-lg-inline mb-3 ms-2'} onChange={this.handleImportApp}>
@@ -367,14 +367,20 @@ class HomePage extends React.Component {
                     </button>
                   )}
                   {this.canCreateApp() && (
-                    <button
-                      className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 create-new-app-button ${
-                        creatingApp ? 'btn-loading' : ''
-                      }`}
-                      onClick={this.createApp}
-                    >
-                      Create new application
-                    </button>
+                    <Dropdown as={ButtonGroup}>
+                      <Button
+                        className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 ${creatingApp ? 'btn-loading' : ''}`}
+                        onClick={this.createApp}
+                      >
+                        Create new application
+                      </Button>
+
+                      <Dropdown.Toggle split className="btn btn-primary d-none d-lg-inline mb-3" />
+
+                      <Dropdown.Menu>
+                        <Dropdown.Item href="#/action-1">Choose from template</Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
                   )}
                 </div>
               </div>
