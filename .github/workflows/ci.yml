@@ -23,7 +23,7 @@ env:
   PG_USER: postgres
   PG_PASS: postgres
   PG_DB: tooljet_test
-  HEROKU_APP_NAME: tooljet-pr-${{ github.event.number }}
+  HEROKU_APP_NAME: tooljet-deploy-${{ github.event.number }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
