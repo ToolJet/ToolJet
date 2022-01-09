@@ -43,17 +43,19 @@ jobs:
         run: heroku addons:create heroku-postgresql:hobby-dev -a ${{ env.HEROKU_APP_NAME }}
       - name: Login to Heroku Container registry
         run: heroku container:login
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
       - name: Build and tag image
         run: docker buildx build --file=docker/heroku.Dockerfile --rm=true -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
       - name: Push image to heroku registry
         run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
       - name: Create tarball from docker image
-        run: docker save registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web > tooljet_build.tar
+        run: docker save registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web > /tmp/tooljet_build.tar
       - name: Upload image tarball for next job
         uses: actions/upload-artifact@v2
         with:
           name: tooljet_build
-          path: tooljet_build.tar
+          path: /tmp/tooljet_build.tar
 
   lint:
     runs-on: ubuntu-latest
@@ -63,7 +65,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: tooljet_build
-          path: /
+          path: /tmp
       - name: Load Docker image
         run: |
           docker load --input tooljet_build.tar
