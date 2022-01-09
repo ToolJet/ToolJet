@@ -57,6 +57,7 @@ COPY --from=SERVER_BUILD /app/templates ./server/templates
 COPY --from=SERVER_BUILD /app/scripts ./server/scripts
 COPY --from=SERVER_BUILD /app/package.json ./server/package.json
 COPY --from=SERVER_BUILD /app/node_modules ./server/node_modules
+COPY --from=SERVER_BUILD /app/ormconfig.ts ./server/ormconfig.ts
 COPY --from=SERVER_BUILD /app/entrypoint.sh ./server/entrypoint.sh
 
 ENTRYPOINT ["./server/entrypoint.sh"]

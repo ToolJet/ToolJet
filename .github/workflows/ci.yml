@@ -153,9 +153,10 @@ jobs:
     needs: build
     env:
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-      DATABASE_URL: ${{ heroku config:get DATABASE_URL }}
     steps:
       - name: Update Heroku
+        run: rm -rf /usr/local/bin/heroku && npm i -g heroku
+      - name: Update DATABASE_URL env
         run: rm -rf /usr/local/bin/heroku && npm i -g heroku
       - name: Login to Heroku container registry
         run: heroku container:login
