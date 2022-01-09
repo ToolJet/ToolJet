@@ -152,11 +152,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     env:
+      NODE_ENV: production
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
     steps:
       - name: Update Heroku
-        run: rm -rf /usr/local/bin/heroku && npm i -g heroku
-      - name: Update DATABASE_URL env
         run: rm -rf /usr/local/bin/heroku && npm i -g heroku
       - name: Login to Heroku container registry
         run: heroku container:login

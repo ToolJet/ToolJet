@@ -39,7 +39,6 @@ RUN npm run build
 # RUN npm install pino-pretty
 # COPY ./server/ ./
 # COPY ./.env.example /.env
-# RUN npm run db:create
 # RUN npm run db:migrate
 # RUN npm run db:seed
 
@@ -58,6 +57,7 @@ COPY --from=SERVER_BUILD /app/scripts ./server/scripts
 COPY --from=SERVER_BUILD /app/package.json ./server/package.json
 COPY --from=SERVER_BUILD /app/node_modules ./server/node_modules
 COPY --from=SERVER_BUILD /app/ormconfig.ts ./server/ormconfig.ts
+COPY --from=SERVER_BUILD /app/tsconfig.json ./server/tsconfig.json
 COPY --from=SERVER_BUILD /app/entrypoint.sh ./server/entrypoint.sh
 
 ENTRYPOINT ["./server/entrypoint.sh"]

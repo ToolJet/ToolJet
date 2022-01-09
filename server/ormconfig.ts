@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 
-function buildConnectionOptions(filePath: string, env: string | undefined): TypeOrmModuleOptions {
+function buildConnectionOptions(filePath: string, env: string): TypeOrmModuleOptions {
   let data: any = process.env;
 
   if (fs.existsSync(filePath)) {
@@ -49,7 +49,7 @@ function buildConnectionOptions(filePath: string, env: string | undefined): Type
   };
 }
 
-function determineFilePathForEnv(env: string | undefined): string {
+function determineFilePathForEnv(env: string): string {
   if (env === 'test') {
     return path.resolve(process.cwd(), '../.env.test');
   } else {
@@ -67,7 +67,7 @@ function throwErrorIfFileNotPresent(filePath: string, env: string): void {
 }
 
 function fetchConnectionOptions(): TypeOrmModuleOptions {
-  const env: string | undefined = process.env.NODE_ENV;
+  const env: string = process.env.NODE_ENV;
   const filePath: string = determineFilePathForEnv(env);
   throwErrorIfFileNotPresent(filePath, env);
 
