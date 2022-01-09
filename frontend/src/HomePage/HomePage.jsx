@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import AppList from './AppList';
 import { SearchBox } from '@/_components/SearchBox';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+import TemplateLibraryModal from './TemplateLibraryModal';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -31,6 +32,7 @@ class HomePage extends React.Component {
         count: 1,
         folders: [],
       },
+      showTemplateLibraryModal: false,
     };
   }
 
@@ -378,7 +380,9 @@ class HomePage extends React.Component {
                       <Dropdown.Toggle split className="btn btn-primary d-none d-lg-inline mb-3" />
 
                       <Dropdown.Menu>
-                        <Dropdown.Item href="#/action-1">Choose from template</Dropdown.Item>
+                        <Dropdown.Item onClick={() => this.setState({ showTemplateLibraryModal: true })}>
+                          Choose from template
+                        </Dropdown.Item>
                       </Dropdown.Menu>
                     </Dropdown>
                   )}
@@ -425,6 +429,10 @@ class HomePage extends React.Component {
                 </div>
               </div>
             </div>
+            <TemplateLibraryModal
+              show={this.state.showTemplateLibraryModal}
+              onHide={() => this.setState({ showTemplateLibraryModal: false })}
+            />
           </div>
         )}
       </div>
