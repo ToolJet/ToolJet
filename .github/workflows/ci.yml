@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Heroku
-        run: npm i -g heroku
+        run: rm -rf /usr/local/bin/heroku && npm i -g heroku
       - name: Create Heroku App
         run: heroku create - a ${{ env.HEROKU_APP_NAME }}
       - name: Login to Heroku Container registry
@@ -149,7 +149,7 @@ jobs:
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
     steps:
       - name: Update Heroku
-        run: sudo apt update && sudo apt install heroku
+        run: npm i -g heroku
       - name: Login to Heroku Container registry
         run: heroku container:login
       - name: Push image to heroku registry

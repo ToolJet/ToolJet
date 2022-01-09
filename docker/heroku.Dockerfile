@@ -50,7 +50,6 @@ COPY --from=DATABASE_BUILD /app/package.json ./db/package.json
 
 COPY --from=FRONTEND_BUILD /app/build ./frontend/build
 COPY --from=FRONTEND_BUILD /app/node_modules ./frontend/node_modules
-COPY --from=FRONTEND_BUILD /app/build ./frontend/public
 
 COPY ./.env /.env
 COPY ./.env.test /.env.test
