@@ -68,7 +68,7 @@ jobs:
           path: /tmp
       - name: Load Docker image
         run: |
-          docker load --input tooljet_build.tar
+          docker load --input /tmp/tooljet_build.tar
           docker image ls -a
       - run: docker exec -it tooljet_build npm --prefix server run lint && npm --prefix frontend run lint
 
