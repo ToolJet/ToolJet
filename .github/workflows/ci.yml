@@ -47,30 +47,40 @@ jobs:
         run: docker buildx build --file=docker/heroku.Dockerfile --rm=true -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
       - name: Push image to heroku registry
         run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
+      - name: Create tarball from docker image
+        run: docker save registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web > tooljet_build.tar
+      - name: Upload image tarball for next job
+        uses: actions/upload-artifact@v2
+        with:
+          name: tooljet_build
+          path: tooljet_build.tar
 
   lint:
     runs-on: ubuntu-latest
     needs: build
-    container:
-      image: registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web:latest
     steps:
-      - run: npm --prefix server run lint && npm --prefix frontend run lint
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: tooljet_build
+          path: /
+      - name: Load Docker image
+        run: |
+          docker load --input tooljet_build.tar
+          docker image ls -a
+      - run: docker exec -it tooljet_build npm --prefix server run lint && npm --prefix frontend run lint
 
-  unit-test:
-    runs-on: ubuntu-latest
-    needs: build
-    container:
-      image: registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web:latest
-    steps:
-      - run: npm --prefix server run test
+  # unit-test:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - run: npm --prefix server run test
 
-  e2e-test:
-    runs-on: ubuntu-latest
-    needs: build
-    container:
-      image: registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web:latest
-    steps:
-      - run: npm --prefix server run test:e2e -- --silent
+  # e2e-test:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - run: npm --prefix server run test:e2e -- --silent
 
   deploy:
     runs-on: ubuntu-latest
