@@ -38,7 +38,7 @@ jobs:
       - name: Create Heroku App
         continue-on-error: true
         run: heroku create ${{ env.HEROKU_APP_NAME }}
-      - name: Create Postgresql addon
+      - name: Create Heroku Postgresql addon
         continue-on-error: true
         run: heroku addons:create heroku-postgresql:hobby-dev -a ${{ env.HEROKU_APP_NAME }}
       - name: Login to Heroku Container registry
@@ -157,6 +157,6 @@ jobs:
       - name: Login to Heroku Container registry
         run: heroku container:login
       - name: Push image to heroku registry
-        run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
+        run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
       - name: Release
         run: heroku container:release web -a ${{ env.HEROKU_APP_NAME }}
