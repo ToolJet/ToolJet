@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { folderService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import Modal from './Modal';
 
 export const Folders = function Folders({
   folders,
   foldersLoading,
-  totalCount,
   currentFolder,
   folderChanged,
   foldersChanged,
@@ -25,14 +25,14 @@ export const Folders = function Folders({
   function saveFolder() {
     if (!newFolderName || !newFolderName.trim()) {
       toast.error("folder name can't be empty.", {
-        position: 'top-left',
+        position: 'top-center',
       });
       return;
     }
     setCreationStatus(true);
     folderService.create(newFolderName).then(() => {
       toast.success('folder created.', {
-        position: 'top-left',
+        position: 'top-center',
       });
       setCreationStatus(false);
       setShowForm(false);
@@ -47,7 +47,7 @@ export const Folders = function Folders({
   }
 
   return (
-    <div className="w-100 px-3 card folder-list">
+    <div className="w-100 px-3 pe-lg-4 folder-list">
       {isLoading && (
         <div className="px-1 py-2" style={{ minHeight: '200px' }}>
           {[1, 2, 3, 4, 5].map((element, index) => {
@@ -68,18 +68,22 @@ export const Folders = function Folders({
       {!isLoading && (
         <div data-testid="applicationFoldersList" className="list-group list-group-transparent mb-3">
           <a
-            className={`list-group-item list-group-item-action d-flex align-items-center ${
+            className={`list-group-item list-group-item-action d-flex align-items-center all-apps-link ${
               !activeFolder.id ? 'active' : ''
             }`}
             onClick={() => handleFolderChange({})}
           >
             All applications
-            <small className="text-muted ms-auto">
-              <span className="badge bg-primary-lt" data-testid="allApplicationsCount">
-                {totalCount}
-              </span>
-            </small>
           </a>
+          <hr></hr>
+          <div className="d-flex justify-content-between mb-3">
+            <div className="folder-info">Folders</div>
+            {canCreateFolder && (
+              <div className="folder-create-btn" onClick={() => setShowForm(true)}>
+                + Create New Folder
+              </div>
+            )}
+          </div>
           {folders.map((folder, index) => (
             <a
               key={index}
@@ -88,21 +92,15 @@ export const Folders = function Folders({
               }`}
               onClick={() => handleFolderChange(folder)}
             >
-              {folder.name}
-              <small className="text-muted ms-auto">
-                <span className="badge bg-primary-lt">{folder.count}</span>
-              </small>
+              <span className="me-2">
+                <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
+              </span>
+              {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
             </a>
           ))}
-          <hr />
-          {!showForm && canCreateFolder && (
-            <a className="mx-3 fw-500" onClick={() => setShowForm(true)}>
-              + Folder
-            </a>
-          )}
-          {showForm && (
-            <div className="p-2 row">
-              <div className="col">
+          <Modal show={showForm} setShow={setShowForm} title="Create Folder">
+            <div className="row">
+              <div className="col modal-main">
                 <input
                   type="text"
                   onChange={(e) => setNewFolderName(e.target.value)}
@@ -111,13 +109,18 @@ export const Folders = function Folders({
                   disabled={isCreating}
                 />
               </div>
-              <div className="col-auto">
+            </div>
+            <div className="row">
+              <div className="col d-flex modal-footer-btn">
+                <button className="btn btn-light" onClick={() => setShowForm(false)}>
+                  Cancel
+                </button>
                 <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={saveFolder}>
-                  Save
+                  Create Folder
                 </button>
               </div>
             </div>
-          )}
+          </Modal>
         </div>
       )}
     </div>
