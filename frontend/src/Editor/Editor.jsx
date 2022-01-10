@@ -93,6 +93,7 @@ class Editor extends React.Component {
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
         errors: {},
+        variables: {},
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
@@ -868,6 +869,7 @@ class Editor extends React.Component {
               switchDarkMode={this.props.switchDarkMode}
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
+              currentState={currentState}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
