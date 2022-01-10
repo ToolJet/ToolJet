@@ -43,8 +43,8 @@ jobs:
         run: heroku addons:create heroku-postgresql:hobby-dev -a ${{ env.HEROKU_APP_NAME }}
       - name: Login to Heroku Container registry
         run: heroku container:login
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
+#       - uses: satackey/action-docker-layer-caching@v0.0.11
+#         continue-on-error: true
       - name: Build and tag image
         run: docker buildx build --file=docker/heroku.Dockerfile --rm=true -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
       - name: Push image to heroku registry
