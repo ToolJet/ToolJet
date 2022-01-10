@@ -776,11 +776,13 @@ class Editor extends React.Component {
   };
 
   saveEditingVersion = () => {
-    this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
-    appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
-      this.setState({ isSavingEditingVersion: false });
-      setTimeout(() => this.setState({ showSaveDetail: false }), 5000);
-    });
+    if (!isEmpty(this.state.editingVersion)) {
+      this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
+      appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
+        this.setState({ isSavingEditingVersion: false });
+        setTimeout(() => this.setState({ showSaveDetail: false }), 5000);
+      });
+    }
   };
 
   renderInitVersionCreateModal = (showModal) => {
