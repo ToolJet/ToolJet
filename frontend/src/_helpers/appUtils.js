@@ -232,6 +232,12 @@ function executeAction(_ref, event, mode) {
         const key = resolveReferences(event.key, _ref.state.currentState);
         const value = resolveReferences(event.value, _ref.state.currentState);
         console.log('Setting custom variable', key, value);
+        break;
+      }
+
+      case 'unset-custom-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        console.log('Unsetting custom variable', key);
       }
     }
   }

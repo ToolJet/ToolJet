@@ -62,4 +62,9 @@ export const ActionTypes = [
       { name: 'value', type: 'code', default: '' },
     ],
   },
+  {
+    name: 'Unset variable',
+    id: 'unset-custom-variable',
+    options: [{ name: 'key', type: 'code', default: '' }],
+  },
 ];

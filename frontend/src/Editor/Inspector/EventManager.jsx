@@ -366,6 +366,21 @@ export const EventManager = ({
                 </div>
               </>
             )}
+            {event.actionId === 'unset-custom-variable' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">Key</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.key}
+                      onChange={(value) => handlerChanged(index, 'key', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </Popover.Content>
       </Popover>
