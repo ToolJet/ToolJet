@@ -227,6 +227,12 @@ function executeAction(_ref, event, mode) {
         generateFile(fileName, csv);
         return Promise.resolve();
       }
+
+      case 'set-custom-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const value = resolveReferences(event.value, _ref.state.currentState);
+        console.log('Setting custom variable', key, value);
+      }
     }
   }
 }

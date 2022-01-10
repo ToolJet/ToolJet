@@ -54,4 +54,12 @@ export const ActionTypes = [
       { name: 'data', type: 'code', default: '{{[]}}' },
     ],
   },
+  {
+    name: 'Set variable',
+    id: 'set-custom-variable',
+    options: [
+      { name: 'key', type: 'code', default: '' },
+      { name: 'value', type: 'code', default: '' },
+    ],
+  },
 ];
