@@ -66,7 +66,5 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
 
   accordionItems.splice(1, 0, ...conditionalAccordionItems(component));
 
-  console.log('accordionItems', accordionItems[0]);
-
   return <Accordion items={accordionItems} />;
 };

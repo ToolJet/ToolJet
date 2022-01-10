@@ -97,40 +97,6 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
   const [showSelectdFiles, setShowSelectedFiles] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState([]);
 
-  const processCSV = (str, delim = ',') => {
-    const headers = str.slice(0, str.indexOf('\n')).split(delim);
-    const rows = str.slice(str.indexOf('\n') + 1).split('\n');
-
-    const newArray = rows.map((row) => {
-      const values = row.split(delim);
-      const eachObject = headers.reduce((obj, header, i) => {
-        obj[header] = values[i];
-        return obj;
-      }, {});
-      return eachObject;
-    });
-
-    return newArray;
-  };
-
-  const parseFileContent = (file, autoDetect = false, parseFileType) => {
-    const fileType = file.type.split('/')[1];
-
-    if (autoDetect) {
-      return detectParserFile(file);
-    } else {
-      return fileType === parseFileType;
-    }
-  };
-
-  const detectParserFile = (file) => {
-    return (
-      file.type === 'text/csv' ||
-      file.type === 'application/vnd.ms-excel' ||
-      file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-  };
-
   /**
    * *getFileData()
    * @param {*} file
@@ -165,14 +131,17 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     const readFileAsDataURL = await getFileData(file, 'readAsDataURL');
     const autoDetectFileType = fileTypeFromExtension === 'auto-detect' ? true : false;
 
-    const parse = parseContent ? await parseFileContent(file, autoDetectFileType, fileTypeFromExtension) : false;
+    // * parse file content
+    const shouldProcessFileParsing = parseContent
+      ? await parseFileContent(file, autoDetectFileType, fileTypeFromExtension)
+      : false;
 
     return {
       name: file.name,
       type: file.type,
       content: readFileAsText,
       dataURL: readFileAsDataURL,
-      parsedData: parse ? await processCSV(readFileAsText) : null,
+      parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
     };
   };
 
@@ -319,5 +288,49 @@ FilePicker.AcceptedFiles = ({ children, width, height, showFilezone, bgThemeColo
       <span className="text-info">Files</span>
       <div className="row accepted-files">{children}</div>
     </aside>
+  );
+};
+
+const processCSV = (str, delimiter = ',') => {
+  const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
+  const rows = str.slice(str.indexOf('\n') + 1).split('\n');
+
+  const newArray = rows.map((row) => {
+    const values = row.split(delimiter);
+    const eachObject = headers.reduce((obj, header, i) => {
+      obj[header] = values[i];
+      return obj;
+    }, {});
+    return eachObject;
+  });
+
+  return newArray;
+};
+
+const processFileContent = (fileType, fileContent) => {
+  switch (fileType) {
+    case 'text/csv':
+      return processCSV(fileContent);
+
+    default:
+      break;
+  }
+};
+
+const parseFileContent = (file, autoDetect = false, parseFileType) => {
+  const fileType = file.type.split('/')[1];
+
+  if (autoDetect) {
+    return detectParserFile(file);
+  } else {
+    return fileType === parseFileType;
+  }
+};
+
+const detectParserFile = (file) => {
+  return (
+    file.type === 'text/csv' ||
+    file.type === 'application/vnd.ms-excel' ||
+    file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   );
 };
