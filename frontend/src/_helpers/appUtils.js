@@ -237,7 +237,6 @@ function executeAction(_ref, event, mode) {
         return _ref.setState({
           currentState: {
             ..._ref.state.currentState,
-
             variables: customVariables,
           },
         });
