@@ -122,7 +122,7 @@ export const Box = function Box({
 
     if (isListView) {
       const itemsAtIndex = currentState?.components[parentId]?.data[extraProps.listviewItemIndex];
-      exposedVariables = itemsAtIndex !== undefined ? itemsAtIndex[component.name] : {};
+      exposedVariables = itemsAtIndex !== undefined ? itemsAtIndex[component.name] || {} : {};
     } else {
       exposedVariables = currentState?.components[component.name] ?? {};
     }
