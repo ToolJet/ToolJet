@@ -13,7 +13,7 @@ export const TextArea = function TextArea({ height, properties, exposedVariables
         setExposedVariable('value', e.target.value);
       }}
       type="text"
-      className="form-control"
+      className="form-control textarea"
       placeholder={properties.placeholder}
       style={{
         height,

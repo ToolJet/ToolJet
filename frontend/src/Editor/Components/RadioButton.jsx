@@ -10,8 +10,7 @@ export const RadioButton = function RadioButton({
   setExposedVariable,
 }) {
   const { label, value, values, display_values } = properties;
-  const { visibility, disabledState, textColor } = styles;
-
+  const { visibility, disabledState, textColor, activeColor } = styles;
   let selectOptions = [];
 
   try {
@@ -43,7 +42,10 @@ export const RadioButton = function RadioButton({
         {selectOptions.map((option, index) => (
           <label key={index} className="form-check form-check-inline">
             <input
-              style={{ marginTop: '1px' }}
+              style={{
+                marginTop: '1px',
+                backgroundColor: exposedVariables.value === option.value ? `${activeColor}` : 'white',
+              }}
               className="form-check-input"
               checked={exposedVariables.value === option.value}
               type="radio"

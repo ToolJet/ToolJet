@@ -21,6 +21,8 @@ class ManageOrgUsers extends React.Component {
       fields: {},
       errors: {},
     };
+
+    this.tableRef = React.createRef(null);
   }
 
   validateEmail(email) {
@@ -61,6 +63,11 @@ class ManageOrgUsers extends React.Component {
 
   componentDidMount() {
     this.fetchUsers();
+  }
+
+  calculateOffset() {
+    const elementHeight = this.tableRef.current.getBoundingClientRect().top;
+    return window.innerHeight - elementHeight;
   }
 
   fetchUsers = () => {
@@ -280,7 +287,11 @@ class ManageOrgUsers extends React.Component {
             {!showNewUserForm && (
               <div className="container-xl">
                 <div className="card">
-                  <div className="card-table table-responsive table-bordered">
+                  <div
+                    className="card-table fixedHeader table-responsive table-bordered"
+                    ref={this.tableRef}
+                    style={{ maxHeight: this.tableRef.current && this.calculateOffset() }}
+                  >
                     <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
                       <thead>
                         <tr>
