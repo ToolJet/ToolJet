@@ -3,7 +3,7 @@ import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
@@ -106,7 +106,11 @@ class Editor extends React.Component {
       showInitVersionCreateModal: false,
       isCreatingInitVersion: false,
       initVersionName: null,
+      isSavingEditingVersion: false,
+      showSaveDetail: false,
     };
+
+    this.autoSave = debounce(this.saveEditingVersion, 3000);
   }
 
   componentDidMount() {
@@ -426,7 +430,9 @@ class Editor extends React.Component {
       },
       this.handleAddPatch
     );
-    this.setState({ appDefinition: newDefinition });
+    this.setState({ appDefinition: newDefinition }, () => {
+      this.autoSave();
+    });
     computeComponentState(this, newDefinition.components);
   };
 
@@ -536,7 +542,10 @@ class Editor extends React.Component {
         role="button"
         key={dataSource.name}
         onClick={() => {
-          this.setState({ selectedDataSource: dataSource, showDataSourceManagerModal: true });
+          this.setState({
+            selectedDataSource: dataSource,
+            showDataSourceManagerModal: true,
+          });
         }}
       >
         <td>
@@ -560,7 +569,10 @@ class Editor extends React.Component {
   };
 
   executeDataQueryDeletion = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true });
+    this.setState({
+      showDataQueryDeletionConfirmation: false,
+      isDeletingDataQuery: true,
+    });
     dataqueryService
       .del(this.state.selectedQuery.id)
       .then(() => {
@@ -617,7 +629,9 @@ class Editor extends React.Component {
             <button
               className="btn badge bg-azure-lt"
               onClick={this.deleteDataQuery}
-              style={{ display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none' }}
+              style={{
+                display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
+              }}
             >
               <div>
                 <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
@@ -687,7 +701,9 @@ class Editor extends React.Component {
   };
 
   toggleQuerySearch = () => {
-    this.setState((prev) => ({ showQuerySearchField: !prev.showQuerySearchField }));
+    this.setState((prev) => ({
+      showQuerySearchField: !prev.showQuerySearchField,
+    }));
   };
 
   onVersionDeploy = (versionId) => {
@@ -715,13 +731,25 @@ class Editor extends React.Component {
   renderLayoutIcon = (isDesktopSelected) => {
     if (isDesktopSelected)
       return (
-        <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+        <span
+          onClick={() =>
+            this.setState({
+              currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
+            })
+          }
+        >
           <DesktopSelectedIcon />
         </span>
       );
 
     return (
-      <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+      <span
+        onClick={() =>
+          this.setState({
+            currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
+          })
+        }
+      >
         <MobileSelectedIcon />
       </span>
     );
@@ -734,7 +762,10 @@ class Editor extends React.Component {
     if (!isEmpty(newVersionName?.trim())) {
       this.setState({ isCreatingInitVersion: true });
       appVersionService.create(appId, newVersionName).then(() => {
-        this.setState({ showInitVersionCreateModal: false, isCreatingInitVersion: false });
+        this.setState({
+          showInitVersionCreateModal: false,
+          isCreatingInitVersion: false,
+        });
         toast.success('Version Created');
         this.fetchApp();
       });
@@ -742,6 +773,14 @@ class Editor extends React.Component {
       toast.error('The name of version should not be empty');
       this.setState({ isCreatingInitVersion: false });
     }
+  };
+
+  saveEditingVersion = () => {
+    this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
+    appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
+      this.setState({ isSavingEditingVersion: false });
+      setTimeout(() => this.setState({ showSaveDetail: false }), 5000);
+    });
   };
 
   renderInitVersionCreateModal = (showModal) => {
@@ -812,6 +851,8 @@ class Editor extends React.Component {
       showComments,
       editingVersion,
       showInitVersionCreateModal,
+      isSavingEditingVersion,
+      showSaveDetail,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -866,6 +907,12 @@ class Editor extends React.Component {
                     <span className="input-icon-addon">
                       <EditIcon />
                     </span>
+                  </div>
+                )}
+                {showSaveDetail && (
+                  <div className="nav-auto-save">
+                    <img src={'/assets/images/icons/editor/auto-save.svg'} width="25" height="25" />
+                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Auto Saving..' : 'Auto Saved'}</em>
                   </div>
                 )}
                 {this.state.editingVersion && (
@@ -979,7 +1026,9 @@ class Editor extends React.Component {
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
                         onComponentClick={(id, component) => {
-                          this.setState({ selectedComponent: { id, component } });
+                          this.setState({
+                            selectedComponent: { id, component },
+                          });
                           this.switchSidebarTab(1);
                         }}
                       />
@@ -1112,7 +1161,11 @@ class Editor extends React.Component {
                                 <button
                                   className="btn btn-sm btn-outline-azure mt-3"
                                   onClick={() =>
-                                    this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
+                                    this.setState({
+                                      selectedQuery: {},
+                                      editingQuery: false,
+                                      addingQuery: true,
+                                    })
                                   }
                                 >
                                   create query
