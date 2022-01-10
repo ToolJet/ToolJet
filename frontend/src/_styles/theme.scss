@@ -2925,3 +2925,65 @@ input[type="text"] {
     z-index: 1; // any positive value, layer order is global
   }
 }
+
+/**
+ * Folder List
+ */
+.folder-list {
+  color: #000000;
+  .list-group-transparent .list-group-item.active {
+    color: $primary;
+    background-color: #EDF1FF;
+    .folder-ico {
+      filter: invert(29%) sepia(84%) saturate(4047%) hue-rotate(215deg) brightness(98%) contrast(111%);
+    }
+  }
+  .list-group-item {
+    padding: 0.5rem 0.75rem;
+    overflow: hidden;
+  }
+  .list-group-item.all-apps-link {
+    font-weight: 500;
+  }
+  .folder-info {
+    color: #8991A0;
+    font-size: 0.75rem;
+    display: contents;
+  }
+  .folder-create-btn {
+    color: #0565FF;
+    cursor: pointer;
+  }
+}
+
+/**
+ * Home page modal
+ */
+ .modal-content.home-modal-component {
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #FEFEFF;
+  color: #000000;
+  .modal-header {
+    border-bottom: 0px;
+  }
+  .btn-close {
+    width: 3.5rem;
+    height: 2.5rem;
+  }
+  .modal-body {
+    padding-top: 0px;
+  }
+  input {
+    border-radius: 5px !important;
+  }
+  .modal-main {
+    padding-bottom: 5rem;
+  }
+  .modal-footer-btn {
+    justify-content: end;
+    button {
+      margin-left: 16px;
+    }
+  }
+ }
