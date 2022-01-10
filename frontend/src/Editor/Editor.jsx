@@ -857,9 +857,7 @@ class Editor extends React.Component {
             <LeftSidebar
               appVersionsId={this.state?.editingVersion?.id}
               errorLogs={currentState.errors}
-              queries={currentState.queries}
               components={currentState.components}
-              globals={currentState.globals}
               appId={appId}
               darkMode={this.props.darkMode}
               dataSources={this.state.dataSources}
