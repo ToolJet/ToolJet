@@ -2,7 +2,7 @@
 
 Tags widget can be used to show array of data as tags.
 
-<img class="screenshot-full" src="/img/widgets/tags/adding-tags.gif" alt="ToolJet - Widget Reference - Tags" height="420"/>
+<img class="screenshot-full" src="/img/widgets/tags/tags.gif" alt="ToolJet - Widget Reference - Tags" height="420"/>
 
 #### Properties
 
