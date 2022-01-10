@@ -308,6 +308,7 @@ const processCSV = (str, delimiter = ',') => {
     return newArray;
   } catch (error) {
     console.log(error);
+    handleErrors(error);
   }
 };
 
@@ -337,4 +338,17 @@ const detectParserFile = (file) => {
     file.type === 'application/vnd.ms-excel' ||
     file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   );
+};
+
+//? handle bad data in csv parser (e.g. empty cells) OR errors
+const handleErrors = (data) => {
+  const badData = data.filter((row) => {
+    return Object.values(row).some((value) => value === '');
+  });
+
+  const errors = data.filter((row) => {
+    return Object.values(row).some((value) => value === 'ERROR');
+  });
+
+  return [badData, errors];
 };
