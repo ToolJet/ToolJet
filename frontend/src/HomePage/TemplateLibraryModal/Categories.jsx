@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ListGroup } from 'react-bootstrap';
 
 const categoryTitles = {
@@ -8,10 +8,10 @@ const categoryTitles = {
 };
 
 export default function Categories(props) {
-  const [selectedCategory, selectCategory] = useState('all');
+  const { categories, selectedCategory, selectCategory } = props;
   return (
-    <ListGroup className="mt-2">
-      {props.categories.map((category) => (
+    <ListGroup className="mt-2 template-categories">
+      {categories.map((category) => (
         <ListGroup.Item
           action
           active={category === selectedCategory}

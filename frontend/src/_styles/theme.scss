@@ -668,15 +668,29 @@ button {
     }
   }
 
-  .list-group-item {
-    border: 0;
-    // padding-bottom: 3px;
+  .template-categories {
+    .list-group-item {
+      border: 0;
+      // padding-bottom: 3px;
+    }
+
+    .list-group-item.active {
+      background-color: #EDF1FF;
+      color: #4D72FA;
+      font-weight: 600;
+    }
   }
 
-  .list-group-item.active {
-    background-color: #EDF1FF;
-    color: #4D72FA;
-    font-weight: 600;
+  .template-app-list {
+    .list-group-item {
+      border: 0;
+      // padding-bottom: 3px;
+    }
+
+    .list-group-item.active {
+      background-color: #EDF1FF;
+      color: black;
+    }
   }
 }
 
