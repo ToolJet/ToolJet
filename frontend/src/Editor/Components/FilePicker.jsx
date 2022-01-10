@@ -129,7 +129,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
     // * readAsDataURL
     const readFileAsDataURL = await getFileData(file, 'readAsDataURL');
-    const autoDetectFileType = fileTypeFromExtension === 'auto-detect' ? true : false;
+    const autoDetectFileType = fileTypeFromExtension === 'auto-detect';
 
     // * parse file content
     const shouldProcessFileParsing = parseContent
@@ -295,16 +295,20 @@ const processCSV = (str, delimiter = ',') => {
   const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
   const rows = str.slice(str.indexOf('\n') + 1).split('\n');
 
-  const newArray = rows.map((row) => {
-    const values = row.split(delimiter);
-    const eachObject = headers.reduce((obj, header, i) => {
-      obj[header] = values[i];
-      return obj;
-    }, {});
-    return eachObject;
-  });
+  try {
+    const newArray = rows.map((row) => {
+      const values = row.split(delimiter);
+      const eachObject = headers.reduce((obj, header, i) => {
+        obj[header] = values[i];
+        return obj;
+      }, {});
+      return eachObject;
+    });
 
-  return newArray;
+    return newArray;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const processFileContent = (fileType, fileContent) => {
