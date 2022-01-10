@@ -1,6 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
-import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
+import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { defaults, cloneDeep, isEqual, isEmpty } from 'lodash';
@@ -37,6 +37,8 @@ import Logo from './Icons/logo.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 setAutoFreeze(false);
 enablePatches();
@@ -102,6 +104,9 @@ class Editor extends React.Component {
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
       socket: null,
+      showInitVersionCreateModal: false,
+      isCreatingInitVersion: false,
+      initVersionName: null,
     };
   }
 
@@ -320,6 +325,10 @@ class Editor extends React.Component {
           slug: data.slug,
         },
         () => {
+          this.setState({
+            showInitVersionCreateModal: isEmpty(this.state.editingVersion),
+          });
+
           computeComponentState(this, this.state.appDefinition.components).then(() => {
             console.log('Default component state computed and set');
             this.runQueries(data.data_queries);
@@ -732,6 +741,58 @@ class Editor extends React.Component {
     );
   };
 
+  createInitVersion = () => {
+    const newVersionName = this.state.initVersionName;
+    const appId = this.state.appId;
+
+    if (!isEmpty(newVersionName?.trim())) {
+      this.setState({ isCreatingInitVersion: true });
+      appVersionService.create(appId, newVersionName).then(() => {
+        this.setState({ showInitVersionCreateModal: false, isCreatingInitVersion: false });
+        toast.success('Version Created');
+        this.fetchApp();
+      });
+    } else {
+      toast.error('The name of version should not be empty');
+      this.setState({ isCreatingInitVersion: false });
+    }
+  };
+
+  renderInitVersionCreateModal = (showModal) => {
+    return (
+      <Modal
+        contentClassName={this.props.darkMode ? 'theme-dark' : ''}
+        show={showModal}
+        size="md"
+        backdrop="static"
+        keyboard={true}
+        enforceFocus={false}
+        animation={false}
+        centered={true}
+      >
+        <Modal.Header>
+          <Modal.Title>Create Version</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <label className="form-label">Create a version to start building your app:</label>
+            <div className="col">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="version name"
+                onChange={(e) => this.setState({ initVersionName: e.target.value })}
+              />
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => this.createInitVersion()}>Create</Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -764,6 +825,7 @@ class Editor extends React.Component {
       defaultComponentStateComputed,
       showComments,
       editingVersion,
+      showInitVersionCreateModal,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -1143,6 +1205,7 @@ class Editor extends React.Component {
               />
             )}
           </div>
+          {this.renderInitVersionCreateModal(showInitVersionCreateModal)}
         </DndProvider>
       </div>
     );
