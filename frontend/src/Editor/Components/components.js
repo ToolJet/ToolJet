@@ -1521,7 +1521,7 @@ export const componentTypes = [
       properties: {
         data: {
           value:
-            "{{ [ \n\t\t{ title: 'success', color: '#4BB543', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#0000ff', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#FFFF00', textColor: '#000'  }, \n\t\t{ title: 'danger', color: '#ff0000', textColor: '#fff' } ] }}",
+            "{{ [ \n\t\t{ title: 'success', color: '#2fb344', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#206bc4', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#f59f00', textColor: '#fff'  }, \n\t\t{ title: 'danger', color: '#d63939', textColor: '#fff' } ] }}",
         },
       },
       events: [],

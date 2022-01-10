@@ -1,11 +1,11 @@
 import React from 'react';
 
-export const Tags = function Tags({ height, properties, styles }) {
+export const Tags = function Tags({ width, height, properties, styles }) {
   const { data } = properties;
   const { textColor, visibility } = styles;
 
   const computedStyles = {
-    width: '100%',
+    width,
     height,
     display: visibility ? '' : 'none',
     color: textColor,
@@ -17,7 +17,6 @@ export const Tags = function Tags({ height, properties, styles }) {
       backgroundColor: item.color,
       color: item.textColor,
       textTransform: 'none',
-      height,
     };
 
     return (
