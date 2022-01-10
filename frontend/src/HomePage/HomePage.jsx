@@ -5,7 +5,7 @@ import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
 import AppList from './AppList';
-import { SearchBox } from '@/_components/SearchBox';
+import HomeHeader from './Header';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -61,15 +61,12 @@ class HomePage extends React.Component {
     this.setState({
       foldersLoading: true,
       appSearchKey: appSearchKey,
-      currentFolder: searchKey ? this.state.currentFolder : {},
     });
 
     folderService.getAll(appSearchKey).then((data) => {
-      const currentFolder =
-        searchKey &&
-        data?.folders?.filter(
-          (folder) => this.state.currentFolder?.id && folder.id === this.state.currentFolder?.id
-        )?.[0];
+      const currentFolder = data?.folders?.filter(
+        (folder) => this.state.currentFolder?.id && folder.id === this.state.currentFolder?.id
+      )?.[0];
       this.setState({
         folders: data.folders,
         foldersLoading: false,
@@ -322,6 +319,10 @@ class HomePage extends React.Component {
       isImportingApp,
       appSearchKey,
     } = this.state;
+    const appCountText = currentFolder.count ? ` (${currentFolder.count})` : '';
+    const folderName = currentFolder.id
+      ? `${currentFolder.name}${appCountText}`
+      : `All applications${meta.total_count ? ` (${meta.total_count})` : ''}`;
     return (
       <div className="wrapper home-page">
         <ConfirmDialog
@@ -346,39 +347,9 @@ class HomePage extends React.Component {
           <div className="page-body homepage-body">
             <div className="container-xl">
               <div className="row">
-                <div className="col-3"></div>
-                <div className="col-3">
-                  <h2 className="page-title px-2">
-                    {currentFolder.id ? `Folder: ${currentFolder.name}` : 'All applications'}
-                  </h2>
-                </div>
-                {this.canCreateApp() && <div className="col-2 ms-auto d-print-none"></div>}
-                <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
-                  <SearchBox onSubmit={this.onSearchSubmit} initialValue={this.state.appSearchKey} />
-                  {this.canCreateApp() && (
-                    <label className={'btn btn-default d-none d-lg-inline mb-3 ms-2'} onChange={this.handleImportApp}>
-                      {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
-                      Import
-                      <input type="file" accept=".json" ref={this.fileInput} style={{ display: 'none' }} />
-                    </label>
-                  )}
-                  {this.canCreateApp() && (
-                    <button
-                      className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 create-new-app-button ${
-                        creatingApp ? 'btn-loading' : ''
-                      }`}
-                      onClick={this.createApp}
-                    >
-                      Create new application
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="row">
                 <div className="col-12 col-lg-3 mb-5">
                   <Folders
                     foldersLoading={this.state.foldersLoading}
-                    totalCount={this.state.meta.total_count}
                     folders={this.state.folders}
                     currentFolder={currentFolder}
                     folderChanged={this.folderChanged}
@@ -389,6 +360,17 @@ class HomePage extends React.Component {
 
                 <div className="col-md-9">
                   <div className="w-100 mb-5">
+                    <HomeHeader
+                      folderName={folderName}
+                      onSearchSubmit={this.onSearchSubmit}
+                      handleImportApp={this.handleImportApp}
+                      isImportingApp={isImportingApp}
+                      canCreateApp={this.canCreateApp}
+                      creatingApp={creatingApp}
+                      createApp={this.createApp}
+                      fileInput={this.fileInput}
+                      appCount={currentFolder.count}
+                    />
                     <AppList
                       apps={apps}
                       canCreateApp={this.canCreateApp}
