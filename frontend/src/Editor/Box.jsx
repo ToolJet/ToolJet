@@ -92,7 +92,7 @@ export const Box = function Box({
   customResolvables,
   parentId,
   allComponents,
-  extraProps
+  extraProps,
 }) {
   const backgroundColor = yellow ? 'yellow' : '';
 
@@ -114,9 +114,7 @@ export const Box = function Box({
 
   let exposedVariables = {};
 
-
   if (component.parent) {
-
     const parentComponent = allComponents[component.parent];
     const isListView = parentComponent.component.component === 'Listview';
 

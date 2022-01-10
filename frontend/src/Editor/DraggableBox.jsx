@@ -89,7 +89,7 @@ export const DraggableBox = function DraggableBox({
   canvasWidth,
   readOnly,
   customResolvables,
-  parentId
+  parentId,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);

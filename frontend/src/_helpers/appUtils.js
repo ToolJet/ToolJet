@@ -693,11 +693,10 @@ export function computeComponentState(_ref, components) {
       try {
         isListView = parentComponent.component.component === 'Listview';
       } catch {
-
+        console.log('error');
       }
 
-      if (isListView) {
-      } else {
+      if (!isListView) {
         componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
       }
     } else {

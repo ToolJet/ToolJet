@@ -37,7 +37,7 @@ export const SubContainer = ({
   readOnly,
   customResolvables,
   parentComponent,
-  listViewItemOptions
+  listViewItemOptions,
 }) => {
   const [_currentParentRef, setParentRef] = useState(parentRef);
 
@@ -362,10 +362,10 @@ export const SubContainer = ({
       ...newData[listViewItemOptions.index],
       [component.name]: {
         ...(newData[listViewItemOptions.index] ? newData[listViewItemOptions.index][component.name] : {}),
-        [optionName]: value
-      }
-    }
-    onComponentOptionChanged(parentComponent, 'data', newData)
+        [optionName]: value,
+      },
+    };
+    onComponentOptionChanged(parentComponent, 'data', newData);
   }
 
   return (
@@ -423,7 +423,7 @@ export const SubContainer = ({
             deviceWindowWidth,
             selectedComponent,
             darkMode,
-            readOnly
+            readOnly,
           }}
         />
       ))}
