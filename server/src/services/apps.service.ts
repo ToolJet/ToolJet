@@ -209,13 +209,14 @@ export class AppsService {
   async update(user: User, appId: string, params: any) {
     const currentVersionId = params['current_version_id'];
     const isPublic = params['is_public'];
-    const { name, slug } = params;
+    const { name, slug, icon } = params;
 
     const updateableParams = {
       name,
       slug,
       isPublic,
       currentVersionId,
+      icon,
     };
 
     // removing keys with undefined values
