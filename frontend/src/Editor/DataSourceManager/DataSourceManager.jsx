@@ -311,7 +311,7 @@ class DataSourceManager extends React.Component {
                       </svg>
                     </div>
                     <div className="col" style={{ maxWidth: '480px' }}>
-                      <p>Please white-list our IP address if your databases are not publicaly accessabile</p>
+                      <p>Please white-list our IP address if your databases are not publicly accessabile</p>
                     </div>
                     <div className="col-auto">
                       {isCopied ? (
