@@ -1703,6 +1703,7 @@ hr {
     position: fixed;
     max-height: 10px;
     z-index: 100;
+    min-width: 108px;
 
     .badge {
       font-size: 9px;
@@ -2240,8 +2241,6 @@ input:focus-visible {
   }
 
   .badge {
-    filter: brightness(1) invert(1);
-
     .svg-icon {
       filter: brightness(1) invert(0);
     }
@@ -2624,25 +2623,24 @@ input[type="text"] {
 
 //!for calendar widget week view with compact/spacious mode border fix
 .resources-week-cls .rbc-time-column:nth-last-child(7n) {
-  border-left: none!important;
+  border-left: none !important;
   .rbc-timeslot-group {
     border-left: 2.5px solid #dadcde !important;
   }
 }
 .resources-week-cls .rbc-allday-cell {
- border: none !important;
- .rbc-row {
-   border-left: 1.5px solid #dadcde;
-   border-right: 1.5px solid #dadcde;
- }
+  border: none !important;
+  .rbc-row {
+    border-left: 1.5px solid #dadcde;
+    border-right: 1.5px solid #dadcde;
+  }
 }
 .resources-week-cls .rbc-time-header-cell {
-  border: none!important;
+  border: none !important;
 }
 .resources-week-cls .rbc-time-view-resources .rbc-header {
- border-left: 1.5px solid #dadcde !important;
- border-right: 1.5px solid #dadcde !important;
-
+  border-left: 1.5px solid #dadcde !important;
+  border-right: 1.5px solid #dadcde !important;
 }
 
 .calendar-widget.hide-view-switcher {
@@ -2809,15 +2807,14 @@ input[type="text"] {
   }
 
   .query-hinter {
-    .CodeMirror-line  {
+    .CodeMirror-line {
       margin-left: 2rem !important;
     }
 
-    .CodeMirror-cursors  .CodeMirror-cursor {
+    .CodeMirror-cursors .CodeMirror-cursor {
       margin-left: 2rem !important;
     }
   }
-
 }
 
 .preview-block-portal {
@@ -2862,10 +2859,6 @@ input[type="text"] {
 
   .nav-item:not(.active) {
     border-bottom: 1px solid #e7eaef;
-  }
-
-  .nav-link {
-    border-color: transparent !important;
   }
 
   .nav-link.active {
@@ -2950,5 +2943,77 @@ input[type="text"] {
   }
   .input-icon .input-icon-addon {
     display: flex;
+  }
+}
+
+.fixedHeader {
+  table thead {
+    position: -webkit-sticky; // this is for all Safari (Desktop & iOS), not for Chrome
+    position: sticky;
+    top: 0;
+    border-top: 0;
+    z-index: 1; // any positive value, layer order is global
+  }
+}
+
+/**
+ * Folder List
+ */
+.folder-list {
+  color: #000000;
+  .list-group-transparent .list-group-item.active {
+    color: $primary;
+    background-color: #edf1ff;
+    .folder-ico {
+      filter: invert(29%) sepia(84%) saturate(4047%) hue-rotate(215deg) brightness(98%) contrast(111%);
+    }
+  }
+  .list-group-item {
+    padding: 0.5rem 0.75rem;
+    overflow: hidden;
+  }
+  .list-group-item.all-apps-link {
+    font-weight: 500;
+  }
+  .folder-info {
+    color: #8991a0;
+    font-size: 0.75rem;
+    display: contents;
+  }
+  .folder-create-btn {
+    color: #0565ff;
+    cursor: pointer;
+  }
+}
+
+/**
+ * Home page modal
+ */
+.modal-content.home-modal-component {
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fefeff;
+  color: #000000;
+  .modal-header {
+    border-bottom: 0px;
+  }
+  .btn-close {
+    width: 3.5rem;
+    height: 2.5rem;
+  }
+  .modal-body {
+    padding-top: 0px;
+  }
+  input {
+    border-radius: 5px !important;
+  }
+  .modal-main {
+    padding-bottom: 5rem;
+  }
+  .modal-footer-btn {
+    justify-content: end;
+    button {
+      margin-left: 16px;
+    }
   }
 }

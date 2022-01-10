@@ -206,6 +206,7 @@ describe('AppImportExportService', () => {
         delete entity.id;
         delete entity.appId;
         delete entity.dataSourceId;
+        delete entity.appVersionId;
         delete entity.createdAt;
         delete entity.updatedAt;
 

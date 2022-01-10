@@ -270,7 +270,7 @@ export class AppsController {
 
     const appVersion = await this.appsService.findVersion(params.versionId);
 
-    return { ...appVersion, data_queries: app.dataQueries };
+    return { ...appVersion, data_queries: appVersion.dataQueries };
   }
 
   @UseGuards(JwtAuthGuard)

@@ -7,7 +7,7 @@
     "./frontend/src/**/*.{js,jsx}": [
       "eslint --fix"
     ],
-    "./server/{src,test,plugins,scripts}/**/*.ts": [
+    "./server/{src,test,plugins,scripts,migrations}/**/*.ts": [
       "eslint --fix"
     ]
   },

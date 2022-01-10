@@ -3,11 +3,13 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { clearDB, createUser, createNestAppInstance } from '../test.helper';
+import { clearDB, createUser, createNestAppInstance, authHeaderForUser } from '../test.helper';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
 
 describe('Authentication', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
+  let orgUserRepository: Repository<OrganizationUser>;
   const originalEnv = process.env;
 
   beforeEach(async () => {
@@ -19,6 +21,7 @@ describe('Authentication', () => {
     app = await createNestAppInstance();
 
     userRepository = app.get('UserRepository');
+    orgUserRepository = app.get('OrganizationUserRepository');
   });
 
   it('should create new users', async () => {
@@ -53,6 +56,23 @@ describe('Authentication', () => {
       .post('/api/authenticate')
       .send({ email: 'admin@tooljet.io', password: 'password' })
       .expect(201);
+  });
+
+  it('throw 401 if user is archived', async () => {
+    await createUser(app, { email: 'user@tooljet.io', status: 'archived' });
+
+    await request(app.getHttpServer())
+      .post('/api/authenticate')
+      .send({ email: 'user@tooljet.io', password: 'password' })
+      .expect(401);
+
+    const adminUser = await userRepository.findOne({ email: 'admin@tooljet.io' });
+    await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
+
+    await request(app.getHttpServer())
+      .get('/api/organizations/users')
+      .set('Authorization', authHeaderForUser(adminUser))
+      .expect(401);
   });
 
   it('throw 401 if invalid credentials', async () => {

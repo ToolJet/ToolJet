@@ -9,6 +9,7 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { App } from './app.entity';
+import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
 
 @Entity({ name: 'data_queries' })
@@ -31,6 +32,9 @@ export class DataQuery extends BaseEntity {
   @Column({ name: 'app_id' })
   appId: string;
 
+  @Column({ name: 'app_version_id' })
+  appVersionId: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
@@ -40,6 +44,10 @@ export class DataQuery extends BaseEntity {
   @ManyToOne(() => App, (app) => app.id)
   @JoinColumn({ name: 'app_id' })
   app: App;
+
+  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id)
+  @JoinColumn({ name: 'app_version_id' })
+  appVersion: AppVersion;
 
   @ManyToOne(() => DataSource, (dataSource) => dataSource.id)
   @JoinColumn({ name: 'data_source_id' })

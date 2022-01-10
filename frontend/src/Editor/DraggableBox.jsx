@@ -209,7 +209,7 @@ export const DraggableBox = function DraggableBox({
               setDragging(false);
               onDragStop(e, id, direction, currentLayout, currentLayoutOptions);
             }}
-            cancel={`div.table-responsive.jet-data-table, div.calendar-widget`}
+            cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea`}
             onDragStart={(e) => e.stopPropagation()}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
