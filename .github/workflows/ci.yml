@@ -27,39 +27,39 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # build:
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install Heroku
-  #       run: rm -rf /usr/local/bin/heroku && npm i -g heroku
-  #     - name: Create Heroku App
-  #       continue-on-error: true
-  #       run: heroku create ${{ env.HEROKU_APP_NAME }}
-  #     - name: Create Heroku Postgresql addon
-  #       continue-on-error: true
-  #       run: heroku addons:create heroku-postgresql:hobby-dev -a ${{ env.HEROKU_APP_NAME }}
-  #     - name: Login to Heroku Container registry
-  #       run: heroku container:login
-  #     - uses: satackey/action-docker-layer-caching@v0.0.11
-  #       continue-on-error: true
-  #     - name: Build and tag image
-  #       run: docker buildx build --file=docker/heroku.Dockerfile --rm=true -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
-  #     - name: Push image to heroku registry
-  #       run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
-  #     - name: Create tarball from docker image
-  #       run: docker save registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web > /tmp/tooljet_build.tar
-  #     - name: Upload image tarball for next job
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: tooljet_build
-  #         path: /tmp/tooljet_build.tar
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Heroku
+        run: rm -rf /usr/local/bin/heroku && npm i -g heroku
+      - name: Create Heroku App
+        continue-on-error: true
+        run: heroku create ${{ env.HEROKU_APP_NAME }}
+      - name: Create Heroku Postgresql addon
+        continue-on-error: true
+        run: heroku addons:create heroku-postgresql:hobby-dev -a ${{ env.HEROKU_APP_NAME }}
+      - name: Login to Heroku Container registry
+        run: heroku container:login
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+      - name: Build and tag image
+        run: docker buildx build --file=docker/heroku.Dockerfile --rm=true -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
+      - name: Push image to heroku registry
+        run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
+      - name: Create tarball from docker image
+        run: docker save registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web > /tmp/tooljet_build.tar
+      - name: Upload image tarball for next job
+        uses: actions/upload-artifact@v2
+        with:
+          name: tooljet_build
+          path: /tmp/tooljet_build.tar
 
   lint:
     runs-on: ubuntu-latest
-    # needs: build
+    needs: build
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v2
@@ -84,16 +84,16 @@ jobs:
   #   steps:
   #     - run: npm --prefix server run test:e2e -- --silent
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    env:
-      NODE_ENV: production
-      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-    steps:
-      - name: Update Heroku
-        run: rm -rf /usr/local/bin/heroku && npm i -g heroku
-      - name: Login to Heroku container registry
-        run: heroku container:login
-      - name: Release
-        run: heroku container:release web -a ${{ env.HEROKU_APP_NAME }}
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   env:
+  #     NODE_ENV: production
+  #     HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+  #   steps:
+  #     - name: Update Heroku
+  #       run: rm -rf /usr/local/bin/heroku && npm i -g heroku
+  #     - name: Login to Heroku container registry
+  #       run: heroku container:login
+  #     - name: Release
+  #       run: heroku container:release web -a ${{ env.HEROKU_APP_NAME }}
