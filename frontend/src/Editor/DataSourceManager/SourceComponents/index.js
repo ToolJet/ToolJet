@@ -4,7 +4,6 @@ import DynamicForm from '@/_components/DynamicForm';
 
 import { allManifests } from '@tooljet/plugins/client';
 
-// Other sources
 import RunjsSchema from './Runjs.schema.json';
 
 export const DataBaseSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {

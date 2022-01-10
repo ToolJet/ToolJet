@@ -29,6 +29,7 @@
     "mssql": "file:packages/mssql",
     "mysql": "file:packages/mysql",
     "postgresql": "file:packages/postgresql",
+    "react": "^17.0.2",
     "redis": "file:packages/redis",
     "restapi": "file:packages/restapi",
     "rimraf": "^3.0.2",
