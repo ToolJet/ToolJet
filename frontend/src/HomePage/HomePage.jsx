@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import AppList from './AppList';
 import { SearchBox } from '@/_components/SearchBox';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
-import TemplateLibraryModal from './TemplateLibraryModal';
+import TemplateLibraryModal from './TemplateLibraryModal/';
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -430,8 +430,10 @@ class HomePage extends React.Component {
               </div>
             </div>
             <TemplateLibraryModal
-              show={this.state.showTemplateLibraryModal}
+              // show={this.state.showTemplateLibraryModal}
+              show={true}
               onHide={() => this.setState({ showTemplateLibraryModal: false })}
+              darkMode={this.props.darkMode}
             />
           </div>
         )}

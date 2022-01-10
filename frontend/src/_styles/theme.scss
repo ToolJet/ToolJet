@@ -637,9 +637,52 @@ button {
   }
 }
 
-.templateLibraryModal {
+.template-library-modal {
+  font-weight: 500;
+
   .modal-dialog {
     max-width: 90%;
+    height: 80%;
+
+    .modal-content {
+      height: 100%;
+      padding: 0;
+
+      .modal-body {
+        height: 100%;
+        padding: 0 10px;
+
+        .container-fluid {
+          height: 100%;
+          padding: 0;
+
+          .row {
+            height: 100%;
+          }
+        }
+      }
+    }
+
+    .modal-body, .modal-footer {
+      background-color: #FFFFFC;
+    }
+  }
+
+  .list-group-item {
+    border: 0;
+    // padding-bottom: 3px;
+  }
+
+  .list-group-item.active {
+    background-color: #EDF1FF;
+    color: #4D72FA;
+    font-weight: 600;
+  }
+}
+
+.template-library-modal.dark-mode {
+  .modal-body, .modal-footer {
+    background-color: #61656f;
   }
 }
 
