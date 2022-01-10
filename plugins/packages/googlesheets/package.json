@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "common": "^1.0.0",
+    "common": "file:../common",
     "got": "^11.8.2",
     "rimraf": "^3.0.2"
   }

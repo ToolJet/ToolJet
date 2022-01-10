@@ -2,7 +2,7 @@ import React from 'react';
 
 import DynamicForm from '@/_components/DynamicForm';
 
-import { allOperations } from '@gandharv99/tooljet-plugins/client';
+import { allOperations } from '@tooljet/plugins/client';
 
 import { Restapi } from './Restapi';
 import { Runjs } from './Runjs';

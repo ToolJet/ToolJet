@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^5.16.1",
-    "common": "^1.0.0",
+    "common": "file:../common",
     "rimraf": "^3.0.2"
   }
 }

@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.16.0",
-    "common": "^1.0.0",
+    "common": "file:../common",
     "rimraf": "^3.0.2"
   }
 }

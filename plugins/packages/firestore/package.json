@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@google-cloud/firestore": "^5.0.1",
-    "common": "^1.0.0",
+    "common": "file:../common",
     "rimraf": "^3.0.2"
   }
 }

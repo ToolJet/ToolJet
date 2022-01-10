@@ -16,7 +16,7 @@
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "common": "^1.0.0",
+    "common": "file:../common",
     "rimraf": "^3.0.2",
     "twilio": "^3.72.0"
   }
