@@ -1178,7 +1178,6 @@ export const componentTypes = [
         options: [
           { name: 'Autodetect from extension', value: 'auto-detect' },
           { name: 'CSV', value: 'csv' },
-          { name: 'PDF', value: 'pdf' },
         ],
       },
     },
