@@ -165,8 +165,51 @@ class DataSourceManager extends React.Component {
     this.setState({ connectionTestError: data });
   };
 
+  renderSidebarList = () => {
+    const dataSourceList = [
+      { type: 'All Datasources', key: '#alldatasources', card: 'Render all datasources' },
+      { type: 'Databases', key: '#databases', card: 'Render databases' },
+      { type: 'APIs', key: '#apis', card: 'Render APIs' },
+      { type: 'Cloud Storage', key: '#cloudstorage', card: 'Render cloud storage' },
+    ];
+
+    return (
+      <>
+        <Tab.Container id="list-group-tabs-example" defaultActiveKey="#alldatasources">
+          <Row>
+            <Col sm={4} md={4} className="modal-sidebar">
+              <ListGroup className="datasource-lists-test" variant="flush">
+                {dataSourceList.map((datasource) => (
+                  <ListGroup.Item key={datasource.key} eventKey={datasource.key}>
+                    {datasource.type}
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </Col>
+
+            <Col sm={8} md={8} className="modal-body-content">
+              <Tab.Content>
+                {dataSourceList.map((datasource) => (
+                  <Tab.Pane eventKey={datasource.key} key={datasource.key}>
+                    {datasource.card}
+                  </Tab.Pane>
+                ))}
+              </Tab.Content>
+            </Col>
+          </Row>
+        </Tab.Container>
+        <div className="datasource-modal-sidebar-footer">
+          <p className="text-black-50">
+            Can&apos;t find yours
+            <br />
+            <a href="#">Suggest</a>
+          </p>
+        </div>
+      </>
+    );
+  };
+
   render() {
-    const datasourceTypes = ['database', 'api', 'cloud_storage'];
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
 
     return (
@@ -215,48 +258,7 @@ class DataSourceManager extends React.Component {
 
           <Modal.Body style={!selectedDataSource && { padding: 0 }}>
             {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
-            {!selectedDataSource && (
-              <>
-                <Tab.Container id="list-group-tabs-example" defaultActiveKey="#allDatasources">
-                  <Row>
-                    <Col sm={4} md={4} className="modal-sidebar">
-                      <div className="">
-                        <ListGroup className="datasource-lists-test" variant="flush">
-                          <ListGroup.Item eventKey="#allDatasources">All Datasources</ListGroup.Item>
-                          <ListGroup.Item eventKey="#databases">Databases</ListGroup.Item>
-                          <ListGroup.Item eventKey="#apis">APIs</ListGroup.Item>
-                          <ListGroup.Item eventKey="#cloudStorages">Cloud storages</ListGroup.Item>
-                        </ListGroup>
-                      </div>
-                    </Col>
-
-                    <Col sm={8} md={8} className="modal-body-content">
-                      <Tab.Content>
-                        <Tab.Pane eventKey="#allDatasources">
-                          <p>All Datasources datasources </p>
-                        </Tab.Pane>
-                        <Tab.Pane eventKey="#databases">
-                          <p>Databases datasources </p>
-                        </Tab.Pane>
-                        <Tab.Pane eventKey="#apis">
-                          <p>APIS datasources </p>
-                        </Tab.Pane>
-                        <Tab.Pane eventKey="#cloudStorages">
-                          <p>Cloud Storages datasources </p>
-                        </Tab.Pane>
-                      </Tab.Content>
-                    </Col>
-                  </Row>
-                </Tab.Container>
-                <div className="datasource-modal-sidebar-footer">
-                  <p className="text-secondary">
-                    Can&apos;t find yours
-                    <br />
-                    <a href="#">Suggest</a>
-                  </p>
-                </div>
-              </>
-            )}
+            {!selectedDataSource && this.renderSidebarList()}
           </Modal.Body>
 
           {selectedDataSource && !dataSourceMeta.customTesting && (

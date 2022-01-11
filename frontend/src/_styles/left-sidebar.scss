@@ -165,10 +165,9 @@
 .datasource-lists-test {
   .list-group-item {
     border: none!important;
-  }
-  .list-group-flush > .list-group-item {
     cursor: pointer!important;
   }
+
   .list-group-item.active {
     border-radius: 4px!important;
     background-color: $primary!important;
@@ -202,7 +201,6 @@
         font-weight: 500;
         font-size: 12px;
         line-height: 15px;
-        color: #8092AB;
 
       a {
         font-size: 14px;
