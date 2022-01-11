@@ -2492,6 +2492,10 @@ input[type="text"] {
     padding: 0;
     padding-left: 2px;
   }
+
+  td.rdtActive, td.rdtActive:hover{
+    background-color: $primary;
+  }
 }
 
 .daterange-picker-widget {
