@@ -115,7 +115,7 @@ jobs:
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
-      - run: npm run build:plugins
+      - run: npm --prefix plugins ci && npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
@@ -152,7 +152,7 @@ jobs:
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
       - run: npm i -g npm@7.20.0
-      - run: npm run build:plugins
+      - run: npm --prefix plugins ci && npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
