@@ -77,7 +77,7 @@ export class AppImportExportService {
     for (const appVersion of appVersions) {
       const version = manager.create(AppVersion, {
         app: importedApp,
-        definition: appVersion.definition,
+        definition: await this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping),
         name: appVersion.name,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -151,10 +151,6 @@ export class AppImportExportService {
         newQuery.options = newOptions;
         await manager.save(newQuery);
       }
-
-      const version = await manager.findOne(AppVersion, { where: { id: appVersionMapping[appVersion.id] } });
-      version.definition = this.replaceDataQueryIdWithinDefinitions(version.definition, dataQueryMapping);
-      await manager.save(version);
     }
   }
 
