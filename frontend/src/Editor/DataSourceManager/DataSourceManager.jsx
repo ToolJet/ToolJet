@@ -166,10 +166,10 @@ class DataSourceManager extends React.Component {
     this.setState({ connectionTestError: data });
   };
 
-  getSvgIcon = (key) => {
+  getSvgIcon = (key, height = 50, width = 50) => {
     const Icon = allSvgs[key];
 
-    return <Icon />;
+    return <Icon style={{ height, width }} />;
   };
 
   render() {
@@ -190,7 +190,7 @@ class DataSourceManager extends React.Component {
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
-                  {this.getSvgIcon(dataSourceMeta.kind.toLowerCase())}
+                  {this.getSvgIcon(dataSourceMeta.kind.toLowerCase(), 35, 35)}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
                       type="text"
