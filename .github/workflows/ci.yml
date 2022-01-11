@@ -33,19 +33,23 @@ jobs:
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
     steps:
       - uses: actions/checkout@v2
-      - name: Install Heroku
-        run: rm -rf /usr/local/bin/heroku && npm i -g heroku
       - name: Create Heroku App
         continue-on-error: true
         run: heroku create ${{ env.HEROKU_APP_NAME }}
       - name: Create Heroku Postgresql addon
         continue-on-error: true
         run: heroku addons:create heroku-postgresql:hobby-dev -a ${{ env.HEROKU_APP_NAME }}
+      - name: Set DATABASE_URL env
+        run: |
+          echo "DATABASE_URL=$(heroku config:get DATABASE_URL)" >> $GITHUB_ENV
+          echo "${{ env.DATABASE_URL }}"
       - name: Login to Heroku Container registry
         run: heroku container:login
-#       - uses: satackey/action-docker-layer-caching@v0.0.11
-#         continue-on-error: true
+      # - uses: satackey/action-docker-layer-caching@v0.0.11
+      #   continue-on-error: true
       - name: Build and tag image
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
         run: docker buildx build --file=docker/heroku.Dockerfile --rm=true -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web .
       - name: Push image to heroku registry
         run: docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
@@ -70,7 +74,7 @@ jobs:
         run: |
           docker load --input /tmp/tooljet_build.tar
           docker image ls -a
-      - run: docker exec -it registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web:latest npm --prefix server run lint && npm --prefix frontend run lint
+      - run: docker exec -it tooljet_build npm --prefix server run lint && npm --prefix frontend run lint
 
   # unit-test:
   #   runs-on: ubuntu-latest
@@ -84,16 +88,14 @@ jobs:
   #   steps:
   #     - run: npm --prefix server run test:e2e -- --silent
 
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   env:
-  #     NODE_ENV: production
-  #     HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-  #   steps:
-  #     - name: Update Heroku
-  #       run: rm -rf /usr/local/bin/heroku && npm i -g heroku
-  #     - name: Login to Heroku container registry
-  #       run: heroku container:login
-  #     - name: Release
-  #       run: heroku container:release web -a ${{ env.HEROKU_APP_NAME }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      NODE_ENV: production
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+    steps:
+      - name: Login to Heroku container registry
+        run: heroku container:login
+      - name: Release
+        run: heroku container:release web -a ${{ env.HEROKU_APP_NAME }}

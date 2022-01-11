@@ -27,12 +27,24 @@ function createDatabase(): void {
       return;
     }
 
-    const createdb =
+    let createdb;
+
+    if(process.env.DATABASE_URL) {
+      createdb =
+      `PGPASSWORD=${envVars.PG_PASS} createdb ` +
+      `--maintenance-db ${process.env.DATABASE_URL} ` +
+      `-h ${envVars.PG_HOST} ` +
+      `-p ${envVars.PG_PORT} ` +
+      `-U ${envVars.PG_USER} ` +
+      process.env.PG_DB;
+    } else {
+      createdb =
       `PGPASSWORD=${envVars.PG_PASS} createdb ` +
       `-h ${envVars.PG_HOST} ` +
       `-p ${envVars.PG_PORT} ` +
       `-U ${envVars.PG_USER} ` +
       process.env.PG_DB;
+    }
 
     exec(createdb, (err, _stdout, _stderr) => {
       if (!err) {
@@ -53,7 +65,7 @@ function createDatabase(): void {
 
 const nodeEnvPath = path.resolve(process.cwd(), process.env.NODE_ENV === 'test' ? '../.env.test' : '../.env');
 
-const fallbackPath = path.resolve(process.cwd(), '../.env');
+const fallbackPath = path.resolve(process.cwd(), '../../.env');
 
 if (fs.existsSync(nodeEnvPath)) {
   createDatabaseFromFile(nodeEnvPath);
