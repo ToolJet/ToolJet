@@ -4,6 +4,7 @@
   "website": "https://tooljet.io/",
   "repository": "https://github.com/tooljet/tooljet",
   "logo": "https://app.tooljet.io/assets/images/logo.svg",
+  "stack": "container",
   "success_url": "/",
   "scripts": {
     "predeploy": "npm install --prefix server && npm run build --prefix server"
