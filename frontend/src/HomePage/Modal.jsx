@@ -1,7 +1,7 @@
 import React from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 
-export default function Modal({ title, show, setShow, customClassName, children }) {
+export default function Modal({ title, show, closeModal, customClassName, children }) {
   return (
     <BootstrapModal
       contentClassName={`home-modal-component${customClassName ? ` ${customClassName}` : ''}`}
@@ -11,12 +11,12 @@ export default function Modal({ title, show, setShow, customClassName, children 
       keyboard={true}
       enforceFocus={false}
       animation={false}
-      onEscapeKeyDown={() => setShow(false)}
+      onEscapeKeyDown={() => closeModal()}
       centered
     >
       <BootstrapModal.Header>
         <BootstrapModal.Title>{title}</BootstrapModal.Title>
-        <button className="btn-close" aria-label="Close" onClick={() => setShow(false)}></button>
+        <button className="btn-close" aria-label="Close" onClick={() => closeModal()}></button>
       </BootstrapModal.Header>
       <BootstrapModal.Body>{children}</BootstrapModal.Body>
     </BootstrapModal>

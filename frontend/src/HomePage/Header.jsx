@@ -14,7 +14,7 @@ export default function Header({
   return (
     <div className="row">
       <div className="col-3">
-        <h2 className="page-title px-2">{folderName}</h2>
+        <h2 className="page-title pe-2">{folderName}</h2>
       </div>
       {canCreateApp() && <div className="col-2 ms-auto d-print-none"></div>}
       <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">

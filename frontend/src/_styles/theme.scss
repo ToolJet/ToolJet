@@ -586,28 +586,79 @@ button {
 
   .app-list {
     .app-card {
-      height: 155px;
-      max-height: 155px;
+      height: 180px;
+      max-height: 180px;
       border: 0.5px solid #b4bbc6;
       box-sizing: border-box;
       border-radius: 8px;
+      overflow: hidden;
 
       .app-creation-time {
-        font-size: 10px;
+        font-size: 0.6rem;
         line-height: 12px;
         color: #61656f;
       }
 
       .app-creator {
         font-weight: 500;
-        font-size: 10px;
+        font-size: 0.6rem;
         line-height: 12px;
         color: #292d37;
+      }
+
+      .app-icon-main {
+        background-color: #B8C7FD;
+        border-radius: 4px;
+
+        .app-icon {
+          background-color: $primary;
+          border-radius: 2px;
+
+          img {
+            height: 16px;
+            width: 16px;
+            filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(17deg) brightness(104%) contrast(104%);
+            vertical-align: middle;
+          }
+        }
+      }
+
+      .app-title {
+        line-height: 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #000000;
+        overflow: hidden;
+      }
+
+      button {
+        font-size: .6rem;
+        width: 100%;
+      }
+
+      .menu-ico {
+        cursor: pointer;
+        padding: 3px;
+        border-radius: 13px;
+        &__open {
+          background-color: #D2DDEC;
+        }
+        img {
+          padding: 0px;
+          height: 14px;
+          width: 14px;
+          vertical-align: unset;
+        }
+      }
+      .menu-ico:hover {
+        background-color: #D2DDEC;
       }
     }
 
     .app-card.highlight {
       background-color: #f8f8f8;
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      border: 1px solid $primary;
 
       button.edit-button {
         background: #ffffff;
@@ -624,15 +675,10 @@ button {
         border-radius: 4px;
         color: #ffffff;
       }
-    }
 
-    .app-title {
-      line-height: 20px;
-      font-size: 16px;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      .app-title {
+        height: 1.3rem;
+      }
     }
   }
 }
@@ -1316,7 +1362,25 @@ tr:focus {
   }
 }
 
-.mentions-popover {
+/**
+ * Home page app menu
+ */
+#popover-app-menu {
+  border-radius: 4px;
+  width: 150px;
+  box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.25);
+
+  .popover-body {
+    padding: 1rem 1rem 0.4rem 1rem;
+
+    .field {
+      font-weight: 500;
+
+      &__danger {
+        color: #FF6666;
+      }
+    }
+  }
 }
 
 .input-icon {
@@ -2959,7 +3023,7 @@ input[type="text"] {
 /**
  * Home page modal
  */
- .modal-content.home-modal-component {
+.modal-content.home-modal-component {
   border-radius: 8px;
   overflow: hidden;
   background-color: #FEFEFF;
@@ -2986,4 +3050,4 @@ input[type="text"] {
       margin-left: 16px;
     }
   }
- }
+}

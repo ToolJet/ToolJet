@@ -98,7 +98,7 @@ export const Folders = function Folders({
               {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
             </a>
           ))}
-          <Modal show={showForm} setShow={setShowForm} title="Create Folder">
+          <Modal show={showForm} closeModal={() => setShowForm(false)} title="Create Folder">
             <div className="row">
               <div className="col modal-main">
                 <input

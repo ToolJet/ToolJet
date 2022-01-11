@@ -6,6 +6,10 @@ import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
 import AppList from './AppList';
 import HomeHeader from './Header';
+import Modal from './Modal';
+import SelectSearch from 'react-select-search';
+import Fuse from 'fuse.js';
+
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -24,12 +28,14 @@ class HomePage extends React.Component {
       currentPage: 1,
       appSearchKey: '',
       showAppDeletionConfirmation: false,
+      showAddToFolderModal: false,
       apps: [],
       folders: [],
       meta: {
         count: 1,
         folders: [],
       },
+      appOperations: {},
     };
   }
 
@@ -307,6 +313,52 @@ class HomePage extends React.Component {
     this.fetchFolders(key || '');
   };
 
+  customFuzzySearch(options) {
+    const fuse = new Fuse(options, {
+      keys: ['name'],
+      threshold: 0.1,
+    });
+
+    return (value) => {
+      if (!value.length) {
+        return options;
+      }
+      let searchKeystrokes = fuse.search(value);
+
+      let _fusionSearchArray = searchKeystrokes.map((_item) => _item.item);
+
+      return _fusionSearchArray;
+    };
+  }
+
+  addAppToFolder = () => {
+    if (!this.state.appOperations?.selectedFolder || !this.state.appOperations?.selectedApp) {
+      return toast.error('Select a folder', { position: 'top-center' });
+    }
+    this.setState({ appOperations: { ...this.state.appOperations, isAdding: true } });
+
+    folderService
+      .addToFolder(this.state.appOperations.selectedApp.id, this.state.appOperations.selectedFolder)
+      .then(() => {
+        toast.success('Added to folder.', {
+          position: 'top-center',
+        });
+
+        this.foldersChanged();
+        this.setState({ appOperations: { isAdding: false }, showAddToFolderModal: false });
+      })
+      .catch(({ error }) => {
+        this.setState({ appOperations: { ...this.state.appOperations, isAdding: false } });
+        toast.error(error, { position: 'top-center' });
+      });
+  };
+
+  appActionModal = (app, action) => {
+    if (action === 'add-to-folder') {
+      this.setState({ appOperations: { ...this.state.appOperations, selectedApp: app }, showAddToFolderModal: true });
+    }
+  };
+
   render() {
     const {
       apps,
@@ -332,6 +384,51 @@ class HomePage extends React.Component {
           onConfirm={() => this.executeAppDeletion()}
           onCancel={() => this.cancelDeleteAppDialog()}
         />
+
+        <Modal
+          show={this.state.showAddToFolderModal && this.state.appOperations.selectedApp}
+          closeModal={() => this.setState({ showAddToFolderModal: false })}
+          title="Add to folder"
+        >
+          <div className="row">
+            <div className="col modal-main">
+              <div className="mb-3">
+                <span>Move</span>
+                <strong>{` "${this.state.appOperations?.selectedApp?.name}" `}</strong>
+                <span>to</span>
+              </div>
+              <div>
+                <SelectSearch
+                  options={this.state.folders.map((folder) => {
+                    return { name: folder.name, value: folder.id };
+                  })}
+                  search={true}
+                  disabled={!!this.state.appOperations?.isAdding}
+                  onChange={(newVal) => {
+                    this.setState({ appOperations: { ...this.state.appOperations, selectedFolder: newVal } });
+                  }}
+                  value={this.state.appOperations?.selectedFolder}
+                  emptyMessage={this.state.folders === 0 ? 'No folders present' : 'Not found'}
+                  filterOptions={this.customFuzzySearch}
+                  placeholder="Select folder"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col d-flex modal-footer-btn">
+              <button className="btn btn-light" onClick={() => this.setState({ showAddToFolderModal: false })}>
+                Cancel
+              </button>
+              <button
+                className={`btn btn-primary ${this.state.appOperations?.isAdding ? 'btn-loading' : ''}`}
+                onClick={this.addAppToFolder}
+              >
+                Add to folder
+              </button>
+            </div>
+          </div>
+        </Modal>
 
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
         {!isLoading && meta.total_count === 0 && !currentFolder.id && !appSearchKey && (
@@ -376,8 +473,6 @@ class HomePage extends React.Component {
                       canCreateApp={this.canCreateApp}
                       canDeleteApp={this.canDeleteApp}
                       canUpdateApp={this.canUpdateApp}
-                      folders={this.state.folders}
-                      foldersChanged={this.foldersChanged}
                       deleteApp={this.deleteApp}
                       cloneApp={this.cloneApp}
                       exportApp={this.exportApp}
@@ -385,6 +480,7 @@ class HomePage extends React.Component {
                       currentFolder={currentFolder}
                       isLoading={isLoading}
                       darkMode={this.props.darkMode}
+                      appActionModal={this.appActionModal}
                     />
                     {this.pageCount() > 10 && (
                       <Pagination
