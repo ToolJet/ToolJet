@@ -199,7 +199,7 @@ class DataSourceManager extends React.Component {
             </div>
           </Col>
 
-          <Col sm={6} md={8} className="modal-body-content">
+          <Col style={{ left: '25%', scrollMargin: '25px' }} sm={6} md={8} className="modal-body-content">
             <Tab.Content>
               {dataSourceList.map((datasource) => (
                 <Tab.Pane eventKey={datasource.key} key={datasource.key}>

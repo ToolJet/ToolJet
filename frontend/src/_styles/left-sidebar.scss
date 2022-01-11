@@ -181,14 +181,12 @@
   top: 0;
   bottom: 0;
   right: 0;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   width: 100%;
 }
 
 .card-group-deck {
-  // border: 1px solid red!important;
-  border: 1px solid red;
   padding: 1rem;
   height: auto;
 }
