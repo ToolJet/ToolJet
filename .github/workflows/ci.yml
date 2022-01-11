@@ -28,6 +28,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.event.label.name == 'run-ci' }}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -56,6 +57,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    if: ${{ github.event.label.name == 'run-ci' }}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
