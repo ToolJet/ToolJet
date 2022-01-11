@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-
 export const DropDown = function DropDown({
   height,
   validate,
@@ -10,6 +9,9 @@ export const DropDown = function DropDown({
   setExposedVariable,
   fireEvent,
   darkMode,
+  onComponentClick,
+  id,
+  component,
 }) {
   let { label, value, display_values, values } = properties;
   const { visibility, disabledState } = styles;
@@ -130,7 +132,13 @@ export const DropDown = function DropDown({
 
   return (
     <>
-      <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
+      <div
+        className="dropdown-widget row g-0"
+        style={{ height, display: visibility ? '' : 'none' }}
+        onMouseDown={(event) => {
+          onComponentClick(id, component, event);
+        }}
+      >
         <div className="col-auto my-auto">
           <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
             {label}
