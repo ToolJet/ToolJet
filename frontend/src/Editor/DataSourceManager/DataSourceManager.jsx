@@ -1,7 +1,7 @@
 import React from 'react';
 import { datasourceService, authenticationService } from '@/_services';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
+import { Modal, Button, Tab, Row, Col, ListGroup, Nav } from 'react-bootstrap';
+// import Button from 'react-bootstrap/Button';
 import { toast } from 'react-hot-toast';
 import { TestConnection } from './TestConnection';
 import {
@@ -166,6 +166,7 @@ class DataSourceManager extends React.Component {
   };
 
   render() {
+    const datasourceTypes = ['database', 'api', 'cloud_storage'];
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
 
     return (
@@ -212,82 +213,50 @@ class DataSourceManager extends React.Component {
             </Button>
           </Modal.Header>
 
-          <Modal.Body>
-            {!selectedDataSource && (
-              <div>
-                <div className="row row-deck">
-                  <h4 className="mb-2">DATABASES</h4>
-                  {DataBaseSources.map((dataSource) => (
-                    <div className="col-md-2" key={dataSource.name}>
-                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
-                        <div className="card-body">
-                          <center>
-                            <img
-                              src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`}
-                              width="50"
-                              height="50"
-                              alt=""
-                            />
-
-                            <br></br>
-                            <br></br>
-                            {dataSource.name}
-                          </center>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="row row-deck mt-2">
-                  <h4 className="mb-2">APIS</h4>
-                  {ApiSources.map((dataSource) => (
-                    <div className="col-md-2" key={dataSource.name}>
-                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
-                        <div className="card-body">
-                          <center>
-                            <img
-                              src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`}
-                              width="50"
-                              height="50"
-                              alt=""
-                            />
-
-                            <br></br>
-                            <br></br>
-                            {dataSource.name}
-                          </center>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="row row-deck mt-2">
-                  <h4 className="mb-2">CLOUD STORAGES</h4>
-                  {CloudStorageSources.map((dataSource) => (
-                    <div className="col-md-2" key={dataSource.name}>
-                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
-                        <div className="card-body">
-                          <center>
-                            <img
-                              src={`/assets/images/icons/editor/datasources/${dataSource.kind.toLowerCase()}.svg`}
-                              width="50"
-                              height="50"
-                              alt=""
-                            />
-
-                            <br></br>
-                            <br></br>
-                            {dataSource.name}
-                          </center>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
+          <Modal.Body style={!selectedDataSource && { padding: 0 }}>
             {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
+            {!selectedDataSource && (
+              <>
+                <Tab.Container id="list-group-tabs-example" defaultActiveKey="#allDatasources">
+                  <Row>
+                    <Col sm={4} md={4} className="modal-sidebar">
+                      <div className="">
+                        <ListGroup className="datasource-lists-test" variant="flush">
+                          <ListGroup.Item eventKey="#allDatasources">All Datasources</ListGroup.Item>
+                          <ListGroup.Item eventKey="#databases">Databases</ListGroup.Item>
+                          <ListGroup.Item eventKey="#apis">APIs</ListGroup.Item>
+                          <ListGroup.Item eventKey="#cloudStorages">Cloud storages</ListGroup.Item>
+                        </ListGroup>
+                      </div>
+                    </Col>
+
+                    <Col sm={8} md={8} className="modal-body-content">
+                      <Tab.Content>
+                        <Tab.Pane eventKey="#allDatasources">
+                          <p>All Datasources datasources </p>
+                        </Tab.Pane>
+                        <Tab.Pane eventKey="#databases">
+                          <p>Databases datasources </p>
+                        </Tab.Pane>
+                        <Tab.Pane eventKey="#apis">
+                          <p>APIS datasources </p>
+                        </Tab.Pane>
+                        <Tab.Pane eventKey="#cloudStorages">
+                          <p>Cloud Storages datasources </p>
+                        </Tab.Pane>
+                      </Tab.Content>
+                    </Col>
+                  </Row>
+                </Tab.Container>
+                <div className="datasource-modal-sidebar-footer">
+                  <p className="text-secondary">
+                    Can&apos;t find yours
+                    <br />
+                    <a href="#">Suggest</a>
+                  </p>
+                </div>
+              </>
+            )}
           </Modal.Body>
 
           {selectedDataSource && !dataSourceMeta.customTesting && (
