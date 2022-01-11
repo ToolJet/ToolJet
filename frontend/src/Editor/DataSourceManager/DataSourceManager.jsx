@@ -14,6 +14,7 @@ import {
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
+import { Card } from '../../_ui/card';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -167,44 +168,62 @@ class DataSourceManager extends React.Component {
 
   renderSidebarList = () => {
     const dataSourceList = [
-      { type: 'All Datasources', key: '#alldatasources', card: 'Render all datasources' },
-      { type: 'Databases', key: '#databases', card: 'Render databases' },
-      { type: 'APIs', key: '#apis', card: 'Render APIs' },
-      { type: 'Cloud Storage', key: '#cloudstorage', card: 'Render cloud storage' },
+      {
+        type: 'All Datasources',
+        key: '#alldatasources',
+        card: 'Render all datasources',
+        list: [...DataBaseSources, ...ApiSources, ...CloudStorageSources],
+      },
+      { type: 'Databases', key: '#databases', card: 'Render databases', list: [...DataBaseSources] },
+      { type: 'APIs', key: '#apis', card: 'Render APIs', list: [...ApiSources] },
+      { type: 'Cloud Storage', key: '#cloudstorage', card: 'Render cloud storage', list: [...CloudStorageSources] },
     ];
 
     return (
-      <>
-        <Tab.Container id="list-group-tabs-example" defaultActiveKey="#alldatasources">
-          <Row>
-            <Col sm={4} md={4} className="modal-sidebar">
-              <ListGroup className="datasource-lists-test" variant="flush">
-                {dataSourceList.map((datasource) => (
-                  <ListGroup.Item key={datasource.key} eventKey={datasource.key}>
-                    {datasource.type}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
-            </Col>
+      <Tab.Container id="list-group-tabs-example" defaultActiveKey="#alldatasources">
+        <Row>
+          <Col sm={6} md={4} className="modal-sidebar">
+            <ListGroup className="datasource-lists-modal" variant="flush">
+              {dataSourceList.map((datasource) => (
+                <ListGroup.Item key={datasource.key} eventKey={datasource.key}>
+                  {datasource.type}
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+            <div className="datasource-modal-sidebar-footer">
+              <p className="text-black-50">
+                Can&apos;t find yours
+                <br />
+                <a href="#">Suggest</a>
+              </p>
+            </div>
+          </Col>
 
-            <Col sm={8} md={8} className="modal-body-content">
-              <Tab.Content>
-                {dataSourceList.map((datasource) => (
-                  <Tab.Pane eventKey={datasource.key} key={datasource.key}>
-                    {datasource.card}
-                  </Tab.Pane>
-                ))}
-              </Tab.Content>
-            </Col>
-          </Row>
-        </Tab.Container>
-        <div className="datasource-modal-sidebar-footer">
-          <p className="text-black-50">
-            Can&apos;t find yours
-            <br />
-            <a href="#">Suggest</a>
-          </p>
-        </div>
+          <Col sm={6} md={8} className="modal-body-content">
+            <Tab.Content>
+              {dataSourceList.map((datasource) => (
+                <Tab.Pane eventKey={datasource.key} key={datasource.key}>
+                  {this.renderCardGroup(datasource.list, datasource.type)}
+                </Tab.Pane>
+              ))}
+            </Tab.Content>
+          </Col>
+        </Row>
+      </Tab.Container>
+    );
+  };
+
+  renderCardGroup = (source, type) => {
+    const datasources = source.map((datasource) => {
+      const src = `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`;
+      const text = datasource.name;
+      const handleClick = () => this.selectDataSource(datasource);
+      return { ...datasource, src, text, handleClick };
+    });
+
+    return (
+      <>
+        <Card.Group list={datasources} heading={type} />
       </>
     );
   };

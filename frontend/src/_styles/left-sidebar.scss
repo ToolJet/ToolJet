@@ -162,7 +162,7 @@
   }  
 }
 
-.datasource-lists-test {
+.datasource-lists-modal {
   .list-group-item {
     border: none!important;
     cursor: pointer!important;
@@ -175,27 +175,52 @@
 }
 
 .modal-body-content {
-  padding: 24px!important;
+  height:100%;
+  text-align: center;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.card-group-deck {
+  // border: 1px solid red!important;
+  border: 1px solid red;
+  padding: 1rem;
+  height: auto;
+}
+
+.card.datasource-card-item {
+  width: 164px!important;
+  height: 112px!important;
 }
 
 .modal-sidebar {
   width: 242px!important;
-  height: 599px;
+  height: 670px;
   margin-left: 0.5rem;
   background: #F7F9FC;
   border-radius: 0px;
   border-right: 1px solid #D2DDEC;
-  @extend .modal-body-content;
+  padding: 24px!important;
 }
 
 .modal-body {
   height: 670px;
   .datasource-modal-sidebar-footer {
     border: 1px solid #D2DDEC; 
-    margin: 0!important;
+    // margin: 0!important;
     width: 242px!important;
     height: 71px;
-    @extend .modal-body-content;
+    background-color: #FFFFFC;
+    // @extend .modal-body-content;
+    padding: 24px!important;
+    position: absolute;
+    left: 0;
+    bottom: 0;
 
     p {
         font-weight: 500;
@@ -210,4 +235,13 @@
       }
     }
   }
+}
+
+.img-card {
+  padding: 24px 12px!important;
+  // position: absolute;
+  width: 164px!important;
+  height: 112px!important;
+  // left: 389px;
+  // top: 176px;
 }
