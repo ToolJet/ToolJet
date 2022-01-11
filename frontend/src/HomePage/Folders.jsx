@@ -84,7 +84,7 @@ export const Folders = function Folders({
               </div>
             )}
           </div>
-          {folders && folders.length < 0 ? (
+          {folders && folders.length > 0 ? (
             folders.map((folder, index) => (
               <a
                 key={index}
