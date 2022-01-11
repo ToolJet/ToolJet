@@ -3,6 +3,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the develop branch
   push:
+    types: [ labeled ]
     branches: [develop, main]
   pull_request:
   # Allows you to run this workflow manually from the Actions tab
