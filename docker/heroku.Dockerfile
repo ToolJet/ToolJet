@@ -20,7 +20,7 @@ RUN NODE_ENV=production npm run-script build
 FROM node:14.17.3-buster AS SERVER_BUILD
 
 RUN npm install -g @nestjs/cli npm@7.20.0
-
+RUN npm install pino-pretty
 WORKDIR /app
 
 COPY ./server/package.json ./server/package-lock.json ./
