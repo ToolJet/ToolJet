@@ -20,6 +20,7 @@
   "dependencies": {
     "common": "file:../common",
     "got": "^11.8.2",
+    "react": "^17.0.2",
     "rimraf": "^3.0.2"
   }
 }
