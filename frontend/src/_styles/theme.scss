@@ -2987,3 +2987,51 @@ input[type="text"] {
     }
   }
  }
+
+
+.radio-img {
+    input { 
+        display:none;
+    }
+
+    .action-icon {
+      width: 28px;
+      height: 28px;
+      background-position: center center;
+      display: block;
+      margin-right: 10px;
+  
+      &:hover {
+        opacity: 1;
+      }
+    }
+  
+    .action-icon{
+      cursor:pointer;
+      border: 1px solid $border-grey-light;
+
+    }
+    input:checked + .action-icon{ 
+      border-color: $black;
+    } 
+
+    .tooltiptext {
+      visibility: hidden;
+      font-size: 12px;
+      background-color: rgb(95, 95, 95);
+      opacity: .9;
+      color: $white;
+      text-align: center;
+      padding: 5px;
+      border-radius: 5px;
+     
+      position: absolute;
+      margin-top:2px;
+      z-index: 1;
+    }
+    
+    .action-icon:hover + .tooltiptext {
+      visibility: visible;
+    }
+}
+
