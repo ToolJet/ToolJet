@@ -549,7 +549,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
-        activeColor: { value: '#375FCF' },
+        activeColor: { value: '#7490FB' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
