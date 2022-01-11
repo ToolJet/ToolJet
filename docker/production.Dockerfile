@@ -13,6 +13,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY ./package.json ./package-lock.json ./
 
+# Building ToolJet plugins
+COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
+RUN npm --prefix plugins install
+COPY ./plugins/ ./plugins/
+RUN npm run build:plugins
+
 # Building ToolJet client
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
