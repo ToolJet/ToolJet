@@ -569,6 +569,22 @@ button {
   height: 100vh;
 }
 
+  @media (min-height: 641px) and (max-height: 899px)
+  { 
+    .homepage-pagination
+    {
+    position: fixed;
+    bottom: 2rem;
+    width: 63%;
+   }
+  }
+   @media (max-height: 640px) { 
+    .homepage-pagination{
+    position: fixed;
+    bottom: 2rem;
+    width: 71%;
+   }
+  }
 .homepage-body {
   overflow-y: hidden;
   a {
