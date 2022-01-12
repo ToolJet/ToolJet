@@ -1,9 +1,9 @@
 import React from 'react';
 
-const Card = ({ cardProps }) => {
+const Card = ({ cardProps, classname }) => {
   return (
     <div className="col-md-3 mb-4" onClick={cardProps?.handleClick}>
-      <div className="card datasource-card-item">
+      <div className={`card ${classname}`}>
         <div className="card-body">
           <center>
             <img src={cardProps?.src} width="50" height="50" alt="" />
@@ -21,7 +21,7 @@ const Group = ({ list = [], heading = '' }) => {
       <div className="row row-deck card-group-deck mt-2">
         <h4 className="mb-2 d-flex justify-content-start">{heading}</h4>
         {list.map((item, index) => (
-          <Card key={index} cardProps={item} />
+          <Card key={index} cardProps={item} classname={'datasource-card-item'} />
         ))}
       </div>
     </div>
