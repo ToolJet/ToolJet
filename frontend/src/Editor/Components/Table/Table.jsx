@@ -581,7 +581,13 @@ export function Table({
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  style={{
+                    background: action.backgroundColor,
+                    color: action.textColor,
+                    borderRadius: component.definition.styles.actionButtonRadius?.value
+                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
+                      : 0,
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     onEvent('onTableActionButtonClicked', {
@@ -613,7 +619,13 @@ export function Table({
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  style={{
+                    background: action.backgroundColor,
+                    color: action.textColor,
+                    borderRadius: component.definition.styles.actionButtonRadius?.value
+                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
+                      : 0,
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     onEvent('onTableActionButtonClicked', {
