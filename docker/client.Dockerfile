@@ -2,6 +2,15 @@
 FROM node:14.17.3-alpine AS builder
 ENV NODE_ENV=production
 
+# --no-cache: download package index on-the-fly, no need to cleanup afterwards
+# --virtual: bundle packages, remove whole bundle at once, when done
+RUN apk --no-cache --virtual build-dependencies add \
+    python \
+    make \
+    g++ 
+
+RUN npm i -g npm@7.20.0
+
 # set working directory
 WORKDIR /app
 

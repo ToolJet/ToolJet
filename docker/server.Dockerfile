@@ -10,6 +10,7 @@ RUN apt update && apt install -y \
   postgresql \
   freetds-dev
 
+RUN npm i -g npm@7.20.0
 RUN npm install -g @nestjs/cli
 
 RUN mkdir -p /app
