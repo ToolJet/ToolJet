@@ -34,7 +34,12 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
           placeholder={<Placeholder />}
           debounce={500}
         >
-          <img src={source} className={`${borderType}`} height={height} onClick={() => fireEvent('onClick')} />
+          <img
+            src={source}
+            className={`${borderType !== 'none' ? borderType : ''}`}
+            height={height}
+            onClick={() => fireEvent('onClick')}
+          />
         </LazyLoad>
       )}
     </div>

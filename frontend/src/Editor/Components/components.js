@@ -748,7 +748,7 @@ export const componentTypes = [
         type: 'select',
         displayName: 'Border type',
         options: [
-          { name: 'None', value: 'rounded-0' },
+          { name: 'None', value: 'none' },
           { name: 'Rounded', value: 'rounded' },
           { name: 'Circle', value: 'rounded-circle' },
           { name: 'Thumbnail', value: 'img-thumbnail' },
@@ -769,7 +769,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        borderType: { value: 'rounded-0' },
+        borderType: { value: 'none' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },

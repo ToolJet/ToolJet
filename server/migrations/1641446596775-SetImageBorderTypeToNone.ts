@@ -19,7 +19,7 @@ export class SetImageBorderTypeToNone1641446596775 implements MigrationInterface
           const component = components[componentId];
 
           if (component.component.component === 'Image') {
-            component.component.definition.properties.borderType = { value: 'rounded-0' };
+            component.component.definition.properties.borderType = { value: 'none' };
             components[componentId] = {
               ...component,
               component: {
