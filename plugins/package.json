@@ -1,6 +1,6 @@
 {
   "name": "@tooljet/plugins",
-  "version": "0.0.12",
+  "version": "0.0.1",
   "source": "server.ts",
   "types": "dist/server.d.ts",
   "main": "dist/server.js",
