@@ -382,7 +382,7 @@ class HomePage extends React.Component {
   };
 
   changeIcon = () => {
-    const { appOperations } = this.state;
+    const { appOperations, apps } = this.state;
 
     if (!appOperations?.selectedIcon || !appOperations?.selectedApp) {
       return toast.error('Select an icon', { position: 'top-center' });
@@ -396,8 +396,13 @@ class HomePage extends React.Component {
           position: 'top-center',
         });
 
-        this.foldersChanged();
-        this.setState({ appOperations: { isAdding: false }, showChangeIconModal: false });
+        const updatedApps = apps.map((app) => {
+          if (app.id === appOperations.selectedApp.id) {
+            app.icon = appOperations.selectedIcon;
+          }
+          return app;
+        });
+        this.setState({ appOperations: { isAdding: false }, showChangeIconModal: false, apps: updatedApps });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
@@ -496,7 +501,7 @@ class HomePage extends React.Component {
               </button>
               <button
                 className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
-                onClick={this.addAppToFolder}
+                onClick={this.changeIcon}
               >
                 Change
               </button>
