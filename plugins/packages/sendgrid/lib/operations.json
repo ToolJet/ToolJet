@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Sendgrid.schema.json",
   "title": "Airtable datasource",
   "description": "A schema defining Sendgrid datasource",
-  "type": "object",
+  "type": "api",
   "defaults": {},
   "properties": {
     "operation": {

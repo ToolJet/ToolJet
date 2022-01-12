@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Postgresql.schema.json",
   "title": "Postgresql datasource",
   "description": "A schema defining Postgresql datasource",
-  "type": "object",
+  "type": "database",
   "defaults": {
     "mode": "sql"
   },

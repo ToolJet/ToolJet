@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Slack.schema.json",
   "title": "Slack datasource",
   "description": "A schema defining Slack datasource",
-  "type": "object",
+  "type": "api",
   "defaults": {},
   "properties": {
     "mode": {

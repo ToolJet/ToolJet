@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Airtable.schema.json",
   "title": "Airtable datasource",
   "description": "A schema defining Airtable datasource",
-  "type": "object",
+  "type": "api",
   "defaults": {},
   "properties": {
     "operation": {

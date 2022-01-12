@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Twilio.schema.json",
   "title": "Twilio datasource",
   "description": "A schema defining Twilio datasource",
-  "type": "object",
+  "type": "api",
   "defaults": {},
   "properties": {
     "operation": {
