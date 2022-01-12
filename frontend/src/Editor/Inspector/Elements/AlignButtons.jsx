@@ -14,7 +14,7 @@ export const AlignButtons = ({ param, definition, onChange, paramType, component
   return (
     <div className={`mb-3 field ${options.className}`}>
       <ToolTip label={displayName} meta={paramMeta} />
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: 'flex', gap: 10 }}>
         <label className="radio-img">
           <input
             type="radio"

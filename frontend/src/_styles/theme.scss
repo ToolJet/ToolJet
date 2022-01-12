@@ -2991,7 +2991,7 @@ input[type="text"] {
 
 .radio-img {
     input { 
-        display:none;
+      display:none;
     }
 
     .action-icon {
@@ -3002,7 +3002,6 @@ input[type="text"] {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 10px;
     }
   
     .action-icon{
@@ -3023,15 +3022,25 @@ input[type="text"] {
       visibility: hidden;
       font-size: 12px;
       background-color: $black;
-      opacity: .9;
       color: $white;
       text-align: center;
       padding: 5px 10px;
-      border-radius: 15px;
-     
       position: absolute;
+      border-radius: 15px;
       margin-top:2px;
       z-index: 1;
+      margin-left: -10px;
+    }
+
+    .tooltiptext::after {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent black transparent;
     }
     
     .action-icon:hover + .tooltiptext {
