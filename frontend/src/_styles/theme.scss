@@ -1942,6 +1942,11 @@ input:focus-visible {
   .has-focus > .select-search__select > ul {
     margin-bottom: 0;
   }
+
+  .select-search__option.is-selected {
+    background: $primary;
+    color: $white;
+  }
 }
 
 .encrypted-icon {
@@ -2364,6 +2369,16 @@ input:focus-visible {
     }
   }
 
+  .org-users-page {
+    .select-search__option.is-selected {
+      background: $primary;
+      color: $white;
+    }
+    .select-search__option:not(.is-selected):hover {
+      background: rgba(66, 153, 225, 0.1);
+    }
+  }
+
   .react-json-view {
     background-color: transparent !important;
   }
@@ -2757,6 +2772,11 @@ input[type="text"] {
   height: 1.2rem;
 }
 
+.navbar .navbar-brand:hover,
+.theme-dark .navbar .navbar-brand:hover {
+  opacity: 1;
+}
+
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
   margin-bottom: -1px !important;
@@ -3036,6 +3056,9 @@ input[type="text"] {
   color: #000000;
   .modal-header {
     border-bottom: 0px;
+  }
+  .modal-title {
+    font-size: 1.1rem;
   }
   .btn-close {
     width: 3.5rem;
