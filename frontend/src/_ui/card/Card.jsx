@@ -19,7 +19,7 @@ const Group = ({ list = [], heading = '' }) => {
   return (
     <div>
       <div className="row row-deck card-group-deck mt-2">
-        <h4 className="mb-2">{heading}</h4>
+        <h4 className="mb-2 d-flex justify-content-start">{heading}</h4>
         {list.map((item, index) => (
           <Card key={index} cardProps={item} />
         ))}
