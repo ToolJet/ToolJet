@@ -1876,6 +1876,11 @@ input:focus-visible {
   .has-focus > .select-search__select > ul {
     margin-bottom: 0;
   }
+
+  .select-search__option.is-selected {
+    background: $primary;
+    color: $white;
+  }
 }
 
 .encrypted-icon {
@@ -2295,6 +2300,16 @@ input:focus-visible {
     .user-email,
     .user-status {
       filter: brightness(0) invert(1);
+    }
+  }
+
+  .org-users-page {
+    .select-search__option.is-selected {
+      background: $primary;
+      color: $white;
+    }
+    .select-search__option:not(.is-selected):hover {
+      background: rgba(66, 153, 225, 0.1);
     }
   }
 
