@@ -2998,32 +2998,36 @@ input[type="text"] {
       width: 28px;
       height: 28px;
       background-position: center center;
-      display: block;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin-right: 10px;
-  
-      &:hover {
-        opacity: 1;
-      }
     }
   
     .action-icon{
       cursor:pointer;
-      border: 1px solid $border-grey-light;
-
+      border: 1px solid $light-gray;
     }
+
+    .action-icon:hover{
+      background-color: #D2DDEC;
+    }
+
     input:checked + .action-icon{ 
-      border-color: $black;
+      border-color: $primary;
+      background-color: #7A95FB;
     } 
 
     .tooltiptext {
       visibility: hidden;
       font-size: 12px;
-      background-color: rgb(95, 95, 95);
+      background-color: $black;
       opacity: .9;
       color: $white;
       text-align: center;
-      padding: 5px;
-      border-radius: 5px;
+      padding: 5px 10px;
+      border-radius: 15px;
      
       position: absolute;
       margin-top:2px;
@@ -3032,6 +3036,10 @@ input[type="text"] {
     
     .action-icon:hover + .tooltiptext {
       visibility: visible;
+    }
+
+    input:checked + .action-icon:hover{
+      background-color: #3650AF;
     }
 }
 
