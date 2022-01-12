@@ -37,6 +37,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      actionButtonRadius: { type: 'code', displayName: 'Action Button Radius' },
       tableType: {
         type: 'select',
         displayName: 'Table type',
@@ -99,6 +100,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: undefined },
+        actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
