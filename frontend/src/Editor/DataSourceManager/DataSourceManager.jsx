@@ -167,16 +167,32 @@ class DataSourceManager extends React.Component {
   };
 
   renderSidebarList = () => {
+    const allDataSourcesList = {
+      databases: DataBaseSources,
+      apis: ApiSources,
+      cloudStorages: CloudStorageSources,
+    };
     const dataSourceList = [
       {
         type: 'All Datasources',
         key: '#alldatasources',
-        card: 'Render all datasources',
-        list: [...DataBaseSources, ...ApiSources, ...CloudStorageSources],
+        card: () => this.renderCardGroup(allDataSourcesList, 'All Datasources'),
       },
-      { type: 'Databases', key: '#databases', card: 'Render databases', list: [...DataBaseSources] },
-      { type: 'APIs', key: '#apis', card: 'Render APIs', list: [...ApiSources] },
-      { type: 'Cloud Storage', key: '#cloudstorage', card: 'Render cloud storage', list: [...CloudStorageSources] },
+      {
+        type: 'Databases',
+        key: '#databases',
+        card: () => this.renderCardGroup(allDataSourcesList.databases, 'Databases'),
+      },
+      {
+        type: 'APIs',
+        key: '#apis',
+        card: () => this.renderCardGroup(allDataSourcesList.apis, 'APIs'),
+      },
+      {
+        type: 'Cloud Storage',
+        key: '#cloudstorage',
+        card: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+      },
     ];
 
     return (
@@ -203,7 +219,7 @@ class DataSourceManager extends React.Component {
             <Tab.Content>
               {dataSourceList.map((datasource) => (
                 <Tab.Pane eventKey={datasource.key} key={datasource.key}>
-                  {this.renderCardGroup(datasource.list, datasource.type)}
+                  {datasource.card()}
                 </Tab.Pane>
               ))}
             </Tab.Content>
@@ -214,6 +230,40 @@ class DataSourceManager extends React.Component {
   };
 
   renderCardGroup = (source, type) => {
+    if (type === 'All Datasources') {
+      const databases = source.databases.map((datasource) => {
+        const src = `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`;
+        const text = datasource.name;
+        const handleClick = () => this.selectDataSource(datasource);
+        return { ...datasource, src, text, handleClick };
+      });
+      const apis = source.apis.map((datasource) => {
+        const src = `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`;
+        const text = datasource.name;
+        const handleClick = () => this.selectDataSource(datasource);
+        return { ...datasource, src, text, handleClick };
+      });
+      const cloudStorages = source.cloudStorages.map((datasource) => {
+        const src = `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`;
+        const text = datasource.name;
+        const handleClick = () => this.selectDataSource(datasource);
+        return { ...datasource, src, text, handleClick };
+      });
+      return (
+        <>
+          <div>
+            <Card.Group list={databases} heading={'Databases'} />
+          </div>
+          <div>
+            <Card.Group list={apis} heading={'APIs'} />
+          </div>
+          <div>
+            <Card.Group list={cloudStorages} heading={'Cloud Storages'} />
+          </div>
+        </>
+      );
+    }
+
     const datasources = source.map((datasource) => {
       const src = `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`;
       const text = datasource.name;
