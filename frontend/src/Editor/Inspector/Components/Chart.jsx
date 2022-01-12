@@ -156,18 +156,20 @@ class Chart extends React.Component {
     });
 
     if (chartType !== 'pie') {
-      items.push({
-        title: 'Marker color',
-        children: renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'markerColor',
-          'properties',
-          currentState
-        ),
-      });
+      if (!plotFromJson) {
+        items.push({
+          title: 'Marker color',
+          children: renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'markerColor',
+            'properties',
+            currentState
+          ),
+        });
+      }
 
       items.push({
         title: 'Show grid lines',
