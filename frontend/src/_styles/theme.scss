@@ -2691,6 +2691,11 @@ input[type="text"] {
   height: 1.2rem;
 }
 
+.navbar .navbar-brand:hover,
+.theme-dark .navbar .navbar-brand:hover {
+  opacity: 1;
+}
+
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
   margin-bottom: -1px !important;
