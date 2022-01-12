@@ -9,6 +9,9 @@ import HomeHeader from './Header';
 import Modal from './Modal';
 import SelectSearch from 'react-select-search';
 import Fuse from 'fuse.js';
+import configs from './Configs/AppIcon.json';
+
+const { iconList, defaultIcon } = configs;
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -332,13 +335,14 @@ class HomePage extends React.Component {
   }
 
   addAppToFolder = () => {
-    if (!this.state.appOperations?.selectedFolder || !this.state.appOperations?.selectedApp) {
+    const { appOperations } = this.state;
+    if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
       return toast.error('Select a folder', { position: 'top-center' });
     }
-    this.setState({ appOperations: { ...this.state.appOperations, isAdding: true } });
+    this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
     folderService
-      .addToFolder(this.state.appOperations.selectedApp.id, this.state.appOperations.selectedFolder)
+      .addToFolder(appOperations.selectedApp.id, appOperations.selectedFolder)
       .then(() => {
         toast.success('Added to folder.', {
           position: 'top-center',
@@ -348,15 +352,57 @@ class HomePage extends React.Component {
         this.setState({ appOperations: { isAdding: false }, showAddToFolderModal: false });
       })
       .catch(({ error }) => {
-        this.setState({ appOperations: { ...this.state.appOperations, isAdding: false } });
+        this.setState({ appOperations: { ...appOperations, isAdding: false } });
         toast.error(error, { position: 'top-center' });
       });
   };
 
   appActionModal = (app, action) => {
+    const { appOperations } = this.state;
+
     if (action === 'add-to-folder') {
-      this.setState({ appOperations: { ...this.state.appOperations, selectedApp: app }, showAddToFolderModal: true });
+      this.setState({ appOperations: { ...appOperations, selectedApp: app }, showAddToFolderModal: true });
+    } else if (action === 'change-icon') {
+      this.setState({ appOperations: { ...appOperations, selectedApp: app }, showChangeIconModal: true });
     }
+  };
+
+  getIcons = () => {
+    const { appOperations } = this.state;
+    const selectedIcon = appOperations.selectedIcon || appOperations.selectedApp?.icon || defaultIcon;
+    return iconList.map((icon, index) => (
+      <li
+        className={`p-3 ms-1 me-2 mt-1 mb-2${selectedIcon === icon ? ' selected' : ''}`}
+        onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
+        key={index}
+      >
+        <img src={`/assets/images/icons/app-icons/${icon}.svg`} />
+      </li>
+    ));
+  };
+
+  changeIcon = () => {
+    const { appOperations } = this.state;
+
+    if (!appOperations?.selectedIcon || !appOperations?.selectedApp) {
+      return toast.error('Select an icon', { position: 'top-center' });
+    }
+    this.setState({ appOperations: { ...appOperations, isAdding: true } });
+
+    appService
+      .changeIcon(appOperations.selectedIcon, appOperations.selectedApp.id)
+      .then(() => {
+        toast.success('Icon updated.', {
+          position: 'top-center',
+        });
+
+        this.foldersChanged();
+        this.setState({ appOperations: { isAdding: false }, showChangeIconModal: false });
+      })
+      .catch(({ error }) => {
+        this.setState({ appOperations: { ...appOperations, isAdding: false } });
+        toast.error(error, { position: 'top-center' });
+      });
   };
 
   render() {
@@ -370,6 +416,9 @@ class HomePage extends React.Component {
       isDeletingApp,
       isImportingApp,
       appSearchKey,
+      showAddToFolderModal,
+      showChangeIconModal,
+      appOperations,
     } = this.state;
     const appCountText = currentFolder.count ? ` (${currentFolder.count})` : '';
     const folderName = currentFolder.id
@@ -386,7 +435,7 @@ class HomePage extends React.Component {
         />
 
         <Modal
-          show={this.state.showAddToFolderModal && this.state.appOperations.selectedApp}
+          show={showAddToFolderModal && !!appOperations.selectedApp}
           closeModal={() => this.setState({ showAddToFolderModal: false })}
           title="Add to folder"
         >
@@ -394,7 +443,7 @@ class HomePage extends React.Component {
             <div className="col modal-main">
               <div className="mb-3">
                 <span>Move</span>
-                <strong>{` "${this.state.appOperations?.selectedApp?.name}" `}</strong>
+                <strong>{` "${appOperations?.selectedApp?.name}" `}</strong>
                 <span>to</span>
               </div>
               <div>
@@ -403,11 +452,11 @@ class HomePage extends React.Component {
                     return { name: folder.name, value: folder.id };
                   })}
                   search={true}
-                  disabled={!!this.state.appOperations?.isAdding}
+                  disabled={!!appOperations?.isAdding}
                   onChange={(newVal) => {
-                    this.setState({ appOperations: { ...this.state.appOperations, selectedFolder: newVal } });
+                    this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
                   }}
-                  value={this.state.appOperations?.selectedFolder}
+                  value={appOperations?.selectedFolder}
                   emptyMessage={this.state.folders === 0 ? 'No folders present' : 'Not found'}
                   filterOptions={this.customFuzzySearch}
                   placeholder="Select folder"
@@ -421,10 +470,35 @@ class HomePage extends React.Component {
                 Cancel
               </button>
               <button
-                className={`btn btn-primary ${this.state.appOperations?.isAdding ? 'btn-loading' : ''}`}
+                className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                 onClick={this.addAppToFolder}
               >
                 Add to folder
+              </button>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          show={showChangeIconModal && !!appOperations.selectedApp}
+          closeModal={() => this.setState({ showChangeIconModal: false })}
+          title="Change Icon"
+        >
+          <div className="row">
+            <div className="col modal-main icon-change-modal">
+              <ul className="p-0">{this.getIcons()}</ul>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col d-flex modal-footer-btn">
+              <button className="btn btn-light" onClick={() => this.setState({ showChangeIconModal: false })}>
+                Cancel
+              </button>
+              <button
+                className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
+                onClick={this.addAppToFolder}
+              >
+                Change
               </button>
             </div>
           </div>

@@ -629,6 +629,7 @@ button {
         font-weight: 600;
         color: #000000;
         overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       button {
@@ -1375,6 +1376,7 @@ tr:focus {
 
     .field {
       font-weight: 500;
+      font-size: 0.7rem;
 
       &__danger {
         color: #FF6666;
@@ -3052,6 +3054,33 @@ input[type="text"] {
     justify-content: end;
     button {
       margin-left: 16px;
+    }
+  }
+}
+
+.icon-change-modal {
+  ul {
+    list-style-type: none;
+
+    li {
+      float: left;
+      border: 2px solid #8991A0;
+      border-radius: 1.75px;
+      cursor: pointer;
+
+      img {
+        width: 22px;
+        height: 22px;
+        filter: invert(59%) sepia(27%) saturate(160%) hue-rotate(181deg) brightness(91%) contrast(95%);
+      }
+    }
+
+    li.selected {
+      border: 2px solid #0565FF;
+      
+      img {
+        filter: invert(27%) sepia(84%) saturate(5230%) hue-rotate(212deg) brightness(102%) contrast(100%);
+      }
     }
   }
 }

@@ -5,7 +5,16 @@ import moment from 'moment';
 import { ToolTip } from '@/_components';
 import useHover from '@/_hooks/useHover';
 
-export default function AppCard({ app, canCreateApp, canDeleteApp, deleteApp, cloneApp, exportApp, appActionModal }) {
+export default function AppCard({
+  app,
+  canCreateApp,
+  canDeleteApp,
+  deleteApp,
+  cloneApp,
+  exportApp,
+  appActionModal,
+  canUpdateApp,
+}) {
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -47,6 +56,7 @@ export default function AppCard({ app, canCreateApp, canDeleteApp, deleteApp, cl
                 openAppActionModal={appActionModalCallBack}
                 canCreateApp={canCreateApp()}
                 canDeleteApp={canDeleteApp(app)}
+                canUpdateApp={canUpdateApp(app)}
                 deleteApp={() => deleteApp(app)}
                 cloneApp={() => cloneApp(app)}
                 exportApp={() => exportApp(app)}

@@ -8,6 +8,7 @@ export const AppMenu = function AppMenu({
   exportApp,
   canCreateApp,
   canDeleteApp,
+  canUpdateApp,
   onMenuOpen,
   isMenuOpen,
   openAppActionModal,
@@ -41,6 +42,7 @@ export const AppMenu = function AppMenu({
         <Popover id="popover-app-menu">
           <Popover.Content bsPrefix="popover-body">
             <div>
+              {canUpdateApp && <Field text="Change icon" onClick={() => openAppActionModal('change-icon')} />}
               {canCreateApp && (
                 <>
                   <Field text="Add to folder" onClick={() => openAppActionModal('add-to-folder')} />
