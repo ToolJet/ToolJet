@@ -8,6 +8,7 @@ const mapImportNameToOldValue = str => {
   if(str === 'mongo') return 'mongodb'
   if(str === 'twilioapi') return 'twilio'
   if(str === 'typesenseapi') return 'typesense'
+  if(str === 'minioapi') return 'minio'
   return str
 }
 

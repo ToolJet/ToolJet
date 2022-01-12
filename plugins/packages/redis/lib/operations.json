@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Redis.schema.json",
   "title": "Redis data query schema",
   "description": "A schema defining redis data query",
-  "type": "object",
+  "type": "database",
   "defaults": {
     "query": "PING"
   },

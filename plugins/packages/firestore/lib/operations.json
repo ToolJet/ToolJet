@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Firestore.schema.json",
   "title": "Firestore datasource",
   "description": "A schema defining Firestore datasource",
-  "type": "object",
+  "type": "database",
   "defaults": {
     "path": "",
     "operation": "get_document",

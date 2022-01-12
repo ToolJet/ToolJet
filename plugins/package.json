@@ -1,6 +1,6 @@
 {
   "name": "@tooljet/plugins",
-  "version": "0.0.12",
+  "version": "0.0.1",
   "source": "server.ts",
   "types": "dist/server.d.ts",
   "main": "dist/server.js",
@@ -23,23 +23,26 @@
     "gcs": "file:packages/gcs",
     "googlesheets": "file:packages/googlesheets",
     "graphql": "file:packages/graphql",
-    "jest": "^27.4.5",
-    "lerna": "^4.0.0",
+    "minioapi": "file:packages/minioapi",
     "mongo": "file:packages/mongo",
     "mssql": "file:packages/mssql",
     "mysql": "file:packages/mysql",
     "postgresql": "file:packages/postgresql",
-    "react": "^17.0.2",
     "redis": "file:packages/redis",
     "restapi": "file:packages/restapi",
-    "rimraf": "^3.0.2",
     "s3": "file:packages/s3",
     "sendgrid": "file:packages/sendgrid",
     "slack": "file:packages/slack",
     "stripe": "file:packages/stripe",
-    "ts-jest": "^27.1.2",
     "twilioapi": "file:packages/twilioapi",
-    "typescript": "^4.5.4",
     "typesenseapi": "file:packages/typesenseapi"
+  },
+  "devDependencies": {
+    "jest": "^27.4.5",
+    "lerna": "^4.0.0",
+    "react": "^17.0.2",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.5.4"
   }
 }

@@ -3,15 +3,15 @@
   "$id": "https://tooljet.io/dataqueries/Minio.schema.json",
   "title": "Minio datasource",
   "description": "A schema defining minio datasource",
-  "type": "object",
+  "type": "api",
   "defaults": {},
   "properties": {
     "operation": {
-      "$label": "Operation",
-      "$key": "operation",
+      "label": "Operation",
+      "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
-      "$options": [
+      "list": [
         { "value": "get_object", "name": "Read object" },
         { "value": "put_object", "name": "Put object" },
         { "value": "list_buckets", "name": "List buckets" },
@@ -22,15 +22,15 @@
     },
     "get_object": {
       "bucket": {
-        "$label": "Bucket",
-        "$key": "bucket",
+        "label": "Bucket",
+        "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter bucket"
       },
       "key": {
-        "$label": "Object Name",
-        "$key": "objectName",
+        "label": "Object Name",
+        "key": "objectName",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter object name"
@@ -38,29 +38,29 @@
     },
     "put_object": {
       "bucket": {
-        "$label": "Bucket",
-        "$key": "bucket",
+        "label": "Bucket",
+        "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter bucket"
       },
       "key": {
-        "$label": "Object Name",
-        "$key": "objectName",
+        "label": "Object Name",
+        "key": "objectName",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter object name"
       },
       "contentType": {
-        "$label": "Content Type",
-        "$key": "contentType",
+        "label": "Content Type",
+        "key": "contentType",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter content type"
       },
       "data": {
-        "$label": "Upload data",
-        "$key": "data",
+        "label": "Upload data",
+        "key": "data",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter upload data"
@@ -68,15 +68,15 @@
     },
     "list_objects": {
       "bucket": {
-        "$label": "Bucket",
-        "$key": "bucket",
+        "label": "Bucket",
+        "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter bucket"
       },
       "prefix": {
-        "$label": "Prefix",
-        "$key": "prefix",
+        "label": "Prefix",
+        "key": "prefix",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter prefix"
@@ -84,22 +84,22 @@
     },
     "signed_url_for_get": {
       "bucket": {
-        "$label": "Bucket",
-        "$key": "bucket",
+        "label": "Bucket",
+        "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter bucket"
       },
       "key": {
-        "$label": "Object Name",
-        "$key": "objectName",
+        "label": "Object Name",
+        "key": "objectName",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter key"
       },
       "expiresIn": {
-        "$label": "Expires in",
-        "$key": "expiresIn",
+        "label": "Expires in",
+        "key": "expiresIn",
         "type": "codehinter",
         "lineNumbers": false,
         "initialValue": "86400",
@@ -108,22 +108,22 @@
     },
     "signed_url_for_put": {
       "bucket": {
-        "$label": "Bucket",
-        "$key": "bucket",
+        "label": "Bucket",
+        "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter bucket"
       },
       "key": {
-        "$label": "Object Name",
-        "$key": "objectName",
+        "label": "Object Name",
+        "key": "objectName",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter key"
       },
       "expiresIn": {
-        "$label": "Expires in",
-        "$key": "expiresIn",
+        "label": "Expires in",
+        "key": "expiresIn",
         "type": "codehinter",
         "initialValue": "86400",
         "lineNumbers": false,

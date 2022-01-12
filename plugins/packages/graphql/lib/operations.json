@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Graphql.schema.json",
   "title": "Graphql data query schema",
   "description": "A schema defining graphql data query",
-  "type": "object",
+  "type": "api",
   "defaults": {},
   "properties": {
     "query": {

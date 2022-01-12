@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Mysql.schema.json",
   "title": "Mysql datasource",
   "description": "A schema defining Mysql datasource",
-  "type": "object",
+  "type": "database",
   "defaults": {},
   "properties": {
     "mode": {

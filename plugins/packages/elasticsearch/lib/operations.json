@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/dataqueries/Elasticsearch.schema.json",
   "title": "Elasticsearch datasource",
   "description": "A schema defining Elasticsearch datasource",
-  "type": "object",
+  "type": "database",
   "defaults": {
     "query": "",
     "operation": "search"
