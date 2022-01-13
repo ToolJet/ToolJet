@@ -15,6 +15,7 @@
     "clean:packages": "lerna run clean --parallel"
   },
   "dependencies": {
+    "lerna": "^4.0.0",
     "airtable": "file:packages/airtable",
     "common": "file:packages/common",
     "dynamodb": "file:packages/dynamodb",
@@ -39,7 +40,6 @@
   },
   "devDependencies": {
     "jest": "^27.4.5",
-    "lerna": "^4.0.0",
     "react": "^17.0.2",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.1.2",
