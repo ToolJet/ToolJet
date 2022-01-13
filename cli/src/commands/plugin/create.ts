@@ -1,35 +1,58 @@
-import {Command} from '@oclif/core'
-// const path = require("path");
-// const fs = require("fs-extra");
+import {Command, Flags} from '@oclif/core'
+import cli from 'cli-ux'
+import * as inquirer from 'inquirer'
+// use spawn over exec to consume lesser memory
+import {spawn} from 'child_process'
+// import * as notifier from 'node-notifier'
 
 export default class Create extends Command {
-  // [x: string]: any;
+  static flags = {
+    type: Flags.string({options: ['database', 'api', 'cloud-storage']})
+  }
   static description = 'Create a new tooljet plugin'
 
   static examples = [
-    `$ tooljet plugin create <name>`,
+    `$ tooljet plugin create <name> --type=<database | api | cloud-storage>`,
   ]
-
-  static flags = {}
 
   static args = [{name: 'plugin_name', description: 'Name of the plugin', required: true}]
 
   async run(): Promise<void> {
-    const {args} = await this.parse(Create)
+    const {args, flags} = await this.parse(Create)
 
-    // this.targetDir = path.resolve(this.pkgsDir, args.plugin_name);
-    // this.libDir = path.join(this.targetDir, "lib");
-    // this.libFileName = `${this.dirName}.ts`;
+    let type = flags.type
 
-    // this.testDir = path.join(this.targetDir, "__tests__");
-    // this.testFileName = `${this.dirName}.test.ts`;
+    const name = await cli.prompt('Enter plugin display name')
 
-    // let chain = Promise.resolve();
+    if (!type) {
+      let responses: any = await inquirer.prompt([{
+        name: 'type',
+        message: 'select a type',
+        type: 'list',
+        choices: [{name: 'database'}, {name: 'api'}, {name: 'cloud-storage'}],
+      }])
+      type = responses.type
+    }
 
-    // chain = chain.then(() => fs.mkdirp(this.libDir));
-    // chain = chain.then(() => fs.mkdirp(this.testDir));
-    // chain = chain.then(() => Promise.all([this.writeReadme(), this.writeLibFile(), this.writeTestFile()]));
+    const child = spawn('npx', ['hygen', 'plugin', 'new', '--name', `${name}`, '--type', `${type}`]);
+    child.stderr.on("data", (_) => {
+      this.log(`Plugin: file created successfully`);
+    });
 
-    this.log(`${args.plugin_name}`)
+    child.on('error', (error: { message: any }) => {
+      this.log(`error: ${error.message}`);
+    });
+  
+    child.on("close", (code: any) => {
+      this.log(`process exited with code ${code}`);
+    });
+  
+    // notifier.notify({
+    //   title: 'Tooljet',
+    //   message: `Plugin ${name} created`
+    // })
+
+    this.log(`${name} ${type}`)
+    this.log(`${name} ${type}`)
   }
 }
