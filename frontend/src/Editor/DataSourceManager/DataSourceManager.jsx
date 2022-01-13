@@ -208,7 +208,7 @@ class DataSourceManager extends React.Component {
             <div className="selected-datasource-list-content">
               <Tab.Content>
                 <div className="input-icon modal-searchbar">
-                  <SearchBox onSubmit={this.handleOnSubmit} />
+                  <SearchBox onSubmit={this.handleOnSubmit} updateIconOnType={true} />
                 </div>
                 {datasources.map((datasource) => (
                   <Tab.Pane eventKey={datasource.key} key={datasource.key}>
@@ -418,7 +418,7 @@ class DataSourceManager extends React.Component {
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
-    console.log('test -->', this.state.activeDatasourceList, this.state.filteredDatasourceList);
+
     return (
       <div>
         <Modal
@@ -596,7 +596,6 @@ const EmptyStateContainer = ({ queryString, handleBackToAllDatasources }) => {
   const [inputValue, set] = React.useState(() => '');
   const [status, setStatus] = React.useState(false);
   const handleSend = () => {
-    console.log('send', inputValue);
     setStatus(true);
   };
 
