@@ -187,11 +187,11 @@
   overflow-x: hidden;
 
   .selected-datasource-list-content {
-    width:860px;
     padding-left: 2rem!important;
     .tab-content {
+      width: 860px!important;
       position: absolute;
-      margin-top: 1rem!important;
+      margin-top: 2rem!important;
       left: 0;
       margin-left: 3rem!important;
     }
@@ -201,7 +201,7 @@
     width: 200px;
     float: right;
     margin-left: 1rem;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
   }
 }
 
