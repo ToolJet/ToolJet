@@ -4,20 +4,20 @@ import {Command} from '@oclif/core'
 
 export default class Create extends Command {
   // [x: string]: any;
-  static description = 'Create a new tooljet plugin package'
+  static description = 'Create a new tooljet plugin'
 
   static examples = [
-    `$ tooljet integration create <name>`,
+    `$ tooljet plugin create <name>`,
   ]
 
   static flags = {}
 
-  static args = [{name: 'integration_name', description: 'Name of the integration', required: true}]
+  static args = [{name: 'plugin_name', description: 'Name of the plugin', required: true}]
 
   async run(): Promise<void> {
     const {args} = await this.parse(Create)
 
-    // this.targetDir = path.resolve(this.pkgsDir, args.integration_name);
+    // this.targetDir = path.resolve(this.pkgsDir, args.plugin_name);
     // this.libDir = path.join(this.targetDir, "lib");
     // this.libFileName = `${this.dirName}.ts`;
 
@@ -30,6 +30,6 @@ export default class Create extends Command {
     // chain = chain.then(() => fs.mkdirp(this.testDir));
     // chain = chain.then(() => Promise.all([this.writeReadme(), this.writeLibFile(), this.writeTestFile()]));
 
-    this.log(`${args.integration_name}`)
+    this.log(`${args.plugin_name}`)
   }
 }
