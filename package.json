@@ -46,7 +46,6 @@
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "NODE_ENV=production ./heroku-postdeploy.sh",
     "cy:run": "cypress run --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
-    "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
-    "prepare": "husky install"
+    "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD"
   }
 }

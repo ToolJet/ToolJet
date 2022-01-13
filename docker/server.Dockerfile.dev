@@ -9,8 +9,7 @@ RUN npm i -g npm@7.20.0
 RUN mkdir -p /app
 WORKDIR /app
 
-COPY ./package.json ./package-lock.json ./
-RUN npm install
+COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/

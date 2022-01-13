@@ -9,8 +9,7 @@ RUN npm install -g @nestjs/cli
 RUN mkdir -p /app
 WORKDIR /app
 
-COPY ./package.json ./package-lock.json ./
-RUN npm install
+COPY ./package.json ./package.json
 
 # Building ToolJet plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/

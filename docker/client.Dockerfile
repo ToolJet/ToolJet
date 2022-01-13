@@ -6,8 +6,7 @@ RUN npm i -g npm@7.20.0
 # set working directory
 WORKDIR /app
 
-COPY ./package.json ./package-lock.json ./
-RUN npm install
+COPY ./package.json ./package.json
 
 # Fix for heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"

@@ -8,10 +8,9 @@ RUN mkdir -p /app
 
 WORKDIR /app
 
-# Install pre-requisite packages for building frontend and server
+# Scripts for building
 ENV NODE_ENV=production
-COPY ./package.json ./package-lock.json ./
-RUN npm install
+COPY ./package.json ./package.json
 
 ENV NODE_ENV=development
 
