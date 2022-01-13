@@ -116,7 +116,7 @@ export const Box = function Box({
 
   if (component.parent) {
     const parentComponent = allComponents[component.parent];
-    const isListView = parentComponent.component.component === 'Listview';
+    const isListView = parentComponent?.component?.component === 'Listview';
 
     if (isListView) {
       const itemsAtIndex = currentState?.components[parentId]?.data[extraProps.listviewItemIndex];
