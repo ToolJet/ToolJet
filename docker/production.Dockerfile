@@ -39,7 +39,7 @@ RUN npm --prefix server run build
 FROM node:14.17.3-alpine
 
 ENV NODE_ENV=production
-RUN apk add postgresql-client
+RUN apk add postgresql-client freetds
 RUN mkdir -p /app
 
 # copy npm scripts
