@@ -8,12 +8,18 @@ import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
 import { history } from '@/_helpers';
 
-const identifyUniqueCategories = (templates) => ['all', ...new Set(_.map(templates, 'category'))];
+const identifyUniqueCategories = (templates) =>
+  ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
+    id: categoryId,
+    count: templates.filter((template) => categoryId === 'all' || template.category === categoryId).length,
+  }));
 
 export default function TemplateLibraryModal(props) {
   const [libraryApps, setLibraryApps] = useState([]);
-  const [selectedCategory, selectCategory] = useState('all');
-  const filteredApps = libraryApps.filter((app) => selectedCategory === 'all' || app.category === selectedCategory);
+  const [selectedCategory, selectCategory] = useState({ id: 'all', count: 0 });
+  const filteredApps = libraryApps.filter(
+    (app) => selectedCategory.id === 'all' || app.category === selectedCategory.id
+  );
   const [selectedApp, selectApp] = useState(undefined);
 
   useEffect(() => {

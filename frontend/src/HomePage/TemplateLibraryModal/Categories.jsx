@@ -14,11 +14,13 @@ export default function Categories(props) {
       {categories.map((category) => (
         <ListGroup.Item
           action
-          active={category === selectedCategory}
-          key={category}
+          active={category.id === selectedCategory.id}
+          key={category.id}
           onClick={() => selectCategory(category)}
+          className="d-flex justify-content-between align-items-start"
         >
-          {categoryTitles[category]}
+          <span>{categoryTitles[category.id]}</span>
+          <span>{category.count}</span>
         </ListGroup.Item>
       ))}
     </ListGroup>
