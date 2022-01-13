@@ -722,6 +722,14 @@ button {
       margin-bottom: 0;
     }
   }
+
+  .template-list {
+    .template-search-box {
+      input {
+        border-radius: 0;
+      }
+    }
+  }
 }
 
 .template-library-modal.dark-mode {
