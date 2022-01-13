@@ -737,15 +737,9 @@ button {
     border-color: #232E3C !important;
   }
 
-  .modal-body, .modal-footer {
+  .modal-body, .modal-footer, .modal-header, .modal-content {
     color: white;
-    background-color: #2B394A;
-  }
-
-  .modal-header {
-    background-color: #232E3C;
-    color: white;
-  }
+    background-color: #2B394A  }
 
   .template-categories {
     .list-group-item {
