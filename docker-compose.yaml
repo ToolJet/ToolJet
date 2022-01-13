@@ -9,14 +9,13 @@ services:
     platform: linux/amd64
     volumes:
       - ./frontend:/app/frontend:delegated
-      - ./plugins/:/plugins:cached
-      - /app/frontend/node_modules/
+      - ./plugins/:/app/plugins:cached
     ports:
       - 8082:8082
     environment:
       - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
       - NODE_ENV=development
-    command: npm start
+    command: npm run --prefix frontend start
 
   server:
     build:
@@ -27,9 +26,10 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./server:/app:delegated
-      - ./plugins/:/plugins:cached
-      - /app/node_modules/
+      - ./server:/app/server:delegated
+      - ./plugins/:/app/plugins:cached
+      - '.env:/app/.env'
+      - '.env.test:/app/.env.test'
     ports:
       - 3000:3000
     environment:
