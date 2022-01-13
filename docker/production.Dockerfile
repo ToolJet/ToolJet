@@ -39,10 +39,11 @@ RUN npm --prefix server run build
 FROM node:14.17.3-alpine
 
 ENV NODE_ENV=production
-RUN apk add postgresql
+RUN apk add postgresql-client
 RUN mkdir -p /app
 
 COPY --from=builder /app/package.json ./app/package.json
+COPY --from=builder /app/plugins/dist ./app/plugins/dist
 COPY --from=builder /app/frontend/build ./app/frontend/build
 # FIXME: dependency on /server/scripts and typeorm for db creation and migration.
 # Need to check if we can optimize such that only executable dist from prev stage
