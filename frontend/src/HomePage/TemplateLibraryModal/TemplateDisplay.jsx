@@ -11,7 +11,7 @@ export default function TemplateDisplay(props) {
           <h3 className="title">{name}</h3>
           <p className="description">{description}</p>
         </Row>
-        <Row style={{ height: '88%' }}>
+        <Row className="align-items-center justify-content-center" style={{ height: '88%' }}>
           <img className="template-image" src={`/assets/images/templates/${id}.png`} />
         </Row>
       </Container>
