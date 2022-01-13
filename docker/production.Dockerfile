@@ -9,10 +9,7 @@ RUN mkdir -p /app
 WORKDIR /app
 
 # Scripts for building
-ENV NODE_ENV=production
 COPY ./package.json ./package.json
-
-ENV NODE_ENV=development
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
