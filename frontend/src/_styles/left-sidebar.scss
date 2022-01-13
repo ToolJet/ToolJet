@@ -188,20 +188,26 @@
 
   .selected-datasource-list-content {
     padding-left: 2rem!important;
+    height:inherit;
     .tab-content {
       width: 860px!important;
       position: absolute;
       margin-top: 2rem!important;
+      margin-left: 3rem!important;  
       left: 0;
-      margin-left: 3rem!important;
+
+      .row-deck {
+        width: 860px!important;
+      }
     }
   }
 
   .modal-searchbar {
     width: 200px;
+    height: 36px;
     float: right;
-    margin-left: 1rem;
-    margin-top: 1.5rem;
+    margin-right: 3.5rem!important;
+    margin-top: 0rem;
   }
 }
 

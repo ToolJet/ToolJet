@@ -205,10 +205,10 @@ class DataSourceManager extends React.Component {
           </Col>
           <Col style={{ left: '25%' }} className="modal-body-content">
             <div className="selected-datasource-list-content">
-              <div className="input-icon modal-searchbar">
-                <SearchBox onSubmit={this.handleOnSubmit} />
-              </div>
               <Tab.Content>
+                <div className="input-icon modal-searchbar">
+                  <SearchBox onSubmit={this.handleOnSubmit} />
+                </div>
                 {filteredDatasources.map((datasource) => (
                   <Tab.Pane eventKey={datasource.key} key={datasource.key}>
                     {datasource.renderDatasources()}
