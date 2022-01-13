@@ -45,14 +45,14 @@ export default function AppCard({
     <div className={`app-card mb-3 p-3 pt-2${focused ? ' highlight' : ''}`} key={app.id} ref={hoverRef}>
       <div className="row mb-3">
         <div className="col-12 d-flex justify-content-between">
-          <div className="pt-1">
+          <div className="pt-2">
             <div className="app-icon-main p-2">
               <div className="app-icon p-1 d-flex">
                 <img src={`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`} alt="Application Icon" />
               </div>
             </div>
           </div>
-          <div>
+          <div className="pt-1">
             {(canCreateApp(app) || canDeleteApp(app)) && (
               <AppMenu
                 onMenuOpen={onMenuToggle}
@@ -74,18 +74,18 @@ export default function AppCard({
           <div className="app-title">{app.name}</div>
         </ToolTip>
       </div>
-      <div style={{ display: focused ? 'block' : 'none' }}>
-        <div className="py-1">
-          <div className="app-creator py-1">{`${app.user?.first_name ? app.user.first_name : ''} ${
-            app.user?.last_name ? app.user.last_name : ''
-          }`}</div>
-          <div className="pt app-creation-time">
-            <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-              <span>{moment(app.created_at).fromNow(true)} ago</span>
-            </ToolTip>
-          </div>
+      <div className="py-1">
+        <div className="app-creator py-1">{`${app.user?.first_name ? app.user.first_name : ''} ${
+          app.user?.last_name ? app.user.last_name : ''
+        }`}</div>
+        <div className="app-creation-time" style={{ display: focused ? 'block' : 'none' }}>
+          <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+            <span>{moment(app.created_at).fromNow(true)} ago</span>
+          </ToolTip>
         </div>
-        <div className="container-fluid d-flex flex-column align-content-center px-0 mt-2">
+      </div>
+      <div style={{ display: focused ? 'block' : 'none' }}>
+        <div className="container-fluid d-flex flex-column align-content-center px-0 mt-1">
           <div className="row">
             <div className="col-6 pe-1">
               <ToolTip message="Open in app builder">

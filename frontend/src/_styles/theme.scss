@@ -594,16 +594,19 @@ button {
       overflow: hidden;
 
       .app-creation-time {
-        font-size: 0.6rem;
+        font-size: 0.625rem;
         line-height: 12px;
         color: #61656f;
       }
 
       .app-creator {
         font-weight: 500;
-        font-size: 0.6rem;
+        font-size: 0.625rem;
         line-height: 12px;
         color: #292d37;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .app-icon-main {
@@ -629,7 +632,7 @@ button {
         font-weight: 600;
         color: #000000;
         overflow: hidden;
-        text-overflow: ellipsis;
+        max-height: 60px;
       }
 
       button {
@@ -678,7 +681,9 @@ button {
       }
 
       .app-title {
-        height: 1.3rem;
+        height: 20px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
       }
     }
   }
@@ -1372,7 +1377,7 @@ tr:focus {
   box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.25);
 
   .popover-body {
-    padding: 1rem 1rem 0.4rem 1rem;
+    padding: 16px 12px 0px 12px;
 
     .field {
       font-weight: 500;
@@ -3004,6 +3009,21 @@ input[type="text"] {
   .input-icon .input-icon-addon {
     display: flex;
   }
+  .input-icon .input-icon-addon.end {
+    pointer-events: auto;
+    div {
+      background-color: #A6B6CC;
+      border-radius: 12px;
+      color: #ffffff;
+      padding: 1px;
+      cursor: pointer;
+      svg {
+        height: 14px;
+        width: 14px
+      }
+    }
+  }
+  
 }
 
 .fixedHeader {

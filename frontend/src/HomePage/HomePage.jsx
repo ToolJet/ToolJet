@@ -312,6 +312,9 @@ class HomePage extends React.Component {
   };
 
   onSearchSubmit = (key) => {
+    if (this.state.appSearchKey === key) {
+      return;
+    }
     this.fetchApps(1, this.state.currentFolder.id, key || '');
     this.fetchFolders(key || '');
   };
@@ -349,7 +352,7 @@ class HomePage extends React.Component {
         });
 
         this.foldersChanged();
-        this.setState({ appOperations: { isAdding: false }, showAddToFolderModal: false });
+        this.setState({ appOperations: {}, showAddToFolderModal: false });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
@@ -363,7 +366,10 @@ class HomePage extends React.Component {
     if (action === 'add-to-folder') {
       this.setState({ appOperations: { ...appOperations, selectedApp: app }, showAddToFolderModal: true });
     } else if (action === 'change-icon') {
-      this.setState({ appOperations: { ...appOperations, selectedApp: app }, showChangeIconModal: true });
+      this.setState({
+        appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+        showChangeIconModal: true,
+      });
     }
   };
 
@@ -387,6 +393,12 @@ class HomePage extends React.Component {
     if (!appOperations?.selectedIcon || !appOperations?.selectedApp) {
       return toast.error('Select an icon', { position: 'top-center' });
     }
+    if (appOperations.selectedIcon === appOperations.selectedApp.icon) {
+      this.setState({ appOperations: {}, showChangeIconModal: false });
+      return toast.success('Icon updated.', {
+        position: 'top-center',
+      });
+    }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
     appService
@@ -402,7 +414,7 @@ class HomePage extends React.Component {
           }
           return app;
         });
-        this.setState({ appOperations: { isAdding: false }, showChangeIconModal: false, apps: updatedApps });
+        this.setState({ appOperations: {}, showChangeIconModal: false, apps: updatedApps });
       })
       .catch(({ error }) => {
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
@@ -441,7 +453,7 @@ class HomePage extends React.Component {
 
         <Modal
           show={showAddToFolderModal && !!appOperations.selectedApp}
-          closeModal={() => this.setState({ showAddToFolderModal: false })}
+          closeModal={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
           title="Add to folder"
         >
           <div className="row">
@@ -471,7 +483,10 @@ class HomePage extends React.Component {
           </div>
           <div className="row">
             <div className="col d-flex modal-footer-btn">
-              <button className="btn btn-light" onClick={() => this.setState({ showAddToFolderModal: false })}>
+              <button
+                className="btn btn-light"
+                onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
+              >
                 Cancel
               </button>
               <button
@@ -486,7 +501,7 @@ class HomePage extends React.Component {
 
         <Modal
           show={showChangeIconModal && !!appOperations.selectedApp}
-          closeModal={() => this.setState({ showChangeIconModal: false })}
+          closeModal={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
           title="Change Icon"
         >
           <div className="row">
@@ -496,7 +511,10 @@ class HomePage extends React.Component {
           </div>
           <div className="row">
             <div className="col d-flex modal-footer-btn">
-              <button className="btn btn-light" onClick={() => this.setState({ showChangeIconModal: false })}>
+              <button
+                className="btn btn-light"
+                onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
+              >
                 Cancel
               </button>
               <button

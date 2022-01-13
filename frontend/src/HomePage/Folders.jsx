@@ -111,6 +111,7 @@ export const Folders = function Folders({
                   className="form-control"
                   placeholder="folder name"
                   disabled={isCreating}
+                  maxLength={25}
                 />
               </div>
             </div>
