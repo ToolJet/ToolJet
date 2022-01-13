@@ -8,6 +8,7 @@ export const LibraryApps = function LibraryApps() {
   const [libraryApps, setLibraryApps] = useState([]);
 
   function deployApp(id) {
+    console.log('id', id);
     setDeployingId(id);
     libraryAppService
       .deploy(id)

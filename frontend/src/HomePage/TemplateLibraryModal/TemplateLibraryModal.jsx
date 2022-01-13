@@ -6,6 +6,7 @@ import { libraryAppService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
+import { history } from '@/_helpers';
 
 const identifyUniqueCategories = (templates) => ['all', ...new Set(_.map(templates, 'category'))];
 
@@ -36,6 +37,30 @@ export default function TemplateLibraryModal(props) {
         setLibraryApps([]);
       });
   }, []);
+
+  const [deploying, setDeploying] = useState(false);
+
+  function deployApp() {
+    console.log('selectedApp', selectedApp);
+    const id = selectedApp.id;
+    setDeploying(true);
+    libraryAppService
+      .deploy(id)
+      .then((data) => {
+        console.log('dataa', data);
+        setDeploying(false);
+        toast.success('App created.', {
+          position: 'top-center',
+        });
+        history.push(`/apps/${data.id}`);
+      })
+      .catch((e) => {
+        toast.error(e.error, {
+          position: 'top-center',
+        });
+        setDeploying(false);
+      });
+  }
 
   return (
     <Modal
@@ -74,7 +99,19 @@ export default function TemplateLibraryModal(props) {
                     style={{ borderTop: '1px solid #D2DDEC' }}
                   >
                     <div className="d-flex flex-row align-items-center" style={{ height: '100%' }}>
-                      <Button onClick={props.onHide}> Close </Button>
+                      <Button variant="outline-primary" onClick={props.onCloseButtonClick}>
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={() => {
+                          deployApp();
+                          props.onCloseButtonClick();
+                        }}
+                        className="ms-2"
+                      >
+                        Deploy
+                      </Button>
                     </div>
                   </Col>
                 </Row>
@@ -83,8 +120,6 @@ export default function TemplateLibraryModal(props) {
           </Row>
         </Container>
       </Modal.Body>
-      {/* <Modal.Footer>
-      </Modal.Footer> */}
     </Modal>
   );
 }
