@@ -84,7 +84,9 @@ class DataSourceManager extends React.Component {
       selectedDataSource: null,
       options: {},
       connectionTestError: null,
-      isCopied: false,
+      queryString: null,
+      filteredDatasources: [],
+      activeDatasourceList: '#alldatasources',
     });
   };
 
@@ -306,6 +308,7 @@ class DataSourceManager extends React.Component {
           <EmptyStateContainer
             queryString={this.state.queryString}
             handleBackToAllDatasources={this.handleBackToAllDatasources}
+            darkMode={this.props.darkMode}
           />
         );
       }
@@ -591,7 +594,7 @@ class DataSourceManager extends React.Component {
   }
 }
 
-const EmptyStateContainer = ({ queryString, handleBackToAllDatasources }) => {
+const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode }) => {
   const [inputValue, set] = React.useState(() => '');
   const [status, setStatus] = React.useState(false);
   const handleSend = () => {
@@ -611,8 +614,7 @@ const EmptyStateContainer = ({ queryString, handleBackToAllDatasources }) => {
           <div>
             <p className="text-success mt-2">Thank you! We&apos;ve took a note of that</p>
             <button
-              // className={`datasource-modal-button ${darkMode && 'dark-button'}`}
-              className={`datasource-modal-button`}
+              className={`datasource-modal-button ${darkMode && 'dark-button'}`}
               onClick={handleBackToAllDatasources}
             >
               {'Go to all Datasources'}
