@@ -148,14 +148,14 @@ class DataSourceManager extends React.Component {
     }
   };
 
-  handleOnSubmit = (searchQuery) => {
+  handleSearch = (searchQuery) => {
     this.setState({ queryString: searchQuery });
-    //filter the datasources based on the search query
+
     const arr = [];
     const filteredDatasources = this.datasourcesGroups().filter(
       (group) => group.key === this.state.activeDatasourceList
     )[0].list;
-    //filter the datasources based on the search query
+
     filteredDatasources.forEach((datasource) => {
       if (datasource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         arr.push(datasource);
@@ -165,8 +165,7 @@ class DataSourceManager extends React.Component {
   };
 
   handleBackToAllDatasources = () => {
-    this.setState({ queryString: null });
-    this.setState({ filteredDatasources: [] });
+    this.setState({ queryString: null, filteredDatasources: [] });
   };
 
   renderSourceComponent = (kind) => {
@@ -209,7 +208,11 @@ class DataSourceManager extends React.Component {
             <div className="selected-datasource-list-content">
               <Tab.Content>
                 <div className="input-icon modal-searchbar">
-                  <SearchBoxContainer onChange={this.handleOnSubmit} onClear={this.handleBackToAllDatasources} />
+                  <SearchBoxContainer
+                    onChange={this.handleSearch}
+                    onClear={this.handleBackToAllDatasources}
+                    queryString={this.state.queryString}
+                  />
                 </div>
                 {datasources.map((datasource) => (
                   <Tab.Pane eventKey={datasource.key} key={datasource.key}>
@@ -645,8 +648,8 @@ const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode
   );
 };
 
-const SearchBoxContainer = ({ onChange, onClear }) => {
-  const [searchText, setSearchText] = React.useState('');
+const SearchBoxContainer = ({ onChange, onClear, queryString }) => {
+  const [searchText, setSearchText] = React.useState(queryString ?? '');
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
@@ -657,6 +660,12 @@ const SearchBoxContainer = ({ onChange, onClear }) => {
     setSearchText('');
     onClear();
   };
+
+  React.useEffect(() => {
+    if (queryString === null) {
+      setSearchText('');
+    }
+  }, [queryString]);
 
   return (
     <div className="search-box-wrapper">
