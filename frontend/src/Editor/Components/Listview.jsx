@@ -54,7 +54,6 @@ export const Listview = function Listview({
               removeComponent={removeComponent}
               listViewItemOptions={{ index }}
             />
-            {index > 0 && <hr className="m-0"></hr>}
           </div>
         ))}
       </div>
