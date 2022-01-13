@@ -19,7 +19,6 @@
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.5",
     "html-webpack-plugin": "^5.3.2",
-    "husky": "^7.0.2",
     "lint-staged": "^11.2.3",
     "path": "^0.12.7",
     "webpack": "^5.55.1",
@@ -28,6 +27,7 @@
   "dependencies": {
     "@nestjs/cli": "^8.1.0",
     "eslint": "^7.25.0",
+    "husky": "^7.0.2",
     "ts-node": "^10.1.0"
   },
   "scripts": {

@@ -13,9 +13,9 @@ ENV NODE_ENV=production
 COPY ./package.json ./package-lock.json ./
 RUN npm install
 
-# Build plugins
 ENV NODE_ENV=development
-# Building ToolJet plugins
+
+# Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
@@ -27,7 +27,7 @@ ENV NODE_ENV=production
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend/ ./frontend/
-RUN NODE_ENV=production npm --prefix frontend run build
+RUN npm --prefix frontend run build
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
@@ -42,12 +42,19 @@ ENV NODE_ENV=production
 RUN apk add postgresql-client
 RUN mkdir -p /app
 
+# copy npm scripts
 COPY --from=builder /app/package.json ./app/package.json
+# copy plugins dependencies
 COPY --from=builder /app/plugins/dist ./app/plugins/dist
+COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
+COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
+COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
+COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
+# copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
-# FIXME: dependency on /server/scripts and typeorm for db creation and migration.
-# Need to check if we can optimize such that only executable dist from prev stage
-# can be copied.
+# copy server build
+# NOTE: typescript dependency on /server/scripts and typeorm for db creation and migration.
+# Need to check if we can optimize such that only executable dist from prev stage can be copied
 COPY --from=builder /app/server ./app/server
 
 WORKDIR /app
