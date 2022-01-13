@@ -170,6 +170,7 @@ class Editor extends React.Component {
     if (this.state.socket) {
       this.state.socket?.close();
     }
+    document.title = 'Tooljet - Dashboard';
   }
 
   getWebsocketUrl = () => {
