@@ -163,6 +163,11 @@ class DataSourceManager extends React.Component {
     this.setState({ filteredDatasources: arr });
   };
 
+  handleBackToAllDatasources = () => {
+    this.setState({ queryString: null });
+    this.setState({ filteredDatasources: [] });
+  };
+
   renderSourceComponent = (kind) => {
     const { options, isSaving } = this.state;
 
@@ -186,31 +191,7 @@ class DataSourceManager extends React.Component {
     this.setState({ connectionTestError: data });
   };
 
-  // **
   segregateDataSources = () => {
-    // const filteredDatasources = [];
-    //filterquery changes update the filtered datasources
-    // if (filterQuery) {
-    //   this.setState({ queryString: filterQuery });
-    // }
-    // const { queryString } = this.state;
-    // console.log('querystring', filterQuery);
-    // if (queryString) {
-    //   filteredDatasources = filteredDatasources.filter((datasource) => {
-    //     return datasource.name.toLowerCase().includes(queryString.toLowerCase());
-    //   });
-    // }
-    // console.log('filteredDatasources', filterQuery);
-
-    // if (filteredDatasources.length === 0) {
-    //   return (
-    //     <div className="empty">
-    //       <p className="empty-title">No results found</p>
-    //       <p className={`empty-subtitle `}>Try adjusting your search or filter to find what you&apos;re looking for.</p>
-    //     </div>
-    //   );
-    // }
-
     const datasources = this.datasourcesGroups();
 
     return (
@@ -241,8 +222,6 @@ class DataSourceManager extends React.Component {
       </Tab.Container>
     );
   };
-  // };
-  //** */
 
   datasourcesGroups = () => {
     const allDataSourcesList = {
@@ -324,7 +303,12 @@ class DataSourceManager extends React.Component {
       });
 
       if (filteredDatasources.length === 0) {
-        return <EmptyStateContainer queryString={this.state.queryString} />;
+        return (
+          <EmptyStateContainer
+            queryString={this.state.queryString}
+            handleBackToAllDatasources={this.handleBackToAllDatasources}
+          />
+        );
       }
 
       return (
@@ -608,8 +592,8 @@ class DataSourceManager extends React.Component {
   }
 }
 
-const EmptyStateContainer = ({ queryString }) => {
-  const [inputValue, set] = React.useState('');
+const EmptyStateContainer = ({ queryString, handleBackToAllDatasources }) => {
+  const [inputValue, set] = React.useState(() => '');
   const [status, setStatus] = React.useState(false);
   const handleSend = () => {
     console.log('send', inputValue);
@@ -631,7 +615,7 @@ const EmptyStateContainer = ({ queryString }) => {
             <button
               // className={`datasource-modal-button ${darkMode && 'dark-button'}`}
               className={`datasource-modal-button`}
-              // onClick={testDataSource}
+              onClick={handleBackToAllDatasources}
             >
               {'Go to all Datasources'}
             </button>
