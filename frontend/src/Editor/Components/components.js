@@ -37,6 +37,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      actionButtonRadius: { type: 'code', displayName: 'Action Button Radius' },
       tableType: {
         type: 'select',
         displayName: 'Table type',
@@ -99,6 +100,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: undefined },
+        actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
@@ -333,6 +335,8 @@ export const componentTypes = [
     },
     properties: {
       value: { type: 'code', displayName: 'Default value' },
+      minValue: { type: 'code', displayName: 'Minimum value' },
+      maxValue: { type: 'code', displayName: 'Maximum value' },
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
@@ -350,6 +354,8 @@ export const componentTypes = [
       },
       properties: {
         value: { value: '99' },
+        maxValue: { value: '' },
+        minValue: { value: '' },
         placeholder: { value: '0' },
       },
       events: [],
