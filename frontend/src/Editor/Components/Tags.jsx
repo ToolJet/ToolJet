@@ -2,13 +2,12 @@ import React from 'react';
 
 export const Tags = function Tags({ width, height, properties, styles }) {
   const { data } = properties;
-  const { textColor, visibility } = styles;
+  const { visibility } = styles;
 
   const computedStyles = {
     width,
     height,
     display: visibility ? '' : 'none',
-    color: textColor,
     overflowY: 'auto',
   };
 
