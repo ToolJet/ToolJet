@@ -984,7 +984,7 @@ class Editor extends React.Component {
                   height: `calc(100% - ${this.state.queryPaneHeight}%)`,
                   width: !showLeftSidebar ? '85%' : '',
                   left: !showLeftSidebar ? '0' : '',
-                  transition: 'height 0.3s ease-in-out',
+                  // transition: 'height 0.3s ease-in-out',
                   cursor: this.state.isQueryPaneDragging || this.state.isTopOfQueryPane ? 'row-resize' : 'default',
                 }}
               >
