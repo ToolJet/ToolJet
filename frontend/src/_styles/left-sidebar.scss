@@ -220,10 +220,6 @@
   }
 }
 
-.test {
-  display: flex;
-}
-
 .modal-body-content::-webkit-scrollbar { 
   display: none!important;
 }
@@ -285,4 +281,22 @@
   padding: 24px 12px!important;
   width: 164px!important;
   height: 112px!important;
+}
+
+
+.input-icon {
+ .search-icon {
+  display: block;
+  position: absolute;
+  left: 0;
+  margin-right: 0.5rem;
+ }
+
+  .clear-icon {
+    cursor: pointer;
+    display: block;
+    position: absolute;
+    right: 0;
+    margin-right: 0.5rem;
+  }
 }

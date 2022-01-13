@@ -14,7 +14,6 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
 import { Card } from '../../_ui/card';
-import { SearchBox } from '../../_components/SearchBox';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -208,7 +207,7 @@ class DataSourceManager extends React.Component {
             <div className="selected-datasource-list-content">
               <Tab.Content>
                 <div className="input-icon modal-searchbar">
-                  <SearchBox onSubmit={this.handleOnSubmit} updateIconOnType={true} />
+                  <SearchBoxContainer onChange={this.handleOnSubmit} onClear={this.handleBackToAllDatasources} />
                 </div>
                 {datasources.map((datasource) => (
                   <Tab.Pane eventKey={datasource.key} key={datasource.key}>
@@ -640,6 +639,68 @@ const EmptyStateContainer = ({ queryString, handleBackToAllDatasources }) => {
           </div>
         )}
       </center>
+    </div>
+  );
+};
+
+const SearchBoxContainer = ({ onChange, onClear }) => {
+  const [searchText, setSearchText] = React.useState('');
+
+  const handleChange = (e) => {
+    setSearchText(e.target.value);
+    onChange(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchText('');
+    onClear();
+  };
+
+  return (
+    <div className="search-box-wrapper">
+      <div style={{ height: '36px' }} className="input-icon mb-3 d-flex">
+        {searchText.length === 0 && (
+          <span className="search-icon mt-2 mx-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <circle cx="10" cy="10" r="7" />
+              <line x1="21" y1="21" x2="15" y2="15" />
+            </svg>
+          </span>
+        )}
+        {searchText.length > 0 && (
+          <span className="clear-icon mt-2" onClick={clearSearch}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="icon icon-tabler icon-tabler-circle-x"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M10 10l4 4m0 -4l-4 4"></path>
+            </svg>
+          </span>
+        )}
+        <input type="text" value={searchText} onChange={handleChange} className="form-control" placeholder="Search" />
+      </div>
     </div>
   );
 };
