@@ -3,7 +3,6 @@ import { Container, Row, Badge } from 'react-bootstrap';
 
 export default function TemplateDisplay(props) {
   const { id, name, description, sources } = props?.app ?? {};
-  console.log('sources', sources);
   return (
     <div className="template-display">
       <Container fluid className="pt-2">
@@ -42,7 +41,7 @@ export default function TemplateDisplay(props) {
           </span>
         </Row>
         <Row className="align-items-center justify-content-center" style={{ height: '88%' }}>
-          <img className="template-image" src={`/assets/images/templates/${id}.png`} />
+          <img className="template-image" src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`} />
         </Row>
       </Container>
     </div>

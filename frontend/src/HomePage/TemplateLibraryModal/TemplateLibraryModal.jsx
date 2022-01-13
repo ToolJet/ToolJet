@@ -95,7 +95,7 @@ export default function TemplateLibraryModal(props) {
                     <AppList apps={filteredApps} selectApp={selectApp} selectedApp={selectedApp} />
                   </Col>
                   <Col xs={9} style={{}}>
-                    <TemplateDisplay app={selectedApp} />
+                    <TemplateDisplay app={selectedApp} darkMode={props.darkMode} />
                   </Col>
                 </Row>
                 <Row style={{ height: '10%' }}>
