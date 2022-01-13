@@ -313,7 +313,7 @@ class DataSourceManager extends React.Component {
           show={this.props.showDataSourceManagerModal}
           size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
-          className={selectedDataSource ? 'mt-1' : 'mt-5 select-datasource-list-modal'}
+          className={selectedDataSource ? 'mt-5' : 'mt-5 select-datasource-list-modal'}
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
           onExit={this.onExit}
