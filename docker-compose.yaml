@@ -6,10 +6,11 @@ services:
       context: ./
       dockerfile: ./docker/client.Dockerfile.dev
     image: tooljet-client:development
-    platform: linux/amd64
+    platform: linux/x86_64
     volumes:
       - ./frontend:/app/frontend:delegated
       - ./plugins/:/app/plugins:cached
+      - /app/frontend/node_modules/
     ports:
       - 8082:8082
     environment:
@@ -22,12 +23,13 @@ services:
       context: ./
       dockerfile: ./docker/server.Dockerfile.dev
     image: tooljet-server:development
-    platform: linux/amd64
+    platform: linux/x86_64
     depends_on:
       - postgres
     volumes:
       - ./server:/app/server:delegated
       - ./plugins/:/app/plugins:cached
+      - /app/server/node_modules/
       - '.env:/app/.env'
       - '.env.test:/app/.env.test'
     ports:
