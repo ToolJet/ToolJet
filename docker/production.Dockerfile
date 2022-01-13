@@ -39,6 +39,7 @@ RUN npm --prefix server run build
 FROM node:14.17.3-alpine
 
 ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apk add postgresql-client freetds
 RUN mkdir -p /app
 
