@@ -214,14 +214,27 @@ class DataSourceManager extends React.Component {
             </div>
           </Col>
 
-          <Col style={{ left: '25%' }} sm={6} md={8} className="modal-body-content">
-            <Tab.Content>
-              {dataSourceList.map((datasource) => (
-                <Tab.Pane eventKey={datasource.key} key={datasource.key}>
-                  {datasource.card()}
-                </Tab.Pane>
-              ))}
-            </Tab.Content>
+          <Col style={{ left: '25%' }} className="modal-body-content mt-2">
+            <div className="input-icon modal-searchbar mt-3">
+              {/* <input
+                  type="text"
+                  className="form-control mb-2"
+                  placeholder="Search…"
+                  // value={searchQuery}
+                  // onChange={(e) => handleSearchQueryChange(e)}
+                /> */}
+              <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" />
+            </div>
+            <br />
+            <div className="selected-datasource-list-content">
+              <Tab.Content>
+                {dataSourceList.map((datasource) => (
+                  <Tab.Pane eventKey={datasource.key} key={datasource.key}>
+                    {datasource.card()}
+                  </Tab.Pane>
+                ))}
+              </Tab.Content>
+            </div>
           </Col>
         </Row>
       </Tab.Container>

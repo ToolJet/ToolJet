@@ -175,15 +175,26 @@
 }
 
 .modal-body-content {
-  height:100%;
-  width: 100%;;
-  // text-align: center;
+  height:98%;
+  width: 860px!important;
   position: absolute;
+  margin-left: -2.5rem!important;
   top: 0;
   bottom: 0;
   right: 0;
   overflow-y: scroll;
   overflow-x: hidden;
+
+  .selected-datasource-list-content {
+    width:860px;
+    padding-left: 2rem!important;
+  }
+
+  .modal-searchbar {
+    width: 200px;
+    float: right;
+    margin-left: 1rem;
+  }
 }
 
 .modal-body-content::-webkit-scrollbar { 
@@ -203,17 +214,17 @@
 .modal-sidebar {
   width: 242px!important;
   height: 670px;
-  margin-left: 0.5rem;
   background: #F7F9FC;
   border-radius: 0px;
   border-right: 1px solid #D2DDEC;
   padding: 24px!important;
+  margin-left: 0.5rem;
 }
 .select-datasource-list-modal {
   
   .modal-body {
     padding: 0px!important;
-  }
+  }  
 }
 
 .modal-body {
@@ -245,9 +256,6 @@
 
 .img-card {
   padding: 24px 12px!important;
-  // position: absolute;
   width: 164px!important;
   height: 112px!important;
-  // left: 389px;
-  // top: 176px;
 }
