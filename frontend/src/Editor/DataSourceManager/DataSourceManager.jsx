@@ -41,13 +41,14 @@ class DataSourceManager extends React.Component {
       isCopied: false,
       queryString: null,
       filteredDatasources: [],
+      activeDatasourceList: '#alldatasources',
     };
   }
 
   componentDidMount() {
     this.setState({
       appId: this.props.appId,
-      filteredDatasources: this.datasourcesGroups(),
+      // filteredDatasources: this.datasourcesGroups(),
     });
   }
 
@@ -148,6 +149,18 @@ class DataSourceManager extends React.Component {
 
   handleOnSubmit = (searchQuery) => {
     this.setState({ queryString: searchQuery });
+    //filter the datasources based on the search query
+    const arr = [];
+    const filteredDatasources = this.datasourcesGroups().filter(
+      (group) => group.key === this.state.activeDatasourceList
+    )[0].list;
+    //filter the datasources based on the search query
+    filteredDatasources.forEach((datasource) => {
+      if (datasource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        arr.push(datasource);
+      }
+    });
+    this.setState({ filteredDatasources: arr });
   };
 
   renderSourceComponent = (kind) => {
@@ -174,7 +187,7 @@ class DataSourceManager extends React.Component {
   };
 
   // **
-  segregateDataSources = (filteredDatasources = [], filterQuery = null) => {
+  segregateDataSources = () => {
     // const filteredDatasources = [];
     //filterquery changes update the filtered datasources
     // if (filterQuery) {
@@ -187,21 +200,28 @@ class DataSourceManager extends React.Component {
     //     return datasource.name.toLowerCase().includes(queryString.toLowerCase());
     //   });
     // }
+    // console.log('filteredDatasources', filterQuery);
 
-    if (filterQuery && filteredDatasources.length === 0) {
-      return (
-        <div className="empty">
-          <p className="empty-title">No results found</p>
-          <p className={`empty-subtitle `}>Try adjusting your search or filter to find what you&apos;re looking for.</p>
-        </div>
-      );
-    }
+    // if (filteredDatasources.length === 0) {
+    //   return (
+    //     <div className="empty">
+    //       <p className="empty-title">No results found</p>
+    //       <p className={`empty-subtitle `}>Try adjusting your search or filter to find what you&apos;re looking for.</p>
+    //     </div>
+    //   );
+    // }
+
+    const datasources = this.datasourcesGroups();
 
     return (
-      <Tab.Container id="list-group-tabs-example" defaultActiveKey="#alldatasources">
+      <Tab.Container
+        onSelect={(activekey) => this.setState({ activeDatasourceList: activekey })}
+        id="list-group-tabs-example"
+        defaultActiveKey={this.state.activeDatasourceList}
+      >
         <Row>
           <Col sm={6} md={4} className="modal-sidebar">
-            {this.renderSidebarList(this.state.filteredDatasources)}
+            {this.renderSidebarList()}
           </Col>
           <Col style={{ left: '25%' }} className="modal-body-content">
             <div className="selected-datasource-list-content">
@@ -209,7 +229,7 @@ class DataSourceManager extends React.Component {
                 <div className="input-icon modal-searchbar">
                   <SearchBox onSubmit={this.handleOnSubmit} />
                 </div>
-                {filteredDatasources.map((datasource) => (
+                {datasources.map((datasource) => (
                   <Tab.Pane eventKey={datasource.key} key={datasource.key}>
                     {datasource.renderDatasources()}
                   </Tab.Pane>
@@ -229,61 +249,47 @@ class DataSourceManager extends React.Component {
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      filteredDatasources: this.state.filteredDatasources,
     };
     const dataSourceList = [
       {
         type: 'All Datasources',
         key: '#alldatasources',
+        list: [...allDataSourcesList.databases, ...allDataSourcesList.apis, ...allDataSourcesList.cloudStorages],
         renderDatasources: () => this.renderCardGroup(allDataSourcesList, 'All Datasources'),
       },
       {
         type: 'Databases',
         key: '#databases',
+        list: allDataSourcesList.databases,
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.databases, 'Databases'),
       },
       {
         type: 'APIs',
         key: '#apis',
+        list: allDataSourcesList.apis,
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.apis, 'APIs'),
       },
       {
         type: 'Cloud Storage',
         key: '#cloudstorage',
+        list: allDataSourcesList.cloudStorages,
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+      },
+      {
+        type: 'Filtered Datasources',
+        key: '#filtereddatasources',
+        list: allDataSourcesList.filteredDatasources,
+        renderDatasources: () => this.renderCardGroup(this.state.filteredDatasources, this.state.activeDatasourceList),
       },
     ];
 
     return dataSourceList;
   };
 
-  renderSidebarList = (dataSourceList) => {
-    // const allDataSourcesList = {
-    //   databases: DataBaseSources,
-    //   apis: ApiSources,
-    //   cloudStorages: CloudStorageSources,
-    // };
-    // const dataSourceList = [
-    //   {
-    //     type: 'All Datasources',
-    //     key: '#alldatasources',
-    //     card: () => this.renderCardGroup(allDataSourcesList, 'All Datasources'),
-    //   },
-    //   {
-    //     type: 'Databases',
-    //     key: '#databases',
-    //     card: () => this.renderCardGroup(allDataSourcesList.databases, 'Databases'),
-    //   },
-    //   {
-    //     type: 'APIs',
-    //     key: '#apis',
-    //     card: () => this.renderCardGroup(allDataSourcesList.apis, 'APIs'),
-    //   },
-    //   {
-    //     type: 'Cloud Storage',
-    //     key: '#cloudstorage',
-    //     card: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
-    //   },
-    // ];
+  renderSidebarList = () => {
+    // const dataSourceList = this.datasourcesGroups();
+    const dataSourceList = this.datasourcesGroups().splice(0, 4);
 
     return (
       <>
@@ -306,7 +312,33 @@ class DataSourceManager extends React.Component {
   };
 
   renderCardGroup = (source, type) => {
-    const testclick = (dataSource) => this.selectDataSource(dataSource);
+    const renderSelectedDatasource = (dataSource) => this.selectDataSource(dataSource);
+
+    if (this.state.queryString && this.state.queryString.length > 0) {
+      const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
+        return {
+          ...datasource,
+          src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+          title: datasource.name,
+        };
+      });
+
+      return (
+        <>
+          <div className="row row-deck mt-4">
+            <h4 className="mb-2">{type}</h4>
+            {filteredDatasources.map((item) => (
+              <Card
+                key={item.key}
+                title={item.title}
+                src={item.src}
+                handleClick={() => renderSelectedDatasource(item)}
+              />
+            ))}
+          </div>
+        </>
+      );
+    }
 
     if (type === 'All Datasources') {
       const databases = source.databases.map((datasource) => {
@@ -337,7 +369,12 @@ class DataSourceManager extends React.Component {
             <div className="row row-deck mt-4">
               <h4 className="mb-2">{'Databases'}</h4>
               {databases.map((item) => (
-                <Card key={item.key} title={item.title} src={item.src} handleClick={() => testclick(item)} />
+                <Card
+                  key={item.key}
+                  title={item.title}
+                  src={item.src}
+                  handleClick={() => renderSelectedDatasource(item)}
+                />
               ))}
             </div>
           </div>
@@ -345,7 +382,12 @@ class DataSourceManager extends React.Component {
             <div className="row row-deck mt-4">
               <h4 className="mb-2">{'APIs'}</h4>
               {apis.map((item) => (
-                <Card key={item.key} title={item.title} src={item.src} handleClick={() => testclick(item)} />
+                <Card
+                  key={item.key}
+                  title={item.title}
+                  src={item.src}
+                  handleClick={() => renderSelectedDatasource(item)}
+                />
               ))}
             </div>
           </div>
@@ -353,7 +395,12 @@ class DataSourceManager extends React.Component {
             <div className="row row-deck mt-4">
               <h4 className="mb-2">{'Cloud Storages'}</h4>
               {cloudStorages.map((item) => (
-                <Card key={item.key} title={item.title} src={item.src} handleClick={() => testclick(item)} />
+                <Card
+                  key={item.key}
+                  title={item.title}
+                  src={item.src}
+                  handleClick={() => renderSelectedDatasource(item)}
+                />
               ))}
             </div>
           </div>
@@ -374,7 +421,7 @@ class DataSourceManager extends React.Component {
         <div className="row row-deck mt-4">
           <h4 className="mb-2">{type}</h4>
           {datasources.map((item) => (
-            <Card key={item.key} title={item.title} src={item.src} handleClick={() => testclick(item)} />
+            <Card key={item.key} title={item.title} src={item.src} handleClick={() => renderSelectedDatasource(item)} />
           ))}
         </div>
       </>
@@ -383,7 +430,7 @@ class DataSourceManager extends React.Component {
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
-    console.log('test -->', this.state.queryString);
+    console.log('test -->', this.state.activeDatasourceList, this.state.filteredDatasourceList);
     return (
       <div>
         <Modal
@@ -430,7 +477,7 @@ class DataSourceManager extends React.Component {
 
           <Modal.Body>
             {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
-            {!selectedDataSource && this.segregateDataSources(this.state.filteredDatasources, this.state.queryString)}
+            {!selectedDataSource && this.segregateDataSources()}
           </Modal.Body>
 
           {selectedDataSource && !dataSourceMeta.customTesting && (
