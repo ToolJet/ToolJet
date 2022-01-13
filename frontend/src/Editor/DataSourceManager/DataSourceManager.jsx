@@ -14,6 +14,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
 import { Card } from '../../_ui/card';
+import { SearchBox } from '../../_components/SearchBox';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -38,12 +39,15 @@ class DataSourceManager extends React.Component {
       dataSourceMeta,
       isSaving: false,
       isCopied: false,
+      queryString: null,
+      filteredDatasources: [],
     };
   }
 
   componentDidMount() {
     this.setState({
       appId: this.props.appId,
+      filteredDatasources: this.datasourcesGroups(),
     });
   }
 
@@ -142,6 +146,10 @@ class DataSourceManager extends React.Component {
     }
   };
 
+  handleOnSubmit = (searchQuery) => {
+    this.setState({ queryString: searchQuery });
+  };
+
   renderSourceComponent = (kind) => {
     const { options, isSaving } = this.state;
 
@@ -165,7 +173,58 @@ class DataSourceManager extends React.Component {
     this.setState({ connectionTestError: data });
   };
 
-  renderSidebarList = () => {
+  // **
+  segregateDataSources = (filteredDatasources = [], filterQuery = null) => {
+    // const filteredDatasources = [];
+    //filterquery changes update the filtered datasources
+    // if (filterQuery) {
+    //   this.setState({ queryString: filterQuery });
+    // }
+    // const { queryString } = this.state;
+    // console.log('querystring', filterQuery);
+    // if (queryString) {
+    //   filteredDatasources = filteredDatasources.filter((datasource) => {
+    //     return datasource.name.toLowerCase().includes(queryString.toLowerCase());
+    //   });
+    // }
+
+    if (filterQuery && filteredDatasources.length === 0) {
+      return (
+        <div className="empty">
+          <p className="empty-title">No results found</p>
+          <p className={`empty-subtitle `}>Try adjusting your search or filter to find what you&apos;re looking for.</p>
+        </div>
+      );
+    }
+
+    return (
+      <Tab.Container id="list-group-tabs-example" defaultActiveKey="#alldatasources">
+        <Row>
+          <Col sm={6} md={4} className="modal-sidebar">
+            {this.renderSidebarList(this.state.filteredDatasources)}
+          </Col>
+          <Col style={{ left: '25%' }} className="modal-body-content">
+            <div className="selected-datasource-list-content">
+              <Tab.Content>
+                <div className="input-icon modal-searchbar">
+                  <SearchBox onSubmit={this.handleOnSubmit} />
+                </div>
+                {filteredDatasources.map((datasource) => (
+                  <Tab.Pane eventKey={datasource.key} key={datasource.key}>
+                    {datasource.renderDatasources()}
+                  </Tab.Pane>
+                ))}
+              </Tab.Content>
+            </div>
+          </Col>
+        </Row>
+      </Tab.Container>
+    );
+  };
+  // };
+  //** */
+
+  datasourcesGroups = () => {
     const allDataSourcesList = {
       databases: DataBaseSources,
       apis: ApiSources,
@@ -175,69 +234,74 @@ class DataSourceManager extends React.Component {
       {
         type: 'All Datasources',
         key: '#alldatasources',
-        card: () => this.renderCardGroup(allDataSourcesList, 'All Datasources'),
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList, 'All Datasources'),
       },
       {
         type: 'Databases',
         key: '#databases',
-        card: () => this.renderCardGroup(allDataSourcesList.databases, 'Databases'),
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.databases, 'Databases'),
       },
       {
         type: 'APIs',
         key: '#apis',
-        card: () => this.renderCardGroup(allDataSourcesList.apis, 'APIs'),
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.apis, 'APIs'),
       },
       {
         type: 'Cloud Storage',
         key: '#cloudstorage',
-        card: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
       },
     ];
 
-    return (
-      <Tab.Container id="list-group-tabs-example" defaultActiveKey="#alldatasources">
-        <Row>
-          <Col sm={6} md={4} className="modal-sidebar">
-            <ListGroup className="datasource-lists-modal" variant="flush">
-              {dataSourceList.map((datasource) => (
-                <ListGroup.Item key={datasource.key} eventKey={datasource.key}>
-                  {datasource.type}
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-            <div className="datasource-modal-sidebar-footer">
-              <p className="text-black-50">
-                Can&apos;t find yours
-                <br />
-                <a href="#">Suggest</a>
-              </p>
-            </div>
-          </Col>
+    return dataSourceList;
+  };
 
-          <Col style={{ left: '25%' }} className="modal-body-content mt-2">
-            <div className="input-icon modal-searchbar mt-3">
-              {/* <input
-                  type="text"
-                  className="form-control mb-2"
-                  placeholder="Search…"
-                  // value={searchQuery}
-                  // onChange={(e) => handleSearchQueryChange(e)}
-                /> */}
-              <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" />
-            </div>
+  renderSidebarList = (dataSourceList) => {
+    // const allDataSourcesList = {
+    //   databases: DataBaseSources,
+    //   apis: ApiSources,
+    //   cloudStorages: CloudStorageSources,
+    // };
+    // const dataSourceList = [
+    //   {
+    //     type: 'All Datasources',
+    //     key: '#alldatasources',
+    //     card: () => this.renderCardGroup(allDataSourcesList, 'All Datasources'),
+    //   },
+    //   {
+    //     type: 'Databases',
+    //     key: '#databases',
+    //     card: () => this.renderCardGroup(allDataSourcesList.databases, 'Databases'),
+    //   },
+    //   {
+    //     type: 'APIs',
+    //     key: '#apis',
+    //     card: () => this.renderCardGroup(allDataSourcesList.apis, 'APIs'),
+    //   },
+    //   {
+    //     type: 'Cloud Storage',
+    //     key: '#cloudstorage',
+    //     card: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+    //   },
+    // ];
+
+    return (
+      <>
+        <ListGroup className="datasource-lists-modal" variant="flush">
+          {dataSourceList.map((datasource) => (
+            <ListGroup.Item key={datasource.key} eventKey={datasource.key}>
+              {datasource.type}
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+        <div className="datasource-modal-sidebar-footer">
+          <p className="text-black-50">
+            Can&apos;t find yours
             <br />
-            <div className="selected-datasource-list-content">
-              <Tab.Content>
-                {dataSourceList.map((datasource) => (
-                  <Tab.Pane eventKey={datasource.key} key={datasource.key}>
-                    {datasource.card()}
-                  </Tab.Pane>
-                ))}
-              </Tab.Content>
-            </div>
-          </Col>
-        </Row>
-      </Tab.Container>
+            <a href="#">Suggest</a>
+          </p>
+        </div>
+      </>
     );
   };
 
@@ -319,7 +383,7 @@ class DataSourceManager extends React.Component {
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
-
+    console.log('test -->', this.state.queryString);
     return (
       <div>
         <Modal
@@ -366,7 +430,7 @@ class DataSourceManager extends React.Component {
 
           <Modal.Body>
             {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
-            {!selectedDataSource && this.renderSidebarList()}
+            {!selectedDataSource && this.segregateDataSources(this.state.filteredDatasources, this.state.queryString)}
           </Modal.Body>
 
           {selectedDataSource && !dataSourceMeta.customTesting && (

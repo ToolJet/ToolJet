@@ -179,6 +179,7 @@
   width: 860px!important;
   position: absolute;
   margin-left: -2.5rem!important;
+  margin-top: 0!important;
   top: 0;
   bottom: 0;
   right: 0;
@@ -188,12 +189,19 @@
   .selected-datasource-list-content {
     width:860px;
     padding-left: 2rem!important;
+    .tab-content {
+      position: absolute;
+      margin-top: 1rem!important;
+      left: 0;
+      margin-left: 3rem!important;
+    }
   }
 
   .modal-searchbar {
     width: 200px;
     float: right;
     margin-left: 1rem;
+    margin-top: 1rem;
   }
 }
 
