@@ -25,4 +25,4 @@ COPY ./server/ ./server/
 COPY ./.env ./.env
 COPY ./.env.test ./.env.test
 
-CMD ls
+ENTRYPOINT ["./server/entrypoint.sh"]
