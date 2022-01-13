@@ -430,8 +430,8 @@ class HomePage extends React.Component {
               </div>
             </div>
             <TemplateLibraryModal
-              show={this.state.showTemplateLibraryModal}
-              // show={true}
+              // show={this.state.showTemplateLibraryModal}
+              show={true}
               onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
               darkMode={this.props.darkMode}
             />
