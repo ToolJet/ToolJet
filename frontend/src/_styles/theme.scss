@@ -664,7 +664,7 @@ button {
     }
 
     .modal-body, .modal-footer {
-      background-color: #FFFFFC;
+      background-color: #FFFFFF;
     }
   }
 
@@ -690,6 +690,34 @@ button {
     .list-group-item.active {
       background-color: #EDF1FF;
       color: black;
+    }
+  }
+
+  .template-display {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+
+    h3.title {
+      font-weight: 600;
+      line-height: 17px
+    }
+
+    p.description {
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 15px;
+      letter-spacing: -0.1px;
+      color: #8092AB;
+    }
+
+    img.template-image {
+      height: 100%;
+    }
+
+    .row {
+      margin-bottom: 0;
     }
   }
 }

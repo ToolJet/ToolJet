@@ -5,6 +5,7 @@ import AppList from './AppList';
 import { libraryAppService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
+import TemplateDisplay from './TemplateDisplay';
 
 const identifyUniqueCategories = (templates) => ['all', ...new Set(_.map(templates, 'category'))];
 
@@ -63,7 +64,7 @@ export default function TemplateLibraryModal(props) {
                     <AppList apps={filteredApps} selectApp={selectApp} selectedApp={selectedApp} />
                   </Col>
                   <Col xs={9} style={{}}>
-                    abc
+                    <TemplateDisplay app={selectedApp} />
                   </Col>
                 </Row>
                 <Row style={{ height: '10%' }}>
