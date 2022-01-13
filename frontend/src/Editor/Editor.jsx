@@ -105,6 +105,10 @@ class Editor extends React.Component {
     };
   }
 
+  setWindowTitle(name) {
+    document.title = name ? `Tooljet - ${name}` : `Tooljet - Untitled App`;
+  }
+
   componentDidMount() {
     this.fetchApps(0);
     this.fetchApp();
@@ -324,6 +328,7 @@ class Editor extends React.Component {
             console.log('Default component state computed and set');
             this.runQueries(data.data_queries);
           });
+          this.setWindowTitle(data.name);
         }
       );
 
@@ -660,6 +665,7 @@ class Editor extends React.Component {
     this.setState({
       app: { ...this.state.app, name: newName },
     });
+    this.setWindowTitle(newName);
   };
 
   toggleQueryEditor = () => {
