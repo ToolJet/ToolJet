@@ -176,14 +176,18 @@
 
 .modal-body-content {
   height:100%;
-  text-align: center;
+  width: 100%;;
+  // text-align: center;
   position: absolute;
   top: 0;
   bottom: 0;
   right: 0;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
-  width: 100%;
+}
+
+.modal-body-content::-webkit-scrollbar { 
+  display: none!important;
 }
 
 .card-group-deck {
@@ -205,16 +209,20 @@
   border-right: 1px solid #D2DDEC;
   padding: 24px!important;
 }
+.select-datasource-list-modal {
+  
+  .modal-body {
+    padding: 0px!important;
+  }
+}
 
 .modal-body {
-  height: 670px;
   .datasource-modal-sidebar-footer {
     border: 1px solid #D2DDEC; 
-    // margin: 0!important;
+
     width: 242px!important;
     height: 71px;
     background-color: #FFFFFC;
-    // @extend .modal-body-content;
     padding: 24px!important;
     position: absolute;
     left: 0;

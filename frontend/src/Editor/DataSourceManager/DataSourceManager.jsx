@@ -1,7 +1,6 @@
 import React from 'react';
 import { datasourceService, authenticationService } from '@/_services';
-import { Modal, Button, Tab, Row, Col, ListGroup, Nav } from 'react-bootstrap';
-// import Button from 'react-bootstrap/Button';
+import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { TestConnection } from './TestConnection';
 import {
@@ -230,50 +229,77 @@ class DataSourceManager extends React.Component {
   };
 
   renderCardGroup = (source, type) => {
+    const testclick = (dataSource) => this.selectDataSource(dataSource);
+
     if (type === 'All Datasources') {
       const databases = source.databases.map((datasource) => {
-        const src = `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`;
-        const text = datasource.name;
-        const handleClick = () => this.selectDataSource(datasource);
-        return { ...datasource, src, text, handleClick };
+        return {
+          ...datasource,
+          src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+          title: datasource.name,
+        };
       });
       const apis = source.apis.map((datasource) => {
-        const src = `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`;
-        const text = datasource.name;
-        const handleClick = () => this.selectDataSource(datasource);
-        return { ...datasource, src, text, handleClick };
+        return {
+          ...datasource,
+          src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+          title: datasource.name,
+        };
       });
       const cloudStorages = source.cloudStorages.map((datasource) => {
-        const src = `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`;
-        const text = datasource.name;
-        const handleClick = () => this.selectDataSource(datasource);
-        return { ...datasource, src, text, handleClick };
+        return {
+          ...datasource,
+          src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+          title: datasource.name,
+        };
       });
+
       return (
         <>
           <div>
-            <Card.Group list={databases} heading={'Databases'} />
+            <div className="row row-deck mt-4">
+              <h4 className="mb-2">{'Databases'}</h4>
+              {databases.map((item) => (
+                <Card key={item.key} title={item.title} src={item.src} handleClick={() => testclick(item)} />
+              ))}
+            </div>
           </div>
           <div>
-            <Card.Group list={apis} heading={'APIs'} />
+            <div className="row row-deck mt-4">
+              <h4 className="mb-2">{'APIs'}</h4>
+              {apis.map((item) => (
+                <Card key={item.key} title={item.title} src={item.src} handleClick={() => testclick(item)} />
+              ))}
+            </div>
           </div>
           <div>
-            <Card.Group list={cloudStorages} heading={'Cloud Storages'} />
+            <div className="row row-deck mt-4">
+              <h4 className="mb-2">{'Cloud Storages'}</h4>
+              {cloudStorages.map((item) => (
+                <Card key={item.key} title={item.title} src={item.src} handleClick={() => testclick(item)} />
+              ))}
+            </div>
           </div>
         </>
       );
     }
 
     const datasources = source.map((datasource) => {
-      const src = `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`;
-      const text = datasource.name;
-      const handleClick = () => this.selectDataSource(datasource);
-      return { ...datasource, src, text, handleClick };
+      return {
+        ...datasource,
+        src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+        title: datasource.name,
+      };
     });
 
     return (
       <>
-        <Card.Group list={datasources} heading={type} />
+        <div className="row row-deck mt-4">
+          <h4 className="mb-2">{type}</h4>
+          {datasources.map((item) => (
+            <Card key={item.key} title={item.title} src={item.src} handleClick={() => testclick(item)} />
+          ))}
+        </div>
       </>
     );
   };
@@ -287,7 +313,7 @@ class DataSourceManager extends React.Component {
           show={this.props.showDataSourceManagerModal}
           size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
-          className="mt-5"
+          className={selectedDataSource ? 'mt-1' : 'mt-5 select-datasource-list-modal'}
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
           onExit={this.onExit}
@@ -325,7 +351,7 @@ class DataSourceManager extends React.Component {
             </Button>
           </Modal.Header>
 
-          <Modal.Body style={!selectedDataSource && { padding: 0 }}>
+          <Modal.Body>
             {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
             {!selectedDataSource && this.renderSidebarList()}
           </Modal.Body>
