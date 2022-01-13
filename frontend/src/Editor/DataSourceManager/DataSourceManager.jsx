@@ -323,6 +323,10 @@ class DataSourceManager extends React.Component {
         };
       });
 
+      if (filteredDatasources.length === 0) {
+        return <EmptyStateContainer queryString={this.state.queryString} />;
+      }
+
       return (
         <>
           <div className="row row-deck mt-4">
@@ -603,5 +607,58 @@ class DataSourceManager extends React.Component {
     );
   }
 }
+
+const EmptyStateContainer = ({ queryString }) => {
+  const [inputValue, set] = React.useState('');
+  const [status, setStatus] = React.useState(false);
+  const handleSend = () => {
+    console.log('send', inputValue);
+    setStatus(true);
+  };
+
+  React.useEffect(() => {
+    setStatus(false);
+  }, [queryString]);
+
+  return (
+    <div className="empty mt-4">
+      <h3>No results for &quot;{queryString} &quot;</h3>
+      <center className="empty-results">
+        <img src="/assets/images/icons/no-results.svg" width="150" height="150" />
+        {status ? (
+          <div>
+            <p className="text-success mt-2">Thank you! We&apos;ve took a note of that</p>
+            <button
+              // className={`datasource-modal-button ${darkMode && 'dark-button'}`}
+              className={`datasource-modal-button`}
+              // onClick={testDataSource}
+            >
+              {'Go to all Datasources'}
+            </button>
+          </div>
+        ) : (
+          <div className="row empty-search">
+            <div className="col-9 mt-2">
+              <div className="input-icon">
+                <input
+                  type="text"
+                  className="form-control mb-2"
+                  value={inputValue}
+                  placeholder="Tell us what you were looking for?"
+                  onChange={(e) => set(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="col-auto">
+              <Button className="mt-2" variant="primary" onClick={handleSend}>
+                {'Send'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </center>
+    </div>
+  );
+};
 
 export { DataSourceManager };

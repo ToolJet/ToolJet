@@ -211,6 +211,19 @@
   }
 }
 
+.empty-results {
+  width: inherit;
+
+  .empty-search {
+    width: 420px;
+    margin-left: 4rem;
+  }
+}
+
+.test {
+  display: flex;
+}
+
 .modal-body-content::-webkit-scrollbar { 
   display: none!important;
 }
