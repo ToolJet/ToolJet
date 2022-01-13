@@ -118,7 +118,7 @@ class Editor extends React.Component {
 
   onMouseMove = (e) => {
     if (this.state.isQueryPaneDragging) {
-      let queryPaneHeight = (e.clientY / window.screen.height) * 100;
+      let queryPaneHeight = (e.clientY / window.innerHeight) * 100;
 
       if (queryPaneHeight > 95) queryPaneHeight = 100;
       if (queryPaneHeight < 4.5) queryPaneHeight = 4.5;
