@@ -156,6 +156,7 @@ let QueryManager = class QueryManager extends React.Component {
 
   createOrUpdateDataQuery = () => {
     const { appId, options, selectedDataSource, mode, queryName } = this.state;
+    const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
 
@@ -181,7 +182,7 @@ let QueryManager = class QueryManager extends React.Component {
     } else {
       this.setState({ isCreating: true });
       dataqueryService
-        .create(appId, queryName, kind, options, dataSourceId)
+        .create(appId, appVersionId, queryName, kind, options, dataSourceId)
         .then(() => {
           toast.success('Query Added');
           this.setState({ isCreating: false });
@@ -442,7 +443,7 @@ let QueryManager = class QueryManager extends React.Component {
 
             {currentTab === 2 && (
               <div className="advanced-options-container m-2">
-                <label className="form-check form-switch">
+                <div className="form-check form-switch">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -450,8 +451,8 @@ let QueryManager = class QueryManager extends React.Component {
                     checked={this.state.options.runOnPageLoad}
                   />
                   <span className="form-check-label">Run this query on page load?</span>
-                </label>
-                <label className="form-check form-switch">
+                </div>
+                <div className="form-check form-switch">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -459,9 +460,9 @@ let QueryManager = class QueryManager extends React.Component {
                     checked={this.state.options.requestConfirmation}
                   />
                   <span className="form-check-label">Request confirmation before running query?</span>
-                </label>
+                </div>
 
-                <label className="form-check form-switch">
+                <div className="form-check form-switch">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -469,7 +470,7 @@ let QueryManager = class QueryManager extends React.Component {
                     checked={this.state.options.showSuccessNotification}
                   />
                   <span className="form-check-label">Show notification on success?</span>
-                </label>
+                </div>
                 {this.state.options.showSuccessNotification && (
                   <div>
                     <div className="row mt-3">

@@ -1,12 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-export function SearchBox({ onSubmit, initialValue = '' }) {
-  const [searchText, setSearchText] = useState(initialValue);
-
-  useEffect(() => {
-    setSearchText(initialValue);
-  }, [initialValue]);
+export function SearchBox({ onSubmit }) {
+  const [searchText, setSearchText] = useState('');
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
@@ -51,6 +47,6 @@ export function SearchBox({ onSubmit, initialValue = '' }) {
     </div>
   );
 }
-SearchBox.PropTypes = {
-  onabort: PropTypes.func.isRequired,
+SearchBox.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
 };

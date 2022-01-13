@@ -61,7 +61,7 @@ export const Multiselect = function Multiselect({
   return (
     <div className="multiselect-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
       <div className="col-auto my-auto">
-        <label style={{ marginRight: '1rem' }} className="form-label py-1">
+        <label style={{ marginRight: label? '1rem' :''}} className="form-label py-1">
           {label}
         </label>
       </div>
