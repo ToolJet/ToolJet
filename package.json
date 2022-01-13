@@ -44,7 +44,7 @@
     "db:reset": "npm --prefix server run db:reset",
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",
-    "heroku-postbuild": "NODE_ENV=production ./heroku-postdeploy.sh",
+    "heroku-postbuild": "./heroku-postbuild.sh",
     "cy:run": "cypress run --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
     "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD"
   }
