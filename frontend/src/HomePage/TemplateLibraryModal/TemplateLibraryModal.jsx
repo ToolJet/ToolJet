@@ -81,7 +81,7 @@ export default function TemplateLibraryModal(props) {
       <Modal.Body>
         <Container fluid>
           <Row>
-            <Col xs={3} style={{ borderRight: '1px solid #D2DDEC', height: '100%' }}>
+            <Col className="categories-column" xs={3} style={{ borderRight: '1px solid #D2DDEC', height: '100%' }}>
               <Categories
                 categories={identifyUniqueCategories(libraryApps)}
                 selectedCategory={selectedCategory}
@@ -91,7 +91,7 @@ export default function TemplateLibraryModal(props) {
             <Col xs={9} style={{ height: '100%' }}>
               <Container fluid>
                 <Row style={{ height: '90%' }}>
-                  <Col xs={3} style={{ borderRight: '1px solid #D2DDEC' }}>
+                  <Col className="template-list-column" xs={3} style={{ borderRight: '1px solid #D2DDEC' }}>
                     <AppList apps={filteredApps} selectApp={selectApp} selectedApp={selectedApp} />
                   </Col>
                   <Col xs={9} style={{}}>
@@ -101,7 +101,7 @@ export default function TemplateLibraryModal(props) {
                 <Row style={{ height: '10%' }}>
                   <Col
                     xs={12}
-                    className="d-flex flex-column align-items-end"
+                    className="d-flex flex-column align-items-end template-modal-control-column"
                     style={{ borderTop: '1px solid #D2DDEC' }}
                   >
                     <div className="d-flex flex-row align-items-center" style={{ height: '100%' }}>

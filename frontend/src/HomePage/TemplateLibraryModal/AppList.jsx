@@ -12,7 +12,13 @@ export default function AppList(props) {
         <FormControl placeholder="Search" aria-label="search" onChange={(event) => searchFor(event.target.value)} />
       </InputGroup>
       <ListGroup className="mt-2 template-app-list">
-        {filteredApps.length === 0 ? <ListGroup.Item variant="light">No results</ListGroup.Item> : <div></div>}
+        {filteredApps.length === 0 ? (
+          <ListGroup.Item variant="light" className="no-results-item">
+            No results
+          </ListGroup.Item>
+        ) : (
+          <div></div>
+        )}
         {filteredApps.map((app) => (
           <ListGroup.Item key={app.id} action active={app.id === selectedApp?.id} onClick={() => selectApp(app)}>
             {app.name}

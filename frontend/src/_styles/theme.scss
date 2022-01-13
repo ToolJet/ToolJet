@@ -733,8 +733,71 @@ button {
 }
 
 .template-library-modal.dark-mode {
+  .template-modal-control-column, .template-list-column, .categories-column, .modal-header {
+    border-color: #232E3C !important;
+  }
+
   .modal-body, .modal-footer {
-    background-color: #61656f;
+    color: white;
+    background-color: #2B394A;
+  }
+
+  .modal-header {
+    background-color: #232E3C;
+    color: white;
+  }
+
+  .template-categories {
+    .list-group-item {
+      color: white;
+      border: 0;
+      // padding-bottom: 3px;
+    }
+
+    .list-group-item:hover {
+      background-color: #232E3C;
+    }
+
+    .list-group-item.active {
+      background-color: #4D72FA;
+      color: white;
+      font-weight: 600;
+    }
+
+  }
+
+  .template-app-list {
+    .list-group-item {
+      border: 0;
+      color: white;
+      // padding-bottom: 3px;
+    }
+
+    .list-group-item:hover {
+      border: 0;
+      // color: red;
+      background-color: #232E3C;
+      // padding-bottom: 3px;
+    }
+
+    .list-group-item.active {
+      background-color: #4D72FA;
+      color: white;
+    }
+
+    .no-results-item {
+      background-color: #2B394A;
+      color: white;
+    }
+  }
+
+  .template-list {
+    .template-search-box {
+      input {
+        background-color: #2B394A;
+        border-color: #232E3C;
+      }
+    }
   }
 }
 
