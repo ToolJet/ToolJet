@@ -1529,11 +1529,8 @@ export const componentTypes = [
       SecondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
       SecondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
     },
-    exposedVariables: {
-      value: '',
-    },
+
     definition: {
-     
       others: {
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
@@ -1544,9 +1541,7 @@ export const componentTypes = [
         secondaryValueLabel: { value:'Last month'  },
         secondaryvalue: { value:'2.85' },
         secondarysigndisplay: { value:'positive'  },
-
       },
-      // events: [],
       styles: {
         PrimaryLabelColour: { value:'#8092AB' },
         PrimaryTextColour: { value:'#000000' },
