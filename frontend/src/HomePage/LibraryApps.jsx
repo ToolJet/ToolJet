@@ -57,14 +57,14 @@ export const LibraryApps = function LibraryApps() {
                   <h3>{app.name}</h3>
                   <p>{app.description}</p>
                   <div className="flex">
-                    {app.widgets.map((widget) => (
-                      <span className="badge bg-azure-lt mx-2" key={app.widget}>
+                    {app.widgets.map((widget, index) => (
+                      <span className="badge bg-azure-lt mx-2" key={index}>
                         {widget}
                       </span>
                     ))}
 
-                    {app.sources.map((source) => (
-                      <span className="badge bg-green-lt mx-2" key={app.source}>
+                    {app.sources.map((source, index) => (
+                      <span className="badge bg-green-lt mx-2" key={index}>
                         {source}
                       </span>
                     ))}

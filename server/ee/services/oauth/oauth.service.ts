@@ -1,11 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
 import { OrganizationsService } from '@services/organizations.service';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { UsersService } from '@services/users.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import { decamelizeKeys } from 'humps';
+import { GitOAuthService } from './git_oauth.service';
 
 @Injectable()
 export class OauthService {
@@ -14,8 +16,28 @@ export class OauthService {
     private readonly organizationService: OrganizationsService,
     private readonly jwtService: JwtService,
     private readonly organizationUsersService: OrganizationUsersService,
-    private readonly googleOAuthService: GoogleOAuthService
-  ) {}
+    private readonly googleOAuthService: GoogleOAuthService,
+    private readonly gitOAuthService: GitOAuthService,
+    private readonly configService: ConfigService
+  ) {
+    this.ssoSignUpDisabled =
+      this.configService.get<string>('SSO_DISABLE_SIGNUPS') &&
+      this.configService.get<string>('SSO_DISABLE_SIGNUPS') === 'true';
+    this.restrictedDomain = this.configService.get<string>('RESTRICTED_DOMAIN');
+  }
+
+  private readonly ssoSignUpDisabled: boolean;
+  private readonly restrictedDomain: string;
+
+  #isValidDoamin(domain: string): boolean {
+    if (!domain) {
+      return false;
+    }
+    if (this.restrictedDomain && this.restrictedDomain.split(',').includes(domain)) {
+      return false;
+    }
+    return true;
+  }
 
   async #findOrCreateUser({ userSSOId, firstName, lastName, email }): Promise<User> {
     const organization = await this.organizationService.findFirst();
@@ -54,19 +76,29 @@ export class OauthService {
     });
   }
 
-  async signIn(token: string): Promise<any> {
-    const { userSSOId, firstName, lastName, email, domain } = await this.googleOAuthService.signIn(token);
+  async signIn({ origin, ...ssoResponse }): Promise<any> {
+    let userSSOId: string, firstName: string, lastName: string, email: string, domain: string;
+    switch (origin) {
+      case 'google':
+        ({ userSSOId, firstName, lastName, email, domain } = await this.googleOAuthService.signIn(ssoResponse?.token));
+        if (!this.#isValidDoamin(domain)) throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
+        break;
 
-    if ([undefined, '', null].includes(userSSOId)) {
-      throw new UnauthorizedException('Invalid credentials');
+      case 'git':
+        ({ userSSOId, firstName, lastName, email, domain } = await this.gitOAuthService.signIn(ssoResponse?.token));
+        if (!this.#isValidDoamin(domain)) throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
+        break;
+
+      default:
+        break;
     }
 
-    if ('RESTRICTED_DOMAIN' in process.env && process.env.RESTRICTED_DOMAIN != domain)
-      throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
-
-    let user: User;
-    if (process.env.SSO_DISABLE_SIGNUP === 'true') user = await this.#findAndActivateUser(email);
-    else user = await this.#findOrCreateUser({ userSSOId, firstName, lastName, email });
+    if (!userSSOId) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const user: User = await (this.ssoSignUpDisabled
+      ? this.#findAndActivateUser(email)
+      : this.#findOrCreateUser({ userSSOId, firstName, lastName, email }));
 
     return await this.#generateLoginResultPayload(user);
   }

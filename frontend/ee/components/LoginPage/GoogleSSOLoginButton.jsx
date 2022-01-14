@@ -5,7 +5,10 @@ import { authenticationService } from '@/_services';
 export default function GoogleSSOLoginButton(props) {
   const googleSSOSuccessHandler = (googleUser) => {
     const idToken = googleUser.getAuthResponse().id_token;
-    authenticationService.signInViaOAuth(idToken).then(props.authSuccessHandler).catch(props.authFailureHandler);
+    authenticationService
+      .signInViaOAuth({ token: idToken, origin: 'google' })
+      .then(props.authSuccessHandler)
+      .catch(props.authFailureHandler);
   };
 
   return (
