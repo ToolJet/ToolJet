@@ -209,12 +209,14 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   renderDataSourceOption = (props, option, snapshot, className) => {
+    const icon = option.kind ? `/assets/images/icons/editor/datasources/${option.kind.toLowerCase() + '.svg'}` : null;
     return (
       <button {...props} className={className} type="button">
-        <div className="row">
-          <div className="col-md-9">
-            <span className="text-muted mx-2">{option.name}</span>
-          </div>
+        <div>
+          <span className="text-muted">
+            {icon && <img src={icon} style={{ margin: 'auto', marginRight: '3px' }} height="25" width="25"></img>}
+            {option.name}
+          </span>
         </div>
       </button>
     );
@@ -366,7 +368,7 @@ let QueryManager = class QueryManager extends React.Component {
                     <SelectSearch
                       options={[
                         ...dataSources.map((source) => {
-                          return { name: source.name, value: source.id };
+                          return { name: source.name, value: source.id, kind: source.kind };
                         }),
                         ...staticDataSources.map((source) => {
                           return { name: source.name, value: source.id };

@@ -386,6 +386,7 @@ class HomePage extends React.Component {
                       isLoading={isLoading}
                       darkMode={this.props.darkMode}
                     />
+                    <div className="homepage-pagination">
                     {this.pageCount() > 10 && (
                       <Pagination
                         currentPage={meta.current_page}
@@ -393,6 +394,7 @@ class HomePage extends React.Component {
                         pageChanged={this.pageChanged}
                       />
                     )}
+                    </div>
                   </div>
                 </div>
               </div>
