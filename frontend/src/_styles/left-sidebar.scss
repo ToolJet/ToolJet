@@ -166,6 +166,12 @@
   .list-group-item {
     border: none!important;
     cursor: pointer!important;
+    margin-bottom: 4px;
+
+    &:hover {
+      border-radius: 4px!important;
+      background-color: $bg-light;
+    }
   }
 
   .list-group-item.active {
@@ -262,6 +268,10 @@
 
   .list-group-item {
     color: $white;
+
+    &:hover {
+      background-color: #324156;
+    }
   }
 
   .datasource-modal-sidebar-footer {
