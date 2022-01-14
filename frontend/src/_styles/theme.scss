@@ -78,7 +78,7 @@ button {
   }
 
   .resizer-active {
-    border: solid 1px rgb(70, 165, 253) !important;
+    border: dotted 1px rgb(70, 165, 253) !important;
 
     .top-right,
     .top-left,
@@ -356,7 +356,12 @@ button {
       -webkit-box-align: center;
       align-items: center;
 
+      .real-canvas {
+        outline: 1px dotted transparent;
+      }
+
       .show-grid {
+        outline: 1px dotted #4d72da;
         background-image: linear-gradient(to right, rgba(194, 191, 191, 0.2) 1px, transparent 1px),
           linear-gradient(to bottom, rgba(194, 191, 191, 0.2) 1px, transparent 1px);
       }
@@ -1713,6 +1718,7 @@ hr {
     top: -20px;
     position: fixed;
     max-height: 10px;
+    z-index: 100;
     min-width: 108px;
 
     .badge {
@@ -2652,25 +2658,24 @@ input[type="text"] {
 
 //!for calendar widget week view with compact/spacious mode border fix
 .resources-week-cls .rbc-time-column:nth-last-child(7n) {
-  border-left: none!important;
+  border-left: none !important;
   .rbc-timeslot-group {
     border-left: 2.5px solid #dadcde !important;
   }
 }
 .resources-week-cls .rbc-allday-cell {
- border: none !important;
- .rbc-row {
-   border-left: 1.5px solid #dadcde;
-   border-right: 1.5px solid #dadcde;
- }
+  border: none !important;
+  .rbc-row {
+    border-left: 1.5px solid #dadcde;
+    border-right: 1.5px solid #dadcde;
+  }
 }
 .resources-week-cls .rbc-time-header-cell {
-  border: none!important;
+  border: none !important;
 }
 .resources-week-cls .rbc-time-view-resources .rbc-header {
- border-left: 1.5px solid #dadcde !important;
- border-right: 1.5px solid #dadcde !important;
-
+  border-left: 1.5px solid #dadcde !important;
+  border-right: 1.5px solid #dadcde !important;
 }
 
 .calendar-widget.hide-view-switcher {
@@ -2746,6 +2751,25 @@ input[type="text"] {
   }
 }
 
+.jet-listview {
+  overflow-y: overlay;
+  overflow-x: hidden;
+
+  .rows {
+  }
+
+  .list-item {
+  }
+}
+
+.jet-listview::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.jet-listview::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
 .code-hinter-wrapper .popup-btn {
   position: absolute;
   display: none;
@@ -2766,6 +2790,13 @@ input[type="text"] {
   position: absolute;
   left: 50%;
   top: 40%;
+
+  .modal-body {
+    width: 500px !important;
+    height: 300px !important;
+    padding: 0px !important;
+  }
+
   transform: translate(-60%, -60%);
   height: 350px;
   width: auto;
@@ -2816,15 +2847,14 @@ input[type="text"] {
   }
 
   .query-hinter {
-    .CodeMirror-line  {
+    .CodeMirror-line {
       margin-left: 2rem !important;
     }
 
-    .CodeMirror-cursors  .CodeMirror-cursor {
+    .CodeMirror-cursors .CodeMirror-cursor {
       margin-left: 2rem !important;
     }
   }
-
 }
 
 .preview-block-portal {
@@ -2973,7 +3003,7 @@ input[type="text"] {
   color: #000000;
   .list-group-transparent .list-group-item.active {
     color: $primary;
-    background-color: #EDF1FF;
+    background-color: #edf1ff;
     .folder-ico {
       filter: invert(29%) sepia(84%) saturate(4047%) hue-rotate(215deg) brightness(98%) contrast(111%);
     }
@@ -2986,12 +3016,12 @@ input[type="text"] {
     font-weight: 500;
   }
   .folder-info {
-    color: #8991A0;
+    color: #8991a0;
     font-size: 0.75rem;
     display: contents;
   }
   .folder-create-btn {
-    color: #0565FF;
+    color: #0565ff;
     cursor: pointer;
   }
 }
@@ -2999,10 +3029,10 @@ input[type="text"] {
 /**
  * Home page modal
  */
- .modal-content.home-modal-component {
+.modal-content.home-modal-component {
   border-radius: 8px;
   overflow: hidden;
-  background-color: #FEFEFF;
+  background-color: #fefeff;
   color: #000000;
   .modal-header {
     border-bottom: 0px;
@@ -3029,4 +3059,4 @@ input[type="text"] {
       margin-left: 16px;
     }
   }
- }
+}

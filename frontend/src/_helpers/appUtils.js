@@ -687,7 +687,21 @@ export function computeComponentState(_ref, components) {
     const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
     const existingValues = currentComponents[existingComponentName];
 
-    componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+    if (component.parent) {
+      const parentComponent = components[component.parent];
+      let isListView = false;
+      try {
+        isListView = parentComponent.component.component === 'Listview';
+      } catch {
+        console.log('error');
+      }
+
+      if (!isListView) {
+        componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+      }
+    } else {
+      componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+    }
   });
 
   return setStateAsync(_ref, {
