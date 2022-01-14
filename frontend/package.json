@@ -55,6 +55,7 @@
     "react-json-view": "^1.21.3",
     "react-lazyload": "^3.2.0",
     "react-loading-skeleton": "^2.2.0",
+    "react-login-github": "^1.0.7",
     "react-mentions": "^4.3.0",
     "react-plotly.js": "^2.5.1",
     "react-qr-reader": "^2.2.1",
