@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker, Autocomplete } from '@react-google-maps/api';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
@@ -86,6 +86,11 @@ export const Map = function Map({
       ['center', newCenter],
     ]).then(() => onEvent('onBoundsChange', { component }));
   }
+
+  useEffect(() => {
+    setMapCenter(resolveReferences(center, currentState));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [center]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onLoad = useCallback(function onLoad(mapInstance) {
