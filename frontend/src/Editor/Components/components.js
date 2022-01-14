@@ -737,8 +737,8 @@ export const componentTypes = [
     displayName: 'Image',
     description: 'Display an Image',
     defaultSize: {
-      width: 5,
-      height: 210,
+      width: 3,
+      height: 100,
     },
     component: 'Image',
     others: {
@@ -1491,62 +1491,53 @@ export const componentTypes = [
       },
     },
   },
-
   {
-    name: 'Statics',
-    displayName: 'Statics',
-    description: 'Statics',
-    component: 'Statics',
+    name: 'Listview',
+    displayName: 'List view',
+    description: 'Wrapper for multiple components',
     defaultSize: {
-      width: 6,
-      height: 152,
+      width: 5,
+      height: 200,
     },
+    component: 'Listview',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
-      primaryvalue: { type: 'code', displayName: 'Primary value' },
-      secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
-      secondaryvalue: { type: 'code', displayName: 'Secondary value' },
-      secondarysigndisplay: {
-        type: 'select',
-        displayName: 'Secondary sign display',
-        options: [
-          { name: 'positive', value: 'positive' },
-          { name: 'negative', value: 'negative' },
-        ],
-      },
+      data: { type: 'code', displayName: 'List data' },
+      rowHeight: { type: 'code', displayName: 'Row height' },
+      showBorder: { type: 'code', displayName: 'Show bottom border' },
     },
-
-    events: {
-      onChange: { displayName: 'On change' },
-    },
+    events: {},
     styles: {
-      PrimaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
-      PrimaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
-      SecondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
-      SecondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
+      backgroundColor: { type: 'color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
     },
-
+    exposedVariables: {
+      data: [{}],
+    },
     definition: {
       others: {
         showOnDesktop: { value: true },
         showOnMobile: { value: false },
       },
       properties: {
-        primaryValueLabel: { value:'This months earnings' },
-        primaryvalue: { value:'682.3'  },  
-        secondaryValueLabel: { value:'Last month'  },
-        secondaryvalue: { value:'2.85' },
-        secondarysigndisplay: { value:'positive'  },
+        data: {
+          value: "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+        },
+        rowHeight: {
+          value: '100',
+        },
+        visible: { value: true },
+        showBorder: { value: '{{true}}' },
       },
+      events: [],
       styles: {
-        PrimaryLabelColour: { value:'#8092AB' },
-        PrimaryTextColour: { value:'#000000' },
-        SecondaryLabelColour: {value:'#8092AB'  },
-        SecondaryTextColour: { value:'#36AF8B'},
+        backgroundColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },
