@@ -116,7 +116,7 @@ export default function TemplateLibraryModal(props) {
                         }}
                         className="ms-2"
                       >
-                        Deploy
+                        Create application from template
                       </Button>
                     </div>
                   </Col>
