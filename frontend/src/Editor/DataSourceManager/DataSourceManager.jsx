@@ -241,7 +241,10 @@ class DataSourceManager extends React.Component {
             <div className="selected-datasource-list-content">
               <Tab.Content>
                 {suggestingDatasources ? (
-                  <div className="suggestingDatasourcesWrapper">{datasourceSuggestionUI()}</div>
+                  <div className="suggestingDatasourcesWrapper row">
+                    <h4 className="mb-2 justify-content-start">Suggest Datasource</h4>
+                    {datasourceSuggestionUI()}
+                  </div>
                 ) : (
                   <>
                     <div className="input-icon modal-searchbar">
@@ -654,7 +657,7 @@ const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode
 
   return (
     <div className="empty mt-4">
-      <h3>No results for &quot;{queryString} &quot;</h3>
+      {queryString && <h3>No results for &quot;{queryString} &quot;</h3>}
       <center className="empty-results">
         <img src="/assets/images/icons/no-results.svg" width="150" height="150" />
         {status ? (
