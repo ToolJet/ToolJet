@@ -47,10 +47,11 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
 
         try {
           const evalFunction = Function(
-            ['components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
+            ['variables', 'components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
             `return ${code}`
           );
           result = evalFunction(
+            state.variables,
             state.components,
             state.queries,
             state.globals,
