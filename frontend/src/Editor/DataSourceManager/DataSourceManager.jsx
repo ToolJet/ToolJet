@@ -41,6 +41,7 @@ class DataSourceManager extends React.Component {
       queryString: null,
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
+      suggestingDatasources: false,
     };
   }
 
@@ -168,6 +169,10 @@ class DataSourceManager extends React.Component {
     this.setState({ queryString: null, filteredDatasources: [] });
   };
 
+  updateSuggestedDatasources = () => {
+    this.setState({ suggestingDatasources: true });
+  };
+
   renderSourceComponent = (kind) => {
     const { options, isSaving } = this.state;
 
@@ -191,12 +196,30 @@ class DataSourceManager extends React.Component {
     this.setState({ connectionTestError: data });
   };
 
-  segregateDataSources = () => {
+  segregateDataSources = (suggestingDatasources) => {
     const datasources = this.datasourcesGroups();
+
+    const hanndleOnSelect = (activekey) => {
+      if (suggestingDatasources) {
+        this.setState({ suggestingDatasources: false });
+      }
+      this.setState({ activeDatasourceList: activekey });
+    };
+
+    const datasourceSuggestionUI = () => {
+      return (
+        <EmptyStateContainer
+          queryString={this.state.queryString}
+          handleBackToAllDatasources={this.handleBackToAllDatasources}
+          darkMode={this.props.darkMode}
+          placeholder={'Tell us your database'}
+        />
+      );
+    };
 
     return (
       <Tab.Container
-        onSelect={(activekey) => this.setState({ activeDatasourceList: activekey })}
+        onSelect={(activekey) => hanndleOnSelect(activekey)}
         id="list-group-tabs-example"
         defaultActiveKey={this.state.activeDatasourceList}
       >
@@ -207,18 +230,24 @@ class DataSourceManager extends React.Component {
           <Col style={{ left: '25%' }} className="modal-body-content">
             <div className="selected-datasource-list-content">
               <Tab.Content>
-                <div className="input-icon modal-searchbar">
-                  <SearchBoxContainer
-                    onChange={this.handleSearch}
-                    onClear={this.handleBackToAllDatasources}
-                    queryString={this.state.queryString}
-                  />
-                </div>
-                {datasources.map((datasource) => (
-                  <Tab.Pane eventKey={datasource.key} key={datasource.key}>
-                    {datasource.renderDatasources()}
-                  </Tab.Pane>
-                ))}
+                {suggestingDatasources ? (
+                  <div>{datasourceSuggestionUI()}</div>
+                ) : (
+                  <>
+                    <div className="input-icon modal-searchbar">
+                      <SearchBoxContainer
+                        onChange={this.handleSearch}
+                        onClear={this.handleBackToAllDatasources}
+                        queryString={this.state.queryString}
+                      />
+                    </div>
+                    {datasources.map((datasource) => (
+                      <Tab.Pane eventKey={datasource.key} key={datasource.key}>
+                        {datasource.renderDatasources()}
+                      </Tab.Pane>
+                    ))}
+                  </>
+                )}
               </Tab.Content>
             </div>
           </Col>
@@ -271,8 +300,11 @@ class DataSourceManager extends React.Component {
   };
 
   renderSidebarList = () => {
-    // const dataSourceList = this.datasourcesGroups();
     const dataSourceList = this.datasourcesGroups().splice(0, 4);
+
+    const updateSuggestionState = () => {
+      this.updateSuggestedDatasources();
+    };
 
     return (
       <>
@@ -287,7 +319,9 @@ class DataSourceManager extends React.Component {
           <p className="text-black-50">
             Can&apos;t find yours
             <br />
-            <a href="#">Suggest</a>
+            <span className="link-span" onClick={updateSuggestionState}>
+              Suggest
+            </span>
           </p>
         </div>
       </>
@@ -312,6 +346,7 @@ class DataSourceManager extends React.Component {
             queryString={this.state.queryString}
             handleBackToAllDatasources={this.handleBackToAllDatasources}
             darkMode={this.props.darkMode}
+            placeholder={'"Tell us what you were looking for?"'}
           />
         );
       }
@@ -423,7 +458,7 @@ class DataSourceManager extends React.Component {
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
-
+    console.log('suggestingDatasources', this.state.suggestingDatasources);
     return (
       <div>
         <Modal
@@ -470,7 +505,7 @@ class DataSourceManager extends React.Component {
 
           <Modal.Body>
             {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
-            {!selectedDataSource && this.segregateDataSources()}
+            {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources)}
           </Modal.Body>
 
           {selectedDataSource && !dataSourceMeta.customTesting && (
@@ -597,7 +632,7 @@ class DataSourceManager extends React.Component {
   }
 }
 
-const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode }) => {
+const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode, placeholder }) => {
   const [inputValue, set] = React.useState(() => '');
   const [status, setStatus] = React.useState(false);
   const handleSend = () => {
@@ -631,7 +666,7 @@ const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode
                   type="text"
                   className="form-control mb-2"
                   value={inputValue}
-                  placeholder="Tell us what you were looking for?"
+                  placeholder={placeholder}
                   onChange={(e) => set(e.target.value)}
                 />
               </div>

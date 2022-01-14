@@ -266,13 +266,6 @@
         font-weight: 500;
         font-size: 12px;
         line-height: 15px;
-
-      a {
-        font-size: 14px;
-        line-height: 17px;
-        text-decoration-line: underline;
-        color: $primary;
-      }
     }
   }
 }
@@ -299,4 +292,14 @@
     right: 0;
     margin-right: 0.5rem;
   }
+}
+
+
+.link-span {
+  text-decoration: none;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 17px;
+  color: $primary;
 }
