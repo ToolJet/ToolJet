@@ -715,6 +715,15 @@ const SearchBoxContainer = ({ onChange, onClear, queryString }) => {
       setSearchText('');
     }
   }, [queryString]);
+  React.useEffect(() => {
+    if (searchText) {
+      document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '0.5rem';
+    }
+
+    return () => {
+      document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '2.5rem';
+    };
+  }, [searchText]);
 
   return (
     <div className="search-box-wrapper">
