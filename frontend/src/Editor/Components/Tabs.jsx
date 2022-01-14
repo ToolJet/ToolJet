@@ -71,6 +71,7 @@ export const Tabs = function Tabs({ id, component, width, height, containerProps
             parentRef={parentRef}
             removeComponent={removeComponent}
             containerCanvasWidth={width}
+            parentComponent={component}
           />
           <SubCustomDragLayer
             parent={id}
