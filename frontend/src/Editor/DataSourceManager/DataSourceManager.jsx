@@ -237,7 +237,7 @@ class DataSourceManager extends React.Component {
           <Col sm={6} md={4} className={`modal-sidebar ${darkMode ? 'dark' : ''}`}>
             {this.renderSidebarList()}
           </Col>
-          <Col style={{ left: '25%' }} className="modal-body-content">
+          <Col style={{ left: '25%' }} className={`modal-body-content ${darkMode ? 'dark' : ''}`}>
             <div className="selected-datasource-list-content">
               <Tab.Content>
                 {suggestingDatasources ? (

@@ -200,6 +200,10 @@
         width: 860px!important;
       }
     }
+
+    .card:hover {
+      background-color: #f8f8f8;
+    }
   }
 
   .modal-searchbar {
@@ -208,6 +212,14 @@
     float: right;
     margin-right: 3.5rem!important;
     margin-top: 0rem;
+  }
+}
+
+.modal-body-content.dark {
+  .selected-datasource-list-content {
+    .card:hover {
+      background-color: #2C405C!important;
+    }
   }
 }
 
