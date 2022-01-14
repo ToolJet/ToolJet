@@ -1491,4 +1491,68 @@ export const componentTypes = [
       },
     },
   },
+
+  {
+    name: 'Statics',
+    displayName: 'Statics',
+    description: 'Statics',
+    component: 'Statics',
+    defaultSize: {
+      width: 6,
+      height: 152,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
+      primaryvalue: { type: 'code', displayName: 'Primary value' },
+      secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
+      secondaryvalue: { type: 'code', displayName: 'Secondary value' },
+      secondarysigndisplay: {
+        type: 'select',
+        displayName: 'Secondary sign display',
+        options: [
+          { name: 'positive', value: 'positive' },
+          { name: 'negative', value: 'negative' },
+        ],
+      },
+    },
+
+    events: {
+      onChange: { displayName: 'On change' },
+    },
+    styles: {
+      PrimaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
+      PrimaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
+      SecondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
+      SecondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
+    },
+    exposedVariables: {
+      value: '',
+    },
+    definition: {
+     
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        primaryValueLabel: { value:'This months earnings' },
+        primaryvalue: { value:'682.3'  },  
+        secondaryValueLabel: { value:'Last month'  },
+        secondaryvalue: { value:'2.85' },
+        secondarysigndisplay: { value:'positive'  },
+
+      },
+      // events: [],
+      styles: {
+        PrimaryLabelColour: { value:'#8092AB' },
+        PrimaryTextColour: { value:'#000000' },
+        SecondaryLabelColour: {value:'#8092AB'  },
+        SecondaryTextColour: { value:'#36AF8B'},
+      },
+    },
+  },
 ];
