@@ -360,7 +360,7 @@ class DataSourceManager extends React.Component {
               queryString={this.state.queryString}
               handleBackToAllDatasources={this.handleBackToAllDatasources}
               darkMode={this.props.darkMode}
-              placeholder={'"Tell us what you were looking for?"'}
+              placeholder={'Tell us what you were looking for?'}
             />
           </div>
         );
@@ -664,7 +664,7 @@ const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode
         <img src="/assets/images/icons/no-results.svg" width="150" height="150" />
         {status ? (
           <div>
-            <p className="text-success mt-2">Thank you! We&apos;ve took a note of that</p>
+            <p className="text-success mt-2">Thank you, we&apos;ve taken a note of that!</p>
             <button
               className={`datasource-modal-button ${darkMode && 'dark-button'}`}
               onClick={handleBackToAllDatasources}
