@@ -19,7 +19,6 @@
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.5",
     "html-webpack-plugin": "^5.3.2",
-    "husky": "^7.0.2",
     "lint-staged": "^11.2.3",
     "path": "^0.12.7",
     "webpack": "^5.55.1",
@@ -28,6 +27,7 @@
   "dependencies": {
     "@nestjs/cli": "^8.1.0",
     "eslint": "^7.25.0",
+    "husky": "^7.0.2",
     "ts-node": "^10.1.0"
   },
   "scripts": {
@@ -44,7 +44,7 @@
     "db:reset": "npm --prefix server run db:reset",
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",
-    "heroku-postbuild": "NODE_ENV=production ./heroku-postdeploy.sh",
+    "heroku-postbuild": "./heroku-postbuild.sh",
     "cy:run": "cypress run --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
     "cy:open": "cypress open --env db.name=$TEST_PG_DB,db.user=$TEST_PG_USERNAME,db.password=$TEST_PG_PASSWORD",
     "prepare": "husky install"
