@@ -106,7 +106,7 @@ class Editor extends React.Component {
   }
 
   setWindowTitle(name) {
-    document.title = name ? `Tooljet - ${name}` : `Tooljet - Untitled App`;
+    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
   }
 
   componentDidMount() {
