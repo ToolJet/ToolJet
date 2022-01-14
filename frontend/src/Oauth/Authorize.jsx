@@ -1,22 +1,24 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import useRouter from '@/_hooks/use-router';
 import { authenticationService } from '@/_services';
 import { Redirect } from 'react-router-dom';
 
 export function Authorize() {
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
 
-  const authSuccessHandler = useMemo(() => {
-    router.history.push('/');
-  }, [router]);
+  const authSuccessHandler = useCallback(() => {
+    setSuccess(true);
+  }, [setSuccess]);
 
-  const authFailureHandler = useMemo(() => {
+  const authFailureHandler = useCallback(() => {
     setError('Github login failed');
   }, [setError]);
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
+
     if (errorMessage) {
       return setError(errorMessage);
     }
@@ -37,11 +39,11 @@ export function Authorize() {
   return (
     <div>
       <div>Loading</div>
-      {error && (
+      {(success || error) && (
         <Redirect
           to={{
             pathname: '/login',
-            state: { errorMessage: error },
+            state: { errorMessage: success ? '' : error },
           }}
         />
       )}

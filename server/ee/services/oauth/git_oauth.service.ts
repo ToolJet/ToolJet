@@ -19,13 +19,13 @@ export class GitOAuthService {
       headers: { Accept: 'application/json', Authorization: `token ${access_token}` },
     });
     const result = JSON.parse(response.body);
+    const { name, email } = result;
 
-    console.log('---?>>>', result);
-    
+    const words = name?.split(' ');
+    const firstName = words?.[0] || '';
+    const lastName = words?.length > 1 ? words[words.length - 1] : '';
 
-    const { userSSOId, firstName, lastName, email, domain } = result;
-
-    return { userSSOId, firstName, lastName, email, domain };
+    return { userSSOId: access_token, firstName, lastName, email };
   }
 
   async signIn(code: string): Promise<any> {
@@ -35,7 +35,7 @@ export class GitOAuthService {
       json: { client_id: this.clientId, client_secret: this.clientSecret, code },
     });
     const result = JSON.parse(response.body);
-    return this.#getUserDetails(result);
+    return await this.#getUserDetails(result);
   }
 }
 

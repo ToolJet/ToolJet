@@ -76,17 +76,18 @@ export class OauthService {
     });
   }
 
-  async signIn({ origin, ...ssoResponse }): Promise<any> {
+  async signIn(ssoResponse: SSOResponse): Promise<any> {
+    const { token, origin } = ssoResponse;
+
     let userSSOId: string, firstName: string, lastName: string, email: string, domain: string;
     switch (origin) {
       case 'google':
-        ({ userSSOId, firstName, lastName, email, domain } = await this.googleOAuthService.signIn(ssoResponse?.token));
+        ({ userSSOId, firstName, lastName, email, domain } = await this.googleOAuthService.signIn(token));
         if (!this.#isValidDoamin(domain)) throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
         break;
 
       case 'git':
-        ({ userSSOId, firstName, lastName, email, domain } = await this.gitOAuthService.signIn(ssoResponse?.token));
-        if (!this.#isValidDoamin(domain)) throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
+        ({ userSSOId, firstName, lastName, email } = await this.gitOAuthService.signIn(token));
         break;
 
       default:
@@ -102,4 +103,9 @@ export class OauthService {
 
     return await this.#generateLoginResultPayload(user);
   }
+}
+
+interface SSOResponse {
+  token: string;
+  origin: 'google' | 'git';
 }
