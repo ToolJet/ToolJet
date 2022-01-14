@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
-export const Pagination = ({ height, properties, styles, setExposedVariable, fireEvent }) => {
+export const Pagination = ({ height, properties, styles, exposedVariables, setExposedVariable, fireEvent }) => {
   const { visibility, disabledState } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
+
+  useEffect(() => {
+    if (exposedVariables.currentPageIndex === null) setExposedVariable('currentPageIndex', currentPage);
+
+    if (exposedVariables.totalPages === null) setExposedVariable('totalPages', properties.numberOfPages);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exposedVariables]);
 
   const pageChanged = (number) => {
     setCurrentPage(number);
@@ -19,7 +26,7 @@ export const Pagination = ({ height, properties, styles, setExposedVariable, fir
   }
 
   function gotoLastPage() {
-    pageChanged(properties.pageSize);
+    pageChanged(properties.numberOfPages);
   }
 
   function gotoNextPage() {
@@ -38,9 +45,9 @@ export const Pagination = ({ height, properties, styles, setExposedVariable, fir
   }, [properties.defaultPageIndex]);
 
   useEffect(() => {
-    setExposedVariable('currentPageSize', properties.pageSize);
+    setExposedVariable('totalPages', properties.numberOfPages);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.pageSize]);
+  }, [properties.numberOfPages]);
 
   const computedStyles = {
     height,
@@ -53,26 +60,26 @@ export const Pagination = ({ height, properties, styles, setExposedVariable, fir
         <Pagination.Operator
           operator="<<"
           currentPage={currentPage}
-          totalPages={properties.pageSize}
+          totalPages={properties.numberOfPages}
           handleOnClick={gotoFirstPage}
         />
         <Pagination.Operator
           operator="<"
           currentPage={currentPage}
-          totalPages={properties.pageSize}
+          totalPages={properties.numberOfPages}
           handleOnClick={gotoPreviousPage}
         />
-        <Pagination.PageLinks currentPage={currentPage} totalPages={properties.pageSize} callback={gotoPage} />
+        <Pagination.PageLinks currentPage={currentPage} totalPages={properties.numberOfPages} callback={gotoPage} />
         <Pagination.Operator
           operator=">"
           currentPage={currentPage}
-          totalPages={properties.pageSize}
+          totalPages={properties.numberOfPages}
           handleOnClick={gotoNextPage}
         />
         <Pagination.Operator
           operator=">>"
           currentPage={currentPage}
-          totalPages={properties.pageSize}
+          totalPages={properties.numberOfPages}
           handleOnClick={gotoLastPage}
         />
       </ul>

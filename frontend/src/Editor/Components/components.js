@@ -1555,7 +1555,7 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      pageSize: { type: 'code', displayName: 'Page size' },
+      numberOfPages: { type: 'code', displayName: 'Number of pages' },
       defaultPageIndex: { type: 'code', displayName: 'Default page index' },
     },
     validation: {},
@@ -1567,7 +1567,7 @@ export const componentTypes = [
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      currentPageSize: null,
+      totalPages: null,
       currentPageIndex: null,
     },
     definition: {
@@ -1577,7 +1577,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        pageSize: {
+        numberOfPages: {
           value: '{{5}}',
         },
         defaultPageIndex: {
