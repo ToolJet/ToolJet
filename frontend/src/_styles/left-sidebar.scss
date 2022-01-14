@@ -255,6 +255,7 @@
   .datasource-modal-sidebar-footer {
     background:#283444;
     border-left: none;
+    border-bottom: none;
     border-color: #324156;
   }
 }
@@ -319,9 +320,6 @@
   color: $primary;
 }
 
-//center a div
-.suggestingDatasourcesWrapper {
-  position:absolute;
-  left: 0;
-  margin-left: 5rem;
+.empty-state-wrapper {
+  margin-left: 5rem!important;
 }

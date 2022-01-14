@@ -355,12 +355,14 @@ class DataSourceManager extends React.Component {
 
       if (filteredDatasources.length === 0) {
         return (
-          <EmptyStateContainer
-            queryString={this.state.queryString}
-            handleBackToAllDatasources={this.handleBackToAllDatasources}
-            darkMode={this.props.darkMode}
-            placeholder={'"Tell us what you were looking for?"'}
-          />
+          <div className="empty-state-wrapper row">
+            <EmptyStateContainer
+              queryString={this.state.queryString}
+              handleBackToAllDatasources={this.handleBackToAllDatasources}
+              darkMode={this.props.darkMode}
+              placeholder={'"Tell us what you were looking for?"'}
+            />
+          </div>
         );
       }
 
