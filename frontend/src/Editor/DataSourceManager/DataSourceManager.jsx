@@ -648,9 +648,13 @@ class DataSourceManager extends React.Component {
 
 const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode, placeholder }) => {
   const [inputValue, set] = React.useState(() => '');
+
   const [status, setStatus] = React.useState(false);
   const handleSend = () => {
-    setStatus(true);
+    if (inputValue) {
+      setStatus(true);
+      //send value to backend
+    }
   };
 
   React.useEffect(() => {
