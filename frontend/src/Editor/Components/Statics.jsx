@@ -24,7 +24,6 @@ export const Statics = function Statics({ height, properties,styles}) {
 
     const letterStyle = {
         fontSize: '14px',
-        // color: PrimaryLabelColour,
         marginTop: '12px', marginBottom: '0px',
         fontWeight: '500',
     };
