@@ -1,5 +1,5 @@
 ---
-to: ../plugins/packages/<%= name %>/README.md
+to: <%= plugins_path %>/packages/<%= name %>/README.md
 ---
 
 # <%= Name %>

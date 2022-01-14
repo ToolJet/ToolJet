@@ -1,3 +1,3 @@
 ---
-to: ../plugins/packages/<%= name %>/lib/operations.ts
+to: <%= plugins_path %>/packages/<%= name %>/lib/operations.ts
 ---

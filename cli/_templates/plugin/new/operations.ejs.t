@@ -1,5 +1,5 @@
 ---
-to: ../plugins/packages/<%= name %>/lib/operations.json
+to: <%= plugins_path %>/packages/<%= name %>/lib/operations.json
 ---
 {
   "$schema": "https://json-schema.org/",

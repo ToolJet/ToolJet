@@ -1,5 +1,5 @@
 ---
-to: ../plugins/packages/<%= name %>/__tests_/index.js
+to: <%= plugins_path %>/packages/<%= name %>/__tests_/index.js
 ---
 'use strict';
 

@@ -1,5 +1,5 @@
 ---
-to: ../plugins/packages/<%= name %>/package.json
+to: <%= plugins_path %>/packages/<%= name %>/package.json
 ---
 {
   "name": "<%= name %>",

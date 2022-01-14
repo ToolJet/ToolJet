@@ -1,5 +1,5 @@
 ---
-to: ../plugins/packages/<%= name %>/tsconfig.json
+to: <%= plugins_path %>/packages/<%= name %>/tsconfig.json
 ---
 {
   "extends": "../../tsconfig.json",

@@ -1,5 +1,5 @@
 ---
-to: ../plugins/packages/<%= name %>/.gitignore
+to: <%= plugins_path %>/packages/<%= name %>/.gitignore
 ---
 node_modules
 lib/*.d.*

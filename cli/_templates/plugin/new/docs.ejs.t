@@ -1,5 +1,5 @@
 ---
-to: ../docs/docs/data-sources/<%= name %>.md
+to: <%= docs_path %>/docs/data-sources/<%= name %>.md
 ---
 # <%= name %>
 

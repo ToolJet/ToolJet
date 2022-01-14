@@ -1,5 +1,5 @@
 ---
-to: ../plugins/packages/<%= name %>/lib/index.ts
+to: <%= plugins_path %>/packages/<%= name %>/lib/index.ts
 ---
 
 import { QueryError, QueryResult,  QueryService } from 'common';
