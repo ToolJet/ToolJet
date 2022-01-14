@@ -80,25 +80,30 @@ export const Folders = function Folders({
             <div className="folder-info">Folders</div>
             {canCreateFolder && (
               <div className="folder-create-btn" onClick={() => setShowForm(true)}>
-                + Create New Folder
+                + Create new folder
               </div>
             )}
           </div>
-          {folders.map((folder, index) => (
-            <a
-              key={index}
-              className={`list-group-item list-group-item-action d-flex align-items-center ${
-                activeFolder.id === folder.id ? 'active' : ''
-              }`}
-              onClick={() => handleFolderChange(folder)}
-            >
-              <span className="me-2">
-                <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
-              </span>
-              {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
-            </a>
-          ))}
-          <Modal show={showForm} setShow={setShowForm} title="Create Folder">
+          {folders && folders.length > 0 ? (
+            folders.map((folder, index) => (
+              <a
+                key={index}
+                className={`list-group-item list-group-item-action d-flex align-items-center ${
+                  activeFolder.id === folder.id ? 'active' : ''
+                }`}
+                onClick={() => handleFolderChange(folder)}
+              >
+                <span className="me-2">
+                  <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
+                </span>
+                {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
+              </a>
+            ))
+          ) : (
+            <div className="folder-info">You haven&apos;t created any folders. Use folders to organize your apps</div>
+          )}
+          {}
+          <Modal show={showForm} setShow={setShowForm} title="Create folder">
             <div className="row">
               <div className="col modal-main">
                 <input
@@ -116,7 +121,7 @@ export const Folders = function Folders({
                   Cancel
                 </button>
                 <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={saveFolder}>
-                  Create Folder
+                  Create folder
                 </button>
               </div>
             </div>

@@ -522,65 +522,65 @@ describe('apps controller', () => {
       await application.reload();
       expect(application.name).toBe('name');
     });
+  });
 
-    describe('DELETE delete app', () => {
-      it('should be possible for the admin to delete an app, cascaded with its versions, queries and data sources', async () => {
-        const admin = await createUser(app, {
-          email: 'adminForDelete@tooljet.io',
-          groups: ['all_users', 'admin'],
-        });
-        const application = await createApplication(app, {
-          name: 'AppTObeDeleted',
-          user: admin.user,
-        });
-        const version = await createApplicationVersion(app, application);
-        const dataQuery = await createDataQuery(app, {
-          application,
-          kind: 'test_kind',
-        });
-        const dataSource = await createDataSource(app, {
-          application,
-          kind: 'test_kind',
-          name: 'test_name',
-        });
-
-        const response = await request(app.getHttpServer())
-          .delete(`/api/apps/${application.id}`)
-          .set('Authorization', authHeaderForUser(admin.user));
-
-        expect(response.statusCode).toBe(200);
-
-        expect(await App.findOne(application.id)).toBeUndefined();
-        expect(await AppVersion.findOne(version.id)).toBeUndefined();
-        expect(await DataQuery.findOne(dataQuery.id)).toBeUndefined();
-        expect(await DataSource.findOne(dataSource.id)).toBeUndefined();
-        expect(await AppUser.findOne({ appId: application.id })).toBeUndefined();
+  describe('DELETE delete app', () => {
+    it('should be possible for the admin to delete an app, cascaded with its versions, queries and data sources', async () => {
+      const admin = await createUser(app, {
+        email: 'adminForDelete@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        name: 'AppTObeDeleted',
+        user: admin.user,
+      });
+      const version = await createApplicationVersion(app, application);
+      const dataQuery = await createDataQuery(app, {
+        application,
+        kind: 'test_kind',
+      });
+      const dataSource = await createDataSource(app, {
+        application,
+        kind: 'test_kind',
+        name: 'test_name',
       });
 
-      it('should be possible for app creator to delete an app', async () => {
-        const developer = await createUser(app, {
-          email: 'developer@tooljet.io',
-          groups: ['all_users', 'developer'],
-        });
-        const application = await createApplication(app, {
-          name: 'AppTObeDeleted',
-          user: developer.user,
-        });
-        await createApplicationVersion(app, application);
-        await createDataQuery(app, { application, kind: 'test_kind' });
-        await createDataSource(app, {
-          application,
-          kind: 'test_kind',
-          name: 'test_name',
-        });
+      const response = await request(app.getHttpServer())
+        .delete(`/api/apps/${application.id}`)
+        .set('Authorization', authHeaderForUser(admin.user));
 
-        const response = await request(app.getHttpServer())
-          .delete(`/api/apps/${application.id}`)
-          .set('Authorization', authHeaderForUser(developer.user));
+      expect(response.statusCode).toBe(200);
 
-        expect(response.statusCode).toBe(200);
-        expect(await App.findOne(application.id)).toBeUndefined();
+      expect(await App.findOne(application.id)).toBeUndefined();
+      expect(await AppVersion.findOne(version.id)).toBeUndefined();
+      expect(await DataQuery.findOne(dataQuery.id)).toBeUndefined();
+      expect(await DataSource.findOne(dataSource.id)).toBeUndefined();
+      expect(await AppUser.findOne({ appId: application.id })).toBeUndefined();
+    });
+
+    it('should be possible for app creator to delete an app', async () => {
+      const developer = await createUser(app, {
+        email: 'developer@tooljet.io',
+        groups: ['all_users', 'developer'],
       });
+      const application = await createApplication(app, {
+        name: 'AppTObeDeleted',
+        user: developer.user,
+      });
+      await createApplicationVersion(app, application);
+      await createDataQuery(app, { application, kind: 'test_kind' });
+      await createDataSource(app, {
+        application,
+        kind: 'test_kind',
+        name: 'test_name',
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/apps/${application.id}`)
+        .set('Authorization', authHeaderForUser(developer.user));
+
+      expect(response.statusCode).toBe(200);
+      expect(await App.findOne(application.id)).toBeUndefined();
     });
 
     it('should not be possible for non admin to delete an app', async () => {
@@ -1389,6 +1389,88 @@ describe('apps controller', () => {
       });
 
       expect(importedApp).toHaveLength(1);
+    });
+  });
+
+  describe('PUT /api/apps/:id/icons', () => {
+    it('should be able to update icon of the app if admin of same organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        user: adminUserData.user,
+      });
+
+      const response = await request(app.getHttpServer())
+        .put(`/api/apps/${application.id}/icons`)
+        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .send({ icon: 'new-icon-name' });
+
+      expect(response.statusCode).toBe(200);
+      await application.reload();
+      expect(application.icon).toBe('new-icon-name');
+    });
+
+    it('should not be able to update icon of the app if admin of another organization', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
+
+      const response = await request(app.getHttpServer())
+        .put(`/api/apps/${application.id}/icons`)
+        .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+        .send({ icon: 'new-icon-name' });
+
+      expect(response.statusCode).toBe(403);
+      await application.reload();
+      expect(application.icon).toBe(null);
+    });
+
+    it('should not allow custom groups without app create permission to change the name of apps', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const application = await createApplication(app, {
+        name: 'name',
+        user: adminUserData.user,
+      });
+
+      const developerUserData = await createUser(app, {
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
+      });
+      const viewerUserData = await createUser(app, {
+        email: 'viewer@tooljet.io',
+        groups: ['all_users', 'viewer'],
+        organization: adminUserData.organization,
+      });
+
+      let response = await request(app.getHttpServer())
+        .put(`/api/apps/${application.id}/icons`)
+        .set('Authorization', authHeaderForUser(developerUserData.user))
+        .send({ icon: 'new-icon' });
+      expect(response.statusCode).toBe(403);
+
+      response = await request(app.getHttpServer())
+        .put(`/api/apps/${application.id}/icons`)
+        .set('Authorization', authHeaderForUser(viewerUserData.user))
+        .send({ icon: 'new-icon' });
+      expect(response.statusCode).toBe(403);
+
+      await application.reload();
+      expect(application.icon).toBe(null);
     });
   });
 

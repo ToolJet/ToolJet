@@ -139,3 +139,4 @@ If the data of a cell is changed, "save changes" button will be shown at the bot
 | Style      | Description |
 | ----------- | ----------- |
 | Cell size |  This decides the size of table cells. You can choose between a `Compact` size for table cells or a `Spacious` size |
+| Action button radius | This field can be used to give a radius to all action buttons. The default value is `0` |
