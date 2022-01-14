@@ -48,7 +48,6 @@ class DataSourceManager extends React.Component {
   componentDidMount() {
     this.setState({
       appId: this.props.appId,
-      // filteredDatasources: this.datasourcesGroups(),
     });
   }
 
@@ -59,6 +58,12 @@ class DataSourceManager extends React.Component {
         options: this.props.selectedDataSource?.options,
         dataSourceMeta: DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource?.kind),
       });
+    }
+    if (this.state.activeDatasourceList === '#') {
+      const element = document.getElementsByClassName('list-group-item');
+      for (let i = 0; i < element.length; i++) {
+        element[i].classList.remove('active');
+      }
     }
   }
 
@@ -170,7 +175,7 @@ class DataSourceManager extends React.Component {
   };
 
   updateSuggestedDatasources = () => {
-    this.setState({ suggestingDatasources: true });
+    this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
   };
 
   renderSourceComponent = (kind) => {
@@ -206,11 +211,16 @@ class DataSourceManager extends React.Component {
       this.setState({ activeDatasourceList: activekey });
     };
 
+    const goBacktoAllDatasources = () => {
+      this.setState({ suggestingDatasources: false });
+      this.handleBackToAllDatasources();
+    };
+
     const datasourceSuggestionUI = () => {
       return (
         <EmptyStateContainer
           queryString={this.state.queryString}
-          handleBackToAllDatasources={this.handleBackToAllDatasources}
+          handleBackToAllDatasources={goBacktoAllDatasources}
           darkMode={this.props.darkMode}
           placeholder={'Tell us your database'}
         />
@@ -231,7 +241,7 @@ class DataSourceManager extends React.Component {
             <div className="selected-datasource-list-content">
               <Tab.Content>
                 {suggestingDatasources ? (
-                  <div>{datasourceSuggestionUI()}</div>
+                  <div className="suggestingDatasourcesWrapper">{datasourceSuggestionUI()}</div>
                 ) : (
                   <>
                     <div className="input-icon modal-searchbar">
@@ -458,7 +468,6 @@ class DataSourceManager extends React.Component {
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
-    console.log('suggestingDatasources', this.state.suggestingDatasources);
     return (
       <div>
         <Modal
