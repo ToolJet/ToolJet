@@ -62,7 +62,7 @@ export const Statics = function Statics({ height, properties,styles}) {
                     {secondarysigndisplay == 'positive'? < img src='../../../assets/images/icons/widgets/upstatics.svg' style={{ ...marginStyle, marginRight: '6.5px' }}/>: <img src='../../../assets/images/icons/widgets/downstatics.svg' style={{ ...marginStyle, marginRight: '6.5px' }} />}
                     <p style={{ ...marginStyle, ...percentageContainer }}>{sign}{secondaryvalue}%</p>
                 </div>
-                <p style={{ ...letterStyle, ...marginStyle ,color:SecondaryLabelColour}} >{secondaryValueLabel}</p>
+                <p style={{ ...letterStyle,color:SecondaryLabelColour}} >{secondaryValueLabel}</p>
             </div>
         </div>
     );
