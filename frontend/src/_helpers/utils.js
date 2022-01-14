@@ -75,7 +75,9 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         } else {
           for (const dynamicVariable of dynamicVariables) {
             const value = resolveReferences(dynamicVariable, state);
-            object = object.replace(dynamicVariable, value);
+            if (typeof value !== 'function') {
+              object = object.replace(dynamicVariable, value);
+            }
           }
         }
       }

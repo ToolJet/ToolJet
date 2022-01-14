@@ -174,7 +174,6 @@ class DataSourceManager extends React.Component {
           show={this.props.showDataSourceManagerModal}
           size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
-          className="mt-5"
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
           onExit={this.onExit}
@@ -311,7 +310,7 @@ class DataSourceManager extends React.Component {
                       </svg>
                     </div>
                     <div className="col" style={{ maxWidth: '480px' }}>
-                      <p>Please white-list our IP address if your databases are not publicaly accessabile</p>
+                      <p>Please white-list our IP address if your databases are not publicly accessabile</p>
                     </div>
                     <div className="col-auto">
                       {isCopied ? (
