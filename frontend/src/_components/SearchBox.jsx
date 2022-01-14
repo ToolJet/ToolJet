@@ -11,7 +11,6 @@ export function SearchBox({ onSubmit }) {
   const trackEnterKey = (e) => {
     if (e.key === 'Enter') {
       onSubmit(searchText);
-      console.log('Enter key pressed', searchText);
     }
   };
 

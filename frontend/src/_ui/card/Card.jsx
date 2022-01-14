@@ -13,7 +13,7 @@ const Card = ({ title, src, handleClick }) => {
       >
         <div className="card-body">
           <center>
-            <img src={src} width="50" height="50" alt="" />
+            <img src={src} width="50" height="50" alt={title} />
 
             <br></br>
             <br></br>

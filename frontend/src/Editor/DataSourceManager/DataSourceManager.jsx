@@ -13,7 +13,7 @@ import {
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
-import { Card } from '../../_ui/card';
+import { Card } from '@/_ui/card';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -473,6 +473,7 @@ class DataSourceManager extends React.Component {
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
+
     return (
       <div>
         <Modal
