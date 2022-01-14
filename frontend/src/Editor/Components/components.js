@@ -1188,6 +1188,7 @@ export const componentTypes = [
     },
     exposedVariables: {
       file: [{ name: '', content: '', dataURL: '', type: '', parsedData: '' }],
+      isParsing: false,
     },
     definition: {
       others: {

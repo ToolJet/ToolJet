@@ -152,6 +152,9 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
     if (acceptedFiles.length !== 0) {
       const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
+      if (parseContent) {
+        onComponentOptionChanged(component, 'isParsing', true);
+      }
       acceptedFiles.map((acceptedFile) => {
         const acceptedFileData = fileReader(acceptedFile);
         acceptedFileData.then((data) => {
@@ -168,6 +171,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
             setTimeout(() => {
               setShowSelectedFiles(true);
               setAccepted(false);
+              onComponentOptionChanged(component, 'isParsing', false);
               resolve();
             }, 600);
           });
