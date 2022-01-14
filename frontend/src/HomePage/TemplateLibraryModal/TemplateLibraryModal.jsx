@@ -47,14 +47,13 @@ export default function TemplateLibraryModal(props) {
   const [deploying, setDeploying] = useState(false);
 
   function deployApp() {
-    console.log('selectedApp', selectedApp);
     const id = selectedApp.id;
     setDeploying(true);
     libraryAppService
       .deploy(id)
       .then((data) => {
-        console.log('dataa', data);
         setDeploying(false);
+        props.onCloseButtonClick();
         toast.success('App created.', {
           position: 'top-center',
         });
@@ -108,16 +107,15 @@ export default function TemplateLibraryModal(props) {
                       <Button variant="outline-primary" onClick={props.onCloseButtonClick}>
                         Cancel
                       </Button>
-                      <Button
-                        variant="primary"
+                      <a
+                        href="#"
+                        className={`btn btn-primary ms-2 ${deploying ? 'btn-loading' : ''}`}
                         onClick={() => {
                           deployApp();
-                          props.onCloseButtonClick();
                         }}
-                        className="ms-2"
                       >
                         Create application from template
-                      </Button>
+                      </a>
                     </div>
                   </Col>
                 </Row>
