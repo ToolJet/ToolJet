@@ -201,7 +201,7 @@ class DataSourceManager extends React.Component {
     this.setState({ connectionTestError: data });
   };
 
-  segregateDataSources = (suggestingDatasources) => {
+  segregateDataSources = (suggestingDatasources, darkMode) => {
     const datasources = this.datasourcesGroups();
 
     const hanndleOnSelect = (activekey) => {
@@ -234,7 +234,7 @@ class DataSourceManager extends React.Component {
         defaultActiveKey={this.state.activeDatasourceList}
       >
         <Row>
-          <Col sm={6} md={4} className="modal-sidebar">
+          <Col sm={6} md={4} className={`modal-sidebar ${darkMode ? 'dark' : ''}`}>
             {this.renderSidebarList()}
           </Col>
           <Col style={{ left: '25%' }} className="modal-body-content">
@@ -329,7 +329,7 @@ class DataSourceManager extends React.Component {
           ))}
         </ListGroup>
         <div className="datasource-modal-sidebar-footer">
-          <p className="text-black-50">
+          <p>
             Can&apos;t find yours
             <br />
             <span className="link-span" onClick={updateSuggestionState}>
@@ -517,7 +517,7 @@ class DataSourceManager extends React.Component {
 
           <Modal.Body>
             {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
-            {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources)}
+            {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
           </Modal.Body>
 
           {selectedDataSource && !dataSourceMeta.customTesting && (

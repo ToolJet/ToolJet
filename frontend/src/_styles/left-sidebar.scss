@@ -243,6 +243,21 @@
   padding: 24px!important;
   margin-left: 0.5rem;
 }
+
+.modal-sidebar.dark {
+  background: $dark-background;
+  border-color: #324156;
+
+  .list-group-item {
+    color: $white;
+  }
+
+  .datasource-modal-sidebar-footer {
+    background:#283444;
+    border-left: none;
+    border-color: #324156;
+  }
+}
 .select-datasource-list-modal {
   
   .modal-body {
@@ -253,7 +268,6 @@
 .modal-body {
   .datasource-modal-sidebar-footer {
     border: 1px solid #D2DDEC; 
-
     width: 242px!important;
     height: 71px;
     background-color: #FFFFFC;
@@ -266,6 +280,7 @@
         font-weight: 500;
         font-size: 12px;
         line-height: 15px;
+        color: #c5c5c5;
     }
   }
 }
