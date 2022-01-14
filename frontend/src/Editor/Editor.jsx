@@ -72,6 +72,7 @@ class Editor extends React.Component {
       allComponentTypes: componentTypes,
       isQueryPaneDragging: false,
       queryPaneHeight: 70,
+      isTopOfQueryPane: false,
       isLoading: true,
       users: null,
       appId,
@@ -107,8 +108,6 @@ class Editor extends React.Component {
   componentDidMount() {
     this.fetchApps(0);
     this.fetchApp();
-    this.fetchDataSources();
-    this.fetchDataQueries();
     this.initComponentVersioning();
     this.initEventListeners();
     config.COMMENT_FEATURE_ENABLE && this.initWebSocket();
@@ -119,8 +118,21 @@ class Editor extends React.Component {
   }
 
   onMouseMove = (e) => {
+    const componentTop = Math.round(this.queryPaneRef.current.getBoundingClientRect().top);
+    const clientY = e.clientY;
+
+    if ((clientY >= componentTop) & (clientY <= componentTop + 5)) {
+      this.setState({
+        isTopOfQueryPane: true,
+      });
+    } else {
+      this.setState({
+        isTopOfQueryPane: false,
+      });
+    }
+
     if (this.state.isQueryPaneDragging) {
-      let queryPaneHeight = (e.clientY / window.screen.height) * 100;
+      let queryPaneHeight = (clientY / window.innerHeight) * 100;
 
       if (queryPaneHeight > 95) queryPaneHeight = 100;
       if (queryPaneHeight < 4.5) queryPaneHeight = 4.5;
@@ -220,7 +232,7 @@ class Editor extends React.Component {
         loadingDataSources: true,
       },
       () => {
-        datasourceService.getAll(this.state.appId).then((data) =>
+        datasourceService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) =>
           this.setState({
             dataSources: data.data_sources,
             loadingDataSources: false,
@@ -236,7 +248,7 @@ class Editor extends React.Component {
         loadingDataQueries: true,
       },
       () => {
-        dataqueryService.getAll(this.state.appId).then((data) => {
+        dataqueryService.getAll(this.state.appId, this.state.editingVersion?.id).then((data) => {
           this.setState(
             {
               dataQueries: data.data_queries,
@@ -314,6 +326,9 @@ class Editor extends React.Component {
           });
         }
       );
+
+      this.fetchDataSources();
+      this.fetchDataQueries();
     });
   };
 
@@ -322,6 +337,9 @@ class Editor extends React.Component {
     this.setState({
       editingVersion: version,
     });
+
+    this.fetchDataSources();
+    this.fetchDataQueries();
   };
 
   dataSourcesChanged = () => {
@@ -745,6 +763,7 @@ class Editor extends React.Component {
       apps,
       defaultComponentStateComputed,
       showComments,
+      editingVersion,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -962,19 +981,11 @@ class Editor extends React.Component {
                 onMouseDown={this.onMouseDown}
                 className="query-pane"
                 style={{
-                  height: `calc(100% - ${this.state.queryPaneHeight - 1}%)`,
-                  background: 'transparent',
-                  border: 0,
-                  cursor: 'row-resize',
-                }}
-              ></div>
-              <div
-                className="query-pane"
-                style={{
                   height: `calc(100% - ${this.state.queryPaneHeight}%)`,
                   width: !showLeftSidebar ? '85%' : '',
                   left: !showLeftSidebar ? '0' : '',
-                  cursor: this.state.isQueryPaneDragging ? 'row-resize' : 'default',
+                  // transition: 'height 0.3s ease-in-out',
+                  cursor: this.state.isQueryPaneDragging || this.state.isTopOfQueryPane ? 'row-resize' : 'default',
                 }}
               >
                 <div className="row main-row">
@@ -1070,6 +1081,7 @@ class Editor extends React.Component {
                             selectedDataSource={this.state.selectedDataSource}
                             dataQueriesChanged={this.dataQueriesChanged}
                             appId={appId}
+                            editingVersionId={editingVersion?.id}
                             addingQuery={addingQuery}
                             editingQuery={editingQuery}
                             queryPaneHeight={queryPaneHeight}

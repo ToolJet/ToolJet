@@ -72,17 +72,16 @@ export class OrganizationUsersService {
   }
 
   async archive(id: string) {
-    const organizationUser = await this.organizationUsersRepository.findOne(id);
+    await getManager().transaction(async (manager) => {
+      const organizationUser = await manager.findOne(OrganizationUser, id);
+      const user = await manager.findOne(User, organizationUser.userId);
 
-    if (organizationUser.role === 'admin') {
-      const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
+      await this.usersService.throwErrorIfRemovingLastActiveAdmin(user);
 
-      if (lastActiveAdmin) {
-        throw new BadRequestException('You cannot archive this user as there are no other active admin users.');
-      }
-    }
+      await manager.update(User, user.id, { invitationToken: null });
+      await manager.update(OrganizationUser, id, { status: 'archived' });
+    });
 
-    await this.organizationUsersRepository.update(id, { status: 'archived' });
     return true;
   }
 

@@ -16,7 +16,7 @@ export const TextInput = function TextInput({ height, validate, properties, styl
   }, [properties.value]);
 
   return (
-    <div>
+    <div className="text-input">
       <input
         disabled={styles.disabledState}
         onChange={(e) => {

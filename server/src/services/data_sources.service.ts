@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
-import { allPlugins } from 'src/modules/data_sources/plugins';
+import { allPlugins } from '../../src/modules/data_sources/plugins';
 
 @Injectable()
 export class DataSourcesService {
@@ -14,12 +14,11 @@ export class DataSourcesService {
     private dataSourcesRepository: Repository<DataSource>
   ) {}
 
-  async all(user: User, appId: string): Promise<DataSource[]> {
-    return await this.dataSourcesRepository.find({
-      where: {
-        appId,
-      },
-    });
+  async all(user: User, query: object): Promise<DataSource[]> {
+    const { app_id: appId, app_version_id: appVersionId }: any = query;
+    const whereClause = { appId, ...(appVersionId && { appVersionId }) };
+
+    return await this.dataSourcesRepository.find({ where: whereClause });
   }
 
   async findOne(dataSourceId: string): Promise<DataSource> {
@@ -29,12 +28,19 @@ export class DataSourcesService {
     });
   }
 
-  async create(name: string, kind: string, options: Array<object>, appId: string): Promise<DataSource> {
+  async create(
+    name: string,
+    kind: string,
+    options: Array<object>,
+    appId: string,
+    appVersionId?: string // TODO: Make this non optional when autosave is implemented
+  ): Promise<DataSource> {
     const newDataSource = this.dataSourcesRepository.create({
       name,
       kind,
       options: await this.parseOptionsForCreate(options),
       appId,
+      appVersionId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -97,9 +103,11 @@ export class DataSourcesService {
   }
 
   async parseOptionsForOauthDataSource(options: Array<object>) {
-    if (options.find((option) => option['key'] === 'oauth2')) {
-      const provider = options.find((option) => option['key'] === 'provider')['value'];
-      const authCode = options.find((option) => option['key'] === 'code')['value'];
+    const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
+
+    if (findOption(options, 'oauth2') && findOption(options, 'code')) {
+      const provider = findOption(options, 'oauth2')['value'];
+      const authCode = findOption(options, 'code')['value'];
 
       const plugins = await allPlugins;
       const queryService = new plugins[provider]();
@@ -120,7 +128,7 @@ export class DataSourcesService {
     return options;
   }
 
-  async parseOptionsForCreate(options: Array<object>) {
+  async parseOptionsForCreate(options: Array<object>, entityManager = getManager()) {
     if (!options) return {};
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
@@ -128,7 +136,7 @@ export class DataSourcesService {
 
     for (const option of optionsWithOauth) {
       if (option['encrypted']) {
-        const credential = await this.credentialsService.create(option['value'] || '');
+        const credential = await this.credentialsService.create(option['value'] || '', entityManager);
 
         parsedOptions[option['key']] = {
           credential_id: credential.id,
