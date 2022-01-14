@@ -715,8 +715,9 @@ button {
     img.template-image {
       height: 75%;
       width: 85%;
-      border: solid black 2px;
+      border: 0;
       padding: 0;
+      object-fit: contain;
     }
 
     .row {
