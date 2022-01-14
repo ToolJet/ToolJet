@@ -212,15 +212,11 @@ let QueryManager = class QueryManager extends React.Component {
     const icon = option.kind ? `/assets/images/icons/editor/datasources/${option.kind.toLowerCase() + '.svg'}` : null;
     return (
       <button {...props} className={className} type="button">
-        <div className="row">
-          <div className="col-md-9">
-            <span className="text-muted mx-2">
-              {icon && (
-                <img src={icon} style={{ objectFit: 'contain' }} height="25" width="25" className="mt-1·col-md-2"></img>
-              )}
-              {option.name}
-            </span>
-          </div>
+        <div>
+          <span className="text-muted">
+            {icon && <img src={icon} style={{ margin: 'auto', marginRight: '3px' }} height="25" width="25"></img>}
+            {option.name}
+          </span>
         </div>
       </button>
     );
