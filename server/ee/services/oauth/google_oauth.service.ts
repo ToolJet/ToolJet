@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import UserResponse from './models/user_response';
+
 @Injectable()
 export class GoogleOAuthService {
   constructor(private readonly configService: ConfigService) {
@@ -10,7 +12,7 @@ export class GoogleOAuthService {
   private readonly client: OAuth2Client;
   private readonly clientId: string;
 
-  #extractDetailsFromPayload(payload: TokenPayload): any {
+  #extractDetailsFromPayload(payload: TokenPayload): UserResponse {
     const email = payload.email;
     const userSSOId = payload.sub;
     const domain = payload.hd;
@@ -21,7 +23,7 @@ export class GoogleOAuthService {
     return { userSSOId, firstName, lastName, email, domain };
   }
 
-  async signIn(token: string): Promise<any> {
+  async signIn(token: string): Promise<UserResponse> {
     const ticket = await this.client.verifyIdToken({
       idToken: token,
       audience: this.clientId,

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import got from 'got';
+import UserResponse from './models/user_response';
 
 @Injectable()
 export class GitOAuthService {
@@ -43,12 +44,4 @@ interface AuthResponse {
   access_token: string;
   scope?: string;
   token_type?: string;
-}
-
-interface UserResponse {
-  userSSOId: string;
-  firstName: string;
-  lastName?: string;
-  email: string;
-  domain?: string;
 }
