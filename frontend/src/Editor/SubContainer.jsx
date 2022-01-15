@@ -34,6 +34,10 @@ export const SubContainer = ({
   removeComponent,
   darkMode,
   containerCanvasWidth,
+  readOnly,
+  customResolvables,
+  parentComponent,
+  listViewItemOptions,
 }) => {
   const [_currentParentRef, setParentRef] = useState(parentRef);
 
@@ -50,7 +54,7 @@ export const SubContainer = ({
 
   Object.keys(allComponents).forEach((key) => {
     if (allComponents[key].parent === parent) {
-      childComponents[key] = allComponents[key];
+      childComponents[key] = { ...allComponents[key], component: { ...allComponents[key]['component'], parent } };
     }
   });
 
@@ -352,18 +356,30 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
+  function onComponentOptionChangedForSubcontainer(component, optionName, value, extraProps) {
+    let newData = currentState.components[parentComponent.name]?.data || [];
+    newData[listViewItemOptions.index] = {
+      ...newData[listViewItemOptions.index],
+      [component.name]: {
+        ...(newData[listViewItemOptions.index] ? newData[listViewItemOptions.index][component.name] : {}),
+        [optionName]: value,
+      },
+    };
+    onComponentOptionChanged(parentComponent, 'data', newData);
+  }
+
   return (
     <div
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
-      className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}
+      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {Object.keys(childComponents).map((key) => (
+      {Object.keys(childComponents).map((key, index) => (
         <DraggableBox
           onComponentClick={onComponentClick}
           onEvent={onEvent}
-          onComponentOptionChanged={onComponentOptionChanged}
+          onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
           onComponentOptionsChanged={onComponentOptionsChanged}
           key={key}
           currentState={currentState}
@@ -371,7 +387,9 @@ export const SubContainer = ({
           onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
-          {...boxes[key]}
+          extraProps={{ listviewItemIndex: listViewItemOptions?.index }}
+          allComponents={allComponents}
+          {...childComponents[key]}
           mode={mode}
           resizingStatusChanged={(status) => setIsResizing(status)}
           draggingStatusChanged={(status) => setIsDragging(status)}
@@ -384,6 +402,9 @@ export const SubContainer = ({
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
           removeComponent={removeComponent}
           canvasWidth={getContainerCanvasWidth()}
+          readOnly={readOnly}
+          customResolvables={customResolvables}
+          parentId={parentComponent.name}
           containerProps={{
             mode,
             snapToGrid,
@@ -402,6 +423,7 @@ export const SubContainer = ({
             deviceWindowWidth,
             selectedComponent,
             darkMode,
+            readOnly,
           }}
         />
       ))}
