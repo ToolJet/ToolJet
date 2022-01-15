@@ -5,6 +5,7 @@ import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
 import AppList from './AppList';
+import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
 import SelectSearch from 'react-select-search';
@@ -39,6 +40,7 @@ class HomePage extends React.Component {
         folders: [],
       },
       appOperations: {},
+      showTemplateLibraryModal: false,
     };
   }
 
@@ -422,6 +424,8 @@ class HomePage extends React.Component {
       });
   };
 
+  showTemplateLibraryModal = () => this.setState({ showTemplateLibraryModal: true });
+
   render() {
     const {
       apps,
@@ -564,6 +568,7 @@ class HomePage extends React.Component {
                       createApp={this.createApp}
                       fileInput={this.fileInput}
                       appCount={currentFolder.count}
+                      showTemplateLibraryModal={this.showTemplateLibraryModal}
                     />
                     <AppList
                       apps={apps}
@@ -579,17 +584,24 @@ class HomePage extends React.Component {
                       darkMode={this.props.darkMode}
                       appActionModal={this.appActionModal}
                     />
-                    {this.pageCount() > 10 && (
-                      <Pagination
-                        currentPage={meta.current_page}
-                        count={this.pageCount()}
-                        pageChanged={this.pageChanged}
-                      />
-                    )}
+                    <div className="homepage-pagination">
+                      {this.pageCount() > 10 && (
+                        <Pagination
+                          currentPage={meta.current_page}
+                          count={this.pageCount()}
+                          pageChanged={this.pageChanged}
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            <TemplateLibraryModal
+              show={this.state.showTemplateLibraryModal}
+              onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
+              darkMode={this.props.darkMode}
+            />
           </div>
         )}
       </div>
