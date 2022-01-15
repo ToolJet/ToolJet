@@ -29,6 +29,7 @@ import { Listview } from './Components/Listview';
 import { IFrame } from './Components/IFrame';
 import { CodeEditor } from './Components/CodeEditor';
 import { Timer } from './Components/Timer';
+import { Tags } from './Components/Tags';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -67,6 +68,7 @@ const AllComponents = {
   CodeEditor,
   Listview,
   Timer,
+  Tags,
 };
 
 export const Box = function Box({
