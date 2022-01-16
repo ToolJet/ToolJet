@@ -885,6 +885,9 @@ button {
   .select-search {
     width: 300px;
   }
+  .select-search-dark {
+    width: 300px;
+  }
 }
 
 .select-search {
@@ -1090,7 +1093,7 @@ button {
 * Select Search Dark Mode 
 */
 .select-search-dark {
-  width: 300px;
+  width: 100%;
   position: relative;
   box-sizing: border-box;
 }
