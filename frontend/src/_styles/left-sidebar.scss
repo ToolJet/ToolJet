@@ -165,8 +165,15 @@
 .datasource-lists-modal {
   .list-group-item {
     border: none!important;
-    cursor: pointer!important;
+    cursor: pointer;
     margin-bottom: 4px;
+    margin-left: 14px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 17px;
+    padding: 10px 12px!important;
+
+    height: 34px;
 
     &:hover {
       border-radius: 4px!important;
