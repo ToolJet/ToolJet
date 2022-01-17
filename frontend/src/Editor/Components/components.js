@@ -1547,7 +1547,7 @@ export const componentTypes = [
     description: 'Statics',
     component: 'Statics',
     defaultSize: {
-      width: 6,
+      width: 9.2,
       height: 152,
     },
     others: {
