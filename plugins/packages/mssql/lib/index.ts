@@ -51,7 +51,7 @@ export default class MssqlQueryService implements QueryService {
         user: sourceOptions.username,
         password: sourceOptions.password,
         database: sourceOptions.database,
-        port: sourceOptions.port,
+        port: +sourceOptions.port,
         options: {
           encrypt: true,
         },
