@@ -183,6 +183,8 @@ export const componentTypes = [
           { name: 'Pie', value: 'pie' },
         ],
       },
+      jsonDescription: { type: 'json', displayName: 'Json Description' },
+      plotFromJson: { type: 'toggle', displayName: 'Use Plotly JSON schema' },
     },
     events: {},
     styles: {
@@ -201,7 +203,27 @@ export const componentTypes = [
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
         showGridLines: { value: true },
+        plotFromJson: { value: false },
         loadingState: { value: `{{false}}` },
+        jsonDescription: {
+          value: `{
+            "data": [
+                {
+                    "x": [
+                        "Jan",
+                        "Feb",
+                        "Mar"
+                    ],
+                    "y": [
+                        100,
+                        80,
+                        40
+                    ],
+                    "type": "bar"
+                }
+            ]
+        }`,
+        },
         type: { value: `line` },
         data: {
           value: `[

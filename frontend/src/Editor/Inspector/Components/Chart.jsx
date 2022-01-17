@@ -59,6 +59,10 @@ class Chart extends React.Component {
 
     const data = this.state.component.component.definition.properties.data;
 
+    const jsonDescription = this.state.component.component.definition.properties.jsonDescription;
+
+    const plotFromJson = this.state.component.component.definition.properties.plotFromJson.value;
+
     const chartType = this.state.component.component.definition.properties.type.value;
 
     let items = [];
@@ -78,34 +82,65 @@ class Chart extends React.Component {
     });
 
     items.push({
-      title: 'Properties',
+      title: 'Plotly JSON chart schema',
       children: renderElement(
         component,
         componentMeta,
         paramUpdated,
         dataQueries,
-        'type',
+        'plotFromJson',
         'properties',
-        currentState,
-        components
+        currentState
       ),
     });
 
-    items.push({
-      title: 'Chart data',
-      children: (
-        <CodeHinter
-          currentState={this.props.currentState}
-          initialValue={data.value}
-          theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-          mode="javascript"
-          lineNumbers={false}
-          className="chart-input pr-2"
-          onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
-          componentName={`widget/${this.props.component.component.name}::${chartType}`}
-        />
-      ),
-    });
+    if (plotFromJson) {
+      items.push({
+        title: 'Json description',
+        children: (
+          <CodeHinter
+            currentState={this.props.currentState}
+            initialValue={jsonDescription.value}
+            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+            mode="javascript"
+            lineNumbers={false}
+            className="chart-input pr-2"
+            onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
+            componentName={`widget/${this.props.component.component.name}::${chartType}`}
+          />
+        ),
+      });
+    } else {
+      items.push({
+        title: 'Properties',
+        children: renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'type',
+          'properties',
+          currentState,
+          components
+        ),
+      });
+
+      items.push({
+        title: 'Chart data',
+        children: (
+          <CodeHinter
+            currentState={this.props.currentState}
+            initialValue={data.value}
+            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+            mode="javascript"
+            lineNumbers={false}
+            className="chart-input pr-2"
+            onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
+            componentName={`widget/${this.props.component.component.name}::${chartType}`}
+          />
+        ),
+      });
+    }
 
     items.push({
       title: 'Loading state',
@@ -121,18 +156,20 @@ class Chart extends React.Component {
     });
 
     if (chartType !== 'pie') {
-      items.push({
-        title: 'Marker color',
-        children: renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'markerColor',
-          'properties',
-          currentState
-        ),
-      });
+      if (!plotFromJson) {
+        items.push({
+          title: 'Marker color',
+          children: renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'markerColor',
+            'properties',
+            currentState
+          ),
+        });
+      }
 
       items.push({
         title: 'Show grid lines',
