@@ -4,6 +4,8 @@ export const Statistics = function Statistics({ height, properties,styles}) {
     const { PrimaryLabelColour, PrimaryTextColour, SecondaryLabelColour, SecondaryTextColour } = styles;
 
     const [sign, setSign] = useState('')
+    const [change, setChange] = useState(false)
+
 
     useEffect(() => {
         secondarysigndisplay == 'positive'? setSign('+'):setSign('-')
@@ -17,9 +19,10 @@ export const Statistics = function Statistics({ height, properties,styles}) {
         alignItems: 'center',
         flexDirection: 'column',
         margin: '0px auto',
-        width: '196px',
+        minWidth: '196px',
         border: ' 0.75px solid #A6B6CC',
-        fontFamily: 'Inter'
+        fontFamily: 'Inter',
+        justifyContent:'center'
     };
 
     const letterStyle = {
@@ -49,7 +52,7 @@ export const Statistics = function Statistics({ height, properties,styles}) {
         height: '24px',
         background: secondarysigndisplay == 'positive'?'#EDFFF9':'#FDEAED',
         borderRadius: '58px',
-        color: SecondaryTextColour!=='#36AF8B'|'#EE2C4D'?SecondaryTextColour:secondarysigndisplay == 'positive'?'#36AF8B':'#EE2C4D',
+        color: SecondaryTextColour!=='#36AF8B'?SecondaryTextColour:secondarysigndisplay == 'positive'?'#36AF8B':'#EE2C4D',
         fontWeight: '700'
     }
 
