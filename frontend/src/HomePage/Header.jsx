@@ -1,5 +1,6 @@
 import React from 'react';
 import { SearchBox } from '@/_components/SearchBox';
+import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 
 export default function Header({
   folderName,
@@ -9,15 +10,16 @@ export default function Header({
   creatingApp,
   canCreateApp,
   createApp,
+  showTemplateLibraryModal,
   fileInput,
 }) {
   return (
     <div className="row">
-      <div className="col-3">
+      <div className="col-4">
         <h2 className="page-title px-2">{folderName}</h2>
       </div>
-      {canCreateApp() && <div className="col-2 ms-auto d-print-none"></div>}
-      <div className="col-4 ms-auto d-print-none d-flex flex-row justify-content-end">
+
+      <div className="col-8 ms-auto d-print-none d-flex flex-row justify-content-end">
         <SearchBox onSubmit={onSearchSubmit} />
         {canCreateApp() && (
           <>
@@ -26,14 +28,22 @@ export default function Header({
               Import
               <input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
             </label>
-            <button
-              className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 create-new-app-button ${
-                creatingApp ? 'btn-loading' : ''
-              }`}
-              onClick={createApp}
-            >
-              Create new application
-            </button>
+            {canCreateApp() && (
+              <Dropdown as={ButtonGroup}>
+                <Button
+                  className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 ${creatingApp ? 'btn-loading' : ''}`}
+                  onClick={createApp}
+                >
+                  Create new application
+                </Button>
+
+                <Dropdown.Toggle split className="btn btn-primary d-none d-lg-inline mb-3" />
+
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={showTemplateLibraryModal}>Choose from template</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            )}
           </>
         )}
       </div>
