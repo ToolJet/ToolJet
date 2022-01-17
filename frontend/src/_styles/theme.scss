@@ -97,6 +97,9 @@ button {
   }
 
   .query-manager {
+    // .row {
+    //   width: 605px;
+    // }
     .btn {
       height: 31px;
     }
@@ -113,7 +116,7 @@ button {
     }
 
     .query-details {
-      margin-top: 34px;
+      margin-top: 0px;
     }
 
     .advanced-options-container {
@@ -454,12 +457,11 @@ button {
         .header {
           position: absolute;
           right: 0;
-          left: 25%;
+          left: 33.33%;
           border: solid rgba(0, 0, 0, 0.125);
           border-width: 0px 0px 1px 0px;
           background: white;
           z-index: 3;
-          padding-top: 1px;
           min-height: 41px;
         }
 
@@ -475,6 +477,7 @@ button {
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
+        min-height: 41px;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* Internet Explorer 10+ */
 
@@ -492,6 +495,8 @@ button {
           .queries-header {
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 0px 0px 1px 0px;
+            height: 41px;
+            padding-top: 1px;
             --tblr-gutter-x: 0rem;
           }
 
@@ -3224,4 +3229,16 @@ input[type="text"] {
       margin-left: 16px;
     }
   }
+}
+
+
+.query-btn {
+  cursor: pointer;
+  height: 24px;
+  width: 24px;
+  padding: 0;
+}
+
+.query-btn.dark {
+  filter: brightness(0) invert(1);
 }

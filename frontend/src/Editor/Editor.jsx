@@ -993,26 +993,28 @@ class Editor extends React.Component {
                 }}
               >
                 <div className="row main-row">
-                  <div className="col-md-3 data-pane">
+                  <div className="col-md-4 data-pane">
                     <div className="queries-container">
-                      <div className="queries-header row mt-2">
+                      <div className="queries-header row">
                         <div className="col">
-                          <h5 className="py-1 px-3 text-muted">QUERIES</h5>
+                          <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
+                            QUERIES
+                          </h5>
                         </div>
-                        <div className="col-auto px-3">
-                          <button
-                            className="btn btn-sm btn-light mx-2"
+                        <div className="col-auto ">
+                          <span
+                            className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
                             data-class="py-1 px-2"
                             data-tip="Search query"
                             onClick={this.toggleQuerySearch}
                           >
-                            <img className="py-1" src="/assets/images/icons/lens.svg" width="17" height="17" />
-                          </button>
+                            <img className="py-1 mt-2" src="/assets/images/icons/lens.svg" width="24" height="24" />
+                          </span>
 
                           <span
+                            className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
                             data-tip="Add new query"
                             data-class="py-1 px-2"
-                            className="btn btn-sm btn-light btn-px-1 text-muted"
                             onClick={() =>
                               this.setState({
                                 options: {},
@@ -1023,7 +1025,7 @@ class Editor extends React.Component {
                               })
                             }
                           >
-                            +
+                            <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
                           </span>
                         </div>
                       </div>
@@ -1072,7 +1074,7 @@ class Editor extends React.Component {
                       )}
                     </div>
                   </div>
-                  <div className="col-md-9 query-definition-pane-wrapper">
+                  <div className="col-md-8 query-definition-pane-wrapper">
                     {!loadingDataSources && (
                       <div className="query-definition-pane">
                         <div>
