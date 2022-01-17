@@ -1,8 +1,11 @@
 import { Command, Flags } from "@oclif/core";
 import cli from "cli-ux";
 import * as inquirer from "inquirer";
+
 const execa = require("execa");
 const path = require("path");
+const { runner } = require('hygen')
+const Logger = require('hygen/lib/logger')
 
 export default class Create extends Command {
   static flags = {
@@ -41,31 +44,57 @@ export default class Create extends Command {
       type = responses.type;
     }
 
-    const cliPath = path.join(process.cwd(), "/cli");
     const pluginsPath = path.join(process.cwd(), "/plugins");
     const docsPath = path.join(process.cwd(), "/docs");
+    const defaultTemplates = path.join(process.cwd(), "/plugins", '/_templates')
+    const hygenArgs = [
+      "plugin",
+      "new",
+      "--name",
+      `${args.plugin_name}`,
+      "--type",
+      `${type}`,
+      "--display_name",
+      `${name}`,
+      "--plugins_path",
+      `${pluginsPath}`,
+      "--docs_path",
+      `${docsPath}`,
+    ]
 
     cli.action.start('creating plugin')
 
-    await execa(
-      "npx",
-      [
-        "hygen",
-        "plugin",
-        "new",
-        "--name",
-        `${args.plugin_name}`,
-        "--type",
-        `${type}`,
-        "--display_name",
-        `${name}`,
-        "--plugins_path",
-        `${pluginsPath}`,
-        "--docs_path",
-        `${docsPath}`,
-      ],
-      { cwd: cliPath }
-    );
+    runner(hygenArgs, {
+      templates: defaultTemplates,
+      cwd: process.cwd(),
+      logger: new Logger(console.log.bind(console)),
+      createPrompter: () => require('enquirer'),
+      exec: (action: any, body: string | any[]) => {
+        const opts = body && body.length > 0 ? { input: body } : {}
+        return require('execa').shell(action, opts)
+      },
+      debug: !!process.env.DEBUG
+    })
+
+    // await execa(
+    //   "npx",
+    //   [
+    //     "hygen",
+    //     "plugin",
+    //     "new",
+    //     "--name",
+    //     `${args.plugin_name}`,
+    //     "--type",
+    //     `${type}`,
+    //     "--display_name",
+    //     `${name}`,
+    //     "--plugins_path",
+    //     `${pluginsPath}`,
+    //     "--docs_path",
+    //     `${docsPath}`,
+    //   ],
+    //   { cwd: cliPath }
+    // );
 
     await execa("npx", ["lerna", "link", "convert"], { cwd: pluginsPath });
 
@@ -77,8 +106,8 @@ export default class Create extends Command {
     tree.insert('plugins')
 
     let subtree = cli.tree()
-    subtree.insert(`${args.plugin_name}`)
-    tree.nodes.bar.insert('packages', subtree)
+    subtree.insert(`${name}`)
+    tree.nodes.plugins.insert('packages', subtree)
 
     tree.display()
   }
