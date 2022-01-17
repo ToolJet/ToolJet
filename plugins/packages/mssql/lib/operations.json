@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/dataqueries/Mysql.schema.json",
+  "title": "Mysql data query schema",
+  "description": "A schema defining mysql data query",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "query": {
+      "key": "query",
+      "type": "codehinter",
+      "description": "Enter query",
+      "height": "150px"
+    }
+  },
+  "required": ["query"]
+}

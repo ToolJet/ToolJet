@@ -1,37 +1,43 @@
-version: '3'
+version: "3"
 
 services:
   client:
     build:
-      context: ./frontend
-      dockerfile: ../docker/client.Dockerfile.dev
+      context: ./
+      dockerfile: ./docker/client.Dockerfile.dev
     image: tooljet-client:development
+    platform: linux/x86_64
     volumes:
-      - ./frontend:/app:delegated
-      - /app/node_modules/
+      - ./frontend:/app/frontend:delegated
+      - ./plugins/:/app/plugins:cached
+      - /app/frontend/node_modules/
     ports:
       - 8082:8082
     environment:
       - WEBPACKER_DEV_SERVER_HOST=0.0.0.0
       - NODE_ENV=development
-    command: ['npm', 'start']
+    command: npm run --prefix frontend start
 
   server:
     build:
-      context: .
+      context: ./
       dockerfile: ./docker/server.Dockerfile.dev
     image: tooljet-server:development
+    platform: linux/x86_64
     depends_on:
       - postgres
     volumes:
-      - ./server:/app:delegated
-      - /app/node_modules/
+      - ./server:/app/server:delegated
+      - ./plugins/:/app/plugins:cached
+      - /app/server/node_modules/
+      - '.env:/app/.env'
+      - '.env.test:/app/.env.test'
     ports:
       - 3000:3000
     environment:
       - SERVE_CLIENT=false
       - FORCE_COLOR=1
-    command: npm run start:dev
+    command: npm run --prefix server start:dev
 
   postgres:
     image: postgres:13
