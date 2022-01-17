@@ -19,9 +19,12 @@ export default class Delete extends Command {
   async run(): Promise<void> {
     const { args } = await this.parse(Delete);
 
-    const pluginsPath = path.join(process.cwd(), "/plugins");
-    const pluginPath = path.join(process.cwd(), "/plugins", "/packages", `/${args.plugin_name}`)
-    const pluginDocPath = path.join(process.cwd(), "/docs/docs/data-sources", `/${args.plugin_name}.md`);
+
+    const idx = process.cwd().split('/').indexOf('tooljet')
+    const rootPath = process.cwd().split('/').splice(0, idx + 1).join('/')
+    const pluginsPath = path.join(rootPath, "plugins");
+    const pluginPath = path.join(rootPath, "plugins", "packages", `${args.plugin_name}`)
+    const pluginDocPath = path.join(rootPath, "docs", "docs", "data-sources", `${args.plugin_name}.md`);
 
     inquirer.prompt({
       name: 'confirm',

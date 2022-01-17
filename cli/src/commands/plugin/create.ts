@@ -44,9 +44,11 @@ export default class Create extends Command {
       type = responses.type;
     }
 
-    const pluginsPath = path.join(process.cwd(), "/plugins");
-    const docsPath = path.join(process.cwd(), "/docs");
-    const defaultTemplates = path.join(process.cwd(), "/plugins", '/_templates')
+    const idx = process.cwd().split('/').indexOf('tooljet')
+    const rootPath = process.cwd().split('/').splice(0, idx + 1).join('/')
+    const pluginsPath = path.join(rootPath, "plugins");
+    const docsPath = path.join(rootPath, "docs");
+    const defaultTemplates = path.join(rootPath, "plugins", '_templates')
     const hygenArgs = [
       "plugin",
       "new",
@@ -66,7 +68,7 @@ export default class Create extends Command {
 
     runner(hygenArgs, {
       templates: defaultTemplates,
-      cwd: process.cwd(),
+      cwd: rootPath,
       logger: new Logger(console.log.bind(console)),
       createPrompter: () => require('enquirer'),
       exec: (action: any, body: string | any[]) => {

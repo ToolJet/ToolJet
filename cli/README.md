@@ -11,7 +11,7 @@ $ npm install -g tooljet
 $ tooljet COMMAND
 running command...
 $ tooljet (--version)
-tooljet/0.0.4 darwin-x64 node-v15.14.0
+tooljet/0.0.5 darwin-x64 node-v15.14.0
 $ tooljet --help [COMMAND]
 USAGE
   $ tooljet COMMAND
@@ -65,7 +65,7 @@ EXAMPLES
 
 ## `tooljet plugin install NPM_MODULE`
 
-Create a new tooljet plugin
+Installs a new npm module inside a tooljet plugin
 
 ```
 USAGE
@@ -78,9 +78,9 @@ FLAGS
   --plugin=<value>  (required)
 
 DESCRIPTION
-  Create a new tooljet plugin
+  Installs a new npm module inside a tooljet plugin
 
 EXAMPLES
-  $ tooljet plugin install <npm_module> --plugin=<plugin_name>
+  $ tooljet plugin install <npm_module> --plugin <plugin_name>
 ```
 <!-- commandsstop -->
