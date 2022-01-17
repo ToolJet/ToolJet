@@ -1618,7 +1618,7 @@ export const componentTypes = [
     description: 'Pagination ',
     component: 'Pagination',
     defaultSize: {
-      width: 10,
+      width: 9,
       height: 30,
     },
     others: {
