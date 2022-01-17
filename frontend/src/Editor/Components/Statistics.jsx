@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-export const Statics = function Statics({ height, properties,styles}) {
+export const Statistics = function Statistics({ height, properties,styles}) {
     const { primaryValueLabel, primaryvalue, secondaryValueLabel, secondaryvalue, secondarysigndisplay } = properties;
     const { PrimaryLabelColour, PrimaryTextColour, SecondaryLabelColour, SecondaryTextColour } = styles;
 

@@ -1591,10 +1591,10 @@ export const componentTypes = [
     },
   },
   {
-    name: 'Statics',
-    displayName: 'Statics',
-    description: 'Statics',
-    component: 'Statics',
+    name: 'Statistics',
+    displayName: 'Statistics',
+    description: 'Statistics',
+    component: 'Statistics',
     defaultSize: {
       width: 9.2,
       height: 152,
