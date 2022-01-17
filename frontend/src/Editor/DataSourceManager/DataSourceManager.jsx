@@ -349,7 +349,7 @@ class DataSourceManager extends React.Component {
       const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
         return {
           ...datasource,
-          src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+          src: datasource.kind.toLowerCase(),
           title: datasource.name,
         };
       });
@@ -377,6 +377,7 @@ class DataSourceManager extends React.Component {
                 title={item.title}
                 src={item.src}
                 handleClick={() => renderSelectedDatasource(item)}
+                usepluginIcon={true}
               />
             ))}
           </div>
@@ -418,7 +419,7 @@ class DataSourceManager extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
-                  pluginIcon={true}
+                  usepluginIcon={true}
                 />
               ))}
             </div>
@@ -432,7 +433,7 @@ class DataSourceManager extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
-                  pluginIcon={true}
+                  usepluginIcon={true}
                 />
               ))}
             </div>
@@ -446,7 +447,7 @@ class DataSourceManager extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
-                  pluginIcon={true}
+                  usepluginIcon={true}
                 />
               ))}
             </div>
@@ -474,7 +475,7 @@ class DataSourceManager extends React.Component {
               title={item.title}
               src={item.src}
               handleClick={() => renderSelectedDatasource(item)}
-              pluginIcon={true}
+              usepluginIcon={true}
             />
           ))}
         </div>

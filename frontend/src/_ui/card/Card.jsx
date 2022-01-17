@@ -1,9 +1,9 @@
 import React from 'react';
 import { allSvgs } from '@tooljet/plugins/client';
 
-const Card = ({ title, src, handleClick, pluginIcon = false }) => {
+const Card = ({ title, src, handleClick, usepluginIcon = false }) => {
   const CardIcon = ({ src, height = 50, width = 50 }) => {
-    if (pluginIcon) {
+    if (usepluginIcon) {
       const Icon = allSvgs[src];
       return <Icon style={{ height, width }} />;
     }
@@ -23,10 +23,7 @@ const Card = ({ title, src, handleClick, pluginIcon = false }) => {
       >
         <div className="card-body">
           <center>
-            {/* <img src={src} width="50" height="50" alt={title} /> */}
-
             <CardIcon src={src} />
-
             <br></br>
             <br></br>
             {title}
