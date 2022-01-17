@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Container, Row, Badge } from 'react-bootstrap';
+import LazyLoad from 'react-lazyload';
 
 export default function TemplateDisplay(props) {
   const { id, name, description, sources } = props?.app ?? {};
+  const componentRef = useRef(null);
+  const [isloaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (componentRef.current) {
+      setLoaded(true);
+    }
+  }, [componentRef]);
+
   return (
-    <div className="template-display">
+    <div className="template-display" ref={componentRef}>
       <Container fluid className="pt-2">
         <Row style={{ height: '10%' }}>
           <h3 className="title">{name}</h3>
@@ -41,7 +51,14 @@ export default function TemplateDisplay(props) {
           </span>
         </Row>
         <Row className="align-items-center justify-content-center" style={{ height: '88%' }}>
-          <img className="template-image" src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`} />
+          {isloaded && (
+            <LazyLoad>
+              <img
+                className="template-image"
+                src={`/assets/images/templates/${id}${props.darkMode ? '-dark' : ''}.png`}
+              />
+            </LazyLoad>
+          )}
         </Row>
       </Container>
     </div>
