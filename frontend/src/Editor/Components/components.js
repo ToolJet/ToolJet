@@ -183,6 +183,8 @@ export const componentTypes = [
           { name: 'Pie', value: 'pie' },
         ],
       },
+      jsonDescription: { type: 'json', displayName: 'Json Description' },
+      plotFromJson: { type: 'toggle', displayName: 'Use Plotly JSON schema' },
     },
     events: {},
     styles: {
@@ -201,7 +203,27 @@ export const componentTypes = [
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
         showGridLines: { value: true },
+        plotFromJson: { value: false },
         loadingState: { value: `{{false}}` },
+        jsonDescription: {
+          value: `{
+            "data": [
+                {
+                    "x": [
+                        "Jan",
+                        "Feb",
+                        "Mar"
+                    ],
+                    "y": [
+                        100,
+                        80,
+                        40
+                    ],
+                    "type": "bar"
+                }
+            ]
+        }`,
+        },
         type: { value: `line` },
         data: {
           value: `[
@@ -737,8 +759,8 @@ export const componentTypes = [
     displayName: 'Image',
     description: 'Display an Image',
     defaultSize: {
-      width: 5,
-      height: 210,
+      width: 3,
+      height: 100,
     },
     component: 'Image',
     others: {
@@ -752,6 +774,16 @@ export const componentTypes = [
       onClick: { displayName: 'On click' },
     },
     styles: {
+      borderType: {
+        type: 'select',
+        displayName: 'Border type',
+        options: [
+          { name: 'None', value: 'none' },
+          { name: 'Rounded', value: 'rounded' },
+          { name: 'Circle', value: 'rounded-circle' },
+          { name: 'Thumbnail', value: 'img-thumbnail' },
+        ],
+      },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -767,6 +799,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderType: { value: 'none' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -1488,6 +1521,94 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Listview',
+    displayName: 'List view',
+    description: 'Wrapper for multiple components',
+    defaultSize: {
+      width: 5,
+      height: 200,
+    },
+    component: 'Listview',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      data: { type: 'code', displayName: 'List data' },
+      rowHeight: { type: 'code', displayName: 'Row height' },
+      showBorder: { type: 'code', displayName: 'Show bottom border' },
+    },
+    events: {},
+    styles: {
+      backgroundColor: { type: 'color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      data: [{}],
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        data: {
+          value: "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+        },
+        rowHeight: {
+          value: '100',
+        },
+        visible: { value: true },
+        showBorder: { value: '{{true}}' },
+      },
+      events: [],
+      styles: {
+        backgroundColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Tags',
+    displayName: 'Tags',
+    description: 'Content can be shown as tags',
+    component: 'Tags',
+    defaultSize: {
+      width: 5,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      data: { type: 'code', displayName: 'Tags' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        data: {
+          value:
+            "{{ [ \n\t\t{ title: 'success', color: '#2fb344', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#206bc4', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#f59f00', textColor: '#fff'  }, \n\t\t{ title: 'danger', color: '#d63939', textColor: '#fff' } ] }}",
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
       },
     },
   },

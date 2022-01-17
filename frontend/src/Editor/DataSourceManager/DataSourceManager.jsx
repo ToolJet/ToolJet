@@ -2,6 +2,7 @@ import React from 'react';
 import { datasourceService, authenticationService } from '@/_services';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
+import { allSvgs } from '@tooljet/plugins/client';
 import { TestConnection } from './TestConnection';
 import {
   DataBaseSources,
@@ -387,21 +388,21 @@ class DataSourceManager extends React.Component {
       const databases = source.databases.map((datasource) => {
         return {
           ...datasource,
-          src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+          src: datasource.kind.toLowerCase(),
           title: datasource.name,
         };
       });
       const apis = source.apis.map((datasource) => {
         return {
           ...datasource,
-          src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+          src: datasource.kind.toLowerCase(),
           title: datasource.name,
         };
       });
       const cloudStorages = source.cloudStorages.map((datasource) => {
         return {
           ...datasource,
-          src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+          src: datasource.kind.toLowerCase(),
           title: datasource.name,
         };
       });
@@ -417,6 +418,7 @@ class DataSourceManager extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
+                  pluginIcon={true}
                 />
               ))}
             </div>
@@ -430,6 +432,7 @@ class DataSourceManager extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
+                  pluginIcon={true}
                 />
               ))}
             </div>
@@ -443,6 +446,7 @@ class DataSourceManager extends React.Component {
                   title={item.title}
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
+                  pluginIcon={true}
                 />
               ))}
             </div>
@@ -452,9 +456,10 @@ class DataSourceManager extends React.Component {
     }
 
     const datasources = source.map((datasource) => {
+      console.log('__svg__', datasource.kind.toLowerCase());
       return {
         ...datasource,
-        src: `/assets/images/icons/editor/datasources/${datasource.kind.toLowerCase()}.svg`,
+        src: datasource.kind.toLowerCase(),
         title: datasource.name,
       };
     });
@@ -464,11 +469,23 @@ class DataSourceManager extends React.Component {
         <div className="row row-deck mt-4">
           <h4 className="mb-2">{type}</h4>
           {datasources.map((item) => (
-            <Card key={item.key} title={item.title} src={item.src} handleClick={() => renderSelectedDatasource(item)} />
+            <Card
+              key={item.key}
+              title={item.title}
+              src={item.src}
+              handleClick={() => renderSelectedDatasource(item)}
+              pluginIcon={true}
+            />
           ))}
         </div>
       </>
     );
+  };
+
+  getSvgIcon = (key, height = 50, width = 50) => {
+    const Icon = allSvgs[key];
+
+    return <Icon style={{ height, width }} />;
   };
 
   render() {
@@ -489,13 +506,7 @@ class DataSourceManager extends React.Component {
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
-                  <img
-                    src={`/assets/images/icons/editor/datasources/${dataSourceMeta.kind.toLowerCase()}.svg`}
-                    style={{ objectFit: 'contain' }}
-                    height="25"
-                    width="25"
-                    className="mt-1 col-md-2"
-                  ></img>
+                  {this.getSvgIcon(dataSourceMeta.kind.toLowerCase(), 35, 35)}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
                       type="text"

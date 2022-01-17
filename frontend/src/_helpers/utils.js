@@ -75,7 +75,9 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         } else {
           for (const dynamicVariable of dynamicVariables) {
             const value = resolveReferences(dynamicVariable, state);
-            object = object.replace(dynamicVariable, value);
+            if (typeof value !== 'function') {
+              object = object.replace(dynamicVariable, value);
+            }
           }
         }
       }
@@ -268,3 +270,12 @@ export async function executeMultilineJS(currentState, code) {
 
   return result;
 }
+
+export const isJson = (str) => {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};

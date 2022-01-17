@@ -26,6 +26,7 @@ export const Container = function Container({ id, component, width, height, cont
       }} //Hack, should find a better solution - to prevent losing z index when comtainer element is clicked
     >
       <SubContainer
+        parentComponent={component}
         containerCanvasWidth={width}
         parent={id}
         {...containerProps}

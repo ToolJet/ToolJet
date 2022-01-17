@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/GoogleSheets.schema.json",
+  "title": "Google Sheets datasource",
+  "description": "A schema defining google sheets datasource",
+  "type": "api",
+  "source": {
+    "name": "Google Sheets",
+    "kind": "googlesheets",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": { "type": "string", "encrypted": true }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
+  "defaults": {
+    "access_type": { "value": "read" }
+  },
+  "properties": {
+    "sheets": {
+      "label": "",
+      "key": "sheets",
+      "type": "react-component-google-sheets",
+      "description": "A component for google sheets"
+    }
+  }
+}

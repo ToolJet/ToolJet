@@ -1,0 +1,48 @@
+{
+  "name": "@tooljet/plugins",
+  "version": "0.0.1",
+  "source": "server.ts",
+  "types": "dist/server.d.ts",
+  "main": "dist/server.js",
+  "scripts": {
+    "clean": "rimraf dist/",
+    "create:client": "node create-client-entry",
+    "create:server": "node create-server-entry",
+    "prebuild:server": "npm run clean",
+    "build:server": "tsc -b",
+    "prebuild:packages": "npm run clean:packages && npm run create:client && npm run create:server",
+    "build:packages": "lerna run build --stream",
+    "clean:packages": "lerna run clean --parallel"
+  },
+  "dependencies": {
+    "lerna": "^4.0.0",
+    "airtable": "file:packages/airtable",
+    "common": "file:packages/common",
+    "dynamodb": "file:packages/dynamodb",
+    "elasticsearch": "file:packages/elasticsearch",
+    "firestore": "file:packages/firestore",
+    "gcs": "file:packages/gcs",
+    "googlesheets": "file:packages/googlesheets",
+    "graphql": "file:packages/graphql",
+    "minioapi": "file:packages/minioapi",
+    "mongo": "file:packages/mongo",
+    "mssql": "file:packages/mssql",
+    "mysql": "file:packages/mysql",
+    "postgresql": "file:packages/postgresql",
+    "redis": "file:packages/redis",
+    "restapi": "file:packages/restapi",
+    "s3": "file:packages/s3",
+    "sendgrid": "file:packages/sendgrid",
+    "slack": "file:packages/slack",
+    "stripe": "file:packages/stripe",
+    "twilioapi": "file:packages/twilioapi",
+    "typesenseapi": "file:packages/typesenseapi"
+  },
+  "devDependencies": {
+    "jest": "^27.4.5",
+    "react": "^17.0.2",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.5.4"
+  }
+}

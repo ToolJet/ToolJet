@@ -10,6 +10,8 @@ ToolJet is an **open-source low-code framework** to build and deploy custom inte
 
 ## How ToolJet works
 
+<img class="screenshot-full" src="/img/how-it-works.png" alt="ToolJet - adding datasources" />
+
 ToolJet has just 3 fundamental principles to build apps:
 
 - **Connect to data sources:** Connect to your existing data sources such as PostgreSQL, MySQL, Firestore, Stripe, Google Sheets, API endpoints, etc.

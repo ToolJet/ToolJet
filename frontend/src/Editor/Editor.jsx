@@ -26,6 +26,7 @@ import {
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
+import { allSvgs } from '@tooljet/plugins/client';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
@@ -105,6 +106,10 @@ class Editor extends React.Component {
     };
   }
 
+  setWindowTitle(name) {
+    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
+  }
+
   componentDidMount() {
     this.fetchApps(0);
     this.fetchApp();
@@ -166,6 +171,7 @@ class Editor extends React.Component {
     if (this.state.socket) {
       this.state.socket?.close();
     }
+    document.title = 'Tooljet - Dashboard';
   }
 
   getWebsocketUrl = () => {
@@ -324,6 +330,7 @@ class Editor extends React.Component {
             console.log('Default component state computed and set');
             this.runQueries(data.data_queries);
           });
+          this.setWindowTitle(data.name);
         }
       );
 
@@ -534,6 +541,12 @@ class Editor extends React.Component {
     this.saveApp(id, { name }, notify);
   };
 
+  getSvgIcon = (key, height = 50, width = 50) => {
+    const Icon = allSvgs[key];
+
+    return <Icon style={{ height, width }} />;
+  };
+
   renderDataSource = (dataSource) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
     return (
@@ -545,12 +558,7 @@ class Editor extends React.Component {
         }}
       >
         <td>
-          <img
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />{' '}
-          {dataSource.name}
+          {this.getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
         </td>
       </tr>
     );
@@ -605,12 +613,7 @@ class Editor extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col">
-          <img
-            className="svg-icon"
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />
+          {this.getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto mx-1">
@@ -660,6 +663,7 @@ class Editor extends React.Component {
     this.setState({
       app: { ...this.state.app, name: newName },
     });
+    this.setWindowTitle(newName);
   };
 
   toggleQueryEditor = () => {
