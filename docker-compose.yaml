@@ -9,7 +9,9 @@ services:
     platform: linux/x86_64
     volumes:
       - ./frontend:/app/frontend:delegated
-      - ./plugins/:/app/plugins:cached
+      - ./plugins/:/app/plugins
+      - /app/plugins/dist/
+      - /app/plugins/node_modules/
       - /app/frontend/node_modules/
     ports:
       - 8082:8082
@@ -28,7 +30,9 @@ services:
       - postgres
     volumes:
       - ./server:/app/server:delegated
-      - ./plugins/:/app/plugins:cached
+      - ./plugins/:/app/plugins
+      - /app/plugins/dist/
+      - /app/plugins/node_modules/
       - /app/server/node_modules/
       - '.env:/app/.env'
       - '.env.test:/app/.env.test'
