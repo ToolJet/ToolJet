@@ -2,7 +2,7 @@ import React from 'react';
 import { appService, organizationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import { debounce } from 'lodash';
@@ -164,7 +164,7 @@ class ManageAppUsers extends React.Component {
             ) : (
               <div>
                 <div className="make-public mb-3">
-                  <label className="form-check form-switch">
+                  <div className="form-check form-switch">
                     <input
                       className="form-check-input"
                       type="checkbox"
@@ -173,7 +173,7 @@ class ManageAppUsers extends React.Component {
                       disabled={this.state.ischangingVisibility}
                     />
                     <span className="form-check-label">Make application public ?</span>
-                  </label>
+                  </div>
                 </div>
                 <div className="shareable-link mb-3">
                   <label className="form-label">

@@ -80,8 +80,8 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
       newData = [
         {
           type: chartType,
-          values: rawData.map((item) => item['value']),
-          labels: rawData.map((item) => item['label']),
+          values: rawData.map((item) => item['y']),
+          labels: rawData.map((item) => item['x']),
         },
       ];
     } else {
@@ -99,7 +99,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const memoizedChartData = useMemo(() => computeChartData(data, dataString), [data, dataString]);
+  const memoizedChartData = useMemo(() => computeChartData(data, dataString), [data, dataString, chartType]);
 
   return (
     <div data-disabled={disabledState} style={computedStyles}>

@@ -9,6 +9,7 @@ import {
   createDataQuery,
   createDataSource,
   createAppGroupPermission,
+  createApplicationVersion,
 } from '../test.helper';
 import { getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -260,6 +261,38 @@ describe('data queries controller', () => {
     expect(response.statusCode).toBe(403);
   });
 
+  it('should be able to search queries with application version id', async () => {
+    const adminUserData = await createUser(app, {
+      email: 'admin@tooljet.io',
+      groups: ['all_users', 'admin'],
+    });
+    const application = await createApplication(app, {
+      name: 'name',
+      user: adminUserData.user,
+    });
+    const appVersion = await createApplicationVersion(app, application);
+    await createDataQuery(app, {
+      application,
+      kind: 'restapi',
+      options: { method: 'get' },
+      appVersion,
+    });
+
+    let response = await request(app.getHttpServer())
+      .get(`/api/data_queries?app_id=${application.id}&app_version_id=${appVersion.id}`)
+      .set('Authorization', authHeaderForUser(adminUserData.user));
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data_queries.length).toBe(1);
+
+    response = await request(app.getHttpServer())
+      .get(`/api/data_queries?app_id=${application.id}&app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
+      .set('Authorization', authHeaderForUser(adminUserData.user));
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data_queries.length).toBe(0);
+  });
+
   it('should be able to create queries for an app only if the user has admin group or update permission', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
@@ -279,6 +312,7 @@ describe('data queries controller', () => {
       name: 'name',
       user: adminUserData.user,
     });
+    const applicationVersion = await createApplicationVersion(app, application);
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
@@ -294,19 +328,27 @@ describe('data queries controller', () => {
       delete: false,
     });
 
-    const queryParams = {
+    const requestBody = {
       app_id: application.id,
       kind: 'restapi',
       options: { method: 'get' },
+      app_version_id: applicationVersion.id,
     };
 
     for (const userData of [adminUserData, developerUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
         .set('Authorization', authHeaderForUser(userData.user))
-        .send(queryParams);
+        .send(requestBody);
 
       expect(response.statusCode).toBe(201);
+      expect(response.body.id).toBeDefined();
+      expect(response.body.app_id).toBe(application.id);
+      expect(response.body.app_version_id).toBe(applicationVersion.id);
+      expect(response.body.options).toBeDefined();
+      expect(response.body.kind).toBe('restapi');
+      expect(response.body.created_at).toBeDefined();
+      expect(response.body.updated_at).toBeDefined();
     }
 
     // Forbidden if a viewer or a user of another organization
@@ -314,7 +356,7 @@ describe('data queries controller', () => {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
         .set('Authorization', authHeaderForUser(userData.user))
-        .send(queryParams);
+        .send(requestBody);
 
       expect(response.statusCode).toBe(403);
     }

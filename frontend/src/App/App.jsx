@@ -3,7 +3,7 @@ import { Router, Route } from 'react-router-dom';
 import { history } from '@/_helpers';
 import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute } from '@/_components';
-import { HomePage, Library } from '@/HomePage';
+import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
 import { InvitationPage } from '@/InvitationPage';
@@ -11,8 +11,6 @@ import { Authorize } from '@/Oauth2';
 import { Editor, Viewer } from '@/Editor';
 import '@/_styles/theme.scss';
 import 'emoji-mart/css/emoji-mart.css';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
@@ -77,8 +75,6 @@ class App extends React.Component {
 
     return (
       <>
-        <ToastContainer />
-
         <Router history={history}>
           <div className={`main-wrapper ${darkMode ? 'theme-dark' : ''}`}>
             {updateAvailable && (
@@ -167,13 +163,6 @@ class App extends React.Component {
               exact
               path="/groups/:id"
               component={ManageGroupPermissionResources}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
-              path="/library"
-              component={Library}
               switchDarkMode={this.switchDarkMode}
               darkMode={darkMode}
             />

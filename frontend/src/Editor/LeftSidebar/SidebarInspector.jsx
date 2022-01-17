@@ -15,7 +15,11 @@ export const LeftSidebarInspector = ({ darkMode, globals, components, queries })
         icon="inspector"
         className={`left-sidebar-item ${open && 'active'}`}
       />
-      <div {...content} className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}>
+      <div
+        {...content}
+        className={`card popover ${open || popoverPinned ? 'show' : 'hide'}`}
+        style={{ resize: 'horizontal', maxWidth: '50%' }}
+      >
         <SidebarPinnedButton
           darkMode={darkMode}
           component={'Inspector'}
@@ -34,6 +38,7 @@ export const LeftSidebarInspector = ({ darkMode, globals, components, queries })
             displayObjectSize={false}
             quotesOnKeys={false}
             sortKeys={true}
+            collapseStringsAfterLength={1000}
           />
           <ReactJson
             src={components}

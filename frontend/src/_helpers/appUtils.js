@@ -1,5 +1,5 @@
 import React from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import {
   getDynamicVariables,
   resolveReferences,
@@ -188,6 +188,7 @@ function executeAction(_ref, event, mode) {
 
         if (mode === 'view') {
           _ref.props.history.push(url);
+          _ref.props.history.go();
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
             window.open(url, '_blank');
@@ -375,6 +376,14 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSelect',
       'onClick',
       'onFileSelected',
+      'onStart',
+      'onResume',
+      'onReset',
+      'onPause',
+      'onCountDownFinish',
+      'onCalendarNavigate',
+      'onCalendarViewChange',
+      'onSearchTextChanged',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -514,6 +523,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
 
   let _self = _ref;
 
+  // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
@@ -532,22 +542,27 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
 
           if (data.status === 'failed') {
             console.error(data.message);
-
             return _self.setState(
               {
                 currentState: {
                   ..._self.state.currentState,
                   queries: {
                     ..._self.state.currentState.queries,
-                    [queryName]: {
-                      ..._self.state.currentState.queries[queryName],
-                      isLoading: false,
-                    },
+                    [queryName]: _.assign(
+                      {
+                        ..._self.state.currentState.queries[queryName],
+                        isLoading: false,
+                      },
+                      query.kind === 'restapi'
+                        ? { request: data.data.requestObject, response: data.data.responseObject }
+                        : {}
+                    ),
                   },
                   errors: {
                     ..._self.state.currentState.errors,
                     [queryName]: {
                       type: 'query',
+                      kind: query.kind,
                       data: data,
                       options: options,
                     },
@@ -613,12 +628,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
                 ..._self.state.currentState,
                 queries: {
                   ..._self.state.currentState.queries,
-                  [queryName]: {
-                    ..._self.state.currentState.queries[queryName],
-                    data: finalData,
-                    rawData,
-                    isLoading: false,
-                  },
+                  [queryName]: _.assign(
+                    {
+                      ..._self.state.currentState.queries[queryName],
+                      isLoading: false,
+                      data: finalData,
+                      rawData,
+                    },
+                    query.kind === 'restapi' ? { request: data.request, response: data.response } : {}
+                  ),
                 },
               },
             },
@@ -669,7 +687,21 @@ export function computeComponentState(_ref, components) {
     const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
     const existingValues = currentComponents[existingComponentName];
 
-    componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+    if (component.parent) {
+      const parentComponent = components[component.parent];
+      let isListView = false;
+      try {
+        isListView = parentComponent.component.component === 'Listview';
+      } catch {
+        console.log('error');
+      }
+
+      if (!isListView) {
+        componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+      }
+    } else {
+      componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+    }
   });
 
   return setStateAsync(_ref, {

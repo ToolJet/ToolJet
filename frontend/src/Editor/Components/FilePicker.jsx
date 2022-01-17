@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode }) => {
   //* properties definitions
@@ -154,6 +154,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
       onComponentOptionChanged(component, 'file', fileData).then(() =>
         onEvent('onFileSelected', { component }).then(() => {
           setAccepted(true);
+          // eslint-disable-next-line no-unused-vars
           return new Promise(function (resolve, reject) {
             setTimeout(() => {
               setShowSelectedFiles(true);

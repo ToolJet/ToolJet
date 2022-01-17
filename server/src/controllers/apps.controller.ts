@@ -9,6 +9,7 @@ import {
   Query,
   Request,
   UseGuards,
+  Body,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -100,7 +101,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@Request() req, @Param() params) {
+  async update(@Request() req, @Param() params, @Body('app') appChanges) {
     const app = await this.appsService.find(params.id);
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
@@ -108,7 +109,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(req.user, params.id, req.body.app);
+    const result = await this.appsService.update(req.user, params.id, appChanges);
     const response = decamelizeKeys(result);
 
     return response;
@@ -149,13 +150,13 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/import')
-  async import(@Request() req) {
+  async import(@Request() req, @Body() body) {
     const ability = await this.appsAbilityFactory.appsActions(req.user, {});
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    await this.appImportExportService.import(req.user, req.body);
+    await this.appImportExportService.import(req.user, body);
 
     return;
   }
@@ -179,21 +180,22 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async index(@Request() req, @Query() query) {
-    const page = req.query.page;
-    const folderId = req.query.folder;
+    const page = query.page;
+    const folderId = query.folder;
+    const searchKey = query.searchKey || '';
 
     let apps = [];
     let totalFolderCount = 0;
 
     if (folderId) {
       const folder = await this.foldersService.findOne(folderId);
-      apps = await this.foldersService.getAppsFor(req.user, folder, page);
-      totalFolderCount = await this.foldersService.userAppCount(req.user, folder);
+      apps = await this.foldersService.getAppsFor(req.user, folder, page, searchKey);
+      totalFolderCount = await this.foldersService.userAppCount(req.user, folder, searchKey);
     } else {
-      apps = await this.appsService.all(req.user, page);
+      apps = await this.appsService.all(req.user, page, searchKey);
     }
 
-    const totalCount = await this.appsService.count(req.user);
+    const totalCount = await this.appsService.count(req.user, searchKey);
 
     const totalPageCount = folderId ? totalFolderCount : totalCount;
 
@@ -243,9 +245,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/versions')
-  async createVersion(@Request() req, @Param() params) {
-    const versionName = req.body['versionName'];
-
+  async createVersion(@Request() req, @Param() params, @Body('versionName') versionName) {
     const app = await this.appsService.find(params.id);
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
@@ -269,14 +269,12 @@ export class AppsController {
 
     const appVersion = await this.appsService.findVersion(params.versionId);
 
-    return { ...appVersion, data_queries: app.dataQueries };
+    return { ...appVersion, data_queries: appVersion.dataQueries };
   }
 
   @UseGuards(JwtAuthGuard)
   @Put(':id/versions/:versionId')
-  async updateVersion(@Request() req, @Param() params) {
-    const definition = req.body['definition'];
-
+  async updateVersion(@Request() req, @Param() params, @Body('definition') definition) {
     const version = await this.appsService.findVersion(params.versionId);
     const ability = await this.appsAbilityFactory.appsActions(req.user, params);
 
@@ -285,6 +283,20 @@ export class AppsController {
     }
 
     const appUser = await this.appsService.updateVersion(req.user, version, definition);
+    return decamelizeKeys(appUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/icons')
+  async updateIcon(@Request() req, @Param() params, @Body('icon') icon) {
+    const app = await this.appsService.find(params.id);
+    const ability = await this.appsAbilityFactory.appsActions(req.user, params);
+
+    if (!ability.can('updateIcon', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const appUser = await this.appsService.update(req.user, params.id, { icon });
     return decamelizeKeys(appUser);
   }
 }

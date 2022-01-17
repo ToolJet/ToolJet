@@ -1,6 +1,6 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
@@ -38,8 +38,7 @@ class LoginPage extends React.Component {
 
     if (!validateEmail(email) || !password || !password.trim()) {
       toast.error('Invalid email or password', {
-        toastId: 'toast-login-auth-error',
-        hideProgressBar: true,
+        id: 'toast-login-auth-error',
         position: 'top-center',
       });
       this.setState({ isLoading: false });
@@ -59,8 +58,7 @@ class LoginPage extends React.Component {
 
   authFailureHandler = () => {
     toast.error('Invalid email or password', {
-      toastId: 'toast-login-auth-error',
-      hideProgressBar: true,
+      id: 'toast-login-auth-error',
       position: 'top-center',
     });
     this.setState({ isLoading: false });

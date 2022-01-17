@@ -21,6 +21,19 @@ export const CalendarEventPopover = function ({
 
   const calendarElement = document.getElementById(calenderWidgetId);
 
+  const handleClickOutside = (event) => {
+    if (parentRef.current && !parentRef.current.contains(event.target)) {
+      popoverClosed();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('click', handleClickOutside, true);
+    return () => {
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  });
+
   useEffect(() => {
     setShow(show);
   }, [show]);

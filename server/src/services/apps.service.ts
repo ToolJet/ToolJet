@@ -1,19 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, Repository } from 'typeorm';
+import { createQueryBuilder, EntityManager, Brackets, getManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
 import { AppImportExportService } from './app_import_export.service';
+import { DataSourcesService } from './data_sources.service';
+import { Credential } from 'src/entities/credential.entity';
 
 @Injectable()
 export class AppsService {
@@ -43,7 +44,8 @@ export class AppsService {
     private appGroupPermissionsRepository: Repository<AppGroupPermission>,
 
     private usersService: UsersService,
-    private appImportExportService: AppImportExportService
+    private appImportExportService: AppImportExportService,
+    private dataSourcesService: DataSourcesService
   ) {}
 
   async find(id: string): Promise<App> {
@@ -63,7 +65,7 @@ export class AppsService {
 
   async findVersion(id: string): Promise<AppVersion> {
     return this.appVersionsRepository.findOne(id, {
-      relations: ['app'],
+      relations: ['app', 'dataQueries'],
     });
   }
 
@@ -134,8 +136,8 @@ export class AppsService {
     return clonedApp;
   }
 
-  async count(user: User): Promise<number> {
-    return await createQueryBuilder(App, 'apps')
+  async count(user: User, searchKey): Promise<number> {
+    const viewableAppsQb = createQueryBuilder(App, 'apps')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
       .innerJoin(
@@ -143,18 +145,29 @@ export class AppsService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
-        value: true,
-        organizationId: user.organizationId,
-        userId: user.id,
-      })
-      .getCount();
+      .where(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', {
+            userId: user.id,
+          })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
+              value: true,
+              organizationId: user.organizationId,
+              userId: user.id,
+            });
+        })
+      );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
+    return await viewableAppsQb.getCount();
   }
 
-  async all(user: User, page: number): Promise<App[]> {
-    const viewableAppsQb = await createQueryBuilder(App, 'apps')
+  async all(user: User, page: number, searchKey: string): Promise<App[]> {
+    const viewableAppsQb = createQueryBuilder(App, 'apps')
       .innerJoin('apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
       .innerJoinAndSelect('apps.user', 'user')
@@ -163,20 +176,26 @@ export class AppsService {
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
-        value: true,
-        organizationId: user.organizationId,
-        userId: user.id,
-      })
-      .orderBy('apps.createdAt', 'DESC');
+      .where(
+        new Brackets((qb) => {
+          qb.where('user_group_permissions.user_id = :userId', {
+            userId: user.id,
+          })
+            .andWhere('app_group_permissions.read = :value', { value: true })
+            .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
+              value: true,
+              organizationId: user.organizationId,
+              userId: user.id,
+            });
+        })
+      );
+    if (searchKey) {
+      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
+        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      });
+    }
+    viewableAppsQb.orderBy('apps.createdAt', 'DESC');
 
-    // FIXME:
-    // Fixed based on https://github.com/typeorm/typeorm/issues/747#issuecomment-519553920
-    // TypeORM gives error when using query builder with order by
-    // https://github.com/typeorm/typeorm/issues/8213
-    // hence sorting results in memory
     if (page) {
       return await viewableAppsQb
         .take(10)
@@ -184,19 +203,20 @@ export class AppsService {
         .getMany();
     }
 
-    return await viewableAppsQb.orderBy('apps.created_at', 'DESC').getMany();
+    return await viewableAppsQb.getMany();
   }
 
   async update(user: User, appId: string, params: any) {
     const currentVersionId = params['current_version_id'];
     const isPublic = params['is_public'];
-    const { name, slug } = params;
+    const { name, slug, icon } = params;
 
     const updateableParams = {
       name,
       slug,
       isPublic,
       currentVersionId,
+      icon,
     };
 
     // removing keys with undefined values
@@ -268,19 +288,120 @@ export class AppsService {
         createdAt: 'DESC',
       },
     });
+    let appVersion: AppVersion;
+    await getManager().transaction(async (manager) => {
+      appVersion = await manager.save(
+        AppVersion,
+        manager.create(AppVersion, {
+          name: versionName,
+          app,
+          definition: lastVersion?.definition,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
+      await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, lastVersion);
+    });
 
-    return await this.appVersionsRepository.save(
-      this.appVersionsRepository.create({
-        name: versionName,
-        app,
-        definition: lastVersion?.definition,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-    );
+    return appVersion;
+  }
+
+  async setupDataSourcesAndQueriesForVersion(manager: EntityManager, appVersion: AppVersion, lastVersion: AppVersion) {
+    if (lastVersion) {
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, lastVersion);
+    } else {
+      // TODO: Remove this when default version will be create when app creation is done
+      await this.associateExistingDataSourceAndQueriesToVersion(manager, appVersion);
+    }
+  }
+
+  async associateExistingDataSourceAndQueriesToVersion(manager: EntityManager, appVersion: AppVersion) {
+    const dataSources = await manager.find(DataSource, {
+      where: { appId: appVersion.appId },
+    });
+    for await (const dataSource of dataSources) {
+      await manager.update(DataSource, dataSource.id, {
+        appVersionId: appVersion.id,
+      });
+    }
+
+    const dataQueries = await manager.find(DataQuery, {
+      where: { appId: appVersion.appId },
+    });
+    for await (const dataQuery of dataQueries) {
+      await manager.update(DataQuery, dataQuery.id, {
+        appVersionId: appVersion.id,
+      });
+    }
+  }
+
+  async createNewDataSourcesAndQueriesForVersion(
+    manager: EntityManager,
+    appVersion: AppVersion,
+    lastVersion: AppVersion
+  ) {
+    const oldDataSourceToNewMapping = {};
+    const dataSources = await manager.find(DataSource, {
+      where: { appVersionId: lastVersion.id },
+    });
+
+    for await (const dataSource of dataSources) {
+      const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSource.options);
+      const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
+      await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+      const dataSourceParams = {
+        name: dataSource.name,
+        kind: dataSource.kind,
+        options: newOptions,
+        appId: dataSource.appId,
+        appVersionId: appVersion.id,
+      };
+      const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+
+      oldDataSourceToNewMapping[dataSource.id] = newDataSource.id;
+    }
+
+    const dataQueries = await manager.find(DataQuery, {
+      where: { appVersionId: lastVersion.id },
+    });
+    for await (const dataQuery of dataQueries) {
+      const dataQueryParams = {
+        name: dataQuery.name,
+        kind: dataQuery.kind,
+        options: dataQuery.options,
+        dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
+        appId: dataQuery.appId,
+        appVersionId: appVersion.id,
+      };
+      await manager.save(manager.create(DataQuery, dataQueryParams));
+    }
+  }
+
+  async setNewCredentialValueFromOldValue(newOptions: any, oldOptions: any, manager: EntityManager) {
+    const newOptionsWithCredentials = this.convertToArrayOfKeyValuePairs(newOptions).filter((opt) => opt['encrypted']);
+
+    for await (const newOption of newOptionsWithCredentials) {
+      const oldOption = oldOptions.find((oldOption) => oldOption['key'] == newOption['key']);
+      const oldCredential = await manager.findOne(Credential, oldOption.credential_id);
+      const newCredential = await manager.findOne(Credential, newOption['credential_id']);
+      newCredential.valueCiphertext = oldCredential.valueCiphertext;
+
+      await manager.save(newCredential);
+    }
   }
 
   async updateVersion(user: User, version: AppVersion, definition: any) {
     return await this.appVersionsRepository.update(version.id, { definition });
+  }
+
+  convertToArrayOfKeyValuePairs(options): Array<object> {
+    return Object.keys(options).map((key) => {
+      return {
+        key: key,
+        value: options[key]['value'],
+        encrypted: options[key]['encrypted'],
+        credential_id: options[key]['credential_id'],
+      };
+    });
   }
 }
