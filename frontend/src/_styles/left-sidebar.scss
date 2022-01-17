@@ -213,6 +213,19 @@
       }
     }
 
+    .card  {
+      .card-body {
+        padding: 0!important;
+
+        svg {
+          margin-top: 24px;
+        }
+        span {
+          margin: 12px 0 24px!important;
+        }
+      }
+    }
+
     .card:hover {
       background-color: #f8f8f8;
     }

@@ -26,7 +26,7 @@ const Card = ({ title, src, handleClick, height = 50, width = 50, usepluginIcon 
             <CardIcon src={src} height={height} width={width} />
             <br></br>
             <br></br>
-            {title}
+            <span>{title}</span>
           </center>
         </div>
       </div>
