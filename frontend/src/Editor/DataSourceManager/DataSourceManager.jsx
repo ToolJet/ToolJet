@@ -525,9 +525,12 @@ class DataSourceManager extends React.Component {
               )}
               {!selectedDataSource && <span className="text-muted">Add new datasource</span>}
             </Modal.Title>
-            <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
-              x
-            </Button>
+            <span
+              className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
+              onClick={() => this.hideModal()}
+            >
+              <img src="/assets/images/icons/close.svg" width="12" height="12" />
+            </span>
           </Modal.Header>
 
           <Modal.Body>

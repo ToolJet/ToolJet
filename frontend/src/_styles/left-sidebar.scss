@@ -345,3 +345,14 @@
 .empty-state-wrapper {
   margin-left: 5rem!important;
 }
+
+.close-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: pointer;
+}
+
+.close-btn.dark {
+  filter: brightness(0) invert(1);
+} 
