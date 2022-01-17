@@ -76,37 +76,17 @@ export default class Create extends Command {
       debug: !!process.env.DEBUG
     })
 
-    // await execa(
-    //   "npx",
-    //   [
-    //     "hygen",
-    //     "plugin",
-    //     "new",
-    //     "--name",
-    //     `${args.plugin_name}`,
-    //     "--type",
-    //     `${type}`,
-    //     "--display_name",
-    //     `${name}`,
-    //     "--plugins_path",
-    //     `${pluginsPath}`,
-    //     "--docs_path",
-    //     `${docsPath}`,
-    //   ],
-    //   { cwd: cliPath }
-    // );
-
     await execa("npx", ["lerna", "link", "convert"], { cwd: pluginsPath });
 
     cli.action.stop()
 
-    this.log(`Plugin: ${name} created successfully`);
+    this.log(`Plugin: ${args.plugin_name} created successfully`);
 
     let tree = cli.tree()
     tree.insert('plugins')
 
     let subtree = cli.tree()
-    subtree.insert(`${name}`)
+    subtree.insert(`${args.plugin_name}`)
     tree.nodes.plugins.insert('packages', subtree)
 
     tree.display()
