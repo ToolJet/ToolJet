@@ -1,11 +1,8 @@
 import { Command, Flags } from "@oclif/core";
 import cli from "cli-ux";
 import * as inquirer from "inquirer";
-// use spawn over exec to consume lesser memory
 const execa = require("execa");
 const path = require("path");
-
-// import * as notifier from 'node-notifier'
 
 export default class Create extends Command {
   static flags = {
@@ -48,6 +45,8 @@ export default class Create extends Command {
     const pluginsPath = path.join(process.cwd(), "/plugins");
     const docsPath = path.join(process.cwd(), "/docs");
 
+    cli.action.start('creating plugin')
+
     await execa(
       "npx",
       [
@@ -70,11 +69,17 @@ export default class Create extends Command {
 
     await execa("npx", ["lerna", "link", "convert"], { cwd: pluginsPath });
 
+    cli.action.stop()
+
     this.log(`Plugin: ${name} created successfully`);
 
-    // notifier.notify({
-    //   title: 'Tooljet',
-    //   message: `Plugin ${name} created`
-    // })
+    let tree = cli.tree()
+    tree.insert('plugins')
+
+    let subtree = cli.tree()
+    subtree.insert(`${args.plugin_name}`)
+    tree.nodes.bar.insert('packages', subtree)
+
+    tree.display()
   }
 }

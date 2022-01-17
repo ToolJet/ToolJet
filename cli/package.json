@@ -12,8 +12,7 @@
     "@oclif/plugin-plugins": "^2.0.1",
     "@types/inquirer": "^8.1.3",
     "hygen": "^6.1.0",
-    "inquirer": "^7.3.3",
-    "node-notifier": "^10.0.0"
+    "inquirer": "^7.3.3"
   },
   "devDependencies": {
     "@oclif/test": "^2",
