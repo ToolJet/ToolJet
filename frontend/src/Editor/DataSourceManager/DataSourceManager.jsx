@@ -378,6 +378,8 @@ class DataSourceManager extends React.Component {
                 src={item.src}
                 handleClick={() => renderSelectedDatasource(item)}
                 usepluginIcon={true}
+                height="35px"
+                width="35px"
               />
             ))}
           </div>
@@ -420,6 +422,8 @@ class DataSourceManager extends React.Component {
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
                   usepluginIcon={true}
+                  height="35px"
+                  width="35px"
                 />
               ))}
             </div>
@@ -434,6 +438,8 @@ class DataSourceManager extends React.Component {
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
                   usepluginIcon={true}
+                  height="35px"
+                  width="35px"
                 />
               ))}
             </div>
@@ -448,6 +454,8 @@ class DataSourceManager extends React.Component {
                   src={item.src}
                   handleClick={() => renderSelectedDatasource(item)}
                   usepluginIcon={true}
+                  height="35px"
+                  width="35px"
                 />
               ))}
             </div>
@@ -476,6 +484,8 @@ class DataSourceManager extends React.Component {
               src={item.src}
               handleClick={() => renderSelectedDatasource(item)}
               usepluginIcon={true}
+              height="35px"
+              width="35px"
             />
           ))}
         </div>
@@ -747,7 +757,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString }) => {
 
   return (
     <div className="search-box-wrapper">
-      <div style={{ height: '36px' }} className="input-icon mb-3 d-flex">
+      <div style={{ height: '36px' }} className="input-icon d-flex">
         {searchText.length === 0 && (
           <span className="search-icon mt-2 mx-2">
             <svg

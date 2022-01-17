@@ -1,8 +1,8 @@
 import React from 'react';
 import { allSvgs } from '@tooljet/plugins/client';
 
-const Card = ({ title, src, handleClick, usepluginIcon = false }) => {
-  const CardIcon = ({ src, height = 50, width = 50 }) => {
+const Card = ({ title, src, handleClick, height = 50, width = 50, usepluginIcon = false }) => {
+  const CardIcon = ({ src, height, width }) => {
     if (usepluginIcon) {
       const Icon = allSvgs[src];
       return <Icon style={{ height, width }} />;
@@ -23,7 +23,7 @@ const Card = ({ title, src, handleClick, usepluginIcon = false }) => {
       >
         <div className="card-body">
           <center>
-            <CardIcon src={src} />
+            <CardIcon src={src} height={height} width={width} />
             <br></br>
             <br></br>
             {title}
