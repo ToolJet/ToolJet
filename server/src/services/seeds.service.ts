@@ -48,6 +48,8 @@ export class SeedsService {
       await manager.save(organizationUser);
 
       await this.createDefaultUserGroups(manager, user);
+
+      console.log('Seeding complete. Use default credentials to login.');
     });
   }
 
