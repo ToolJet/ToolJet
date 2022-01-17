@@ -1,7 +1,7 @@
 {
   "name": "tooljet",
   "description": "tooljet cli tool",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "bin": {
     "tooljet": "./bin/run"
   },
@@ -52,10 +52,7 @@
   "oclif": {
     "bin": "tooljet",
     "commands": "./dist/commands",
-    "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
-    ],
+    "plugins": [],
     "topicSeparator": " ",
     "topics": {
       "hello": {
