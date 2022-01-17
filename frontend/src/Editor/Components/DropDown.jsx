@@ -160,6 +160,7 @@ export const DropDown = function DropDown({
             styles={customStyles}
             isLoading={properties.loadingState}
             onInputChange={onSearchTextChange}
+            onFocus={(event) => onComponentClick(event, component, id)}
           />
         </div>
       </div>
