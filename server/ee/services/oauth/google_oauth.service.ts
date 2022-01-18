@@ -20,7 +20,7 @@ export class GoogleOAuthService {
     const words = payload.name?.split(' ');
     const firstName = words?.[0] || '';
     const lastName = words?.length > 1 ? words[words.length - 1] : '';
-    return { userSSOId, firstName, lastName, email, domain };
+    return { userSSOId, firstName, lastName, email, domain, sso: 'google' };
   }
 
   async signIn(token: string): Promise<UserResponse> {

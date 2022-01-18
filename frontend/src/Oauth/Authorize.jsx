@@ -23,9 +23,13 @@ export function Authorize() {
     const configs = Configs[router.query.origin];
 
     authenticationService
-      .signInViaOAuth({ token: router.query[configs.tokenParam], origin: router.query.origin })
+      .signInViaOAuth({
+        token: router.query[configs.params.token],
+        origin: router.query.origin,
+        state: router.query[configs.params.state],
+      })
       .then(() => setSuccess(true))
-      .catch(() => setError('Github login failed'));
+      .catch(() => setError(`${configs.name} login failed`));
     // Disabled for useEffect not being called for updation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -1,5 +1,8 @@
 {
   "git": {
-    "tokenParam": "code"
+    "name": "Github",
+    "params": {
+      "token": "code"
+    }
   }
 }

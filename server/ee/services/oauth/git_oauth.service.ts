@@ -15,28 +15,26 @@ export class GitOAuthService {
   private readonly getUserUrl = 'https://api.github.com/user';
 
   async #getUserDetails({ access_token }: AuthResponse): Promise<UserResponse> {
-    const response = await got(this.getUserUrl, {
+    const response: any = await got(this.getUserUrl, {
       method: 'get',
       headers: { Accept: 'application/json', Authorization: `token ${access_token}` },
-    });
-    const result = JSON.parse(response.body);
-    const { name, email } = result;
+    }).json();
+    const { name, email } = response;
 
     const words = name?.split(' ');
     const firstName = words?.[0] || '';
     const lastName = words?.length > 1 ? words[words.length - 1] : '';
 
-    return { userSSOId: access_token, firstName, lastName, email };
+    return { userSSOId: access_token, firstName, lastName, email, sso: 'git' };
   }
 
   async signIn(code: string): Promise<any> {
-    const response = await got(this.authUrl, {
+    const response: any = await got(this.authUrl, {
       method: 'post',
       headers: { Accept: 'application/json' },
       json: { client_id: this.clientId, client_secret: this.clientSecret, code },
-    });
-    const result = JSON.parse(response.body);
-    return await this.#getUserDetails(result);
+    }).json();
+    return await this.#getUserDetails(response);
   }
 }
 

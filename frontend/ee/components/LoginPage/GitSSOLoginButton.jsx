@@ -1,7 +1,8 @@
 import React from 'react';
 import { toQuery } from '@/_helpers/utils';
 
-export default function GitSSOLoginButton({ clientId }) {
+export default function GitSSOLoginButton() {
+  const clientId = window.public_config.SSO_GIT_OAUTH2_CLIENT_ID;
   const gitLogin = (e) => {
     e.preventDefault();
     const search = toQuery({

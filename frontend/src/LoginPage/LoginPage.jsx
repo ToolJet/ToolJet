@@ -155,9 +155,7 @@ class LoginPage extends React.Component {
                     authFailureHandler={this.authFailureHandler}
                   />
                 )}
-                {window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID && (
-                  <GitSSOLoginButton clientId={window.public_config.SSO_GIT_OAUTH2_CLIENT_ID} />
-                )}
+                {window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID && <GitSSOLoginButton />}
               </div>
             </div>
           </form>

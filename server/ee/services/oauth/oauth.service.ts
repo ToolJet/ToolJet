@@ -39,17 +39,18 @@ export class OauthService {
     return true;
   }
 
-  async #findOrCreateUser({ userSSOId, firstName, lastName, email }): Promise<User> {
+  async #findOrCreateUser({ userSSOId, firstName, lastName, email, sso }): Promise<User> {
     const organization = await this.organizationService.findFirst();
-    const [user, newUserCreated] = await this.usersService.findOrCreateBySSOIdOrEmail(
-      userSSOId,
-      { firstName, lastName, email },
+    const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
+      { firstName, lastName, email, ssoId: userSSOId, sso },
       organization
     );
 
     if (newUserCreated) {
       const organizationUser = await this.organizationUsersService.create(user, organization);
       await this.organizationUsersService.activate(organizationUser);
+    } else if (userSSOId) {
+      await this.usersService.updateSSODetails(user, { userSSOId, sso });
     }
     return user;
   }
@@ -63,7 +64,7 @@ export class OauthService {
   }
 
   async #generateLoginResultPayload(user: User): Promise<any> {
-    const JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId };
+    const JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId, sso: user.sso };
     return decamelizeKeys({
       id: user.id,
       auth_token: this.jwtService.sign(JWTPayload),
@@ -79,7 +80,7 @@ export class OauthService {
   async signIn(ssoResponse: SSOResponse): Promise<any> {
     const { token, origin } = ssoResponse;
 
-    let userSSOId: string, firstName: string, lastName: string, email: string, domain: string;
+    let userSSOId: string, firstName: string, lastName: string, email: string, domain: string, sso: string;
     switch (origin) {
       case 'google':
         ({ userSSOId, firstName, lastName, email, domain } = await this.googleOAuthService.signIn(token));
@@ -87,7 +88,7 @@ export class OauthService {
         break;
 
       case 'git':
-        ({ userSSOId, firstName, lastName, email } = await this.gitOAuthService.signIn(token));
+        ({ userSSOId, firstName, lastName, email, sso } = await this.gitOAuthService.signIn(token));
         break;
 
       default:
@@ -99,7 +100,11 @@ export class OauthService {
     }
     const user: User = await (this.ssoSignUpDisabled
       ? this.#findAndActivateUser(email)
-      : this.#findOrCreateUser({ userSSOId, firstName, lastName, email }));
+      : this.#findOrCreateUser({ userSSOId, firstName, lastName, email, sso }));
+
+    if (!user) {
+      throw new UnauthorizedException(`Email id ${email} is not registered`);
+    }
 
     return await this.#generateLoginResultPayload(user);
   }
@@ -108,4 +113,6 @@ export class OauthService {
 interface SSOResponse {
   token: string;
   origin: 'google' | 'git';
+  state?: string;
+  redirectUri?: string;
 }

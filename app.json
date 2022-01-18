@@ -37,14 +37,6 @@
       "description": "Google OAuth2 client id to enable single sign-on",
       "value": ""
     },
-    "SSO_GIT_OAUTH2_CLIENT_ID": {
-      "description": "Git OAuth2 client id to enable single sign-on",
-      "value": ""
-    },
-    "SSO_GIT_OAUTH2_CLIENT_SECRET": {
-      "description": "Git OAuth2 client secret to enable single sign-on",
-      "value": ""
-    },
     "SSO_DISABLE_SIGNUP": {
       "description": "Disable sign-up via SSO",
       "value": ""
