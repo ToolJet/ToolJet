@@ -1,10 +1,16 @@
 import { ConnectionTestResult, QueryService, QueryResult } from 'common';
-
 import { createCollection, getDocument, updateDocument, deleteDocument, indexDocument, search } from './operations';
 import { Client } from 'typesense';
 
+type SourceOptions = { 
+  host: string; 
+  port: string; 
+  protocol: string; 
+  api_key: string;
+};
+
 export default class TypeSenseService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     const client = await this.getConnection(sourceOptions);
     let result = {};
     const operation = queryOptions.operation;
@@ -40,7 +46,7 @@ export default class TypeSenseService implements QueryService {
     };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
     const health = await client.health.retrieve();
 
@@ -49,7 +55,7 @@ export default class TypeSenseService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: any): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const client = new Client({
       nodes: [
         {

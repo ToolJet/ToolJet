@@ -1,6 +1,20 @@
-
 import { Knex, knex } from 'knex';
-import { ConnectionTestResult, QueryError, QueryResult,  QueryService, cacheConnection, getCachedConnection } from 'common';
+import { 
+  ConnectionTestResult,
+  QueryError,
+  QueryResult,
+  QueryService,
+  cacheConnection,
+  getCachedConnection 
+} from 'common';
+
+type SourceOptions = {
+  database: string; 
+  host: string;
+  port: string;
+  username: string;
+  password: string;
+};
 
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
@@ -15,7 +29,7 @@ export default class MssqlQueryService implements QueryService {
   }
 
   async run(
-    sourceOptions: any,
+    sourceOptions: SourceOptions,
     queryOptions: any,
     dataSourceId: string,
     dataSourceUpdatedAt: string
@@ -43,7 +57,7 @@ export default class MssqlQueryService implements QueryService {
     };
   }
 
-  async buildConnection(sourceOptions: any) {
+  async buildConnection(sourceOptions: SourceOptions) {
     const config: Knex.Config = {
       client: 'mssql',
       connection: {
@@ -62,7 +76,7 @@ export default class MssqlQueryService implements QueryService {
   }
 
   async getConnection(
-    sourceOptions: any,
+    sourceOptions: SourceOptions,
     options: any,
     checkCache: boolean,
     dataSourceId?: string,

@@ -3,8 +3,15 @@ import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from 'com
 
 const Redis = require('ioredis');
 
+type SourceOptions = { 
+  host: string; 
+  port: string; 
+  username: string;
+  password: string;
+};
+
 export default class RedisQueryService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     let result = {};
     const query = queryOptions.query;
 
@@ -23,7 +30,7 @@ export default class RedisQueryService implements QueryService {
     return { status: 'ok', data: result };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
     await client.ping();
 
@@ -32,7 +39,7 @@ export default class RedisQueryService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: any): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const username = sourceOptions.username;
     const host = sourceOptions.host;
     const password = sourceOptions.password;

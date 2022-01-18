@@ -1,11 +1,11 @@
 import { HTTPError } from 'got';
-import { QueryError, QueryResult,  QueryService} from 'common';
-
-
+import { QueryError, QueryResult,  QueryService } from 'common';
 import got from 'got'
 
+type SourceOptions = { url: string; headers: any; url_params: any; };
+
 export default class GraphqlQueryService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     let result = {};
 
     const url = sourceOptions.url;

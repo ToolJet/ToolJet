@@ -11,8 +11,10 @@ import {
 } from './operations';
 const { Firestore } = require('@google-cloud/firestore');
 
+type SourceOptions = { gcp_key: string; };
+
 export default class FirestoreQueryService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {
     const firestore = await this.getConnection(sourceOptions);
     const operation = queryOptions.operation;
     let result = {};
@@ -65,7 +67,7 @@ export default class FirestoreQueryService implements QueryService {
     };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
     await getDocument(client, 'test/test');
 
@@ -74,7 +76,7 @@ export default class FirestoreQueryService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: any): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const gcpKey = parseJson(sourceOptions['gcp_key'], 'GCP key could not be parsed as a valid JSON object');
 
     const firestore = new Firestore({

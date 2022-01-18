@@ -2,6 +2,15 @@ import { ConnectionTestResult, cacheConnection, getCachedConnection, QueryServic
 
 const { Pool } = require('pg');
 
+type SourceOptions = { 
+  database: string; 
+  host: string; 
+  port: string; 
+  username: string;
+  password: string;
+  ssl_enabled: boolean; 
+};
+
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
 
@@ -15,7 +24,7 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   async run(
-    sourceOptions: any,
+    sourceOptions: SourceOptions,
     queryOptions: any,
     dataSourceId: string,
     dataSourceUpdatedAt: string
@@ -43,7 +52,7 @@ export default class PostgresqlQueryService implements QueryService {
     };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const pool = await this.getConnection(sourceOptions, {}, false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const result = await pool.query('SELECT version();');
@@ -53,7 +62,7 @@ export default class PostgresqlQueryService implements QueryService {
     };
   }
 
-  async buildConnection(sourceOptions: any) {
+  async buildConnection(sourceOptions: SourceOptions) {
     const poolConfig: any = {
       user: sourceOptions.username,
       host: sourceOptions.host,
@@ -70,7 +79,7 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   async getConnection(
-    sourceOptions: any,
+    sourceOptions: SourceOptions,
     options: any,
     checkCache: boolean,
     dataSourceId?: string,

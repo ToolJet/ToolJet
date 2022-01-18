@@ -1,12 +1,19 @@
-
-
 import { QueryResult, QueryService, QueryError, ConnectionTestResult } from 'common';
 const { MongoClient } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
 
+type SourceOptions = { 
+  connection_type: string; 
+  database: string; 
+  host: string; 
+  port: string; 
+  username: string; 
+  password: string; 
+};
+
 export default class MongodbService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
     let result = {};
     const operation = queryOptions.operation;
@@ -155,7 +162,7 @@ export default class MongodbService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: any): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions): Promise<any> {
     let db = null,
       client;
     const connectionType = sourceOptions['connection_type'];

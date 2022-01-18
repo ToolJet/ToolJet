@@ -1,8 +1,9 @@
-import { QueryError, QueryResult,  QueryService} from 'common';
+import { QueryError, QueryResult,  QueryService } from 'common';
+import got, { Headers } from 'got'
 
-
-import got from 'got'
-import {Headers} from 'got'
+type SourceOptions = { 
+  api_key: string; 
+};
 
 export default class SlackQueryService implements QueryService {
   authUrl(): string {
@@ -49,11 +50,11 @@ export default class SlackQueryService implements QueryService {
     return { Authorization: `Bearer ${token}` };
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     let result = {};
     let response = null;
     const operation = queryOptions.operation;
-    const accessToken = sourceOptions['access_token'];
+    const accessToken = sourceOptions.api_key;
 
     try {
       switch (operation) {

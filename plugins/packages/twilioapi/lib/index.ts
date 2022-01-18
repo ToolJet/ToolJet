@@ -1,14 +1,18 @@
-import { QueryError, QueryResult,  QueryService} from 'common';
-
-
+import { QueryError, QueryResult,  QueryService } from 'common';
 import { Twilio } from 'twilio';
+
+type SourceOptions = { 
+  accountSid: string; 
+  authToken: string; 
+  messagingServiceSid: string; 
+};
 
 export default class TwilioQueryService implements QueryService {
   getClient(accountSid: string, authToken: string): any {
     return new Twilio(accountSid, authToken);
   }
 
-  async run(sourceOptions: any = {}, queryOptions: any = {}, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any = {}, dataSourceId: string): Promise<QueryResult> {
     let result = {};
 
     try {

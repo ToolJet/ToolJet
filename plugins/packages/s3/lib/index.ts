@@ -2,8 +2,14 @@ import { getObject, uploadObject, listBuckets, listObjects, signedUrlForGet, sig
 import { S3Client } from '@aws-sdk/client-s3';
 import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from 'common';
 
+type SourceOptions = { 
+  access_key: string; 
+  secret_key: string; 
+  region: string; 
+};
+
 export default class S3QueryService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     const operation = queryOptions.operation;
     const client = await this.getConnection(sourceOptions, { operation });
     let result = {};
@@ -39,7 +45,7 @@ export default class S3QueryService implements QueryService {
     };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client: S3Client = await this.getConnection(sourceOptions, {
       operation: 'list_objects',
     });
@@ -50,7 +56,7 @@ export default class S3QueryService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: any, options?: object): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
     const credentials = {
       accessKeyId: sourceOptions['access_key'],
       secretAccessKey: sourceOptions['secret_key'],

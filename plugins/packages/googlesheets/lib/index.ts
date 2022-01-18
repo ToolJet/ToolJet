@@ -1,8 +1,10 @@
-import { QueryError, QueryResult,  QueryService} from 'common';
+import { QueryError, QueryResult,  QueryService } from 'common';
 
 
 import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
-import got, {Headers} from 'got'
+import got, { Headers } from 'got'
+
+type SourceOptions = { access_token: string; };
 
 export default class GooglesheetsQueryService implements QueryService {
   authUrl(): string {
@@ -62,7 +64,7 @@ export default class GooglesheetsQueryService implements QueryService {
     return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     let result = {};
     let response = null;
     const operation = queryOptions.operation;

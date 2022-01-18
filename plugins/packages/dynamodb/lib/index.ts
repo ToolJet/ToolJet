@@ -1,10 +1,11 @@
 import { ConnectionTestResult, QueryService, QueryResult } from 'common';
-
 import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
 const AWS = require('aws-sdk');
 
+type SourceOptions = { access_key: string; secret_key: string; region: string; };
+
 export default class DynamodbQueryService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {
     const operation = queryOptions.operation;
     const client = await this.getConnection(sourceOptions, { operation });
     let result = {};
@@ -37,7 +38,7 @@ export default class DynamodbQueryService implements QueryService {
     };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions, { operation: 'list_tables' });
     await listTables(client);
 
@@ -46,7 +47,7 @@ export default class DynamodbQueryService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: any, options?: object): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
     const credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
     const region = sourceOptions['region'];
 
