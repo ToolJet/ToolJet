@@ -4,6 +4,7 @@ import { history } from '@/_helpers';
 import moment from 'moment';
 import { ToolTip } from '@/_components';
 import useHover from '@/_hooks/useHover';
+import useHeight from '@/_hooks/useHeight';
 import configs from './Configs/AppIcon.json';
 
 const { defaultIcon } = configs;
@@ -19,6 +20,7 @@ export default function AppCard({
   canUpdateApp,
 }) {
   const [hoverRef, isHovered] = useHover();
+  const [heightRef, appTitleHeight] = useHeight();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
 
@@ -46,7 +48,7 @@ export default function AppCard({
       <div className="row mb-3">
         <div className="col-12 d-flex justify-content-between">
           <div className="pt-2">
-            <div className="app-icon-main p-2">
+            <div className="app-icon-main p-1">
               <div className="app-icon p-1 d-flex">
                 <img src={`/assets/images/icons/app-icons/${app.icon || defaultIcon}.svg`} alt="Application Icon" />
               </div>
@@ -71,14 +73,16 @@ export default function AppCard({
       </div>
       <div>
         <ToolTip message={app.name}>
-          <div className="app-title">{app.name}</div>
+          <div ref={heightRef} className="app-title">
+            {app.name}
+          </div>
         </ToolTip>
       </div>
       <div className="py-1">
         <div className="app-creator py-1">{`${app.user?.first_name ? app.user.first_name : ''} ${
           app.user?.last_name ? app.user.last_name : ''
         }`}</div>
-        <div className="app-creation-time" style={{ display: focused ? 'block' : 'none' }}>
+        <div className="app-creation-time" style={{ display: focused || appTitleHeight < 40 ? 'block' : 'none' }}>
           <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
             <span>{moment(app.created_at).fromNow(true)} ago</span>
           </ToolTip>
