@@ -8,6 +8,7 @@ import { UsersService } from '@services/users.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import { decamelizeKeys } from 'humps';
 import { GitOAuthService } from './git_oauth.service';
+import UserResponse from './models/user_response';
 
 @Injectable()
 export class OauthService {
@@ -39,7 +40,7 @@ export class OauthService {
     return true;
   }
 
-  async #findOrCreateUser({ userSSOId, firstName, lastName, email, sso }): Promise<User> {
+  async #findOrCreateUser({ userSSOId, firstName, lastName, email, sso }: UserResponse): Promise<User> {
     const organization = await this.organizationService.findFirst();
     const { user, newUserCreated } = await this.usersService.findOrCreateByEmail(
       { firstName, lastName, email, ssoId: userSSOId, sso },
@@ -64,7 +65,7 @@ export class OauthService {
   }
 
   async #generateLoginResultPayload(user: User): Promise<any> {
-    const JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId, sso: user.sso };
+    const JWTPayload: JWTPayload = { username: user.id, sub: user.email, ssoId: user.ssoId, sso: user.sso };
     return decamelizeKeys({
       id: user.id,
       auth_token: this.jwtService.sign(JWTPayload),
@@ -80,30 +81,31 @@ export class OauthService {
   async signIn(ssoResponse: SSOResponse): Promise<any> {
     const { token, origin } = ssoResponse;
 
-    let userSSOId: string, firstName: string, lastName: string, email: string, domain: string, sso: string;
+    let userResponse: UserResponse;
     switch (origin) {
       case 'google':
-        ({ userSSOId, firstName, lastName, email, domain } = await this.googleOAuthService.signIn(token));
-        if (!this.#isValidDomain(domain)) throw new UnauthorizedException(`You cannot sign in using a ${domain} id`);
+        userResponse = await this.googleOAuthService.signIn(token);
+        if (!this.#isValidDomain(userResponse.domain))
+          throw new UnauthorizedException(`You cannot sign in using a ${userResponse.domain} id`);
         break;
 
       case 'git':
-        ({ userSSOId, firstName, lastName, email, sso } = await this.gitOAuthService.signIn(token));
+        userResponse = await this.gitOAuthService.signIn(token);
         break;
 
       default:
         break;
     }
 
-    if (!userSSOId) {
+    if (!(userResponse.userSSOId && userResponse.email)) {
       throw new UnauthorizedException('Invalid credentials');
     }
     const user: User = await (this.ssoSignUpDisabled
-      ? this.#findAndActivateUser(email)
-      : this.#findOrCreateUser({ userSSOId, firstName, lastName, email, sso }));
+      ? this.#findAndActivateUser(userResponse.email)
+      : this.#findOrCreateUser(userResponse));
 
     if (!user) {
-      throw new UnauthorizedException(`Email id ${email} is not registered`);
+      throw new UnauthorizedException(`Email id ${userResponse.email} is not registered`);
     }
 
     return await this.#generateLoginResultPayload(user);
@@ -115,4 +117,11 @@ interface SSOResponse {
   origin: 'google' | 'git';
   state?: string;
   redirectUri?: string;
+}
+
+interface JWTPayload {
+  username: string;
+  sub: string;
+  ssoId: string;
+  sso: string;
 }
