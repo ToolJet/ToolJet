@@ -72,6 +72,18 @@ export const EventManager = ({
 
     return modalOptions;
   }
+  function getTableOptions() {
+    let tableOptions = [];
+    Object.keys(components || {}).forEach((key) => {
+      if (components[key].component.component === 'Table') {
+        tableOptions.push({
+          name: components[key].component.name,
+          value: key,
+        });
+      }
+    });
+    return tableOptions;
+  }
 
   function getAllApps() {
     let appsOptionsList = [];
@@ -335,6 +347,39 @@ export const EventManager = ({
                       initialValue={event.data}
                       onChange={(value) => handlerChanged(index, 'data', value)}
                       enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {event.actionId === 'set-table-page' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">Table</div>
+                  <div className="col-9">
+                    <SelectSearch
+                      options={getTableOptions()}
+                      value={event.table}
+                      search={true}
+                      onChange={(value) => {
+                        console.log('value piku', value);
+                        handlerChanged(index, 'table', value);
+                      }}
+                      filterOptions={fuzzySearch}
+                      placeholder="Select.."
+                    />
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">Page index</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.pageIndex ?? '1'}
+                      onChange={(value) => handlerChanged(index, 'pageIndex', value)}
+                      enablePreview={true}
+                      usePortalEditor={false}
                     />
                   </div>
                 </div>

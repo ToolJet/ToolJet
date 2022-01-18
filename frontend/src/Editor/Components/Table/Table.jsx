@@ -917,7 +917,7 @@ export function Table({
             <div className="col">
               {(clientSidePagination || serverSidePagination) && (
                 <Pagination
-                  lastActivePageIndex={pageIndex}
+                  lastActivePageIndex={serverSidePagination ? componentState.pageIndex : pageIndex}
                   serverSide={serverSidePagination}
                   autoGotoPage={gotoPage}
                   autoCanNextPage={canNextPage}

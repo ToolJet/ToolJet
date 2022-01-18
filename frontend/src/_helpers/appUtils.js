@@ -130,6 +130,33 @@ function showModal(_ref, modalId, show) {
   return Promise.resolve();
 }
 
+function setTablePageIndex(_ref, tabelId, index) {
+  if (_.isEmpty(tabelId)) {
+    console.log('No table is associated with this event.');
+    return Promise.resolve();
+  }
+
+  const tableMeta = _ref.state.appDefinition.components[tabelId];
+  console.log('modalMeta', tableMeta);
+
+  const newState = {
+    currentState: {
+      ..._ref.state.currentState,
+      components: {
+        ..._ref.state.currentState.components,
+        [tableMeta.component.name]: {
+          ..._ref.state.currentState.components[tableMeta.component.name],
+          pageIndex: parseInt(index) - 1,
+        },
+      },
+    },
+  };
+
+  _ref.setState(newState);
+
+  return Promise.resolve();
+}
+
 function executeAction(_ref, event, mode) {
   if (event) {
     switch (event.actionId) {
@@ -226,6 +253,9 @@ function executeAction(_ref, event, mode) {
         const csv = generateCSV(data);
         generateFile(fileName, csv);
         return Promise.resolve();
+      }
+      case 'set-table-page': {
+        setTablePageIndex(_ref, event.table, event.pageIndex);
       }
     }
   }
