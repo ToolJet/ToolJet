@@ -145,13 +145,14 @@ function setTablePageIndex(_ref, tabelId, index) {
         ..._ref.state.currentState.components,
         [tableMeta.component.name]: {
           ..._ref.state.currentState.components[tableMeta.component.name],
-          pageIndex: parseInt(index) - 1,
+          pageIndex: parseInt(index),
         },
       },
     },
   };
 
-  _ref.setState(newState);
+  // _ref.setState(newState);
+  _ref.setState(newState, () => onEvent(_ref, 'onPageChanged', tableMeta.component));
 
   return Promise.resolve();
 }
@@ -415,10 +416,10 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSearchTextChanged',
     ].includes(eventName)
   ) {
+    toast('Event: ' + eventName);
     const { component } = options;
     executeActionsForEventId(_ref, eventName, component, mode);
   }
-
   if (eventName === 'onBulkUpdate') {
     onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
     await executeActionsForEventId(_self, eventName, options.component, mode);

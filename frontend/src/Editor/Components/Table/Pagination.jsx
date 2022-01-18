@@ -18,7 +18,7 @@ export const Pagination = function Pagination({
 
   useEffect(() => {
     if (serverSide && lastActivePageIndex > 0) {
-      setPageCount(lastActivePageIndex);
+      setPageIndex(lastActivePageIndex);
     } else if (serverSide || lastActivePageIndex === 0) {
       setPageIndex(1);
     } else {
