@@ -37,26 +37,6 @@ export const Header = function Header({ switchDarkMode, darkMode }) {
           </Link>
         </h1>
 
-        <ul className="navbar-nav d-none d-lg-flex">
-          <li className={cx(`nav-item mx-3`, { active: pathName === '/' })}>
-            <Link to={'/'} className="nav-link">
-              <span className="nav-link-icon d-md-none d-lg-inline-block">
-                <img className="svg-icon" src="/assets/images/icons/apps.svg" width="15" height="15" />
-              </span>
-              <span className="nav-link-title">Apps</span>
-            </Link>
-          </li>
-
-          <li className={cx(`nav-item mx-3`, { active: pathName === '/library' })}>
-            <Link to={'/library'} className="nav-link mx-2">
-              <span className="nav-link-icon d-md-none d-lg-inline-block">
-                <img className="svg-icon" src="https://www.svgrepo.com/show/39547/gallery.svg" width="15" height="15" />
-              </span>
-              <span className="nav-link-title">Library</span>
-            </Link>
-          </li>
-        </ul>
-
         <div className="navbar-nav flex-row order-md-last">
           <div className="p-1 m-1 d-flex align-items-center">
             <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} />

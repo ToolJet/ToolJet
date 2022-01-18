@@ -5,11 +5,20 @@ import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
+import { allSvgs } from '@tooljet/plugins/client';
 
 export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, dataSources = [], dataSourcesChanged }) => {
   const [open, trigger, content] = usePopover(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
+
+  // TODO: move this to a react component
+  // TODO: add falback svg icon if icon not found
+  const getSvgIcon = (key, height = 50, width = 50) => {
+    const Icon = allSvgs[key];
+
+    return <Icon style={{ height, width }} />;
+  };
 
   const renderDataSource = (dataSource, idx) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
@@ -23,12 +32,7 @@ export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, data
           }}
           className="col"
         >
-          <img
-            className="svg-icon"
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />
+          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
           <span className="p-2 font-500">{dataSource.name}</span>
         </div>
       </div>

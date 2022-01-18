@@ -47,6 +47,6 @@ export function SearchBox({ onSubmit }) {
     </div>
   );
 }
-SearchBox.PropTypes = {
-  onabort: PropTypes.func.isRequired,
+SearchBox.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
 };

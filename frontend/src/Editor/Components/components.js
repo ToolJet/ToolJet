@@ -37,6 +37,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      actionButtonRadius: { type: 'code', displayName: 'Action Button Radius' },
       tableType: {
         type: 'select',
         displayName: 'Table type',
@@ -99,6 +100,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: undefined },
+        actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
@@ -181,6 +183,8 @@ export const componentTypes = [
           { name: 'Pie', value: 'pie' },
         ],
       },
+      jsonDescription: { type: 'json', displayName: 'Json Description' },
+      plotFromJson: { type: 'toggle', displayName: 'Use Plotly JSON schema' },
     },
     events: {},
     styles: {
@@ -199,7 +203,27 @@ export const componentTypes = [
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
         showGridLines: { value: true },
+        plotFromJson: { value: false },
         loadingState: { value: `{{false}}` },
+        jsonDescription: {
+          value: `{
+            "data": [
+                {
+                    "x": [
+                        "Jan",
+                        "Feb",
+                        "Mar"
+                    ],
+                    "y": [
+                        100,
+                        80,
+                        40
+                    ],
+                    "type": "bar"
+                }
+            ]
+        }`,
+        },
         type: { value: `line` },
         data: {
           value: `[
@@ -333,6 +357,8 @@ export const componentTypes = [
     },
     properties: {
       value: { type: 'code', displayName: 'Default value' },
+      minValue: { type: 'code', displayName: 'Minimum value' },
+      maxValue: { type: 'code', displayName: 'Maximum value' },
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
@@ -350,6 +376,8 @@ export const componentTypes = [
       },
       properties: {
         value: { value: '99' },
+        maxValue: { value: '' },
+        minValue: { value: '' },
         placeholder: { value: '0' },
       },
       events: [],
@@ -549,7 +577,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
-        activeColor: { value: '#375FCF' },
+        activeColor: { value: '#4D72FA' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -704,6 +732,7 @@ export const componentTypes = [
     events: [],
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      textAlign: { type: 'alignButtons', displayName: 'Align Text' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -720,7 +749,9 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        groupActions: { value: 'left' },
         textColor: { value: '#000' },
+        textAlign: { value: 'left' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -731,8 +762,8 @@ export const componentTypes = [
     displayName: 'Image',
     description: 'Display an Image',
     defaultSize: {
-      width: 5,
-      height: 210,
+      width: 3,
+      height: 100,
     },
     component: 'Image',
     others: {
@@ -746,6 +777,16 @@ export const componentTypes = [
       onClick: { displayName: 'On click' },
     },
     styles: {
+      borderType: {
+        type: 'select',
+        displayName: 'Border type',
+        options: [
+          { name: 'None', value: 'none' },
+          { name: 'Rounded', value: 'rounded' },
+          { name: 'Circle', value: 'rounded-circle' },
+          { name: 'Thumbnail', value: 'img-thumbnail' },
+        ],
+      },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -761,6 +802,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderType: { value: 'none' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -1488,6 +1530,144 @@ export const componentTypes = [
         },
         type: {
           value: 'countUp',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Listview',
+    displayName: 'List view',
+    description: 'Wrapper for multiple components',
+    defaultSize: {
+      width: 5,
+      height: 200,
+    },
+    component: 'Listview',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      data: { type: 'code', displayName: 'List data' },
+      rowHeight: { type: 'code', displayName: 'Row height' },
+      showBorder: { type: 'code', displayName: 'Show bottom border' },
+    },
+    events: {},
+    styles: {
+      backgroundColor: { type: 'color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      data: [{}],
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        data: {
+          value: "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+        },
+        rowHeight: {
+          value: '100',
+        },
+        visible: { value: true },
+        showBorder: { value: '{{true}}' },
+      },
+      events: [],
+      styles: {
+        backgroundColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Tags',
+    displayName: 'Tags',
+    description: 'Content can be shown as tags',
+    component: 'Tags',
+    defaultSize: {
+      width: 5,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      data: { type: 'code', displayName: 'Tags' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        data: {
+          value:
+            "{{ [ \n\t\t{ title: 'success', color: '#2fb344', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#206bc4', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#f59f00', textColor: '#fff'  }, \n\t\t{ title: 'danger', color: '#d63939', textColor: '#fff' } ] }}",
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'Pagination',
+    displayName: 'Pagination',
+    description: 'Pagination ',
+    component: 'Pagination',
+    defaultSize: {
+      width: 9,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      numberOfPages: { type: 'code', displayName: 'Number of pages' },
+      defaultPageIndex: { type: 'code', displayName: 'Default page index' },
+    },
+    validation: {},
+    events: {
+      onPageChange: { displayName: 'On Page Change' },
+    },
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      totalPages: null,
+      currentPageIndex: null,
+    },
+    definition: {
+      validation: {},
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        numberOfPages: {
+          value: '{{5}}',
+        },
+        defaultPageIndex: {
+          value: '{{1}}',
         },
       },
       events: [],

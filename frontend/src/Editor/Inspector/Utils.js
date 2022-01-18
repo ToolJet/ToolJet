@@ -5,6 +5,7 @@ import { Json } from './Elements/Json';
 import { Code } from './Elements/Code';
 import { Select } from './Elements/Select';
 import { Toggle } from './Elements/Toggle';
+import { AlignButtons } from './Elements/AlignButtons';
 import { TypeMapping } from './TypeMapping';
 import { QuerySelector } from './QuerySelector';
 
@@ -15,6 +16,7 @@ const AllElements = {
   Code,
   Toggle,
   Select,
+  AlignButtons,
 };
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
