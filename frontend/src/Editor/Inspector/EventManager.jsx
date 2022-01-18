@@ -60,9 +60,10 @@ export const EventManager = ({
     });
 
   function getComponentOptions(componentType) {
+    console.log('getComponentOptions', componentType);
     let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
-      if (components[key].component.component !== componentType) {
+      if (components[key].component.component === componentType) {
         componentOptions.push({
           name: components[key].component.name,
           value: key,
