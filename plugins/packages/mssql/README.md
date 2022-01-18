@@ -1,11 +1,4 @@
 # `mssql`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/mssql
 
-## Usage
-
-```
-const mssql = require('mssql');
-
-// TODO: DEMONSTRATE API
-```

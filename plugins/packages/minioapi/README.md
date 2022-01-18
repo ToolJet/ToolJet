@@ -1,11 +1,4 @@
 # `minioapi`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/minio
 
-## Usage
-
-```
-const minioapi = require('minioapi');
-
-// TODO: DEMONSTRATE API
-```

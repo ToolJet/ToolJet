@@ -1,11 +1,3 @@
 # `redis`
 
-> TODO: description
-
-## Usage
-
-```
-const redis = require('redis');
-
-// TODO: DEMONSTRATE API
-```
+Documentation on: https://docs.tooljet.com/docs/data-sources/redus

@@ -1,11 +1,3 @@
 # `elasticsearch`
 
-> TODO: description
-
-## Usage
-
-```
-const elasticsearch = require('elasticsearch');
-
-// TODO: DEMONSTRATE API
-```
+Documentation on: https://docs.tooljet.com/docs/data-sources/elasticsearch

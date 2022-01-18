@@ -1,11 +1,3 @@
 # `firestore`
 
-> TODO: description
-
-## Usage
-
-```
-const firestore = require('firestore');
-
-// TODO: DEMONSTRATE API
-```
+Documentation on: https://docs.tooljet.com/docs/data-sources/firestore

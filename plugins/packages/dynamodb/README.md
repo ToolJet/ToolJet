@@ -1,11 +1,3 @@
 # `dynamodb`
 
-> TODO: description
-
-## Usage
-
-```
-const dynamodb = require('dynamodb');
-
-// TODO: DEMONSTRATE API
-```
+Documentation on: https://docs.tooljet.com/docs/data-sources/dynamodb
