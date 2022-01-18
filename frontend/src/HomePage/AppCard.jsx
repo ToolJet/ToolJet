@@ -82,7 +82,7 @@ export default function AppCard({
         <div className="app-creator py-1">{`${app.user?.first_name ? app.user.first_name : ''} ${
           app.user?.last_name ? app.user.last_name : ''
         }`}</div>
-        <div className="app-creation-time" style={{ display: focused || appTitleHeight < 40 ? 'block' : 'none' }}>
+        <div className="app-creation-time" style={{ display: focused || appTitleHeight < 50 ? 'block' : 'none' }}>
           <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
             <span>{moment(app.created_at).fromNow(true)} ago</span>
           </ToolTip>
