@@ -56,7 +56,7 @@ export class OauthService {
     return user;
   }
 
-  async #findAndActivateUser(email): Promise<User> {
+  async #findAndActivateUser(email: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const organizationUser = user.organizationUsers[0];

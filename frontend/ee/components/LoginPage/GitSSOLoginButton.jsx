@@ -1,14 +1,11 @@
 import React from 'react';
-import { toQuery } from '@/_helpers/utils';
+import { buildURLWithQuery } from '@/_helpers/utils';
 
 export default function GitSSOLoginButton() {
   const clientId = window.public_config.SSO_GIT_OAUTH2_CLIENT_ID;
   const gitLogin = (e) => {
     e.preventDefault();
-    const search = toQuery({
-      client_id: clientId,
-    });
-    window.location.href = `https://github.com/login/oauth/authorize?${search}`;
+    window.location.href = buildURLWithQuery('https://github.com/login/oauth/authorize', { client_id: clientId });
   };
   return (
     <div>
