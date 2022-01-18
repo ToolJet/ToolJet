@@ -631,13 +631,10 @@ button {
       }
 
       .app-icon-main {
-        background-color: #B8C7FD;
+        background-color: $primary;
         border-radius: 4px;
 
         .app-icon {
-          background-color: $primary;
-          border-radius: 2px;
-
           img {
             height: 16px;
             width: 16px;
