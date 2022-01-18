@@ -59,30 +59,17 @@ export const EventManager = ({
       };
     });
 
-  function getModalOptions() {
-    let modalOptions = [];
+  function getComponentOptions(componentType) {
+    let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
-      if (components[key].component.component === 'Modal') {
-        modalOptions.push({
+      if (components[key].component.component !== componentType) {
+        componentOptions.push({
           name: components[key].component.name,
           value: key,
         });
       }
     });
-
-    return modalOptions;
-  }
-  function getTableOptions() {
-    let tableOptions = [];
-    Object.keys(components || {}).forEach((key) => {
-      if (components[key].component.component === 'Table') {
-        tableOptions.push({
-          name: components[key].component.name,
-          value: key,
-        });
-      }
-    });
-    return tableOptions;
+    return componentOptions;
   }
 
   function getAllApps() {
@@ -219,7 +206,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">Modal</div>
                 <div className="col-9">
                   <SelectSearch
-                    options={getModalOptions()}
+                    options={getComponentOptions('Modal')}
                     value={event.model}
                     search={true}
                     onChange={(value) => {
@@ -237,7 +224,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">Modal</div>
                 <div className="col-9">
                   <SelectSearch
-                    options={getModalOptions()}
+                    options={getComponentOptions('Modal')}
                     value={event.model}
                     search={true}
                     onChange={(value) => {
@@ -359,7 +346,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">Table</div>
                   <div className="col-9">
                     <SelectSearch
-                      options={getTableOptions()}
+                      options={getComponentOptions('Table')}
                       value={event.table}
                       search={true}
                       onChange={(value) => {
