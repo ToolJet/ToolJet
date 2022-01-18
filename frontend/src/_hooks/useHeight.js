@@ -7,7 +7,6 @@ export default function useHeight(useResizeEventListner) {
   useEffect(() => {
     function handleResize() {
       setHeight(ref.current.clientHeight);
-      console.log(22342423);
     }
     useResizeEventListner && window.addEventListener('resize', handleResize);
     handleResize();
