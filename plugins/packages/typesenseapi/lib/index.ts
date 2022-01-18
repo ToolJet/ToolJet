@@ -60,7 +60,7 @@ export default class TypeSenseService implements QueryService {
       nodes: [
         {
           host: sourceOptions.host,
-          port: sourceOptions.port,
+          port: +sourceOptions.port,
           protocol: sourceOptions.protocol,
         },
       ],

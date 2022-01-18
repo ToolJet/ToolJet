@@ -47,7 +47,7 @@ export default class MssqlQueryService implements QueryService {
     return { status: 'ok', data: result };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const result = await knexInstance.raw('select @@version;');

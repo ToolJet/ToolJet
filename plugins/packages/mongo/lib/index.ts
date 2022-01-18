@@ -152,7 +152,7 @@ export default class MongodbService implements QueryService {
     return EJSON.parse(JSON.stringify(JSON5.parse(maybeEJSON)));
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const { db, close } = await this.getConnection(sourceOptions);
     await db.listCollections().toArray();
     await close();
