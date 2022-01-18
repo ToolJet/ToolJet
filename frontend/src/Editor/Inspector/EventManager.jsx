@@ -350,7 +350,6 @@ export const EventManager = ({
                       value={event.table}
                       search={true}
                       onChange={(value) => {
-                        console.log('value piku', value);
                         handlerChanged(index, 'table', value);
                       }}
                       filterOptions={fuzzySearch}
