@@ -9,29 +9,18 @@ export const Pagination = function Pagination({
   autoPageOptions,
   lastActivePageIndex,
 }) {
-  const [pageIndex, setPageIndex] = useState(lastActivePageIndex ?? 1);
+  const pageIndex = React.useMemo(() => lastActivePageIndex, [lastActivePageIndex]);
+
   const [pageCount, setPageCount] = useState(autoPageCount);
 
   useEffect(() => {
     setPageCount(autoPageCount);
   }, [autoPageCount]);
 
-  useEffect(() => {
-    if (serverSide && lastActivePageIndex > 0) {
-      setPageIndex(lastActivePageIndex);
-    } else if (serverSide || lastActivePageIndex === 0) {
-      setPageIndex(1);
-    } else {
-      gotoPage(lastActivePageIndex + 1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverSide, lastActivePageIndex]);
-
   function gotoPage(page) {
-    setPageIndex(page);
     onPageIndexChanged(page);
     if (!serverSide) {
-      autoGotoPage(page - 1);
+      autoGotoPage(page);
     }
   }
 

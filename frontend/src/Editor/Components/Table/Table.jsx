@@ -782,6 +782,12 @@ export function Table({
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
   }, [pageCount]);
 
+  useEffect(() => {
+    if (componentState?.pageIndex !== pageIndex && !serverSidePagination) {
+      gotoPage(parseInt(componentState?.pageIndex) - 1);
+    }
+  }, [componentState.pageIndex]);
+
   return (
     <div
       data-disabled={parsedDisabledState}
@@ -917,7 +923,7 @@ export function Table({
             <div className="col">
               {(clientSidePagination || serverSidePagination) && (
                 <Pagination
-                  lastActivePageIndex={serverSidePagination ? componentState.pageIndex : pageIndex}
+                  lastActivePageIndex={componentState.pageIndex}
                   serverSide={serverSidePagination}
                   autoGotoPage={gotoPage}
                   autoCanNextPage={canNextPage}
