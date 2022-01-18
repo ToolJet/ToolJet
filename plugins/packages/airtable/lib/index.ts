@@ -2,14 +2,13 @@ import { QueryError, QueryResult,  QueryService } from 'common';
 import got, { Headers } from 'got'
 
 type SourceOptions = { api_key: string; };
-type QueryOptions = { [x: string]: string; operation: string; }
 
 export default class AirtableQueryService implements QueryService {
   authHeader(token: string): Headers {
     return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   }
 
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {
     let result = {};
     let response = null;
     const operation = queryOptions.operation;
