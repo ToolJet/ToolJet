@@ -23,17 +23,18 @@ export default function Header({
         <SearchBox onSubmit={onSearchSubmit} />
         {canCreateApp() && (
           <>
-            <label className="btn btn-default d-none d-lg-inline mb-3 ms-2" onChange={handleImportApp}>
+            {/* <label className="btn btn-default d-none d-lg-inline mb-3 ms-2" onChange={handleImportApp}>
               {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
               Import
               <input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
-            </label>
+            </label> */}
             {canCreateApp() && (
               <Dropdown as={ButtonGroup}>
                 <Button
                   className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 ${creatingApp ? 'btn-loading' : ''}`}
                   onClick={createApp}
                 >
+                  {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
                   Create new application
                 </Button>
 
@@ -41,6 +42,10 @@ export default function Header({
 
                 <Dropdown.Menu>
                   <Dropdown.Item onClick={showTemplateLibraryModal}>Choose from template</Dropdown.Item>
+                  <Dropdown.Item   onSelect={handleImportApp}>
+                    Import <input type="file" accept=".json"  ref={fileInput} style={{ display: 'none' ,zIndex:}} />
+                  </Dropdown.Item>
+
                 </Dropdown.Menu>
               </Dropdown>
             )}
