@@ -5,20 +5,12 @@ import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
-import { allSvgs } from '@tooljet/plugins/client';
+import { getSvgIcon } from '@/_helpers/appUtils';
 
 export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, dataSources = [], dataSourcesChanged }) => {
   const [open, trigger, content] = usePopover(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
-
-  // TODO: move this to a react component
-  // TODO: add falback svg icon if icon not found
-  const getSvgIcon = (key, height = 50, width = 50) => {
-    const Icon = allSvgs[key];
-
-    return <Icon style={{ height, width }} />;
-  };
 
   const renderDataSource = (dataSource, idx) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);

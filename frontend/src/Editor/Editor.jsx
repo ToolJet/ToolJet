@@ -23,10 +23,10 @@ import {
   runQuery,
   setStateAsync,
   computeComponentState,
+  getSvgIcon,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
-import { allSvgs } from '@tooljet/plugins/client';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
@@ -541,12 +541,6 @@ class Editor extends React.Component {
     this.saveApp(id, { name }, notify);
   };
 
-  getSvgIcon = (key, height = 50, width = 50) => {
-    const Icon = allSvgs[key];
-
-    return <Icon style={{ height, width }} />;
-  };
-
   renderDataSource = (dataSource) => {
     const sourceMeta = DataSourceTypes.find((source) => source.kind === dataSource.kind);
     return (
@@ -558,7 +552,7 @@ class Editor extends React.Component {
         }}
       >
         <td>
-          {this.getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
+          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
         </td>
       </tr>
     );
@@ -613,7 +607,7 @@ class Editor extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col">
-          {this.getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
+          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto mx-1">
