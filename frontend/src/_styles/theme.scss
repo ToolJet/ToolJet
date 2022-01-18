@@ -3224,4 +3224,69 @@ input[type="text"] {
       margin-left: 16px;
     }
   }
+ }
+
+
+.radio-img {
+    input { 
+      display:none;
+    }
+
+    .action-icon {
+      width: 28px;
+      height: 28px;
+      background-position: center center;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  
+    .action-icon{
+      cursor:pointer;
+      border: 1px solid $light-gray;
+    }
+
+    .action-icon:hover{
+      background-color: #D2DDEC;
+    }
+
+    input:checked + .action-icon{ 
+      border-color: $primary;
+      background-color: #7A95FB;
+    } 
+
+    .tooltiptext {
+      visibility: hidden;
+      font-size: 12px;
+      background-color: $black;
+      color: $white;
+      text-align: center;
+      padding: 5px 10px;
+      position: absolute;
+      border-radius: 15px;
+      margin-top:2px;
+      z-index: 1;
+      margin-left: -10px;
+    }
+
+    .tooltiptext::after {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent black transparent;
+    }
+    
+    .action-icon:hover + .tooltiptext {
+      visibility: visible;
+    }
+
+    input:checked + .action-icon:hover{
+      background-color: #3650AF;
+    }
 }
+

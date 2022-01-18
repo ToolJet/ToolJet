@@ -732,6 +732,7 @@ export const componentTypes = [
     events: [],
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      textAlign: { type: 'alignButtons', displayName: 'Align Text' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -748,7 +749,9 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        groupActions: { value: 'left' },
         textColor: { value: '#000' },
+        textAlign: { value: 'left' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
