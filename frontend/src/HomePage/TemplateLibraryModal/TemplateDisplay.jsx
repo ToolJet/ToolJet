@@ -1,15 +1,9 @@
 import React from 'react';
 import { Container, Row, Badge } from 'react-bootstrap';
-import { allSvgs } from '@tooljet/plugins/client';
+import { getSvgIcon } from '@/_helpers/appUtils';
 
 export default function TemplateDisplay(props) {
   const { id, name, description, sources } = props?.app ?? {};
-
-  const getSvgIcon = (key, height = 50, width = 50) => {
-    const Icon = allSvgs[key];
-
-    return <Icon style={{ height, width }} />;
-  };
 
   return (
     <div className="template-display">

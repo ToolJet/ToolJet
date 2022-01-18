@@ -13,6 +13,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '../Editor/Components/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
+import { allSvgs } from '@tooljet/plugins/client';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -715,3 +716,9 @@ export function computeComponentState(_ref, components) {
     defaultComponentStateComputed: true,
   });
 }
+
+export const getSvgIcon = (key, height = 50, width = 50) => {
+  const Icon = allSvgs[key];
+
+  return <Icon style={{ height, width }} />;
+};
