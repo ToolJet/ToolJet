@@ -3,7 +3,7 @@ import { datasourceService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { toast } from 'react-hot-toast';
-import { allSvgs } from '@tooljet/plugins/client';
+import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
 import {
   DataBaseSources,
@@ -166,12 +166,6 @@ class DataSourceManager extends React.Component {
     this.setState({ connectionTestError: data });
   };
 
-  getSvgIcon = (key, height = 50, width = 50) => {
-    const Icon = allSvgs[key];
-
-    return <Icon style={{ height, width }} />;
-  };
-
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
 
@@ -189,7 +183,7 @@ class DataSourceManager extends React.Component {
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
-                  {this.getSvgIcon(dataSourceMeta.kind.toLowerCase(), 35, 35)}
+                  {getSvgIcon(dataSourceMeta.kind.toLowerCase(), 35, 35)}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
                       type="text"
@@ -222,7 +216,7 @@ class DataSourceManager extends React.Component {
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
-                            {this.getSvgIcon(dataSource.kind.toLowerCase())}
+                            {getSvgIcon(dataSource.kind.toLowerCase())}
                             <br></br>
                             <br></br>
                             {dataSource.name}
@@ -239,7 +233,7 @@ class DataSourceManager extends React.Component {
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
-                            {this.getSvgIcon(dataSource.kind.toLowerCase())}
+                            {getSvgIcon(dataSource.kind.toLowerCase())}
                             <br></br>
                             <br></br>
                             {dataSource.name}
@@ -256,7 +250,7 @@ class DataSourceManager extends React.Component {
                       <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
                         <div className="card-body">
                           <center>
-                            {this.getSvgIcon(dataSource.kind.toLowerCase())}
+                            {getSvgIcon(dataSource.kind.toLowerCase())}
                             <br></br>
                             <br></br>
                             {dataSource.name}
