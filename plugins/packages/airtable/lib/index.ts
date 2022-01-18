@@ -14,7 +14,7 @@ export default class AirtableQueryService implements QueryService {
     const operation = queryOptions.operation;
     const baseId = queryOptions['base_id'];
     const tableName = queryOptions['table_name'];
-    const accessToken = sourceOptions['api_key'];
+    const apiKey = sourceOptions['api_key'];
 
     try {
       switch (operation) {
@@ -26,7 +26,7 @@ export default class AirtableQueryService implements QueryService {
             `https://api.airtable.com/v0/${baseId}/${tableName}/?pageSize=${pageSize || ''}&offset=${offset || ''}`,
             {
               method: 'get',
-              headers: this.authHeader(accessToken),
+              headers: this.authHeader(apiKey),
             }
           );
 
@@ -38,7 +38,7 @@ export default class AirtableQueryService implements QueryService {
           const recordId = queryOptions['record_id'];
 
           response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/${recordId}`, {
-            headers: this.authHeader(accessToken),
+            headers: this.authHeader(apiKey),
           });
 
           result = JSON.parse(response.body);
@@ -48,7 +48,7 @@ export default class AirtableQueryService implements QueryService {
         case 'update_record': {
           response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
             method: 'patch',
-            headers: this.authHeader(accessToken),
+            headers: this.authHeader(apiKey),
             json: {
               records: [
                 {
@@ -65,11 +65,9 @@ export default class AirtableQueryService implements QueryService {
         }
 
         case 'delete_record': {
-          const _recordId = queryOptions['record_id'];
-
-          response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/${_recordId}`, {
+          response = await got(`https://api.airtable.com/v0/${baseId}/${tableName}/${queryOptions['record_id']}`, {
             method: 'delete',
-            headers: this.authHeader(accessToken),
+            headers: this.authHeader(apiKey),
           });
           result = JSON.parse(response.body);
 
@@ -77,7 +75,7 @@ export default class AirtableQueryService implements QueryService {
         }
       }
     } catch (error) {
-      console.log(error.response);
+      console.log(error);
       throw new QueryError('Query could not be completed', error.message, {});
     }
 
