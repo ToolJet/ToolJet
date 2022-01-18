@@ -2,6 +2,22 @@ import React from 'react';
 import AppCard from './AppCard';
 
 const AppList = (props) => {
+
+  const basestyles = {
+    border: ' .5px solid #b4bbc6',
+    padding: '1rem',
+    borderRadius: '8px',
+    height: '155px',
+  };
+
+  const buttonBlock = {
+    height: '20px',
+    width: '60px',
+    backgroundColor: '#91a4f6',
+    marginTop:'1rem',
+    borderRadius: '4px',
+
+  };
   return (
     <div style={{ minHeight: '600px' }} className="app-list">
       {props.isLoading && (
@@ -10,10 +26,11 @@ const AppList = (props) => {
             <div className="row mb-4" key={rowIndex}>
               {Array.from(Array(5)).map((_, index) => (
                 <div className="col" key={rowIndex * 5 + index}>
-                  <div className="skeleton-line"></div>
-                  <div className="skeleton-line"></div>
-                  <div className="skeleton-line"></div>
-                  <div className="skeleton-line"></div>
+                  <div style={basestyles}>
+                    <div className="skeleton-line"></div>
+                    <div className="skeleton-line"></div>
+                    <div style={buttonBlock}></div>     
+                  </div>
                 </div>
               ))}
             </div>
