@@ -416,7 +416,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onSearchTextChanged',
     ].includes(eventName)
   ) {
-    toast('Event: ' + eventName);
     const { component } = options;
     executeActionsForEventId(_ref, eventName, component, mode);
   }
