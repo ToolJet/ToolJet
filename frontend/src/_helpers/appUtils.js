@@ -137,7 +137,6 @@ function setTablePageIndex(_ref, tabelId, index) {
   }
 
   const tableMeta = _ref.state.appDefinition.components[tabelId];
-  console.log('modalMeta', tableMeta);
 
   const newState = {
     currentState: {
