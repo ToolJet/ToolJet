@@ -84,7 +84,7 @@ export default function AppCard({
         }`}</div>
         <div className="app-creation-time" style={{ display: focused || appTitleHeight < 50 ? 'block' : 'none' }}>
           <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-            <span>{moment(app.created_at).fromNow(true)} ago {appTitleHeight}</span>
+            <span>{moment(app.created_at).fromNow(true)} ago</span>
           </ToolTip>
         </div>
       </div>
