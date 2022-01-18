@@ -1,11 +1,4 @@
 # `s3`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/aws-s3
 
-## Usage
-
-```
-const s3 = require('s3');
-
-// TODO: DEMONSTRATE API
-```

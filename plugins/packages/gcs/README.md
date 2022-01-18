@@ -1,11 +1,4 @@
 # `gcs`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/gcs
 
-## Usage
-
-```
-const gcs = require('gcs');
-
-// TODO: DEMONSTRATE API
-```
