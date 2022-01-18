@@ -151,7 +151,6 @@ function setTablePageIndex(_ref, tabelId, index) {
     },
   };
 
-  // _ref.setState(newState);
   _ref.setState(newState, () => onEvent(_ref, 'onPageChanged', tableMeta.component));
 
   return Promise.resolve();
