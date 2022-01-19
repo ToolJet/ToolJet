@@ -140,7 +140,6 @@ class Editor extends React.Component {
   };
 
   closeCreateVersionModalPrompt = () => {
-    console.log('called');
     this.setState({ showCreateVersionModalPrompt: false });
   };
 
