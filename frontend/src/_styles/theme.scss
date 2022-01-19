@@ -747,10 +747,16 @@ button {
   }
 
   .template-list {
+    padding-top: 16px;
+
     .template-search-box {
       input {
         border-radius: 0;
       }
+    }
+
+    .list-group-item.active {
+      color: $primary;
     }
   }
 }
