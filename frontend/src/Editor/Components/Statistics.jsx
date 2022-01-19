@@ -42,7 +42,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
         marginBottom: '0px'
     }
 
-    const percentageContainer = {
+    const secondaryContainerStyle = {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
@@ -63,7 +63,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
             <div>
                 <div className="d-flex flex-row ">
                     {secondarysigndisplay == 'positive' ? < img src='/assets/images/icons/widgets/upstatistics.svg' style={{ ...marginStyle, marginRight: '6.5px' }} /> : <img src='/assets/images/icons/widgets/downstatistics.svg' style={{ ...marginStyle, marginRight: '6.5px' }} />}
-                    <p style={{ ...marginStyle, ...percentageContainer }}>{secondaryvalue}</p>
+                    <p style={{ ...marginStyle, ...secondaryContainerStyle }}>{secondaryvalue}</p>
                 </div>
                 <p style={{ ...letterStyle, color: darkMode?'#FFFFFC' :SecondaryLabelColour,marginBottom:'12px' }}>{secondaryValueLabel}</p>
             </div>
