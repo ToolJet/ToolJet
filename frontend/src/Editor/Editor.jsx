@@ -13,7 +13,7 @@ import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
 import { Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
-import { SaveAndPreview } from './SaveAndPreview';
+import { ReleaseVersionButton } from './ReleaseVersionButton';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -39,6 +39,7 @@ import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { AppVersionsDropDown } from './AppVersionsDropdown';
 
 setAutoFreeze(false);
 enablePatches();
@@ -109,9 +110,14 @@ class Editor extends React.Component {
       initVersionName: null,
       isSavingEditingVersion: false,
       showSaveDetail: false,
+      hasAppDefinitionChanged: false,
+      showCreateNewVersionModal: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
+
+    // setup for closing versions dropdown on oustide click
+    this.wrapperRef = React.createRef();
   }
 
   componentDidMount() {
@@ -125,6 +131,13 @@ class Editor extends React.Component {
       selectedComponent: null,
     });
   }
+
+  isVersionReleased = (version = this.state.editingVersion.id) => {
+    if (isEmpty(this.state.editingVersion)) {
+      return false;
+    }
+    return this.state.app.current_version_id === version;
+  };
 
   onMouseMove = (e) => {
     const componentTop = Math.round(this.queryPaneRef.current.getBoundingClientRect().top);
@@ -346,7 +359,7 @@ class Editor extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition));
+    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), { skipAutoSave: true });
     this.setState({
       editingVersion: version,
     });
@@ -436,7 +449,7 @@ class Editor extends React.Component {
     }
   };
 
-  appDefinitionChanged = (newDefinition) => {
+  appDefinitionChanged = (newDefinition, opts = {}) => {
     produce(
       this.state.appDefinition,
       (draft) => {
@@ -445,7 +458,7 @@ class Editor extends React.Component {
       this.handleAddPatch
     );
     this.setState({ appDefinition: newDefinition }, () => {
-      this.autoSave();
+      if (!opts.skipAutoSave) this.autoSave();
     });
     computeComponentState(this, newDefinition.components);
   };
@@ -462,6 +475,12 @@ class Editor extends React.Component {
 
   handleSlugChange = (newSlug) => {
     this.setState({ slug: newSlug });
+  };
+
+  handleClickOutsideAppVersionsDropdown = (event) => {
+    if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
+      this.setState({ showAppVersionsDropdown: false });
+    }
   };
 
   removeComponent = (component) => {
@@ -720,7 +739,7 @@ class Editor extends React.Component {
     }));
   };
 
-  onVersionDeploy = (versionId) => {
+  onVersionRelease = (versionId) => {
     this.setState({
       app: {
         ...this.state.app,
@@ -790,11 +809,13 @@ class Editor extends React.Component {
   };
 
   saveEditingVersion = () => {
-    if (!isEmpty(this.state.editingVersion)) {
+    if (this.isVersionReleased()) {
+      this.setState({ showCreateNewVersionModal: true });
+    } else if (!isEmpty(this.state.editingVersion)) {
       this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
       appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
         this.setState({ isSavingEditingVersion: false });
-        setTimeout(() => this.setState({ showSaveDetail: false }), 5000);
+        setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
       });
     }
   };
@@ -869,6 +890,7 @@ class Editor extends React.Component {
       showInitVersionCreateModal,
       isSavingEditingVersion,
       showSaveDetail,
+      showCreateNewVersionModal,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -931,13 +953,30 @@ class Editor extends React.Component {
                     <em className="small lh-base p-1">{isSavingEditingVersion ? 'Auto Saving..' : 'Auto Saved'}</em>
                   </div>
                 )}
-                {this.state.editingVersion && (
-                  <small className="app-version-name">{`App version: ${this.state.editingVersion.name}`}</small>
+
+                {editingVersion && (
+                  <AppVersionsDropDown
+                    editingVersion={editingVersion}
+                    deployedVersionId={app.current_version_id}
+                    setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                    showCreateNewVersionModal={showCreateNewVersionModal}
+                  />
                 )}
+
                 <div className="layout-buttons cursor-pointer">
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
+                  <div className="nav-item dropdown d-none d-md-flex me-2">
+                    <a
+                      href={appLink}
+                      target="_blank"
+                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
+                      rel="noreferrer"
+                    >
+                      Preview
+                    </a>
+                  </div>
                   <div className="nav-item dropdown d-none d-md-flex me-2">
                     {app.id && (
                       <ManageAppUsers
@@ -948,27 +987,14 @@ class Editor extends React.Component {
                       />
                     )}
                   </div>
-                  <div className="nav-item dropdown d-none d-md-flex me-2">
-                    <a
-                      href={appLink}
-                      target="_blank"
-                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
-                      rel="noreferrer"
-                    >
-                      Launch
-                    </a>
-                  </div>
                   <div className="nav-item dropdown me-2">
                     {app.id && (
-                      <SaveAndPreview
+                      <ReleaseVersionButton
+                        isVersionReleased={this.isVersionReleased()}
                         appId={app.id}
                         appName={app.name}
-                        appDefinition={appDefinition}
-                        app={app}
-                        darkMode={this.props.darkMode}
-                        onVersionDeploy={this.onVersionDeploy}
-                        editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null}
-                        setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                        onVersionRelease={this.onVersionRelease}
+                        editingVersion={editingVersion}
                         fetchApp={this.fetchApp}
                       />
                     )}

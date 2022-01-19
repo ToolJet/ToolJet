@@ -575,7 +575,7 @@ button {
 }
 
   @media (min-height: 641px) and (max-height: 899px)
-  { 
+  {
     .homepage-pagination
     {
     position: fixed;
@@ -583,7 +583,7 @@ button {
     width: 63%;
    }
   }
-   @media (max-height: 640px) { 
+   @media (max-height: 640px) {
     .homepage-pagination{
     position: fixed;
     bottom: 2rem;
@@ -2945,15 +2945,36 @@ input[type="text"] {
   left: 50%;
 }
 
-.app-version-name {
+.app-version-menu {
   position: absolute;
   right: 220px;
-  color: $light-gray;
-  border: 1px solid $light-gray;
   padding: 4px 8px;
-  border-radius: 4px;
   min-width: 100px;
+  max-width: 300px;
+}
+
+.app-version-menu-sm {
+    height: 30px
+}
+
+.app-version-menu .dropdown-menu {
+  left: -50px;
+  width: 250px;
+}
+
+.app-version-menu .deployed {
+  color: #36AF8B;
+}
+
+.app-version-menu .deployed-subtext {
   font-size: 10px;
+  color: #36AF8B;
+}
+
+.app-version-menu .create-link{
+  margin: auto;
+  width: 50%;
+  padding-left: 10px;
 }
 
 .canvas-background-holder {
