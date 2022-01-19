@@ -2,7 +2,7 @@ import { QueryError, QueryResult,  QueryService } from 'common';
 import got, { Headers } from 'got'
 
 type SourceOptions = { 
-  api_key: string; 
+  access_token: string; 
 };
 
 export default class SlackQueryService implements QueryService {
@@ -54,7 +54,7 @@ export default class SlackQueryService implements QueryService {
     let result = {};
     let response = null;
     const operation = queryOptions.operation;
-    const accessToken = sourceOptions.api_key;
+    const accessToken = sourceOptions.access_token;
 
     try {
       switch (operation) {
