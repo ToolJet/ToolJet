@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SearchBox } from '@/_components/SearchBox';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
+import useMediaQuery from "./useMediaquery";
 
 export default function Header({
   folderName,
@@ -15,7 +16,7 @@ export default function Header({
 }) {
 
   const [bgColour, setBgColour] = useState("#ffffff")
-
+  
   const dropdownStyle = {
     minWidth: '11rem',
     display: 'flex',
@@ -34,6 +35,7 @@ export default function Header({
     border: '0',
     cursor: 'pointer',
   }
+  const matches = useMediaQuery("(min-width: 1600px)");
 
   return (
     <div className="row">
@@ -46,7 +48,7 @@ export default function Header({
         {canCreateApp() && (
           <>
             {canCreateApp() && (
-              <Dropdown as={ButtonGroup}>
+              <Dropdown as={ButtonGroup}  >
                 <Button
                   className={`btn btn-primary d-none d-lg-inline mb-3 ms-2 ${creatingApp ? 'btn-loading' : ''}`}
                   onClick={createApp}
@@ -54,11 +56,10 @@ export default function Header({
                   {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
                   Create new application
                 </Button>
-                <Dropdown.Toggle split className="btn btn-primary d-none d-lg-inline mb-3" />
-                <Dropdown.Menu>
+                <Dropdown.Toggle split className="btn btn-primary d-none d-lg-inline mb-3 " />
+                <Dropdown.Menu className={matches&&"import-lg-position"} >
                   <Dropdown.Item onClick={showTemplateLibraryModal}>Choose from template</Dropdown.Item>
-                  <label style={dropdownStyle} onChange={handleImportApp} onMouseEnter={() => setBgColour(" rgba(101, 109, 119, 0.06)")}
-                    onMouseLeave={() => setBgColour("#ffffff")}>
+                  <label style={dropdownStyle} onChange={handleImportApp} onMouseEnter={() => setBgColour("rgba(101, 109, 119, 0.06)")}>
                     Import
                     < input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
                   </label>
