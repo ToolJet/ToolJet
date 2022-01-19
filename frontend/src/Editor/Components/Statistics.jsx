@@ -27,7 +27,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
 
     const letterStyle = {
         fontSize: '14px',
-        marginTop: '12px', marginBottom: '0px',
+        marginTop: '12px', 
         fontWeight: '500',
     };
 
@@ -58,14 +58,14 @@ export const Statistics = function Statistics({ height, properties, styles, dark
 
     return (
         <div className="" style={baseStyle}>
-            <p style={{ ...letterStyle, color: darkMode?'#FFFFFC' :PrimaryLabelColour }}>{primaryValueLabel}</p>
+            <p style={{ ...letterStyle,...marginStyle, color: darkMode?'#FFFFFC' :PrimaryLabelColour, }}>{primaryValueLabel}</p>
             <h2 style={priceStyle} >{primaryvalue}</h2>
             <div>
                 <div className="d-flex flex-row ">
-                    {secondarysigndisplay == 'positive' ? < img src='../../../assets/images/icons/widgets/upstatics.svg' style={{ ...marginStyle, marginRight: '6.5px' }} /> : <img src='../../../assets/images/icons/widgets/downstatics.svg' style={{ ...marginStyle, marginRight: '6.5px' }} />}
+                    {secondarysigndisplay == 'positive' ? < img src='/assets/images/icons/widgets/upstatistics.svg' style={{ ...marginStyle, marginRight: '6.5px' }} /> : <img src='/assets/images/icons/widgets/downstatistics.svg' style={{ ...marginStyle, marginRight: '6.5px' }} />}
                     <p style={{ ...marginStyle, ...percentageContainer }}>{secondaryvalue}</p>
                 </div>
-                <p style={{ ...letterStyle, color: darkMode?'#FFFFFC' :SecondaryLabelColour }}>{secondaryValueLabel}</p>
+                <p style={{ ...letterStyle, color: darkMode?'#FFFFFC' :SecondaryLabelColour,marginBottom:'12px' }}>{secondaryValueLabel}</p>
             </div>
         </div>
     );
