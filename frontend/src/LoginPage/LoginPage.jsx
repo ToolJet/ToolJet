@@ -65,7 +65,11 @@ class LoginPage extends React.Component {
     this.setState({ isLoading: false });
   };
 
-  authFailureHandler = () => {
+  authFailureHandler = (error) => {
+    if (error?.error === 'idpiframe_initialization_failed') {
+      //Error thrown by google on load
+      return this.setState({ isLoading: false });
+    }
     toast.error('Invalid email or password', {
       id: 'toast-login-auth-error',
       position: 'top-center',
