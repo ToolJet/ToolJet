@@ -270,3 +270,12 @@ export async function executeMultilineJS(currentState, code) {
 
   return result;
 }
+
+export const isJson = (str) => {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};

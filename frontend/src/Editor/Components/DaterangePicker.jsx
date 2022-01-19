@@ -26,11 +26,11 @@ export const DaterangePicker = function DaterangePicker({
     const end = dates.endDate;
 
     if (start) {
-      setExposedVariable('startDate', start.format(formatProp.value));
+      setExposedVariable('startDate', start.format(formatProp));
     }
 
     if (end) {
-      setExposedVariable('endDate', end.format(formatProp.value));
+      setExposedVariable('endDate', end.format(formatProp));
     }
 
     setStartDate(start);
@@ -54,6 +54,7 @@ export const DaterangePicker = function DaterangePicker({
         onFocusChange={(focus) => focusChanged(focus)}
         focusedInput={focusedInput}
         hideKeyboardShortcutsPanel={true}
+        displayFormat={formatProp}
       />
     </div>
   );
