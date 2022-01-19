@@ -26,7 +26,7 @@ spec:
           args: ["npm", "run", "start:prod"]
           resources:
             limits:
-              memory: "3001Mi"
+              memory: "3000Mi"
               cpu: "500m"
             requests:
               memory: "3000Mi"
@@ -50,7 +50,9 @@ spec:
               value: "sentry"
             - name: SERVER_IP
               value: "3.129.198.40"
-            - name: GOOGLE_MAPS_API_KEY  
+            - name: SERVE_CLIENT
+              value: "false"
+            - name: GOOGLE_MAPS_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: optional
