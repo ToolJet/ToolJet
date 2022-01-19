@@ -39,7 +39,7 @@ import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { AppVersionsDropDown } from './AppVersionsDropdown';
+import { AppVersionsManager } from './AppVersionsManager';
 
 setAutoFreeze(false);
 enablePatches();
@@ -111,7 +111,7 @@ class Editor extends React.Component {
       isSavingEditingVersion: false,
       showSaveDetail: false,
       hasAppDefinitionChanged: false,
-      showCreateNewVersionModal: false,
+      showCreateVersionModalPrompt: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -132,11 +132,16 @@ class Editor extends React.Component {
     });
   }
 
-  isVersionReleased = (version = this.state.editingVersion.id) => {
-    if (isEmpty(this.state.editingVersion)) {
+  isVersionReleased = (version = this.state.editingVersion) => {
+    if (isEmpty(version)) {
       return false;
     }
-    return this.state.app.current_version_id === version;
+    return this.state.app.current_version_id === version.id;
+  };
+
+  closeCreateVersionModalPrompt = () => {
+    console.log('called');
+    this.setState({ showCreateVersionModalPrompt: false });
   };
 
   onMouseMove = (e) => {
@@ -484,21 +489,23 @@ class Editor extends React.Component {
   };
 
   removeComponent = (component) => {
-    let newDefinition = cloneDeep(this.state.appDefinition);
-    // Delete child components when parent is deleted
-    const childComponents = Object.keys(newDefinition.components).filter(
-      (key) => newDefinition.components[key].parent === component.id
-    );
-    childComponents.forEach((componentId) => {
-      delete newDefinition.components[componentId];
-    });
+    if (!this.isVersionReleased()) {
+      let newDefinition = cloneDeep(this.state.appDefinition);
+      // Delete child components when parent is deleted
+      const childComponents = Object.keys(newDefinition.components).filter(
+        (key) => newDefinition.components[key].parent === component.id
+      );
+      childComponents.forEach((componentId) => {
+        delete newDefinition.components[componentId];
+      });
 
-    delete newDefinition.components[component.id];
-    toast('Component deleted! (⌘Z to undo)', {
-      icon: '🗑️',
-    });
-    this.appDefinitionChanged(newDefinition);
-    this.handleInspectorView(component);
+      delete newDefinition.components[component.id];
+      toast('Component deleted! (⌘Z to undo)', {
+        icon: '🗑️',
+      });
+      this.appDefinitionChanged(newDefinition, { skipAutoSave: this.isReleased() });
+      this.handleInspectorView(component);
+    }
   };
 
   componentDefinitionChanged = (componentDefinition) => {
@@ -810,7 +817,7 @@ class Editor extends React.Component {
 
   saveEditingVersion = () => {
     if (this.isVersionReleased()) {
-      this.setState({ showCreateNewVersionModal: true });
+      this.setState({ showCreateVersionModalPrompt: true });
     } else if (!isEmpty(this.state.editingVersion)) {
       this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
       appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
@@ -890,7 +897,7 @@ class Editor extends React.Component {
       showInitVersionCreateModal,
       isSavingEditingVersion,
       showSaveDetail,
-      showCreateNewVersionModal,
+      showCreateVersionModalPrompt,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -955,11 +962,12 @@ class Editor extends React.Component {
                 )}
 
                 {editingVersion && (
-                  <AppVersionsDropDown
+                  <AppVersionsManager
                     editingVersion={editingVersion}
                     deployedVersionId={app.current_version_id}
                     setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-                    showCreateNewVersionModal={showCreateNewVersionModal}
+                    showCreateVersionModalPrompt={showCreateVersionModalPrompt}
+                    closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
                   />
                 )}
 

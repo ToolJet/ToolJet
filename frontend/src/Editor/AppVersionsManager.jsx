@@ -1,40 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Modal from '../HomePage/Modal';
 import { toast } from 'react-hot-toast';
 import { appVersionService } from '@/_services';
 
-export const AppVersionsDropDown = function AppVersionsDropDown({
+export const AppVersionsManager = function AppVersionsManager({
   editingVersion,
   deployedVersionId,
   setAppDefinitionFromVersion,
-  showCreateNewVersionModal,
+  showCreateVersionModalPrompt,
+  closeCreateVersionModalPrompt,
 }) {
   const [showDropDown, setShowDropDown] = useState(false);
-  const [showModal, setShowModal] = useState(showCreateNewVersionModal);
+  const [showModal, setShowModal] = useState(showCreateVersionModalPrompt);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [editingAppVersion, setEditingAppVersion] = useState(editingVersion);
   const [versionName, setVersionName] = useState('');
   const [appVersions, setAppVersions] = useState([]);
   const [createAppVersionFrom, setCreateAppVersionFrom] = useState(editingAppVersion);
-  console.log({ showModal, showCreateNewVersionModal });
 
   useEffect(() => {
-    const latestVersion = appVersions.at(0);
-    setCreateAppVersionFrom(latestVersion);
+    setCreateAppVersionFrom(editingAppVersion);
   }, [appVersions]);
-
-  useEffect(() => {
-    setShowModal(showCreateNewVersionModal);
-  }, [showCreateNewVersionModal]);
 
   useEffect(() => {
     appVersionService.getAll(editingAppVersion.app_id).then((data) => {
       setAppVersions(data.versions);
-      const latestVersion = appVersions.at(0);
-
-      setCreateAppVersionFrom(latestVersion);
     });
   }, []);
+
+  const wrapperRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setShowDropDown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [wrapperRef]);
+
+  const closeModal = () => {
+    setShowModal(false);
+    closeCreateVersionModalPrompt();
+  };
 
   const createVersion = (versionName, createAppVersionFrom) => {
     if (versionName.trim() !== '') {
@@ -72,7 +83,7 @@ export const AppVersionsDropDown = function AppVersionsDropDown({
   };
 
   return (
-    <div className="input-group app-version-menu">
+    <div ref={wrapperRef} className="input-group app-version-menu">
       <span className="input-group-text app-version-menu-sm">App Version</span>
       <span
         className={`app-version-name form-select app-version-menu-sm ${appVersions ? '' : 'disabled'}`}
@@ -81,7 +92,7 @@ export const AppVersionsDropDown = function AppVersionsDropDown({
         }}
       >
         <span className={`mb-1 ${deployedVersionId === editingAppVersion.id ? 'deployed' : ''}`}>
-          <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
+          {deployedVersionId === editingAppVersion.id && <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />}
           <span>{editingAppVersion.name}</span>
         </span>
         {showDropDown && (
@@ -109,7 +120,7 @@ export const AppVersionsDropDown = function AppVersionsDropDown({
         )}
         <CreateVersionModal
           showModal={showModal}
-          setShowModal={setShowModal}
+          setShowModal={closeModal}
           versionName={versionName}
           setVersionName={setVersionName}
           createAppVersionFrom={createAppVersionFrom}
@@ -117,6 +128,7 @@ export const AppVersionsDropDown = function AppVersionsDropDown({
           createVersion={createVersion}
           isCreatingVersion={isCreatingVersion}
           appVersions={appVersions}
+          showCreateVersionModalPrompt={showCreateVersionModalPrompt}
         />
       </span>
     </div>
@@ -133,9 +145,10 @@ const CreateVersionModal = function CreateVersionModal({
   createVersion,
   isCreatingVersion,
   appVersions,
+  showCreateVersionModalPrompt,
 }) {
   return (
-    <Modal show={showModal} setShow={setShowModal} title="Create Version">
+    <Modal show={showModal || showCreateVersionModalPrompt} setShow={setShowModal} title="Create Version">
       <div className="mb-3">
         <div className="col">
           <label className="form-label">Version Name</label>
@@ -161,6 +174,13 @@ const CreateVersionModal = function CreateVersionModal({
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="mb-3">
+        <pre className="highlight">
+          This version is already released. Kindly create a new version or switch to a different version to continue
+          making changes.
+        </pre>
       </div>
 
       <div className="mb-3">
