@@ -20,7 +20,7 @@ export class AuthService {
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
     private auditLoggerService: AuditLoggerService
-  ) {}
+  ) { }
 
   verifyToken(token: string) {
     try {
@@ -96,7 +96,7 @@ export class AuthService {
       actionType: ActionTypes.USER_SIGNUP,
     });
 
-    return user;
+    return {};
   }
 
   async forgotPassword(email: string) {
