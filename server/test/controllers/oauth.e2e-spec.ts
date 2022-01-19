@@ -33,7 +33,7 @@ describe('oauth controller', () => {
 
       const token = ['someStuff'];
 
-      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token });
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token, origin: 'google' });
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
@@ -94,7 +94,7 @@ describe('oauth controller', () => {
 
       const token = ['someStuff'];
 
-      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token });
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token, origin: 'google' });
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
@@ -127,7 +127,7 @@ describe('oauth controller', () => {
 
       const token = ['someStuff'];
 
-      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token });
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token, origin: 'google' });
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
