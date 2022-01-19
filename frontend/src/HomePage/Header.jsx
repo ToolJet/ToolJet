@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SearchBox } from '@/_components/SearchBox';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 
@@ -14,31 +14,27 @@ export default function Header({
   fileInput,
 }) {
 
-  const dropdownStyle={
+  const [bgColour, setBgColour] = useState("#ffffff")
+
+  const dropdownStyle = {
     minWidth: '11rem',
     display: 'flex',
     alignItems: 'center',
     margin: 0,
-    lineHeight:' 1.4285714',
+    lineHeight: ' 1.4285714',
     display: 'block',
     width: '100%',
-    padding:' 0.5rem 0.75rem',
+    padding: ' 0.5rem 0.75rem',
     clear: 'both',
     fontWeight: '400',
     color: 'inherit',
     textAlign: 'inherit',
     whiteSpace: 'nowrap',
-    // backgroundColor: 'transparent',
+    background: `${bgColour}`,
     border: '0',
-    cursor:'pointer',
-    backgroundColor: {
-      default: 'white',
-      hover: 'red',
-      active: 'navy',
-      focus: 'white',
-     },
+    cursor: 'pointer',
   }
-  
+
   return (
     <div className="row">
       <div className="col-4">
@@ -61,9 +57,10 @@ export default function Header({
                 <Dropdown.Toggle split className="btn btn-primary d-none d-lg-inline mb-3" />
                 <Dropdown.Menu>
                   <Dropdown.Item onClick={showTemplateLibraryModal}>Choose from template</Dropdown.Item>
-                  <label style={dropdownStyle} onChange={handleImportApp}>  
+                  <label style={dropdownStyle} onChange={handleImportApp} onMouseEnter={() => setBgColour(" rgba(101, 109, 119, 0.06)")}
+                    onMouseLeave={() => setBgColour("#ffffff")}>
                     Import
-                    < input type="file" accept=".json" ref={fileInput} style={{ display: 'none', zIndex: '100' }} />
+                    < input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
                   </label>
                 </Dropdown.Menu>
               </Dropdown>
