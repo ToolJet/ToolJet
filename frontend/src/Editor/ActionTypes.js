@@ -63,7 +63,7 @@ export const ActionTypes = [
         type: 'text',
         default: '',
       },
-      { name: 'pageIndex', type: 'text', default: '1' },
+      { name: 'pageIndex', type: 'text', default: '{{1}}' },
     ],
   },
 ];

@@ -362,7 +362,7 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       currentState={currentState}
-                      initialValue={event.pageIndex ?? '1'}
+                      initialValue={event.pageIndex ?? '{{1}}'}
                       onChange={(value) => handlerChanged(index, 'pageIndex', value)}
                       enablePreview={true}
                       usePortalEditor={false}

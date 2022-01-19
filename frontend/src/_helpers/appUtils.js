@@ -138,6 +138,7 @@ function setTablePageIndex(_ref, tabelId, index) {
 
   const tableMeta = _ref.state.appDefinition.components[tabelId];
 
+  const newPageIndex = resolveReferences(index, _ref.state.currentState);
   const newState = {
     currentState: {
       ..._ref.state.currentState,
@@ -145,13 +146,15 @@ function setTablePageIndex(_ref, tabelId, index) {
         ..._ref.state.currentState.components,
         [tableMeta.component.name]: {
           ..._ref.state.currentState.components[tableMeta.component.name],
-          pageIndex: parseInt(index),
+          pageIndex: resolveReferences(index, _ref.state.currentState),
         },
       },
     },
   };
 
-  _ref.setState(newState, () => onEvent(_ref, 'onPageChanged', tableMeta.component));
+  const existingPageIndex = _ref.state.currentState.components[tableMeta.component.name].pageIndex;
+  if (newPageIndex != existingPageIndex)
+    _ref.setState(newState, () => onEvent(_ref, 'onPageChanged', { component: tableMeta.component }));
 
   return Promise.resolve();
 }

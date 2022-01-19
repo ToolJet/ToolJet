@@ -784,7 +784,7 @@ export function Table({
 
   useEffect(() => {
     if (componentState?.pageIndex !== pageIndex && !serverSidePagination) {
-      gotoPage(parseInt(componentState?.pageIndex) - 1);
+      gotoPage(componentState?.pageIndex - 1);
     }
   }, [componentState.pageIndex]);
 
