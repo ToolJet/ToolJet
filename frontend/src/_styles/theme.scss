@@ -650,7 +650,12 @@ button {
         font-weight: 500;
         color: #000000;
         overflow: hidden;
-        max-height: 60px;
+        max-height: 40px;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* number of lines to show */
+        line-clamp: 2; 
+        -webkit-box-orient: vertical;
       }
 
       button {
@@ -700,8 +705,8 @@ button {
 
       .app-title {
         height: 20px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
+        -webkit-line-clamp: 1; /* number of lines to show */
+        line-clamp: 1; 
       }
     }
   }
