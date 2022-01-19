@@ -117,7 +117,7 @@ export async function createUser(
     organization ||
     (await organizationRepository.save(
       organizationRepository.create({
-        name: 'test org',
+        name: 'Test Organization',
         createdAt: new Date(),
         updatedAt: new Date(),
       })

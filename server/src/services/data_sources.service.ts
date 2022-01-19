@@ -106,7 +106,7 @@ export class DataSourcesService {
     const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
     if (findOption(options, 'oauth2') && findOption(options, 'code')) {
-      const provider = findOption(options, 'oauth2')['value'];
+      const provider = findOption(options, 'provider')['value'];
       const authCode = findOption(options, 'code')['value'];
 
       const plugins = await allPlugins;
