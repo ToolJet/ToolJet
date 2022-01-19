@@ -6,7 +6,7 @@ import { appVersionService } from '@/_services';
 export const AppVersionsManager = function AppVersionsManager({
   appId,
   editingVersion,
-  deployedVersionId,
+  releasedVersionId,
   setAppDefinitionFromVersion,
   showCreateVersionModalPrompt,
   closeCreateVersionModalPrompt,
@@ -92,19 +92,19 @@ export const AppVersionsManager = function AppVersionsManager({
           setShowDropDown(!showDropDown);
         }}
       >
-        <span className={`${deployedVersionId === editingAppVersion.id ? 'deployed' : ''}`}>
-          {deployedVersionId === editingAppVersion.id && <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />}
+        <span className={`${releasedVersionId === editingAppVersion.id ? 'released' : ''}`}>
+          {releasedVersionId === editingAppVersion.id && <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />}
           <span className="px-1">{editingAppVersion.name}</span>
         </span>
         {showDropDown && (
           <div className="dropdown-menu show">
             {appVersions.map((version) =>
-              deployedVersionId == version.id ? (
-                <div className="row dropdown-item deployed" key={version.id} onClick={() => selectVersion(version)}>
+              releasedVersionId == version.id ? (
+                <div className="row dropdown-item released" key={version.id} onClick={() => selectVersion(version)}>
                   {version.name}
-                  <div className="deployed-subtext">
+                  <div className="released-subtext">
                     <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
-                    <span className="px-1">Currently Deployed</span>
+                    <span className="px-1">Currently Released</span>
                   </div>
                 </div>
               ) : (

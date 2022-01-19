@@ -822,7 +822,6 @@ class Editor extends React.Component {
       this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
       appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
         this.setState({ isSavingEditingVersion: false });
-        setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
       });
     }
   };
@@ -963,9 +962,9 @@ class Editor extends React.Component {
 
                 {editingVersion && (
                   <AppVersionsManager
-                    appId={editingVersion.app_id}
+                    appId={appId}
                     editingVersion={editingVersion}
-                    deployedVersionId={app.current_version_id}
+                    releasedVersionId={app.current_version_id}
                     setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
                     showCreateVersionModalPrompt={showCreateVersionModalPrompt}
                     closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
