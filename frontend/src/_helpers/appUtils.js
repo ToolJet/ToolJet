@@ -227,6 +227,10 @@ function executeAction(_ref, event, mode) {
         generateFile(fileName, csv);
         return Promise.resolve();
       }
+
+      case 'set-table-page': {
+        setTablePageIndex(_ref, event.table, event.pageIndex);
+      }
     }
   }
 }
@@ -667,6 +671,35 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
         });
     });
   });
+}
+
+function setTablePageIndex(_ref, tabelId, index) {
+  if (_.isEmpty(tabelId)) {
+    console.log('No table is associated with this event.');
+    return Promise.resolve();
+  }
+
+  const tableMeta = _ref.state.appDefinition.components[tabelId];
+
+  const newPageIndex = resolveReferences(index, _ref.state.currentState);
+  const newState = {
+    currentState: {
+      ..._ref.state.currentState,
+      components: {
+        ..._ref.state.currentState.components,
+        [tableMeta.component.name]: {
+          ..._ref.state.currentState.components[tableMeta.component.name],
+          pageIndex: resolveReferences(index, _ref.state.currentState),
+        },
+      },
+    },
+  };
+
+  const existingPageIndex = _ref.state.currentState.components[tableMeta.component.name].pageIndex;
+  if (newPageIndex != existingPageIndex)
+    _ref.setState(newState, () => onEvent(_ref, 'onPageChanged', { component: tableMeta.component }));
+
+  return Promise.resolve();
 }
 
 export function renderTooltip({ props, text }) {
