@@ -35,7 +35,7 @@ export default function Header({
     border: '0',
     cursor: 'pointer',
   }
-  const matches = useMediaQuery("(min-width: 1600px)");
+  const matches = useMediaQuery("(min-width: 1699px)");
 
   return (
     <div className="row">
