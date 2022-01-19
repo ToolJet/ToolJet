@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { appVersionService } from '@/_services';
 
 export const AppVersionsManager = function AppVersionsManager({
+  appId,
   editingVersion,
   deployedVersionId,
   setAppDefinitionFromVersion,
@@ -23,7 +24,7 @@ export const AppVersionsManager = function AppVersionsManager({
   }, [appVersions]);
 
   useEffect(() => {
-    appVersionService.getAll(editingAppVersion.app_id).then((data) => {
+    appVersionService.getAll(appId).then((data) => {
       setAppVersions(data.versions);
     });
   }, []);
@@ -51,12 +52,12 @@ export const AppVersionsManager = function AppVersionsManager({
     if (versionName.trim() !== '') {
       setIsCreatingVersion(true);
       appVersionService
-        .create(createAppVersionFrom.appId, versionName, createAppVersionFrom.id)
+        .create(appId, versionName, createAppVersionFrom.id)
         .then(() => {
           setShowModal(false);
           toast.success('Version Created');
 
-          appVersionService.getAll(createAppVersionFrom.appId).then((data) => {
+          appVersionService.getAll(appId).then((data) => {
             setAppVersions(data.versions);
 
             const latestVersion = data.versions.at(0);
@@ -91,9 +92,9 @@ export const AppVersionsManager = function AppVersionsManager({
           setShowDropDown(!showDropDown);
         }}
       >
-        <span className={`mb-1 ${deployedVersionId === editingAppVersion.id ? 'deployed' : ''}`}>
+        <span className={`${deployedVersionId === editingAppVersion.id ? 'deployed' : ''}`}>
           {deployedVersionId === editingAppVersion.id && <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />}
-          <span>{editingAppVersion.name}</span>
+          <span className="px-1">{editingAppVersion.name}</span>
         </span>
         {showDropDown && (
           <div className="dropdown-menu show">
@@ -103,7 +104,7 @@ export const AppVersionsManager = function AppVersionsManager({
                   {version.name}
                   <div className="deployed-subtext">
                     <img src={'/assets/images/icons/editor/deploy-rocket.svg'} />
-                    Currently Deployed
+                    <span className="px-1">Currently Deployed</span>
                   </div>
                 </div>
               ) : (
@@ -176,12 +177,27 @@ const CreateVersionModal = function CreateVersionModal({
         </div>
       </div>
 
-      <div className="mb-3">
-        <pre className="highlight">
-          This version is already released. Kindly create a new version or switch to a different version to continue
-          making changes.
-        </pre>
-      </div>
+      {showCreateVersionModalPrompt && (
+        <div className="mb-3">
+          <div className="light border rounded">
+            <div className="container">
+              <div className="row py-3">
+                <div className="col-1 py-2">
+                  <span className="pe-1">
+                    <img src={'/assets/images/icons/editor/bulb-sharp.svg'} />
+                  </span>
+                </div>
+                <div className="col">
+                  <span>
+                    Version already released. Kindly create a new version or switch to a different version to continue
+                    making changes.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mb-3">
         <div className="col d-flex modal-footer-btn">

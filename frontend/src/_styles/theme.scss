@@ -2954,12 +2954,14 @@ input[type="text"] {
 }
 
 .app-version-menu-sm {
-    height: 30px
+  height: 30px;
+  display: inline-block;
+  font-size: 12px;
 }
 
 .app-version-menu .dropdown-menu {
-  left: -50px;
-  width: 250px;
+  left: -90px;
+  width: 283px;
 }
 
 .app-version-menu .deployed {
@@ -2967,8 +2969,9 @@ input[type="text"] {
 }
 
 .app-version-menu .deployed-subtext {
-  font-size: 10px;
+  font-size: 12px;
   color: #36AF8B;
+  padding: 0;
 }
 
 .app-version-menu .create-link{

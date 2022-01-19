@@ -503,7 +503,7 @@ class Editor extends React.Component {
       toast('Component deleted! (⌘Z to undo)', {
         icon: '🗑️',
       });
-      this.appDefinitionChanged(newDefinition, { skipAutoSave: this.isReleased() });
+      this.appDefinitionChanged(newDefinition, { skipAutoSave: this.isVersionReleased() });
       this.handleInspectorView(component);
     }
   };
@@ -963,6 +963,7 @@ class Editor extends React.Component {
 
                 {editingVersion && (
                   <AppVersionsManager
+                    appId={editingVersion.app_id}
                     editingVersion={editingVersion}
                     deployedVersionId={app.current_version_id}
                     setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
