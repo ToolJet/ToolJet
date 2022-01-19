@@ -224,7 +224,6 @@ let QueryManager = class QueryManager extends React.Component {
                 style={{
                   margin: 'auto',
                   marginRight: '3px',
-                  filter: this.props.darkMode ? 'brightness(0) invert(1)' : '',
                 }}
                 height="25"
                 width="25"

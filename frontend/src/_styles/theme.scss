@@ -1156,15 +1156,6 @@ button {
 }
 
 /**
- * Options wrapper
- *
-.select-search-dark__select {
-  background: #fff;
-  box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.15);
-}
-*/
-
-/**
  * Options
  */
 .select-search-dark__options {
@@ -1202,23 +1193,6 @@ button {
 .select-search-dark--multiple .select-search-dark__option {
   height: 48px;
 }
-
-/**
-*
-.select-search-dark__option.is-highlighted,
-.select-search-dark__option:not(.is-selected):hover {
-  background: rgba(47, 204, 139, 0.1);
-}
-*/
-
-/**
-*
-.select-search-dark__option.is-highlighted.is-selected,
-.select-search-dark__option.is-selected:hover {
-  background: #2eb378;
-  color: #fff;
-}
-*/
 
 /**
  * Group
