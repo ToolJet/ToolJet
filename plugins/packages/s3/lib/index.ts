@@ -1,12 +1,7 @@
 import { getObject, uploadObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
 import { S3Client } from '@aws-sdk/client-s3';
 import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from 'common';
-
-type SourceOptions = { 
-  access_key: string; 
-  secret_key: string; 
-  region: string; 
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class S3QueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {

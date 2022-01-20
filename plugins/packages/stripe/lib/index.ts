@@ -1,9 +1,6 @@
 import { QueryError, QueryResult,  QueryService } from 'common';
 import got, { Headers } from 'got'
-
-type SourceOptions = { 
-  api_key: string; 
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class StripeQueryService implements QueryService {
   authHeader(token: string): Headers {

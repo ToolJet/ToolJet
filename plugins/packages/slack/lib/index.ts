@@ -1,9 +1,6 @@
 import { QueryError, QueryResult,  QueryService } from 'common';
 import got, { Headers } from 'got'
-
-type SourceOptions = { 
-  access_token: string; 
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class SlackQueryService implements QueryService {
   authUrl(): string {

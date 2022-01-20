@@ -1,15 +1,7 @@
 import { ConnectionTestResult, cacheConnection, getCachedConnection, QueryService, QueryResult } from 'common';
 
 const { Pool } = require('pg');
-
-type SourceOptions = { 
-  database: string; 
-  host: string; 
-  port: string; 
-  username: string;
-  password: string;
-  ssl_enabled: boolean; 
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;

@@ -7,14 +7,7 @@ import {
   cacheConnection,
   getCachedConnection 
 } from 'common';
-
-type SourceOptions = {
-  database: string; 
-  host: string;
-  port: string;
-  username: string;
-  password: string;
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;

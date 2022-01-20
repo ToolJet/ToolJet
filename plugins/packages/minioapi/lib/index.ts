@@ -1,8 +1,7 @@
 import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from 'common';
 import { Client as MinioClient, ClientOptions } from 'minio';
 import { getObject, uploadObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
-
-type SourceOptions = { host: string; port: string; ssl_enabled: string; access_key: string; secret_key: string; };
+import { SourceOptions, QueryOptions } from './types'
 
 export default class MinioService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any, _dataSourceId: string): Promise<QueryResult> {

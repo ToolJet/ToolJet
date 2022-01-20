@@ -2,13 +2,7 @@
 import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from 'common';
 
 const Redis = require('ioredis');
-
-type SourceOptions = { 
-  host: string; 
-  port: string; 
-  username: string;
-  password: string;
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class RedisQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {

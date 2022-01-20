@@ -10,8 +10,7 @@ import {
   updateDocument,
 } from './operations';
 const { Firestore } = require('@google-cloud/firestore');
-
-type SourceOptions = { gcp_key: string; };
+import { SourceOptions, QueryOptions } from './types'
 
 export default class FirestoreQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {

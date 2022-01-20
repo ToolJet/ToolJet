@@ -2,15 +2,7 @@ import { QueryResult, QueryService, QueryError, ConnectionTestResult } from 'com
 const { MongoClient } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
-
-type SourceOptions = { 
-  connection_type: string; 
-  database: string; 
-  host: string; 
-  port: string; 
-  username: string; 
-  password: string; 
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class MongodbService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {

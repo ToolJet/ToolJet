@@ -1,14 +1,6 @@
 import { Knex, knex } from 'knex';
 import { cacheConnection, getCachedConnection, ConnectionTestResult, QueryService, QueryResult } from 'common';
-
-type SourceOptions = { 
-  database: string; 
-  host: string; 
-  port: string; 
-  username: string;
-  password: string;
-  ssl_enabled: boolean; 
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class MysqlQueryService implements QueryService {
   private static _instance: MysqlQueryService;

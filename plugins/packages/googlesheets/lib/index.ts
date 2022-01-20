@@ -3,8 +3,7 @@ import { QueryError, QueryResult,  QueryService } from 'common';
 
 import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
 import got, { Headers } from 'got'
-
-type SourceOptions = { access_token: string; };
+import { SourceOptions, QueryOptions } from './types'
 
 export default class GooglesheetsQueryService implements QueryService {
   authUrl(): string {
