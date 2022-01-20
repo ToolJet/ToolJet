@@ -228,6 +228,12 @@
     .card:hover {
       background-color: #f8f8f8;
     }
+
+    .empty {
+      position: relative;
+      margin-top: 100px;
+      width: 524px!important;
+    }
   }
 
   .modal-searchbar {
@@ -252,7 +258,6 @@
 
   .empty-search {
     width: 420px;
-    margin-left: 4rem;
   }
 }
 
@@ -312,16 +317,19 @@
     width: 242px!important;
     height: 71px;
     background-color: #FFFFFC;
-    padding: 24px!important;
+    padding: 16px 24px!important;
     position: absolute;
     left: 0;
     bottom: 0;
 
     p {
-        font-weight: 500;
+      margin: 0;
+      .footer-text {
+        font-weight: 300;
         font-size: 12px;
         line-height: 15px;
-        color: #c5c5c5;
+        color: #8092AB;
+      }
     }
   }
 }
@@ -356,6 +364,7 @@
   text-decoration: underline;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500;
   line-height: 17px;
   color: $primary;
 }
@@ -374,3 +383,16 @@
 .close-btn.dark {
   filter: brightness(0) invert(1);
 } 
+
+.suggestion-container {
+  h4 {
+    margin-top: 2rem;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 22px;
+  }
+  .suggestingDatasourcesWrapper {
+    position: absolute;
+    left: 0;
+  }
+}

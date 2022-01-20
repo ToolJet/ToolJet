@@ -205,7 +205,7 @@ class DataSourceManager extends React.Component {
   segregateDataSources = (suggestingDatasources, darkMode) => {
     const datasources = this.datasourcesGroups();
 
-    const hanndleOnSelect = (activekey) => {
+    const handleOnSelect = (activekey) => {
       if (suggestingDatasources) {
         this.setState({ suggestingDatasources: false });
       }
@@ -219,18 +219,21 @@ class DataSourceManager extends React.Component {
 
     const datasourceSuggestionUI = () => {
       return (
-        <EmptyStateContainer
-          queryString={this.state.queryString}
-          handleBackToAllDatasources={goBacktoAllDatasources}
-          darkMode={this.props.darkMode}
-          placeholder={'Tell us your database'}
-        />
+        <div className="empty-state-wrapper suggestingDatasourcesWrapper">
+          <EmptyStateContainer
+            suggestionUI={true}
+            queryString={this.state.queryString}
+            handleBackToAllDatasources={goBacktoAllDatasources}
+            darkMode={this.props.darkMode}
+            placeholder={'Suggest an integration'}
+          />
+        </div>
       );
     };
 
     return (
       <Tab.Container
-        onSelect={(activekey) => hanndleOnSelect(activekey)}
+        onSelect={(activekey) => handleOnSelect(activekey)}
         id="list-group-tabs-example"
         defaultActiveKey={this.state.activeDatasourceList}
       >
@@ -242,8 +245,8 @@ class DataSourceManager extends React.Component {
             <div className="selected-datasource-list-content">
               <Tab.Content>
                 {suggestingDatasources ? (
-                  <div className="suggestingDatasourcesWrapper row">
-                    <h4 className="mb-2 justify-content-start">Suggest Datasource</h4>
+                  <div className="suggestion-container">
+                    <h4 className="justify-content-start">Suggest Datasource</h4>
                     {datasourceSuggestionUI()}
                   </div>
                 ) : (
@@ -331,7 +334,7 @@ class DataSourceManager extends React.Component {
         </ListGroup>
         <div className="datasource-modal-sidebar-footer">
           <p>
-            Can&apos;t find yours
+            <span className="footer-text">Don&apos;t see what you were looking for?</span>
             <br />
             <span className="link-span" onClick={updateSuggestionState}>
               Suggest
@@ -465,7 +468,6 @@ class DataSourceManager extends React.Component {
     }
 
     const datasources = source.map((datasource) => {
-      console.log('__svg__', datasource.kind.toLowerCase());
       return {
         ...datasource,
         src: datasource.kind.toLowerCase(),
@@ -492,12 +494,6 @@ class DataSourceManager extends React.Component {
       </>
     );
   };
-
-  // getSvgIcon = (key, height = 50, width = 50) => {
-  //   const Icon = allSvgs[key];
-
-  //   return <Icon style={{ height, width }} />;
-  // };
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
@@ -672,7 +668,13 @@ class DataSourceManager extends React.Component {
   }
 }
 
-const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode, placeholder }) => {
+const EmptyStateContainer = ({
+  suggestionUI = false,
+  queryString,
+  handleBackToAllDatasources,
+  darkMode,
+  placeholder,
+}) => {
   const [inputValue, set] = React.useState(() => '');
 
   const [status, setStatus] = React.useState(false);
@@ -688,9 +690,9 @@ const EmptyStateContainer = ({ queryString, handleBackToAllDatasources, darkMode
   }, [queryString]);
 
   return (
-    <div className="empty mt-4">
-      {queryString && <h3>No results for &quot;{queryString} &quot;</h3>}
-      <center className="empty-results">
+    <div className="empty">
+      {queryString && !suggestionUI && <h3>No results for &quot;{queryString} &quot;</h3>}
+      <center className={`empty-results ${suggestionUI ? 'suggestionUI-results' : ''}`}>
         <img src="/assets/images/icons/no-results.svg" width="150" height="150" />
         {status ? (
           <div>
