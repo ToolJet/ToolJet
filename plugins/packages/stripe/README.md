@@ -1,11 +1,4 @@
 # `stripe`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/stripe
 
-## Usage
-
-```
-const stripe = require('stripe');
-
-// TODO: DEMONSTRATE API
-```

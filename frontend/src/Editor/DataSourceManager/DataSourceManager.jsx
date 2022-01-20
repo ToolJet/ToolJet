@@ -2,7 +2,7 @@ import React from 'react';
 import { datasourceService, authenticationService } from '@/_services';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
-import { allSvgs } from '@tooljet/plugins/client';
+import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
 import {
   DataBaseSources,
@@ -493,11 +493,11 @@ class DataSourceManager extends React.Component {
     );
   };
 
-  getSvgIcon = (key, height = 50, width = 50) => {
-    const Icon = allSvgs[key];
+  // getSvgIcon = (key, height = 50, width = 50) => {
+  //   const Icon = allSvgs[key];
 
-    return <Icon style={{ height, width }} />;
-  };
+  //   return <Icon style={{ height, width }} />;
+  // };
 
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
@@ -517,7 +517,7 @@ class DataSourceManager extends React.Component {
             <Modal.Title>
               {selectedDataSource && (
                 <div className="row">
-                  {this.getSvgIcon(dataSourceMeta.kind.toLowerCase(), 35, 35)}
+                  {getSvgIcon(dataSourceMeta.kind.toLowerCase(), 35, 35)}
                   <div className="input-icon" style={{ width: '160px' }}>
                     <input
                       type="text"

@@ -732,6 +732,7 @@ export const componentTypes = [
     events: [],
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      textAlign: { type: 'alignButtons', displayName: 'Align Text' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -748,7 +749,9 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        groupActions: { value: 'left' },
         textColor: { value: '#000' },
+        textAlign: { value: 'left' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -1609,6 +1612,56 @@ export const componentTypes = [
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'Pagination',
+    displayName: 'Pagination',
+    description: 'Pagination ',
+    component: 'Pagination',
+    defaultSize: {
+      width: 9,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      numberOfPages: { type: 'code', displayName: 'Number of pages' },
+      defaultPageIndex: { type: 'code', displayName: 'Default page index' },
+    },
+    validation: {},
+    events: {
+      onPageChange: { displayName: 'On Page Change' },
+    },
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      totalPages: null,
+      currentPageIndex: null,
+    },
+    definition: {
+      validation: {},
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        numberOfPages: {
+          value: '{{5}}',
+        },
+        defaultPageIndex: {
+          value: '{{1}}',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
       },
     },
   },

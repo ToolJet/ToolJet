@@ -29,6 +29,7 @@ import { Listview } from './Components/Listview';
 import { IFrame } from './Components/IFrame';
 import { CodeEditor } from './Components/CodeEditor';
 import { Timer } from './Components/Timer';
+import { Pagination } from './Components/Pagination';
 import { Tags } from './Components/Tags';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -68,6 +69,7 @@ const AllComponents = {
   CodeEditor,
   Listview,
   Timer,
+  Pagination,
   Tags,
 };
 

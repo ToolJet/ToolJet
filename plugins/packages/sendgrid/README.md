@@ -1,11 +1,4 @@
 # `sendgrid`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/sendgrid
 
-## Usage
-
-```
-const sendgrid = require('sendgrid');
-
-// TODO: DEMONSTRATE API
-```

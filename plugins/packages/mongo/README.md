@@ -1,11 +1,4 @@
 # `mongo`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/mongodb
 
-## Usage
-
-```
-const mongo = require('mongo');
-
-// TODO: DEMONSTRATE API
-```
