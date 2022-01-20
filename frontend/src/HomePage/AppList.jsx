@@ -27,22 +27,21 @@ const AppList = (props) => {
             <div className="row" key={rowIndex}>
               {Array.from(Array(5)).map((_, index) =>
                 props.apps[rowIndex * 5 + index] ? (
-                  <div className="col">
+                  <div className="col" key={rowIndex * 5 + index}>
                     <AppCard
                       app={props.apps[rowIndex * 5 + index]}
                       key={props.apps[rowIndex * 5 + index].id}
                       canCreateApp={props.canCreateApp}
                       canDeleteApp={props.canDeleteApp}
                       canUpdateApp={props.canUpdateApp}
-                      folders={props.folders}
-                      foldersChanged={props.foldersChanged}
                       deleteApp={props.deleteApp}
                       cloneApp={props.cloneApp}
                       exportApp={props.exportApp}
+                      appActionModal={props.appActionModal}
                     />
                   </div>
                 ) : (
-                  <div className="col"></div>
+                  <div className="col" key={rowIndex * 5 + index}></div>
                 )
               )}
             </div>
@@ -51,7 +50,7 @@ const AppList = (props) => {
       )}
       {!props.isLoading && props.meta.total_count === 0 && !(props.currentFolder && props.currentFolder.id) && (
         <div>
-          <span className="d-block text-center text-body">No Applications found</span>
+          <span className="d-block text-center text-body pt-5">No Applications found</span>
         </div>
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (

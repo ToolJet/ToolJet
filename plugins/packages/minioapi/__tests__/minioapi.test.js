@@ -1,7 +1,7 @@
 'use strict';
 
-const minioapi = require('..');
+const minioapi = require('../lib');
 
 describe('minioapi', () => {
-    it('needs tests');
+    it.todo('needs tests');
 });

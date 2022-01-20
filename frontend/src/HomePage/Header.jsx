@@ -1,7 +1,6 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { SearchBox } from '@/_components/SearchBox';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
-import { debounce } from 'lodash';
 
 export default function Header({
   folderName,
@@ -14,15 +13,13 @@ export default function Header({
   showTemplateLibraryModal,
   fileInput,
 }) {
-  const debouncedChangeHandler = useCallback(debounce(onSearchSubmit, 300), []);
   return (
     <div className="row">
       <div className="col-4">
-        <h2 className="page-title px-2">{folderName}</h2>
+        <h2 className="page-title pe-2">{folderName}</h2>
       </div>
-
       <div className="col-8 ms-auto d-print-none d-flex flex-row justify-content-end">
-        <SearchBox onSubmit={debouncedChangeHandler} />
+        <SearchBox onSubmit={onSearchSubmit} />
         {canCreateApp() && (
           <>
             <label className="btn btn-default d-none d-lg-inline mb-3 ms-2" onChange={handleImportApp}>
