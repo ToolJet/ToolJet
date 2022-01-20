@@ -104,7 +104,8 @@ async function copyToClipboard(text) {
   }
 }
 
-function showModal(_ref, modalId, show) {
+function showModal(_ref, modal, show) {
+  const modalId = modal.id;
   if (_.isEmpty(modalId)) {
     console.log('No modal is associated with this event.');
     return Promise.resolve();
@@ -226,6 +227,10 @@ function executeAction(_ref, event, mode) {
         const csv = generateCSV(data);
         generateFile(fileName, csv);
         return Promise.resolve();
+      }
+
+      case 'set-table-page': {
+        setTablePageIndex(_ref, event.table, event.pageIndex);
       }
     }
   }
@@ -667,6 +672,18 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
         });
     });
   });
+}
+
+function setTablePageIndex(_ref, table, index) {
+  if (_.isEmpty(table.id)) {
+    console.log('No table is associated with this event.');
+    return Promise.resolve();
+  }
+
+  const tableMeta = _ref.state.currentState.components[table.name];
+  const newPageIndex = resolveReferences(index, _ref.state.currentState);
+  tableMeta.setPage(newPageIndex);
+  return Promise.resolve();
 }
 
 export function renderTooltip({ props, text }) {
