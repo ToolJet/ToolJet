@@ -742,7 +742,10 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
   };
 
   React.useEffect(() => {
-    onChange(searchText, activeDatasourceList);
+    if (searchText.length > 0) {
+      onChange(searchText, activeDatasourceList);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDatasourceList]);
 
