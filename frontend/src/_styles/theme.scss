@@ -607,28 +607,85 @@ button {
 
   .app-list {
     .app-card {
-      height: 155px;
-      max-height: 155px;
+      height: 180px;
+      max-height: 180px;
       border: 0.5px solid #b4bbc6;
       box-sizing: border-box;
       border-radius: 8px;
+      overflow: hidden;
 
       .app-creation-time {
-        font-size: 10px;
+        font-size: 0.625rem;
         line-height: 12px;
         color: #61656f;
       }
 
       .app-creator {
         font-weight: 500;
-        font-size: 10px;
+        font-size: 0.625rem;
         line-height: 12px;
         color: #292d37;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .app-icon-main {
+        background-color: $primary;
+        border-radius: 4px;
+
+        .app-icon {
+          img {
+            height: 24px;
+            width: 24px;
+            filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(17deg) brightness(104%) contrast(104%);
+            vertical-align: middle;
+          }
+        }
+      }
+
+      .app-title {
+        line-height: 20px;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #000000;
+        overflow: hidden;
+        max-height: 40px;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* number of lines to show */
+        line-clamp: 2; 
+        -webkit-box-orient: vertical;
+      }
+
+      button {
+        font-size: .6rem;
+        width: 100%;
+      }
+
+      .menu-ico {
+        cursor: pointer;
+        padding: 3px;
+        border-radius: 13px;
+        &__open {
+          background-color: #D2DDEC;
+        }
+        img {
+          padding: 0px;
+          height: 14px;
+          width: 14px;
+          vertical-align: unset;
+        }
+      }
+      .menu-ico:hover {
+        background-color: #D2DDEC;
       }
     }
 
     .app-card.highlight {
       background-color: #f8f8f8;
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      border: 1px solid $primary;
 
       button.edit-button {
         background: #ffffff;
@@ -645,15 +702,12 @@ button {
         border-radius: 4px;
         color: #ffffff;
       }
-    }
 
-    .app-title {
-      line-height: 20px;
-      font-size: 16px;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      .app-title {
+        height: 20px;
+        -webkit-line-clamp: 1; /* number of lines to show */
+        line-clamp: 1; 
+      }
     }
   }
 }
@@ -1694,7 +1748,26 @@ tr:focus {
   }
 }
 
-.mentions-popover {
+/**
+ * Home page app menu
+ */
+#popover-app-menu {
+  border-radius: 4px;
+  width: 150px;
+  box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.25);
+
+  .popover-body {
+    padding: 16px 12px 0px 12px;
+
+    .field {
+      font-weight: 500;
+      font-size: 0.7rem;
+
+      &__danger {
+        color: #FF6666;
+      }
+    }
+  }
 }
 
 .input-icon {
@@ -3345,6 +3418,21 @@ input[type="text"] {
   .input-icon .input-icon-addon {
     display: flex;
   }
+  .input-icon .input-icon-addon.end {
+    pointer-events: auto;
+    div {
+      background-color: #A6B6CC;
+      border-radius: 12px;
+      color: #ffffff;
+      padding: 1px;
+      cursor: pointer;
+      svg {
+        height: 14px;
+        width: 14px
+      }
+    }
+  }
+  
 }
 
 .fixedHeader {
@@ -3486,3 +3574,29 @@ input[type="text"] {
     }
 }
 
+.icon-change-modal {
+  ul {
+    list-style-type: none;
+
+    li {
+      float: left;
+      border: 2px solid #8991A0;
+      border-radius: 1.75px;
+      cursor: pointer;
+
+      img {
+        width: 22px;
+        height: 22px;
+        filter: invert(59%) sepia(27%) saturate(160%) hue-rotate(181deg) brightness(91%) contrast(95%);
+      }
+    }
+
+    li.selected {
+      border: 2px solid #0565FF;
+      
+      img {
+        filter: invert(27%) sepia(84%) saturate(5230%) hue-rotate(212deg) brightness(102%) contrast(100%);
+      }
+    }
+  }
+}
