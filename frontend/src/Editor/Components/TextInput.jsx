@@ -11,9 +11,12 @@ export const TextInput = function TextInput({ height, validate, properties, styl
 
   useEffect(() => {
     setValue(properties.value);
-    setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
+  useEffect(() => {
+    setExposedVariable('value', value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   return (
     <div>
@@ -21,7 +24,6 @@ export const TextInput = function TextInput({ height, validate, properties, styl
         disabled={styles.disabledState}
         onChange={(e) => {
           setValue(e.target.value);
-          setExposedVariable('value', e.target.value);
           fireEvent('onChange');
         }}
         type="text"
