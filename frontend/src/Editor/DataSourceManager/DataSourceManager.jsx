@@ -170,8 +170,9 @@ class DataSourceManager extends React.Component {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
 
     return (
-      <div>
+      <div className="animation-fade">
         <Modal
+          className="animation-fade"
           show={this.props.showDataSourceManagerModal}
           size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
