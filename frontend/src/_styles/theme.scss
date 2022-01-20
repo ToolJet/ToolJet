@@ -573,7 +573,20 @@ button {
 .homepage-body {
   height: 100vh;
 }
-
+.card-skeleton-container
+{
+    border: .5px solid #b4bbc6;
+    padding: 1rem;
+    border-radius: 8px;
+    height: 155px;
+}
+.card-skeleton-button{
+height: 20px;
+width: 60px;
+background:#91a4f6 ;
+margin-top: 1rem;
+border-radius: 4px;
+}
   @media (min-height: 641px) and (max-height: 899px)
   { 
     .homepage-pagination
