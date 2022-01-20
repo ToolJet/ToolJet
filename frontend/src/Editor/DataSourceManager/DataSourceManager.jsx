@@ -43,6 +43,7 @@ class DataSourceManager extends React.Component {
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
       suggestingDatasources: false,
+      isDefault: false,
     };
   }
 
@@ -65,6 +66,44 @@ class DataSourceManager extends React.Component {
       for (let i = 0; i < element.length; i++) {
         element[i].classList.remove('active');
       }
+    }
+
+    if (!this.isDefault) {
+      const element = document.getElementsByClassName('list-group-item');
+      for (let i = 0; i < element.length; i++) {
+        if (!element[i].id.includes(this.state.activeDatasourceList)) {
+          element[i].classList.remove('active');
+        }
+      }
+
+      const tabPane = document.getElementsByClassName('tab-pane');
+      for (let i = 0; i < tabPane.length; i++) {
+        if (!tabPane[i].id.includes(this.state.activeDatasourceList)) {
+          tabPane[i].classList.remove('active');
+          tabPane[i].classList.remove('show');
+        }
+      }
+    }
+
+    if (this.state.activeDatasourceList === '#alldatasources' && this.state.isDefault) {
+      const element = document.getElementsByClassName('list-group-item');
+      for (let i = 0; i < element.length; i++) {
+        element[i].classList.remove('active');
+        if (element[i].id.includes('#alldatasources')) {
+          element[i].classList.add('active');
+        }
+      }
+      const tabPane = document.getElementsByClassName('tab-pane');
+      for (let i = 0; i < tabPane.length; i++) {
+        tabPane[i].classList.remove('active');
+        tabPane[i].classList.remove('show');
+        if (tabPane[i].id.includes('#alldatasources')) {
+          tabPane[i].classList.add('active');
+          tabPane[i].classList.add('show');
+        }
+      }
+
+      return this.setState({ isDefault: false });
     }
   }
 
@@ -170,7 +209,12 @@ class DataSourceManager extends React.Component {
   };
 
   handleBackToAllDatasources = () => {
-    this.setState({ queryString: null, filteredDatasources: [] });
+    this.setState({
+      queryString: null,
+      filteredDatasources: [],
+      isDefault: true,
+      activeDatasourceList: '#alldatasources',
+    });
   };
 
   updateSuggestedDatasources = () => {
@@ -207,7 +251,7 @@ class DataSourceManager extends React.Component {
       if (suggestingDatasources) {
         this.setState({ suggestingDatasources: false });
       }
-      this.setState({ activeDatasourceList: activekey });
+      this.setState({ activeDatasourceList: activekey, isDefault: false });
     };
 
     const goBacktoAllDatasources = () => {
