@@ -36,7 +36,8 @@ export default function Header({
                 <Dropdown.Toggle split className="btn btn-primary d-none d-lg-inline mb-3 " />
                 <Dropdown.Menu className="import-lg-position">
                   <Dropdown.Item onClick={showTemplateLibraryModal}>Choose from template</Dropdown.Item>
-                  <label className="homepage-dropdown-style" onChange={handleImportApp} >
+                  <label className="homepage-dropdown-style" onChange={handleImportApp}>
+                    Import
                     <input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} />
                   </label>
                 </Dropdown.Menu>
