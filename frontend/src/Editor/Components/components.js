@@ -1671,7 +1671,7 @@ export const componentTypes = [
     description: 'Spinner can be used as a loader',
     component: 'Spinner',
     defaultSize: {
-      width: 5,
+      width: 2,
       height: 30,
     },
     others: {
@@ -1679,11 +1679,19 @@ export const componentTypes = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      data: { type: 'code', displayName: 'Spinner' },
     },
     events: {},
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
+      colour: { type: 'color', displayName: 'Colour' },
+      size: {
+        type: 'select',
+        displayName: 'Size',
+        options: [
+          { name: 'small', value: 'sm' },
+          { name: 'large', value: 'lg' },
+        ],
+      },
     },
     exposedVariables: {},
     definition: {
@@ -1692,15 +1700,14 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        data: {
-          value:
-            "{{ [ \n\t\t{ title: 'success', color: '#2fb344', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#206bc4', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#f59f00', textColor: '#fff'  }, \n\t\t{ title: 'danger', color: '#d63939', textColor: '#fff' } ] }}",
-        },
       },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
+        size: { value:'sm'  },
+        colour: { value:'#0565ff' },
       },
     },
-  }
+  },
+
 ];
