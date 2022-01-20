@@ -65,7 +65,7 @@ export const EventManager = ({
       if (components[key].component.component === componentType) {
         componentOptions.push({
           name: components[key].component.name,
-          value: key,
+          value: { name: components[key].component.name, id: key },
         });
       }
     });
@@ -206,7 +206,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">Modal</div>
                 <div className="col-9">
                   <SelectSearch
-                    options={getComponentOptions()}
+                    options={getComponentOptions('Modal')}
                     value={event.model}
                     search={true}
                     onChange={(value) => {
@@ -224,7 +224,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">Modal</div>
                 <div className="col-9">
                   <SelectSearch
-                    options={getComponentOptions()}
+                    options={getComponentOptions('Modal')}
                     value={event.model}
                     search={true}
                     onChange={(value) => {

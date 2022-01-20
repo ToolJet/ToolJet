@@ -104,7 +104,8 @@ async function copyToClipboard(text) {
   }
 }
 
-function showModal(_ref, modalId, show) {
+function showModal(_ref, modal, show) {
+  const modalId = modal.id;
   if (_.isEmpty(modalId)) {
     console.log('No modal is associated with this event.');
     return Promise.resolve();
@@ -673,32 +674,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
   });
 }
 
-function setTablePageIndex(_ref, tabelId, index) {
-  if (_.isEmpty(tabelId)) {
+function setTablePageIndex(_ref, table, index) {
+  if (_.isEmpty(table.id)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
   }
 
-  const tableMeta = _ref.state.appDefinition.components[tabelId];
-
+  const tableMeta = _ref.state.currentState.components[table.name];
   const newPageIndex = resolveReferences(index, _ref.state.currentState);
-  const newState = {
-    currentState: {
-      ..._ref.state.currentState,
-      components: {
-        ..._ref.state.currentState.components,
-        [tableMeta.component.name]: {
-          ..._ref.state.currentState.components[tableMeta.component.name],
-          pageIndex: resolveReferences(index, _ref.state.currentState),
-        },
-      },
-    },
-  };
-
-  const existingPageIndex = _ref.state.currentState.components[tableMeta.component.name].pageIndex;
-  if (newPageIndex != existingPageIndex)
-    _ref.setState(newState, () => onEvent(_ref, 'onPageChanged', { component: tableMeta.component }));
-
+  tableMeta.setPage(newPageIndex);
   return Promise.resolve();
 }
 
