@@ -1680,6 +1680,7 @@ export const componentTypes = [
     },
     properties: {
       text: { type: 'code', displayName: 'Text' },
+      progress: { type: 'code', displayName: 'Progress' },
     },
     events: {},
     styles: {
@@ -1697,6 +1698,9 @@ export const componentTypes = [
       },
       properties: {
         text: {
+          value: '',
+        },
+        progress: {
           value: '{{50}}',
         },
       },
