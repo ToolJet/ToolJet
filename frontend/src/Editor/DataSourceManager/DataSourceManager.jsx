@@ -155,13 +155,11 @@ class DataSourceManager extends React.Component {
     }
   };
 
-  handleSearch = (searchQuery) => {
+  handleSearch = (searchQuery, activeDatasourceList) => {
     this.setState({ queryString: searchQuery });
 
     const arr = [];
-    const filteredDatasources = this.datasourcesGroups().filter(
-      (group) => group.key === this.state.activeDatasourceList
-    )[0].list;
+    const filteredDatasources = this.datasourcesGroups().filter((group) => group.key === activeDatasourceList)[0].list;
 
     filteredDatasources.forEach((datasource) => {
       if (datasource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -256,6 +254,7 @@ class DataSourceManager extends React.Component {
                         onChange={this.handleSearch}
                         onClear={this.handleBackToAllDatasources}
                         queryString={this.state.queryString}
+                        activeDatasourceList={this.state.activeDatasourceList}
                       />
                     </div>
                     {datasources.map((datasource) => (
@@ -729,18 +728,23 @@ const EmptyStateContainer = ({
   );
 };
 
-const SearchBoxContainer = ({ onChange, onClear, queryString }) => {
+const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList }) => {
   const [searchText, setSearchText] = React.useState(queryString ?? '');
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
-    onChange(e.target.value);
+    onChange(e.target.value, activeDatasourceList);
   };
 
   const clearSearch = () => {
     setSearchText('');
     onClear();
   };
+
+  React.useEffect(() => {
+    onChange(searchText, activeDatasourceList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDatasourceList]);
 
   React.useEffect(() => {
     if (queryString === null) {
