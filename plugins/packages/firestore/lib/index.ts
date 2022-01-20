@@ -6,6 +6,7 @@ import {
   queryCollection,
   setDocument,
   updateDocument,
+  deleteDocument,
 } from './operations';
 const { Firestore } = require('@google-cloud/firestore');
 import { SourceOptions, QueryOptions } from './types'

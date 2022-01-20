@@ -15,7 +15,7 @@ interface RestAPIResult extends QueryResult {
 
 export default class RestapiQueryService implements QueryService {
   /* Headers of the source will be overridden by headers of the query */
-  headers(sourceOptions: any, queryOptions: QueryOptions, hasDataSource: boolean): Headers {
+  headers(sourceOptions: any, queryOptions: any, hasDataSource: boolean): Headers {
     const _headers = (queryOptions.headers || []).filter((o) => {
       return o.some((e) => !isEmpty(e));
     });
@@ -31,7 +31,7 @@ export default class RestapiQueryService implements QueryService {
   }
 
   /* Body params of the source will be overridden by body params of the query */
-  body(sourceOptions: any, queryOptions: QueryOptions, hasDataSource: boolean): object {
+  body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
     const _body = (queryOptions.body || []).filter((o) => {
       return o.some((e) => !isEmpty(e));
     });
@@ -43,7 +43,7 @@ export default class RestapiQueryService implements QueryService {
   }
 
   /* Search params of the source will be overridden by Search params of the query */
-  searchParams(sourceOptions: any, queryOptions: QueryOptions, hasDataSource: boolean): object {
+  searchParams(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
     const _urlParams = (queryOptions.url_params || []).filter((o) => {
       return o.some((e) => !isEmpty(e));
     });
@@ -54,7 +54,7 @@ export default class RestapiQueryService implements QueryService {
     return Object.fromEntries(urlParams);
   }
 
-  async run(sourceOptions: any, queryOptions: QueryOptions, dataSourceId: string): Promise<RestAPIResult> {
+  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const requiresOauth = sourceOptions['auth_type'] === 'oauth2';
