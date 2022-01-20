@@ -170,7 +170,7 @@ class DataSourceManager extends React.Component {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
 
     return (
-      <div className="animation-fade">
+      <div>
         <Modal
           className="animation-fade"
           show={this.props.showDataSourceManagerModal}
