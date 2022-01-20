@@ -7,12 +7,7 @@ export function SearchBox({ onSubmit }) {
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
-  };
-
-  const trackEnterKey = (e) => {
-    if (e.key === 'Enter') {
-      onSubmit(searchText);
-    }
+    onSubmit(e.target.value);
   };
 
   const clearSearchText = () => {
