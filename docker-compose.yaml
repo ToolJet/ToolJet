@@ -1,6 +1,18 @@
 version: "3"
 
 services:
+  plugins:
+    build:
+      context: ./
+      dockerfile: ./docker/plugins.Dockerfile.dev
+    image: tooljet-plugins:development
+    platform: linux/x86_64
+    volumes:
+      - ./plugins/:/app/plugins:cached
+    ports:
+      - 4000:4000
+    command: npm run --prefix plugins start
+
   client:
     build:
       context: ./
@@ -10,8 +22,6 @@ services:
     volumes:
       - ./frontend:/app/frontend:delegated
       - ./plugins/:/app/plugins
-      - /app/plugins/dist/
-      - /app/plugins/node_modules/
       - /app/frontend/node_modules/
     ports:
       - 8082:8082
@@ -31,11 +41,9 @@ services:
     volumes:
       - ./server:/app/server:delegated
       - ./plugins/:/app/plugins
-      - /app/plugins/dist/
-      - /app/plugins/node_modules/
       - /app/server/node_modules/
-      - '.env:/app/.env'
-      - '.env.test:/app/.env.test'
+      - ".env:/app/.env"
+      - ".env.test:/app/.env.test"
     ports:
       - 3000:3000
     environment:

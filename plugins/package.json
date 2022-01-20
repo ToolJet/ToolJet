@@ -10,6 +10,8 @@
     "create:server": "node create-server-entry",
     "prebuild:server": "npm run clean",
     "build:server": "tsc -b",
+    "start": "tsc -b --watch",
+    "build": "npm run create:client && npm run create:server && npm run build:server",
     "prebuild:packages": "npm run clean:packages && npm run create:client && npm run create:server",
     "build:packages": "lerna run build --stream",
     "clean:packages": "lerna run clean --parallel"
