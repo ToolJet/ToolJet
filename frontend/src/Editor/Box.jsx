@@ -151,6 +151,7 @@ export const Box = function Box({
               exposedVariables={exposedVariables}
               styles={resolvedStyles}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value)}
+              registerAction={(actionName, func) => onComponentOptionChanged(component, actionName, func)}
               fireEvent={fireEvent}
               validate={validate}
             ></ComponentToRender>
