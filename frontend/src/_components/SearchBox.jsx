@@ -7,7 +7,6 @@ export function SearchBox({ onSubmit }) {
   const handleChange = (e) => {
     setSearchText(e.target.value);
     onSubmit(e.target.value);
-    
   };
 
   return (
@@ -31,13 +30,7 @@ export function SearchBox({ onSubmit }) {
             <line x1="21" y1="21" x2="15" y2="15" />
           </svg>
         </span>
-        <input
-          type="text"
-          value={searchText}
-          onChange={handleChange}
-          className="form-control"
-          placeholder="Search"
-        />
+        <input type="text" value={searchText} onChange={handleChange} className="form-control" placeholder="Search" />
       </div>
     </div>
   );

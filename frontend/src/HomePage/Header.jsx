@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback } from 'react';
 import { SearchBox } from '@/_components/SearchBox';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 import { debounce } from 'lodash';
@@ -14,9 +14,7 @@ export default function Header({
   showTemplateLibraryModal,
   fileInput,
 }) {
-  const debouncedChangeHandler = useCallback(
-    debounce(onSearchSubmit, 300)
-  , []);
+  const debouncedChangeHandler = useCallback(debounce(onSearchSubmit, 300), []);
   return (
     <div className="row">
       <div className="col-4">
