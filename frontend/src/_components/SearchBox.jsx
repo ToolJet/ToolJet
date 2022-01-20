@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import useDebounce from '@/_hooks/useDebounce';
 
-export function SearchBox({ onSubmit }) {
+export function SearchBox({ onSubmit, debounceDelay = 300 }) {
   const [searchText, setSearchText] = useState('');
+  const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
   const [isFocused, setFocussed] = useState(false);
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
-    onSubmit(e.target.value);
   };
 
   const clearSearchText = () => {
     setSearchText('');
-    onSubmit('');
   };
+
+  useEffect(() => {
+    console.log(debouncedSearchTerm);
+    onSubmit(debouncedSearchTerm);
+  }, [debouncedSearchTerm, onSubmit]);
 
   return (
     <div className="search-box-wrapper">
@@ -41,7 +46,6 @@ export function SearchBox({ onSubmit }) {
         <input
           type="text"
           value={searchText}
-          onKeyDown={trackEnterKey}
           onChange={handleChange}
           className="form-control"
           placeholder="Search"
@@ -76,4 +80,5 @@ export function SearchBox({ onSubmit }) {
 }
 SearchBox.propTypes = {
   onSubmit: PropTypes.func.isRequired,
+  debounceDelay: PropTypes.number,
 };
