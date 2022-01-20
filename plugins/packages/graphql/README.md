@@ -1,11 +1,3 @@
 # `graphql`
 
-> TODO: description
-
-## Usage
-
-```
-const graphql = require('graphql');
-
-// TODO: DEMONSTRATE API
-```
+Documentation on: https://docs.tooljet.com/docs/data-sources/graphql

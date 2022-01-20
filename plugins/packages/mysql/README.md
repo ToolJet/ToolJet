@@ -1,11 +1,4 @@
 # `mysql`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/mysql
 
-## Usage
-
-```
-const mysql = require('mysql');
-
-// TODO: DEMONSTRATE API
-```

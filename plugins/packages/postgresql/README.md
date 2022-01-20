@@ -1,11 +1,4 @@
 # `postgresql`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/oistgresql
 
-## Usage
-
-```
-const postgresql = require('postgresql');
-
-// TODO: DEMONSTRATE API
-```

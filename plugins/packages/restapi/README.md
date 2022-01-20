@@ -1,11 +1,4 @@
 # `restapi`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/rest-api
 
-## Usage
-
-```
-const restapi = require('restapi');
-
-// TODO: DEMONSTRATE API
-```

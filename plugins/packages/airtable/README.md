@@ -1,11 +1,3 @@
 # `airtable`
 
-> TODO: description
-
-## Usage
-
-```
-const airtable = require('airtable');
-
-// TODO: DEMONSTRATE API
-```
+Documentation on: https://docs.tooljet.com/docs/data-sources/airtable

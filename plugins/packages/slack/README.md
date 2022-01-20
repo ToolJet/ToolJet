@@ -1,11 +1,4 @@
 # `slack`
 
-> TODO: description
+Documentation on: https://docs.tooljet.com/docs/data-sources/slack
 
-## Usage
-
-```
-const slack = require('slack');
-
-// TODO: DEMONSTRATE API
-```
