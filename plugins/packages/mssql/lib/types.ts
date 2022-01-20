@@ -5,3 +5,7 @@ export type SourceOptions = {
   username: string;
   password: string;
 };
+export type QueryOptions = { 
+  operation: string;
+  query: string;
+};

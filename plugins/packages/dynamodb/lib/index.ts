@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 import { SourceOptions, QueryOptions } from './types'
 
 export default class DynamodbQueryService implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const operation = queryOptions.operation;
     const client = await this.getConnection(sourceOptions, { operation });
     let result = {};
@@ -21,10 +21,10 @@ export default class DynamodbQueryService implements QueryService {
           result = await deleteItem(client, queryOptions.table, JSON.parse(queryOptions.key));
           break;
         case 'query_table':
-          result = await queryTable(client, JSON.parse(queryOptions['query_condition']));
+          result = await queryTable(client, JSON.parse(queryOptions.query_condition));
           break;
         case 'scan_table':
-          result = await scanTable(client, JSON.parse(queryOptions['scan_condition']));
+          result = await scanTable(client, JSON.parse(queryOptions.scan_condition));
           break;
       }
     } catch (err) {

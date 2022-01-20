@@ -5,7 +5,7 @@ const { Client } = require('@elastic/elasticsearch');
 import { SourceOptions, QueryOptions } from './types'
 
 export default class ElasticsearchService implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const client = await this.getConnection(sourceOptions);
     let result = {};
     const operation = queryOptions.operation;

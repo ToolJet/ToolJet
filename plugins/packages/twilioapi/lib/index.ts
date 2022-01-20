@@ -7,7 +7,7 @@ export default class TwilioQueryService implements QueryService {
     return new Twilio(accountSid, authToken);
   }
 
-  async run(sourceOptions: SourceOptions, queryOptions: any = {}, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
 
     try {
