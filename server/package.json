@@ -22,7 +22,7 @@
     "db:create": "ts-node ./scripts/create-database.ts",
     "db:drop": "ts-node ./scripts/drop-database.ts",
     "db:migrate": "npm run typeorm migration:run",
-    "db:seed": "ts-node -r tsconfig-paths/register ./scripts/seeds.ts",
+    "db:seed": "node  ./dist/scripts/seeds.js",
     "db:reset": "npm run db:drop && npm run db:create && npm run db:migrate",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config ormconfig.ts"
   },
