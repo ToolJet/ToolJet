@@ -63,7 +63,7 @@ export const LeftSidebarInspector = ({ darkMode, globals, components, queries })
             collapsed={true}
             displayObjectSize={false}
             quotesOnKeys={false}
-            sortKeys={true}
+            sortKeys={false}
             // indentWidth={1}
           />
         </div>
