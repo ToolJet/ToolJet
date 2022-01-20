@@ -72,7 +72,7 @@ export class AuthService {
 
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
-    return user;
+    return {};
   }
 
   async forgotPassword(email: string) {

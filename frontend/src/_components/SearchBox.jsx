@@ -6,12 +6,8 @@ export function SearchBox({ onSubmit }) {
 
   const handleChange = (e) => {
     setSearchText(e.target.value);
-  };
-
-  const trackEnterKey = (e) => {
-    if (e.key === 'Enter') {
-      onSubmit(searchText);
-    }
+    onSubmit(e.target.value);
+    
   };
 
   return (
@@ -38,7 +34,6 @@ export function SearchBox({ onSubmit }) {
         <input
           type="text"
           value={searchText}
-          onKeyDown={trackEnterKey}
           onChange={handleChange}
           className="form-control"
           placeholder="Search"

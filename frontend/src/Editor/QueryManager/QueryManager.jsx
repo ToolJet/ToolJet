@@ -211,10 +211,24 @@ let QueryManager = class QueryManager extends React.Component {
   renderDataSourceOption = (props, option, snapshot, className) => {
     const icon = option.kind ? `/assets/images/icons/editor/datasources/${option.kind.toLowerCase() + '.svg'}` : null;
     return (
-      <button {...props} className={className} type="button">
+      <button
+        {...props}
+        className={`${className} ${this.props.darkMode ? 'select-search__option__dark' : ''}`}
+        type="button"
+      >
         <div>
-          <span className="text-muted">
-            {icon && <img src={icon} style={{ margin: 'auto', marginRight: '3px' }} height="25" width="25"></img>}
+          <span>
+            {icon && (
+              <img
+                src={icon}
+                style={{
+                  margin: 'auto',
+                  marginRight: '3px',
+                }}
+                height="25"
+                width="25"
+              ></img>
+            )}
             {option.name}
           </span>
         </div>
@@ -380,6 +394,7 @@ let QueryManager = class QueryManager extends React.Component {
                       filterOptions={fuzzySearch}
                       renderOption={this.renderDataSourceOption}
                       placeholder="Select a data source"
+                      className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                     />
                   </div>
                 )}
