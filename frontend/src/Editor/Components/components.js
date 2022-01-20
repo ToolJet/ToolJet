@@ -1680,10 +1680,10 @@ export const componentTypes = [
     },
     properties: {
       primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
-      primaryvalue: { type: 'code', displayName: 'Primary value' },
+      primaryValue: { type: 'code', displayName: 'Primary value' },
       secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
-      secondaryvalue: { type: 'code', displayName: 'Secondary value' },
-      secondarysigndisplay: {
+      secondaryValue: { type: 'code', displayName: 'Secondary value' },
+      secondarySignDisplay: {
         type: 'select',
         displayName: 'Secondary sign display',
         options: [
@@ -1696,10 +1696,10 @@ export const componentTypes = [
       onChange: { displayName: 'On change' },
     },
     styles: {
-      PrimaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
-      PrimaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
-      SecondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
-      SecondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
+      primaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
+      primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
+      secondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
+      secondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
     },
     definition: {
       others: {
@@ -1708,16 +1708,16 @@ export const componentTypes = [
       },
       properties: {
         primaryValueLabel: { value:'This months earnings' },
-        primaryvalue: { value:'682.3'  },  
+        primaryValue: { value:'682.3'  },  
         secondaryValueLabel: { value:'Last month'  },
-        secondaryvalue: { value:'2.85' },
-        secondarysigndisplay: { value:'positive'  },
+        secondaryValue: { value:'2.85' },
+        secondarySignDisplay: { value:'positive'  },
       },
       styles: {
-        PrimaryLabelColour: { value:'#8092AB' },
-        PrimaryTextColour: { value:'#000000' },
-        SecondaryLabelColour: {value:'#8092AB'  },
-        SecondaryTextColour: { value:'#36AF8B'},
+        primaryLabelColour: { value:'#8092AB' },
+        primaryTextColour: { value:'#000000' },
+        secondaryLabelColour: {value:'#8092AB'  },
+        secondaryTextColour: { value:'#36AF8B'},
       },
     },
   },
