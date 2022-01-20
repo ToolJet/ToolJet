@@ -1,11 +1,6 @@
 import { QueryError, QueryResult,  QueryService } from 'common';
 import { Twilio } from 'twilio';
-
-type SourceOptions = { 
-  accountSid: string; 
-  authToken: string; 
-  messagingServiceSid: string; 
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class TwilioQueryService implements QueryService {
   getClient(accountSid: string, authToken: string): any {

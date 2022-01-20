@@ -1,10 +1,6 @@
 import { QueryError, QueryResult,  QueryService } from 'common';
 import * as SendGrid from '@sendgrid/mail';
-import { EmailOptions } from './types';
-
-type SourceOptions = { 
-  api_key: string; 
-};
+import { EmailOptions, SourceOptions, QueryOptions } from './types'
 
 export default class SendGridQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {

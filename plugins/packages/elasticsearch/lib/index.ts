@@ -2,8 +2,7 @@ import { ConnectionTestResult, QueryService, QueryResult } from 'common';
 import { getDocument, updateDocument } from './operations';
 import { indexDocument, search } from './operations';
 const { Client } = require('@elastic/elasticsearch');
-
-type SourceOptions = { scheme: string; host: string; port: string; username: string; password: string; }
+import { SourceOptions, QueryOptions } from './types'
 
 export default class ElasticsearchService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {

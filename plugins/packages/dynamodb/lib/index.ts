@@ -1,8 +1,7 @@
 import { ConnectionTestResult, QueryService, QueryResult } from 'common';
 import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
 const AWS = require('aws-sdk');
-
-type SourceOptions = { access_key: string; secret_key: string; region: string; };
+import { SourceOptions, QueryOptions } from './types'
 
 export default class DynamodbQueryService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {

@@ -1,13 +1,7 @@
 import { ConnectionTestResult, QueryService, QueryResult } from 'common';
 import { createCollection, getDocument, updateDocument, deleteDocument, indexDocument, search } from './operations';
 import { Client } from 'typesense';
-
-type SourceOptions = { 
-  host: string; 
-  port: string; 
-  protocol: string; 
-  api_key: string;
-};
+import { SourceOptions, QueryOptions } from './types'
 
 export default class TypeSenseService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
