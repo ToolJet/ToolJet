@@ -3290,3 +3290,12 @@ input[type="text"] {
     }
 }
 
+/**
+ * Spinner Widget
+ */
+ .spinner-container{
+   display: flex;
+   justify-content: center;
+   align-items: center;
+ }
+
