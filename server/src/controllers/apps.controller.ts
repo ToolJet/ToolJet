@@ -301,9 +301,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const appUser = await this.appsService.update(req.user, params.id, {
-      icon,
-    });
+    const appUser = await this.appsService.update(req.user, params.id, { icon });
     return decamelizeKeys(appUser);
   }
 }

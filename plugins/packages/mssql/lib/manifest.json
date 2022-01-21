@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/",
+  "$id": "https://tooljet.io/Mssql.schema.json",
+  "title": "Mssql datasource",
+  "description": "A schema defining mssql datasource",
+  "type": "database",
+  "source": {
+    "name": "SQL Server",
+    "kind": "mssql",
+    "exposedVariables": {
+      "isLoading": {},
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": { "type": "string" },
+      "port": { "type": "string" },
+      "database": { "type": "string" },
+      "username": { "type": "string" },
+      "password": { "type": "string", "encrypted": true }
+    }
+  },
+  "defaults": {
+    "host": { "value": "localhost" },
+    "port": { "value": 1433 },
+    "database": { "value": "" },
+    "username": { "value": "" },
+    "password": { "value": "" }
+  },
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter host"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "Enter port"
+    },
+    "database": {
+      "label": "Database Name",
+      "key": "database",
+      "type": "text",
+      "description": "Name of the database"
+    },
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter username"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    },
+    "azure": {
+      "label": "Azure",
+      "key": "azure",
+      "type": "toggle",
+      "description": "Toggle for azure"
+    }
+  },
+  "required": ["host", "port", "username", "password"]
+}
