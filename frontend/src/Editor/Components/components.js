@@ -1668,7 +1668,7 @@ export const componentTypes = [
   {
     name: 'Spinner',
     displayName: 'Spinner',
-    description: 'Spinner can be used as a loader',
+    description: 'Spinner can be used to display loading status',
     component: 'Spinner',
     defaultSize: {
       width: 2,
