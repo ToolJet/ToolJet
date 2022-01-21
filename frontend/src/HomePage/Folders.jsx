@@ -102,8 +102,7 @@ export const Folders = function Folders({
           ) : (
             <div className="folder-info">You haven&apos;t created any folders. Use folders to organize your apps</div>
           )}
-          {}
-          <Modal show={showForm} setShow={setShowForm} title="Create folder">
+          <Modal show={showForm} closeModal={() => setShowForm(false)} title="Create folder">
             <div className="row">
               <div className="col modal-main">
                 <input
@@ -112,6 +111,7 @@ export const Folders = function Folders({
                   className="form-control"
                   placeholder="folder name"
                   disabled={isCreating}
+                  maxLength={25}
                 />
               </div>
             </div>
