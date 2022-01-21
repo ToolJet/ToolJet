@@ -55,6 +55,7 @@ class Editor extends React.Component {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
+        groups: currentUser?.group_permissions.map((group) => group.group),
       };
     }
 
