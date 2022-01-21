@@ -37,7 +37,7 @@ class Viewer extends React.Component {
         queries: {},
         components: {},
         globals: {
-          current_user: {},
+          currentUser: {},
           urlparams: {},
         },
       },
@@ -61,6 +61,7 @@ class Viewer extends React.Component {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
+        groups: currentUser?.group_permissions.map((group) => group.group),
       };
     }
 
@@ -96,7 +97,7 @@ class Viewer extends React.Component {
           queries: queryState,
           components: {},
           globals: {
-            current_user: userVars,
+            currentUser: userVars,
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
           },
         },
