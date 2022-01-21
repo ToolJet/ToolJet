@@ -3600,3 +3600,19 @@ input[type="text"] {
     }
   }
 }
+
+.animation-fade {
+  animation-name: fade;
+  animation-duration: .3s;
+  animation-timing-function: linear;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+

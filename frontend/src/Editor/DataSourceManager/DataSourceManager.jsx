@@ -172,6 +172,7 @@ class DataSourceManager extends React.Component {
     return (
       <div>
         <Modal
+          className="animation-fade"
           show={this.props.showDataSourceManagerModal}
           size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
