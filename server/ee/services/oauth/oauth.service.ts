@@ -22,8 +22,8 @@ export class OauthService {
     private readonly configService: ConfigService
   ) {
     this.ssoSignUpDisabled =
-      this.configService.get<string>('SSO_DISABLE_SIGNUPS') &&
-      this.configService.get<string>('SSO_DISABLE_SIGNUPS') === 'true';
+      this.configService.get<string>('SSO_DISABLE_SIGNUP') &&
+      this.configService.get<string>('SSO_DISABLE_SIGNUP') === 'true';
     this.restrictedDomain = this.configService.get<string>('RESTRICTED_DOMAIN');
   }
 
