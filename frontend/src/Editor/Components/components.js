@@ -1685,6 +1685,8 @@ export const componentTypes = [
     events: {},
     styles: {
       color: { type: 'color', displayName: 'Color' },
+      textColor: { type: 'color', displayName: 'Text Color' },
+      textSize: { type: 'code', displayName: 'Text Size' },
       strokeWidth: { type: 'code', displayName: 'Stroke Width' },
       counterClockwise: { type: 'code', displayName: 'Counter Clockwise' },
       circleRatio: { type: 'code', displayName: 'Circle Ratio' },
@@ -1707,6 +1709,8 @@ export const componentTypes = [
       events: [],
       styles: {
         color: { value: '#4D72FA' },
+        textColor: { value: '#4D72FA' },
+        textSize: { value: '{{16}}' },
         strokeWidth: { value: '{{8}}' },
         counterClockwise: { value: '{{false}}' },
         circleRatio: { value: '{{1}}' },
