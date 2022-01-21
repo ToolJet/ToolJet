@@ -13,7 +13,7 @@ import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
 import { Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
-import { SaveAndPreview } from './SaveAndPreview';
+import { ReleaseVersionButton } from './ReleaseVersionButton';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -39,6 +39,7 @@ import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { AppVersionsManager } from './AppVersionsManager';
 
 setAutoFreeze(false);
 enablePatches();
@@ -74,6 +75,7 @@ class Editor extends React.Component {
       allComponentTypes: componentTypes,
       isQueryPaneDragging: false,
       queryPaneHeight: 70,
+      isTopOfQueryPane: false,
       isLoading: true,
       users: null,
       appId,
@@ -108,9 +110,14 @@ class Editor extends React.Component {
       initVersionName: null,
       isSavingEditingVersion: false,
       showSaveDetail: false,
+      hasAppDefinitionChanged: false,
+      showCreateVersionModalPrompt: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
+
+    // setup for closing versions dropdown on oustide click
+    this.wrapperRef = React.createRef();
   }
 
   componentDidMount() {
@@ -125,9 +132,33 @@ class Editor extends React.Component {
     });
   }
 
+  isVersionReleased = (version = this.state.editingVersion) => {
+    if (isEmpty(version)) {
+      return false;
+    }
+    return this.state.app.current_version_id === version.id;
+  };
+
+  closeCreateVersionModalPrompt = () => {
+    this.setState({ showCreateVersionModalPrompt: false });
+  };
+
   onMouseMove = (e) => {
+    const componentTop = Math.round(this.queryPaneRef.current.getBoundingClientRect().top);
+    const clientY = e.clientY;
+
+    if ((clientY >= componentTop) & (clientY <= componentTop + 5)) {
+      this.setState({
+        isTopOfQueryPane: true,
+      });
+    } else {
+      this.setState({
+        isTopOfQueryPane: false,
+      });
+    }
+
     if (this.state.isQueryPaneDragging) {
-      let queryPaneHeight = (e.clientY / window.screen.height) * 100;
+      let queryPaneHeight = (clientY / window.innerHeight) * 100;
 
       if (queryPaneHeight > 95) queryPaneHeight = 100;
       if (queryPaneHeight < 4.5) queryPaneHeight = 4.5;
@@ -332,7 +363,7 @@ class Editor extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition));
+    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), { skipAutoSave: true });
     this.setState({
       editingVersion: version,
     });
@@ -422,7 +453,7 @@ class Editor extends React.Component {
     }
   };
 
-  appDefinitionChanged = (newDefinition) => {
+  appDefinitionChanged = (newDefinition, opts = {}) => {
     produce(
       this.state.appDefinition,
       (draft) => {
@@ -431,7 +462,7 @@ class Editor extends React.Component {
       this.handleAddPatch
     );
     this.setState({ appDefinition: newDefinition }, () => {
-      this.autoSave();
+      if (!opts.skipAutoSave) this.autoSave();
     });
     computeComponentState(this, newDefinition.components);
   };
@@ -450,22 +481,32 @@ class Editor extends React.Component {
     this.setState({ slug: newSlug });
   };
 
-  removeComponent = (component) => {
-    let newDefinition = cloneDeep(this.state.appDefinition);
-    // Delete child components when parent is deleted
-    const childComponents = Object.keys(newDefinition.components).filter(
-      (key) => newDefinition.components[key].parent === component.id
-    );
-    childComponents.forEach((componentId) => {
-      delete newDefinition.components[componentId];
-    });
+  handleClickOutsideAppVersionsDropdown = (event) => {
+    if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
+      this.setState({ showAppVersionsDropdown: false });
+    }
+  };
 
-    delete newDefinition.components[component.id];
-    toast('Component deleted! (⌘Z to undo)', {
-      icon: '🗑️',
-    });
-    this.appDefinitionChanged(newDefinition);
-    this.handleInspectorView(component);
+  removeComponent = (component) => {
+    if (!this.isVersionReleased()) {
+      let newDefinition = cloneDeep(this.state.appDefinition);
+      // Delete child components when parent is deleted
+      const childComponents = Object.keys(newDefinition.components).filter(
+        (key) => newDefinition.components[key].parent === component.id
+      );
+      childComponents.forEach((componentId) => {
+        delete newDefinition.components[componentId];
+      });
+
+      delete newDefinition.components[component.id];
+      toast('Component deleted! (⌘Z to undo)', {
+        icon: '🗑️',
+      });
+      this.appDefinitionChanged(newDefinition, {
+        skipAutoSave: this.isVersionReleased(),
+      });
+      this.handleInspectorView(component);
+    }
   };
 
   componentDefinitionChanged = (componentDefinition) => {
@@ -706,7 +747,7 @@ class Editor extends React.Component {
     }));
   };
 
-  onVersionDeploy = (versionId) => {
+  onVersionRelease = (versionId) => {
     this.setState({
       app: {
         ...this.state.app,
@@ -776,11 +817,13 @@ class Editor extends React.Component {
   };
 
   saveEditingVersion = () => {
-    if (!isEmpty(this.state.editingVersion)) {
+    if (this.isVersionReleased()) {
+      this.setState({ showCreateVersionModalPrompt: true });
+    } else if (!isEmpty(this.state.editingVersion)) {
       this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
       appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
         this.setState({ isSavingEditingVersion: false });
-        setTimeout(() => this.setState({ showSaveDetail: false }), 5000);
+        setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
       });
     }
   };
@@ -801,8 +844,7 @@ class Editor extends React.Component {
           <Modal.Title>Create Version</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div className="row">
-            <label className="form-label">Create a version to start building your app:</label>
+          <div className="row m-2">
             <div className="col">
               <input
                 type="text"
@@ -812,9 +854,20 @@ class Editor extends React.Component {
               />
             </div>
           </div>
+
+          <div className="row m-2">
+            <div className="col">
+              <small className="muted">Create a version to start building your app</small>
+            </div>
+          </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={() => this.createInitVersion()}>Create</Button>
+          <Button
+            className={`${this.state.isCreatingInitVersion ? 'btn-loading' : ''}`}
+            onClick={() => this.createInitVersion()}
+          >
+            Create
+          </Button>
         </Modal.Footer>
       </Modal>
     );
@@ -855,6 +908,7 @@ class Editor extends React.Component {
       showInitVersionCreateModal,
       isSavingEditingVersion,
       showSaveDetail,
+      showCreateVersionModalPrompt,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -917,13 +971,32 @@ class Editor extends React.Component {
                     <em className="small lh-base p-1">{isSavingEditingVersion ? 'Auto Saving..' : 'Auto Saved'}</em>
                   </div>
                 )}
-                {this.state.editingVersion && (
-                  <small className="app-version-name">{`App version: ${this.state.editingVersion.name}`}</small>
+
+                {editingVersion && (
+                  <AppVersionsManager
+                    appId={appId}
+                    editingVersion={editingVersion}
+                    releasedVersionId={app.current_version_id}
+                    setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                    showCreateVersionModalPrompt={showCreateVersionModalPrompt}
+                    closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
+                  />
                 )}
+
                 <div className="layout-buttons cursor-pointer">
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
+                  <div className="nav-item dropdown d-none d-md-flex me-2">
+                    <a
+                      href={appLink}
+                      target="_blank"
+                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
+                      rel="noreferrer"
+                    >
+                      Preview
+                    </a>
+                  </div>
                   <div className="nav-item dropdown d-none d-md-flex me-2">
                     {app.id && (
                       <ManageAppUsers
@@ -934,27 +1007,14 @@ class Editor extends React.Component {
                       />
                     )}
                   </div>
-                  <div className="nav-item dropdown d-none d-md-flex me-2">
-                    <a
-                      href={appLink}
-                      target="_blank"
-                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
-                      rel="noreferrer"
-                    >
-                      Launch
-                    </a>
-                  </div>
                   <div className="nav-item dropdown me-2">
                     {app.id && (
-                      <SaveAndPreview
+                      <ReleaseVersionButton
+                        isVersionReleased={this.isVersionReleased()}
                         appId={app.id}
                         appName={app.name}
-                        appDefinition={appDefinition}
-                        app={app}
-                        darkMode={this.props.darkMode}
-                        onVersionDeploy={this.onVersionDeploy}
-                        editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null}
-                        setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                        onVersionRelease={this.onVersionRelease}
+                        editingVersion={editingVersion}
                         fetchApp={this.fetchApp}
                       />
                     )}
@@ -1080,19 +1140,11 @@ class Editor extends React.Component {
                 onMouseDown={this.onMouseDown}
                 className="query-pane"
                 style={{
-                  height: `calc(100% - ${this.state.queryPaneHeight - 1}%)`,
-                  background: 'transparent',
-                  border: 0,
-                  cursor: 'row-resize',
-                }}
-              ></div>
-              <div
-                className="query-pane"
-                style={{
                   height: `calc(100% - ${this.state.queryPaneHeight}%)`,
                   width: !showLeftSidebar ? '85%' : '',
                   left: !showLeftSidebar ? '0' : '',
-                  cursor: this.state.isQueryPaneDragging ? 'row-resize' : 'default',
+                  // transition: 'height 0.3s ease-in-out',
+                  cursor: this.state.isQueryPaneDragging || this.state.isTopOfQueryPane ? 'row-resize' : 'default',
                 }}
               >
                 <div className="row main-row">
