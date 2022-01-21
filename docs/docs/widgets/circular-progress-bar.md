@@ -9,7 +9,7 @@ Circular progress bar widget can be used to show progress in a progress circle.
 | properties      | description |
 | ----------- | ----------- |
 | Text | We can set a text inside the progress circle.|
-| Progress | It can be used to set the progress of the widget. This will be a number and it must be between 0 to 100.|
+| Progress | It can be used to set the progress of the widget. Progress should be an integer between 0 and 100.|
 
 #### Styles
 
@@ -17,7 +17,7 @@ Circular progress bar widget can be used to show progress in a progress circle.
 | ----------- | ----------- |
 | Color | To define stroke color.|
 | Stroke width | To define the width of stroke, value must between 0-100. ``Default: 8``.|
-| Counter Clockwise | We can also rotate the progressbar in counterclockwise direction. ``Default: false``.|
+| Counter Clockwise | Whether to rotate progress bar in counterclockwise direction. ``Default: false``.|
 | circleRatio | To define ratio of the full circle diameter the progressbar should use. ``Default: 1``.|
 
 #### More info
