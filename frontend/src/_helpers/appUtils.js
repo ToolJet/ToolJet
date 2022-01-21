@@ -20,6 +20,17 @@ export function setStateAsync(_ref, state) {
   });
 }
 
+export function setCurrentStateAsync(_ref, changes) {
+  return new Promise((resolve) => {
+    _ref.setState((prevState) => {
+      return {
+        currentState: prevState.currentState,
+        ...changes,
+      };
+    }, resolve);
+  });
+}
+
 export function onComponentOptionsChanged(_ref, component, options) {
   const componentName = component.name;
   const components = _ref.state.currentState.components;
@@ -42,9 +53,7 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   componentData = componentData || {};
   componentData[option_name] = value;
 
-  return setStateAsync(_ref, {
-    currentState: { ..._ref.state.currentState, components: { ...components, [componentName]: componentData } },
-  });
+  return setCurrentStateAsync(_ref, { components: { ...components, [componentName]: componentData } });
 }
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
