@@ -1,5 +1,5 @@
 {
-  "name": "s3",
+  "name": "@tooljet-plugins/s3",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
