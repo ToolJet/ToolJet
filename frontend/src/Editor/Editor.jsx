@@ -502,7 +502,9 @@ class Editor extends React.Component {
       toast('Component deleted! (⌘Z to undo)', {
         icon: '🗑️',
       });
-      this.appDefinitionChanged(newDefinition, { skipAutoSave: this.isVersionReleased() });
+      this.appDefinitionChanged(newDefinition, {
+        skipAutoSave: this.isVersionReleased(),
+      });
       this.handleInspectorView(component);
     }
   };
@@ -821,6 +823,7 @@ class Editor extends React.Component {
       this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
       appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
         this.setState({ isSavingEditingVersion: false });
+        setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
       });
     }
   };
@@ -841,8 +844,7 @@ class Editor extends React.Component {
           <Modal.Title>Create Version</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div className="row">
-            <label className="form-label">Create a version to start building your app:</label>
+          <div className="row m-2">
             <div className="col">
               <input
                 type="text"
@@ -852,9 +854,20 @@ class Editor extends React.Component {
               />
             </div>
           </div>
+
+          <div className="row m-2">
+            <div className="col">
+              <small className="muted">Create a version to start building your app</small>
+            </div>
+          </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={() => this.createInitVersion()}>Create</Button>
+          <Button
+            className={`${this.state.isCreatingInitVersion ? 'btn-loading' : ''}`}
+            onClick={() => this.createInitVersion()}
+          >
+            Create
+          </Button>
         </Modal.Footer>
       </Modal>
     );
