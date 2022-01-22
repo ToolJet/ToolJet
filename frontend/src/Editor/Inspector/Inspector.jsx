@@ -7,10 +7,10 @@ import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
-import { EventManager } from './EventManager';
 import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
-import Accordion from '@/_ui/Accordion';
+import { DefaultComponent } from './Components/DefaultComponent';
+import { FilePicker } from './Components/FilePicker';
 
 export const Inspector = ({
   selectedComponentId,
@@ -217,96 +217,37 @@ export const Inspector = ({
           />
         );
 
+      case 'FilePicker':
+        return (
+          <FilePicker
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
+
       default: {
-        const properties = Object.keys(componentMeta.properties);
-        const events = Object.keys(componentMeta.events);
-        const validations = Object.keys(componentMeta.validation || {});
-        let items = [];
-        items.push({
-          title: 'Properties',
-          children: properties.map((property) =>
-            renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              property,
-              'properties',
-              currentState,
-              allComponents,
-              darkMode
-            )
-          ),
-        });
-
-        if (events.length > 0) {
-          items.push({
-            title: 'Events',
-            isOpen: false,
-            children: (
-              <EventManager
-                component={component}
-                componentMeta={componentMeta}
-                currentState={currentState}
-                dataQueries={dataQueries}
-                components={allComponents}
-                eventsChanged={eventsChanged}
-                apps={apps}
-                darkMode={darkMode}
-              />
-            ),
-          });
-        }
-
-        if (validations.length > 0) {
-          items.push({
-            title: 'Validation',
-            children: validations.map((property) =>
-              renderElement(
-                component,
-                componentMeta,
-                paramUpdated,
-                dataQueries,
-                property,
-                'validation',
-                currentState,
-                allComponents,
-                darkMode
-              )
-            ),
-          });
-        }
-
-        items.push({
-          title: 'Layout',
-          isOpen: false,
-          children: (
-            <>
-              {renderElement(
-                component,
-                componentMeta,
-                layoutPropertyChanged,
-                dataQueries,
-                'showOnDesktop',
-                'others',
-                currentState,
-                allComponents
-              )}
-              {renderElement(
-                component,
-                componentMeta,
-                layoutPropertyChanged,
-                dataQueries,
-                'showOnMobile',
-                'others',
-                currentState,
-                allComponents
-              )}
-            </>
-          ),
-        });
-
-        return <Accordion items={items} />;
+        return (
+          <DefaultComponent
+            layoutPropertyChanged={layoutPropertyChanged}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            componentMeta={componentMeta}
+            currentState={currentState}
+            darkMode={darkMode}
+            eventsChanged={eventsChanged}
+            apps={apps}
+            allComponents={allComponents}
+          />
+        );
       }
     }
   }
