@@ -1,7 +1,6 @@
 import React from 'react';
 import { datasourceService, authenticationService } from '@/_services';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
+import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { TestConnection } from './TestConnection';
@@ -15,6 +14,7 @@ import {
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
 import { isEmpty } from 'lodash';
+import { Card } from '@/_ui/card';
 
 class DataSourceManager extends React.Component {
   constructor(props) {
@@ -39,6 +39,11 @@ class DataSourceManager extends React.Component {
       dataSourceMeta,
       isSaving: false,
       isCopied: false,
+      queryString: null,
+      filteredDatasources: [],
+      activeDatasourceList: '#alldatasources',
+      suggestingDatasources: false,
+      isDefault: false,
     };
   }
 
@@ -55,6 +60,50 @@ class DataSourceManager extends React.Component {
         options: this.props.selectedDataSource?.options,
         dataSourceMeta: DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource?.kind),
       });
+    }
+    if (this.state.activeDatasourceList === '#') {
+      const element = document.getElementsByClassName('list-group-item');
+      for (let i = 0; i < element.length; i++) {
+        element[i].classList.remove('active');
+      }
+    }
+
+    if (!this.isDefault) {
+      const element = document.getElementsByClassName('list-group-item');
+      for (let i = 0; i < element.length; i++) {
+        if (!element[i].id.includes(this.state.activeDatasourceList)) {
+          element[i].classList.remove('active');
+        }
+      }
+
+      const tabPane = document.getElementsByClassName('tab-pane');
+      for (let i = 0; i < tabPane.length; i++) {
+        if (!tabPane[i].id.includes(this.state.activeDatasourceList)) {
+          tabPane[i].classList.remove('active');
+          tabPane[i].classList.remove('show');
+        }
+      }
+    }
+
+    if (this.state.activeDatasourceList === '#alldatasources' && this.state.isDefault) {
+      const element = document.getElementsByClassName('list-group-item');
+      for (let i = 0; i < element.length; i++) {
+        element[i].classList.remove('active');
+        if (element[i].id.includes('#alldatasources')) {
+          element[i].classList.add('active');
+        }
+      }
+      const tabPane = document.getElementsByClassName('tab-pane');
+      for (let i = 0; i < tabPane.length; i++) {
+        tabPane[i].classList.remove('active');
+        tabPane[i].classList.remove('show');
+        if (tabPane[i].id.includes('#alldatasources')) {
+          tabPane[i].classList.add('active');
+          tabPane[i].classList.add('show');
+        }
+      }
+
+      return this.setState({ isDefault: false });
     }
   }
 
@@ -81,7 +130,9 @@ class DataSourceManager extends React.Component {
       selectedDataSource: null,
       options: {},
       connectionTestError: null,
-      isCopied: false,
+      queryString: null,
+      filteredDatasources: [],
+      activeDatasourceList: '#alldatasources',
     });
   };
 
@@ -143,6 +194,33 @@ class DataSourceManager extends React.Component {
     }
   };
 
+  handleSearch = (searchQuery, activeDatasourceList) => {
+    this.setState({ queryString: searchQuery });
+
+    const arr = [];
+    const filteredDatasources = this.datasourcesGroups().filter((group) => group.key === activeDatasourceList)[0].list;
+
+    filteredDatasources.forEach((datasource) => {
+      if (datasource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        arr.push(datasource);
+      }
+    });
+    this.setState({ filteredDatasources: arr });
+  };
+
+  handleBackToAllDatasources = () => {
+    this.setState({
+      queryString: null,
+      filteredDatasources: [],
+      isDefault: true,
+      activeDatasourceList: '#alldatasources',
+    });
+  };
+
+  updateSuggestedDatasources = () => {
+    this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
+  };
+
   renderSourceComponent = (kind) => {
     const { options, isSaving } = this.state;
 
@@ -166,6 +244,300 @@ class DataSourceManager extends React.Component {
     this.setState({ connectionTestError: data });
   };
 
+  segregateDataSources = (suggestingDatasources, darkMode) => {
+    const datasources = this.datasourcesGroups();
+
+    const handleOnSelect = (activekey) => {
+      if (suggestingDatasources) {
+        this.setState({ suggestingDatasources: false });
+      }
+      this.setState({ activeDatasourceList: activekey, isDefault: false });
+    };
+
+    const goBacktoAllDatasources = () => {
+      this.setState({ suggestingDatasources: false });
+      this.handleBackToAllDatasources();
+    };
+
+    const datasourceSuggestionUI = () => {
+      return (
+        <div className="empty-state-wrapper suggestingDatasourcesWrapper">
+          <EmptyStateContainer
+            suggestionUI={true}
+            queryString={this.state.queryString}
+            handleBackToAllDatasources={goBacktoAllDatasources}
+            darkMode={this.props.darkMode}
+            placeholder={'Suggest an integration'}
+          />
+        </div>
+      );
+    };
+
+    return (
+      <Tab.Container
+        onSelect={(activekey) => handleOnSelect(activekey)}
+        id="list-group-tabs-example"
+        defaultActiveKey={this.state.activeDatasourceList}
+      >
+        <Row>
+          <Col sm={6} md={4} className={`modal-sidebar ${darkMode ? 'dark' : ''}`}>
+            {this.renderSidebarList()}
+          </Col>
+          <Col style={{ left: '25%' }} className={`modal-body-content ${darkMode ? 'dark' : ''}`}>
+            <div className="selected-datasource-list-content">
+              <Tab.Content>
+                {suggestingDatasources ? (
+                  <div className="suggestion-container">
+                    <h4 className="justify-content-start">Suggest Datasource</h4>
+                    {datasourceSuggestionUI()}
+                  </div>
+                ) : (
+                  <>
+                    <div className="input-icon modal-searchbar">
+                      <SearchBoxContainer
+                        onChange={this.handleSearch}
+                        onClear={this.handleBackToAllDatasources}
+                        queryString={this.state.queryString}
+                        activeDatasourceList={this.state.activeDatasourceList}
+                      />
+                    </div>
+                    {datasources.map((datasource) => (
+                      <Tab.Pane eventKey={datasource.key} key={datasource.key}>
+                        {datasource.renderDatasources()}
+                      </Tab.Pane>
+                    ))}
+                  </>
+                )}
+              </Tab.Content>
+            </div>
+          </Col>
+        </Row>
+      </Tab.Container>
+    );
+  };
+
+  datasourcesGroups = () => {
+    const allDataSourcesList = {
+      databases: DataBaseSources,
+      apis: ApiSources,
+      cloudStorages: CloudStorageSources,
+      filteredDatasources: this.state.filteredDatasources,
+    };
+    const dataSourceList = [
+      {
+        type: 'All Datasources',
+        key: '#alldatasources',
+        list: [...allDataSourcesList.databases, ...allDataSourcesList.apis, ...allDataSourcesList.cloudStorages],
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList, 'All Datasources'),
+      },
+      {
+        type: 'Databases',
+        key: '#databases',
+        list: allDataSourcesList.databases,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.databases, 'Databases'),
+      },
+      {
+        type: 'APIs',
+        key: '#apis',
+        list: allDataSourcesList.apis,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.apis, 'APIs'),
+      },
+      {
+        type: 'Cloud Storage',
+        key: '#cloudstorage',
+        list: allDataSourcesList.cloudStorages,
+        renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+      },
+      {
+        type: 'Filtered Datasources',
+        key: '#filtereddatasources',
+        list: allDataSourcesList.filteredDatasources,
+        renderDatasources: () => this.renderCardGroup(this.state.filteredDatasources, this.state.activeDatasourceList),
+      },
+    ];
+
+    return dataSourceList;
+  };
+
+  renderSidebarList = () => {
+    const dataSourceList = this.datasourcesGroups().splice(0, 4);
+
+    const updateSuggestionState = () => {
+      this.updateSuggestedDatasources();
+    };
+
+    return (
+      <>
+        <ListGroup className="datasource-lists-modal" variant="flush">
+          {dataSourceList.map((datasource) => (
+            <ListGroup.Item key={datasource.key} eventKey={datasource.key}>
+              {datasource.type}
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+        <div className="datasource-modal-sidebar-footer">
+          <p>
+            <span className="footer-text">Don&apos;t see what you were looking for?</span>
+            <br />
+            <span className="link-span" onClick={updateSuggestionState}>
+              Suggest
+            </span>
+          </p>
+        </div>
+      </>
+    );
+  };
+
+  renderCardGroup = (source, type) => {
+    const renderSelectedDatasource = (dataSource) => this.selectDataSource(dataSource);
+
+    if (this.state.queryString && this.state.queryString.length > 0) {
+      const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
+        return {
+          ...datasource,
+          src: datasource.kind.toLowerCase(),
+          title: datasource.name,
+        };
+      });
+
+      if (filteredDatasources.length === 0) {
+        return (
+          <div className="empty-state-wrapper row">
+            <EmptyStateContainer
+              queryString={this.state.queryString}
+              handleBackToAllDatasources={this.handleBackToAllDatasources}
+              darkMode={this.props.darkMode}
+              placeholder={'Tell us what you were looking for?'}
+            />
+          </div>
+        );
+      }
+
+      return (
+        <>
+          <div className="row row-deck mt-4">
+            <h4 className="mb-2">{type}</h4>
+            {filteredDatasources.map((item) => (
+              <Card
+                key={item.key}
+                title={item.title}
+                src={item.src}
+                handleClick={() => renderSelectedDatasource(item)}
+                usepluginIcon={true}
+                height="35px"
+                width="35px"
+              />
+            ))}
+          </div>
+        </>
+      );
+    }
+
+    if (type === 'All Datasources') {
+      const databases = source.databases.map((datasource) => {
+        return {
+          ...datasource,
+          src: datasource.kind.toLowerCase(),
+          title: datasource.name,
+        };
+      });
+      const apis = source.apis.map((datasource) => {
+        return {
+          ...datasource,
+          src: datasource.kind.toLowerCase(),
+          title: datasource.name,
+        };
+      });
+      const cloudStorages = source.cloudStorages.map((datasource) => {
+        return {
+          ...datasource,
+          src: datasource.kind.toLowerCase(),
+          title: datasource.name,
+        };
+      });
+
+      return (
+        <>
+          <div>
+            <div className="row row-deck mt-4">
+              <h4 className="mb-2">{'Databases'}</h4>
+              {databases.map((item) => (
+                <Card
+                  key={item.key}
+                  title={item.title}
+                  src={item.src}
+                  handleClick={() => renderSelectedDatasource(item)}
+                  usepluginIcon={true}
+                  height="35px"
+                  width="35px"
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="row row-deck mt-4">
+              <h4 className="mb-2">{'APIs'}</h4>
+              {apis.map((item) => (
+                <Card
+                  key={item.key}
+                  title={item.title}
+                  src={item.src}
+                  handleClick={() => renderSelectedDatasource(item)}
+                  usepluginIcon={true}
+                  height="35px"
+                  width="35px"
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="row row-deck mt-4">
+              <h4 className="mb-2">{'Cloud Storages'}</h4>
+              {cloudStorages.map((item) => (
+                <Card
+                  key={item.key}
+                  title={item.title}
+                  src={item.src}
+                  handleClick={() => renderSelectedDatasource(item)}
+                  usepluginIcon={true}
+                  height="35px"
+                  width="35px"
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    const datasources = source.map((datasource) => {
+      return {
+        ...datasource,
+        src: datasource.kind.toLowerCase(),
+        title: datasource.name,
+      };
+    });
+
+    return (
+      <>
+        <div className="row row-deck mt-4">
+          <h4 className="mb-2">{type}</h4>
+          {datasources.map((item) => (
+            <Card
+              key={item.key}
+              title={item.title}
+              src={item.src}
+              handleClick={() => renderSelectedDatasource(item)}
+              usepluginIcon={true}
+              height="35px"
+              width="35px"
+            />
+          ))}
+        </div>
+      </>
+    );
+  };
+
   render() {
     const { dataSourceMeta, selectedDataSource, options, isSaving, connectionTestError, isCopied } = this.state;
 
@@ -176,6 +548,7 @@ class DataSourceManager extends React.Component {
           show={this.props.showDataSourceManagerModal}
           size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
+          className={selectedDataSource ? 'mt-5' : 'mt-5 select-datasource-list-modal'}
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
           onExit={this.onExit}
@@ -202,69 +575,17 @@ class DataSourceManager extends React.Component {
               )}
               {!selectedDataSource && <span className="text-muted">Add new datasource</span>}
             </Modal.Title>
-            <Button variant={this.props.darkMode ? 'secondary' : 'light'} size="sm" onClick={() => this.hideModal()}>
-              x
-            </Button>
+            <span
+              className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
+              onClick={() => this.hideModal()}
+            >
+              <img src="/assets/images/icons/close.svg" width="12" height="12" />
+            </span>
           </Modal.Header>
 
           <Modal.Body>
-            {!selectedDataSource && (
-              <div>
-                <div className="row row-deck">
-                  <h4 className="mb-2">DATABASES</h4>
-                  {DataBaseSources.map((dataSource) => (
-                    <div className="col-md-2" key={dataSource.name}>
-                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
-                        <div className="card-body">
-                          <center>
-                            {getSvgIcon(dataSource.kind.toLowerCase())}
-                            <br></br>
-                            <br></br>
-                            {dataSource.name}
-                          </center>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="row row-deck mt-2">
-                  <h4 className="mb-2">APIS</h4>
-                  {ApiSources.map((dataSource) => (
-                    <div className="col-md-2" key={dataSource.name}>
-                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
-                        <div className="card-body">
-                          <center>
-                            {getSvgIcon(dataSource.kind.toLowerCase())}
-                            <br></br>
-                            <br></br>
-                            {dataSource.name}
-                          </center>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="row row-deck mt-2">
-                  <h4 className="mb-2">CLOUD STORAGES</h4>
-                  {CloudStorageSources.map((dataSource) => (
-                    <div className="col-md-2" key={dataSource.name}>
-                      <div className="card mb-3" role="button" onClick={() => this.selectDataSource(dataSource)}>
-                        <div className="card-body">
-                          <center>
-                            {getSvgIcon(dataSource.kind.toLowerCase())}
-                            <br></br>
-                            <br></br>
-                            {dataSource.name}
-                          </center>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind)}</div>}
+            {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
           </Modal.Body>
 
           {selectedDataSource && !dataSourceMeta.customTesting && (
@@ -390,5 +711,151 @@ class DataSourceManager extends React.Component {
     );
   }
 }
+
+const EmptyStateContainer = ({
+  suggestionUI = false,
+  queryString,
+  handleBackToAllDatasources,
+  darkMode,
+  placeholder,
+}) => {
+  const [inputValue, set] = React.useState(() => '');
+
+  const [status, setStatus] = React.useState(false);
+  const handleSend = () => {
+    if (inputValue) {
+      setStatus(true);
+      //send value to backend
+    }
+  };
+
+  React.useEffect(() => {
+    setStatus(false);
+  }, [queryString]);
+
+  return (
+    <div className="empty">
+      {queryString && !suggestionUI && <h3>No results for &quot;{queryString} &quot;</h3>}
+      <center className={`empty-results ${suggestionUI ? 'suggestionUI-results' : ''}`}>
+        <img src="/assets/images/icons/no-results.svg" width="150" height="150" />
+        {status ? (
+          <div>
+            <p className="text-success mt-2">Thank you, we&apos;ve taken a note of that!</p>
+            <button
+              className={`datasource-modal-button ${darkMode && 'dark-button'}`}
+              onClick={handleBackToAllDatasources}
+            >
+              {'Go to all Datasources'}
+            </button>
+          </div>
+        ) : (
+          <div className="row empty-search">
+            <div className="col-9 mt-2">
+              <div className="input-icon">
+                <input
+                  type="text"
+                  className="form-control mb-2"
+                  value={inputValue}
+                  placeholder={placeholder}
+                  onChange={(e) => set(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="col-auto">
+              <Button className="mt-2" variant="primary" onClick={handleSend}>
+                {'Send'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </center>
+    </div>
+  );
+};
+
+const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList }) => {
+  const [searchText, setSearchText] = React.useState(queryString ?? '');
+
+  const handleChange = (e) => {
+    setSearchText(e.target.value);
+    onChange(e.target.value, activeDatasourceList);
+  };
+
+  const clearSearch = () => {
+    setSearchText('');
+    onClear();
+  };
+
+  React.useEffect(() => {
+    if (searchText.length > 0) {
+      onChange(searchText, activeDatasourceList);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDatasourceList]);
+
+  React.useEffect(() => {
+    if (queryString === null) {
+      setSearchText('');
+    }
+  }, [queryString]);
+  React.useEffect(() => {
+    if (searchText) {
+      document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '0.5rem';
+    }
+
+    return () => {
+      document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '2.5rem';
+    };
+  }, [searchText]);
+
+  return (
+    <div className="search-box-wrapper">
+      <div style={{ height: '36px' }} className="input-icon d-flex">
+        {searchText.length === 0 && (
+          <span className="search-icon mt-2 mx-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <circle cx="10" cy="10" r="7" />
+              <line x1="21" y1="21" x2="15" y2="15" />
+            </svg>
+          </span>
+        )}
+        {searchText.length > 0 && (
+          <span className="clear-icon mt-2" onClick={clearSearch}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="icon icon-tabler icon-tabler-circle-x"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M10 10l4 4m0 -4l-4 4"></path>
+            </svg>
+          </span>
+        )}
+        <input type="text" value={searchText} onChange={handleChange} className="form-control" placeholder="Search" />
+      </div>
+    </div>
+  );
+};
 
 export { DataSourceManager };

@@ -3,7 +3,7 @@
   "$id": "https://tooljet.io/minio.schema.json",
   "title": "Minio datasource",
   "description": "A schema defining Minio datasource",
-  "type": "api",
+  "type": "cloud-storage",
   "source": {
     "name": "Minio",
     "kind": "minio",
