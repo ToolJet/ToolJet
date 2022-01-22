@@ -1,19 +1,18 @@
 import { ConnectionTestResult, QueryError, QueryResult,  QueryService, parseJson } from 'common';
-
 import {
   addDocument,
   bulkUpdate,
-  deleteDocument,
   getDocument,
   queryCollection,
   setDocument,
   updateDocument,
+  deleteDocument,
 } from './operations';
 const { Firestore } = require('@google-cloud/firestore');
 import { SourceOptions, QueryOptions } from './types'
 
 export default class FirestoreQueryService implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const firestore = await this.getConnection(sourceOptions);
     const operation = queryOptions.operation;
     let result = {};

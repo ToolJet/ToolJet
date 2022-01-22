@@ -47,7 +47,7 @@ export default class SlackQueryService implements QueryService {
     return { Authorization: `Bearer ${token}` };
   }
 
-  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
     let response = null;
     const operation = queryOptions.operation;
@@ -66,9 +66,9 @@ export default class SlackQueryService implements QueryService {
 
         case 'send_message': {
           const body = {
-            channel: queryOptions['channel'],
-            text: queryOptions['message'],
-            as_user: queryOptions['sendAsUser'],
+            channel: queryOptions.channel,
+            text: queryOptions.message,
+            as_user: queryOptions.sendAsUser,
           };
 
           response = await got('https://slack.com/api/chat.postMessage', {

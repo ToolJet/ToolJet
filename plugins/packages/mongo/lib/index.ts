@@ -5,7 +5,7 @@ import { EJSON } from 'bson';
 import { SourceOptions, QueryOptions } from './types'
 
 export default class MongodbService implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
     let result = {};
     const operation = queryOptions.operation;

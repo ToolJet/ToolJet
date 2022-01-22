@@ -4,7 +4,7 @@ import { listBuckets, signedUrlForGet, signedUrlForPut, listFiles, getFile, uplo
 import { SourceOptions, QueryOptions } from './types'
 
 export default class GcsQueryService implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: any): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const operation = queryOptions.operation;
     const client = await this.getConnection(sourceOptions);
     let result = {};

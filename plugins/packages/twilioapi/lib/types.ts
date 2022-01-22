@@ -3,3 +3,8 @@ export type SourceOptions = {
   authToken: string; 
   messagingServiceSid: string; 
 };
+export type QueryOptions = { 
+  operation: string;
+  body: string;
+  toNumber: string;
+};

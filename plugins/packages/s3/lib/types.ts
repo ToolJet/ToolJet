@@ -3,3 +3,7 @@ export type SourceOptions = {
   secret_key: string; 
   region: string; 
 };
+export type QueryOptions = { 
+  operation: string;
+  query: string;
+};

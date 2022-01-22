@@ -16,7 +16,7 @@ export default class MysqlQueryService implements QueryService {
 
   async run(
     sourceOptions: SourceOptions,
-    queryOptions: any,
+    queryOptions: QueryOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {

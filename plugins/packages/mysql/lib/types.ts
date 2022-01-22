@@ -6,3 +6,8 @@ export type SourceOptions = {
   password: string;
   ssl_enabled: boolean; 
 };
+export type QueryOptions = { 
+  operation: string;
+  query: string;
+  mode: string;
+};
