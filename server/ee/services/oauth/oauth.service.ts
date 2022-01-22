@@ -28,7 +28,13 @@ export class OauthService {
     if (!domain) {
       return false;
     }
-    if (restrictedDomain && !restrictedDomain.split(',').includes(domain)) {
+    if (
+      restrictedDomain &&
+      !restrictedDomain
+        .split(',')
+        .filter((e) => !!e)
+        .includes(domain)
+    ) {
       return false;
     }
     return true;
