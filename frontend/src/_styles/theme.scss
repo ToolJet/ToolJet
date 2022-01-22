@@ -3351,6 +3351,10 @@ input[type="text"] {
     width: 50%;
   }
 
+  .nav-item:hover{
+    border: 1px solid transparent;
+  }
+
   .nav-item:not(.active) {
     border-bottom: 1px solid #e7eaef;
   }
@@ -3358,11 +3362,38 @@ input[type="text"] {
   .nav-link.active {
     border: 1px solid transparent;
     border-bottom: 1px solid $primary;
+    background: white;
+  }
+}
+
+.close-icon{
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20%;
+  height: 22;
+  border-bottom: 1px solid #e7eaef;
+  display: flex;
+  align-items: center;
+
+  .svg-wrapper {
+    width: 100%;
+    height: 70%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid #e7eaef;
+    margin-left: 20px;
+  
+    .close-svg{
+      cursor: pointer;
+    }
   }
 }
 
 .tabs-inspector.nav-tabs {
   border: 0;
+  width: 80%;
 }
 
 .bg-primary-lt {
@@ -3620,3 +3651,19 @@ input[type="text"] {
     }
   }
 }
+
+.animation-fade {
+  animation-name: fade;
+  animation-duration: .3s;
+  animation-timing-function: linear;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+

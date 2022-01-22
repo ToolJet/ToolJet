@@ -341,6 +341,8 @@ export class AppsService {
     lastVersion: AppVersion
   ) {
     const oldDataSourceToNewMapping = {};
+    const oldDataQueryToNewMapping = {};
+
     const dataSources = await manager.find(DataSource, {
       where: { appVersionId: lastVersion.id },
     });
@@ -364,6 +366,7 @@ export class AppsService {
     const dataQueries = await manager.find(DataQuery, {
       where: { appVersionId: lastVersion.id },
     });
+    const newDataQueries = [];
     for await (const dataQuery of dataQueries) {
       const dataQueryParams = {
         name: dataQuery.name,
@@ -373,8 +376,67 @@ export class AppsService {
         appId: dataQuery.appId,
         appVersionId: appVersion.id,
       };
-      await manager.save(manager.create(DataQuery, dataQueryParams));
+
+      const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+      oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
+      newDataQueries.push(newQuery);
     }
+
+    for (const newQuery of newDataQueries) {
+      const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, oldDataQueryToNewMapping);
+      newQuery.options = newOptions;
+      await manager.save(newQuery);
+    }
+
+    appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
+    await manager.save(appVersion);
+  }
+
+  replaceDataQueryOptionsWithNewDataQueryIds(options, dataQueryMapping) {
+    if (options && options.events) {
+      const replacedEvents = options.events.map((event) => {
+        if (event.queryId) {
+          event.queryId = dataQueryMapping[event.queryId];
+        }
+        return event;
+      });
+      options.events = replacedEvents;
+    }
+    return options;
+  }
+
+  replaceDataQueryIdWithinDefinitions(definition, dataQueryMapping) {
+    if (definition?.components) {
+      for (const id of Object.keys(definition.components)) {
+        const component = definition.components[id].component;
+
+        if (component?.definition?.events) {
+          const replacedComponentEvents = component.definition.events.map((event) => {
+            if (event.queryId) {
+              event.queryId = dataQueryMapping[event.queryId];
+            }
+            return event;
+          });
+          component.definition.events = replacedComponentEvents;
+        }
+
+        if (component?.definition?.properties?.actions?.value) {
+          for (const value of component.definition.properties.actions.value) {
+            if (value?.events) {
+              const replacedComponentActionEvents = value.events.map((event) => {
+                if (event.queryId) {
+                  event.queryId = dataQueryMapping[event.queryId];
+                }
+                return event;
+              });
+              value.events = replacedComponentActionEvents;
+            }
+          }
+        }
+        definition.components[id].component = component;
+      }
+    }
+    return definition;
   }
 
   async setNewCredentialValueFromOldValue(newOptions: any, oldOptions: any, manager: EntityManager) {
