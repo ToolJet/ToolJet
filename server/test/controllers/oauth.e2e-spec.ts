@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { clearDB, createUser, createNestAppInstance } from '../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../test.helper';
 import { OAuth2Client } from 'google-auth-library';
 import { mocked } from 'ts-jest/utils';
 import got from 'got';
@@ -10,17 +10,26 @@ const mockedGot = mocked(got);
 
 describe('oauth controller', () => {
   let app: INestApplication;
+  let mockConfig;
 
   beforeEach(async () => {
     await clearDB();
+    jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+      if (key === 'SSO_DISABLE_SIGNUP') {
+        return 'false';
+      } else {
+        return process.env[key];
+      }
+    });
   });
 
   beforeAll(async () => {
-    app = await createNestAppInstance();
+    ({ app, mockConfig } = await createNestAppInstanceWithEnvMock());
   });
 
-  afterAll(() => {
+  afterEach(() => {
     jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('sign in via Google OAuth', () => {
@@ -84,7 +93,105 @@ describe('oauth controller', () => {
       expect(app_group_permissions).toHaveLength(0);
     });
 
-    // TODO should be forbid logging in when the user does not exist and signups are disabled - Not able to change env values
+    it('should be forbid logging in when the user does not exist and signups are disabled', async () => {
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        if (key === 'SSO_DISABLE_SIGNUP') {
+          return 'true';
+        } else {
+          return process.env[key];
+        }
+      });
+      const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+      googleVerifyMock.mockImplementation(() => ({
+        getPayload: () => ({
+          sub: 'someSSOId',
+          email: 'ssoUser@tooljet.io',
+          name: 'SSO User',
+          hd: 'tooljet.io',
+        }),
+      }));
+
+      // Calling the createUser helper function to have an Organization created. This user is irrelevant for the test
+      await createUser(app, { email: 'anotherUser@tooljet.io', role: 'admin' });
+
+      const token = 'someStuff';
+
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token, origin: 'google' });
+
+      expect(googleVerifyMock).toHaveBeenCalledWith({
+        idToken: token,
+        audience: expect.anything(),
+      });
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('should be forbid logging in when the restricted domin is configured and domain not match', async () => {
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        if (key === 'RESTRICTED_DOMAIN') {
+          return 'tooljet.com,tooljet.in';
+        } else {
+          return process.env[key];
+        }
+      });
+      const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+      googleVerifyMock.mockImplementation(() => ({
+        getPayload: () => ({
+          sub: 'someSSOId',
+          email: 'ssoUser@tooljet.io',
+          name: 'SSO User',
+          hd: 'tooljet.io',
+        }),
+      }));
+
+      // Calling the createUser helper function to have an Organization created. This user is irrelevant for the test
+      await createUser(app, { email: 'anotherUser@tooljet.io', role: 'admin' });
+
+      const token = 'someStuff';
+
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token, origin: 'google' });
+
+      expect(googleVerifyMock).toHaveBeenCalledWith({
+        idToken: token,
+        audience: expect.anything(),
+      });
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('should be success when the restricted domin is configured and domain matches', async () => {
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        if (key === 'RESTRICTED_DOMAIN') {
+          return 'tooljet.com,tooljet.io';
+        } else {
+          return process.env[key];
+        }
+      });
+      const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+      googleVerifyMock.mockImplementation(() => ({
+        getPayload: () => ({
+          sub: 'someSSOId',
+          email: 'ssoUser@tooljet.io',
+          name: 'SSO User',
+          hd: 'tooljet.io',
+        }),
+      }));
+
+      // Calling the createUser helper function to have an Organization created. This user is irrelevant for the test
+      await createUser(app, { email: 'anotherUser@tooljet.io', role: 'admin' });
+
+      const token = 'someStuff';
+
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token, origin: 'google' });
+
+      expect(googleVerifyMock).toHaveBeenCalledWith({
+        idToken: token,
+        audience: expect.anything(),
+      });
+
+      expect(response.statusCode).toBe(201);
+    });
+
     it('should return login info when the user exists', async () => {
       const googleVerifyMock = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
       googleVerifyMock.mockImplementation(() => ({
@@ -105,7 +212,7 @@ describe('oauth controller', () => {
         groups: ['all_users', 'admin'],
       });
 
-      const token = ['someStuff'];
+      const token = 'someStuff';
 
       const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token, origin: 'google' });
 
@@ -222,6 +329,51 @@ describe('oauth controller', () => {
         ].sort()
       );
       expect(app_group_permissions).toHaveLength(0);
+    });
+
+    it('should be forbid logging in when the user does not exist and signups are disabled', async () => {
+      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
+        if (key === 'SSO_DISABLE_SIGNUP') {
+          return 'true';
+        } else {
+          return process.env[key];
+        }
+      });
+      const gitAuthResponse = jest.fn();
+      gitAuthResponse.mockImplementation(() => {
+        return {
+          json: () => {
+            return {
+              access_token: 'some-access-token',
+              scope: 'scope',
+              token_type: 'bearer',
+            };
+          },
+        };
+      });
+      const gitGetUserResponse = jest.fn();
+      gitGetUserResponse.mockImplementation(() => {
+        return {
+          json: () => {
+            return {
+              name: 'SSO UserGit',
+              email: 'ssoUserGit@tooljet.io',
+            };
+          },
+        };
+      });
+
+      mockedGot.mockImplementationOnce(gitAuthResponse);
+      mockedGot.mockImplementationOnce(gitGetUserResponse);
+
+      // Calling the createUser helper function to have an Organization created. This user is irrelevant for the test
+      await createUser(app, { email: 'anotherUser@tooljet.io', role: 'admin' });
+
+      const token = 'someStuff';
+
+      const response = await request(app.getHttpServer()).post('/api/oauth/sign-in').send({ token, origin: 'git' });
+
+      expect(response.statusCode).toBe(401);
     });
 
     it('should return login info when the user exists', async () => {

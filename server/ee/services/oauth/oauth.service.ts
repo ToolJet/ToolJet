@@ -20,21 +20,15 @@ export class OauthService {
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
     private readonly configService: ConfigService
-  ) {
-    this.ssoSignUpDisabled =
-      this.configService.get<string>('SSO_DISABLE_SIGNUP') &&
-      this.configService.get<string>('SSO_DISABLE_SIGNUP') === 'true';
-    this.restrictedDomain = this.configService.get<string>('RESTRICTED_DOMAIN');
-  }
-
-  private readonly ssoSignUpDisabled: boolean;
-  private readonly restrictedDomain: string;
+  ) {}
 
   #isValidDomain(domain: string): boolean {
+    const restrictedDomain = this.configService.get<string>('RESTRICTED_DOMAIN');
+
     if (!domain) {
       return false;
     }
-    if (this.restrictedDomain && this.restrictedDomain.split(',').includes(domain)) {
+    if (restrictedDomain && !restrictedDomain.split(',').includes(domain)) {
       return false;
     }
     return true;
@@ -58,7 +52,9 @@ export class OauthService {
 
   async #findAndActivateUser(email: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
     const organizationUser = user.organizationUsers[0];
     if (organizationUser.status != 'active') await this.organizationUsersService.activate(organizationUser);
     return user;
@@ -79,6 +75,10 @@ export class OauthService {
   }
 
   async signIn(ssoResponse: SSOResponse): Promise<any> {
+    const ssoSignUpDisabled =
+      this.configService.get<string>('SSO_DISABLE_SIGNUP') &&
+      this.configService.get<string>('SSO_DISABLE_SIGNUP') === 'true';
+
     const { token, origin } = ssoResponse;
 
     let userResponse: UserResponse;
@@ -100,7 +100,7 @@ export class OauthService {
     if (!(userResponse.userSSOId && userResponse.email)) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const user: User = await (this.ssoSignUpDisabled
+    const user: User = await (ssoSignUpDisabled
       ? this.#findAndActivateUser(userResponse.email)
       : this.#findOrCreateUser(userResponse));
 
