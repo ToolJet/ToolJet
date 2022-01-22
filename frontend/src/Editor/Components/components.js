@@ -1665,4 +1665,57 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'CircularProgressbar',
+    displayName: 'Circular Progressbar',
+    description: 'Show the progress using circular progressbar',
+    component: 'CircularProgressBar',
+    defaultSize: {
+      width: 2,
+      height: 50,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      text: { type: 'code', displayName: 'Text' },
+      progress: { type: 'code', displayName: 'Progress' },
+    },
+    events: {},
+    styles: {
+      color: { type: 'color', displayName: 'Color' },
+      textColor: { type: 'color', displayName: 'Text Color' },
+      textSize: { type: 'code', displayName: 'Text Size' },
+      strokeWidth: { type: 'code', displayName: 'Stroke Width' },
+      counterClockwise: { type: 'code', displayName: 'Counter Clockwise' },
+      circleRatio: { type: 'code', displayName: 'Circle Ratio' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        text: {
+          value: '',
+        },
+        progress: {
+          value: '{{50}}',
+        },
+      },
+      events: [],
+      styles: {
+        color: { value: '#4D72FA' },
+        textColor: { value: '#4D72FA' },
+        textSize: { value: '{{16}}' },
+        strokeWidth: { value: '{{8}}' },
+        counterClockwise: { value: '{{false}}' },
+        circleRatio: { value: '{{1}}' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
 ];
