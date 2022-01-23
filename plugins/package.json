@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
+    "@tooljet-plugins/common": "file:packages/common",
     "@tooljet-plugins/dynamodb": "file:packages/dynamodb",
     "@tooljet-plugins/elasticsearch": "file:packages/elasticsearch",
     "@tooljet-plugins/firestore": "file:packages/firestore",
@@ -34,8 +35,7 @@
     "@tooljet-plugins/slack": "file:packages/slack",
     "@tooljet-plugins/stripe": "file:packages/stripe",
     "@tooljet-plugins/twilioapi": "file:packages/twilioapi",
-    "@tooljet-plugins/typesenseapi": "file:packages/typesenseapi",
-    "common": "file:packages/common"
+    "@tooljet-plugins/typesenseapi": "file:packages/typesenseapi"
   },
   "devDependencies": {
     "jest": "^27.4.5",
