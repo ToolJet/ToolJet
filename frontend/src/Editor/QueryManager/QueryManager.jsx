@@ -285,7 +285,7 @@ let QueryManager = class QueryManager extends React.Component {
                       onClick={() => this.switchCurrentTab(1)}
                       className={currentTab === 1 ? 'nav-link active' : 'nav-link'}
                     >
-                      &nbsp; General
+                      &nbsp; Properties
                     </a>
                   </li>
                   <li className="nav-item">
@@ -293,7 +293,7 @@ let QueryManager = class QueryManager extends React.Component {
                       onClick={() => this.switchCurrentTab(2)}
                       className={currentTab === 2 ? 'nav-link active' : 'nav-link'}
                     >
-                      &nbsp; Advanced
+                      &nbsp; Style
                     </a>
                   </li>
                 </ul>
@@ -363,7 +363,7 @@ let QueryManager = class QueryManager extends React.Component {
             {currentTab === 1 && (
               <div className="row row-deck px-2 pt-1 query-details">
                 {dataSources && mode === 'create' && (
-                  <div className="datasource-picker mb-2">
+                  <div className="datasource-picker mt-3 mb-2">
                     <label className="form-label col-md-2">Datasource</label>
                     <SelectSearch
                       options={[

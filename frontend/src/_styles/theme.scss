@@ -2603,7 +2603,7 @@ input:focus-visible {
 
 .nav-tabs .nav-link.active {
   border: 0;
-  border-bottom: 1px solid #206bc4;
+  border-bottom: 1px solid $primary;
   font-weight: 400;
 }
 
@@ -2760,7 +2760,7 @@ input[type="text"] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: #0565fe !important;
+  color: $primary !important;
 }
 
 .empty-title {
