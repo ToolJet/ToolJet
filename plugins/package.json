@@ -9,7 +9,7 @@
     "create:server": "node create-server-entry",
     "build:server": "rimraf dist/ && tsc -b",
     "start": "tsc -b --watch",
-    "build": "npm run create:client && npm run create:server && lerna run build:packages && npm run build:server",
+    "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server",
     "prebuild:packages": "npm run clean:packages",
     "build:packages": "lerna run build --stream",
     "clean:packages": "lerna run clean --parallel"
