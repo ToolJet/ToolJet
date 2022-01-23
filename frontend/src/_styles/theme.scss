@@ -1885,10 +1885,10 @@ hr {
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #dadcde;
+  border-radius: $border-radius;
   appearance: none;
-  border-radius: 0;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  height: 36px !important;
+  height: 28px !important;
 }
 
 .modal-component {
@@ -3270,4 +3270,14 @@ input[type="text"] {
 
 .button-family-secondary.dark {
   @include button-outline($light-theme: false);
+}
+
+.rest-methods-options .select-search {
+  width: 90px;
+  height: 28px;
+}
+.rest-methods-options .select-search__value input {
+  width: 90px;
+  height: 28px;
+  border-radius: $border-radius;
 }

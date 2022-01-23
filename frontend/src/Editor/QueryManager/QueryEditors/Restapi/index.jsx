@@ -78,10 +78,10 @@ class Restapi extends React.Component {
 
     return (
       <div>
-        <div className="mb-3 mt-2">
+        <div className="mb-3">
           <div className="mb-3">
-            <div className="row g-2">
-              <div className="col-auto" style={{ width: '120px' }}>
+            <div className="row mt-1" style={{ height: '60px' }}>
+              <div className="col-auto rest-methods-options" style={{ width: '90px' }}>
                 <SelectSearch
                   options={[
                     { name: 'GET', value: 'get' },
@@ -101,22 +101,23 @@ class Restapi extends React.Component {
                 />
               </div>
 
-              <div className="col field" style={{ display: 'flex' }}>
+              <div className="col field mx-3" style={{ display: 'flex' }}>
                 {dataSourceURL && (
                   <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={options.url}
-                  height="36px"
-                  className="codehinter-query-editor-input"
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  onChange={(value) => {
-                    changeOption(this, 'url', value);
-                  }}
-                  placeholder="Enter request URL"
-                  componentName={`${queryName}::url`}
-                />
+                <div className="col-4 mb-2 rest-methods-field">
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={options.url}
+                    height="28px"
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => {
+                      changeOption(this, 'url', value);
+                    }}
+                    placeholder="Enter request URL"
+                    componentName={`${queryName}::url`}
+                  />
+                </div>
               </div>
             </div>
           </div>
