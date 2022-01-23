@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SearchBox } from '@/_components/SearchBox';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 
@@ -13,8 +13,6 @@ export default function Header({
   showTemplateLibraryModal,
   fileInput,
 }) {
-
-
   return (
     <div className="row">
       <div className="col-4">
