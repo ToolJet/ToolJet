@@ -1,6 +1,6 @@
 
 import { Knex, knex } from 'knex';
-import { ConnectionTestResult, QueryError, QueryResult,  QueryService, cacheConnection, getCachedConnection } from 'common';
+import { ConnectionTestResult, QueryError, QueryResult,  QueryService, cacheConnection, getCachedConnection } from '@tooljet-plugins/common'
 
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
