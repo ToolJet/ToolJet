@@ -301,8 +301,8 @@ let QueryManager = class QueryManager extends React.Component {
             )}
           </div>
           {(addingQuery || editingQuery) && selectedDataSource && (
-            <div className="col query-name-field">
-              <div className="input-icon" style={{ width: '160px' }}>
+            <div className="col-4 d-flex justify-content-end query-name-field">
+              <div className="input-icon">
                 <input
                   type="text"
                   onChange={(e) => this.setState({ queryName: e.target.value })}
@@ -311,9 +311,6 @@ let QueryManager = class QueryManager extends React.Component {
                   style={{ width: '160px' }}
                   autoFocus={false}
                 />
-                <span className="input-icon-addon">
-                  <img className="svg-icon" src="/assets/images/icons/edit.svg" width="12" height="12" />
-                </span>
               </div>
             </div>
           )}
@@ -336,7 +333,10 @@ let QueryManager = class QueryManager extends React.Component {
                       console.log(error, data);
                     });
                 }}
-                className={`btn btn-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''}`}
+                className={`btn button-family-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''} ${
+                  this.props.darkMode ? 'dark' : ''
+                } `}
+                style={{ width: '72px', height: '28px' }}
               >
                 Preview
               </span>
@@ -346,6 +346,7 @@ let QueryManager = class QueryManager extends React.Component {
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
                 className={`btn btn-primary m-1 float-right ${isUpdating || isCreating ? 'btn-loading' : ''}`}
+                style={{ width: '72px', height: '28px' }}
               >
                 {buttonText}
               </button>

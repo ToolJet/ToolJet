@@ -126,6 +126,15 @@ button {
     .advanced-options-container {
       margin-top: 42px !important;
     }
+
+    .query-name-field .input-icon {
+      margin-right: 30px;
+      width: 160px;
+      input {
+        text-align: right;
+        font-weight: 600;
+      }
+    }
   }
 
   .left-sidebar {
