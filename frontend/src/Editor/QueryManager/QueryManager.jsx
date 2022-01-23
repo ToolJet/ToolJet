@@ -2,6 +2,7 @@ import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
@@ -365,6 +366,7 @@ let QueryManager = class QueryManager extends React.Component {
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mb-2">
                     <label className="form-label col-md-2">Datasource</label>
+                    {/*
                     <SelectSearch
                       options={[
                         ...dataSources.map((source) => {
@@ -380,6 +382,25 @@ let QueryManager = class QueryManager extends React.Component {
                       filterOptions={fuzzySearch}
                       renderOption={this.renderDataSourceOption}
                       placeholder="Select a data source"
+                    />
+                    */}
+                    <Select
+                      options={[
+                        ...dataSources.map((source) => {
+                          return { label: source.name, value: source.id };
+                        }),
+                        ...staticDataSources.map((source) => {
+                          return { label: source.name, value: source.id };
+                        }),
+                      ]}
+                      onChange={(newValue) => this.changeDataSource(newValue.value)}
+                      placeholder="Select a data source"
+                      styles={{
+                        menu: (provided) => ({
+                          ...provided,
+                          zIndex: 2,
+                        }),
+                      }}
                     />
                   </div>
                 )}
