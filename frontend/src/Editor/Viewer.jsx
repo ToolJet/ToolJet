@@ -17,6 +17,7 @@ import {
 import queryString from 'query-string';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import LogoIcon from './Icons/logo.svg';
+import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 
 class Viewer extends React.Component {
   constructor(props) {
@@ -72,6 +73,14 @@ class Viewer extends React.Component {
         ).length > 0;
     }
 
+    let queryState = {};
+    data.data_queries.forEach((query) => {
+      queryState[query.name] = {
+        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+        ...this.state.currentState.queries[query.name],
+      };
+    });
+
     this.setState(
       {
         currentSidebarTab: 2,
@@ -84,7 +93,7 @@ class Viewer extends React.Component {
             : '1292px',
         selectedComponent: null,
         currentState: {
-          queries: {},
+          queries: queryState,
           components: {},
           globals: {
             current_user: userVars,

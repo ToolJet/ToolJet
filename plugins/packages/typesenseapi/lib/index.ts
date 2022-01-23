@@ -1,4 +1,4 @@
-import { ConnectionTestResult, QueryService, QueryResult } from 'common';
+import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common'
 
 import { createCollection, getDocument, updateDocument, deleteDocument, indexDocument, search } from './operations';
 import { Client } from 'typesense';

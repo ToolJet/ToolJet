@@ -41,6 +41,7 @@
     "react": "^16.14.0",
     "react-big-calendar": "^0.38.0",
     "react-bootstrap": "^1.5.2",
+    "react-circular-progressbar": "^2.0.4",
     "react-color": "^2.19.3",
     "react-copy-to-clipboard": "^5.0.3",
     "react-dates": "^21.8.0",

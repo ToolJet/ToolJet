@@ -64,7 +64,7 @@ export const componentTypes = [
       selectedRow: {},
       changeSet: {},
       dataUpdates: [],
-      pageIndex: 0,
+      pageIndex: 1,
       searchText: '',
       selectedRows: [],
     },
@@ -1213,6 +1213,15 @@ export const componentTypes = [
       fileType: { type: 'code', displayName: 'Accept file types' },
       maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
       minSize: { type: 'code', displayName: 'Min size limit (Bytes)' },
+      parseContent: { type: 'toggle', displayName: 'Parse content' },
+      parseFileType: {
+        type: 'select',
+        displayName: 'File type',
+        options: [
+          { name: 'Autodetect from extension', value: 'auto-detect' },
+          { name: 'CSV', value: 'csv' },
+        ],
+      },
     },
     events: { onFileSelected: { displayName: 'On File Selected' } },
     styles: {
@@ -1220,7 +1229,8 @@ export const componentTypes = [
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
-      file: [{ name: '', content: '', dataURL: '', type: '' }],
+      file: [{ name: '', content: '', dataURL: '', type: '', parsedData: '' }],
+      isParsing: false,
     },
     definition: {
       others: {
@@ -1235,6 +1245,8 @@ export const componentTypes = [
         fileType: { value: '{{"image/*"}}' },
         maxSize: { value: '{{1048576}}' },
         minSize: { value: '{{50}}' },
+        parseContent: { value: false },
+        parseFileType: { value: 'auto-detect' },
       },
       events: [],
       styles: {
@@ -1666,6 +1678,59 @@ export const componentTypes = [
     },
   },
   {
+    name: 'CircularProgressbar',
+    displayName: 'Circular Progressbar',
+    description: 'Show the progress using circular progressbar',
+    component: 'CircularProgressBar',
+    defaultSize: {
+      width: 2,
+      height: 50,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      text: { type: 'code', displayName: 'Text' },
+      progress: { type: 'code', displayName: 'Progress' },
+    },
+    events: {},
+    styles: {
+      color: { type: 'color', displayName: 'Color' },
+      textColor: { type: 'color', displayName: 'Text Color' },
+      textSize: { type: 'code', displayName: 'Text Size' },
+      strokeWidth: { type: 'code', displayName: 'Stroke Width' },
+      counterClockwise: { type: 'code', displayName: 'Counter Clockwise' },
+      circleRatio: { type: 'code', displayName: 'Circle Ratio' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        text: {
+          value: '',
+        },
+        progress: {
+          value: '{{50}}',
+        },
+      },
+      events: [],
+      styles: {
+        color: { value: '#4D72FA' },
+        textColor: { value: '#4D72FA' },
+        textSize: { value: '{{16}}' },
+        strokeWidth: { value: '{{8}}' },
+        counterClockwise: { value: '{{false}}' },
+        circleRatio: { value: '{{1}}' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
     name: 'Statistics',
     displayName: 'Statistics',
     description: 'Statistics',
@@ -1707,17 +1772,17 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        primaryValueLabel: { value:'This months earnings' },
-        primaryValue: { value:'682.3'  },  
-        secondaryValueLabel: { value:'Last month'  },
-        secondaryValue: { value:'2.85' },
-        secondarySignDisplay: { value:'positive'  },
+        primaryValueLabel: { value: 'This months earnings' },
+        primaryValue: { value: '682.3' },
+        secondaryValueLabel: { value: 'Last month' },
+        secondaryValue: { value: '2.85' },
+        secondarySignDisplay: { value: 'positive' },
       },
       styles: {
-        primaryLabelColour: { value:'#8092AB' },
-        primaryTextColour: { value:'#000000' },
-        secondaryLabelColour: {value:'#8092AB'  },
-        secondaryTextColour: { value:'#36AF8B'},
+        primaryLabelColour: { value: '#8092AB' },
+        primaryTextColour: { value: '#000000' },
+        secondaryLabelColour: { value: '#8092AB' },
+        secondaryTextColour: { value: '#36AF8B' },
       },
     },
   },

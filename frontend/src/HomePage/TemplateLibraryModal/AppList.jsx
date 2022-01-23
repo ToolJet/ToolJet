@@ -8,7 +8,7 @@ export default function AppList(props) {
 
   return (
     <div className="template-list">
-      <InputGroup className="mt-2 template-search-box">
+      <InputGroup className="template-search-box">
         <FormControl placeholder="Search" aria-label="search" onChange={(event) => searchFor(event.target.value)} />
       </InputGroup>
       <ListGroup className="mt-2 template-app-list">
