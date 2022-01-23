@@ -23,6 +23,7 @@ import {
   runQuery,
   setStateAsync,
   computeComponentState,
+  getSvgIcon,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -54,6 +55,7 @@ class Editor extends React.Component {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
+        groups: currentUser?.group_permissions.map((group) => group.group),
       };
     }
 
@@ -148,9 +150,10 @@ class Editor extends React.Component {
   };
 
   onMouseDown = () => {
-    this.setState({
-      isQueryPaneDragging: true,
-    });
+    this.state.isTopOfQueryPane &&
+      this.setState({
+        isQueryPaneDragging: true,
+      });
   };
 
   onMouseUp = () => {
@@ -551,12 +554,7 @@ class Editor extends React.Component {
         }}
       >
         <td>
-          <img
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />{' '}
-          {dataSource.name}
+          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
         </td>
       </tr>
     );
@@ -611,12 +609,7 @@ class Editor extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col">
-          <img
-            className="svg-icon"
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />
+          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto mx-1">
@@ -991,7 +984,6 @@ class Editor extends React.Component {
                   height: `calc(100% - ${this.state.queryPaneHeight}%)`,
                   width: !showLeftSidebar ? '85%' : '',
                   left: !showLeftSidebar ? '0' : '',
-                  // transition: 'height 0.3s ease-in-out',
                   cursor: this.state.isQueryPaneDragging || this.state.isTopOfQueryPane ? 'row-resize' : 'default',
                 }}
               >

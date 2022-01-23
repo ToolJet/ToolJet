@@ -1,21 +1,25 @@
 # pull official base image
-FROM node:14.17.3-buster
+FROM node:14.17.3-alpine
+RUN apk add postgresql-client freetds
 
 ENV NODE_ENV=development
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN apt update && apt install -y \
-  build-essential  \
-  postgresql \
-  freetds-dev
-
+RUN npm i -g npm@7.20.0
 RUN mkdir -p /app
 WORKDIR /app
 
-COPY ./server/package.json ./server/package-lock.json ./
-RUN npm install
-COPY ./server/ ./
+COPY ./package.json ./package.json
 
-COPY ./.env ../.env
-COPY ./.env.test ../.env.test
+# Build plugins
+COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
+RUN npm --prefix plugins install
+COPY ./plugins/ ./plugins/
+RUN npm run build:plugins
 
-ENTRYPOINT ["./entrypoint.sh"]
+# install app dependencies
+COPY ./server/package.json ./server/package-lock.json ./server/
+RUN npm --prefix server install
+COPY ./server/ ./server/
+
+ENTRYPOINT ["./server/entrypoint.sh"]
