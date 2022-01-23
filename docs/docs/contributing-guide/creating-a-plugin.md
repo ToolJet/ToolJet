@@ -36,23 +36,31 @@ All the plugins live under the `/plugins` directory. The structure of a plugin l
 ## Getting Started
 
 1. Install [tooljet cli](https://www.npmjs.com/package/tooljet):
-  ```sh
+  ```bash
   $ npm i -g tooljet
   ```
 
 2. Bootstrap a new plugin using cli
-  ```sh
+  ```bash
   $ tooljet plugin create bigquery
   ```
 
+  ```bash
+  creating plugin... done
+  Plugin: bigquery created successfully
+  └─ plugins
+    └─ packages
+        └─ bigquery
+  ```
+
 3. Add the npm package of BigQuery to the plugin dependencies
-  ```sh
+  ```bash
   $ tooljet plugin install @google-cloud/bigquery --plugin bigquery
   ```
 
 4. Now the directory for our new plugin should looks something like below: 
 
-  ```
+  ```bash
   plugins/
     package.json
     packages/
@@ -114,8 +122,8 @@ All the plugins live under the `/plugins` directory. The structure of a plugin l
 6. Edit index.ts to include the logic for creating a connection.    
   ```javascript
   async getConnection(sourceOptions: any, _options?: object): Promise<any> {
-    const privateKey = JSON.parse(sourceOptions['gcp_key']);
-    const storage = new BigQuery({
+    const privateKey = JSON.parse(sourceOptions['private_key']);
+    const client = new BigQuery({
       projectId: privateKey['project_id'],
       credentials: {
         client_email: privateKey['client_email'],
@@ -123,7 +131,7 @@ All the plugins live under the `/plugins` directory. The structure of a plugin l
       },
     });
 
-    return storage;
+    return client;
   }
   ```
 
@@ -193,12 +201,18 @@ All the plugins live under the `/plugins` directory. The structure of a plugin l
 
         try {
           switch (operation) {
-            case 'list_buckets':
-                result = await bigquery.getDatasets();
-                datasets.forEach(dataset => console.log(dataset.id));
+            case 'list_datasets':
+                result = await client.getDatasets();
                 break;
           }
+        } catch (error) {
+          throw new QueryError('Query could not be completed', error.message, {});
         }
+
+        return {
+          status: 'ok',
+          data: result,
+        };
       }
     }
   ```
@@ -210,6 +224,4 @@ All the plugins live under the `/plugins` directory. The structure of a plugin l
 
   Tests for a specific plugin can be run using the command `tooljet plugin test --bigquery`
 
-13. The plugin is now ready! Let's try it out. 
-
-  Screenshots
+13. The plugin is now ready! 
