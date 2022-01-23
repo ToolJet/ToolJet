@@ -1,5 +1,5 @@
 {
-  "name": "mongo",
+  "name": "@tooljet-plugins/mongo",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "common": "file:../common",
+    "@tooljet-plugins/common": "file:../common",
     "json5": "^2.2.0",
     "mongodb": "^4.2.2",
     "react": "^17.0.2",

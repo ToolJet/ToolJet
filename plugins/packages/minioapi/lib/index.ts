@@ -1,4 +1,4 @@
-import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from 'common';
+import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from '@tooljet-plugins/common'
 import { Client as MinioClient, ClientOptions } from 'minio';
 
 import { getObject, uploadObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';

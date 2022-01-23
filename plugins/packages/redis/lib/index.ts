@@ -1,5 +1,5 @@
 
-import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from 'common';
+import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
 
 const Redis = require('ioredis');
 

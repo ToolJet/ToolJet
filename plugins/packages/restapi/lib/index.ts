@@ -1,7 +1,7 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
 import * as tls from 'tls';
-import { QueryError, QueryResult,  QueryService} from 'common';
+import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
 import got, { Headers, HTTPError } from 'got'
 
 function isEmpty(value: number | null | undefined | string) {

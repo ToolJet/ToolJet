@@ -1,4 +1,4 @@
-import { QueryError, QueryResult,  QueryService} from 'common';
+import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
 
 
 import * as SendGrid from '@sendgrid/mail';
