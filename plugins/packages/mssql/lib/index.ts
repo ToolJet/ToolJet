@@ -1,4 +1,3 @@
-
 import { Knex, knex } from 'knex';
 import { ConnectionTestResult, QueryError, QueryResult,  QueryService, cacheConnection, getCachedConnection } from '@tooljet-plugins/common'
 
@@ -9,7 +8,7 @@ export default class MssqlQueryService implements QueryService {
     if (MssqlQueryService._instance) {
       return MssqlQueryService._instance;
     }
-  
+
     MssqlQueryService._instance = this;
     return MssqlQueryService._instance;
   }
@@ -52,9 +51,6 @@ export default class MssqlQueryService implements QueryService {
         password: sourceOptions.password,
         database: sourceOptions.database,
         port: +sourceOptions.port,
-        options: {
-          encrypt: true,
-        },
       },
     };
 
