@@ -1,5 +1,5 @@
 {
-  "name": "googlesheets",
+  "name": "@tooljet-plugins/googlesheets",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "common": "file:../common",
+    "@tooljet-plugins/common": "file:../common",
     "got": "^11.8.2",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"

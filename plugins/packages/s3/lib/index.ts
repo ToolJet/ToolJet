@@ -1,6 +1,6 @@
 import { getObject, uploadObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
 import { S3Client } from '@aws-sdk/client-s3';
-import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from 'common';
+import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from '@tooljet-plugins/common'
 import { SourceOptions, QueryOptions } from './types'
 
 export default class S3QueryService implements QueryService {

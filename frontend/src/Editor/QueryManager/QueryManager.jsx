@@ -1,7 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
@@ -211,10 +211,24 @@ let QueryManager = class QueryManager extends React.Component {
   renderDataSourceOption = (props, option, snapshot, className) => {
     const icon = option.kind ? `/assets/images/icons/editor/datasources/${option.kind.toLowerCase() + '.svg'}` : null;
     return (
-      <button {...props} className={className} type="button">
+      <button
+        {...props}
+        className={`${className} ${this.props.darkMode ? 'select-search__option__dark' : ''}`}
+        type="button"
+      >
         <div>
-          <span className="text-muted">
-            {icon && <img src={icon} style={{ margin: 'auto', marginRight: '3px' }} height="25" width="25"></img>}
+          <span>
+            {icon && (
+              <img
+                src={icon}
+                style={{
+                  margin: 'auto',
+                  marginRight: '3px',
+                }}
+                height="25"
+                width="25"
+              ></img>
+            )}
             {option.name}
           </span>
         </div>
@@ -365,21 +379,23 @@ let QueryManager = class QueryManager extends React.Component {
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mb-2">
                     <label className="form-label col-md-2">Datasource</label>
-                    <SelectSearch
+                    <Select
                       options={[
                         ...dataSources.map((source) => {
-                          return { name: source.name, value: source.id, kind: source.kind };
+                          return { label: source.name, value: source.id };
                         }),
                         ...staticDataSources.map((source) => {
-                          return { name: source.name, value: source.id };
+                          return { label: source.name, value: source.id };
                         }),
                       ]}
-                      value={selectedDataSource ? selectedDataSource.id : ''}
-                      search={true}
-                      onChange={(value) => this.changeDataSource(value)}
-                      filterOptions={fuzzySearch}
-                      renderOption={this.renderDataSourceOption}
+                      onChange={(newValue) => this.changeDataSource(newValue.value)}
                       placeholder="Select a data source"
+                      styles={{
+                        menu: (provided) => ({
+                          ...provided,
+                          zIndex: 2,
+                        }),
+                      }}
                     />
                   </div>
                 )}

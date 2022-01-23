@@ -1,4 +1,5 @@
-import { ConnectionTestResult, QueryService, QueryResult } from 'common';
+import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common'
+
 import { getDocument, updateDocument } from './operations';
 import { indexDocument, search } from './operations';
 const { Client } = require('@elastic/elasticsearch');

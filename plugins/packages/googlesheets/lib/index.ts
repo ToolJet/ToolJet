@@ -1,4 +1,4 @@
-import { QueryError, QueryResult,  QueryService } from 'common';
+import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
 import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
 import got, { Headers } from 'got'
 import { SourceOptions, QueryOptions } from './types'

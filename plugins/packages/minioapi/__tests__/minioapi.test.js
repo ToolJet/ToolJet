@@ -3,5 +3,5 @@
 const minioapi = require('../lib');
 
 describe('minioapi', () => {
-    it('needs tests');
+    it.todo('needs tests');
 });

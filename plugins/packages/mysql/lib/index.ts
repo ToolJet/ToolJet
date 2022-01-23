@@ -1,5 +1,5 @@
 import { Knex, knex } from 'knex';
-import { cacheConnection, getCachedConnection, ConnectionTestResult, QueryService, QueryResult } from 'common';
+import { cacheConnection, getCachedConnection, ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common'
 import { SourceOptions, QueryOptions } from './types'
 
 export default class MysqlQueryService implements QueryService {

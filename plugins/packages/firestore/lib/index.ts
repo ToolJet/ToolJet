@@ -1,4 +1,11 @@
-import { ConnectionTestResult, QueryError, QueryResult,  QueryService, parseJson } from 'common';
+import {
+  ConnectionTestResult,
+  QueryError,
+  QueryResult,
+  QueryService,
+  parseJson 
+} from '@tooljet-plugins/common'
+
 import {
   addDocument,
   bulkUpdate,

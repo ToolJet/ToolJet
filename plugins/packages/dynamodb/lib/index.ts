@@ -1,4 +1,5 @@
-import { ConnectionTestResult, QueryService, QueryResult } from 'common';
+import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common'
+
 import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
 const AWS = require('aws-sdk');
 import { SourceOptions, QueryOptions } from './types'
