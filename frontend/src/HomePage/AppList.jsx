@@ -13,7 +13,7 @@ const AppList = (props) => {
                   <div className="card-skeleton-container">
                     <div className="skeleton-line"></div>
                     <div className="skeleton-line"></div>
-                    <div className="card-skeleton-button"></div>     
+                    <div className="card-skeleton-button"></div>
                   </div>
                 </div>
               ))}
