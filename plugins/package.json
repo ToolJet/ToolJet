@@ -11,8 +11,8 @@
     "prebuild:server": "npm run clean",
     "build:server": "tsc -b",
     "prebuild:packages": "npm run clean:packages && npm run create:client && npm run create:server",
-    "build:packages": "lerna run build --stream",
-    "clean:packages": "lerna run clean --parallel"
+    "build:packages": "npx lerna run build --stream",
+    "clean:packages": "npx lerna run clean --parallel"
   },
   "dependencies": {
     "@tooljet-plugins/airtable": "file:packages/airtable",
