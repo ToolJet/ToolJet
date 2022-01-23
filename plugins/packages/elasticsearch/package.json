@@ -1,5 +1,5 @@
 {
-  "name": "elasticsearch",
+  "name": "@tooljet-plugins/elasticsearch",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.16.0",
-    "common": "file:../common",
+    "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"
   }

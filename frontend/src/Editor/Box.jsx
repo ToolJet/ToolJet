@@ -32,6 +32,7 @@ import { Timer } from './Components/Timer';
 import { Pagination } from './Components/Pagination';
 import { Tags } from './Components/Tags';
 import { Spinner } from './Components/Spinner';
+import { CircularProgressBar } from './Components/CirularProgressbar';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -73,6 +74,7 @@ const AllComponents = {
   Pagination,
   Tags,
   Spinner,
+  CircularProgressBar,
 };
 
 export const Box = function Box({
@@ -176,6 +178,7 @@ export const Box = function Box({
               exposedVariables={exposedVariables}
               styles={resolvedStyles}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, extraProps)}
+              registerAction={(actionName, func) => onComponentOptionChanged(component, actionName, func)}
               fireEvent={fireEvent}
               validate={validate}
               parentId={parentId}

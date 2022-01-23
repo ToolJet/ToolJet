@@ -1,5 +1,5 @@
 {
-  "name": "graphql",
+  "name": "@tooljet-plugins/graphql",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "common": "file:../common",
+    "@tooljet-plugins/common": "file:../common",
     "got": "^11.8.2",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"
