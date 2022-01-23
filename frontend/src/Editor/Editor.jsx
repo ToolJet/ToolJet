@@ -1060,7 +1060,7 @@ class Editor extends React.Component {
                               <center>
                                 <span className="mute-text">{dataQueriesDefaultText}</span> <br />
                                 <button
-                                  className={`datasource-modal-button mt-3 ${this.props.darkMode && 'dark-button'}`}
+                                  className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
                                   onClick={() =>
                                     this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
                                   }

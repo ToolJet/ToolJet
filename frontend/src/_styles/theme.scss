@@ -3,6 +3,9 @@
 @import "./z-index.scss";
 @import "./mixins.scss";
 
+// variables
+$border-radius: 4px;
+
 body {
   font-family: "Roboto", sans-serif;
 }
@@ -116,7 +119,8 @@ button {
     }
 
     .query-details {
-      margin-top: 0px;
+      margin-top: 25px;
+      width: inherit;
     }
 
     .advanced-options-container {
@@ -888,7 +892,13 @@ button {
 
 .datasource-picker {
   .select-search {
-    width: 300px;
+    width: 224px;
+    height: 28px;
+    border-radius: $border-radius!important;
+  }
+
+  .select-search__value input {
+    @extend .select-search;
   }
 }
 
@@ -3241,4 +3251,14 @@ input[type="text"] {
 
 .query-btn.dark {
   filter: brightness(0) invert(1);
+}
+
+.button-family-secondary {
+  @include button-outline($light-theme: true);
+  height: 32px;
+  width: 112px;
+}
+
+.button-family-secondary.dark {
+  @include button-outline($light-theme: false);
 }
