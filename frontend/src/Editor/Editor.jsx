@@ -1058,14 +1058,14 @@ class Editor extends React.Component {
                           {dataQueries.length === 0 && (
                             <div className="mt-5">
                               <center>
-                                <span className="text-muted">{dataQueriesDefaultText}</span> <br />
+                                <span className="mute-text">{dataQueriesDefaultText}</span> <br />
                                 <button
-                                  className="btn btn-sm btn-outline-azure mt-3"
+                                  className={`datasource-modal-button mt-3 ${this.props.darkMode && 'dark-button'}`}
                                   onClick={() =>
                                     this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
                                   }
                                 >
-                                  create query
+                                  {'create query'}
                                 </button>
                               </center>
                             </div>
