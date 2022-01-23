@@ -1065,7 +1065,7 @@ class Editor extends React.Component {
                                     this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
                                   }
                                 >
-                                  {'create query'}
+                                  {'Create query'}
                                 </button>
                               </center>
                             </div>
