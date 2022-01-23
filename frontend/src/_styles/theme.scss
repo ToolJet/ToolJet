@@ -470,7 +470,7 @@ button {
         .header {
           position: absolute;
           right: 0;
-          left: 33.33%;
+          left: 264px;
           border: solid rgba(0, 0, 0, 0.125);
           border-width: 0px 0px 1px 0px;
           background: white;
@@ -490,6 +490,7 @@ button {
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
+        width: 264px!important;
         min-height: 41px;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* Internet Explorer 10+ */
@@ -505,6 +506,7 @@ button {
         }
 
         .queries-container {
+          width: 100%;
           .queries-header {
             border: solid rgba(0, 0, 0, 0.125);
             border-width: 0px 0px 1px 0px;
