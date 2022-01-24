@@ -39,6 +39,7 @@ export function Table({
   onComponentOptionsChanged,
   darkMode,
   fireEvent,
+  setExposedVariable,
   registerAction,
 }) {
   const color = component.definition.styles.textColor.value;
@@ -750,7 +751,7 @@ export function Table({
   const registerSetPageAction = () => {
     registerAction('setPage', (targetPageIndex) => {
       setPaginationInternalPageIndex(targetPageIndex);
-      onComponentOptionChanged(component, 'pageIndex', targetPageIndex);
+      setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
     });
   };
