@@ -1,19 +1,17 @@
-import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-
-
-import {Headers} from 'got'
-import got from 'got'
+import { QueryError, QueryResult,  QueryService } from '@tooljet-plugins/common';
+import got, { Headers } from 'got'
+import { SourceOptions } from './types'
 
 export default class StripeQueryService implements QueryService {
   authHeader(token: string): Headers {
     return { Authorization: `Bearer ${token}` };
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
     let result = {};
     const operation = queryOptions.operation;
 
-    const apiKey = sourceOptions['api_key'];
+    const apiKey = sourceOptions.api_key;
     const baseUrl = 'https://api.stripe.com';
     const path = queryOptions['path'];
     let url = `${baseUrl}${path}`;

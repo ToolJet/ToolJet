@@ -1,11 +1,10 @@
 import { Storage } from '@google-cloud/storage';
-
 import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-
 import { listBuckets, signedUrlForGet, signedUrlForPut, listFiles, getFile, uploadFile } from './operations';
+import { SourceOptions, QueryOptions } from './types'
 
 export default class GcsQueryService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, _dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const operation = queryOptions.operation;
     const client = await this.getConnection(sourceOptions);
     let result = {};
@@ -41,7 +40,7 @@ export default class GcsQueryService implements QueryService {
     };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client: Storage = await this.getConnection(sourceOptions);
     await listBuckets(client, {});
 
@@ -50,7 +49,7 @@ export default class GcsQueryService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: any, _options?: object): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const privateKey = JSON.parse(sourceOptions['private_key']);
     const storage = new Storage({
       projectId: privateKey['project_id'],

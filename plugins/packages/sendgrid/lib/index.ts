@@ -1,11 +1,9 @@
 import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-
-
 import * as SendGrid from '@sendgrid/mail';
-import { EmailOptions } from './types';
+import { EmailOptions, SourceOptions, QueryOptions } from './types'
 
 export default class SendGridQueryService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     if (!(queryOptions && sourceOptions.api_key)) {
       throw new QueryError('Query could not be completed as API key is not set', 'Missing API key', {});
     }

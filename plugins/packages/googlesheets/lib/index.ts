@@ -1,8 +1,7 @@
 import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-
-
 import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
-import got, {Headers} from 'got'
+import got, { Headers } from 'got'
+import { SourceOptions, QueryOptions } from './types'
 
 export default class GooglesheetsQueryService implements QueryService {
   authUrl(): string {
@@ -62,14 +61,14 @@ export default class GooglesheetsQueryService implements QueryService {
     return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
     let response = null;
     const operation = queryOptions.operation;
-    const spreadsheetId = queryOptions['spreadsheet_id'];
-    const spreadsheetRange = queryOptions['spreadsheet_range'] ? queryOptions['spreadsheet_range'] : 'A1:Z500';
+    const spreadsheetId = queryOptions.spreadsheet_id;
+    const spreadsheetRange = queryOptions.spreadsheet_range ? queryOptions.spreadsheet_range : 'A1:Z500';
     const accessToken = sourceOptions['access_token'];
-    const queryOptionFilter = { key: queryOptions['where_field'], value: queryOptions['where_value'] };
+    const queryOptionFilter = { key: queryOptions.where_field, value: queryOptions.where_value };
 
     try {
       switch (operation) {
@@ -83,14 +82,14 @@ export default class GooglesheetsQueryService implements QueryService {
           break;
 
         case 'read':
-          result = await readData(spreadsheetId, spreadsheetRange, queryOptions['sheet'], this.authHeader(accessToken));
+          result = await readData(spreadsheetId, spreadsheetRange, queryOptions.sheet, this.authHeader(accessToken));
           break;
 
         case 'append':
           result = await appendData(
             spreadsheetId,
-            queryOptions['sheet'],
-            queryOptions['rows'],
+            queryOptions.sheet,
+            queryOptions.rows,
             this.authHeader(accessToken)
           );
           break;
@@ -98,9 +97,9 @@ export default class GooglesheetsQueryService implements QueryService {
         case 'update':
           result = await batchUpdateToSheet(
             spreadsheetId,
-            queryOptions['body'],
+            queryOptions.body,
             queryOptionFilter,
-            queryOptions['where_operation'],
+            queryOptions.where_operation,
             this.authHeader(accessToken)
           );
           break;
@@ -108,8 +107,8 @@ export default class GooglesheetsQueryService implements QueryService {
         case 'delete_row':
           result = await deleteData(
             spreadsheetId,
-            queryOptions['sheet'],
-            queryOptions['row_index'],
+            queryOptions.sheet,
+            queryOptions.row_index,
             this.authHeader(accessToken)
           );
           break;
