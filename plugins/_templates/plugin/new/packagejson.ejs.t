@@ -2,7 +2,7 @@
 to: <%= plugins_path %>/packages/<%= name %>/package.json
 ---
 {
-  "name": "<%= name %>",
+  "name": "@tooljet-plugins/<%= name %>",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,5 +1,5 @@
 {
-  "name": "redis",
+  "name": "@tooljet-plugins/redis",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "common": "file:../common",
+    "@tooljet-plugins/common": "file:../common",
     "ioredis": "^4.28.2",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"

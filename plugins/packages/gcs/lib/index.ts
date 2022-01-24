@@ -1,6 +1,6 @@
 import { Storage } from '@google-cloud/storage';
 
-import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from 'common';
+import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
 
 import { listBuckets, signedUrlForGet, signedUrlForPut, listFiles, getFile, uploadFile } from './operations';
 
