@@ -34,8 +34,8 @@ services:
       - /app/plugins/dist/
       - /app/plugins/node_modules/
       - /app/server/node_modules/
-      - '.env:/app/.env'
-      - '.env.test:/app/.env.test'
+      - ".env:/app/.env"
+      - ".env.test:/app/.env.test"
     ports:
       - 3000:3000
     environment:
@@ -55,5 +55,3 @@ services:
 
 volumes:
   postgres:
-  node_modules:
-  cache:
