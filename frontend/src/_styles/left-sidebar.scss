@@ -184,6 +184,10 @@
     border-radius: 4px!important;
     background-color: $primary!important;
   }
+
+  .list-group-item + .list-group-item.active  {
+    margin-top: 0px!important;
+  }
 }
 
 .modal-body-content {
