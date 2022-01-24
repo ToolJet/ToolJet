@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
@@ -83,7 +83,14 @@ export const Container = ({
     [boxes]
   );
 
+  // Dont update first time to skip
+  // redundant save on app definition load
+  const firstUpdate = useRef(true);
   useEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
     console.log('new boxes - 2', boxes);
     appDefinitionChanged({ ...appDefinition, components: boxes });
     // eslint-disable-next-line react-hooks/exhaustive-deps

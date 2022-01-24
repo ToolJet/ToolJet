@@ -1,7 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
@@ -379,22 +379,23 @@ let QueryManager = class QueryManager extends React.Component {
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mb-2">
                     <label className="form-label col-md-2">Datasource</label>
-                    <SelectSearch
+                    <Select
                       options={[
                         ...dataSources.map((source) => {
-                          return { name: source.name, value: source.id, kind: source.kind };
+                          return { label: source.name, value: source.id };
                         }),
                         ...staticDataSources.map((source) => {
-                          return { name: source.name, value: source.id };
+                          return { label: source.name, value: source.id };
                         }),
                       ]}
-                      value={selectedDataSource ? selectedDataSource.id : ''}
-                      search={true}
-                      onChange={(value) => this.changeDataSource(value)}
-                      filterOptions={fuzzySearch}
-                      renderOption={this.renderDataSourceOption}
+                      onChange={(newValue) => this.changeDataSource(newValue.value)}
                       placeholder="Select a data source"
-                      className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                      styles={{
+                        menu: (provided) => ({
+                          ...provided,
+                          zIndex: 2,
+                        }),
+                      }}
                     />
                   </div>
                 )}

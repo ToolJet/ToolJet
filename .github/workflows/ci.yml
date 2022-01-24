@@ -5,7 +5,8 @@ on:
   push:
     branches: [develop, main]
   pull_request:
-    types: [ labeled ]
+    types: [ labeled, opened, synchronize, reopened ]
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -29,7 +30,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.label.name == 'run-ci' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'run-ci') }}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -58,7 +59,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    if: ${{ github.event.label.name == 'run-ci' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'run-ci') }}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it

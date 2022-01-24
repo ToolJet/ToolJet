@@ -1,5 +1,5 @@
 {
-  "name": "s3",
+  "name": "@tooljet-plugins/s3",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,7 +19,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.44.0",
     "@aws-sdk/s3-request-presigner": "^3.44.0",
-    "common": "file:../common",
+    "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"
   }
