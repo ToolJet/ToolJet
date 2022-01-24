@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Custom JavaScript
 
-Now you can write custom JavaScript code to interact with components and queries. To do that, you just need to create a new query and select **Run JavaScript Code** from the list of datasource dropdown.
+You can write custom JavaScript code to interact with components and queries. To do that, you just need to create a new query and select **Run JavaScript Code** from the datasources dropdown.
 
 <div style={{textAlign: 'center'}}>
 
