@@ -1,13 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 export const Statistics = function Statistics({ height, properties, styles, darkMode }) {
   const { primaryValueLabel, primaryValue, secondaryValueLabel, secondaryValue, secondarySignDisplay } = properties;
   const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour } = styles;
-
-  const [sign, setSign] = useState('');
-
-  useEffect(() => {
-    secondarySignDisplay == 'positive' ? setSign('+') : setSign('-');
-  }, [secondarySignDisplay]);
 
   const baseStyle = {
     borderRadius: 4,
@@ -49,26 +43,32 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     width: '61px',
     height: '24px',
     background:
-      secondarySignDisplay == 'positive' ? (darkMode ? '#206953' : '#EDFFF9') : darkMode ? '#F8ABB8' : '#FDEAED',
+      secondarySignDisplay !== 'negative' ? (darkMode ? '#206953' : '#EDFFF9') : darkMode ? '#F8ABB8' : '#FDEAED',
     borderRadius: '58px',
     color:
       secondaryTextColour !== '#36AF8B'
         ? secondaryTextColour
-        : secondarySignDisplay == 'positive'
+        : secondarySignDisplay !== 'negative'
         ? '#36AF8B'
         : '#EE2C4D',
     fontWeight: '700',
   };
 
   return (
-    <div className="" style={baseStyle}>
-      <p style={{ ...letterStyle, ...marginStyle, color: darkMode ? '#FFFFFC' : primaryLabelColour }}>
+    <div style={baseStyle}>
+      <p
+        style={{
+          ...letterStyle,
+          ...marginStyle,
+          color: darkMode ? '#FFFFFC' : primaryLabelColour,
+        }}
+      >
         {primaryValueLabel}
       </p>
       <h2 style={priceStyle}>{primaryValue}</h2>
       <div>
         <div className="d-flex flex-row">
-          {secondarySignDisplay == 'positive' ? (
+          {secondarySignDisplay !== 'negative' ? (
             <img src="/assets/images/icons/widgets/upstatistics.svg" style={{ ...marginStyle, marginRight: '6.5px' }} />
           ) : (
             <img
@@ -78,7 +78,13 @@ export const Statistics = function Statistics({ height, properties, styles, dark
           )}
           <p style={{ ...marginStyle, ...secondaryContainerStyle }}>{secondaryValue}</p>
         </div>
-        <p style={{ ...letterStyle, color: darkMode ? '#FFFFFC' : secondaryLabelColour, marginBottom: '12px' }}>
+        <p
+          style={{
+            ...letterStyle,
+            color: darkMode ? '#FFFFFC' : secondaryLabelColour,
+            marginBottom: '12px',
+          }}
+        >
           {secondaryValueLabel}
         </p>
       </div>
