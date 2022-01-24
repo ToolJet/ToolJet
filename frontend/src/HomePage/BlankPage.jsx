@@ -1,5 +1,4 @@
 import React from 'react';
-import { LibraryApps } from './LibraryApps';
 
 export const BlankPage = function BlankPage({ createApp, handleImportApp, isImportingApp, fileInput }) {
   return (
@@ -59,8 +58,6 @@ export const BlankPage = function BlankPage({ createApp, handleImportApp, isImpo
                 </a>
               </div>
             </div>
-
-            <LibraryApps></LibraryApps>
           </div>
         </div>
       </div>

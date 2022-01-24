@@ -23,6 +23,7 @@ import {
   runQuery,
   setStateAsync,
   computeComponentState,
+  getSvgIcon,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -54,6 +55,7 @@ class Editor extends React.Component {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
+        groups: currentUser?.group_permissions.map((group) => group.group),
       };
     }
 
@@ -72,6 +74,7 @@ class Editor extends React.Component {
       allComponentTypes: componentTypes,
       isQueryPaneDragging: false,
       queryPaneHeight: 70,
+      isTopOfQueryPane: false,
       isLoading: true,
       users: null,
       appId,
@@ -105,6 +108,10 @@ class Editor extends React.Component {
     };
   }
 
+  setWindowTitle(name) {
+    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
+  }
+
   componentDidMount() {
     this.fetchApps(0);
     this.fetchApp();
@@ -118,8 +125,21 @@ class Editor extends React.Component {
   }
 
   onMouseMove = (e) => {
+    const componentTop = Math.round(this.queryPaneRef.current.getBoundingClientRect().top);
+    const clientY = e.clientY;
+
+    if ((clientY >= componentTop) & (clientY <= componentTop + 5)) {
+      this.setState({
+        isTopOfQueryPane: true,
+      });
+    } else {
+      this.setState({
+        isTopOfQueryPane: false,
+      });
+    }
+
     if (this.state.isQueryPaneDragging) {
-      let queryPaneHeight = (e.clientY / window.screen.height) * 100;
+      let queryPaneHeight = (clientY / window.innerHeight) * 100;
 
       if (queryPaneHeight > 95) queryPaneHeight = 100;
       if (queryPaneHeight < 4.5) queryPaneHeight = 4.5;
@@ -131,9 +151,10 @@ class Editor extends React.Component {
   };
 
   onMouseDown = () => {
-    this.setState({
-      isQueryPaneDragging: true,
-    });
+    this.state.isTopOfQueryPane &&
+      this.setState({
+        isQueryPaneDragging: true,
+      });
   };
 
   onMouseUp = () => {
@@ -153,6 +174,7 @@ class Editor extends React.Component {
     if (this.state.socket) {
       this.state.socket?.close();
     }
+    document.title = 'Tooljet - Dashboard';
   }
 
   getWebsocketUrl = () => {
@@ -311,6 +333,7 @@ class Editor extends React.Component {
             console.log('Default component state computed and set');
             this.runQueries(data.data_queries);
           });
+          this.setWindowTitle(data.name);
         }
       );
 
@@ -532,12 +555,7 @@ class Editor extends React.Component {
         }}
       >
         <td>
-          <img
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />{' '}
-          {dataSource.name}
+          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)} {dataSource.name}
         </td>
       </tr>
     );
@@ -592,12 +610,7 @@ class Editor extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col">
-          <img
-            className="svg-icon"
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />
+          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto mx-1">
@@ -647,6 +660,7 @@ class Editor extends React.Component {
     this.setState({
       app: { ...this.state.app, name: newName },
     });
+    this.setWindowTitle(newName);
   };
 
   toggleQueryEditor = () => {
@@ -967,19 +981,10 @@ class Editor extends React.Component {
                 onMouseDown={this.onMouseDown}
                 className="query-pane"
                 style={{
-                  height: `calc(100% - ${this.state.queryPaneHeight - 1}%)`,
-                  background: 'transparent',
-                  border: 0,
-                  cursor: 'row-resize',
-                }}
-              ></div>
-              <div
-                className="query-pane"
-                style={{
                   height: `calc(100% - ${this.state.queryPaneHeight}%)`,
                   width: !showLeftSidebar ? '85%' : '',
                   left: !showLeftSidebar ? '0' : '',
-                  cursor: this.state.isQueryPaneDragging ? 'row-resize' : 'default',
+                  cursor: this.state.isQueryPaneDragging || this.state.isTopOfQueryPane ? 'row-resize' : 'default',
                 }}
               >
                 <div className="row main-row">

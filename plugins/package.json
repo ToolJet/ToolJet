@@ -1,0 +1,47 @@
+{
+  "name": "@tooljet/plugins",
+  "version": "0.0.1",
+  "source": "server.ts",
+  "types": "dist/server.d.ts",
+  "main": "dist/server.js",
+  "scripts": {
+    "clean": "rimraf dist/",
+    "create:client": "node create-client-entry",
+    "create:server": "node create-server-entry",
+    "prebuild:server": "npm run clean",
+    "build:server": "tsc -b",
+    "prebuild:packages": "npm run clean:packages && npm run create:client && npm run create:server",
+    "build:packages": "npx lerna run build --stream",
+    "clean:packages": "npx lerna run clean --parallel"
+  },
+  "dependencies": {
+    "@tooljet-plugins/airtable": "file:packages/airtable",
+    "@tooljet-plugins/common": "file:packages/common",
+    "@tooljet-plugins/dynamodb": "file:packages/dynamodb",
+    "@tooljet-plugins/elasticsearch": "file:packages/elasticsearch",
+    "@tooljet-plugins/firestore": "file:packages/firestore",
+    "@tooljet-plugins/gcs": "file:packages/gcs",
+    "@tooljet-plugins/googlesheets": "file:packages/googlesheets",
+    "@tooljet-plugins/graphql": "file:packages/graphql",
+    "@tooljet-plugins/minioapi": "file:packages/minioapi",
+    "@tooljet-plugins/mongo": "file:packages/mongo",
+    "@tooljet-plugins/mssql": "file:packages/mssql",
+    "@tooljet-plugins/mysql": "file:packages/mysql",
+    "@tooljet-plugins/postgresql": "file:packages/postgresql",
+    "@tooljet-plugins/redis": "file:packages/redis",
+    "@tooljet-plugins/restapi": "file:packages/restapi",
+    "@tooljet-plugins/s3": "file:packages/s3",
+    "@tooljet-plugins/sendgrid": "file:packages/sendgrid",
+    "@tooljet-plugins/slack": "file:packages/slack",
+    "@tooljet-plugins/stripe": "file:packages/stripe",
+    "@tooljet-plugins/twilioapi": "file:packages/twilioapi",
+    "@tooljet-plugins/typesenseapi": "file:packages/typesenseapi"
+  },
+  "devDependencies": {
+    "jest": "^27.4.5",
+    "lerna": "^4.0.0",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.5.4"
+  }
+}

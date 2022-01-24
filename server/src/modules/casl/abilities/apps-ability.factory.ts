@@ -25,6 +25,7 @@ type Actions =
   | 'updateParams'
   | 'updateQuery'
   | 'updateVersions'
+  | 'updateIcon'
   | 'viewApp';
 
 type Subjects = InferSubjects<typeof AppVersion | typeof User | typeof App> | 'all';
@@ -68,6 +69,7 @@ export class AppsAbilityFactory {
       can('updateParams', App, { organizationId: user.organizationId });
       can('createVersions', App, { organizationId: user.organizationId });
       can('updateVersions', App, { organizationId: user.organizationId });
+      can('updateIcon', App, { organizationId: user.organizationId });
 
       can('updateQuery', App, { organizationId: user.organizationId });
       can('createQuery', App, { organizationId: user.organizationId });

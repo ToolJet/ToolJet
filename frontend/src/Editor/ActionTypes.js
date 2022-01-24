@@ -55,6 +55,18 @@ export const ActionTypes = [
     ],
   },
   {
+    name: 'Set table page',
+    id: 'set-table-page',
+    options: [
+      {
+        name: 'table',
+        type: 'text',
+        default: '',
+      },
+      { name: 'pageIndex', type: 'text', default: '{{1}}' },
+    ],
+  },
+  {
     name: 'Set variable',
     id: 'set-custom-variable',
     options: [

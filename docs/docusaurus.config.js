@@ -10,6 +10,7 @@ module.exports = {
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
+    image: 'img/tooljet-og-image.png',
     announcementBar: {
       id: 'support_us',
       content:

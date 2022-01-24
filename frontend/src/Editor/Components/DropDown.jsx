@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-
 export const DropDown = function DropDown({
   height,
   validate,
@@ -10,6 +9,9 @@ export const DropDown = function DropDown({
   setExposedVariable,
   fireEvent,
   darkMode,
+  onComponentClick,
+  id,
+  component,
 }) {
   let { label, value, display_values, values } = properties;
   const { visibility, disabledState } = styles;
@@ -101,17 +103,17 @@ export const DropDown = function DropDown({
       const styles = darkMode
         ? {
             color: 'white',
-            backgroundColor: state.value === currentValue ? '#4D72FA' : state.isFocused ? '#2F3C4C' : 'rgb(31,40,55)',
+            backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
             ':hover': {
-              backgroundColor: '#2F3C4C',
-            },
-            ':active': {
-              backgroundColor: '#4D72FA',
+              backgroundColor: state.value === currentValue ? '#1F2E64' : '#323C4B',
             },
           }
         : {
-            backgroundColor: state.value === currentValue ? '#4D72FA' : state.isFocused ? '#d8dce9' : 'white',
+            backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
             color: state.value === currentValue ? 'white' : 'black',
+            ':hover': {
+              backgroundColor: state.value === currentValue ? '#3650AF' : '#d8dce9',
+            },
           };
       return {
         ...provided,
@@ -130,7 +132,13 @@ export const DropDown = function DropDown({
 
   return (
     <>
-      <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
+      <div
+        className="dropdown-widget row g-0"
+        style={{ height, display: visibility ? '' : 'none' }}
+        onMouseDown={(event) => {
+          onComponentClick(id, component, event);
+        }}
+      >
         <div className="col-auto my-auto">
           <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
             {label}
@@ -152,6 +160,7 @@ export const DropDown = function DropDown({
             styles={customStyles}
             isLoading={properties.loadingState}
             onInputChange={onSearchTextChange}
+            onFocus={(event) => onComponentClick(event, component, id)}
           />
         </div>
       </div>

@@ -1,10 +1,10 @@
+import allPlugins from '@tooljet/plugins/dist/server';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getManager, Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
-import { allPlugins } from '../../src/modules/data_sources/plugins';
 
 @Injectable()
 export class DataSourcesService {
@@ -88,9 +88,7 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const plugins = await allPlugins;
-      const serviceClass = plugins[kind];
-      const service = new serviceClass();
+      const service = new allPlugins[kind]();
       result = await service.testConnection(sourceOptions);
     } catch (error) {
       result = {
@@ -106,11 +104,10 @@ export class DataSourcesService {
     const findOption = (opts: any[], key: string) => opts.find((opt) => opt['key'] === key);
 
     if (findOption(options, 'oauth2') && findOption(options, 'code')) {
-      const provider = findOption(options, 'oauth2')['value'];
+      const provider = findOption(options, 'provider')['value'];
       const authCode = findOption(options, 'code')['value'];
 
-      const plugins = await allPlugins;
-      const queryService = new plugins[provider]();
+      const queryService = new allPlugins[provider]();
       const accessDetails = await queryService.accessDetailsFrom(authCode);
 
       for (const row of accessDetails) {
@@ -181,8 +178,7 @@ export class DataSourcesService {
   }
 
   async getAuthUrl(provider): Promise<object> {
-    const plugins = await allPlugins;
-    const service = new plugins[provider]();
+    const service = new allPlugins[provider]();
     return { url: service.authUrl() };
   }
 }

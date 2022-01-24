@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker, Autocomplete } from '@react-google-maps/api';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
@@ -70,6 +70,11 @@ export const Map = function Map({
     onComponentOptionChanged(component, 'markers', newMarkers).then(() => onEvent('onCreateMarker', { component }));
   }
 
+  function addMapUrlToJson(centerJson) {
+    centerJson.googleMapUrl = `https://www.google.com/maps/@?api=1&map_action=map&center=${centerJson?.lat},${centerJson?.lng}`;
+    return centerJson;
+  }
+
   function handleBoundsChange() {
     const mapBounds = gmap.getBounds();
 
@@ -83,14 +88,22 @@ export const Map = function Map({
 
     onComponentOptionsChanged(component, [
       ['bounds', bounds],
-      ['center', newCenter],
+      ['center', addMapUrlToJson(newCenter)],
     ]).then(() => onEvent('onBoundsChange', { component }));
   }
+
+  useEffect(() => {
+    const resolvedCenter = resolveReferences(center, currentState);
+    setMapCenter(resolvedCenter);
+    onComponentOptionsChanged(component, [['center', addMapUrlToJson(resolvedCenter)]]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [center]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onLoad = useCallback(function onLoad(mapInstance) {
     setGmap(mapInstance);
-    onComponentOptionsChanged(component, [['center', mapInstance.center?.toJSON()]]);
+    const centerJson = mapInstance.center?.toJSON();
+    onComponentOptionsChanged(component, [['center', addMapUrlToJson(centerJson)]]);
   });
 
   function handleMarkerClick(index) {
