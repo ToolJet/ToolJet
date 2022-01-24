@@ -39,6 +39,7 @@ export function Table({
   onComponentOptionsChanged,
   darkMode,
   fireEvent,
+  setExposedVariable,
   registerAction,
 }) {
   const color = component.definition.styles.textColor.value;
@@ -747,13 +748,16 @@ export function Table({
     }
   );
 
-  useEffect(() => {
+  const registerSetPageAction = () => {
     registerAction('setPage', (targetPageIndex) => {
       setPaginationInternalPageIndex(targetPageIndex);
-      onPageIndexChanged(targetPageIndex);
+      setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
     });
-  }, [serverSidePagination, clientSidePagination]);
+  };
+
+  useEffect(registerSetPageAction, []);
+  useEffect(registerSetPageAction, [serverSidePagination, clientSidePagination]);
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
