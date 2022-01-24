@@ -43,7 +43,7 @@ class DataSourceManager extends React.Component {
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
       suggestingDatasources: false,
-      isDefault: false,
+      noSearchResult: false,
     };
   }
 
@@ -66,44 +66,6 @@ class DataSourceManager extends React.Component {
       for (let i = 0; i < element.length; i++) {
         element[i].classList.remove('active');
       }
-    }
-
-    if (!this.isDefault) {
-      const element = document.getElementsByClassName('list-group-item');
-      for (let i = 0; i < element.length; i++) {
-        if (!element[i].id.includes(this.state.activeDatasourceList)) {
-          element[i].classList.remove('active');
-        }
-      }
-
-      const tabPane = document.getElementsByClassName('tab-pane');
-      for (let i = 0; i < tabPane.length; i++) {
-        if (!tabPane[i].id.includes(this.state.activeDatasourceList)) {
-          tabPane[i].classList.remove('active');
-          tabPane[i].classList.remove('show');
-        }
-      }
-    }
-
-    if (this.state.activeDatasourceList === '#alldatasources' && this.state.isDefault) {
-      const element = document.getElementsByClassName('list-group-item');
-      for (let i = 0; i < element.length; i++) {
-        element[i].classList.remove('active');
-        if (element[i].id.includes('#alldatasources')) {
-          element[i].classList.add('active');
-        }
-      }
-      const tabPane = document.getElementsByClassName('tab-pane');
-      for (let i = 0; i < tabPane.length; i++) {
-        tabPane[i].classList.remove('active');
-        tabPane[i].classList.remove('show');
-        if (tabPane[i].id.includes('#alldatasources')) {
-          tabPane[i].classList.add('active');
-          tabPane[i].classList.add('show');
-        }
-      }
-
-      return this.setState({ isDefault: false });
     }
   }
 
@@ -133,6 +95,8 @@ class DataSourceManager extends React.Component {
       queryString: null,
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
+      suggestingDatasources: false,
+      noSearchResult: false,
     });
   };
 
@@ -209,12 +173,41 @@ class DataSourceManager extends React.Component {
   };
 
   handleBackToAllDatasources = () => {
-    this.setState({
-      queryString: null,
-      filteredDatasources: [],
-      isDefault: true,
-      activeDatasourceList: '#alldatasources',
-    });
+    this.setState(
+      {
+        queryString: null,
+        noSearchResult: false,
+        filteredDatasources: [],
+        activeDatasourceList: '#alldatasources',
+      },
+      () => {
+        const _ids = ['#alldatasources', '#databases', '#apis', '#cloudstorage'];
+        return new Promise((resolve) => {
+          const element = _ids.map((id) => document.getElementById(`list-group-tabs-example-tab-${id}`));
+          for (let i = 0; i < element.length; i++) {
+            element[i]?.classList.remove('active');
+            if (element[i]?.id.includes('#alldatasources')) {
+              element[i]?.classList.add('active');
+            }
+          }
+          resolve();
+        })
+          .then(() => {
+            const tabPane = _ids.map((id) => document.getElementById(`list-group-tabs-example-tabpane-${id}`));
+            for (let i = 0; i < tabPane?.length; i++) {
+              if (tabPane[i]?.id.includes(this.state.activeDatasourceList)) {
+                tabPane[i]?.classList.add('active');
+                tabPane[i]?.classList.add('show');
+              } else {
+                tabPane[i]?.classList.remove('active');
+              }
+            }
+          })
+          .catch((err) => {
+            console.log('error', err);
+          });
+      }
+    );
   };
 
   updateSuggestedDatasources = () => {
@@ -248,10 +241,33 @@ class DataSourceManager extends React.Component {
     const datasources = this.datasourcesGroups();
 
     const handleOnSelect = (activekey) => {
+      (async () => {
+        const _ids = ['#alldatasources', '#databases', '#apis', '#cloudstorage'];
+        return new Promise((resolve) => {
+          const element = _ids.map((id) => document.getElementById(`list-group-tabs-example-tab-${id}`));
+          for (let i = 0; i < element.length; i++) {
+            element[i]?.classList.remove('active');
+            if (element[i]?.id.includes(activekey)) {
+              element[i]?.classList.add('active');
+            }
+          }
+          const tabPane = _ids.map((id) => document.getElementById(`list-group-tabs-example-tabpane-${id}`));
+          for (let i = 0; i < tabPane?.length; i++) {
+            tabPane[i]?.classList.remove('active');
+            tabPane[i]?.classList.remove('show');
+            if (tabPane[i]?.id.includes(activekey)) {
+              tabPane[i]?.classList.add('active');
+              tabPane[i]?.classList.add('show');
+            }
+          }
+
+          resolve();
+        });
+      })();
       if (suggestingDatasources) {
         this.setState({ suggestingDatasources: false });
       }
-      this.setState({ activeDatasourceList: activekey, isDefault: false });
+      this.setState({ activeDatasourceList: activekey }, () => this.forceUpdate());
     };
 
     const goBacktoAllDatasources = () => {
@@ -306,6 +322,16 @@ class DataSourceManager extends React.Component {
                         {datasource.renderDatasources()}
                       </Tab.Pane>
                     ))}
+                    {this.state.queryString?.length > 0 && this.state.filteredDatasources.length === 0 && (
+                      <div className="empty-state-wrapper row">
+                        <EmptyStateContainer
+                          queryString={this.state.queryString}
+                          handleBackToAllDatasources={this.handleBackToAllDatasources}
+                          darkMode={this.props.darkMode}
+                          placeholder={'Tell us what you were looking for?'}
+                        />
+                      </div>
+                    )}
                   </>
                 )}
               </Tab.Content>
@@ -348,12 +374,6 @@ class DataSourceManager extends React.Component {
         list: allDataSourcesList.cloudStorages,
         renderDatasources: () => this.renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
       },
-      {
-        type: 'Filtered Datasources',
-        key: '#filtereddatasources',
-        list: allDataSourcesList.filteredDatasources,
-        renderDatasources: () => this.renderCardGroup(this.state.filteredDatasources, this.state.activeDatasourceList),
-      },
     ];
 
     return dataSourceList;
@@ -391,7 +411,9 @@ class DataSourceManager extends React.Component {
   renderCardGroup = (source, type) => {
     const renderSelectedDatasource = (dataSource) => this.selectDataSource(dataSource);
 
-    if (this.state.queryString && this.state.queryString.length > 0) {
+    const queryString = this.state.queryString;
+
+    if (queryString !== null && queryString.length > 0) {
       const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
         return {
           ...datasource,
@@ -400,18 +422,19 @@ class DataSourceManager extends React.Component {
         };
       });
 
-      if (filteredDatasources.length === 0) {
-        return (
-          <div className="empty-state-wrapper row">
-            <EmptyStateContainer
-              queryString={this.state.queryString}
-              handleBackToAllDatasources={this.handleBackToAllDatasources}
-              darkMode={this.props.darkMode}
-              placeholder={'Tell us what you were looking for?'}
-            />
-          </div>
-        );
-      }
+      // if (filteredDatasources.length === 0 && queryString.length > 0) {
+      //   console.log('No Datasources found');
+      //   return (
+      //     <div className="empty-state-wrapper row">
+      //       <EmptyStateContainer
+      //         queryString={this.state.queryString}
+      //         handleBackToAllDatasources={this.handleBackToAllDatasources}
+      //         darkMode={this.props.darkMode}
+      //         placeholder={'Tell us what you were looking for?'}
+      //       />
+      //     </div>
+      //   );
+      // }
 
       return (
         <>
