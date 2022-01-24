@@ -750,7 +750,6 @@ export function Table({
   const registerSetPageAction = () => {
     registerAction('setPage', (targetPageIndex) => {
       setPaginationInternalPageIndex(targetPageIndex);
-      onPageIndexChanged(targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
     });
   };
