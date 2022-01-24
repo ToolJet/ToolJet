@@ -19,6 +19,7 @@
     "@uiw/react-codemirror": "^3.0.6",
     "array-move": "^3.0.1",
     "axios": "^0.24.0",
+    "babel-eslint": "^10.1.0",
     "babel-loader": "^8.0.5",
     "babel-plugin-console-source": "^2.0.5",
     "babel-plugin-import": "^1.13.3",
