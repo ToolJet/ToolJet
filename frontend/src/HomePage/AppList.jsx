@@ -10,10 +10,11 @@ const AppList = (props) => {
             <div className="row mb-4" key={rowIndex}>
               {Array.from(Array(5)).map((_, index) => (
                 <div className="col" key={rowIndex * 5 + index}>
-                  <div className="skeleton-line"></div>
-                  <div className="skeleton-line"></div>
-                  <div className="skeleton-line"></div>
-                  <div className="skeleton-line"></div>
+                  <div className="card-skeleton-container">
+                    <div className="skeleton-line"></div>
+                    <div className="skeleton-line"></div>
+                    <div className="card-skeleton-button"></div>
+                  </div>
                 </div>
               ))}
             </div>
