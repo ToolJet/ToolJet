@@ -96,7 +96,7 @@ export class AuthService {
       actionType: ActionTypes.USER_SIGNUP,
     });
 
-    return user;
+    return {};
   }
 
   async forgotPassword(email: string) {
