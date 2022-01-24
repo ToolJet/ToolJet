@@ -39,6 +39,8 @@ export function Table({
   onComponentOptionsChanged,
   darkMode,
   fireEvent,
+  setExposedVariable,
+  registerAction,
 }) {
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
@@ -746,6 +748,17 @@ export function Table({
     }
   );
 
+  const registerSetPageAction = () => {
+    registerAction('setPage', (targetPageIndex) => {
+      setPaginationInternalPageIndex(targetPageIndex);
+      setExposedVariable('pageIndex', targetPageIndex);
+      if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
+    });
+  };
+
+  useEffect(registerSetPageAction, []);
+  useEffect(registerSetPageAction, [serverSidePagination, clientSidePagination]);
+
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
     onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);
@@ -777,6 +790,8 @@ export function Table({
       changeCanDrag(false);
     }
   }, [state.columnResizing.isResizingColumn]);
+
+  const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
 
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
@@ -924,6 +939,8 @@ export function Table({
                   autoPageCount={pageCount}
                   autoPageOptions={pageOptions}
                   onPageIndexChanged={onPageIndexChanged}
+                  pageIndex={paginationInternalPageIndex}
+                  setPageIndex={setPaginationInternalPageIndex}
                 />
               )}
             </div>

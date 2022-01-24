@@ -41,7 +41,7 @@ export const LeftSidebarInspector = ({ darkMode, globals, components, queries })
             collapseStringsAfterLength={1000}
           />
           <ReactJson
-            src={components}
+            src={JSON.parse(JSON.stringify(components))}
             theme={darkMode ? 'shapeshifter' : 'rjv-default'}
             name={'components'}
             style={{ fontSize: '0.7rem' }}
@@ -63,7 +63,7 @@ export const LeftSidebarInspector = ({ darkMode, globals, components, queries })
             collapsed={true}
             displayObjectSize={false}
             quotesOnKeys={false}
-            sortKeys={true}
+            sortKeys={false}
             // indentWidth={1}
           />
         </div>

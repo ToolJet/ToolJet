@@ -8,8 +8,9 @@ export const Pagination = function Pagination({
   autoPageCount,
   autoPageOptions,
   lastActivePageIndex,
+  pageIndex,
+  setPageIndex,
 }) {
-  const [pageIndex, setPageIndex] = useState(lastActivePageIndex ?? 1);
   const [pageCount, setPageCount] = useState(autoPageCount);
 
   useEffect(() => {

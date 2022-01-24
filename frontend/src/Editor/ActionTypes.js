@@ -54,4 +54,16 @@ export const ActionTypes = [
       { name: 'data', type: 'code', default: '{{[]}}' },
     ],
   },
+  {
+    name: 'Set table page',
+    id: 'set-table-page',
+    options: [
+      {
+        name: 'table',
+        type: 'text',
+        default: '',
+      },
+      { name: 'pageIndex', type: 'text', default: '{{1}}' },
+    ],
+  },
 ];

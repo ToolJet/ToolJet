@@ -63,7 +63,7 @@ export const componentTypes = [
       selectedRow: {},
       changeSet: {},
       dataUpdates: [],
-      pageIndex: 0,
+      pageIndex: 1,
       searchText: '',
       selectedRows: [],
     },
