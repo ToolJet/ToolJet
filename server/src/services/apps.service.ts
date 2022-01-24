@@ -281,13 +281,9 @@ export class AppsService {
     });
   }
 
-  async createVersion(user: User, app: App, versionName: string): Promise<AppVersion> {
-    const lastVersion = await this.appVersionsRepository.findOne({
-      where: { appId: app.id },
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+  async createVersion(user: User, app: App, versionName: string, versionFromId: string): Promise<AppVersion> {
+    const lastVersion = await this.appVersionsRepository.findOne(versionFromId);
+
     let appVersion: AppVersion;
     await getManager().transaction(async (manager) => {
       appVersion = await manager.save(

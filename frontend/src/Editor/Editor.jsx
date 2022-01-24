@@ -1,9 +1,9 @@
 /* eslint-disable import/no-named-as-default */
 import React, { createRef } from 'react';
-import { datasourceService, dataqueryService, appService, authenticationService } from '@/_services';
+import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
@@ -13,7 +13,7 @@ import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager } from './QueryManager';
 import { Link } from 'react-router-dom';
 import { ManageAppUsers } from './ManageAppUsers';
-import { SaveAndPreview } from './SaveAndPreview';
+import { ReleaseVersionButton } from './ReleaseVersionButton';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -38,6 +38,9 @@ import Logo from './Icons/logo.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import { AppVersionsManager } from './AppVersionsManager';
 
 setAutoFreeze(false);
 enablePatches();
@@ -104,7 +107,19 @@ class Editor extends React.Component {
       showHiddenOptionsForDataQueryId: null,
       showQueryConfirmation: false,
       socket: null,
+      showInitVersionCreateModal: false,
+      isCreatingInitVersion: false,
+      initVersionName: null,
+      isSavingEditingVersion: false,
+      showSaveDetail: false,
+      hasAppDefinitionChanged: false,
+      showCreateVersionModalPrompt: false,
     };
+
+    this.autoSave = debounce(this.saveEditingVersion, 3000);
+
+    // setup for closing versions dropdown on oustide click
+    this.wrapperRef = React.createRef();
   }
 
   setWindowTitle(name) {
@@ -122,6 +137,17 @@ class Editor extends React.Component {
       selectedComponent: null,
     });
   }
+
+  isVersionReleased = (version = this.state.editingVersion) => {
+    if (isEmpty(version)) {
+      return false;
+    }
+    return this.state.app.current_version_id === version.id;
+  };
+
+  closeCreateVersionModalPrompt = () => {
+    this.setState({ showCreateVersionModalPrompt: false });
+  };
 
   onMouseMove = (e) => {
     const componentTop = Math.round(this.queryPaneRef.current.getBoundingClientRect().top);
@@ -328,6 +354,10 @@ class Editor extends React.Component {
           slug: data.slug,
         },
         () => {
+          this.setState({
+            showInitVersionCreateModal: isEmpty(this.state.editingVersion),
+          });
+
           computeComponentState(this, this.state.appDefinition.components).then(() => {
             console.log('Default component state computed and set');
             this.runQueries(data.data_queries);
@@ -342,7 +372,7 @@ class Editor extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition));
+    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), { skipAutoSave: true });
     this.setState({
       editingVersion: version,
     });
@@ -432,7 +462,7 @@ class Editor extends React.Component {
     }
   };
 
-  appDefinitionChanged = (newDefinition) => {
+  appDefinitionChanged = (newDefinition, opts = {}) => {
     produce(
       this.state.appDefinition,
       (draft) => {
@@ -440,7 +470,9 @@ class Editor extends React.Component {
       },
       this.handleAddPatch
     );
-    this.setState({ appDefinition: newDefinition });
+    this.setState({ appDefinition: newDefinition }, () => {
+      if (!opts.skipAutoSave) this.autoSave();
+    });
     computeComponentState(this, newDefinition.components);
   };
 
@@ -458,22 +490,32 @@ class Editor extends React.Component {
     this.setState({ slug: newSlug });
   };
 
-  removeComponent = (component) => {
-    let newDefinition = cloneDeep(this.state.appDefinition);
-    // Delete child components when parent is deleted
-    const childComponents = Object.keys(newDefinition.components).filter(
-      (key) => newDefinition.components[key].parent === component.id
-    );
-    childComponents.forEach((componentId) => {
-      delete newDefinition.components[componentId];
-    });
+  handleClickOutsideAppVersionsDropdown = (event) => {
+    if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
+      this.setState({ showAppVersionsDropdown: false });
+    }
+  };
 
-    delete newDefinition.components[component.id];
-    toast('Component deleted! (⌘Z to undo)', {
-      icon: '🗑️',
-    });
-    this.appDefinitionChanged(newDefinition);
-    this.handleInspectorView(component);
+  removeComponent = (component) => {
+    if (!this.isVersionReleased()) {
+      let newDefinition = cloneDeep(this.state.appDefinition);
+      // Delete child components when parent is deleted
+      const childComponents = Object.keys(newDefinition.components).filter(
+        (key) => newDefinition.components[key].parent === component.id
+      );
+      childComponents.forEach((componentId) => {
+        delete newDefinition.components[componentId];
+      });
+
+      delete newDefinition.components[component.id];
+      toast('Component deleted! (⌘Z to undo)', {
+        icon: '🗑️',
+      });
+      this.appDefinitionChanged(newDefinition, {
+        skipAutoSave: this.isVersionReleased(),
+      });
+      this.handleInspectorView(component);
+    }
   };
 
   componentDefinitionChanged = (componentDefinition) => {
@@ -550,7 +592,10 @@ class Editor extends React.Component {
         role="button"
         key={dataSource.name}
         onClick={() => {
-          this.setState({ selectedDataSource: dataSource, showDataSourceManagerModal: true });
+          this.setState({
+            selectedDataSource: dataSource,
+            showDataSourceManagerModal: true,
+          });
         }}
       >
         <td>
@@ -569,7 +614,10 @@ class Editor extends React.Component {
   };
 
   executeDataQueryDeletion = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false, isDeletingDataQuery: true });
+    this.setState({
+      showDataQueryDeletionConfirmation: false,
+      isDeletingDataQuery: true,
+    });
     dataqueryService
       .del(this.state.selectedQuery.id)
       .then(() => {
@@ -621,7 +669,9 @@ class Editor extends React.Component {
             <button
               className="btn badge bg-azure-lt"
               onClick={this.deleteDataQuery}
-              style={{ display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none' }}
+              style={{
+                display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
+              }}
             >
               <div>
                 <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
@@ -692,10 +742,12 @@ class Editor extends React.Component {
   };
 
   toggleQuerySearch = () => {
-    this.setState((prev) => ({ showQuerySearchField: !prev.showQuerySearchField }));
+    this.setState((prev) => ({
+      showQuerySearchField: !prev.showQuerySearchField,
+    }));
   };
 
-  onVersionDeploy = (versionId) => {
+  onVersionRelease = (versionId) => {
     this.setState({
       app: {
         ...this.state.app,
@@ -720,15 +772,104 @@ class Editor extends React.Component {
   renderLayoutIcon = (isDesktopSelected) => {
     if (isDesktopSelected)
       return (
-        <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+        <span
+          onClick={() =>
+            this.setState({
+              currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
+            })
+          }
+        >
           <DesktopSelectedIcon />
         </span>
       );
 
     return (
-      <span onClick={() => this.setState({ currentLayout: isDesktopSelected ? 'mobile' : 'desktop' })}>
+      <span
+        onClick={() =>
+          this.setState({
+            currentLayout: isDesktopSelected ? 'mobile' : 'desktop',
+          })
+        }
+      >
         <MobileSelectedIcon />
       </span>
+    );
+  };
+
+  createInitVersion = () => {
+    const newVersionName = this.state.initVersionName;
+    const appId = this.state.appId;
+
+    if (!isEmpty(newVersionName?.trim())) {
+      this.setState({ isCreatingInitVersion: true });
+      appVersionService.create(appId, newVersionName).then(() => {
+        this.setState({
+          showInitVersionCreateModal: false,
+          isCreatingInitVersion: false,
+        });
+        toast.success('Version Created');
+        this.fetchApp();
+      });
+    } else {
+      toast.error('The name of version should not be empty');
+      this.setState({ isCreatingInitVersion: false });
+    }
+  };
+
+  saveEditingVersion = () => {
+    if (this.isVersionReleased()) {
+      this.setState({ showCreateVersionModalPrompt: true });
+    } else if (!isEmpty(this.state.editingVersion)) {
+      this.setState({ isSavingEditingVersion: true, showSaveDetail: true });
+      appVersionService.save(this.state.appId, this.state.editingVersion.id, this.state.appDefinition).then(() => {
+        this.setState({ isSavingEditingVersion: false });
+        setTimeout(() => this.setState({ showSaveDetail: false }), 3000);
+      });
+    }
+  };
+
+  renderInitVersionCreateModal = (showModal) => {
+    return (
+      <Modal
+        contentClassName={this.props.darkMode ? 'theme-dark' : ''}
+        show={showModal}
+        size="md"
+        backdrop="static"
+        keyboard={true}
+        enforceFocus={false}
+        animation={false}
+        centered={true}
+      >
+        <Modal.Header>
+          <Modal.Title>Create Version</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row m-2">
+            <div className="col">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="version name"
+                onChange={(e) => this.setState({ initVersionName: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="row m-2">
+            <div className="col">
+              <small className="muted">Create a version to start building your app</small>
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            className={`${this.state.isCreatingInitVersion ? 'btn-loading' : ''}`}
+            onClick={() => this.createInitVersion()}
+          >
+            Create
+          </Button>
+        </Modal.Footer>
+      </Modal>
     );
   };
 
@@ -764,6 +905,10 @@ class Editor extends React.Component {
       defaultComponentStateComputed,
       showComments,
       editingVersion,
+      showInitVersionCreateModal,
+      isSavingEditingVersion,
+      showSaveDetail,
+      showCreateVersionModalPrompt,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -820,13 +965,38 @@ class Editor extends React.Component {
                     </span>
                   </div>
                 )}
-                {this.state.editingVersion && (
-                  <small className="app-version-name">{`App version: ${this.state.editingVersion.name}`}</small>
+                {showSaveDetail && (
+                  <div className="nav-auto-save">
+                    <img src={'/assets/images/icons/editor/auto-save.svg'} width="25" height="25" />
+                    <em className="small lh-base p-1">{isSavingEditingVersion ? 'Auto Saving..' : 'Auto Saved'}</em>
+                  </div>
                 )}
+
+                {editingVersion && (
+                  <AppVersionsManager
+                    appId={appId}
+                    editingVersion={editingVersion}
+                    releasedVersionId={app.current_version_id}
+                    setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                    showCreateVersionModalPrompt={showCreateVersionModalPrompt}
+                    closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
+                  />
+                )}
+
                 <div className="layout-buttons cursor-pointer">
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
                 <div className="navbar-nav flex-row order-md-last">
+                  <div className="nav-item dropdown d-none d-md-flex me-2">
+                    <a
+                      href={appLink}
+                      target="_blank"
+                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
+                      rel="noreferrer"
+                    >
+                      Preview
+                    </a>
+                  </div>
                   <div className="nav-item dropdown d-none d-md-flex me-2">
                     {app.id && (
                       <ManageAppUsers
@@ -837,27 +1007,14 @@ class Editor extends React.Component {
                       />
                     )}
                   </div>
-                  <div className="nav-item dropdown d-none d-md-flex me-2">
-                    <a
-                      href={appLink}
-                      target="_blank"
-                      className={`btn btn-sm font-500 color-primary  ${app?.current_version_id ? '' : 'disabled'}`}
-                      rel="noreferrer"
-                    >
-                      Launch
-                    </a>
-                  </div>
                   <div className="nav-item dropdown me-2">
                     {app.id && (
-                      <SaveAndPreview
+                      <ReleaseVersionButton
+                        isVersionReleased={this.isVersionReleased()}
                         appId={app.id}
                         appName={app.name}
-                        appDefinition={appDefinition}
-                        app={app}
-                        darkMode={this.props.darkMode}
-                        onVersionDeploy={this.onVersionDeploy}
-                        editingVersionId={this.state.editingVersion ? this.state.editingVersion.id : null}
-                        setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                        onVersionRelease={this.onVersionRelease}
+                        editingVersion={editingVersion}
                         fetchApp={this.fetchApp}
                       />
                     )}
@@ -931,7 +1088,9 @@ class Editor extends React.Component {
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
                         onComponentClick={(id, component) => {
-                          this.setState({ selectedComponent: { id, component } });
+                          this.setState({
+                            selectedComponent: { id, component },
+                          });
                           this.switchSidebarTab(1);
                         }}
                       />
@@ -1055,7 +1214,11 @@ class Editor extends React.Component {
                                 <button
                                   className="btn font-500 color-primary btn-sm mt-3"
                                   onClick={() =>
-                                    this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
+                                    this.setState({
+                                      selectedQuery: {},
+                                      editingQuery: false,
+                                      addingQuery: true,
+                                    })
                                   }
                                 >
                                   create query
@@ -1142,6 +1305,7 @@ class Editor extends React.Component {
               />
             )}
           </div>
+          {this.renderInitVersionCreateModal(showInitVersionCreateModal)}
         </DndProvider>
       </div>
     );
