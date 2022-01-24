@@ -31,6 +31,7 @@ import { CodeEditor } from './Components/CodeEditor';
 import { Timer } from './Components/Timer';
 import { Pagination } from './Components/Pagination';
 import { Tags } from './Components/Tags';
+import { Spinner } from './Components/Spinner';
 import { CircularProgressBar } from './Components/CirularProgressbar';
 import { renderTooltip } from '../_helpers/appUtils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -72,6 +73,7 @@ const AllComponents = {
   Timer,
   Pagination,
   Tags,
+  Spinner,
   CircularProgressBar,
 };
 
