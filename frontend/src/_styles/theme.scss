@@ -523,6 +523,8 @@ button {
   }
 }
 
+
+
 .viewer {
   .header-container {
     max-width: 100%;
@@ -572,6 +574,22 @@ button {
 .page-body,
 .homepage-body {
   height: 100vh;
+}
+.homepage-dropdown-style  {
+  min-width: 11rem;
+  display: block;
+  align-items:center;
+  margin: 0;
+  line-height: 1.4285714;
+  width: 100%;
+  padding:  0.5rem 0.75rem;
+  font-weight: 400;
+  white-space: nowrap;
+  border: 0;
+  cursor: pointer,
+}
+.homepage-dropdown-style:hover {
+  background: rgba(101, 109, 119, 0.06);
 }
 .card-skeleton-container
 {
