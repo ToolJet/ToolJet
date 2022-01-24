@@ -62,7 +62,6 @@
     "react-qr-reader": "^2.2.1",
     "react-rnd": "^10.3.0",
     "react-router-dom": "^5.0.0",
-    "react-scripts": "3.4.3",
     "react-select": "^4.3.1",
     "react-select-search": "^3.0.5",
     "react-spring": "^9.2.4",
@@ -93,9 +92,7 @@
     "start": "webpack serve --port 8082 --host 0.0.0.0",
     "build": "webpack --mode production && cp -a ./assets/. ./build/assets/",
     "lint": "eslint . '**/*.{js,jsx}'",
-    "format": "eslint . --fix '**/*.{js,jsx}'",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "format": "eslint . --fix '**/*.{js,jsx}'"
   },
   "eslintConfig": {
     "extends": "react-app"
