@@ -836,7 +836,27 @@ border-radius: 4px;
 
     .template-search-box {
       input {
-        border-radius: 0;
+        border-radius: 5px !important;
+      }
+      .input-icon {
+        display: flex;
+      }
+    }
+    
+    .input-icon {
+      .search-icon {
+       display: block;
+       position: absolute;
+       left: 0;
+       margin-right: 0.5rem;
+      }
+     
+      .clear-icon {
+        cursor: pointer;
+        display: block;
+        position: absolute;
+        right: 0;
+        margin-right: 0.5rem;
       }
     }
 
