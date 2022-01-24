@@ -764,11 +764,37 @@ describe('apps controller', () => {
               .post(`/api/apps/${application.id}/versions`)
               .set('Authorization', authHeaderForUser(userData.user))
               .send({
-                versionName: 'v0',
+                versionName: 'v1',
               });
 
             expect(response.statusCode).toBe(201);
           }
+        });
+
+        it('should be able to create a new app version from existing version', async () => {
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+          });
+          const application = await createApplication(app, {
+            user: adminUserData.user,
+          });
+          const v1 = await createApplicationVersion(app, application, {
+            name: 'v1',
+            definition: { foo: 'bar' },
+          });
+
+          const response = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('Authorization', authHeaderForUser(adminUserData.user))
+            .send({
+              versionName: 'v2',
+              versionFromId: v1.id,
+            });
+
+          expect(response.statusCode).toBe(201);
+
+          const v2 = await getManager().findOne(AppVersion, { where: { name: 'v2' } });
+          expect(v2.definition).toEqual(v1.definition);
         });
 
         it('should not be able to create app versions if user of another organization', async () => {

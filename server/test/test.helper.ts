@@ -89,14 +89,15 @@ export async function importAppFromTemplates(nestApp, user, identifier) {
   return service.perform(user, identifier);
 }
 
-export async function createApplicationVersion(nestApp, application) {
+export async function createApplicationVersion(nestApp, application, { name = 'v0', definition = null } = {}) {
   let appVersionsRepository: Repository<AppVersion>;
   appVersionsRepository = nestApp.get('AppVersionRepository');
 
   return await appVersionsRepository.save(
     appVersionsRepository.create({
       app: application,
-      name: 'v0',
+      name,
+      definition,
     })
   );
 }
