@@ -1,11 +1,3 @@
 # `typesenseapi`
 
-> TODO: description
-
-## Usage
-
-```
-const typesenseapi = require('typesenseapi');
-
-// TODO: DEMONSTRATE API
-```
+Documentation on: https://docs.tooljet.com/docs/data-sources/typesense

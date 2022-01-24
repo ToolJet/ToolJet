@@ -30,6 +30,7 @@ describe('Authentication', () => {
 
     const id = response.body['id'];
     const user = await userRepository.findOne(id, {
+      where: { email: 'test@tooljet.io' },
       relations: ['organization'],
     });
 
@@ -66,7 +67,9 @@ describe('Authentication', () => {
       .send({ email: 'user@tooljet.io', password: 'password' })
       .expect(401);
 
-    const adminUser = await userRepository.findOne({ email: 'admin@tooljet.io' });
+    const adminUser = await userRepository.findOne({
+      email: 'admin@tooljet.io',
+    });
     await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
     await request(app.getHttpServer())

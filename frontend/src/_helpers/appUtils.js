@@ -13,10 +13,22 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '../Editor/Components/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
+import { allSvgs } from '@tooljet/plugins/client';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
     _ref.setState(state, resolve);
+  });
+}
+
+export function setCurrentStateAsync(_ref, changes) {
+  return new Promise((resolve) => {
+    _ref.setState((prevState) => {
+      return {
+        currentState: prevState.currentState,
+        ...changes,
+      };
+    }, resolve);
   });
 }
 
@@ -42,9 +54,7 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   componentData = componentData || {};
   componentData[option_name] = value;
 
-  return setStateAsync(_ref, {
-    currentState: { ..._ref.state.currentState, components: { ...components, [componentName]: componentData } },
-  });
+  return setCurrentStateAsync(_ref, { components: { ...components, [componentName]: componentData } });
 }
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
@@ -104,7 +114,8 @@ async function copyToClipboard(text) {
   }
 }
 
-function showModal(_ref, modalId, show) {
+function showModal(_ref, modal, show) {
+  const modalId = modal.id;
   if (_.isEmpty(modalId)) {
     console.log('No modal is associated with this event.');
     return Promise.resolve();
@@ -226,6 +237,10 @@ function executeAction(_ref, event, mode) {
         const csv = generateCSV(data);
         generateFile(fileName, csv);
         return Promise.resolve();
+      }
+
+      case 'set-table-page': {
+        setTablePageIndex(_ref, event.table, event.pageIndex);
       }
     }
   }
@@ -384,6 +399,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarNavigate',
       'onCalendarViewChange',
       'onSearchTextChanged',
+      'onPageChange',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -669,6 +685,18 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
   });
 }
 
+function setTablePageIndex(_ref, table, index) {
+  if (_.isEmpty(table.id)) {
+    console.log('No table is associated with this event.');
+    return Promise.resolve();
+  }
+
+  const tableMeta = _ref.state.currentState.components[table.name];
+  const newPageIndex = resolveReferences(index, _ref.state.currentState);
+  tableMeta.setPage(newPageIndex);
+  return Promise.resolve();
+}
+
 export function renderTooltip({ props, text }) {
   return (
     <Tooltip id="button-tooltip" {...props}>
@@ -714,3 +742,9 @@ export function computeComponentState(_ref, components) {
     defaultComponentStateComputed: true,
   });
 }
+
+export const getSvgIcon = (key, height = 50, width = 50) => {
+  const Icon = allSvgs[key];
+
+  return <Icon style={{ height, width }} />;
+};
