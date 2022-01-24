@@ -26,5 +26,5 @@ Click on + button of the query manager at the bottom panel of the editor and sel
 Click on the 'run' button to run the query. NOTE: Query should be saved before running.
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: link
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::

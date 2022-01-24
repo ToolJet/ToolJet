@@ -5,8 +5,9 @@ import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import OverlayTrigger from 'react-bootstrap/esm/OverlayTrigger';
 import Tooltip from 'react-bootstrap/esm/Tooltip';
+import { getSvgIcon } from '@/_helpers/appUtils';
 
-export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], dataSourcesChanged }) => {
+export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, dataSources = [], dataSourcesChanged }) => {
   const [open, trigger, content] = usePopover(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = React.useState(false);
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
@@ -23,12 +24,7 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], data
           }}
           className="col"
         >
-          <img
-            className="svg-icon"
-            src={`/assets/images/icons/editor/datasources/${sourceMeta.kind.toLowerCase()}.svg`}
-            width="20"
-            height="20"
-          />
+          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
           <span className="p-2 font-500">{dataSource.name}</span>
         </div>
       </div>
@@ -58,6 +54,7 @@ export const LeftSidebarDataSources = ({ appId, darkMode, dataSources = [], data
           setSelectedDataSource(null);
           toggleDataSourceManagerModal(false);
         }}
+        editingVersionId={editingVersionId}
         dataSourcesChanged={dataSourcesChanged}
         selectedDataSource={selectedDataSource}
       />

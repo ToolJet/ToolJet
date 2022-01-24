@@ -1,13 +1,13 @@
+import allPlugins from '@tooljet/plugins/dist/server';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataQuery } from '../../src/entities/data_query.entity';
 import { CredentialsService } from './credentials.service';
-import { allPlugins } from 'src/modules/data_sources/plugins';
 import { DataSource } from 'src/entities/data_source.entity';
-import RestapiQueryService from '@plugins/datasources/restapi';
 import { DataSourcesService } from './data_sources.service';
+const got = require('got');
 
 @Injectable()
 export class DataQueriesService {
@@ -22,14 +22,13 @@ export class DataQueriesService {
     return await this.dataQueriesRepository.findOne({ id: dataQueryId }, { relations: ['dataSource', 'app'] });
   }
 
-  async all(user: User, appId: string): Promise<DataQuery[]> {
+  async all(user: User, query: object): Promise<DataQuery[]> {
+    const { app_id: appId, app_version_id: appVersionId }: any = query;
+    const whereClause = { appId, ...(appVersionId && { appVersionId }) };
+
     return await this.dataQueriesRepository.find({
-      where: {
-        appId,
-      },
-      order: {
-        name: 'ASC',
-      },
+      where: whereClause,
+      order: { name: 'ASC' },
     });
   }
 
@@ -39,7 +38,8 @@ export class DataQueriesService {
     kind: string,
     options: object,
     appId: string,
-    dataSourceId: string
+    dataSourceId: string,
+    appVersionId?: string // TODO: Make this non optional when autosave is implemented
   ): Promise<DataQuery> {
     const newDataQuery = this.dataQueriesRepository.create({
       name,
@@ -47,6 +47,7 @@ export class DataQueriesService {
       options,
       appId,
       dataSourceId,
+      appVersionId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -74,20 +75,41 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
     const kind = dataQuery.kind;
-    const plugins = await allPlugins;
-    const pluginServiceClass = plugins[kind];
+    const service = new allPlugins[kind]();
 
-    const service = new pluginServiceClass();
     const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
 
     return result;
   }
 
+  /* This function fetches the access token from the token url set in REST API (oauth) datasource */
+  async fetchOAuthToken(sourceOptions: any, code: string): Promise<any> {
+    const tooljetHost = process.env.TOOLJET_HOST;
+    const accessTokenUrl = sourceOptions['access_token_url'];
+
+    const customParams = Object.fromEntries(sourceOptions['custom_auth_params']);
+    Object.keys(customParams).forEach((key) => (customParams[key] === '' ? delete customParams[key] : {}));
+
+    const response = await got(accessTokenUrl, {
+      method: 'post',
+      json: {
+        code,
+        client_id: sourceOptions['client_id'],
+        client_secret: sourceOptions['client_secret'],
+        grant_type: sourceOptions['grant_type'],
+        redirect_uri: `${tooljetHost}/oauth2/authorize`,
+        ...customParams,
+      },
+    });
+
+    const result = JSON.parse(response.body);
+    return { access_token: result['access_token'] };
+  }
+
   /* This function fetches access token from authorization code */
   async authorizeOauth2(dataSource: DataSource, code: string): Promise<any> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
-    const queryService = new RestapiQueryService();
-    const tokenData = await queryService.fetchOAuthToken(sourceOptions, code);
+    const tokenData = await this.fetchOAuthToken(sourceOptions, code);
 
     const tokenOptions = [
       {

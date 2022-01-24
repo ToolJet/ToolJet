@@ -1,17 +1,32 @@
+import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
-
-export const DropDown = function DropDown({ height, validate, properties, styles, setExposedVariable, fireEvent }) {
-  const { label, value, display_values, values } = properties;
+import Select from 'react-select';
+export const DropDown = function DropDown({
+  height,
+  validate,
+  properties,
+  styles,
+  setExposedVariable,
+  fireEvent,
+  darkMode,
+  onComponentClick,
+  id,
+  component,
+}) {
+  let { label, value, display_values, values } = properties;
   const { visibility, disabledState } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
+
+  if (!_.isArray(values)) {
+    values = [];
+  }
 
   let selectOptions = [];
 
   try {
     selectOptions = [
       ...values.map((value, index) => {
-        return { name: display_values[index], value: value };
+        return { label: display_values[index], value: value };
       }),
     ];
   } catch (err) {
@@ -45,62 +60,107 @@ export const DropDown = function DropDown({ height, validate, properties, styles
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
-  const onSearchTextChange = (searchText) => {
-    setExposedVariable('searchText', searchText);
-    fireEvent('onSearchTextChanged');
+  const onSearchTextChange = (searchText, actionProps) => {
+    if (actionProps.action === 'input-change') {
+      setExposedVariable('searchText', searchText);
+      fireEvent('onSearchTextChanged');
+    }
   };
 
-  const customInputForSelect = (valueProps) => (
-    <input
-      {...valueProps}
-      className="select-search__input"
-      onChange={(event) => {
-        valueProps.onChange(event);
-        onSearchTextChange(event.target.value);
-      }}
-    />
-  );
+  const customStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      background: darkMode ? 'rgb(31,40,55)' : 'white',
+      minHeight: height,
+      height: height,
+      boxShadow: state.isFocused ? null : null,
+      borderRadius: 0,
+    }),
 
-  const customOptionForSelect = (domProps, option, snapshot, className) => {
-    return (
-      <div
-        className={className}
-        {...domProps}
-        style={{ width: '100%', height: 30, margin: 0, paddingLeft: 14 }}
-        onMouseDown={(event) => {
-          event.stopPropagation();
-          setCurrentValue(option.value);
-          setExposedVariable('value', option.value).then(() => fireEvent('onSelect'));
-        }}
-      >
-        {option.name}
-      </div>
-    );
+    valueContainer: (provided, _state) => ({
+      ...provided,
+      height: height,
+      padding: '0 6px',
+    }),
+
+    singleValue: (provided, _state) => ({
+      ...provided,
+      color: disabledState ? 'grey' : darkMode ? 'white' : 'black',
+    }),
+
+    input: (provided, _state) => ({
+      ...provided,
+      color: darkMode ? 'white' : 'black',
+    }),
+    indicatorSeparator: (_state) => ({
+      display: 'none',
+    }),
+    indicatorsContainer: (provided, _state) => ({
+      ...provided,
+      height: height,
+    }),
+    option: (provided, state) => {
+      const styles = darkMode
+        ? {
+            color: 'white',
+            backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
+            ':hover': {
+              backgroundColor: state.value === currentValue ? '#1F2E64' : '#323C4B',
+            },
+          }
+        : {
+            backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
+            color: state.value === currentValue ? 'white' : 'black',
+            ':hover': {
+              backgroundColor: state.value === currentValue ? '#3650AF' : '#d8dce9',
+            },
+          };
+      return {
+        ...provided,
+        height: 'auto',
+        display: 'flex',
+        flexDirection: 'rows',
+        alignItems: 'center',
+        ...styles,
+      };
+    },
+    menu: (provided, _state) => ({
+      ...provided,
+      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+    }),
   };
 
   return (
     <>
-      <div className="dropdown-widget row g-0" style={{ height, display: visibility ? '' : 'none' }}>
+      <div
+        className="dropdown-widget row g-0"
+        style={{ height, display: visibility ? '' : 'none' }}
+        onMouseDown={(event) => {
+          onComponentClick(id, component, event);
+        }}
+      >
         <div className="col-auto my-auto">
           <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-1">
             {label}
           </label>
         </div>
         <div className="col px-0 h-100">
-          <SelectSearch
-            disabled={disabledState}
-            options={properties.loadingState ? [] : selectOptions}
-            emptyMessage={properties.loadingState ? 'Loading options..' : 'There are no options'}
-            placeholder={'Select..'}
-            value={currentValue}
-            search={true}
-            onChange={(newVal) => {
-              setCurrentValue(newVal);
-              setExposedVariable('value', newVal).then(() => fireEvent('onSelect'));
+          <Select
+            isDisabled={disabledState}
+            value={
+              selectOptions.filter((option) => option.value === currentValue)[0] ?? { label: '', value: undefined }
+            }
+            onChange={(selectedOption, actionProps) => {
+              if (actionProps.action === 'select-option') {
+                setCurrentValue(selectedOption.value);
+                setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+              }
             }}
-            filterOptions={fuzzySearch}
-            renderValue={customInputForSelect}
-            renderOption={customOptionForSelect}
+            options={selectOptions}
+            styles={customStyles}
+            isLoading={properties.loadingState}
+            onInputChange={onSearchTextChange}
+            onFocus={(event) => onComponentClick(event, component, id)}
           />
         </div>
       </div>

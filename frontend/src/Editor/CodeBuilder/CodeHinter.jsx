@@ -167,7 +167,7 @@ export function CodeHinter({
           key={suggestions.length}
           customComponent={getPreview}
           forceUpdate={forceUpdate}
-          optionalProps={{ height: 300 }}
+          optionalProps={{ styles: { height: 300 }, cls: className }}
           darkMode={darkMode}
           selectors={{ className: 'preview-block-portal' }}
         >

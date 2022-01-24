@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { createQueryBuilder, Repository, Brackets } from 'typeorm';
+import { createQueryBuilder, EntityManager, Brackets, getManager, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -13,6 +13,8 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
 import { AppImportExportService } from './app_import_export.service';
+import { DataSourcesService } from './data_sources.service';
+import { Credential } from 'src/entities/credential.entity';
 
 @Injectable()
 export class AppsService {
@@ -42,7 +44,8 @@ export class AppsService {
     private appGroupPermissionsRepository: Repository<AppGroupPermission>,
 
     private usersService: UsersService,
-    private appImportExportService: AppImportExportService
+    private appImportExportService: AppImportExportService,
+    private dataSourcesService: DataSourcesService
   ) {}
 
   async find(id: string): Promise<App> {
@@ -62,7 +65,7 @@ export class AppsService {
 
   async findVersion(id: string): Promise<AppVersion> {
     return this.appVersionsRepository.findOne(id, {
-      relations: ['app'],
+      relations: ['app', 'dataQueries'],
     });
   }
 
@@ -144,7 +147,9 @@ export class AppsService {
       )
       .where(
         new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+          qb.where('user_group_permissions.user_id = :userId', {
+            userId: user.id,
+          })
             .andWhere('app_group_permissions.read = :value', { value: true })
             .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
               value: true,
@@ -173,7 +178,9 @@ export class AppsService {
       )
       .where(
         new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+          qb.where('user_group_permissions.user_id = :userId', {
+            userId: user.id,
+          })
             .andWhere('app_group_permissions.read = :value', { value: true })
             .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
               value: true,
@@ -202,13 +209,14 @@ export class AppsService {
   async update(user: User, appId: string, params: any) {
     const currentVersionId = params['current_version_id'];
     const isPublic = params['is_public'];
-    const { name, slug } = params;
+    const { name, slug, icon } = params;
 
     const updateableParams = {
       name,
       slug,
       isPublic,
       currentVersionId,
+      icon,
     };
 
     // removing keys with undefined values
@@ -273,26 +281,185 @@ export class AppsService {
     });
   }
 
-  async createVersion(user: User, app: App, versionName: string): Promise<AppVersion> {
-    const lastVersion = await this.appVersionsRepository.findOne({
-      where: { appId: app.id },
-      order: {
-        createdAt: 'DESC',
-      },
+  async createVersion(user: User, app: App, versionName: string, versionFromId: string): Promise<AppVersion> {
+    const lastVersion = await this.appVersionsRepository.findOne(versionFromId);
+
+    let appVersion: AppVersion;
+    await getManager().transaction(async (manager) => {
+      appVersion = await manager.save(
+        AppVersion,
+        manager.create(AppVersion, {
+          name: versionName,
+          app,
+          definition: lastVersion?.definition,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
+      await this.setupDataSourcesAndQueriesForVersion(manager, appVersion, lastVersion);
     });
 
-    return await this.appVersionsRepository.save(
-      this.appVersionsRepository.create({
-        name: versionName,
-        app,
-        definition: lastVersion?.definition,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-    );
+    return appVersion;
+  }
+
+  async setupDataSourcesAndQueriesForVersion(manager: EntityManager, appVersion: AppVersion, lastVersion: AppVersion) {
+    if (lastVersion) {
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, lastVersion);
+    } else {
+      // TODO: Remove this when default version will be create when app creation is done
+      await this.associateExistingDataSourceAndQueriesToVersion(manager, appVersion);
+    }
+  }
+
+  async associateExistingDataSourceAndQueriesToVersion(manager: EntityManager, appVersion: AppVersion) {
+    const dataSources = await manager.find(DataSource, {
+      where: { appId: appVersion.appId },
+    });
+    for await (const dataSource of dataSources) {
+      await manager.update(DataSource, dataSource.id, {
+        appVersionId: appVersion.id,
+      });
+    }
+
+    const dataQueries = await manager.find(DataQuery, {
+      where: { appId: appVersion.appId },
+    });
+    for await (const dataQuery of dataQueries) {
+      await manager.update(DataQuery, dataQuery.id, {
+        appVersionId: appVersion.id,
+      });
+    }
+  }
+
+  async createNewDataSourcesAndQueriesForVersion(
+    manager: EntityManager,
+    appVersion: AppVersion,
+    lastVersion: AppVersion
+  ) {
+    const oldDataSourceToNewMapping = {};
+    const oldDataQueryToNewMapping = {};
+
+    const dataSources = await manager.find(DataSource, {
+      where: { appVersionId: lastVersion.id },
+    });
+
+    for await (const dataSource of dataSources) {
+      const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSource.options);
+      const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, manager);
+      await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+      const dataSourceParams = {
+        name: dataSource.name,
+        kind: dataSource.kind,
+        options: newOptions,
+        appId: dataSource.appId,
+        appVersionId: appVersion.id,
+      };
+      const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+
+      oldDataSourceToNewMapping[dataSource.id] = newDataSource.id;
+    }
+
+    const dataQueries = await manager.find(DataQuery, {
+      where: { appVersionId: lastVersion.id },
+    });
+    const newDataQueries = [];
+    for await (const dataQuery of dataQueries) {
+      const dataQueryParams = {
+        name: dataQuery.name,
+        kind: dataQuery.kind,
+        options: dataQuery.options,
+        dataSourceId: oldDataSourceToNewMapping[dataQuery.dataSourceId],
+        appId: dataQuery.appId,
+        appVersionId: appVersion.id,
+      };
+
+      const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+      oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
+      newDataQueries.push(newQuery);
+    }
+
+    for (const newQuery of newDataQueries) {
+      const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, oldDataQueryToNewMapping);
+      newQuery.options = newOptions;
+      await manager.save(newQuery);
+    }
+
+    appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
+    await manager.save(appVersion);
+  }
+
+  replaceDataQueryOptionsWithNewDataQueryIds(options, dataQueryMapping) {
+    if (options && options.events) {
+      const replacedEvents = options.events.map((event) => {
+        if (event.queryId) {
+          event.queryId = dataQueryMapping[event.queryId];
+        }
+        return event;
+      });
+      options.events = replacedEvents;
+    }
+    return options;
+  }
+
+  replaceDataQueryIdWithinDefinitions(definition, dataQueryMapping) {
+    if (definition?.components) {
+      for (const id of Object.keys(definition.components)) {
+        const component = definition.components[id].component;
+
+        if (component?.definition?.events) {
+          const replacedComponentEvents = component.definition.events.map((event) => {
+            if (event.queryId) {
+              event.queryId = dataQueryMapping[event.queryId];
+            }
+            return event;
+          });
+          component.definition.events = replacedComponentEvents;
+        }
+
+        if (component?.definition?.properties?.actions?.value) {
+          for (const value of component.definition.properties.actions.value) {
+            if (value?.events) {
+              const replacedComponentActionEvents = value.events.map((event) => {
+                if (event.queryId) {
+                  event.queryId = dataQueryMapping[event.queryId];
+                }
+                return event;
+              });
+              value.events = replacedComponentActionEvents;
+            }
+          }
+        }
+        definition.components[id].component = component;
+      }
+    }
+    return definition;
+  }
+
+  async setNewCredentialValueFromOldValue(newOptions: any, oldOptions: any, manager: EntityManager) {
+    const newOptionsWithCredentials = this.convertToArrayOfKeyValuePairs(newOptions).filter((opt) => opt['encrypted']);
+
+    for await (const newOption of newOptionsWithCredentials) {
+      const oldOption = oldOptions.find((oldOption) => oldOption['key'] == newOption['key']);
+      const oldCredential = await manager.findOne(Credential, oldOption.credential_id);
+      const newCredential = await manager.findOne(Credential, newOption['credential_id']);
+      newCredential.valueCiphertext = oldCredential.valueCiphertext;
+
+      await manager.save(newCredential);
+    }
   }
 
   async updateVersion(user: User, version: AppVersion, definition: any) {
     return await this.appVersionsRepository.update(version.id, { definition });
+  }
+
+  convertToArrayOfKeyValuePairs(options): Array<object> {
+    return Object.keys(options).map((key) => {
+      return {
+        key: key,
+        value: options[key]['value'],
+        encrypted: options[key]['encrypted'],
+        credential_id: options[key]['credential_id'],
+      };
+    });
   }
 }

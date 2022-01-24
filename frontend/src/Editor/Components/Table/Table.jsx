@@ -39,6 +39,7 @@ export function Table({
   onComponentOptionsChanged,
   darkMode,
   fireEvent,
+  registerAction,
 }) {
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
@@ -405,6 +406,12 @@ export function Table({
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
+                onChange={(e) => {
+                  if (column.isEditable) {
+                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  }
+                }}
+                value={cellValue}
                 defaultValue={cellValue}
               ></textarea>
             );
@@ -575,7 +582,13 @@ export function Table({
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  style={{
+                    background: action.backgroundColor,
+                    color: action.textColor,
+                    borderRadius: component.definition.styles.actionButtonRadius?.value
+                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
+                      : 0,
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     onEvent('onTableActionButtonClicked', {
@@ -607,7 +620,13 @@ export function Table({
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
-                  style={{ background: action.backgroundColor, color: action.textColor }}
+                  style={{
+                    background: action.backgroundColor,
+                    color: action.textColor,
+                    borderRadius: component.definition.styles.actionButtonRadius?.value
+                      ? parseFloat(component.definition.styles.actionButtonRadius?.value)
+                      : 0,
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     onEvent('onTableActionButtonClicked', {
@@ -741,6 +760,14 @@ export function Table({
   );
 
   useEffect(() => {
+    registerAction('setPage', (targetPageIndex) => {
+      setPaginationInternalPageIndex(targetPageIndex);
+      onPageIndexChanged(targetPageIndex);
+      if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
+    });
+  }, [serverSidePagination, clientSidePagination]);
+
+  useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
     onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);
   }, [selectedFlatRows.length]);
@@ -771,6 +798,8 @@ export function Table({
       changeCanDrag(false);
     }
   }, [state.columnResizing.isResizingColumn]);
+
+  const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
 
   useEffect(() => {
     if (pageCount <= pageIndex) gotoPage(pageCount - 1);
@@ -918,6 +947,8 @@ export function Table({
                   autoPageCount={pageCount}
                   autoPageOptions={pageOptions}
                   onPageIndexChanged={onPageIndexChanged}
+                  pageIndex={paginationInternalPageIndex}
+                  setPageIndex={setPaginationInternalPageIndex}
                 />
               )}
             </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
@@ -156,6 +156,7 @@ let QueryManager = class QueryManager extends React.Component {
 
   createOrUpdateDataQuery = () => {
     const { appId, options, selectedDataSource, mode, queryName } = this.state;
+    const appVersionId = this.props.editingVersionId;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
 
@@ -181,7 +182,7 @@ let QueryManager = class QueryManager extends React.Component {
     } else {
       this.setState({ isCreating: true });
       dataqueryService
-        .create(appId, queryName, kind, options, dataSourceId)
+        .create(appId, appVersionId, queryName, kind, options, dataSourceId)
         .then(() => {
           toast.success('Query Added');
           this.setState({ isCreating: false });
@@ -208,12 +209,28 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   renderDataSourceOption = (props, option, snapshot, className) => {
+    const icon = option.kind ? `/assets/images/icons/editor/datasources/${option.kind.toLowerCase() + '.svg'}` : null;
     return (
-      <button {...props} className={className} type="button">
-        <div className="row">
-          <div className="col-md-9">
-            <span className="text-muted mx-2">{option.name}</span>
-          </div>
+      <button
+        {...props}
+        className={`${className} ${this.props.darkMode ? 'select-search__option__dark' : ''}`}
+        type="button"
+      >
+        <div>
+          <span>
+            {icon && (
+              <img
+                src={icon}
+                style={{
+                  margin: 'auto',
+                  marginRight: '3px',
+                }}
+                height="25"
+                width="25"
+              ></img>
+            )}
+            {option.name}
+          </span>
         </div>
       </button>
     );
@@ -362,21 +379,23 @@ let QueryManager = class QueryManager extends React.Component {
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mb-2">
                     <label className="form-label col-md-2">Datasource</label>
-                    <SelectSearch
+                    <Select
                       options={[
                         ...dataSources.map((source) => {
-                          return { name: source.name, value: source.id };
+                          return { label: source.name, value: source.id };
                         }),
                         ...staticDataSources.map((source) => {
-                          return { name: source.name, value: source.id };
+                          return { label: source.name, value: source.id };
                         }),
                       ]}
-                      value={selectedDataSource ? selectedDataSource.id : ''}
-                      search={true}
-                      onChange={(value) => this.changeDataSource(value)}
-                      filterOptions={fuzzySearch}
-                      renderOption={this.renderDataSourceOption}
+                      onChange={(newValue) => this.changeDataSource(newValue.value)}
                       placeholder="Select a data source"
+                      styles={{
+                        menu: (provided) => ({
+                          ...provided,
+                          zIndex: 2,
+                        }),
+                      }}
                     />
                   </div>
                 )}
@@ -399,7 +418,7 @@ let QueryManager = class QueryManager extends React.Component {
                         <div className="mb-3 mt-2">
                           <Transformation
                             changeOption={this.optionchanged}
-                            options={this.state.options}
+                            options={this.props.selectedQuery.options ?? {}}
                             currentState={currentState}
                             darkMode={this.props.darkMode}
                           />
@@ -440,7 +459,7 @@ let QueryManager = class QueryManager extends React.Component {
 
             {currentTab === 2 && (
               <div className="advanced-options-container m-2">
-                <label className="form-check form-switch">
+                <div className="form-check form-switch">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -448,8 +467,8 @@ let QueryManager = class QueryManager extends React.Component {
                     checked={this.state.options.runOnPageLoad}
                   />
                   <span className="form-check-label">Run this query on page load?</span>
-                </label>
-                <label className="form-check form-switch">
+                </div>
+                <div className="form-check form-switch">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -457,9 +476,9 @@ let QueryManager = class QueryManager extends React.Component {
                     checked={this.state.options.requestConfirmation}
                   />
                   <span className="form-check-label">Request confirmation before running query?</span>
-                </label>
+                </div>
 
-                <label className="form-check form-switch">
+                <div className="form-check form-switch">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -467,7 +486,7 @@ let QueryManager = class QueryManager extends React.Component {
                     checked={this.state.options.showSuccessNotification}
                   />
                   <span className="form-check-label">Show notification on success?</span>
-                </label>
+                </div>
                 {this.state.options.showSuccessNotification && (
                   <div>
                     <div className="row mt-3">

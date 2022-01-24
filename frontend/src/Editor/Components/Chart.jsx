@@ -3,13 +3,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 // Use plotly basic bundle
 import Plotly from 'plotly.js-basic-dist-min';
 import createPlotlyComponent from 'react-plotly.js/factory';
+import { isJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
 
 export const Chart = function Chart({ width, height, darkMode, properties, styles }) {
   const [loadingState, setLoadingState] = useState(false);
 
   const { visibility, disabledState } = styles;
-  const { title, markerColor, showGridLines, type, data } = properties;
+  const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson } = properties;
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
@@ -28,6 +29,8 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
   const dataString = data ?? [];
 
   const chartType = type;
+
+  const jsonChartData = isJson(jsonDescription) ? JSON.parse(jsonDescription).data : [];
 
   const fontColor = darkMode ? '#c3c3c3' : null;
 
@@ -80,8 +83,8 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
       newData = [
         {
           type: chartType,
-          values: rawData.map((item) => item['value']),
-          labels: rawData.map((item) => item['label']),
+          values: rawData.map((item) => item['y']),
+          labels: rawData.map((item) => item['x']),
         },
       ];
     } else {
@@ -99,7 +102,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const memoizedChartData = useMemo(() => computeChartData(data, dataString), [data, dataString]);
+  const memoizedChartData = useMemo(() => computeChartData(data, dataString), [data, dataString, chartType]);
 
   return (
     <div data-disabled={disabledState} style={computedStyles}>
@@ -111,7 +114,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
         </div>
       ) : (
         <Plot
-          data={memoizedChartData}
+          data={plotFromJson ? jsonChartData : memoizedChartData}
           layout={layout}
           config={{
             displayModeBar: false,

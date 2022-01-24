@@ -4,15 +4,13 @@ import DOMPurify from 'dompurify';
 export const Text = function Text({ height, properties, styles }) {
   const [loadingState, setLoadingState] = useState(false);
 
-  const { textColor, visibility, disabledState } = styles;
+  const { textColor, textAlign, visibility, disabledState } = styles;
   const text = properties.text ?? '';
   const color = textColor;
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
-    if (loadingStateProperty) {
-      setLoadingState(loadingStateProperty);
-    }
+    setLoadingState(loadingStateProperty);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
 
@@ -21,14 +19,19 @@ export const Text = function Text({ height, properties, styles }) {
     height,
     display: visibility ? 'flex' : 'none',
     alignItems: 'center',
+    textAlign,
   };
 
   return (
     <div data-disabled={disabledState} className="text-widget" style={computedStyles}>
-      {!loadingState && <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />}
+      {!loadingState && (
+        <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />
+      )}
       {loadingState === true && (
-        <div>
-          <div className="skeleton-line w-10"></div>
+        <div style={{ width: '100%' }}>
+          <center>
+            <div className="spinner-border" role="status"></div>
+          </center>
         </div>
       )}
     </div>

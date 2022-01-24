@@ -30,7 +30,7 @@ return data.filter(row => row.amount > 1000);`;
 
   return (
     <div className="field mb-2 transformation-editor">
-      <label className="form-check form-switch my-2">
+      <div className="form-check form-switch my-2">
         <input
           className="form-check-input"
           type="checkbox"
@@ -38,7 +38,7 @@ return data.filter(row => row.amount > 1000);`;
           checked={enableTransformation}
         />
         <span className="form-check-label">Transformations</span>
-      </label>
+      </div>
       {!enableTransformation && (
         <div>
           <div className="alert alert-success" role="alert">
@@ -60,6 +60,7 @@ return data.filter(row => row.amount > 1000);`;
             mode="javascript"
             theme={darkMode ? 'monokai' : 'base16-light'}
             lineNumbers={true}
+            height={300}
             className="query-hinter"
             ignoreBraces={true}
             onChange={(value) => codeChanged(value)}
