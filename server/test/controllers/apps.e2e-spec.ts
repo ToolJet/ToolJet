@@ -990,47 +990,6 @@ describe('apps controller', () => {
           expect(response.statusCode).toBe(200);
           expect(response.body.versions['0']['definition']).toBe(null);
         });
-
-        it('should return previous version definition when previous versions exists', async () => {
-          const adminUserData = await createUser(app, {
-            email: 'admin@tooljet.io',
-            groups: ['all_users', 'admin'],
-          });
-
-          const application = await createApplication(app, {
-            user: adminUserData.user,
-          });
-
-          const version = await createApplicationVersion(app, application);
-
-          let response = await request(app.getHttpServer())
-            .put(`/api/apps/${application.id}/versions/${version.id}`)
-            .set('Authorization', authHeaderForUser(adminUserData.user))
-            .send({
-              definition: { foo: 'bar' },
-            });
-
-          expect(response.statusCode).toBe(200);
-
-          response = await request(app.getHttpServer())
-            .post(`/api/apps/${application.id}/versions`)
-            .set('Authorization', authHeaderForUser(adminUserData.user))
-            .send({
-              versionName: 'v1',
-            });
-
-          expect(response.statusCode).toBe(201);
-
-          response = await request(app.getHttpServer())
-            .get(`/api/apps/${application.id}/versions`)
-            .set('Authorization', authHeaderForUser(adminUserData.user));
-
-          expect(response.statusCode).toBe(200);
-          expect(response.body.versions['0']['name']).toBe('v1');
-          expect(response.body.versions['0']['definition']).toMatchObject({
-            foo: 'bar',
-          });
-        });
       });
     });
   });
