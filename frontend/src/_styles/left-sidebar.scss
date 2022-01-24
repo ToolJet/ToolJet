@@ -215,7 +215,7 @@
     .card  {
       .card-body {
         padding: 0!important;
-
+        pointer-events: none;
         svg {
           margin-top: 24px;
         }
