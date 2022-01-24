@@ -62,6 +62,13 @@ class DataSourceManager extends React.Component {
     }
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.queryString !== this.state.queryString && this.state.queryString === null) {
+      return false;
+    }
+    return true;
+  }
+
   selectDataSource = (source) => {
     this.setState({
       dataSourceMeta: source,
