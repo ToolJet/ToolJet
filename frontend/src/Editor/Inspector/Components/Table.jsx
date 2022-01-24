@@ -165,6 +165,23 @@ class Table extends React.Component {
             />
           </div>
           <div className="field mb-2">
+            <label className="form-label">Text wrap</label>
+            <SelectSearch
+              options={[
+                { name: 'text wrap', value: 'textWrap' },
+                { name: 'no wrap', value: 'noWrap' },
+              ]}
+              value={column.textWrap}
+              search={true}
+              closeOnSelect={true}
+              onChange={(value) => {
+                this.onColumnItemChange(index, 'textWrap', value);
+              }}
+              filterOptions={fuzzySearch}
+              placeholder="Select.."
+            />
+          </div>
+          <div className="field mb-2">
             <label className="form-label">key</label>
             <CodeHinter
               currentState={this.props.currentState}
@@ -543,6 +560,8 @@ class Table extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
+
+    console.log('col', column);
 
     if (item === 'name') {
       const columnSizes = this.props.component.component.definition.properties.columnSizes;
