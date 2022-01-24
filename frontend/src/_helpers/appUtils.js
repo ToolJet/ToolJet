@@ -239,7 +239,7 @@ function executeAction(_ref, event, mode) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(_ref, event.table, event.pageIndex);
+        return setTablePageIndex(_ref, event.table, event.pageIndex);
       }
     }
   }
@@ -691,7 +691,7 @@ function setTablePageIndex(_ref, table, index) {
 
   const tableMeta = _ref.state.currentState.components[table.name];
   const newPageIndex = resolveReferences(index, _ref.state.currentState);
-  tableMeta.setPage(newPageIndex);
+  tableMeta.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }
 
