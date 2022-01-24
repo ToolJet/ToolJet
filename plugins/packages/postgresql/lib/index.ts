@@ -1,4 +1,4 @@
-import { ConnectionTestResult, cacheConnection, getCachedConnection, QueryService, QueryResult } from 'common';
+import { ConnectionTestResult, cacheConnection, getCachedConnection, QueryService, QueryResult } from '@tooljet-plugins/common'
 
 const { Pool } = require('pg');
 
