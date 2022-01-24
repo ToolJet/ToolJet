@@ -26,7 +26,7 @@ spec:
           args: ["npm", "run", "start:prod"]
           resources:
             limits:
-              memory: "3000Mi"
+              memory: "3001Mi"
               cpu: "500m"
             requests:
               memory: "3000Mi"
@@ -138,3 +138,13 @@ spec:
                 secretKeyRef:
                   name: sources
                   key: slack_client_secret
+            - name: customerIoSiteId
+              valueFrom:
+                secretKeyRef:
+                  name: other
+                  key: customerIoSiteId
+            - name: customerIoApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: other
+                  key: customerIoApiKey
