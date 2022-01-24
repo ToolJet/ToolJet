@@ -1748,14 +1748,7 @@ export const componentTypes = [
       primaryValue: { type: 'code', displayName: 'Primary value' },
       secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
-      secondarySignDisplay: {
-        type: 'select',
-        displayName: 'Secondary sign display',
-        options: [
-          { name: 'positive', value: 'positive' },
-          { name: 'negative', value: 'negative' },
-        ],
-      },
+      secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
     },
     events: {
       onChange: { displayName: 'On change' },
