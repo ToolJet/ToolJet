@@ -43,7 +43,6 @@ class DataSourceManager extends React.Component {
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
       suggestingDatasources: false,
-      isDefault: false,
     };
   }
 
@@ -60,50 +59,6 @@ class DataSourceManager extends React.Component {
         options: this.props.selectedDataSource?.options,
         dataSourceMeta: DataSourceTypes.find((source) => source.kind === this.props.selectedDataSource?.kind),
       });
-    }
-    if (this.state.activeDatasourceList === '#') {
-      const element = document.getElementsByClassName('list-group-item');
-      for (let i = 0; i < element.length; i++) {
-        element[i].classList.remove('active');
-      }
-    }
-
-    if (!this.isDefault) {
-      const element = document.getElementsByClassName('list-group-item');
-      for (let i = 0; i < element.length; i++) {
-        if (!element[i].id.includes(this.state.activeDatasourceList)) {
-          element[i].classList.remove('active');
-        }
-      }
-
-      const tabPane = document.getElementsByClassName('tab-pane');
-      for (let i = 0; i < tabPane.length; i++) {
-        if (!tabPane[i].id.includes(this.state.activeDatasourceList)) {
-          tabPane[i].classList.remove('active');
-          tabPane[i].classList.remove('show');
-        }
-      }
-    }
-
-    if (this.state.activeDatasourceList === '#alldatasources' && this.state.isDefault) {
-      const element = document.getElementsByClassName('list-group-item');
-      for (let i = 0; i < element.length; i++) {
-        element[i].classList.remove('active');
-        if (element[i].id.includes('#alldatasources')) {
-          element[i].classList.add('active');
-        }
-      }
-      const tabPane = document.getElementsByClassName('tab-pane');
-      for (let i = 0; i < tabPane.length; i++) {
-        tabPane[i].classList.remove('active');
-        tabPane[i].classList.remove('show');
-        if (tabPane[i].id.includes('#alldatasources')) {
-          tabPane[i].classList.add('active');
-          tabPane[i].classList.add('show');
-        }
-      }
-
-      return this.setState({ isDefault: false });
     }
   }
 
@@ -212,7 +167,6 @@ class DataSourceManager extends React.Component {
     this.setState({
       queryString: null,
       filteredDatasources: [],
-      isDefault: true,
       activeDatasourceList: '#alldatasources',
     });
   };
@@ -251,7 +205,7 @@ class DataSourceManager extends React.Component {
       if (suggestingDatasources) {
         this.setState({ suggestingDatasources: false });
       }
-      this.setState({ activeDatasourceList: activekey, isDefault: false });
+      this.setState({ activeDatasourceList: activekey });
     };
 
     const goBacktoAllDatasources = () => {
@@ -275,6 +229,8 @@ class DataSourceManager extends React.Component {
 
     return (
       <Tab.Container
+        activeKey={this.state.activeDatasourceList}
+        unmountOnExit={true}
         onSelect={(activekey) => handleOnSelect(activekey)}
         id="list-group-tabs-example"
         defaultActiveKey={this.state.activeDatasourceList}
@@ -302,11 +258,27 @@ class DataSourceManager extends React.Component {
                       />
                     </div>
                     {datasources.map((datasource) => (
-                      <Tab.Pane eventKey={datasource.key} key={datasource.key}>
+                      <Tab.Pane
+                        transition={false}
+                        active={this.state.activeDatasourceList === datasource.key}
+                        bsPrefix={`datasource-modal-${this.state.activeDatasourceList}`}
+                        eventKey={datasource.key}
+                        key={datasource.key}
+                      >
                         {datasource.renderDatasources()}
                       </Tab.Pane>
                     ))}
                   </>
+                )}
+                {this.state.queryString && this.state.filteredDatasources.length === 0 && (
+                  <div className="empty-state-wrapper row">
+                    <EmptyStateContainer
+                      queryString={this.state.queryString}
+                      handleBackToAllDatasources={this.handleBackToAllDatasources}
+                      darkMode={this.props.darkMode}
+                      placeholder={'Tell us what you were looking for?'}
+                    />
+                  </div>
                 )}
               </Tab.Content>
             </div>
@@ -400,18 +372,18 @@ class DataSourceManager extends React.Component {
         };
       });
 
-      if (filteredDatasources.length === 0) {
-        return (
-          <div className="empty-state-wrapper row">
-            <EmptyStateContainer
-              queryString={this.state.queryString}
-              handleBackToAllDatasources={this.handleBackToAllDatasources}
-              darkMode={this.props.darkMode}
-              placeholder={'Tell us what you were looking for?'}
-            />
-          </div>
-        );
-      }
+      // if (filteredDatasources.length === 0) {
+      //   return (
+      //     <div className="empty-state-wrapper row">
+      //       <EmptyStateContainer
+      //         queryString={this.state.queryString}
+      //         handleBackToAllDatasources={this.handleBackToAllDatasources}
+      //         darkMode={this.props.darkMode}
+      //         placeholder={'Tell us what you were looking for?'}
+      //       />
+      //     </div>
+      //   );
+      // }
 
       return (
         <>
