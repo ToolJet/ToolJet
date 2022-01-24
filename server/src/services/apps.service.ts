@@ -282,7 +282,7 @@ export class AppsService {
   }
 
   async createVersion(user: User, app: App, versionName: string, versionFromId: string): Promise<AppVersion> {
-    const lastVersion = await this.appVersionsRepository.findOne(versionFromId);
+    const lastVersion = versionFromId && (await this.appVersionsRepository.findOne(versionFromId));
 
     let appVersion: AppVersion;
     await getManager().transaction(async (manager) => {
