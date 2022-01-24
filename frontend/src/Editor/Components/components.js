@@ -1730,4 +1730,46 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Spinner',
+    displayName: 'Spinner',
+    description: 'Spinner can be used to display loading status',
+    component: 'Spinner',
+    defaultSize: {
+      width: 2,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      colour: { type: 'color', displayName: 'Colour' },
+      size: {
+        type: 'select',
+        displayName: 'Size',
+        options: [
+          { name: 'small', value: 'sm' },
+          { name: 'large', value: 'lg' },
+        ],
+      },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        size: { value: 'sm' },
+        colour: { value: '#0565ff' },
+      },
+    },
+  },
 ];
