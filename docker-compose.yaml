@@ -8,7 +8,10 @@ services:
     image: tooljet-plugins:development
     platform: linux/x86_64
     volumes:
-      - ./plugins/:/app/plugins:cached
+      - ./plugins/:/app/plugins
+      - plugins_vol:/app/plugins:delegated
+      - /app/plugins/dist/
+      - /app/plugins/node_modules/
     ports:
       - 4000:4000
     command: npm run --prefix plugins start
@@ -21,7 +24,7 @@ services:
     platform: linux/x86_64
     volumes:
       - ./frontend:/app/frontend:delegated
-      - ./plugins/:/app/plugins
+      - plugins_vol:/app/plugins
       - /app/frontend/node_modules/
     ports:
       - 8082:8082
@@ -40,7 +43,7 @@ services:
       - postgres
     volumes:
       - ./server:/app/server:delegated
-      - ./plugins/:/app/plugins
+      - plugins_vol:/app/plugins
       - /app/server/node_modules/
       - ".env:/app/.env"
       - ".env.test:/app/.env.test"
@@ -63,3 +66,4 @@ services:
 
 volumes:
   postgres:
+  plugins_vol:
