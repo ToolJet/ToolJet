@@ -106,8 +106,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ checkKeys: true }",
@@ -133,8 +133,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ checkKeys: true }",
@@ -144,15 +144,15 @@
     },
     "find_one": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }",
@@ -160,8 +160,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ projections: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
@@ -171,15 +171,15 @@
     },
     "find_many": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }",
@@ -187,8 +187,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ projections: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
@@ -198,15 +198,15 @@
     },
     "count_total": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ fullResponse: true }",
@@ -216,15 +216,15 @@
     },
     "count": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }",
@@ -232,8 +232,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ skip: 2 }",
@@ -243,22 +243,22 @@
     },
     "distinct": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "field": {
-        "$label": "Field",
-        "$key": "field",
+        "label": "Field",
+        "key": "field",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter field name"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ directors: 'Barbra Streisand', }",
@@ -266,8 +266,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
@@ -277,15 +277,15 @@
     },
     "update_one": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ directors: 'Barbra Streisand', }",
@@ -293,8 +293,8 @@
         "height": "150px"
       },
       "update": {
-        "$label": "Update",
-        "$key": "update",
+        "label": "Update",
+        "key": "update",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ $set: { status: 'Modified' } }",
@@ -302,8 +302,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
@@ -313,15 +313,15 @@
     },
     "update_many": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ directors: 'Barbra Streisand', }",
@@ -329,8 +329,8 @@
         "height": "150px"
       },
       "update": {
-        "$label": "Update",
-        "$key": "update",
+        "label": "Update",
+        "key": "update",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ $set: { status: 'Modified' } }",
@@ -338,8 +338,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
@@ -349,15 +349,15 @@
     },
     "replace_one": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ title: { $regex: 'The Cat from' } } }",
@@ -365,8 +365,8 @@
         "height": "150px"
       },
       "replacement": {
-        "$label": "Replacement",
-        "$key": "replacement",
+        "label": "Replacement",
+        "key": "replacement",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ title: { $regex: 'The Cat from some sector' } }",
@@ -374,8 +374,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
@@ -385,15 +385,15 @@
     },
     "find_one_replace": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ title: { $regex: 'The Cat from' } } }",
@@ -401,8 +401,8 @@
         "height": "150px"
       },
       "replacement": {
-        "$label": "Replacement",
-        "$key": "replacement",
+        "label": "Replacement",
+        "key": "replacement",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ title: { $regex: 'The Cat from some sector' } }",
@@ -410,8 +410,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
@@ -421,15 +421,15 @@
     },
     "find_one_update": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ directors: 'Barbra Streisand', }",
@@ -437,8 +437,8 @@
         "height": "150px"
       },
       "update": {
-        "$label": "Update",
-        "$key": "update",
+        "label": "Update",
+        "key": "update",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ $set: { status: 'Modified' } }",
@@ -446,8 +446,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ upsert: true }",
@@ -457,15 +457,15 @@
     },
     "find_one_delete": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ directors: 'Barbra Streisand', }",
@@ -473,8 +473,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ sort: { field: -1 } }",
@@ -484,15 +484,15 @@
     },
     "delete_one": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ directors: 'Barbra Streisand', }",
@@ -500,8 +500,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{  comment: 'some comment' }",
@@ -511,15 +511,15 @@
     },
     "delete_many": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "filter": {
-        "$label": "Filter",
-        "$key": "filter",
+        "label": "Filter",
+        "key": "filter",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ directors: 'Barbra Streisand', }",
@@ -527,8 +527,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
@@ -538,15 +538,15 @@
     },
     "bulk_write": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "operations": {
-        "$label": "Operations",
-        "$key": "operations",
+        "label": "Operations",
+        "key": "operations",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "[{ insertOne: { document: { directors: 'Barbra Streisand' } } }]",
@@ -554,8 +554,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
@@ -565,15 +565,15 @@
     },
     "aggregate": {
       "collection": {
-        "$label": "Collection",
-        "$key": "collection",
+        "label": "Collection",
+        "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter collection"
       },
       "pipeline": {
-        "$label": "Pipeline",
-        "$key": "pipeline",
+        "label": "Pipeline",
+        "key": "pipeline",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "[{ $match: { categories: 'Bakery' } }, { $group: { _id: '$stars', count: { $sum: 1 } } }]",
@@ -581,8 +581,8 @@
         "height": "150px"
       },
       "options": {
-        "$label": "Options",
-        "$key": "options",
+        "label": "Options",
+        "key": "options",
         "type": "codehinter",
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
