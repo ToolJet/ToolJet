@@ -1053,7 +1053,7 @@ class Editor extends React.Component {
                               <center>
                                 <span className="text-muted">{dataQueriesDefaultText}</span> <br />
                                 <button
-                                  className="btn btn-sm btn-outline-azure mt-3"
+                                  className="btn font-500 color-primary btn-sm mt-3"
                                   onClick={() =>
                                     this.setState({ selectedQuery: {}, editingQuery: false, addingQuery: true })
                                   }
