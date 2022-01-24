@@ -1,11 +1,10 @@
 import { HTTPError } from 'got';
 import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-
-
 import got from 'got'
+import { SourceOptions, QueryOptions } from './types'
 
 export default class GraphqlQueryService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
 
     const url = sourceOptions.url;
