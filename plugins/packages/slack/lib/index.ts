@@ -1,8 +1,6 @@
-import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-
-
-import got from 'got'
-import {Headers} from 'got'
+import { QueryError, QueryResult,  QueryService } from '@tooljet-plugins/common';
+import got, { Headers } from 'got'
+import { SourceOptions, QueryOptions } from './types'
 
 export default class SlackQueryService implements QueryService {
   authUrl(): string {
@@ -49,11 +47,11 @@ export default class SlackQueryService implements QueryService {
     return { Authorization: `Bearer ${token}` };
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
     let response = null;
     const operation = queryOptions.operation;
-    const accessToken = sourceOptions['access_token'];
+    const accessToken = sourceOptions.access_token;
 
     try {
       switch (operation) {
@@ -68,9 +66,9 @@ export default class SlackQueryService implements QueryService {
 
         case 'send_message': {
           const body = {
-            channel: queryOptions['channel'],
-            text: queryOptions['message'],
-            as_user: queryOptions['sendAsUser'],
+            channel: queryOptions.channel,
+            text: queryOptions.message,
+            as_user: queryOptions.sendAsUser,
           };
 
           response = await got('https://slack.com/api/chat.postMessage', {
