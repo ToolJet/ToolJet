@@ -1,5 +1,0 @@
-{
-  "testFiles": "**/*.spec.jsx",
-  "componentFolder": "./src",
-  "nodeVersion": "system"
-}
