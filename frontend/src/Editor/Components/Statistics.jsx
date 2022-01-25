@@ -23,9 +23,9 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     fontWeight: '500',
   };
 
-  const priceStyle = {
+  const primaryStyle = {
     fontSize: '34px',
-    color: darkMode ? '#FFFFFC' : primaryTextColour,
+    color: primaryTextColour !== '#000000' ? primaryTextColour : darkMode && '#FFFFFC',
     fontWeight: '700',
     marginBottom: '0px',
   };
@@ -60,12 +60,12 @@ export const Statistics = function Statistics({ height, properties, styles, dark
         style={{
           ...letterStyle,
           ...marginStyle,
-          color: darkMode ? '#FFFFFC' : primaryLabelColour,
+          color: primaryLabelColour !== '#8092AB' ? primaryLabelColour : darkMode && '#FFFFFC',
         }}
       >
         {primaryValueLabel}
       </p>
-      <h2 style={priceStyle}>{primaryValue}</h2>
+      <h2 style={primaryStyle}>{primaryValue}</h2>
       <div>
         <div className="d-flex flex-row">
           {secondarySignDisplay !== 'negative' ? (
@@ -81,7 +81,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
         <p
           style={{
             ...letterStyle,
-            color: darkMode ? '#FFFFFC' : secondaryLabelColour,
+            color: secondaryLabelColour !== '#8092AB' ? secondaryLabelColour : darkMode && '#FFFFFC',
             marginBottom: '12px',
           }}
         >

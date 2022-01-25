@@ -1775,7 +1775,7 @@ export const componentTypes = [
   {
     name: 'Statistics',
     displayName: 'Statistics',
-    description: 'Statistics',
+    description: 'Statistics can be used to display different statistical information',
     component: 'Statistics',
     defaultSize: {
       width: 9.2,
