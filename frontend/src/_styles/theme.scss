@@ -1447,7 +1447,10 @@ border-radius: 4px;
   .has-actions {
     margin: 0;
   }
-
+.text-wrapper{
+  white-space:normal !important;
+  // background-color: greenyellow;
+}
   td {
     .text-container:focus-visible,
     .text-container:focus,

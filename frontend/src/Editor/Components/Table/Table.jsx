@@ -91,6 +91,11 @@ export function Table({
   }
 
   const [loadingState, setLoadingState] = useState(false);
+  const [columnResult, setColumResult] = useState();
+
+  useEffect(() => {
+    setColumResult(component?.definition?.properties?.columns?.value);
+  }, [component?.definition?.properties]);
 
   useEffect(() => {
     const loadingStateProperty = component.definition.properties.loadingState;
@@ -569,6 +574,15 @@ export function Table({
   const leftActions = () => actions.value.filter((action) => action.position === 'left');
   const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
 
+  const textActions = (id) => {
+    let finOut = columnResult?.find((item) => {
+      return item?.id == id;
+    });
+    if (finOut?.textWrap == 'textWrap') {
+      return true;
+    }
+  };
+
   const leftActionsCellData =
     leftActions().length > 0
       ? [
@@ -748,6 +762,7 @@ export function Table({
             ),
             Cell: ({ row }) => (
               <div className="d-flex flex-column align-items-center">
+                ]
                 <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
               </div>
             ),
@@ -885,7 +900,6 @@ export function Table({
                       if (componentState.changeSet) {
                         if (componentState.changeSet[cell.row.index]) {
                           const currentColumn = columnData.find((column) => column.id === cell.column.id);
-
                           if (
                             _.get(componentState.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
                             undefined
@@ -896,7 +910,6 @@ export function Table({
                           }
                         }
                       }
-
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -908,6 +921,7 @@ export function Table({
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
+                            'text-wrapper': textActions(cell.column.id),
                             [cellSizeType]: true,
                           })}
                           {...cellProps}
