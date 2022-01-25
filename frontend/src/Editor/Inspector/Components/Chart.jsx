@@ -77,7 +77,8 @@ class Chart extends React.Component {
         'title',
         'properties',
         currentState,
-        components
+        components,
+        this.props.darkMode
       ),
     });
 
