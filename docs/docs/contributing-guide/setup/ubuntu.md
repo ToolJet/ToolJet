@@ -47,6 +47,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     ```bash
     npm install --prefix server
     npm install --prefix frontend
+    npm run build:plugins
     ```
 
 5. Set up database
