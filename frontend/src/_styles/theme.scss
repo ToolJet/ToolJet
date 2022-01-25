@@ -428,6 +428,9 @@ button {
       .query-row {
         cursor: pointer;
         --tblr-gutter-x: 0rem;
+        &:hover {
+          background: #D2DDEC;
+        }
         .query-copy-button {
           display: none;
         }
