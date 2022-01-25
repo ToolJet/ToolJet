@@ -29,8 +29,8 @@ describe('Authentication', () => {
     expect(response.statusCode).toBe(201);
 
     const id = response.body['id'];
-    const user = await userRepository.findOne(id, {
-      where: { email: 'test@tooljet.io' },
+    const user = await userRepository.findOne({
+      where: { id, email: 'test@tooljet.io' },
       relations: ['organization'],
     });
 

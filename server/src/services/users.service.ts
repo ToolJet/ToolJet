@@ -26,7 +26,7 @@ export class UsersService {
   ) {}
 
   async findOne(id: string): Promise<User> {
-    return this.usersRepository.findOne(id);
+    return this.usersRepository.findOne({ where: { id } });
   }
 
   async findByEmail(email: string): Promise<User> {
@@ -71,8 +71,10 @@ export class UsersService {
 
       for (const group of groups) {
         const orgGroupPermission = await manager.findOne(GroupPermission, {
-          organizationId: organization.id,
-          group: group,
+          where: {
+            organizationId: organization.id,
+            group: group,
+          },
         });
 
         if (orgGroupPermission) {
@@ -91,7 +93,7 @@ export class UsersService {
   }
 
   async status(user: User) {
-    const orgUser = await this.organizationUsersRepository.findOne({ user });
+    const orgUser = await this.organizationUsersRepository.findOne({ where: { user } });
     return orgUser.status;
   }
 
@@ -124,7 +126,7 @@ export class UsersService {
     const lastName = params['last_name'];
     const newSignup = params['new_signup'];
 
-    const user = await this.usersRepository.findOne({ invitationToken: token });
+    const user = await this.usersRepository.findOne({ where: { invitationToken: token } });
 
     if (user) {
       // beforeUpdate hook will not trigger if using update method of repository
@@ -171,7 +173,7 @@ export class UsersService {
 
     const performUpdateInTransaction = async (manager) => {
       await manager.update(User, userId, { ...updateableParams });
-      user = await manager.findOne(User, { id: userId });
+      user = await manager.findOne(User, { where: { id: userId } });
 
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups);
 
@@ -328,8 +330,10 @@ export class UsersService {
 
   async isUserOwnerOfApp(user, appId): Promise<boolean> {
     const app = await this.appsRepository.findOne({
-      id: appId,
-      userId: user.id,
+      where: {
+        id: appId,
+        userId: user.id,
+      },
     });
     return !!app;
   }
