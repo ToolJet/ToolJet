@@ -41,6 +41,7 @@ import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { AppVersionsManager } from './AppVersionsManager';
+import { SearchBoxComponent } from '@/_ui/Search';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1154,55 +1155,58 @@ class Editor extends React.Component {
                   <div className="col-md-4 data-pane">
                     <div className="queries-container">
                       <div className="queries-header row">
-                        <div className="col">
-                          <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
-                            QUERIES
-                          </h5>
-                        </div>
-                        <div className="col-auto ">
-                          <span
-                            className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
-                            data-class="py-1 px-0"
-                            data-tip="Search query"
-                            onClick={this.toggleQuerySearch}
-                          >
-                            <img className="py-1 mt-2" src="/assets/images/icons/lens.svg" width="24" height="24" />
-                          </span>
-
-                          <span
-                            className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
-                            data-tip="Add new query"
-                            data-class="py-1 px-2"
-                            onClick={() =>
-                              this.setState({
-                                options: {},
-                                selectedDataSource: null,
-                                selectedQuery: {},
-                                editingQuery: false,
-                                addingQuery: true,
-                              })
-                            }
-                          >
-                            <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
-                          </span>
-                        </div>
-                      </div>
-
-                      {showQuerySearchField && (
-                        <div className="row mt-2 pt-1 px-2">
-                          <div className="col-12">
-                            <div className="queries-search">
-                              <input
-                                type="text"
-                                className="form-control mb-2"
-                                placeholder="Search…"
-                                autoFocus
-                                onChange={(e) => this.filterQueries(e.target.value)}
-                              />
+                        <>
+                          {showQuerySearchField && (
+                            <div className="col-12 p-1">
+                              <div className="queries-search">
+                                <SearchBoxComponent onChange={this.filterQueries} callback={this.toggleQuerySearch} />
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      )}
+                          )}
+
+                          {!showQuerySearchField && (
+                            <>
+                              <div className="col">
+                                <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
+                                  QUERIES
+                                </h5>
+                              </div>
+                              <div className="col-auto ">
+                                <span
+                                  className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
+                                  data-class="py-1 px-0"
+                                  data-tip="Search query"
+                                  onClick={this.toggleQuerySearch}
+                                >
+                                  <img
+                                    className="py-1 mt-2"
+                                    src="/assets/images/icons/lens.svg"
+                                    width="24"
+                                    height="24"
+                                  />
+                                </span>
+
+                                <span
+                                  className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
+                                  data-tip="Add new query"
+                                  data-class="py-1 px-2"
+                                  onClick={() =>
+                                    this.setState({
+                                      options: {},
+                                      selectedDataSource: null,
+                                      selectedQuery: {},
+                                      editingQuery: false,
+                                      addingQuery: true,
+                                    })
+                                  }
+                                >
+                                  <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      </div>
 
                       {loadingDataQueries ? (
                         <div className="p-5">
