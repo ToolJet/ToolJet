@@ -3916,3 +3916,21 @@ input[type="text"] {
 
 
 
+// **Alert component**
+.alert-component {
+  border: 1px solid rgba(101, 109, 119, 0.16)!important;
+  background: #F5F7F9;
+
+  a {
+    color: $primary;
+  }
+}
+
+.alert-component.dark {
+  border: none!important;
+  background-color: #333C48!important;
+
+  span {
+    filter: brightness(0) invert(1);
+  }
+}

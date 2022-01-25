@@ -6,11 +6,11 @@ import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
 import ReactJson from 'react-json-view';
-import { previewQuery, getSvgIcon } from '@/_helpers/appUtils';
+import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
-import { allSvgs } from '@tooljet/plugins/client';
+
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
