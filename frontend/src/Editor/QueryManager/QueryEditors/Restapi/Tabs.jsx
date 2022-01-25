@@ -5,46 +5,52 @@ import Tab from 'react-bootstrap/Tab';
 import Headers from './TabHeaders';
 import Params from './TabParams';
 import Body from './TabBody';
+import { Col, ListGroup, Nav, Row } from 'react-bootstrap';
 
-function ControlledTabs({ options, currentState, theme, onChange, removeKeyValuePair, darkMode, componentName }) {
+function ControlledTabs({
+  options,
+  currentState,
+  theme,
+  onChange,
+  removeKeyValuePair,
+  addNewKeyValuePair,
+  darkMode,
+  componentName,
+}) {
   const [key, setKey] = React.useState('headers');
-
+  const tabs = ['Headers', 'Params', 'Body'];
   return (
-    <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
-      <Tab eventKey="headers" title="Headers">
-        <Headers
-          removeKeyValuePair={removeKeyValuePair}
-          onChange={onChange}
-          options={options['headers']}
-          currentState={currentState}
-          theme={theme}
-          darkMode={darkMode}
-          componentName={componentName}
-        />
-      </Tab>
-      <Tab eventKey="params" title="Params">
-        <Params
-          removeKeyValuePair={removeKeyValuePair}
-          onChange={onChange}
-          options={options['url_params']}
-          currentState={currentState}
-          theme={theme}
-          darkMode={darkMode}
-          componentName={componentName}
-        />
-      </Tab>
-      <Tab eventKey="body" title="Body">
-        <Body
-          removeKeyValuePair={removeKeyValuePair}
-          onChange={onChange}
-          options={options['body']}
-          currentState={currentState}
-          theme={theme}
-          darkMode={darkMode}
-          componentName={componentName}
-        />
-      </Tab>
-    </Tabs>
+    <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
+      <Row>
+        <Col sm={2} className={`keys ${darkMode ? 'dark' : ''}`}>
+          <ListGroup className="query-pane-rest-api-keys-list-group" variant="flush">
+            {tabs.map((tab) => (
+              <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
+                <span>{tab}</span>
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </Col>
+        <Col sm={10}>
+          <Tab.Content bsPrefix="rest-api-tab-content">
+            <Tab.Pane eventKey="headers">
+              <Headers
+                removeKeyValuePair={removeKeyValuePair}
+                addNewKeyValuePair={addNewKeyValuePair}
+                onChange={onChange}
+                options={options['headers']}
+                currentState={currentState}
+                theme={theme}
+                darkMode={darkMode}
+                componentName={componentName}
+              />
+            </Tab.Pane>
+            <Tab.Pane eventKey="params">Tab two content</Tab.Pane>
+            <Tab.Pane eventKey="body">Tab three content</Tab.Pane>
+          </Tab.Content>
+        </Col>
+      </Row>
+    </Tab.Container>
   );
 }
 

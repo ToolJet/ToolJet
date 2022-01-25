@@ -452,6 +452,7 @@ button {
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
+        width: 1065px;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* Internet Explorer 10+ */
 
@@ -3763,6 +3764,9 @@ input[type="text"] {
   }
 }
 
+/**
+ * Query panel
+ */
 .query-btn {
   cursor: pointer;
   height: 24px;
@@ -3793,3 +3797,108 @@ input[type="text"] {
   height: 28px;
   border-radius: $border-radius;
 }
+
+.rest-methods-field {
+  .code-hinter-wrapper .popup-btn {
+    margin-top: 0.35rem!important;
+  }
+}
+
+
+.query-pane-restapi-tabs.dark {
+  background: $bg-dark!important;
+  border-color: $border-grey-dark !important;
+
+  .list-group-item {
+    color: $disabled !important;
+    &:hover {
+      background-color: #262b33 !important;
+    }
+  }
+  .list-group-item.active {
+    color: $white !important;
+  }
+}
+.query-pane-restapi-tabs {
+  background: #F7F9FC;
+  border: 1px solid #D2DDEC;
+  box-sizing: border-box;
+  border-radius: 4px;
+  margin: 0px;
+  height: 160px; 
+
+  .row {
+    height: inherit;
+
+    .keys {
+      border-right: 1px solid #D2DDEC!important;
+      margin-left: 20px;
+      margin-right: 20px;
+      width: 100px;
+    }
+
+    .keys.dark {
+      border-color: $border-grey-dark !important; 
+    }
+    .rest-api-tab-content {
+      margin-top: 1rem;
+
+      .tabpanel {
+        height: inherit;
+      }
+
+      .code-hinter-wrapper .popup-btn {
+        margin-top: 0.35rem!important;
+      }
+    }
+  }
+}
+
+
+.query-pane-rest-api-keys-list-group {
+  margin-top: 1.25rem;
+  .list-group-item {
+    border: none!important;
+    cursor: pointer;
+    margin-bottom: 11px;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 17px;
+    padding: 3px!important;
+    height: 22px;
+    width: 72px;
+    
+
+    span {
+      display: flex;
+      justify-content: left;
+      margin-left: 7px;
+    }
+
+    &:hover {
+      border-radius: 4px!important;
+      background-color: $bg-light;
+    }
+  }
+
+  .list-group-item.active {
+    border-radius: 4px!important;
+    background-color: $primary!important;
+    z-index: inherit!important;
+  }
+}
+
+// ** Query Panel: REST API Tabs **
+.group-header {
+  background: #D2DDEC;
+  border-radius: 4px;
+  height: 28px!important;
+  span {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+  }
+}
+
+
+

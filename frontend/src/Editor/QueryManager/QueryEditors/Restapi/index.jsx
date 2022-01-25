@@ -39,6 +39,7 @@ class Restapi extends React.Component {
   }
 
   addNewKeyValuePair = (option) => {
+    console.log('addNewKeyValuePair', option);
     const { options } = this.state;
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
 
@@ -78,55 +79,57 @@ class Restapi extends React.Component {
 
     return (
       <div>
-        <div className="mb-3">
-          <div className="mb-3">
-            <div className="row mt-1" style={{ height: '60px' }}>
-              <div className="col-auto rest-methods-options" style={{ width: '90px' }}>
-                <SelectSearch
-                  options={[
-                    { name: 'GET', value: 'get' },
-                    { name: 'POST', value: 'post' },
-                    { name: 'PUT', value: 'put' },
-                    { name: 'PATCH', value: 'patch' },
-                    { name: 'DELETE', value: 'delete' },
-                  ]}
-                  value={options.method === '' ? 'get' : options.method}
-                  search={false}
-                  closeOnSelect={true}
-                  onChange={(value) => {
-                    changeOption(this, 'method', value);
-                  }}
-                  filterOptions={fuzzySearch}
-                  placeholder="Method"
-                />
-              </div>
+        <div className="row mt-2" style={{ height: '40px' }}>
+          <div className="col-auto rest-methods-options" style={{ width: '90px' }}>
+            <SelectSearch
+              options={[
+                { name: 'GET', value: 'get' },
+                { name: 'POST', value: 'post' },
+                { name: 'PUT', value: 'put' },
+                { name: 'PATCH', value: 'patch' },
+                { name: 'DELETE', value: 'delete' },
+              ]}
+              value={options.method === '' ? 'get' : options.method}
+              search={false}
+              closeOnSelect={true}
+              onChange={(value) => {
+                changeOption(this, 'method', value);
+              }}
+              filterOptions={fuzzySearch}
+              placeholder="Method"
+            />
+          </div>
 
-              <div className="col field mx-3" style={{ display: 'flex' }}>
-                {dataSourceURL && (
-                  <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
-                )}
-                <div className="col-4 mb-2 rest-methods-field">
-                  <CodeHinter
-                    currentState={this.props.currentState}
-                    initialValue={options.url}
-                    height="28px"
-                    theme={this.props.darkMode ? 'monokai' : 'default'}
-                    onChange={(value) => {
-                      changeOption(this, 'url', value);
-                    }}
-                    placeholder="Enter request URL"
-                    componentName={`${queryName}::url`}
-                  />
-                </div>
-              </div>
+          <div className="col field mx-3" style={{ display: 'flex' }}>
+            {dataSourceURL && (
+              <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
+            )}
+            <div className="col-4 rest-methods-field">
+              <CodeHinter
+                currentState={this.props.currentState}
+                initialValue={options.url}
+                theme={this.props.darkMode ? 'monokai' : 'default'}
+                onChange={(value) => {
+                  changeOption(this, 'url', value);
+                }}
+                placeholder="Enter request URL"
+                componentName={`${queryName}::url`}
+                mode="javascript"
+                lineNumbers={false}
+                height={'28px'}
+              />
             </div>
           </div>
+        </div>
+
+        <div className={`query-pane-restapi-tabs mt-2 ${this.props.darkMode ? 'dark' : ''}`}>
           <Tabs
             theme={this.props.darkMode ? 'monokai' : 'default'}
             options={this.state.options}
             currentState={this.props.currentState}
             onChange={this.handleChange}
             removeKeyValuePair={this.removeKeyValuePair}
+            addNewKeyValuePair={this.addNewKeyValuePair}
             darkMode={this.props.darkMode}
             componentName={queryName}
           />

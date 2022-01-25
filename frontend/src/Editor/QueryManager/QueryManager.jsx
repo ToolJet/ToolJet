@@ -6,10 +6,11 @@ import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
 import ReactJson from 'react-json-view';
-import { previewQuery } from '@/_helpers/appUtils';
+import { previewQuery, getSvgIcon } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
+import { allSvgs } from '@tooljet/plugins/client';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
@@ -58,12 +59,12 @@ let QueryManager = class QueryManager extends React.Component {
           let source = props.dataSources.find((datasource) => datasource.id === selectedQuery.data_source_id);
           if (selectedQuery.kind === 'restapi') {
             if (!selectedQuery.data_source_id) {
-              source = { kind: 'restapi' };
+              source = { kind: 'restapi', id: 'null', name: 'REST API' };
             }
           }
           if (selectedQuery.kind === 'runjs') {
             if (!selectedQuery.data_source_id) {
-              source = { kind: 'runjs' };
+              source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
             }
           }
 
@@ -209,12 +210,14 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   renderDataSourceOption = (props, option, snapshot, className) => {
-    const icon = option.kind ? `/assets/images/icons/editor/datasources/${option.kind.toLowerCase() + '.svg'}` : null;
+    // const icon = option.kind ? `/assets/images/icons/editor/datasources/${option.kind.toLowerCase() + '.svg'}` : null;
+    // const Icon = allSvgs[option.kind.toLowerCase()];
+    // return <Icon style={{ height: 25, width: 25 }} />;
     return (
       <button {...props} className={className} type="button">
         <div>
           <span className="text-muted">
-            {icon && <img src={icon} style={{ margin: 'auto', marginRight: '3px' }} height="25" width="25"></img>}
+            {/* <Icon /> */}
             {option.name}
           </span>
         </div>
@@ -272,6 +275,8 @@ let QueryManager = class QueryManager extends React.Component {
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
 
+    console.log('selectedDataSource', JSON.stringify(selectedDataSource));
+
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -285,7 +290,7 @@ let QueryManager = class QueryManager extends React.Component {
                       onClick={() => this.switchCurrentTab(1)}
                       className={currentTab === 1 ? 'nav-link active' : 'nav-link'}
                     >
-                      &nbsp; Properties
+                      &nbsp; General
                     </a>
                   </li>
                   <li className="nav-item">
@@ -293,7 +298,7 @@ let QueryManager = class QueryManager extends React.Component {
                       onClick={() => this.switchCurrentTab(2)}
                       className={currentTab === 2 ? 'nav-link active' : 'nav-link'}
                     >
-                      &nbsp; Style
+                      &nbsp; Advance
                     </a>
                   </li>
                 </ul>
@@ -363,8 +368,8 @@ let QueryManager = class QueryManager extends React.Component {
           <div className="py-2">
             {currentTab === 1 && (
               <div className="row row-deck px-2 pt-3 query-details">
-                {dataSources && mode === 'create' && (
-                  <div className="datasource-picker mt-3 mb-2">
+                {dataSources && (
+                  <div className="datasource-picker mt-1 mb-2">
                     <label className="form-label col-md-2">Datasource</label>
                     <SelectSearch
                       options={[
@@ -372,7 +377,7 @@ let QueryManager = class QueryManager extends React.Component {
                           return { name: source.name, value: source.id, kind: source.kind };
                         }),
                         ...staticDataSources.map((source) => {
-                          return { name: source.name, value: source.id };
+                          return { name: source.name, value: source.id, kind: source.kind };
                         }),
                       ]}
                       value={selectedDataSource ? selectedDataSource.id : ''}
