@@ -8,8 +8,7 @@ services:
     image: tooljet-plugins:development
     platform: linux/x86_64
     volumes:
-      - ./plugins/:/app/plugins
-      - plugins_vol:/app/plugins:delegated
+      - plugins-app-sync:/app/plugins:cached
       - /app/plugins/dist/
       - /app/plugins/node_modules/
     ports:
@@ -24,7 +23,7 @@ services:
     platform: linux/x86_64
     volumes:
       - ./frontend:/app/frontend:delegated
-      - plugins_vol:/app/plugins
+      - plugins-app-sync:/app/plugins:cached
       - /app/frontend/node_modules/
     ports:
       - 8082:8082
@@ -43,7 +42,7 @@ services:
       - postgres
     volumes:
       - ./server:/app/server:delegated
-      - plugins_vol:/app/plugins
+      - plugins-app-sync:/app/plugins:cached
       - /app/server/node_modules/
       - ".env:/app/.env"
       - ".env.test:/app/.env.test"
@@ -66,4 +65,5 @@ services:
 
 volumes:
   postgres:
-  plugins_vol:
+  plugins-app-sync:
+    external: true

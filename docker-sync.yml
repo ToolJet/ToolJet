@@ -1,0 +1,10 @@
+version: '2'
+
+syncs:
+  plugins-app-sync:
+    src: './plugins/'
+    sync_host_ip: 'localhost'
+    sync_host_port: 10871
+    sync_group: root
+    sync_userid: 0
+    sync_strategy: 'rsync'
