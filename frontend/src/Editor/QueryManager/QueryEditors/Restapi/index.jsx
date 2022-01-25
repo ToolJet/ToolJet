@@ -79,7 +79,7 @@ class Restapi extends React.Component {
 
     return (
       <div>
-        <div className="row mt-2" style={{ height: '40px' }}>
+        <div className="row mt-2" style={{ height: 'fit-content' }}>
           <div className="col-auto rest-methods-options" style={{ width: '90px' }}>
             <SelectSearch
               options={[

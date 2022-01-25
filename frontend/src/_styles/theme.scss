@@ -3802,6 +3802,13 @@ input[type="text"] {
   .code-hinter-wrapper .popup-btn {
     margin-top: 0.35rem!important;
   }
+  .CodeMirror pre.CodeMirror-line {
+    padding: 2px !important;
+    margin-left: 2px!important;
+  }
+  .CodeMirror-cursor {
+    height: 21px!important;
+  }
 }
 
 
@@ -3830,7 +3837,6 @@ input[type="text"] {
 
   .row {
     height: inherit;
-    // min-height: 160px;
 
     .keys {
       border-right: 1px solid #D2DDEC!important;
