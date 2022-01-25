@@ -404,8 +404,7 @@ let QueryManager = class QueryManager extends React.Component {
                     />
                     {!dataSourceMeta?.disableTransformations && (
                       <div>
-                        <hr></hr>
-                        <div className="mb-3 mt-2">
+                        <div className="mb-3 mt-4">
                           <Transformation
                             changeOption={this.optionchanged}
                             options={this.props.selectedQuery.options ?? {}}
@@ -416,7 +415,9 @@ let QueryManager = class QueryManager extends React.Component {
                       </div>
                     )}
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>
-                      <div className="py-2">Preview</div>
+                      <div className="py-2" style={{ fontWeight: 600 }}>
+                        Preview
+                      </div>
                     </div>
                     <div className="mb-3 mt-2">
                       {previewLoading && (
