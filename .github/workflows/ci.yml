@@ -1,11 +1,10 @@
 name: CI
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the develop branch
   push:
     branches: [develop, main]
   pull_request:
-    types: [ labeled, opened, synchronize, reopened ]
+    types: [labeled, opened, synchronize, reopened]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -30,7 +29,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'run-ci') }}
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'run-ci') ||
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/develop'
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -59,8 +61,10 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'run-ci') }}
-
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'run-ci') ||
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/develop'
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
