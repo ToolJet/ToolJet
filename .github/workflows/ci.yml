@@ -27,11 +27,6 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  context-check:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "$GITHUB_REF"
-
   build:
     runs-on: ubuntu-latest
     if: |
