@@ -1,13 +1,12 @@
 import React from 'react';
 export const Statistics = function Statistics({ height, properties, styles, darkMode }) {
   const { primaryValueLabel, primaryValue, secondaryValueLabel, secondaryValue, secondarySignDisplay } = properties;
-  const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour } = styles;
+  const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour, visibility } = styles;
 
   const baseStyle = {
     borderRadius: 4,
     height,
     backgroundColor: darkMode ? '#47505D' : '#ffffff',
-    display: 'flex',
     alignItems: 'center',
     flexDirection: 'column',
     margin: '0px auto',
@@ -15,6 +14,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     border: ' 0.75px solid #A6B6CC',
     fontFamily: 'Inter',
     justifyContent: 'center',
+    display: visibility ? 'flex' : 'none',
   };
 
   const letterStyle = {
