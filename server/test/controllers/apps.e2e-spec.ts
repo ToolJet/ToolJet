@@ -904,6 +904,7 @@ describe('apps controller', () => {
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v1',
+              versionFromId: response.body.id,
             });
 
           dataSources = await manager.find(DataSource);
@@ -918,6 +919,7 @@ describe('apps controller', () => {
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v2',
+              versionFromId: response.body.id,
             });
 
           dataSources = await manager.find(DataSource);
@@ -938,7 +940,7 @@ describe('apps controller', () => {
           credential.valueCiphertext = 'strongPassword';
           await getManager().save(credential);
 
-          await request(app.getHttpServer())
+          const response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
@@ -950,16 +952,16 @@ describe('apps controller', () => {
             .set('Authorization', authHeaderForUser(adminUserData.user))
             .send({
               versionName: 'v2',
+              versionFromId: response.body.id,
             });
 
           const dataSources = await getManager().find(DataSource);
           const dataQueries = await getManager().find(DataQuery);
 
-          expect(dataSources).toHaveLength(3);
-          expect(dataQueries).toHaveLength(6);
+          expect(dataSources).toHaveLength(2);
+          expect(dataQueries).toHaveLength(4);
 
           const credentials = await getManager().find(Credential);
-          expect(dataSources).toHaveLength(3);
           expect([...new Set(credentials.map((c) => c.valueCiphertext))]).toEqual(['strongPassword']);
         });
       });
