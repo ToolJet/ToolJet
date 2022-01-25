@@ -69,7 +69,7 @@ export const SearchBox = ({ onChange, ...restProps }) => {
             </svg>
           </span>
         )}
-        {searchText.length === 0 && (
+        {typeof callback === 'function' && searchText.length === 0 && (
           <span className="clear-icon mt-2" onClick={callback}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
