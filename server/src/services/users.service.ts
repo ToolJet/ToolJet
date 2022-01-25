@@ -119,7 +119,7 @@ export class UsersService {
   }
 
   async setupAccountFromInvitationToken(params: any) {
-    const { organization, password, token } = params; // TODO: organization is the name of the organization, this should be changed
+    const { organization, password, token, role } = params; // TODO: organization is the name of the organization, this should be changed
     const firstName = params['first_name'];
     const lastName = params['last_name'];
     const newSignup = params['new_signup'];
@@ -133,6 +133,7 @@ export class UsersService {
           firstName,
           lastName,
           password,
+          role,
           invitationToken: null,
         })
       );
