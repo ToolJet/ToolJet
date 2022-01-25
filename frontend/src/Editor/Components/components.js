@@ -1772,4 +1772,53 @@ export const componentTypes = [
       },
     },
   },
+  {
+    name: 'Statistics',
+    displayName: 'Statistics',
+    description: 'Statistics',
+    component: 'Statistics',
+    defaultSize: {
+      width: 9.2,
+      height: 152,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
+      primaryValue: { type: 'code', displayName: 'Primary value' },
+      secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
+      secondaryValue: { type: 'code', displayName: 'Secondary value' },
+      secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
+    },
+    events: {
+      onChange: { displayName: 'On change' },
+    },
+    styles: {
+      primaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
+      primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
+      secondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
+      secondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        primaryValueLabel: { value: 'This months earnings' },
+        primaryValue: { value: '682.3' },
+        secondaryValueLabel: { value: 'Last month' },
+        secondaryValue: { value: '2.85' },
+        secondarySignDisplay: { value: 'positive' },
+      },
+      styles: {
+        primaryLabelColour: { value: '#8092AB' },
+        primaryTextColour: { value: '#000000' },
+        secondaryLabelColour: { value: '#8092AB' },
+        secondaryTextColour: { value: '#36AF8B' },
+      },
+    },
+  },
 ];
