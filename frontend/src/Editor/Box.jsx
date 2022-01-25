@@ -29,6 +29,7 @@ import { Listview } from './Components/Listview';
 import { IFrame } from './Components/IFrame';
 import { CodeEditor } from './Components/CodeEditor';
 import { Timer } from './Components/Timer';
+import { Statistics } from './Components/Statistics';
 import { Pagination } from './Components/Pagination';
 import { Tags } from './Components/Tags';
 import { Spinner } from './Components/Spinner';
@@ -71,6 +72,7 @@ const AllComponents = {
   CodeEditor,
   Listview,
   Timer,
+  Statistics,
   Pagination,
   Tags,
   Spinner,
