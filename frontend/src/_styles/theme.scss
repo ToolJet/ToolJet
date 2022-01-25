@@ -439,6 +439,9 @@ button {
 
       .query-row-selected {
         background: #B8C7FD !important;
+        &:hover{
+          background: #D2DDEC !important;
+        }
       }
       .query-row-selected.dark {
         background: #2B3546 !important;

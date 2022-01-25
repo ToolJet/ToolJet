@@ -676,7 +676,7 @@ class Editor extends React.Component {
               onClick={this.deleteDataQuery}
               style={{
                 display: this.state.showHiddenOptionsForDataQueryId === dataQuery.id ? 'block' : 'none',
-                marginTop: '1px',
+                marginTop: '3px',
               }}
             >
               <div>
@@ -692,7 +692,7 @@ class Editor extends React.Component {
             </div>
           ) : (
             <button
-              style={{ marginTop: '1px' }}
+              style={{ marginTop: '3px' }}
               className="btn badge bg-azure-lt"
               onClick={() => {
                 runQuery(this, dataQuery.id, dataQuery.name).then(() => {
