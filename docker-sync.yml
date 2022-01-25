@@ -7,4 +7,4 @@ syncs:
     sync_host_port: 10871
     sync_group: root
     sync_userid: 0
-    sync_strategy: 'rsync'
+    sync_strategy: 'native_osx'
