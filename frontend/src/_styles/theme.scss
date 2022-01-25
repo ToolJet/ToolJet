@@ -3825,17 +3825,19 @@ input[type="text"] {
   box-sizing: border-box;
   border-radius: 4px;
   margin: 0px;
-  height: 160px; 
+  height: fit-content; 
+  min-height: 160px;
 
   .row {
     height: inherit;
+    // min-height: 160px;
 
     .keys {
       border-right: 1px solid #D2DDEC!important;
       margin-left: 20px;
       margin-right: 20px;
       width: 100px;
-      height: 160px;
+      min-height: 160px;
     }
 
     .keys.dark {
@@ -3843,11 +3845,7 @@ input[type="text"] {
     }
     .rest-api-tab-content {
       margin-top: 1rem;
-      height: 160px;
-
-      .tabpanel {
-        height: inherit;
-      }
+      min-height: 160px;
 
       .code-hinter-wrapper .popup-btn {
         margin-top: 0.35rem!important;
@@ -3895,10 +3893,6 @@ input[type="text"] {
     border-radius: 4px!important;
     background-color: $primary!important;
     z-index: inherit!important;
-  }
-
-  .list-group-item + .list-group-item.active  {
-    margin-top: 0px!important;
   }
 }
 

@@ -58,7 +58,16 @@ function ControlledTabs({
               />
             </Tab.Pane>
             <Tab.Pane eventKey="body" bsPrefix="rest-api-tabpanes" transition={false}>
-              Tab three content
+              <Body
+                removeKeyValuePair={removeKeyValuePair}
+                addNewKeyValuePair={addNewKeyValuePair}
+                onChange={onChange}
+                options={options['body']}
+                currentState={currentState}
+                theme={theme}
+                darkMode={darkMode}
+                componentName={componentName}
+              />
             </Tab.Pane>
           </Tab.Content>
         </Col>
