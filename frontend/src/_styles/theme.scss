@@ -3835,6 +3835,7 @@ input[type="text"] {
       margin-left: 20px;
       margin-right: 20px;
       width: 100px;
+      height: 160px;
     }
 
     .keys.dark {
@@ -3842,6 +3843,7 @@ input[type="text"] {
     }
     .rest-api-tab-content {
       margin-top: 1rem;
+      height: 160px;
 
       .tabpanel {
         height: inherit;
@@ -3849,6 +3851,14 @@ input[type="text"] {
 
       .code-hinter-wrapper .popup-btn {
         margin-top: 0.35rem!important;
+      }
+
+      .rest-api-tabpanes {
+        display: none;
+      }
+
+      .rest-api-tabpanes.active {
+        display: block;
       }
     }
   }
@@ -3885,6 +3895,10 @@ input[type="text"] {
     border-radius: 4px!important;
     background-color: $primary!important;
     z-index: inherit!important;
+  }
+
+  .list-group-item + .list-group-item.active  {
+    margin-top: 0px!important;
   }
 }
 

@@ -33,7 +33,7 @@ function ControlledTabs({
         </Col>
         <Col sm={10}>
           <Tab.Content bsPrefix="rest-api-tab-content">
-            <Tab.Pane eventKey="headers">
+            <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}
@@ -45,8 +45,21 @@ function ControlledTabs({
                 componentName={componentName}
               />
             </Tab.Pane>
-            <Tab.Pane eventKey="params">Tab two content</Tab.Pane>
-            <Tab.Pane eventKey="body">Tab three content</Tab.Pane>
+            <Tab.Pane eventKey="params" bsPrefix="rest-api-tabpanes" transition={false}>
+              <Params
+                removeKeyValuePair={removeKeyValuePair}
+                addNewKeyValuePair={addNewKeyValuePair}
+                onChange={onChange}
+                options={options['url_params']}
+                currentState={currentState}
+                theme={theme}
+                darkMode={darkMode}
+                componentName={componentName}
+              />
+            </Tab.Pane>
+            <Tab.Pane eventKey="body" bsPrefix="rest-api-tabpanes" transition={false}>
+              Tab three content
+            </Tab.Pane>
           </Tab.Content>
         </Col>
       </Row>
