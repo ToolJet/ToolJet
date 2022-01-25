@@ -649,7 +649,11 @@ class Editor extends React.Component {
 
     return (
       <div
-        className={'row query-row py-2 px-3' + (isSeletedQuery ? ' query-row-selected' : '')}
+        className={
+          'row query-row mb-1 py-2 px-3' +
+          (isSeletedQuery ? ' query-row-selected' : '') +
+          (this.props.darkMode ? ' dark' : '')
+        }
         key={dataQuery.id}
         onClick={() => this.setState({ editingQuery: true, selectedQuery: dataQuery })}
         role="button"
@@ -1207,7 +1211,7 @@ class Editor extends React.Component {
                           </center>
                         </div>
                       ) : (
-                        <div className="query-list">
+                        <div className="query-list p-1 mt-1">
                           <div>{dataQueries.map((query) => this.renderDataQuery(query))}</div>
                           {dataQueries.length === 0 && (
                             <div className="mt-5">

@@ -427,6 +427,7 @@ button {
 
       .query-row {
         cursor: pointer;
+        border-radius: $border-radius;
         --tblr-gutter-x: 0rem;
         &:hover {
           background: #D2DDEC;
@@ -437,7 +438,13 @@ button {
       }
 
       .query-row-selected {
-        background: rgba(66, 153, 225, 0.1) !important;
+        background: #B8C7FD !important;
+      }
+      .query-row-selected.dark {
+        background: #2B3546 !important;
+      }
+      .query-row.dark:hover {
+        background: #404d66 !important;
       }
 
       .query-row:hover {
