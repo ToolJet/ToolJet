@@ -80,6 +80,7 @@ docker-compose version 1.26.2, build eefe0d31
 
    ```bash
    docker-compose build
+   docker-compose run --rm  plugins npm run build:plugins
    ```
 
 5. Run ToolJet

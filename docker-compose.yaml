@@ -8,12 +8,7 @@ services:
     image: tooljet-plugins:development
     platform: linux/x86_64
     volumes:
-      - ./plugins/:/app/plugins
-      - plugins_vol:/app/plugins:delegated
-      - /app/plugins/dist/
-      - /app/plugins/node_modules/
-    ports:
-      - 4000:4000
+      - plugins_vol:/app/plugins
     command: npm run --prefix plugins start
 
   client:
@@ -45,8 +40,8 @@ services:
       - ./server:/app/server:delegated
       - plugins_vol:/app/plugins
       - /app/server/node_modules/
-      - ".env:/app/.env"
-      - ".env.test:/app/.env.test"
+      - ./.env:/app/.env
+      - ./.env.test:/app/.env.test
     ports:
       - 3000:3000
     environment:
@@ -67,3 +62,7 @@ services:
 volumes:
   postgres:
   plugins_vol:
+    driver_opts:
+      type: none
+      device: ${PWD}/plugins
+      o: bind

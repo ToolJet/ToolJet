@@ -15,4 +15,3 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN npm run build:plugins
