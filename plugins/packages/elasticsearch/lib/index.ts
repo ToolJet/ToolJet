@@ -1,8 +1,7 @@
 import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common'
-
 import { getDocument, updateDocument } from './operations';
 import { indexDocument, search } from './operations';
-import { Client } from '@opensearch-project/opensearch';
+import { Client } from "@opensearch-project/opensearch";
 
 export default class ElasticsearchService implements QueryService {
   async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
@@ -37,7 +36,7 @@ export default class ElasticsearchService implements QueryService {
 
   async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
-    await client.info();
+    await client.info()
 
     return {
       status: 'ok',
@@ -65,7 +64,7 @@ export default class ElasticsearchService implements QueryService {
 
     let url = '';
 
-    if (username === '' || password === '') {
+    if (username || password) {
       url = `${protocol}://${username}:${password}@${host}:${port}`;
     } else {
       url = `${protocol}://${host}:${port}`;
