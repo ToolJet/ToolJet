@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/TypeSense.schema.json",
   "title": "TypeSense datasource",
   "description": "A schema defining TypeSense datasource",
   "type": "database",
@@ -13,17 +12,34 @@
       "rawData": {}
     },
     "options": {
-      "host": { "type": "string" },
-      "port": { "type": "string" },
-      "api_key": { "type": "string ", "encrypted": true },
-      "protocol": { "type": "string" }
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "api_key": {
+        "type": "string ",
+        "encrypted": true
+      },
+      "protocol": {
+        "type": "string"
+      }
     }
   },
   "defaults": {
-    "scheme": { "value": "https" },
-    "host": { "value": "localhost" },
-    "port": { "value": 8108 },
-    "protocol": { "value": "http" }
+    "scheme": {
+      "value": "https"
+    },
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 8108
+    },
+    "protocol": {
+      "value": "http"
+    }
   },
   "properties": {
     "host": {
@@ -49,11 +65,22 @@
       "key": "protocol",
       "type": "dropdown",
       "list": [
-        { "name": "HTTP", "value": "http" },
-        { "name": "HTTPS", "value": "https" }
+        {
+          "name": "HTTP",
+          "value": "http"
+        },
+        {
+          "name": "HTTPS",
+          "value": "https"
+        }
       ],
       "description": "Enter protocol"
     }
   },
-  "required": ["host", "port", "api_key", "protocol"]
+  "required": [
+    "host",
+    "port",
+    "api_key",
+    "protocol"
+  ]
 }

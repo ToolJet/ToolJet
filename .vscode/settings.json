@@ -10,5 +10,18 @@
     ],
     "eslint.format.enable": true,
     "editor.formatOnSave": true,
-
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "/*.operations.json"
+            ],
+            "url": "https://jsonkeeper.com/b/0XIY"
+        },
+        {
+            "fileMatch": [
+                "/*.manifest.json"
+            ],
+            "url": "https://jsonkeeper.com/b/0XIY"
+        }
+    ]
 }
