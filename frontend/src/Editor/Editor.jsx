@@ -1177,7 +1177,6 @@ class Editor extends React.Component {
                                 <span
                                   className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
                                   data-class="py-1 px-0"
-                                  data-tip="Search query"
                                   onClick={this.toggleQuerySearch}
                                 >
                                   <img
