@@ -3828,12 +3828,10 @@ input[type="text"] {
   .code-hinter-wrapper .popup-btn {
     margin-top: 0.4rem!important;
   }
-  .CodeMirror pre.CodeMirror-line {
-    padding: 2px !important;
-    margin-left: 2px!important;
-  }
-  .CodeMirror-cursor {
-    height: 21px!important;
+
+  .CodeMirror-placeholder, .CodeMirror-lines {
+    height: 28px!important;
+    margin-top: 0px!important;
   }
 }
 
