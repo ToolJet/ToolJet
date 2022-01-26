@@ -1088,7 +1088,8 @@ border-radius: 4px;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  border-radius: 0;
+  // border-radius: 0;
+  border-radius: $border-radius!important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -3821,7 +3822,7 @@ input[type="text"] {
 
 .rest-methods-field {
   .code-hinter-wrapper .popup-btn {
-    margin-top: 0.35rem!important;
+    margin-top: 0.4rem!important;
   }
   .CodeMirror pre.CodeMirror-line {
     padding: 2px !important;
@@ -3953,5 +3954,29 @@ input[type="text"] {
 
   span {
     filter: brightness(0) invert(1);
+  }
+}
+
+.codehinter-airtable.code-hinter {
+  @extend .codehinter-default-input;
+
+  .popup-btn {
+    margin-top: 0.65rem!important;
+  }
+  .CodeMirror pre.CodeMirror-line {
+    height: 36px!important;
+    margin-bottom: 6px!important;
+  }
+  .CodeMirror-placeholder {
+    height: 36px!important;
+    position: absolute!important;
+    margin-top: 0px!important;
+  }
+  .CodeMirror-cursor {
+    height: inherit!important;
+  }
+  .CodeMirror-lines {
+    margin-top: 6px!important;
+    height: 36px!important;
   }
 }

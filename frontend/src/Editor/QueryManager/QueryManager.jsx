@@ -386,6 +386,7 @@ let QueryManager = class QueryManager extends React.Component {
                       filterOptions={fuzzySearch}
                       renderOption={this.renderDataSourceOption}
                       placeholder="Select a data source"
+                      // className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                     />
                   </div>
                 )}
