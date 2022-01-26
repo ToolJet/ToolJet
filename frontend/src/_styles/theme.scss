@@ -120,7 +120,6 @@ button {
 
     .query-details {
       margin-top: 25px;
-      width: inherit;
     }
 
     .advanced-options-container {
@@ -465,7 +464,6 @@ button {
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
-        width: 1065px;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* Internet Explorer 10+ */
 
@@ -1023,6 +1021,12 @@ border-radius: 4px;
     a.page-link {
       background-color: #4d72fa;
     }
+  }
+}
+
+.datasource-picker {
+  @media (max-width: 1250px) {
+    margin-top: 3rem!important;
   }
 }
 
