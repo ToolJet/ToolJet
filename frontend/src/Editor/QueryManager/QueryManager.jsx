@@ -368,87 +368,84 @@ let QueryManager = class QueryManager extends React.Component {
           <div className="py-2">
             {currentTab === 1 && (
               <div className="row row-deck px-2 pt-3 query-details">
-                <div className="col">
-                  {dataSources && (
-                    <div className="datasource-picker mt-1 mb-2">
-                      <label className="form-label col-md-2">Datasource</label>
-                      <SelectSearch
-                        options={[
-                          ...dataSources.map((source) => {
-                            return { name: source.name, value: source.id, kind: source.kind };
-                          }),
-                          ...staticDataSources.map((source) => {
-                            return { name: source.name, value: source.id, kind: source.kind };
-                          }),
-                        ]}
-                        value={selectedDataSource ? selectedDataSource.id : ''}
-                        search={true}
-                        onChange={(value) => this.changeDataSource(value)}
-                        filterOptions={fuzzySearch}
-                        renderOption={this.renderDataSourceOption}
-                        placeholder="Select a data source"
-                        // className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
-                      />
+                {dataSources && mode === 'create' && (
+                  <div className="datasource-picker mt-1 mb-2">
+                    <label className="form-label col-md-2">Datasource</label>
+                    <SelectSearch
+                      options={[
+                        ...dataSources.map((source) => {
+                          return { name: source.name, value: source.id, kind: source.kind };
+                        }),
+                        ...staticDataSources.map((source) => {
+                          return { name: source.name, value: source.id, kind: source.kind };
+                        }),
+                      ]}
+                      value={selectedDataSource ? selectedDataSource.id : ''}
+                      search={true}
+                      onChange={(value) => this.changeDataSource(value)}
+                      filterOptions={fuzzySearch}
+                      renderOption={this.renderDataSourceOption}
+                      placeholder="Select a data source"
+                      // className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                    />
+                  </div>
+                )}
+
+                {selectedDataSource && (
+                  <div>
+                    <ElementToRender
+                      selectedDataSource={this.state.selectedSource}
+                      options={this.state.options}
+                      optionsChanged={this.optionsChanged}
+                      optionchanged={this.optionchanged}
+                      currentState={currentState}
+                      darkMode={this.props.darkMode}
+                      isEditMode={this.props.mode === 'edit'}
+                      queryName={this.state.queryName}
+                    />
+                    {!dataSourceMeta?.disableTransformations && (
+                      <div>
+                        <div className="mb-3 mt-4">
+                          <Transformation
+                            changeOption={this.optionchanged}
+                            options={this.props.selectedQuery.options ?? {}}
+                            currentState={currentState}
+                            darkMode={this.props.darkMode}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <div className="row preview-header border-top" ref={this.previewPanelRef}>
+                      <div className="py-2" style={{ fontWeight: 600 }}>
+                        Preview
+                      </div>
                     </div>
-                  )}
-                </div>
-                <div className="col-auto">
-                  {selectedDataSource && (
-                    <div>
-                      <ElementToRender
-                        selectedDataSource={this.state.selectedSource}
-                        options={this.state.options}
-                        optionsChanged={this.optionsChanged}
-                        optionchanged={this.optionchanged}
-                        currentState={currentState}
-                        darkMode={this.props.darkMode}
-                        isEditMode={this.props.mode === 'edit'}
-                        queryName={this.state.queryName}
-                      />
-                      {!dataSourceMeta?.disableTransformations && (
+                    <div className="mb-3 mt-2">
+                      {previewLoading && (
+                        <center>
+                          <div className="spinner-border text-azure mt-5" role="status"></div>
+                        </center>
+                      )}
+                      {previewLoading === false && (
                         <div>
-                          <div className="mb-3 mt-4">
-                            <Transformation
-                              changeOption={this.optionchanged}
-                              options={this.props.selectedQuery.options ?? {}}
-                              currentState={currentState}
-                              darkMode={this.props.darkMode}
-                            />
-                          </div>
+                          <ReactJson
+                            name={false}
+                            style={{ fontSize: '0.7rem' }}
+                            enableClipboard={false}
+                            src={queryPreviewData}
+                            theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
+                            displayDataTypes={true}
+                            collapsed={false}
+                            displayObjectSize={true}
+                            quotesOnKeys={false}
+                            sortKeys={true}
+                            indentWidth={1}
+                          />
                         </div>
                       )}
-                      <div className="row preview-header border-top" ref={this.previewPanelRef}>
-                        <div className="py-2" style={{ fontWeight: 600 }}>
-                          Preview
-                        </div>
-                      </div>
-                      <div className="mb-3 mt-2">
-                        {previewLoading && (
-                          <center>
-                            <div className="spinner-border text-azure mt-5" role="status"></div>
-                          </center>
-                        )}
-                        {previewLoading === false && (
-                          <div>
-                            <ReactJson
-                              name={false}
-                              style={{ fontSize: '0.7rem' }}
-                              enableClipboard={false}
-                              src={queryPreviewData}
-                              theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                              displayDataTypes={true}
-                              collapsed={false}
-                              displayObjectSize={true}
-                              quotesOnKeys={false}
-                              sortKeys={true}
-                              indentWidth={1}
-                            />
-                          </div>
-                        )}
-                      </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
