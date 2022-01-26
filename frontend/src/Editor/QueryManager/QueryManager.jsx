@@ -275,8 +275,6 @@ let QueryManager = class QueryManager extends React.Component {
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
 
-    console.log('selectedDataSource', JSON.stringify(selectedDataSource));
-
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -367,7 +365,7 @@ let QueryManager = class QueryManager extends React.Component {
         {(addingQuery || editingQuery) && (
           <div className="py-2">
             {currentTab === 1 && (
-              <div className="row row-deck px-2 pt-3 query-details">
+              <div className="row row-deck px-2 mt-0 query-details">
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mt-1 mb-2">
                     <label className="form-label col-md-2">Datasource</label>

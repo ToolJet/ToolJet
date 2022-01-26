@@ -480,9 +480,6 @@ button {
 
       .query-definition-pane {
         .header {
-          position: absolute;
-          right: 0;
-          left: 264px;
           border: solid rgba(0, 0, 0, 0.125);
           border-width: 0px 0px 1px 0px;
           background: white;
@@ -502,7 +499,6 @@ button {
         overflow-x: hidden;
         overflow-y: scroll;
         height: 100%;
-        width: 264px!important;
         min-height: 41px;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* Internet Explorer 10+ */
@@ -1024,11 +1020,6 @@ border-radius: 4px;
   }
 }
 
-.datasource-picker {
-  @media (max-width: 1250px) {
-    margin-top: 3rem!important;
-  }
-}
 
 .datasource-picker, .stripe-operation-options {
   .select-search {
@@ -1635,9 +1626,9 @@ tr:focus {
   box-shadow: none;
 }
 
-.jet-container {
-  // width: 100%;
-}
+// .jet-container {
+//   // width: 100%;
+// }
 
 .select-search__option {
   color: rgb(90, 89, 89);
@@ -3285,11 +3276,11 @@ input[type="text"] {
   overflow-y: overlay;
   overflow-x: hidden;
 
-  .rows {
-  }
+  // .rows {
+  // }
 
-  .list-item {
-  }
+  // .list-item {
+  // }
 }
 
 .jet-listview::-webkit-scrollbar-track {
