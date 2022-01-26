@@ -578,9 +578,7 @@ export function Table({
     let finOut = columnResult?.find((item) => {
       return item?.id == id;
     });
-    if (finOut?.textWrap == 'textWrap') {
-      return true;
-    }
+    return finOut?.textWrap;
   };
 
   const leftActionsCellData =
@@ -921,7 +919,8 @@ export function Table({
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
-                            'text-wrapper': textActions(cell.column.id),
+                            'text-wrapper': textActions(cell.column.id) === 'textWrap',
+                            'scroll-wrapper': textActions(cell.column.id) === 'scroll',
                             [cellSizeType]: true,
                           })}
                           {...cellProps}

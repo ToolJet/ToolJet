@@ -1449,7 +1449,9 @@ border-radius: 4px;
   }
 .text-wrapper{
   white-space:normal !important;
-  // background-color: greenyellow;
+}
+.scroll-wrapper{
+  overflow-x: scroll;
 }
   td {
     .text-container:focus-visible,

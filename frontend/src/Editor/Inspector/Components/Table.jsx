@@ -169,7 +169,7 @@ class Table extends React.Component {
             <SelectSearch
               options={[
                 { name: 'text wrap', value: 'textWrap' },
-                { name: 'no wrap', value: 'noWrap' },
+                { name: 'scroll', value: 'scroll' },
               ]}
               value={column.textWrap}
               search={true}
