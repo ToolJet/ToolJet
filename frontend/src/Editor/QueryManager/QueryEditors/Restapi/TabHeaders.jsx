@@ -34,24 +34,26 @@ export default ({
         {options.map((option, index) => {
           return (
             <div className="row input-group my-1" key={index}>
-              <div style={{ width: '234px' }} className="col-6 field">
+              <div className="col-5 field">
                 <CodeHinter
                   currentState={currentState}
                   initialValue={option[0]}
                   theme={theme}
                   height={'28px'}
+                  width="234px"
                   placeholder="key"
                   onChange={onChange('headers', 0, index)}
                   componentName={`${componentName}/headers::key::${index}`}
                 />
               </div>
 
-              <div style={{ width: '234px', marginLeft: '2.75rem' }} className="col-6 field">
+              <div style={{ marginLeft: '2.75rem', width: '246px' }} className="col-5 field">
                 <CodeHinter
                   currentState={currentState}
                   initialValue={option[1]}
                   theme={theme}
                   height={'28px'}
+                  width="234px"
                   placeholder="value"
                   onChange={onChange('headers', 1, index)}
                   componentName={`${componentName}/headers::value::${index}`}
@@ -59,7 +61,7 @@ export default ({
               </div>
               {index > 0 && (
                 <span
-                  className="btn-sm col-2 mt-1 color-primary"
+                  className="btn-sm col-2 mt-1 ml-1 color-primary"
                   role="button"
                   onClick={() => {
                     removeKeyValuePair('headers', index);

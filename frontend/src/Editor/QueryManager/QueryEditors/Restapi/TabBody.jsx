@@ -34,24 +34,26 @@ export default ({
         {options.map((option, index) => {
           return (
             <div className="row input-group my-1" key={index}>
-              <div style={{ width: '234px' }} className="col-6 field">
+              <div className="col-5 field">
                 <CodeHinter
                   currentState={currentState}
                   initialValue={option[0]}
                   theme={theme}
                   height={'28px'}
+                  width="234px"
                   placeholder="key"
                   onChange={onChange('body', 0, index)}
                   componentName={`${componentName}/params::key::${index}`}
                 />
               </div>
 
-              <div style={{ width: '234px', marginLeft: '2.75rem' }} className="col-6 field">
+              <div style={{ width: '246px', marginLeft: '2.75rem' }} className="col-5 field">
                 <CodeHinter
                   currentState={currentState}
                   initialValue={option[1]}
                   theme={theme}
                   height={'28px'}
+                  width="234px"
                   placeholder="value"
                   onChange={onChange('body', 1, index)}
                   componentName={`${componentName}/params::value::${index}`}
@@ -59,7 +61,7 @@ export default ({
               </div>
               {index > 0 && (
                 <span
-                  className="btn-sm col-2 mt-1 color-primary"
+                  className="btn-sm col-2 mt-1 ml-1 color-primary"
                   role="button"
                   onClick={() => {
                     removeKeyValuePair('body', index);

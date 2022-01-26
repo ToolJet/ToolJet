@@ -1,11 +1,8 @@
 import React from 'react';
-import Tabs from 'react-bootstrap/Tabs';
-import Tab from 'react-bootstrap/Tab';
-
 import Headers from './TabHeaders';
 import Params from './TabParams';
 import Body from './TabBody';
-import { Col, ListGroup, Nav, Row } from 'react-bootstrap';
+import { Tab, ListGroup, Row } from 'react-bootstrap';
 
 function ControlledTabs({
   options,
@@ -22,7 +19,7 @@ function ControlledTabs({
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
       <Row>
-        <Col sm={2} className={`keys ${darkMode ? 'dark' : ''}`}>
+        <div className={`col -2 keys ${darkMode ? 'dark' : ''}`}>
           <ListGroup className="query-pane-rest-api-keys-list-group" variant="flush">
             {tabs.map((tab) => (
               <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
@@ -30,8 +27,9 @@ function ControlledTabs({
               </ListGroup.Item>
             ))}
           </ListGroup>
-        </Col>
-        <Col sm={10}>
+        </div>
+
+        <div className="col-10">
           <Tab.Content bsPrefix="rest-api-tab-content">
             <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers
@@ -70,7 +68,7 @@ function ControlledTabs({
               />
             </Tab.Pane>
           </Tab.Content>
-        </Col>
+        </div>
       </Row>
     </Tab.Container>
   );

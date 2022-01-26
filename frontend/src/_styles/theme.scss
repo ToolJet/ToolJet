@@ -3849,16 +3849,16 @@ input[type="text"] {
   margin: 0px;
   height: fit-content; 
   min-height: 160px;
-
+  width: 100%;
   .row {
     height: inherit;
+    width: 100%;
 
     .keys {
       border-right: 1px solid #D2DDEC!important;
       margin-left: 20px;
       margin-right: 20px;
-      width: 100px;
-      min-height: 160px;
+      min-height: 90px;
     }
 
     .keys.dark {
