@@ -298,7 +298,7 @@ let QueryManager = class QueryManager extends React.Component {
                       onClick={() => this.switchCurrentTab(2)}
                       className={currentTab === 2 ? 'nav-link active' : 'nav-link'}
                     >
-                      &nbsp; Advance
+                      &nbsp; Advanced
                     </a>
                   </li>
                 </ul>
