@@ -1026,7 +1026,7 @@ border-radius: 4px;
   }
 }
 
-.datasource-picker {
+.datasource-picker, .stripe-operation-options {
   .select-search {
     width: 224px!important;
     height: 28px!important;
@@ -3978,5 +3978,21 @@ input[type="text"] {
   .CodeMirror-lines {
     margin-top: 6px!important;
     height: 36px!important;
+  }
+}
+
+/**
+ * *Stripe Query Select-search
+ */
+
+ .stripe-operation-options .select-search__row .col-md-8 {
+   margin-left: 45px!important;
+ }
+
+.field-width-268 {
+  width: 268px!important;
+
+  input {
+    border-radius: $border-radius!important;
   }
 }
