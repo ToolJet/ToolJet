@@ -1,4 +1,4 @@
-@import './colors.scss';
+@import "./colors.scss";
 
 .left-sidebar {
   background: $white;
@@ -9,7 +9,7 @@
     padding-top: 1vw;
     padding-bottom: 1vw;
     border-bottom: 1px solid $grey;
-    transition: all .2s ease-in-out;
+    transition: all 0.2s ease-in-out;
     cursor: pointer;
 
     &:hover {
@@ -26,7 +26,7 @@
   .left-sidebar-stack-bottom {
     width: 3%;
     position: fixed;
-    bottom: 4vw;
+    bottom: 1vw;
     height: 50px;
     text-align: center;
   }
@@ -69,14 +69,14 @@
       .object-key-val {
         margin-top: 0;
       }
-      .icon-container + span  {
+      .icon-container + span {
         margin-top: -0.14rem;
         + span {
           transform: translateY(-0.2rem);
         }
-      }        
+      }
       .brace-row > span {
-        transform: translateY(-0.2rem)
+        transform: translateY(-0.2rem);
       }
     }
   }
@@ -106,7 +106,7 @@
     display: none;
   }
   .dark-mode {
-    transform: scale(.7);
+    transform: scale(0.7);
   }
   .no-border {
     border: 0;
@@ -127,28 +127,27 @@
   height: 36px;
   &:hover {
     background: #4d72fa;
-    color: #FFFFFC;
+    color: #fffffc;
   }
 }
 
 .dark-button {
   @extend .datasource-modal-button;
-  background: transparent!important;
+  background: transparent !important;
   &:hover {
-    background: #4d72fa!important;
-    color: #FFFFFC!important;
-
+    background: #4d72fa !important;
+    color: #fffffc !important;
   }
 }
 
 .datasource-footer-info {
-  border: 1px solid #A6B6CC!important;
+  border: 1px solid #a6b6cc !important;
   box-sizing: border-box;
-  border-radius: 4px!important;
+  border-radius: 4px !important;
   height: 68px;
 
   .copied {
-    color: #7A95FB;
+    color: #7a95fb;
     margin-left: 2rem;
     font-weight: 400;
   }
@@ -159,43 +158,43 @@
     svg {
       margin-right: 0.5rem;
     }
-  }  
+  }
 }
 
 .datasource-lists-modal {
   .list-group-item {
-    border: none!important;
+    border: none !important;
     cursor: pointer;
     margin-bottom: 4px;
     margin-left: 14px;
     font-weight: 600;
     font-size: 14px;
     line-height: 17px;
-    padding: 9px 12px!important;
+    padding: 9px 12px !important;
     height: 34px;
 
     &:hover {
-      border-radius: 4px!important;
+      border-radius: 4px !important;
       background-color: $bg-light;
     }
   }
 
   .list-group-item.active {
-    border-radius: 4px!important;
-    background-color: $primary!important;
+    border-radius: 4px !important;
+    background-color: $primary !important;
   }
 
-  .list-group-item + .list-group-item.active  {
-    margin-top: 0px!important;
+  .list-group-item + .list-group-item.active {
+    margin-top: 0px !important;
   }
 }
 
 .modal-body-content {
-  height:98%;
-  width: 860px!important;
+  height: 98%;
+  width: 860px !important;
   position: absolute;
-  margin-left: -2.5rem!important;
-  margin-top: 0!important;
+  margin-left: -2.5rem !important;
+  margin-top: 0 !important;
   top: 0;
   bottom: 0;
   right: 0;
@@ -203,28 +202,28 @@
   overflow-x: hidden;
 
   .selected-datasource-list-content {
-    padding-left: 2rem!important;
-    height:inherit;
+    padding-left: 2rem !important;
+    height: inherit;
     .tab-content {
-      width: 860px!important;
+      width: 860px !important;
       position: absolute;
-      margin-left: 3rem!important;  
+      margin-left: 3rem !important;
       left: 0;
 
       .row-deck {
-        width: 860px!important;
+        width: 860px !important;
       }
     }
 
-    .card  {
+    .card {
       .card-body {
-        padding: 0!important;
+        padding: 0 !important;
 
         svg {
           margin-top: 24px;
         }
         span {
-          margin: 12px 0 24px!important;
+          margin: 12px 0 24px !important;
         }
       }
     }
@@ -236,7 +235,7 @@
     .empty {
       position: relative;
       margin-top: 100px;
-      width: 524px!important;
+      width: 524px !important;
     }
   }
 
@@ -244,15 +243,15 @@
     width: 200px;
     height: 36px;
     float: right;
-    margin-right: 3.5rem!important;
-    margin-top: 20px;;
+    margin-right: 3.5rem !important;
+    margin-top: 20px;
   }
 }
 
 .modal-body-content.dark {
   .selected-datasource-list-content {
     .card:hover {
-      background-color: #2C405C!important;
+      background-color: #2c405c !important;
     }
   }
 }
@@ -265,8 +264,8 @@
   }
 }
 
-.modal-body-content::-webkit-scrollbar { 
-  display: none!important;
+.modal-body-content::-webkit-scrollbar {
+  display: none !important;
 }
 
 .card-group-deck {
@@ -275,17 +274,17 @@
 }
 
 .card.datasource-card-item {
-  width: 164px!important;
-  height: 112px!important;
+  width: 164px !important;
+  height: 112px !important;
 }
 
 .modal-sidebar {
-  width: 242px!important;
+  width: 242px !important;
   height: 670px;
-  background: #F7F9FC;
+  background: #f7f9fc;
   border-radius: 0px;
-  border-right: 1px solid #D2DDEC;
-  padding: 24px!important;
+  border-right: 1px solid #d2ddec;
+  padding: 24px !important;
   margin-left: 0.5rem;
 }
 
@@ -302,26 +301,25 @@
   }
 
   .datasource-modal-sidebar-footer {
-    background:#283444;
+    background: #283444;
     border-left: none;
     border-bottom: none;
     border-color: #324156;
   }
 }
 .select-datasource-list-modal {
-  
   .modal-body {
-    padding: 0px!important;
-  }  
+    padding: 0px !important;
+  }
 }
 
 .modal-body {
   .datasource-modal-sidebar-footer {
-    border: 1px solid #D2DDEC; 
-    width: 242px!important;
+    border: 1px solid #d2ddec;
+    width: 242px !important;
     height: 71px;
-    background-color: #FFFFFC;
-    padding: 16px 24px!important;
+    background-color: #fffffc;
+    padding: 16px 24px !important;
     position: absolute;
     left: 0;
     bottom: 0;
@@ -332,26 +330,25 @@
         font-weight: 300;
         font-size: 12px;
         line-height: 15px;
-        color: #8092AB;
+        color: #8092ab;
       }
     }
   }
 }
 
 .img-card {
-  padding: 24px 12px!important;
-  width: 164px!important;
-  height: 112px!important;
+  padding: 24px 12px !important;
+  width: 164px !important;
+  height: 112px !important;
 }
 
-
 .input-icon {
- .search-icon {
-  display: block;
-  position: absolute;
-  left: 0;
-  margin-right: 0.5rem;
- }
+  .search-icon {
+    display: block;
+    position: absolute;
+    left: 0;
+    margin-right: 0.5rem;
+  }
 
   .clear-icon {
     cursor: pointer;
@@ -361,7 +358,6 @@
     margin-right: 0.5rem;
   }
 }
-
 
 .link-span {
   text-decoration: none;
@@ -374,7 +370,7 @@
 }
 
 .empty-state-wrapper {
-  margin-left: 5rem!important;
+  margin-left: 5rem !important;
 }
 
 .close-btn {
@@ -386,7 +382,7 @@
 
 .close-btn.dark {
   filter: brightness(0) invert(1);
-} 
+}
 
 .suggestion-container {
   h4 {
