@@ -109,7 +109,7 @@ class Editor extends React.Component {
       socket: null,
       showInitVersionCreateModal: false,
       isCreatingInitVersion: false,
-      initVersionName: '1.0',
+      initVersionName: 'v1',
       isSavingEditingVersion: false,
       showSaveDetail: false,
       hasAppDefinitionChanged: false,
