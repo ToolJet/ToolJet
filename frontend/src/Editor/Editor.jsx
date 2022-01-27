@@ -333,6 +333,21 @@ class Editor extends React.Component {
     });
   };
 
+  //* on creating a new query after filterQuery is called
+  createNewQuery = () => {
+    this.fetchDataQueries();
+    setTimeout(() => {
+      this.setState({
+        options: {},
+        selectedDataSource: null,
+        selectedQuery: {},
+        editingQuery: false,
+        addingQuery: true,
+        showQuerySearchField: false,
+      });
+    }, 400);
+  };
+
   fetchApps = (page) => {
     appService.getAll(page).then((data) =>
       this.setState({
@@ -1205,20 +1220,17 @@ class Editor extends React.Component {
                             data-tip="Add new query"
                             data-class="py-1 px-2"
                             onClick={() => {
-                              const delay = showQuerySearchField ? 300 : 0;
                               if (showQuerySearchField) {
-                                this.fetchDataQueries();
-                              }
-                              setTimeout(() => {
+                                this.createNewQuery();
+                              } else {
                                 this.setState({
                                   options: {},
                                   selectedDataSource: null,
                                   selectedQuery: {},
                                   editingQuery: false,
                                   addingQuery: true,
-                                  showQuerySearchField: false,
                                 });
-                              }, delay);
+                              }
                             }}
                           >
                             <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
@@ -1241,13 +1253,7 @@ class Editor extends React.Component {
                                 <span className="mute-text">{dataQueriesDefaultText}</span> <br />
                                 <button
                                   className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
-                                  onClick={() =>
-                                    this.setState({
-                                      selectedQuery: {},
-                                      editingQuery: false,
-                                      addingQuery: true,
-                                    })
-                                  }
+                                  onClick={() => this.createNewQuery()}
                                 >
                                   {'Create query'}
                                 </button>
