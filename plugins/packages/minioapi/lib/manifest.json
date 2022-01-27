@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/minio.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Minio datasource",
   "description": "A schema defining Minio datasource",
   "type": "cloud-storage",
@@ -13,19 +12,40 @@
       "rawData": {}
     },
     "options": {
-      "host": { "type": "string" },
-      "port": { "type": "string" },
-      "ssl_enabled": { "type": "string" },
-      "access_key": { "type": "string" },
-      "secret_key": { "type": "string", "encrypted": true }
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "ssl_enabled": {
+        "type": "string"
+      },
+      "access_key": {
+        "type": "string"
+      },
+      "secret_key": {
+        "type": "string",
+        "encrypted": true
+      }
     }
   },
   "defaults": {
-    "host": { "value": "play.min.io" },
-    "port": { "value": 9000 },
-    "ssl_enabled": { "value": true },
-    "access_key": { "value": "" },
-    "secret_key": { "value": "" }
+    "host": {
+      "value": "play.min.io"
+    },
+    "port": {
+      "value": 9000
+    },
+    "ssl_enabled": {
+      "value": true
+    },
+    "access_key": {
+      "value": ""
+    },
+    "secret_key": {
+      "value": ""
+    }
   },
   "properties": {
     "host": {
@@ -59,5 +79,11 @@
       "description": "Enter secret key"
     }
   },
-  "required": ["host", "port", "access_key", "secret_key", "ssl_enabled"]
+  "required": [
+    "host",
+    "port",
+    "access_key",
+    "secret_key",
+    "ssl_enabled"
+  ]
 }

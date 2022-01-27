@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Elasticsearch.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Elastic search datasource",
   "description": "A schema defining elastic search datasource",
   "type": "database",
@@ -13,18 +12,37 @@
       "rawData": {}
     },
     "options": {
-      "host": { "type": "string" },
-      "port": { "type": "string" },
-      "username": { "type": "string" },
-      "password": { "type": "string", "encrypted": true }
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
     }
   },
   "defaults": {
-    "scheme": { "value": "https" },
-    "host": { "value": "localhost" },
-    "port": { "value": 9200 },
-    "username": { "value": "" },
-    "password": { "value": "" }
+    "scheme": {
+      "value": "https"
+    },
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 9200
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    }
   },
   "properties": {
     "host": {
@@ -52,5 +70,10 @@
       "description": "Enter password"
     }
   },
-  "required": ["scheme", "host", "port", "password"]
+  "required": [
+    "scheme",
+    "host",
+    "port",
+    "password"
+  ]
 }

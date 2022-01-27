@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Slack.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Slack datasource",
   "description": "A schema defining Slack datasource",
   "type": "api",
@@ -12,8 +11,14 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
       "list": [
-        { "name": "List members", "value": "list_users" },
-        { "name": "Send message", "value": "send_message" }
+        {
+          "name": "List members",
+          "value": "list_users"
+        },
+        {
+          "name": "Send message",
+          "value": "send_message"
+        }
       ]
     },
     "send_message": {
