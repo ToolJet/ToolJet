@@ -1449,9 +1449,13 @@ border-radius: 4px;
   }
   .text-wrapper{
     white-space:normal !important;
+    word-break: break-all;
   }
   .scroll-wrapper{
     overflow-x: scroll;
+  }
+  .hide-wrapper{
+   display: none !important;
   }
   td {
     .text-container:focus-visible,

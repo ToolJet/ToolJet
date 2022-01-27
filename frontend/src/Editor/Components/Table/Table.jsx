@@ -908,19 +908,18 @@ export function Table({
                           }
                         }
                       }
+                      const wrapAction = textWrapActions(cell.column.id);
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
                         <td
-                          className={cx({
+                          className={cx(`${wrapAction}-wrapper`, {
                             'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                             'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
                             'has-dropdown': cell.column.columnType === 'dropdown',
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
-                            'text-wrapper': textWrapActions(cell.column.id) === 'textWrap',
-                            'scroll-wrapper': textWrapActions(cell.column.id) === 'scroll',
                             [cellSizeType]: true,
                           })}
                           {...cellProps}

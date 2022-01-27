@@ -168,8 +168,9 @@ class Table extends React.Component {
             <label className="form-label">Text wrap</label>
             <SelectSearch
               options={[
-                { name: 'Text wrap', value: 'textWrap' },
+                { name: 'Text wrap', value: 'text' },
                 { name: 'Scroll', value: 'scroll' },
+                { name: 'Hide', value: 'hide' },
               ]}
               value={column.textWrap}
               search={true}
