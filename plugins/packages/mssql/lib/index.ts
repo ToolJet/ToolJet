@@ -16,7 +16,7 @@ export default class MssqlQueryService implements QueryService {
     if (MssqlQueryService._instance) {
       return MssqlQueryService._instance;
     }
-  
+
     MssqlQueryService._instance = this;
     return MssqlQueryService._instance;
   }
@@ -59,9 +59,6 @@ export default class MssqlQueryService implements QueryService {
         password: sourceOptions.password,
         database: sourceOptions.database,
         port: +sourceOptions.port,
-        options: {
-          encrypt: true,
-        },
       },
     };
 
