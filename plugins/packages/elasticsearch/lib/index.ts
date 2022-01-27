@@ -2,9 +2,10 @@ import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugin
 import { getDocument, updateDocument } from './operations';
 import { indexDocument, search } from './operations';
 import { Client } from "@opensearch-project/opensearch";
+import { SourceOptions, QueryOptions } from './types'
 
 export default class ElasticsearchService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const client = await this.getConnection(sourceOptions);
     let result = {};
     const operation = queryOptions.operation;
@@ -34,7 +35,7 @@ export default class ElasticsearchService implements QueryService {
     };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const client = await this.getConnection(sourceOptions);
     await client.info()
 
@@ -43,7 +44,7 @@ export default class ElasticsearchService implements QueryService {
     };
   }
 
-  determineProtocol(sourceOptions: { scheme: any; ssl_enabled: any; }) {
+  determineProtocol(sourceOptions: SourceOptions) {
     // Scheme was hardcoded as https earlier
     // Thus checking it to keep things backwards copatible
     // Need a migration to fix the data for existing es datasources otherwise
@@ -55,7 +56,7 @@ export default class ElasticsearchService implements QueryService {
     return sslEnabled ? 'https' : 'http'
   }
 
-  async getConnection(sourceOptions: any): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const host = sourceOptions.host;
     const port = sourceOptions.port;
     const username = sourceOptions.username;

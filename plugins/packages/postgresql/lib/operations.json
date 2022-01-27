@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Postgresql.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Postgresql datasource",
   "description": "A schema defining Postgresql datasource",
   "type": "database",
@@ -14,8 +13,14 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
       "list": [
-        { "name": "SQL mode", "value": "sql" },
-        { "name": "GUI mode", "value": "gui" }
+        {
+          "name": "SQL mode",
+          "value": "sql"
+        },
+        {
+          "name": "GUI mode",
+          "value": "gui"
+        }
       ]
     },
     "sql": {

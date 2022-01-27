@@ -1,6 +1,7 @@
 import { ConnectionTestResult, cacheConnection, getCachedConnection, QueryService, QueryResult } from '@tooljet-plugins/common'
 
 const { Pool } = require('pg');
+import { SourceOptions, QueryOptions } from './types'
 
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
@@ -15,8 +16,8 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   async run(
-    sourceOptions: any,
-    queryOptions: any,
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
@@ -43,7 +44,7 @@ export default class PostgresqlQueryService implements QueryService {
     };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const pool = await this.getConnection(sourceOptions, {}, false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const result = await pool.query('SELECT version();');
@@ -53,7 +54,7 @@ export default class PostgresqlQueryService implements QueryService {
     };
   }
 
-  async buildConnection(sourceOptions: any) {
+  async buildConnection(sourceOptions: SourceOptions) {
     const poolConfig: any = {
       user: sourceOptions.username,
       host: sourceOptions.host,
@@ -70,7 +71,7 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   async getConnection(
-    sourceOptions: any,
+    sourceOptions: SourceOptions,
     options: any,
     checkCache: boolean,
     dataSourceId?: string,

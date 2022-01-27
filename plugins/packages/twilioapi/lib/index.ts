@@ -1,14 +1,13 @@
-import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-
-
+import { QueryError, QueryResult,  QueryService } from '@tooljet-plugins/common';
 import { Twilio } from 'twilio';
+import { SourceOptions, QueryOptions } from './types'
 
 export default class TwilioQueryService implements QueryService {
   getClient(accountSid: string, authToken: string): any {
     return new Twilio(accountSid, authToken);
   }
 
-  async run(sourceOptions: any = {}, queryOptions: any = {}, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     let result = {};
 
     try {

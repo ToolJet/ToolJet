@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Firestore.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Firestore datasource",
   "description": "A schema defining firestore datasource",
   "type": "database",
@@ -20,7 +19,9 @@
     }
   },
   "defaults": {
-    "gcp_key": { "value": "" }
+    "gcp_key": {
+      "value": ""
+    }
   },
   "properties": {
     "gcp_key": {
@@ -32,5 +33,7 @@
       "description": "Enter private key"
     }
   },
-  "required": ["gcp_key"]
+  "required": [
+    "gcp_key"
+  ]
 }

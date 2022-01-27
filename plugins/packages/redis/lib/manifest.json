@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Redis.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Redis datasource",
   "description": "A schema defining redis datasource",
   "type": "database",
@@ -13,17 +12,34 @@
       "rawData": {}
     },
     "options": {
-      "host": { "type": "string" },
-      "port": { "type": "string" },
-      "username": { "type": "string" },
-      "password": { "type": "string", "encrypted": true }
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
     }
   },
   "defaults": {
-    "host": { "value": "localhost" },
-    "port": { "value": 6379 },
-    "username": { "value": "" },
-    "password": { "value": "" }
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 6379
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    }
   },
   "properties": {
     "host": {
@@ -51,5 +67,10 @@
       "description": "Enter password"
     }
   },
-  "required": ["scheme", "host", "port", "password"]
+  "required": [
+    "scheme",
+    "host",
+    "port",
+    "password"
+  ]
 }

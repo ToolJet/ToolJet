@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Twilio.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Twilio datasource",
   "description": "A schema defining Twilio datasource",
   "type": "api",
@@ -51,5 +50,9 @@
       "helpText": "For generating Messaging Service SID, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"
     }
   },
-  "required": ["authToken", "accountSid", "messagingServiceSid"]
+  "required": [
+    "authToken",
+    "accountSid",
+    "messagingServiceSid"
+  ]
 }

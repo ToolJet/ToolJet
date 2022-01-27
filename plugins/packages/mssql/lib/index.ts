@@ -1,5 +1,13 @@
 import { Knex, knex } from 'knex';
-import { ConnectionTestResult, QueryError, QueryResult,  QueryService, cacheConnection, getCachedConnection } from '@tooljet-plugins/common'
+import { 
+  ConnectionTestResult,
+  QueryError,
+  QueryResult,
+  QueryService,
+  cacheConnection,
+  getCachedConnection 
+} from '@tooljet-plugins/common';
+import { SourceOptions, QueryOptions } from './types'
 
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
@@ -14,8 +22,8 @@ export default class MssqlQueryService implements QueryService {
   }
 
   async run(
-    sourceOptions: any,
-    queryOptions: any,
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
@@ -32,7 +40,7 @@ export default class MssqlQueryService implements QueryService {
     return { status: 'ok', data: result };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const result = await knexInstance.raw('select @@version;');
@@ -42,7 +50,7 @@ export default class MssqlQueryService implements QueryService {
     };
   }
 
-  async buildConnection(sourceOptions: any) {
+  async buildConnection(sourceOptions: SourceOptions) {
     const config: Knex.Config = {
       client: 'mssql',
       connection: {
@@ -58,7 +66,7 @@ export default class MssqlQueryService implements QueryService {
   }
 
   async getConnection(
-    sourceOptions: any,
+    sourceOptions: SourceOptions,
     options: any,
     checkCache: boolean,
     dataSourceId?: string,
