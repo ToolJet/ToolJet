@@ -19,6 +19,7 @@
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
     "knex": "^0.95.14",
+    "tedious": "^11.2.0",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"
   }

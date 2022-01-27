@@ -271,6 +271,20 @@ export async function executeMultilineJS(currentState, code) {
   return result;
 }
 
+export function toQuery(params, delimiter = '&') {
+  const keys = Object.keys(params);
+
+  return keys.reduce((str, key, index) => {
+    let query = `${str}${key}=${params[key]}`;
+
+    if (index < keys.length - 1) {
+      query += delimiter;
+    }
+
+    return query;
+  }, '');
+}
+
 export const isJson = (str) => {
   try {
     JSON.parse(str);
@@ -279,3 +293,7 @@ export const isJson = (str) => {
   }
   return true;
 };
+
+export function buildURLWithQuery(url, query = {}) {
+  return `${url}?${toQuery(query)}`;
+}

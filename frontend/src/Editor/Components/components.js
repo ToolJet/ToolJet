@@ -1775,7 +1775,7 @@ export const componentTypes = [
   {
     name: 'Statistics',
     displayName: 'Statistics',
-    description: 'Statistics',
+    description: 'Statistics can be used to display different statistical information',
     component: 'Statistics',
     defaultSize: {
       width: 9.2,
@@ -1792,14 +1792,13 @@ export const componentTypes = [
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
       secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
     },
-    events: {
-      onChange: { displayName: 'On change' },
-    },
+    events: {},
     styles: {
       primaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
       primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
       secondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
       secondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
+      visibility: { type: 'code', displayName: 'Visibility' },
     },
     definition: {
       others: {
@@ -1813,11 +1812,13 @@ export const componentTypes = [
         secondaryValue: { value: '2.85' },
         secondarySignDisplay: { value: 'positive' },
       },
+      events: [],
       styles: {
         primaryLabelColour: { value: '#8092AB' },
         primaryTextColour: { value: '#000000' },
         secondaryLabelColour: { value: '#8092AB' },
         secondaryTextColour: { value: '#36AF8B' },
+        visibility: { value: '{{true}}' },
       },
     },
   },

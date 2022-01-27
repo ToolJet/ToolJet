@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Graphql.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Graphql datasource",
   "description": "A schema defining graphql datasource",
   "type": "api",
@@ -8,10 +7,18 @@
     "name": "GraphQL",
     "kind": "graphql",
     "options": {
-      "url": { "type": "string" },
-      "headers": { "type": "array" },
-      "url_params": { "type": "array" },
-      "body": { "type": "array" }
+      "url": {
+        "type": "string"
+      },
+      "headers": {
+        "type": "array"
+      },
+      "url_params": {
+        "type": "array"
+      },
+      "body": {
+        "type": "array"
+      }
     },
     "exposedVariables": {
       "isLoading": {},
@@ -21,9 +28,25 @@
     "customTesting": true
   },
   "defaults": {
-    "url": { "value": "" },
-    "headers": { "value": [["", ""]] },
-    "url_params": { "value": [["", ""]] }
+    "url": {
+      "value": ""
+    },
+    "headers": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "url_params": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    }
   },
   "properties": {
     "url": {
@@ -45,5 +68,7 @@
       "description": "key-value pair url parameters for rest api"
     }
   },
-  "required": ["url"]
+  "required": [
+    "url"
+  ]
 }

@@ -4,16 +4,14 @@ import { GroupPermission } from '../src/entities/group_permission.entity';
 import { AppGroupPermission } from '../src/entities/app_group_permission.entity';
 import { UserGroupPermission } from '../src/entities/user_group_permission.entity';
 import { App } from '../src/entities/app.entity';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
 
 export class PopulateUserGroupsFromOrganizationRoles1632468258787 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const OrganizationRepository = entityManager.getRepository(Organization);
 
-    const organizations = await OrganizationRepository.createQueryBuilder('organization')
-      .leftJoinAndSelect('organization.users', 'user')
-      .select(['organization.id', 'user.id'])
-      .getMany();
+    const organizations = await OrganizationRepository.find();
 
     for (const organization of organizations) {
       const groupPermissions = await setupInitialGroupPermissions(entityManager, organization);
@@ -24,14 +22,11 @@ export class PopulateUserGroupsFromOrganizationRoles1632468258787 implements Mig
   public async down(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    entityManager.createQueryBuilder().delete().from(GroupPermission).execute();
+    await entityManager.createQueryBuilder().delete().from(GroupPermission).execute();
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    entityManager.createQueryBuilder().delete().from(AppGroupPermission).execute();
+    await entityManager.createQueryBuilder().delete().from(AppGroupPermission).execute();
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    entityManager.createQueryBuilder().delete().from(UserGroupPermission).execute();
+    await entityManager.createQueryBuilder().delete().from(UserGroupPermission).execute();
   }
 }
 
@@ -83,8 +78,12 @@ async function setupUserAndAppGroupPermissions(
   });
 
   for (const groupPermission of createdGroupPermissions) {
-    const usersForGroup = organization.users.filter(
-      (u) => u.organizationUsers[0].role == groupPermission.group || groupPermission.group == 'all_users'
+    const orgUsers = await entityManager.find(OrganizationUser, {
+      where: { organizationId: organization.id },
+      select: ['id', 'role'],
+    });
+    const usersForGroup = orgUsers.filter(
+      (u) => u.role == groupPermission.group || groupPermission.group == 'all_users'
     );
 
     for (const user of usersForGroup) {

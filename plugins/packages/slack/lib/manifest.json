@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Slack.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Slack datasource",
   "description": "A schema defining slack datasource",
   "type": "api",
@@ -13,13 +12,18 @@
       "rawData": {}
     },
     "options": {
-      "api_key": { "type": "string", "encrypted": true }
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
     },
     "customTesting": true,
     "hideSave": true
   },
   "defaults": {
-    "access_type": { "value": "read" }
+    "access_type": {
+      "value": "read"
+    }
   },
   "properties": {
     "sheets": {

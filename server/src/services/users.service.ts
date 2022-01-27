@@ -52,7 +52,7 @@ export class UsersService {
     const password = uuid.v4();
     const invitationToken = uuid.v4();
 
-    const { email, firstName, lastName, ssoId } = userParams;
+    const { email, firstName, lastName, ssoId, sso } = userParams;
     let user: User;
 
     await getManager().transaction(async (manager) => {
@@ -63,6 +63,7 @@ export class UsersService {
         password,
         invitationToken,
         ssoId,
+        sso,
         organizationId: organization.id,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -90,32 +91,35 @@ export class UsersService {
     return user;
   }
 
+  async updateSSODetails(user: User, { userSSOId, sso }) {
+    await this.usersRepository.save({
+      ...user,
+      ssoId: userSSOId,
+      sso,
+    });
+  }
+
   async status(user: User) {
     const orgUser = await this.organizationUsersRepository.findOne({ user });
     return orgUser.status;
   }
 
-  async findOrCreateBySSOIdOrEmail(
-    ssoId: string,
+  async findOrCreateByEmail(
     userParams: any,
     organization: Organization
-  ): Promise<[User, boolean]> {
+  ): Promise<{ user: User; newUserCreated: boolean }> {
     let user: User;
     let newUserCreated = false;
-    try {
-      user = await this.findBySSOId(ssoId);
-      if (!user) user = await this.findByEmail(userParams.email);
-    } catch (e) {
-      console.log(e);
-    }
 
-    if (user === undefined) {
+    user = await this.findByEmail(userParams.email);
+
+    if (!user) {
       const groups = ['all_users'];
-      user = await this.create({ ...userParams, ...{ ssoId } }, organization, groups);
+      user = await this.create({ ...userParams }, organization, groups);
       newUserCreated = true;
     }
 
-    return [user, newUserCreated];
+    return { user, newUserCreated };
   }
 
   async setupAccountFromInvitationToken(params: any) {

@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/TypseSense.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "TypeSense datasource",
   "description": "A schema defining TypeSense datasource",
   "type": "database",
@@ -15,12 +14,30 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "list": [
-        { "value": "create_collection", "name": "Create a collection" },
-        { "value": "search", "name": "Search" },
-        { "value": "index_document", "name": "Index a document" },
-        { "value": "get", "name": "Get a document" },
-        { "value": "update", "name": "Update a document" },
-        { "value": "delete", "name": "Delete a document" }
+        {
+          "value": "create_collection",
+          "name": "Create a collection"
+        },
+        {
+          "value": "search",
+          "name": "Search"
+        },
+        {
+          "value": "index_document",
+          "name": "Index a document"
+        },
+        {
+          "value": "get",
+          "name": "Get a document"
+        },
+        {
+          "value": "update",
+          "name": "Update a document"
+        },
+        {
+          "value": "delete",
+          "name": "Delete a document"
+        }
       ]
     },
     "create_collection": {
