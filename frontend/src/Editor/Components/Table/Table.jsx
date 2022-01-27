@@ -91,10 +91,10 @@ export function Table({
   }
 
   const [loadingState, setLoadingState] = useState(false);
-  const [columnResult, setColumResult] = useState();
+  const [columnProperties, setColumnProperties] = useState();
 
   useEffect(() => {
-    setColumResult(component?.definition?.properties?.columns?.value);
+    setColumnProperties(component?.definition?.properties?.columns?.value);
   }, [component?.definition?.properties]);
 
   useEffect(() => {
@@ -574,11 +574,11 @@ export function Table({
   const leftActions = () => actions.value.filter((action) => action.position === 'left');
   const rightActions = () => actions.value.filter((action) => [undefined, 'right'].includes(action.position));
 
-  const textActions = (id) => {
-    let finOut = columnResult?.find((item) => {
+  const textWrapActions = (id) => {
+    let wrapOption = columnProperties?.find((item) => {
       return item?.id == id;
     });
-    return finOut?.textWrap;
+    return wrapOption?.textWrap;
   };
 
   const leftActionsCellData =
@@ -919,8 +919,8 @@ export function Table({
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
-                            'text-wrapper': textActions(cell.column.id) === 'textWrap',
-                            'scroll-wrapper': textActions(cell.column.id) === 'scroll',
+                            'text-wrapper': textWrapActions(cell.column.id) === 'textWrap',
+                            'scroll-wrapper': textWrapActions(cell.column.id) === 'scroll',
                             [cellSizeType]: true,
                           })}
                           {...cellProps}
