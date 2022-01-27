@@ -702,7 +702,6 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border Radius' },
     },
     exposedVariables: {
       endDate: {},
@@ -720,7 +719,6 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
       },
     },
   },
