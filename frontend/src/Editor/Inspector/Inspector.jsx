@@ -12,6 +12,13 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 
+// TODO: move to common file
+function uuidv4() {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+  );
+}
+
 export const Inspector = ({
   selectedComponentId,
   componentDefinitionChanged,
@@ -29,14 +36,20 @@ export const Inspector = ({
     component: allComponents[selectedComponentId].component,
     layouts: allComponents[selectedComponentId].layouts,
   };
-  // const [component, setComponent] = useState(selectedComponent);
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
-  // const [components, setComponents] = useState(allComponents);
   const [key, setKey] = React.useState('properties');
   const [tabHeight, setTabHeight] = React.useState(0);
   const tabsRef = useRef(null);
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
+
+  useHotkeys('cmd+c, ctrl+c', () => {
+    let clonedComponent = JSON.parse(JSON.stringify(component));
+    clonedComponent.id = uuidv4();
+    clonedComponent.component.name = `${clonedComponent.component.name}-copy`;
+    componentChanged(clonedComponent);
+    toast.success(`${component.component.name} cloned succesfully`);
+  });
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
@@ -45,15 +58,6 @@ export const Inspector = ({
       setTabHeight(tabsRef.current.querySelector('.nav-tabs').clientHeight);
     }
   }, []);
-
-  // useEffect(() => {
-  //   setComponent(selectedComponent);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [selectedComponent.component.definition]);
-
-  // useEffect(() => {
-  //   setComponents(allComponents);
-  // }, [allComponents]);
 
   function handleComponentNameChange(newName) {
     if (validateQueryName(newName)) {
