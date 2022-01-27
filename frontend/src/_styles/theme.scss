@@ -437,9 +437,9 @@ button {
       }
 
       .query-row-selected {
-        background: #B8C7FD !important;
+        background: #D2DDEC!important;
         &:hover{
-          background: rgba(77, 114, 250, 0.75) !important;
+          background: #EDF1FF!important;
         }
       }
       .query-row-selected.dark {
@@ -3901,7 +3901,6 @@ input[type="text"] {
     height: 22px;
     width: 72px;
     
-
     span {
       display: flex;
       justify-content: left;
@@ -3982,9 +3981,9 @@ input[type="text"] {
  * *Stripe Query Select-search
  */
 
- .stripe-operation-options .select-search__row .col-md-8 {
+.stripe-operation-options .select-search__row .col-md-8 {
    margin-left: 45px!important;
- }
+}
 
 .field-width-268 {
   width: 268px!important;
