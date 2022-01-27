@@ -126,13 +126,10 @@ button {
       // margin-top: 42px !important;
     }
 
-    .query-name-field .input-icon {
-      margin-right: 30px;
-      width: 160px;
-      input {
-        text-align: right;
-        font-weight: 600;
-      }
+    .query-name-field input {
+      max-width: 120px;
+      font-weight: 600;
+      margin-left: 2rem;
     }
   }
 

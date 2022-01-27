@@ -302,17 +302,15 @@ let QueryManager = class QueryManager extends React.Component {
             )}
           </div>
           {(addingQuery || editingQuery) && selectedDataSource && (
-            <div className="col-4 d-flex justify-content-end query-name-field">
-              <div className="input-icon">
-                <input
-                  type="text"
-                  onChange={(e) => this.setState({ queryName: e.target.value })}
-                  className="form-control-plaintext form-control-plaintext-sm mt-1"
-                  value={queryName}
-                  style={{ width: '160px' }}
-                  autoFocus={false}
-                />
-              </div>
+            <div className="col-2 query-name-field">
+              <input
+                type="text"
+                onChange={(e) => this.setState({ queryName: e.target.value })}
+                className="form-control-plaintext form-control-plaintext-sm mt-1"
+                value={queryName}
+                style={{ width: '160px' }}
+                autoFocus={false}
+              />
             </div>
           )}
           <div className="col-auto px-1 m-auto">
