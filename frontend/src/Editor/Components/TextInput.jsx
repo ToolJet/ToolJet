@@ -14,7 +14,7 @@ export const TextInput = function TextInput({ height, validate, properties, styl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
   return (
-    <div className="text-input" style={{ borderRadius: `${styles.borderRadius}px` }}>
+    <div className="text-input">
       <input
         disabled={styles.disabledState}
         onChange={(e) => {
