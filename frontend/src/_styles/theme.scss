@@ -3820,9 +3820,15 @@ input[type="text"] {
     margin-top: 0.4rem!important;
   }
 
-  .CodeMirror-placeholder, .CodeMirror-lines {
+  .CodeMirror pre.CodeMirror-line {
     height: 28px!important;
-    margin-top: 0px!important;
+    margin-top: -3px!important;
+  }
+
+  .CodeMirror-placeholder {
+    height: 28px!important;
+    position: absolute!important;
+    margin-top: 3px!important;
   }
 }
 
