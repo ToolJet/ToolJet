@@ -3989,3 +3989,27 @@ input[type="text"] {
     border-radius: $border-radius!important;
   }
 }
+
+//*button loading with spinner with primary color*//
+.button-loading {
+  position: relative;
+  color: transparent !important;
+  text-shadow: none !important;
+  pointer-events: none;
+
+  &:after {
+    content: '';
+    display: inline-block;
+    vertical-align: text-bottom;
+    border: 1.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    color: $primary;
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    left: calc(50% - .5rem);
+    top: calc(50% - .5rem);
+    animation: spinner-border .75s linear infinite;
+  }
+}
