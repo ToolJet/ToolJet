@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Mysql.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Mysql datasource",
   "description": "A schema defining mysql datasource",
   "type": "database",
@@ -13,20 +12,43 @@
       "rawData": {}
     },
     "options": {
-      "host": { "type": "string" },
-      "port": { "type": "string" },
-      "database": { "type": "string" },
-      "username": { "type": "string" },
-      "password": { "type": "string", "encrypted": true }
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "database": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
     }
   },
   "defaults": {
-    "host": { "value": "localhost" },
-    "port": { "value": 3306 },
-    "database": { "value": "" },
-    "username": { "value": "" },
-    "password": { "value": "" },
-    "ssl_enabled": { "value": true }
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 3306
+    },
+    "database": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "ssl_enabled": {
+      "value": true
+    }
   },
   "properties": {
     "host": {
@@ -66,5 +88,10 @@
       "description": "Enter password"
     }
   },
-  "required": ["host", "port", "username", "password"]
+  "required": [
+    "host",
+    "port",
+    "username",
+    "password"
+  ]
 }
