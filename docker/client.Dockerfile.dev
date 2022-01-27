@@ -21,8 +21,6 @@ COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend/ ./frontend/
 
-RUN npm install react-scripts@3.4.1 -g --silent
-
 # start app
 CMD ["npm", "--prefix", "frontend", "start"]
 
