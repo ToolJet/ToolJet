@@ -110,7 +110,7 @@ class Editor extends React.Component {
       socket: null,
       showInitVersionCreateModal: false,
       isCreatingInitVersion: false,
-      initVersionName: null,
+      initVersionName: 'v1',
       isSavingEditingVersion: false,
       showSaveDetail: false,
       hasAppDefinitionChanged: false,
@@ -800,7 +800,12 @@ class Editor extends React.Component {
       </span>
     );
   };
-
+  handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      // eslint-disable-next-line no-undef
+      this.createInitVersion();
+    }
+  };
   createInitVersion = () => {
     const newVersionName = this.state.initVersionName;
     const appId = this.state.appId;
@@ -844,6 +849,7 @@ class Editor extends React.Component {
         enforceFocus={false}
         animation={false}
         centered={true}
+        // eslint-disable-next-line no-undef
       >
         <Modal.Header>
           <Modal.Title>Create Version</Modal.Title>
@@ -855,7 +861,9 @@ class Editor extends React.Component {
                 type="text"
                 className="form-control"
                 placeholder="version name"
+                defaultValue={this.state.initVersionName}
                 onChange={(e) => this.setState({ initVersionName: e.target.value })}
+                onKeyPress={(e) => this.handleKeyPress(e)}
               />
             </div>
           </div>
