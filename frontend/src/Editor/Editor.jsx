@@ -702,7 +702,7 @@ class Editor extends React.Component {
                 });
               }}
             >
-              <div>
+              <div className={`query-icon ${this.props.darkMode && 'dark'}`}>
                 <img src="/assets/images/icons/editor/play.svg" width="8" height="8" className="mx-1" />
               </div>
             </button>

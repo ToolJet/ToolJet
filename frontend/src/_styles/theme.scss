@@ -4016,3 +4016,8 @@ input[type="text"] {
     animation: spinner-border .75s linear infinite;
   }
 }
+
+
+.query-icon.dark {
+  filter: brightness(0) invert(1);
+}
