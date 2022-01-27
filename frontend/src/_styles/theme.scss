@@ -1447,12 +1447,12 @@ border-radius: 4px;
   .has-actions {
     margin: 0;
   }
-.text-wrapper{
-  white-space:normal !important;
-}
-.scroll-wrapper{
-  overflow-x: scroll;
-}
+  .text-wrapper{
+    white-space:normal !important;
+  }
+  .scroll-wrapper{
+    overflow-x: scroll;
+  }
   td {
     .text-container:focus-visible,
     .text-container:focus,

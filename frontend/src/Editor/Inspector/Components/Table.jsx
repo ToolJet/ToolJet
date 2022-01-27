@@ -168,8 +168,8 @@ class Table extends React.Component {
             <label className="form-label">Text wrap</label>
             <SelectSearch
               options={[
-                { name: 'text wrap', value: 'textWrap' },
-                { name: 'scroll', value: 'scroll' },
+                { name: 'Text wrap', value: 'textWrap' },
+                { name: 'Scroll', value: 'scroll' },
               ]}
               value={column.textWrap}
               search={true}
@@ -560,8 +560,6 @@ class Table extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-
-    console.log('col', column);
 
     if (item === 'name') {
       const columnSizes = this.props.component.component.definition.properties.columnSizes;
