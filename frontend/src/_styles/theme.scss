@@ -429,7 +429,7 @@ button {
         border-radius: $border-radius;
         --tblr-gutter-x: 0rem;
         &:hover {
-          background: #D2DDEC;
+          background: rgba(77, 114, 250, 0.75) !important;
         }
         .query-copy-button {
           display: none;
@@ -439,7 +439,7 @@ button {
       .query-row-selected {
         background: #B8C7FD !important;
         &:hover{
-          background: #D2DDEC !important;
+          background: rgba(77, 114, 250, 0.75) !important;
         }
       }
       .query-row-selected.dark {
