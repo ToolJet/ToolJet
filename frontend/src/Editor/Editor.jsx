@@ -844,7 +844,6 @@ class Editor extends React.Component {
         enforceFocus={false}
         animation={false}
         centered={true}
-        onKeyPress={this.handleKeyPress}
         // eslint-disable-next-line no-undef
       >
         <Modal.Header>
@@ -859,7 +858,7 @@ class Editor extends React.Component {
                 placeholder="version name"
                 defaultValue={this.state.initVersionName}
                 onChange={(e) => this.setState({ initVersionName: e.target.value })}
-                onKeyPress={this.handleKeyPress}
+                onKeyPress={(e) => this.handleKeyPress(e)}
               />
             </div>
           </div>
