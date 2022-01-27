@@ -93,7 +93,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       'StarRating',
     ];
     const integrationItems = ['Map'];
-    const layoutItems = ['Container', 'Listview', 'Tabs'];
+    const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
 
     filteredComponents.forEach((f) => {
       if (commonItems.includes(f.name)) commonSection.items.push(f);
