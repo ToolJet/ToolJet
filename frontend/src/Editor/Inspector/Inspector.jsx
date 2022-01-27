@@ -6,7 +6,7 @@ import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
-import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
+import { computeComponentName, validateQueryName, convertToKebabCase } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
@@ -43,10 +43,11 @@ export const Inspector = ({
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
 
-  useHotkeys('cmd+d, ctrl+d', () => {
+  useHotkeys('cmd+d, ctrl+d', (e) => {
+    e.preventDefault();
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.id = uuidv4();
-    clonedComponent.component.name = `${clonedComponent.component.name}-copy`;
+    clonedComponent.component.name = computeComponentName(clonedComponent.component.component, allComponents);
     componentChanged(clonedComponent);
     toast.success(`${component.component.name} cloned succesfully`);
   });
