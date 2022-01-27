@@ -493,7 +493,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '0' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -678,7 +678,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '0' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -720,7 +720,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '0' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -1265,7 +1265,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '0' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
