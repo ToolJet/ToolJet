@@ -18,12 +18,17 @@
       "description": "description of datasource"
     },
     "type": {
-      "type": "array",
+      "type": "string",
       "items": {
         "$ref": "#/definitions/type"
       }
     },
     "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "properties": {
       "type": "object",
       "additionalProperties": false,
       "properties": {}
