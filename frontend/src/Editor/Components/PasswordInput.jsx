@@ -2,7 +2,7 @@ import React from 'react';
 
 export const PasswordInput = ({ height, validate, properties, styles, exposedVariables, setExposedVariable }) => {
   const value = exposedVariables.value;
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState, borderRadius } = styles;
   const placeholder = properties.placeholder;
 
   const currentValidState = exposedVariables.isValid;
@@ -26,7 +26,7 @@ export const PasswordInput = ({ height, validate, properties, styles, exposedVar
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon rounded-0`}
         placeholder={placeholder}
         value={exposedVariables.value}
-        style={{ height, display: visibility ? '' : 'none' }}
+        style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
       />
 
       <div className="invalid-feedback">{validationError}</div>

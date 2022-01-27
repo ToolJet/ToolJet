@@ -19,6 +19,7 @@ export const TextArea = function TextArea({ height, properties, exposedVariables
         height,
         resize: 'none',
         display: styles.visibility ? '' : 'none',
+        borderRadius: `${styles.borderRadius}px`,
       }}
       value={exposedVariables.value}
     ></textarea>
