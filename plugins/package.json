@@ -5,12 +5,12 @@
   "types": "dist/server.d.ts",
   "main": "dist/server.js",
   "scripts": {
-    "clean": "rimraf dist/",
     "create:client": "node create-client-entry",
     "create:server": "node create-server-entry",
-    "prebuild:server": "npm run clean",
-    "build:server": "tsc -b",
-    "prebuild:packages": "npm run clean:packages && npm run create:client && npm run create:server",
+    "build:server": "rimraf dist/ && tsc -b",
+    "start": "tsc -b --watch",
+    "build": "npm run create:client && npm run create:server && npm run build:packages && npm run build:server",
+    "prebuild:packages": "npm run clean:packages",
     "build:packages": "npx lerna run build --stream",
     "clean:packages": "npx lerna run clean --parallel"
   },

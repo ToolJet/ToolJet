@@ -23,6 +23,7 @@ export class AppConfigService {
       'SENTRY_DNS',
       'SENTRY_DEBUG',
       'SSO_GOOGLE_OAUTH2_CLIENT_ID',
+      'SSO_GIT_OAUTH2_CLIENT_ID',
       'DISABLE_PASSWORD_LOGIN',
     ];
   }

@@ -80,6 +80,7 @@ docker-compose version 1.26.2, build eefe0d31
 
    ```bash
    docker-compose build
+   docker-compose run --rm  plugins npm run build:plugins
    ```
 
 5. Run ToolJet
@@ -91,7 +92,7 @@ docker-compose version 1.26.2, build eefe0d31
 6. ToolJet server is built using NestJS and the data such as application definitions are persisted on a postgres database. You can run the below command to seed the database.
 
    ```bash
-   docker-compose run --rm server npm run db:seed
+   docker-compose exec server npm run db:seed
    ```
 
 7. ToolJet should now be served locally at `http://localhost:8082`. You can login using the default user created.

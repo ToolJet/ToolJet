@@ -218,11 +218,14 @@ export const DraggableBox = function DraggableBox({
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && !readOnly && mouseOver && !isResizing && (
+              {mode === 'edit' && !readOnly && (mouseOver || isSelectedComponent) && !isResizing && (
                 <ConfigHandle
                   id={id}
                   removeComponent={removeComponent}
                   component={component}
+                  position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
+                  widgetTop={currentLayoutOptions.top}
+                  widgetHeight={currentLayoutOptions.height}
                   configHandleClicked={(id, component) => configHandleClicked(id, component)}
                 />
               )}

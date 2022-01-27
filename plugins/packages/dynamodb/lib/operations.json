@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Dynamodb.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Dynamodb datasource",
   "description": "A schema defining Dynamodb datasource",
   "type": "database",
@@ -12,11 +11,26 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "list": [
-        { "value": "list_tables", "name": "List Tables" },
-        { "value": "get_item", "name": "Get Item" },
-        { "value": "query_table", "name": "Query Table" },
-        { "value": "scan_table", "name": "Scan Table" },
-        { "value": "delete_item", "name": "Delete Item" }
+        {
+          "value": "list_tables",
+          "name": "List Tables"
+        },
+        {
+          "value": "get_item",
+          "name": "Get Item"
+        },
+        {
+          "value": "query_table",
+          "name": "Query Table"
+        },
+        {
+          "value": "scan_table",
+          "name": "Scan Table"
+        },
+        {
+          "value": "delete_item",
+          "name": "Delete Item"
+        }
       ]
     },
     "get_item": {

@@ -35,6 +35,7 @@ import queryString from 'query-string';
 import toast from 'react-hot-toast';
 import produce, { enablePatches, setAutoFreeze, applyPatches } from 'immer';
 import Logo from './Icons/logo.svg';
+import RunjsIcon from './Icons/runjs.svg';
 import EditIcon from './Icons/edit.svg';
 import MobileSelectedIcon from './Icons/mobile-selected.svg';
 import DesktopSelectedIcon from './Icons/desktop-selected.svg';
@@ -657,7 +658,11 @@ class Editor extends React.Component {
         onMouseLeave={() => this.setShowHiddenOptionsForDataQuery(null)}
       >
         <div className="col">
-          {getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)}
+          {sourceMeta.kind === 'runjs' ? (
+            <RunjsIcon style={{ height: 25, width: 25 }} />
+          ) : (
+            getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25)
+          )}
           <span className="p-3">{dataQuery.name}</span>
         </div>
         <div className="col-auto mx-1">

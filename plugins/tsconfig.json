@@ -18,5 +18,5 @@
     "composite": true,
     "resolveJsonModule": true
   },
-  "exclude": ["packages/*/lib/*.json", "packages/*/__tests__/*"]
+  "exclude": ["packages/*/lib/*.json", "packages/*/__tests__/*", "dist"]
 }

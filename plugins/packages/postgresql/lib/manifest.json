@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Postgresql.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Postgresql datasource",
   "description": "A schema defining postgresql datasource",
   "type": "database",
@@ -8,11 +7,22 @@
     "name": "PostgreSQL",
     "kind": "postgresql",
     "options": {
-      "host": { "type": "string" },
-      "port": { "type": "string" },
-      "database": { "type": "string" },
-      "username": { "type": "string" },
-      "password": { "type": "string", "encrypted": true }
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "database": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
     },
     "exposedVariables": {
       "isLoading": {},
@@ -21,12 +31,24 @@
     }
   },
   "defaults": {
-    "host": { "value": "localhost" },
-    "port": { "value": 5432 },
-    "database": { "value": "" },
-    "username": { "value": "" },
-    "password": { "value": "" },
-    "ssl_enabled": { "value": true }
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 5432
+    },
+    "database": {
+      "value": ""
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "ssl_enabled": {
+      "value": true
+    }
   },
   "properties": {
     "host": {
@@ -66,5 +88,11 @@
       "description": "Enter password"
     }
   },
-  "required": ["host", "port", "username", "database", "password"]
+  "required": [
+    "host",
+    "port",
+    "username",
+    "database",
+    "password"
+  ]
 }
