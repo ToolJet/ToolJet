@@ -3819,7 +3819,7 @@ input[type="text"] {
 
   .CodeMirror pre.CodeMirror-line {
     height: 28px!important;
-    margin-top: -3px!important;
+    margin-top: -2px!important;
   }
 
   .CodeMirror-placeholder {
@@ -3870,6 +3870,10 @@ input[type="text"] {
 
       .code-hinter-wrapper .popup-btn {
         margin-top: 0.35rem!important;
+      }
+
+      .CodeMirror-placeholder {
+        margin-left: 4px!important;
       }
 
       .rest-api-tabpanes {
