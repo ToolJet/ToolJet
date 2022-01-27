@@ -25,7 +25,11 @@
         "key": "table",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter table"
+        "description": "Enter table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table"
       },
       "key": {
         "label": "Key name",
@@ -62,7 +66,11 @@
         "key": "get_item",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter table"
+        "description": "Enter table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table"
       },
       "key": {
         "label": "Key name",

@@ -27,7 +27,7 @@
         "description": "Enter base ID",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "appwKbrBctcQF9pYr"
       },
       "table_name": {
@@ -38,7 +38,7 @@
         "description": "Enter table name",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "Table name"
       },
       "page_size": {
@@ -49,7 +49,7 @@
         "description": "Enter page size",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "10"
       },
       "offset": {
@@ -60,7 +60,7 @@
         "description": "Enter offset",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "recAOzdIHaRpvRaGE"
       }
     },
@@ -73,7 +73,7 @@
         "description": "Enter base ID",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "appwKbrBctcQF9pYr"
       },
       "table_name": {
@@ -84,7 +84,7 @@
         "description": "Enter table name",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "Table_name"
       },
       "record_id": {
@@ -95,7 +95,7 @@
         "description": "Enter record id",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "recu9xMnUdr2n2cw8"
       }
     },
@@ -108,7 +108,7 @@
         "description": "Enter base ID",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "appwKbrBctcQF9pYr"
       },
       "table_name": {
@@ -119,7 +119,7 @@
         "description": "Enter table name",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "Table_name"
       },
       "record_id": {
@@ -130,7 +130,7 @@
         "description": "Enter record id",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "appwKbrBctcQF9pYr"
       },
       "body": {
@@ -150,7 +150,7 @@
         "description": "Enter base ID",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "appwKbrBctcQF9pYr"
       },
       "table_name": {
@@ -161,7 +161,7 @@
         "description": "Enter table name",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "Table_name"
       },
       "record_id": {
@@ -172,7 +172,7 @@
         "description": "Enter record id",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-airtable",
+        "className": "codehinter-plugins",
         "placeholder": "appwKbrBctcQF9pYr"
       }
     }
