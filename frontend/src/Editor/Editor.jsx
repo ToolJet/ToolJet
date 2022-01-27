@@ -741,7 +741,7 @@ class Editor extends React.Component {
       const results = fuse.search(value);
       this.setState({
         dataQueries: results.map((result) => result.item),
-        dataQueriesDefaultText: results.length ?? 'No Queries found.',
+        dataQueriesDefaultText: 'No Queries found.',
       });
     } else {
       this.fetchDataQueries();
