@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/add-custom-schema/plugins/schemas/manifest.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Slack datasource",
   "description": "A schema defining slack datasource",
   "type": "api",

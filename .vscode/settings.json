@@ -15,13 +15,13 @@
             "fileMatch": [
                 "/*.operations.json"
             ],
-            "url": "https://jsonkeeper.com/b/0XIY"
+            "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json"
         },
         {
             "fileMatch": [
                 "/*.manifest.json"
             ],
-            "url": "https://jsonkeeper.com/b/0XIY"
+            "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
         }
     ]
 }

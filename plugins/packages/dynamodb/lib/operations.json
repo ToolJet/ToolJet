@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/add-custom-schema/plugins/schemas/operations.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Dynamodb datasource",
   "description": "A schema defining Dynamodb datasource",
   "type": "database",

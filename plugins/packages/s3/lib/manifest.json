@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/add-custom-schema/plugins/schemas/manifest.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "AWS S3 datasource",
   "description": "A schema defining AWS S3 datasource",
   "type": "cloud-storage",
