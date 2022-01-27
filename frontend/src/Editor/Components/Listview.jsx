@@ -11,6 +11,7 @@ export const Listview = function Listview({
   removeComponent,
   properties,
   styles,
+  fireEvent,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -41,6 +42,10 @@ export const Listview = function Listview({
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
             key={index}
+            onClick={(event) => {
+              event.stopPropagation();
+              fireEvent('onRowClicked', { data: listItem, rowId: index });
+            }}
           >
             <SubContainer
               parentComponent={component}
