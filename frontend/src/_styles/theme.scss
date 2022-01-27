@@ -556,8 +556,6 @@ button {
   }
 }
 
-
-
 .viewer {
   .header-container {
     max-width: 100%;
@@ -608,52 +606,49 @@ button {
 .homepage-body {
   height: 100vh;
 }
-.homepage-dropdown-style  {
+.homepage-dropdown-style {
   min-width: 11rem;
   display: block;
-  align-items:center;
+  align-items: center;
   margin: 0;
   line-height: 1.4285714;
   width: 100%;
-  padding:  0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   font-weight: 400;
   white-space: nowrap;
   border: 0;
-  cursor: pointer,
+  cursor: pointer;
 }
 .homepage-dropdown-style:hover {
   background: rgba(101, 109, 119, 0.06);
 }
-.card-skeleton-container
-{
-    border: .5px solid #b4bbc6;
-    padding: 1rem;
-    border-radius: 8px;
-    height: 155px;
+.card-skeleton-container {
+  border: 0.5px solid #b4bbc6;
+  padding: 1rem;
+  border-radius: 8px;
+  height: 155px;
 }
-.card-skeleton-button{
-height: 20px;
-width: 60px;
-background:#91a4f6 ;
-margin-top: 1rem;
-border-radius: 4px;
+.card-skeleton-button {
+  height: 20px;
+  width: 60px;
+  background: #91a4f6;
+  margin-top: 1rem;
+  border-radius: 4px;
 }
-  @media (min-height: 641px) and (max-height: 899px)
-  {
-    .homepage-pagination
-    {
+@media (min-height: 641px) and (max-height: 899px) {
+  .homepage-pagination {
     position: fixed;
     bottom: 2rem;
     width: 63%;
-   }
   }
-   @media (max-height: 640px) {
-    .homepage-pagination{
+}
+@media (max-height: 640px) {
+  .homepage-pagination {
     position: fixed;
     bottom: 2rem;
     width: 71%;
-   }
   }
+}
 .homepage-body {
   overflow-y: hidden;
   a {
@@ -723,7 +718,7 @@ border-radius: 4px;
       }
 
       button {
-        font-size: .6rem;
+        font-size: 0.6rem;
         width: 100%;
       }
 
@@ -732,7 +727,7 @@ border-radius: 4px;
         padding: 3px;
         border-radius: 13px;
         &__open {
-          background-color: #D2DDEC;
+          background-color: #d2ddec;
         }
         img {
           padding: 0px;
@@ -742,7 +737,7 @@ border-radius: 4px;
         }
       }
       .menu-ico:hover {
-        background-color: #D2DDEC;
+        background-color: #d2ddec;
       }
     }
 
@@ -802,8 +797,9 @@ border-radius: 4px;
       }
     }
 
-    .modal-body, .modal-footer {
-      background-color: #FFFFFF;
+    .modal-body,
+    .modal-footer {
+      background-color: #ffffff;
     }
   }
 
@@ -814,8 +810,8 @@ border-radius: 4px;
     }
 
     .list-group-item.active {
-      background-color: #EDF1FF;
-      color: #4D72FA;
+      background-color: #edf1ff;
+      color: #4d72fa;
       font-weight: 600;
     }
   }
@@ -827,7 +823,7 @@ border-radius: 4px;
     }
 
     .list-group-item.active {
-      background-color: #EDF1FF;
+      background-color: #edf1ff;
       color: black;
     }
   }
@@ -840,7 +836,7 @@ border-radius: 4px;
 
     h3.title {
       font-weight: 600;
-      line-height: 17px
+      line-height: 17px;
     }
 
     p.description {
@@ -848,7 +844,7 @@ border-radius: 4px;
       font-size: 13px;
       line-height: 15px;
       letter-spacing: -0.1px;
-      color: #8092AB;
+      color: #8092ab;
     }
 
     img.template-image {
@@ -875,15 +871,15 @@ border-radius: 4px;
         display: flex;
       }
     }
-    
+
     .input-icon {
       .search-icon {
-       display: block;
-       position: absolute;
-       left: 0;
-       margin-right: 0.5rem;
+        display: block;
+        position: absolute;
+        left: 0;
+        margin-right: 0.5rem;
       }
-     
+
       .clear-icon {
         cursor: pointer;
         display: block;
@@ -900,13 +896,20 @@ border-radius: 4px;
 }
 
 .template-library-modal.dark-mode {
-  .template-modal-control-column, .template-list-column, .categories-column, .modal-header {
-    border-color: #232E3C !important;
+  .template-modal-control-column,
+  .template-list-column,
+  .categories-column,
+  .modal-header {
+    border-color: #232e3c !important;
   }
 
-  .modal-body, .modal-footer, .modal-header, .modal-content {
+  .modal-body,
+  .modal-footer,
+  .modal-header,
+  .modal-content {
     color: white;
-    background-color: #2B394A  }
+    background-color: #2b394a;
+  }
 
   .template-categories {
     .list-group-item {
@@ -916,15 +919,14 @@ border-radius: 4px;
     }
 
     .list-group-item:hover {
-      background-color: #232E3C;
+      background-color: #232e3c;
     }
 
     .list-group-item.active {
-      background-color: #4D72FA;
+      background-color: #4d72fa;
       color: white;
       font-weight: 600;
     }
-
   }
 
   .template-app-list {
@@ -937,17 +939,17 @@ border-radius: 4px;
     .list-group-item:hover {
       border: 0;
       // color: red;
-      background-color: #232E3C;
+      background-color: #232e3c;
       // padding-bottom: 3px;
     }
 
     .list-group-item.active {
-      background-color: #4D72FA;
+      background-color: #4d72fa;
       color: white;
     }
 
     .no-results-item {
-      background-color: #2B394A;
+      background-color: #2b394a;
       color: white;
     }
   }
@@ -955,8 +957,8 @@ border-radius: 4px;
   .template-list {
     .template-search-box {
       input {
-        background-color: #2B394A;
-        border-color: #232E3C;
+        background-color: #2b394a;
+        border-color: #232e3c;
         color: white;
       }
     }
@@ -1848,7 +1850,7 @@ tr:focus {
       font-size: 0.7rem;
 
       &__danger {
-        color: #FF6666;
+        color: #ff6666;
       }
     }
   }
@@ -2234,6 +2236,12 @@ hr {
     max-height: 10px;
     z-index: 100;
     min-width: 108px;
+
+    .handle-content {
+      cursor: move;
+      color: #4d72fa;
+      background: rgba(66, 153, 225, 0.1);
+    }
 
     .badge {
       font-size: 9px;
@@ -3048,7 +3056,8 @@ input[type="text"] {
     padding-left: 2px;
   }
 
-  td.rdtActive, td.rdtActive:hover{
+  td.rdtActive,
+  td.rdtActive:hover {
     background-color: $primary;
   }
 }
@@ -3415,7 +3424,7 @@ input[type="text"] {
     width: 50%;
   }
 
-  .nav-item:hover{
+  .nav-item:hover {
     border: 1px solid transparent;
   }
 
@@ -3430,7 +3439,7 @@ input[type="text"] {
   }
 }
 
-.close-icon{
+.close-icon {
   position: absolute;
   top: 0;
   right: 0;
@@ -3448,8 +3457,8 @@ input[type="text"] {
     justify-content: center;
     border-left: 1px solid #e7eaef;
     margin-left: 20px;
-  
-    .close-svg{
+
+    .close-svg {
       cursor: pointer;
     }
   }
@@ -3486,7 +3495,7 @@ input[type="text"] {
   width: 325px;
   left: 485px;
   position: absolute;
-  color: #36AF8B;
+  color: #36af8b;
 }
 
 .layout-buttons {
@@ -3514,12 +3523,12 @@ input[type="text"] {
 }
 
 .app-version-menu .released {
-  color: #36AF8B;
+  color: #36af8b;
 }
 
 .app-version-menu .released-subtext {
   font-size: 12px;
-  color: #36AF8B;
+  color: #36af8b;
   padding: 0;
 }
 
@@ -3567,18 +3576,17 @@ input[type="text"] {
   .input-icon .input-icon-addon.end {
     pointer-events: auto;
     div {
-      background-color: #A6B6CC;
+      background-color: #a6b6cc;
       border-radius: 12px;
       color: #ffffff;
       padding: 1px;
       cursor: pointer;
       svg {
         height: 14px;
-        width: 14px
+        width: 14px;
       }
     }
   }
-
 }
 
 .fixedHeader {
@@ -3656,68 +3664,67 @@ input[type="text"] {
   }
 }
 
-
 .radio-img {
-    input {
-      display:none;
-    }
+  input {
+    display: none;
+  }
 
-    .action-icon {
-      width: 28px;
-      height: 28px;
-      background-position: center center;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+  .action-icon {
+    width: 28px;
+    height: 28px;
+    background-position: center center;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-    .action-icon{
-      cursor:pointer;
-      border: 1px solid $light-gray;
-    }
+  .action-icon {
+    cursor: pointer;
+    border: 1px solid $light-gray;
+  }
 
-    .action-icon:hover{
-      background-color: #D2DDEC;
-    }
+  .action-icon:hover {
+    background-color: #d2ddec;
+  }
 
-    input:checked + .action-icon{
-      border-color: $primary;
-      background-color: #7A95FB;
-    }
+  input:checked + .action-icon {
+    border-color: $primary;
+    background-color: #7a95fb;
+  }
 
-    .tooltiptext {
-      visibility: hidden;
-      font-size: 12px;
-      background-color: $black;
-      color: $white;
-      text-align: center;
-      padding: 5px 10px;
-      position: absolute;
-      border-radius: 15px;
-      margin-top:2px;
-      z-index: 1;
-      margin-left: -10px;
-    }
+  .tooltiptext {
+    visibility: hidden;
+    font-size: 12px;
+    background-color: $black;
+    color: $white;
+    text-align: center;
+    padding: 5px 10px;
+    position: absolute;
+    border-radius: 15px;
+    margin-top: 2px;
+    z-index: 1;
+    margin-left: -10px;
+  }
 
-    .tooltiptext::after {
-      content: "";
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: transparent transparent black transparent;
-    }
+  .tooltiptext::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent black transparent;
+  }
 
-    .action-icon:hover + .tooltiptext {
-      visibility: visible;
-    }
+  .action-icon:hover + .tooltiptext {
+    visibility: visible;
+  }
 
-    input:checked + .action-icon:hover{
-      background-color: #3650AF;
-    }
+  input:checked + .action-icon:hover {
+    background-color: #3650af;
+  }
 }
 
 .icon-change-modal {
@@ -3726,7 +3733,7 @@ input[type="text"] {
 
     li {
       float: left;
-      border: 2px solid #8991A0;
+      border: 2px solid #8991a0;
       border-radius: 1.75px;
       cursor: pointer;
 
@@ -3738,7 +3745,7 @@ input[type="text"] {
     }
 
     li.selected {
-      border: 2px solid #0565FF;
+      border: 2px solid #0565ff;
 
       img {
         filter: invert(27%) sepia(84%) saturate(5230%) hue-rotate(212deg) brightness(102%) contrast(100%);
@@ -3749,7 +3756,7 @@ input[type="text"] {
 /**
  * Spinner Widget
  */
- .spinner-container{
+.spinner-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -3757,7 +3764,7 @@ input[type="text"] {
 
 .animation-fade {
   animation-name: fade;
-  animation-duration: .3s;
+  animation-duration: 0.3s;
   animation-timing-function: linear;
 }
 
