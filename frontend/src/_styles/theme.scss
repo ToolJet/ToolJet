@@ -41,6 +41,39 @@ button {
   }
 }
 
+.auth-main {
+  height: 1000px;
+  padding-top: calc(.25 * 100vh);
+  overflow: hidden;
+
+  svg, img {
+    height: 50px;
+    width: 50px;
+  }
+
+  svg {
+    color: #000000;
+  }
+
+  .col-4 {
+    z-index: 1;
+  }
+
+  .horizontal-line {
+    width: 100%;
+    position: relative;
+    border: 1px solid #b1b1b1;
+    top: 25px;
+    margin: 0px auto;
+    z-index: 0;
+  }
+  .sso-ico {
+    div {
+      background-color: #ffffff;
+    }
+  } 
+}
+
 .emoji-mart-scroll {
   border-bottom: 0;
   margin-bottom: 6px;

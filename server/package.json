@@ -73,6 +73,7 @@
     "ws": "^7.5.5"
   },
   "devDependencies": {
+    "@golevelup/ts-jest": "^0.3.2",
     "@nestjs/cli": "^8.0.0",
     "@nestjs/schematics": "^8.0.0",
     "@nestjs/testing": "^8.0.0",

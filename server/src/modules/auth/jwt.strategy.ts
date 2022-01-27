@@ -15,8 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const user =
-      (await this.usersService.findByEmail(payload.sub)) || (await this.usersService.findBySSOId(payload.ssoId));
+    const user = await this.usersService.findByEmail(payload.sub);
 
     if (user && (await this.usersService.status(user)) !== 'archived') return user;
     else return false;
