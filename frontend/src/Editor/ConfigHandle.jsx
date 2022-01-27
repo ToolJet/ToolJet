@@ -19,13 +19,12 @@ export const ConfigHandle = function ConfigHandle({
       }}
     >
       <span
-        style={{ cursor: 'move' }}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
           configHandleClicked(id, component);
         }}
-        className="badge badge bg-azure-lt"
+        className="badge handle-content"
         role="button"
       >
         <img
