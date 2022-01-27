@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const SearchBox = ({ onChange, ...restProps }) => {
-  const { callback } = restProps;
+  const { callback, placeholder } = restProps;
   const [searchText, setSearchText] = React.useState('');
 
   const handleChange = (e) => {
@@ -94,7 +94,7 @@ export const SearchBox = ({ onChange, ...restProps }) => {
           value={searchText}
           onChange={handleChange}
           className="form-control"
-          placeholder="Search"
+          placeholder={placeholder ?? 'Search'}
         />
       </div>
     </div>

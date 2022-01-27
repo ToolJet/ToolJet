@@ -1157,56 +1157,53 @@ class Editor extends React.Component {
                   <div className="col-3 data-pane">
                     <div className="queries-container">
                       <div className="queries-header row">
-                        <>
-                          {showQuerySearchField && (
-                            <div className="col-12 p-1">
-                              <div className="queries-search">
-                                <SearchBoxComponent onChange={this.filterQueries} callback={this.toggleQuerySearch} />
-                              </div>
+                        {showQuerySearchField && (
+                          <div className="col-10 p-1">
+                            <div className="queries-search px-1">
+                              <SearchBoxComponent
+                                onChange={this.filterQueries}
+                                callback={this.toggleQuerySearch}
+                                placeholder={'Search queries'}
+                              />
                             </div>
-                          )}
+                          </div>
+                        )}
 
+                        {!showQuerySearchField && (
+                          <div className="col">
+                            <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
+                              Queries
+                            </h5>
+                          </div>
+                        )}
+                        <div className="col-auto">
                           {!showQuerySearchField && (
-                            <>
-                              <div className="col">
-                                <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
-                                  Queries
-                                </h5>
-                              </div>
-                              <div className="col-auto ">
-                                <span
-                                  className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
-                                  data-class="py-1 px-0"
-                                  onClick={this.toggleQuerySearch}
-                                >
-                                  <img
-                                    className="py-1 mt-2"
-                                    src="/assets/images/icons/lens.svg"
-                                    width="24"
-                                    height="24"
-                                  />
-                                </span>
-
-                                <span
-                                  className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
-                                  data-tip="Add new query"
-                                  data-class="py-1 px-2"
-                                  onClick={() =>
-                                    this.setState({
-                                      options: {},
-                                      selectedDataSource: null,
-                                      selectedQuery: {},
-                                      editingQuery: false,
-                                      addingQuery: true,
-                                    })
-                                  }
-                                >
-                                  <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
-                                </span>
-                              </div>
-                            </>
+                            <span
+                              className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
+                              data-class="py-1 px-0"
+                              onClick={this.toggleQuerySearch}
+                            >
+                              <img className="py-1 mt-2" src="/assets/images/icons/lens.svg" width="24" height="24" />
+                            </span>
                           )}
-                        </>
+
+                          <span
+                            className={`query-btn mx-2 ${this.props.darkMode ? 'dark' : ''}`}
+                            data-tip="Add new query"
+                            data-class="py-1 px-2"
+                            onClick={() =>
+                              this.setState({
+                                options: {},
+                                selectedDataSource: null,
+                                selectedQuery: {},
+                                editingQuery: false,
+                                addingQuery: true,
+                              })
+                            }
+                          >
+                            <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
+                          </span>
+                        </div>
                       </div>
 
                       {loadingDataQueries ? (
