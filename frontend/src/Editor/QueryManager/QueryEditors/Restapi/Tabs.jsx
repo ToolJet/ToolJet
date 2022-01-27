@@ -29,7 +29,7 @@ function ControlledTabs({
           </ListGroup>
         </div>
 
-        <div className="col-10">
+        <div className="col">
           <Tab.Content bsPrefix="rest-api-tab-content">
             <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers

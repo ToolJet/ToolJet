@@ -15,10 +15,10 @@ export default ({
   return (
     <>
       <div className="row">
-        <div className="col">
+        <div className="col px-3">
           <GroupHeader darkMode={darkMode} />
         </div>
-        <div className="col-auto">
+        <div className="col-auto px-2">
           <span onClick={() => addNewKeyValuePair('body')} className="btn-sm col-2 mt-1 color-primary" role="button">
             <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -30,7 +30,7 @@ export default ({
         </div>
       </div>
 
-      <div className="row">
+      <div className="row px-2">
         {options.map((option, index) => {
           return (
             <div className="row input-group my-1" key={index}>
@@ -40,20 +40,20 @@ export default ({
                   initialValue={option[0]}
                   theme={theme}
                   height={'28px'}
-                  width="234px"
+                  width="80%"
                   placeholder="key"
                   onChange={onChange('body', 0, index)}
                   componentName={`${componentName}/params::key::${index}`}
                 />
               </div>
 
-              <div style={{ width: '246px', marginLeft: '2.75rem' }} className="col-5 field">
+              <div style={{ marginLeft: '-2.5%' }} className="col-5 field">
                 <CodeHinter
                   currentState={currentState}
                   initialValue={option[1]}
                   theme={theme}
                   height={'28px'}
-                  width="234px"
+                  width="80%"
                   placeholder="value"
                   onChange={onChange('body', 1, index)}
                   componentName={`${componentName}/params::value::${index}`}
@@ -61,7 +61,8 @@ export default ({
               </div>
               {index > 0 && (
                 <span
-                  className="btn-sm col-2 mt-1 ml-1 color-primary"
+                  style={{ marginLeft: '-5%' }}
+                  className="btn-sm col-2 mt-1 color-primary"
                   role="button"
                   onClick={() => {
                     removeKeyValuePair('body', index);
