@@ -26,6 +26,23 @@ export const SearchBox = ({ onChange, ...restProps }) => {
     };
   }, [searchText]);
 
+  const componentWillUnmount = React.useRef(false);
+
+  // componentWillUnmount
+  React.useEffect(() => {
+    return () => {
+      componentWillUnmount.current = true;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (componentWillUnmount.current) {
+        setSearchText('');
+      }
+    };
+  }, [searchText]);
+
   return (
     <div className="searchbox-wrapper">
       <div style={{ height: '32px' }} className="input-icon d-flex">
