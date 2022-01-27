@@ -47,7 +47,7 @@ export default ({
                 />
               </div>
 
-              <div style={{ marginLeft: '2.75rem', width: '246px' }} className="col-5 field">
+              <div style={{ marginLeft: '2.75rem' }} className="col-5 field">
                 <CodeHinter
                   currentState={currentState}
                   initialValue={option[1]}
