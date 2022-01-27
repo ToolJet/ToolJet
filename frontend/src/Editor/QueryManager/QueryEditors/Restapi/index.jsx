@@ -97,6 +97,7 @@ class Restapi extends React.Component {
               }}
               filterOptions={fuzzySearch}
               placeholder="Method"
+              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
             />
           </div>
 

@@ -224,7 +224,7 @@ let QueryManager = class QueryManager extends React.Component {
       <button {...props} className={className} type="button">
         <div>
           {Icon && <Icon style={{ height: 25, width: 25 }} />}
-          <span className="text-muted mx-2">{option.name}</span>
+          <span className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}>{option.name}</span>
         </div>
       </button>
     );
@@ -387,7 +387,7 @@ let QueryManager = class QueryManager extends React.Component {
                       filterOptions={fuzzySearch}
                       renderOption={this.renderDataSourceOption}
                       placeholder="Select a data source"
-                      // className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                      className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                     />
                   </div>
                 )}
