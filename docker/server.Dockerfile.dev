@@ -11,12 +11,6 @@ WORKDIR /app
 
 COPY ./package.json ./package.json
 
-# Build plugins
-COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins install
-COPY ./plugins/ ./plugins/
-RUN npm run build:plugins
-
 # install app dependencies
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install

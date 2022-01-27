@@ -1,6 +1,16 @@
 version: "3"
 
 services:
+  plugins:
+    build:
+      context: ./
+      dockerfile: ./docker/plugins.Dockerfile.dev
+    image: tooljet-plugins:development
+    platform: linux/x86_64
+    volumes:
+      - plugins_vol:/app/plugins
+    command: npm run --prefix plugins start
+
   client:
     build:
       context: ./
@@ -9,9 +19,7 @@ services:
     platform: linux/x86_64
     volumes:
       - ./frontend:/app/frontend:delegated
-      - ./plugins/:/app/plugins
-      - /app/plugins/dist/
-      - /app/plugins/node_modules/
+      - plugins_vol:/app/plugins
       - /app/frontend/node_modules/
     ports:
       - 8082:8082
@@ -30,12 +38,10 @@ services:
       - postgres
     volumes:
       - ./server:/app/server:delegated
-      - ./plugins/:/app/plugins
-      - /app/plugins/dist/
-      - /app/plugins/node_modules/
+      - plugins_vol:/app/plugins
       - /app/server/node_modules/
-      - ".env:/app/.env"
-      - ".env.test:/app/.env.test"
+      - ./.env:/app/.env
+      - ./.env.test:/app/.env.test
     ports:
       - 3000:3000
     environment:
@@ -55,3 +61,8 @@ services:
 
 volumes:
   postgres:
+  plugins_vol:
+    driver_opts:
+      type: none
+      device: ${PWD}/plugins
+      o: bind
