@@ -941,7 +941,7 @@ describe('apps controller', () => {
           const application = await importAppFromTemplates(app, adminUserData.user, 'customer-dashboard');
           const dataSource = await getManager().findOne(DataSource, { where: { appId: application } });
           const credential = await getManager().findOne(Credential, {
-            where: { id: dataSource.options['password']['credentialId'] },
+            where: { id: dataSource.options['password']['credential_id'] },
           });
           credential.valueCiphertext = 'strongPassword';
           await getManager().save(credential);

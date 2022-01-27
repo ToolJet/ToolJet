@@ -28,9 +28,8 @@ describe('Authentication', () => {
     const response = await request(app.getHttpServer()).post('/api/signup').send({ email: 'test@tooljet.io' });
     expect(response.statusCode).toBe(201);
 
-    const id = response.body['id'];
     const user = await userRepository.findOne({
-      where: { id, email: 'test@tooljet.io' },
+      where: { email: 'test@tooljet.io' },
       relations: ['organization'],
     });
 
