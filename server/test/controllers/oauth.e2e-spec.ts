@@ -53,7 +53,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: expect.anything(),
+        audience: undefined,
       });
 
       expect(response.statusCode).toBe(201);
@@ -120,7 +120,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: expect.anything(),
+        audience: undefined,
       });
 
       expect(response.statusCode).toBe(401);
@@ -128,7 +128,7 @@ describe('oauth controller', () => {
 
     it('should be forbid logging in when the restricted domin is configured and domain not match', async () => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        if (key === 'RESTRICTED_DOMAIN') {
+        if (key === 'SSO_RESTRICTED_DOMAIN') {
           return 'tooljet.com,tooljet.in';
         } else {
           return process.env[key];
@@ -153,7 +153,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: expect.anything(),
+        audience: undefined,
       });
 
       expect(response.statusCode).toBe(401);
@@ -161,7 +161,7 @@ describe('oauth controller', () => {
 
     it('should be success when the restricted domin is configured and domain matches', async () => {
       jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        if (key === 'RESTRICTED_DOMAIN') {
+        if (key === 'SSO_RESTRICTED_DOMAIN') {
           return 'tooljet.com,tooljet.io';
         } else {
           return process.env[key];
@@ -186,7 +186,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: expect.anything(),
+        audience: undefined,
       });
 
       expect(response.statusCode).toBe(201);
@@ -218,7 +218,7 @@ describe('oauth controller', () => {
 
       expect(googleVerifyMock).toHaveBeenCalledWith({
         idToken: token,
-        audience: expect.anything(),
+        audience: undefined,
       });
 
       expect(response.statusCode).toBe(201);

@@ -23,7 +23,7 @@ export class OauthService {
   ) {}
 
   #isValidDomain(domain: string): boolean {
-    const restrictedDomain = this.configService.get<string>('RESTRICTED_DOMAIN');
+    const restrictedDomain = this.configService.get<string>('SSO_RESTRICTED_DOMAIN');
 
     if (!domain) {
       return false;
