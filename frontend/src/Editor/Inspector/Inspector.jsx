@@ -43,7 +43,7 @@ export const Inspector = ({
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
 
-  useHotkeys('cmd+c, ctrl+c', () => {
+  useHotkeys('cmd+d, ctrl+d', () => {
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.id = uuidv4();
     clonedComponent.component.name = `${clonedComponent.component.name}-copy`;
