@@ -816,7 +816,7 @@ export function Table({
       }}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {displaySearchBox && (
+      {displaySearchBox && !serverSidePagination && (
         <div className="card-body border-bottom py-3 jet-data-table-header">
           <div className="d-flex">
             <div className="ms-auto text-muted">
