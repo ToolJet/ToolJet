@@ -10,6 +10,7 @@ export const Folders = function Folders({
   folderChanged,
   foldersChanged,
   canCreateFolder,
+  darkMode,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
 
@@ -66,7 +67,10 @@ export const Folders = function Folders({
       )}
 
       {!isLoading && (
-        <div data-testid="applicationFoldersList" className="list-group list-group-transparent mb-3">
+        <div
+          data-testid="applicationFoldersList"
+          className={`list-group list-group-transparent mb-3 ${darkMode && 'dark'}`}
+        >
           <a
             className={`list-group-item list-group-item-action d-flex align-items-center all-apps-link ${
               !activeFolder.id ? 'active' : ''

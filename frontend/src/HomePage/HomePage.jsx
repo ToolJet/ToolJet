@@ -553,6 +553,7 @@ class HomePage extends React.Component {
                     folderChanged={this.folderChanged}
                     foldersChanged={this.foldersChanged}
                     canCreateFolder={this.canCreateFolder()}
+                    darkMode={this.props.darkMode}
                   />
                 </div>
 
