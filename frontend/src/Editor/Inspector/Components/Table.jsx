@@ -730,7 +730,7 @@ class Table extends React.Component {
 
     const conditionalOptions = [
       { name: 'clientSidePagination', condition: !serverSidePagination },
-      { name: 'displaySearchBox', condition: displaySearchBox },
+      { name: 'displaySearchBox', condition: true },
       { name: 'loadingState', condition: true },
     ];
 
