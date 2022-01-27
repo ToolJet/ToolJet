@@ -93,6 +93,11 @@ let QueryManager = class QueryManager extends React.Component {
     this.setStateFromProps(this.props);
   }
 
+  isJson = (maybeJson) => {
+    if (typeof maybeJson === 'object') return true;
+    return false;
+  };
+
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
@@ -113,7 +118,9 @@ let QueryManager = class QueryManager extends React.Component {
       selectedDataSource: source,
       selectedSource: source,
       queryName: this.computeQueryName(source.kind),
-      ...(isSchemaUnavailable && { options: schemaUnavailableOptions[source.kind] }),
+      ...(isSchemaUnavailable && {
+        options: schemaUnavailableOptions[source.kind],
+      }),
     });
   };
 
@@ -434,23 +441,26 @@ let QueryManager = class QueryManager extends React.Component {
                           <div className="spinner-border text-azure mt-5" role="status"></div>
                         </center>
                       )}
-                      {previewLoading === false && (
-                        <div>
-                          <ReactJson
-                            name={false}
-                            style={{ fontSize: '0.7rem' }}
-                            enableClipboard={false}
-                            src={queryPreviewData}
-                            theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                            displayDataTypes={true}
-                            collapsed={false}
-                            displayObjectSize={true}
-                            quotesOnKeys={false}
-                            sortKeys={true}
-                            indentWidth={1}
-                          />
-                        </div>
-                      )}
+                      {previewLoading === false &&
+                        (this.isJson(queryPreviewData) ? (
+                          <div>
+                            <ReactJson
+                              name={false}
+                              style={{ fontSize: '0.7rem' }}
+                              enableClipboard={false}
+                              src={queryPreviewData}
+                              theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
+                              displayDataTypes={true}
+                              collapsed={false}
+                              displayObjectSize={true}
+                              quotesOnKeys={false}
+                              sortKeys={true}
+                              indentWidth={1}
+                            />
+                          </div>
+                        ) : (
+                          <div>{queryPreviewData}</div>
+                        ))}
                     </div>
                   </div>
                 )}

@@ -28,21 +28,11 @@
     }
   },
   "defaults": {
-    "scheme": {
-      "value": "https"
-    },
-    "host": {
-      "value": "localhost"
-    },
-    "port": {
-      "value": 9200
-    },
-    "username": {
-      "value": ""
-    },
-    "password": {
-      "value": ""
-    }
+    "host": { "value": "localhost" },
+    "port": { "value": 9200 },
+    "username": { "value": "" },
+    "password": { "value": "" },
+    "ssl_enabled": { "value": true }
   },
   "properties": {
     "host": {
@@ -63,6 +53,12 @@
       "type": "text",
       "description": "Enter username"
     },
+    "ssl_enabled": {
+      "label": "SSL",
+      "key": "ssl_enabled",
+      "type": "toggle",
+      "description": "Toggle for ssl_enabled"
+    },
     "password": {
       "label": "Password",
       "key": "password",
@@ -72,6 +68,7 @@
   },
   "required": [
     "scheme",
+    "ssl_enabled",
     "host",
     "port",
     "password"

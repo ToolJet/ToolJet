@@ -1,5 +1,5 @@
 import { ConnectionTestResult, QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-const Redis = require('ioredis');
+import Redis from 'ioredis';
 import { SourceOptions, QueryOptions } from './types'
 
 export default class RedisQueryService implements QueryService {
