@@ -5,8 +5,7 @@ to: <%= plugins_path %>/packages/<%= name %>/lib/manifest.json
  Display_name = display_name.toUpperCase()
 %>
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/<%= Name %>/manifest.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "<%= Name %> datasource",
   "description": "A schema defining <%= name %> datasource",
   "type": "api",

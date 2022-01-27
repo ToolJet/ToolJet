@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/GCS.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "GCS datasource",
   "description": "A schema defining GCS datasource",
   "type": "cloud-storage",
@@ -12,12 +11,30 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "list": [
-        { "value": "get_file", "name": "Read file" },
-        { "value": "upload_file", "name": "Upload file" },
-        { "value": "list_buckets", "name": "List buckets" },
-        { "value": "list_files", "name": "List files in a bucket" },
-        { "value": "signed_url_for_get", "name": "Signed url for download" },
-        { "value": "signed_url_for_put", "name": "Signed url for upload" }
+        {
+          "value": "get_file",
+          "name": "Read file"
+        },
+        {
+          "value": "upload_file",
+          "name": "Upload file"
+        },
+        {
+          "value": "list_buckets",
+          "name": "List buckets"
+        },
+        {
+          "value": "list_files",
+          "name": "List files in a bucket"
+        },
+        {
+          "value": "signed_url_for_get",
+          "name": "Signed url for download"
+        },
+        {
+          "value": "signed_url_for_put",
+          "name": "Signed url for upload"
+        }
       ]
     },
     "get_file": {

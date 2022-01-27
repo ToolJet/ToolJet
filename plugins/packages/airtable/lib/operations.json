@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Airtable.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Airtable datasource",
   "description": "A schema defining Airtable datasource",
   "type": "api",
@@ -12,10 +11,22 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "list": [
-        { "value": "list_records", "name": "List records" },
-        { "value": "retrieve_record", "name": "Retrieve record" },
-        { "value": "update_record", "name": "Update record" },
-        { "value": "delete_record", "name": "Delete record" }
+        {
+          "value": "list_records",
+          "name": "List records"
+        },
+        {
+          "value": "retrieve_record",
+          "name": "Retrieve record"
+        },
+        {
+          "value": "update_record",
+          "name": "Update record"
+        },
+        {
+          "value": "delete_record",
+          "name": "Delete record"
+        }
       ]
     },
     "list_records": {

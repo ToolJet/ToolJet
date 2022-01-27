@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Stripe.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Stripe datasource",
   "description": "A schema defining stripe datasource",
   "type": "api",
@@ -33,5 +32,7 @@
       "description": "Api key for stripe"
     }
   },
-  "required": ["api_key"]
+  "required": [
+    "api_key"
+  ]
 }

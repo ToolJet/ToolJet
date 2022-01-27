@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Elasticsearch.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Elasticsearch datasource",
   "description": "A schema defining Elasticsearch datasource",
   "type": "database",
@@ -15,10 +14,22 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "list": [
-        { "value": "search", "name": "Search" },
-        { "value": "index_document", "name": "Index a document" },
-        { "value": "get", "name": "Get a document" },
-        { "value": "update", "name": "Update a document" }
+        {
+          "value": "search",
+          "name": "Search"
+        },
+        {
+          "value": "index_document",
+          "name": "Index a document"
+        },
+        {
+          "value": "get",
+          "name": "Get a document"
+        },
+        {
+          "value": "update",
+          "name": "Update a document"
+        }
       ]
     },
     "search": {

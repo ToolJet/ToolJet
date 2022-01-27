@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Minio.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Minio datasource",
   "description": "A schema defining minio datasource",
   "type": "api",
@@ -12,12 +11,30 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "list": [
-        { "value": "get_object", "name": "Read object" },
-        { "value": "put_object", "name": "Put object" },
-        { "value": "list_buckets", "name": "List buckets" },
-        { "value": "list_objects", "name": "List objects in a bucket" },
-        { "value": "signed_url_for_get", "name": "Presigned url for download" },
-        { "value": "signed_url_for_put", "name": "Presigned url for upload" }
+        {
+          "value": "get_object",
+          "name": "Read object"
+        },
+        {
+          "value": "put_object",
+          "name": "Put object"
+        },
+        {
+          "value": "list_buckets",
+          "name": "List buckets"
+        },
+        {
+          "value": "list_objects",
+          "name": "List objects in a bucket"
+        },
+        {
+          "value": "signed_url_for_get",
+          "name": "Presigned url for download"
+        },
+        {
+          "value": "signed_url_for_put",
+          "name": "Presigned url for upload"
+        }
       ]
     },
     "get_object": {
