@@ -7,6 +7,7 @@ import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
 import ReactJson from 'react-json-view';
 import { previewQuery } from '@/_helpers/appUtils';
+import { allSvgs } from '@tooljet/plugins/client';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
@@ -210,16 +211,13 @@ let QueryManager = class QueryManager extends React.Component {
   };
 
   renderDataSourceOption = (props, option, snapshot, className) => {
-    // const icon = option.kind ? `/assets/images/icons/editor/datasources/${option.kind.toLowerCase() + '.svg'}` : null;
-    // const Icon = allSvgs[option.kind.toLowerCase()];
-    // return <Icon style={{ height: 25, width: 25 }} />;
+    //Todo: add icon for the "runjs" query
+    const Icon = allSvgs[option.kind];
     return (
       <button {...props} className={className} type="button">
         <div>
-          <span className="text-muted">
-            {/* <Icon /> */}
-            {option.name}
-          </span>
+          {Icon && <Icon style={{ height: 25, width: 25 }} />}
+          <span className="text-muted mx-2">{option.name}</span>
         </div>
       </button>
     );
