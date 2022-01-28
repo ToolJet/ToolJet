@@ -6,7 +6,7 @@ sidebar_position: 7
 
 ## Managing Users
 
-Admin of an account can add users to the account. To manage the users for your account, just go to the **Account menu** on top right corner and click on the **Manage Users**.
+Admin of an organization can add users to the account. To manage the users for your account, just go to the **Account menu** on top right corner and click on the **Manage Users**.
 
 <div style={{textAlign: 'center'}}>
 
@@ -16,7 +16,7 @@ Admin of an account can add users to the account. To manage the users for your a
 
 ### Inviting users
 
-Admins can invite anyone to their ToolJet account using the email address. To invite a user:
+Admins can invite anyone to a ToolJet organization using the email address. To invite a user:
 
 - On the **Manage Users** page click on the `Invite new user` button.
 
@@ -114,7 +114,7 @@ Admins can set granular permission like creating/deleting apps or creating folde
 
 :::tip
 
-All the activities performed by every Admin or every user in an account is logged in `Audit logs` - including any activity related with managing users and groups.
+All the activities performed by any Admin or any user in a ToolJet organization is logged in `Audit logs` - including any activity related with managing users and groups.
 
 :::
 
@@ -128,7 +128,7 @@ This group contains all the users and admins.
 
 | Apps | Users | Permissions |
 | ----------- | ----------- | ----------- |
-| You can add or remove apps. | Modification is disabled. This group will have all the users and admins added in an account. | You can edit permissions for all the users globally. |
+| You can add or remove apps. | Modification is disabled. This group will have all the users and admins added in an organization. | You can edit permissions for all the users globally. |
 
 <div style={{textAlign: 'center'}}>
 
