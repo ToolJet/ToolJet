@@ -275,8 +275,10 @@ export async function maybeCreateAdminAppGroupPermissions(nestApp, app) {
   const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
 
   const orgAdminGroupPermissions = await groupPermissionRepository.findOne({
-    organizationId: app.organizationId,
-    group: 'admin',
+    where: {
+      organizationId: app.organizationId,
+      group: 'admin',
+    },
   });
 
   if (orgAdminGroupPermissions) {
@@ -300,8 +302,10 @@ export async function maybeCreateAllUsersAppGroupPermissions(nestApp, app) {
   const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
 
   const orgGroupPermissions = await groupPermissionRepository.findOne({
-    organizationId: app.organizationId,
-    group: 'all_users',
+    where: {
+      organizationId: app.organizationId,
+      group: 'all_users',
+    },
   });
 
   if (orgGroupPermissions) {

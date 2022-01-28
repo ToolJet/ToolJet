@@ -20,9 +20,9 @@ export class AppImportExportService {
   ) {}
 
   async export(user: User, id: string): Promise<App> {
-    const appToExport = this.appsRepository.findOne(id, {
+    const appToExport = this.appsRepository.findOne({
       relations: ['dataQueries', 'dataSources', 'appVersions'],
-      where: { organizationId: user.organizationId },
+      where: { id, organizationId: user.organizationId },
     });
 
     return appToExport;
