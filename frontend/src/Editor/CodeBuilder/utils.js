@@ -97,7 +97,7 @@ export function handleChange(editor, onChange, suggestions, ignoreBraces = false
   const hints = generateHints(currentWord, suggestions);
 
   const options = {
-    alignWithWord: true,
+    alignWithWord: false,
     completeSingle: false,
     hint: function () {
       return {
