@@ -44,7 +44,12 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
       if (object.startsWith('{{') && object.endsWith('}}')) {
         const code = object.replace('{{', '').replace('}}', '');
         let result = '';
-
+        if (code === 'this' || code === 'window' || code === 'app') {
+          let jsonString = JSON.stringify(code, handleCircularStructureToJSON());
+          console.log('jsonString', jsonString);
+          result = jsonString;
+          return [result, {}];
+        }
         try {
           const evalFunction = Function(
             ['components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
@@ -297,3 +302,18 @@ export const isJson = (str) => {
 export function buildURLWithQuery(url, query = {}) {
   return `${url}?${toQuery(query)}`;
 }
+
+const handleCircularStructureToJSON = () => {
+  const seen = new WeakSet();
+
+  return (key, value) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return 'Object';
+      }
+      seen.add(value);
+    }
+
+    return value;
+  };
+};
