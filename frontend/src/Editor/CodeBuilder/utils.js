@@ -31,7 +31,11 @@ export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false
   const splitter = ignoreBraces ? ' ' : '{{';
 
   const split = sliced.split(splitter);
-  const lastWord = split[split.length - 1];
+  const splittedWord = split.slice(-1).pop();
+
+  // Check if the word still has spaces, to avoid replacing entire code
+  const lastWord = splittedWord.split(' ').slice(-1).pop();
+
   return lastWord;
 }
 
