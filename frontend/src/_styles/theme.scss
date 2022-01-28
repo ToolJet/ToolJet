@@ -601,7 +601,139 @@ button {
 .modal-header {
   padding: 0 1.5rem 0 1.5rem;
 }
-
+/**
+ * Homepage card 
+ */
+ .onboarding-page-wrapper{
+  padding: 3% 6%;
+  height: 100vh;
+ }
+ .onboarding-confetti{
+   padding-left: 16px;  
+   display: flex;
+    margin-bottom: 10px;
+ }
+ .empty-action{
+  margin-top: 0px !important;
+ }
+ .onboard-import-button{
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  color: #4D72FA !important;
+  border: 1px solid #4D72FA !important;
+ }
+ .onboarding-seperator{
+   margin-bottom: 42px !important;
+   margin-top: 42px !important;
+ }
+ .onboarding-app-creation{
+   display: flex;
+   flex-direction: row;
+   justify-content: space-between;
+ }
+ .onbaording-topics{
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 24px;
+  color: #000000;
+ }
+.onboarding-card-container{
+  display: flex;
+  flex-direction: row;
+  gap: 28px;
+}
+.onboarding-subheader{
+  color: #5E5E5E;
+  font-size: 18px;
+  line-height: 21.78px;
+  margin-bottom: 0;
+}
+.onbaording-info{
+  font-size: 18px;
+  line-height: 22px;
+  color: #5E5E5E;
+  margin-bottom: 28px;
+}
+.onboarding-topics{
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 24px;  
+  margin-bottom: 21px;
+  span{
+    color: #8092AB;
+  }
+}
+.onboarding-header-wrapper{
+  display: flex;
+  flex-direction: row;
+}
+.onboarding-header{
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 58.09px;
+}
+ .onboarding-card-wrapper{
+   border: 1px solid #D2DDEC;
+   padding: 20px;
+   border-radius: 8px;
+   height: 103px;
+   width: 326px;
+   background-color: #FFFFFC;
+   display: flex;
+   cursor: pointer;
+ }
+ .onboarding-navigation-wrapper{
+   display: flex;
+   flex-direction: row;
+   align-items: baseline;
+   img{
+     display: none;
+     margin-left: 15px;
+   }
+ }
+ .onboarding-card-wrapper:hover{
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  h3{
+    color: #4D72FA;
+  }
+  .onboarding-navigation-wrapper img{
+    display: block;
+  }
+ }
+ .onboarding-card-details{
+  padding-left: 20px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  a{
+    text-decoration: none;
+  }
+  p{
+    color: #a4aebf;
+    margin-bottom:0px;
+    font-size: 14px;
+    line-height: 17px;
+    margin-bottom: 4px;
+  }
+  h3{
+    font-size: 18px;
+    line-height: 22px;
+    color: #000000;
+  }
+}
+ .onboarding-icon-wrapper{
+   background-color:  #EDF1FF;
+   padding: 2px;
+   width: 60px;
+   height: 60px;
+   border-radius: 4px;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+ }
+// onboarding style end
 .page-body,
 .homepage-body {
   height: 100vh;
