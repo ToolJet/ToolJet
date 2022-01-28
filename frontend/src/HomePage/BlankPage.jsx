@@ -35,7 +35,7 @@ export const BlankPage = function BlankPage({ createApp, handleImportApp, isImpo
         Library.
       </p>
       <hr className="onboarding-seperator" />
-      <p className="onbaording-info">To better use, here is some helpful resources to get started:</p>
+      {/* <p className="onbaording-info">To better use, here is some helpful resources to get started:</p> */}
       <h1 className="onboarding-topics">Get Help</h1>
       <div>
         <div className="onboarding-card-container">
