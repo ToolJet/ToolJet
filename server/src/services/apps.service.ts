@@ -49,7 +49,8 @@ export class AppsService {
   ) {}
 
   async find(id: string): Promise<App> {
-    return this.appsRepository.findOne(id, {
+    return this.appsRepository.findOne({
+      where: { id },
       relations: ['dataQueries'],
     });
   }
@@ -64,7 +65,8 @@ export class AppsService {
   }
 
   async findVersion(id: string): Promise<AppVersion> {
-    return this.appVersionsRepository.findOne(id, {
+    return this.appVersionsRepository.findOne({
+      where: { id },
       relations: ['app', 'dataQueries'],
     });
   }
@@ -442,8 +444,8 @@ export class AppsService {
 
     for await (const newOption of newOptionsWithCredentials) {
       const oldOption = oldOptions.find((oldOption) => oldOption['key'] == newOption['key']);
-      const oldCredential = await manager.findOne(Credential, oldOption.credential_id);
-      const newCredential = await manager.findOne(Credential, newOption['credential_id']);
+      const oldCredential = await manager.findOne(Credential, { where: { id: oldOption.credential_id } });
+      const newCredential = await manager.findOne(Credential, { where: { id: newOption['credential_id'] } });
       newCredential.valueCiphertext = oldCredential.valueCiphertext;
 
       await manager.save(newCredential);
