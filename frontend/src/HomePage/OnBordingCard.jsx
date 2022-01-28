@@ -8,10 +8,12 @@ function OnBordingCard({ cardData }) {
       </div>
       <div className="onboarding-card-details">
         <p>{cardData?.description}</p>
-        <div className="onboarding-navigation-wrapper">
-          <h3>{cardData?.title}</h3>
-          <img src="/assets/images/navigate.svg" alt="" />
-        </div>
+        <a href={`${cardData.link}`} target="_blank" rel="noreferrer">
+          <div className="onboarding-navigation-wrapper">
+            <h3>{cardData?.title}</h3>
+            <img src="/assets/images/navigate.svg" alt="" />
+          </div>
+        </a>
       </div>
     </div>
   );
