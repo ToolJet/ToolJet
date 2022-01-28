@@ -34,7 +34,7 @@ export default ({
         </div>
       </div>
 
-      <div className="row px-2">
+      <div className="row px-2 pb-3">
         {options.map((option, index) => {
           return (
             <div className="row input-group my-1" key={index}>
