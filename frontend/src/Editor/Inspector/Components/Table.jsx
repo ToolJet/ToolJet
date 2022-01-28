@@ -730,10 +730,9 @@ class Table extends React.Component {
 
     const conditionalOptions = [
       { name: 'clientSidePagination', condition: !serverSidePagination },
-      !serverSidePagination && { name: 'displaySearchBox', condition: true },
       { name: 'loadingState', condition: true },
     ];
-
+    !serverSidePagination && conditionalOptions.push({ name: 'displaySearchBox', condition: true });
     conditionalOptions.map(({ name, condition }) => {
       if (condition) renderOptions.push(renderCustomElement(name));
     });
