@@ -605,6 +605,10 @@ button {
 .page-body,
 .homepage-body {
   height: 100vh;
+
+  .list-group.list-group-transparent.dark .all-apps-link {
+    background-color: $dark-background !important;
+  }
 }
 .homepage-dropdown-style {
   min-width: 11rem;
