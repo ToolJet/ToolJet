@@ -114,7 +114,7 @@ async function copyToClipboard(text) {
 }
 
 function showModal(_ref, modal, show) {
-  const modalId = modal.id;
+  const modalId = modal?.id ?? modal;
   if (_.isEmpty(modalId)) {
     console.log('No modal is associated with this event.');
     return Promise.resolve();
@@ -683,15 +683,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
   });
 }
 
-function setTablePageIndex(_ref, table, index) {
-  if (_.isEmpty(table.id)) {
+function setTablePageIndex(_ref, tableId, index) {
+  if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
   }
 
-  const tableMeta = _ref.state.currentState.components[table.name];
+  const table = Object.entries(_ref.state.currentState.components).filter((entry) => entry[1].id === tableId)[0][1];
   const newPageIndex = resolveReferences(index, _ref.state.currentState);
-  tableMeta.setPage(newPageIndex ?? 1);
+  table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }
 
