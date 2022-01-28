@@ -315,7 +315,6 @@ let QueryManager = class QueryManager extends React.Component {
                 onChange={(e) => this.setState({ queryName: e.target.value })}
                 className="form-control-plaintext form-control-plaintext-sm mt-1"
                 value={queryName}
-                style={{ width: '160px' }}
                 autoFocus={false}
               />
             </div>
