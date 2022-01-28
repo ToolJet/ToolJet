@@ -99,7 +99,7 @@ describe('apps controller', () => {
       expect(response.body.name).toBe('Untitled app');
 
       const appId = response.body.id;
-      const application = await App.findOne({ id: appId });
+      const application = await App.findOne({ where: { id: appId } });
 
       expect(application.name).toBe('Untitled app');
       expect(application.id).toBe(application.slug);
@@ -404,7 +404,7 @@ describe('apps controller', () => {
       expect(response.statusCode).toBe(201);
 
       const appId = response.body.id;
-      const clonedApplication = await App.findOne({ id: appId });
+      const clonedApplication = await App.findOne({ where: { id: appId } });
       expect(clonedApplication.name).toBe('App to clone');
 
       response = await request(app.getHttpServer())
@@ -551,11 +551,11 @@ describe('apps controller', () => {
 
       expect(response.statusCode).toBe(200);
 
-      expect(await App.findOne(application.id)).toBeUndefined();
-      expect(await AppVersion.findOne(version.id)).toBeUndefined();
-      expect(await DataQuery.findOne(dataQuery.id)).toBeUndefined();
-      expect(await DataSource.findOne(dataSource.id)).toBeUndefined();
-      expect(await AppUser.findOne({ appId: application.id })).toBeUndefined();
+      expect(await App.findOne({ where: { id: application.id } })).toBeUndefined();
+      expect(await AppVersion.findOne({ where: { id: version.id } })).toBeUndefined();
+      expect(await DataQuery.findOne({ where: { id: dataQuery.id } })).toBeUndefined();
+      expect(await DataSource.findOne({ where: { id: dataSource.id } })).toBeUndefined();
+      expect(await AppUser.findOne({ where: { appId: application.id } })).toBeUndefined();
     });
 
     it('should be possible for app creator to delete an app', async () => {
@@ -580,7 +580,7 @@ describe('apps controller', () => {
         .set('Authorization', authHeaderForUser(developer.user));
 
       expect(response.statusCode).toBe(200);
-      expect(await App.findOne(application.id)).toBeUndefined();
+      expect(await App.findOne({ where: { id: application.id } })).toBeUndefined();
     });
 
     it('should not be possible for non admin to delete an app', async () => {
@@ -605,7 +605,7 @@ describe('apps controller', () => {
 
       expect(response.statusCode).toBe(403);
 
-      expect(await App.findOne(application.id)).not.toBeUndefined();
+      expect(await App.findOne({ where: { id: application.id } })).not.toBeUndefined();
     });
   });
 
@@ -692,7 +692,9 @@ describe('apps controller', () => {
         await createApplicationVersion(app, application);
 
         const allUserGroup = await getRepository(GroupPermission).findOne({
-          group: 'all_users',
+          where: {
+            group: 'all_users',
+          },
         });
         await createAppGroupPermission(app, application, allUserGroup.id, {
           read: true,
@@ -751,7 +753,9 @@ describe('apps controller', () => {
 
           // setup app permissions for developer
           const developerUserGroup = await getRepository(GroupPermission).findOne({
-            group: 'developer',
+            where: {
+              group: 'developer',
+            },
           });
           await createAppGroupPermission(app, application, developerUserGroup.id, {
             read: false,
@@ -936,7 +940,9 @@ describe('apps controller', () => {
           });
           const application = await importAppFromTemplates(app, adminUserData.user, 'customer-dashboard');
           const dataSource = await getManager().findOne(DataSource, { where: { appId: application } });
-          const credential = await getManager().findOne(Credential, dataSource.options['password']['credentialId']);
+          const credential = await getManager().findOne(Credential, {
+            where: { id: dataSource.options['password']['credential_id'] },
+          });
           credential.valueCiphertext = 'strongPassword';
           await getManager().save(credential);
 
@@ -1014,7 +1020,9 @@ describe('apps controller', () => {
         const version = await createApplicationVersion(app, application);
 
         const allUserGroup = await getRepository(GroupPermission).findOne({
-          group: 'all_users',
+          where: {
+            group: 'all_users',
+          },
         });
         await createAppGroupPermission(app, application, allUserGroup.id, {
           read: true,
@@ -1071,7 +1079,7 @@ describe('apps controller', () => {
         const version = await createApplicationVersion(app, application);
 
         // setup app permissions for developer
-        const developerUserGroup = await getRepository(GroupPermission).findOne({ group: 'developer' });
+        const developerUserGroup = await getRepository(GroupPermission).findOne({ where: { group: 'developer' } });
         await createAppGroupPermission(app, application, developerUserGroup.id, {
           read: false,
           update: true,
@@ -1172,7 +1180,9 @@ describe('apps controller', () => {
       });
       // setup app permissions for developer
       const developerUserGroup = await getRepository(GroupPermission).findOne({
-        group: 'developer',
+        where: {
+          group: 'developer',
+        },
       });
       await createAppGroupPermission(app, application, developerUserGroup.id, {
         read: true,
@@ -1181,7 +1191,9 @@ describe('apps controller', () => {
       });
       // setup app permissions for viewer
       const viewerUserGroup = await getRepository(GroupPermission).findOne({
-        group: 'viewer',
+        where: {
+          group: 'viewer',
+        },
       });
       await createAppGroupPermission(app, application, viewerUserGroup.id, {
         read: true,
@@ -1262,7 +1274,9 @@ describe('apps controller', () => {
       });
       // setup app permissions for developer
       const developerUserGroup = await getRepository(GroupPermission).findOne({
-        group: 'developer',
+        where: {
+          group: 'developer',
+        },
       });
       await createAppGroupPermission(app, application, developerUserGroup.id, {
         read: true,
@@ -1271,7 +1285,9 @@ describe('apps controller', () => {
       });
       // setup app permissions for viewer
       const viewerUserGroup = await getRepository(GroupPermission).findOne({
-        group: 'viewer',
+        where: {
+          group: 'viewer',
+        },
       });
       await createAppGroupPermission(app, application, viewerUserGroup.id, {
         read: true,
