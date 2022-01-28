@@ -23,7 +23,7 @@ export const PasswordInput = ({ height, validate, properties, styles, exposedVar
           setExposedVariable('value', e.target.value);
         }}
         type={'password'}
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon rounded-0`}
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
         placeholder={placeholder}
         value={exposedVariables.value}
         style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
