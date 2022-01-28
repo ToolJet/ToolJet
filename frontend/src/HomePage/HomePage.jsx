@@ -590,6 +590,7 @@ class HomePage extends React.Component {
                           currentPage={meta.current_page}
                           count={this.pageCount()}
                           pageChanged={this.pageChanged}
+                          darkMode={this.props.darkMode}
                         />
                       )}
                     </div>
