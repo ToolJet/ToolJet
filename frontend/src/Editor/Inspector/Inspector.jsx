@@ -11,6 +11,7 @@ import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import useFocus from '@/_hooks/use-Focus';
 
 export const Inspector = ({
   selectedComponentId,
@@ -36,6 +37,9 @@ export const Inspector = ({
   const [tabHeight, setTabHeight] = React.useState(0);
   const tabsRef = useRef(null);
 
+  const [newComponentName, setNewComponentName] = useState(component.component.name);
+  const [inputRef, setInputFocus] = useFocus();
+
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
@@ -55,14 +59,30 @@ export const Inspector = ({
   //   setComponents(allComponents);
   // }, [allComponents]);
 
-  function handleComponentNameChange(newName) {
-    if (validateQueryName(newName)) {
-      let newComponent = { ...component };
-      newComponent.component.name = newName;
+  function handleonChangeInputEvent(event) {
+    const newName = event.target.value;
+    if (
+      Object.values(allComponents)
+        .map((component) => component.component.name)
+        .includes(newName)
+    ) {
+      toast.error('Component name already exists');
+    }
+    setNewComponentName(newName);
+  }
 
+  function handleComponentNameChange(newName) {
+    const isValid = !Object.values(allComponents)
+      .map((component) => component.component.name)
+      .includes(newName);
+
+    let newComponent = { ...component };
+    if (validateQueryName(newName) && isValid) {
+      newComponent.component.name = newName;
       componentChanged(newComponent);
-    } else {
+    } else if (newComponent.component.name !== newName) {
       toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.');
+      setInputFocus();
     }
   }
 
@@ -252,6 +272,23 @@ export const Inspector = ({
     }
   }
 
+  const componentWillUnmount = React.useRef(false);
+  // componentWillUnmount
+  React.useEffect(() => {
+    return () => {
+      componentWillUnmount.current = true;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (componentWillUnmount.current) {
+        setNewComponentName(component.component.name);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [component.componentname]);
+
   return (
     <div className="inspector">
       <ConfirmDialog
@@ -270,10 +307,15 @@ export const Inspector = ({
               <div>
                 <div className="input-icon">
                   <input
+                    onChange={handleonChangeInputEvent}
                     type="text"
-                    onChange={(e) => handleComponentNameChange(e.target.value)}
+                    onKeyUp={(e) => {
+                      if (e.keyCode === 13) handleComponentNameChange(newComponentName);
+                    }}
+                    onBlur={() => handleComponentNameChange(newComponentName)}
                     className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
-                    value={component.component.name}
+                    value={newComponentName}
+                    ref={inputRef}
                   />
                   <span className="input-icon-addon">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
