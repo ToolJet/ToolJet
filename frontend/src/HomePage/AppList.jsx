@@ -51,7 +51,9 @@ const AppList = (props) => {
       )}
       {!props.isLoading && props.meta.total_count === 0 && !(props.currentFolder && props.currentFolder.id) && (
         <div>
-          <span className="d-block text-center text-body pt-5">No Applications found</span>
+          <span className={`d-block text-center text-body pt-5 ${props.darkMode && 'text-white-50'}`}>
+            No Applications found
+          </span>
         </div>
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (
