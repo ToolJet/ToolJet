@@ -11,6 +11,7 @@ export const Listview = function Listview({
   removeComponent,
   properties,
   styles,
+  currentState,
   fireEvent,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
@@ -19,10 +20,28 @@ export const Listview = function Listview({
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
   const { backgroundColor, visibility, disabledState } = { ...fallbackStyles, ...styles };
 
+  let childComponents = [];
+
+  const allComponents = containerProps.appDefinition ? containerProps.appDefinition.components : {};
+  Object.keys(allComponents).forEach((key) => {
+    if (allComponents[key].parent === id) {
+      const dataObj = {
+        id: key,
+        name: allComponents[key]['component'].name,
+        data: allComponents[key]['component']['exposedVariables'],
+      };
+      childComponents[key] = dataObj;
+    }
+  });
+
   const computedStyles = {
     backgroundColor,
     height,
     display: visibility ? 'flex' : 'none',
+  };
+
+  const onRowClicked = (index) => {
+    fireEvent('onRowClicked', { data: currentState.components['listview1'].data[index], rowId: index });
   };
 
   const parentRef = useRef(null);
@@ -44,7 +63,7 @@ export const Listview = function Listview({
             key={index}
             onClick={(event) => {
               event.stopPropagation();
-              fireEvent('onRowClicked', { data: listItem, rowId: index });
+              onRowClicked(index);
             }}
           >
             <SubContainer
