@@ -539,6 +539,12 @@ class Editor extends React.Component {
     return setStateAsync(_self, newDefinition);
   };
 
+  cloneComponent = (newComponent) => {
+    const appDefinition = this.state.appDefinition;
+    appDefinition.components[newComponent.id] = newComponent;
+    this.appDefinitionChanged(appDefinition);
+  };
+
   componentChanged = (newComponent) => {
     this.setState({
       appDefinition: {
@@ -1283,6 +1289,7 @@ class Editor extends React.Component {
                   !isEmpty(appDefinition.components) &&
                   !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
+                      cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
                       componentChanged={this.componentChanged}

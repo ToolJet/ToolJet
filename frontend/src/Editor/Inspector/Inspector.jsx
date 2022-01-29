@@ -20,6 +20,7 @@ function uuidv4() {
 }
 
 export const Inspector = ({
+  cloneComponent,
   selectedComponentId,
   componentDefinitionChanged,
   dataQueries,
@@ -35,6 +36,7 @@ export const Inspector = ({
     id: selectedComponentId,
     component: allComponents[selectedComponentId].component,
     layouts: allComponents[selectedComponentId].layouts,
+    parent: allComponents[selectedComponentId].parent,
   };
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   const [key, setKey] = React.useState('properties');
@@ -48,7 +50,19 @@ export const Inspector = ({
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.id = uuidv4();
     clonedComponent.component.name = computeComponentName(clonedComponent.component.component, allComponents);
-    componentChanged(clonedComponent);
+
+    if (component.parent) clonedComponent.parent = component.parent;
+
+    const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+
+    childComponents.forEach((componentId) => {
+      let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
+      childComponent.id = uuidv4();
+      childComponent.parent = clonedComponent.id;
+      childComponent.component.name = computeComponentName(childComponent.component.component, allComponents);
+      cloneComponent(childComponent);
+    });
+    cloneComponent(clonedComponent);
     toast.success(`${component.component.name} cloned succesfully`);
   });
 
