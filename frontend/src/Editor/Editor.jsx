@@ -345,7 +345,7 @@ class Editor extends React.Component {
         addingQuery: true,
         showQuerySearchField: false,
       });
-    }, 400);
+    }, 500);
   };
 
   fetchApps = (page) => {
@@ -1218,19 +1218,15 @@ class Editor extends React.Component {
                                 className={`query-btn mx-2 ${this.props.darkMode ? 'dark' : ''}`}
                                 data-tip="Add new query"
                                 data-class="py-1 px-2"
-                                onClick={() => {
-                                  if (showQuerySearchField) {
-                                    this.createNewQuery();
-                                  } else {
-                                    this.setState({
-                                      options: {},
-                                      selectedDataSource: null,
-                                      selectedQuery: {},
-                                      editingQuery: false,
-                                      addingQuery: true,
-                                    });
-                                  }
-                                }}
+                                onClick={() =>
+                                  this.setState({
+                                    options: {},
+                                    selectedDataSource: null,
+                                    selectedQuery: {},
+                                    editingQuery: false,
+                                    addingQuery: true,
+                                  })
+                                }
                               >
                                 <img className="mt-2" src="/assets/images/icons/plus.svg" width="24" height="24" />
                               </span>

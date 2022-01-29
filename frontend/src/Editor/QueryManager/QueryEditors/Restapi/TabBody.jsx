@@ -43,7 +43,7 @@ export default ({
                   width="80%"
                   placeholder="key"
                   onChange={onChange('body', 0, index)}
-                  componentName={`${componentName}/params::key::${index}`}
+                  componentName={`${componentName}/body::key::${index}`}
                 />
               </div>
 
@@ -56,7 +56,7 @@ export default ({
                   width="80%"
                   placeholder="value"
                   onChange={onChange('body', 1, index)}
-                  componentName={`${componentName}/params::value::${index}`}
+                  componentName={`${componentName}/body::value::${index}`}
                 />
               </div>
               {index > 0 && (
