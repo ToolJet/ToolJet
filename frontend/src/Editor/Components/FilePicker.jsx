@@ -3,7 +3,16 @@ import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 
-export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode }) => {
+export const FilePicker = ({
+  width,
+  height,
+  component,
+  currentState,
+  onComponentOptionChanged,
+  onEvent,
+  darkMode,
+  styles,
+}) => {
   //* properties definitions
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
@@ -46,7 +55,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     justifyContent: 'center',
     padding: '20px',
     borderWidth: 1.5,
-    borderRadius: 2,
+    borderRadius: `${styles.borderRadius}px`,
     borderColor: '#42536A',
     borderStyle: 'dashed',
     color: '#bdbdbd',
