@@ -1214,7 +1214,7 @@ class Editor extends React.Component {
                       {loadingDataQueries ? (
                         <div className="p-5">
                           <center>
-                            <div className="spinner-border text-azure" role="status"></div>
+                            <div className="spinner-border" role="status"></div>
                           </center>
                         </div>
                       ) : (
