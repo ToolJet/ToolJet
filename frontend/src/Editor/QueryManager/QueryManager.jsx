@@ -321,7 +321,7 @@ let QueryManager = class QueryManager extends React.Component {
           )}
           <div className="col-auto px-1 m-auto">
             {(addingQuery || editingQuery) && (
-              <span
+              <button
                 onClick={() => {
                   const _options = { ...options };
 
@@ -338,13 +338,13 @@ let QueryManager = class QueryManager extends React.Component {
                       console.log(error, data);
                     });
                 }}
-                className={`btn button-family-secondary m-1 float-right1  ${previewLoading ? 'button-loading' : ''} ${
+                className={`btn button-family-secondary m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
                   this.props.darkMode ? 'dark' : ''
                 } `}
                 style={{ width: '72px', height: '28px' }}
               >
                 Preview
-              </span>
+              </button>
             )}
             {(addingQuery || editingQuery) && (
               <button
