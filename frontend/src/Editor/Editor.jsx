@@ -713,7 +713,7 @@ class Editor extends React.Component {
           ) : (
             <button
               style={{ marginTop: '3px' }}
-              className="btn badge bg-azure-lt"
+              className="btn badge bg-light-1"
               onClick={() => {
                 runQuery(this, dataQuery.id, dataQuery.name).then(() => {
                   toast(`Query (${dataQuery.name}) completed.`, {
