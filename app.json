@@ -3,7 +3,7 @@
   "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
   "website": "https://tooljet.io/",
   "repository": "https://github.com/tooljet/tooljet",
-  "logo": "https://app.tooljet.io/assets/images/logo.svg",
+  "logo": "https://tooljet.com/blue-logo.png",
   "success_url": "/",
   "scripts": {
     "predeploy": "npm install --prefix server && npm run build --prefix server"
