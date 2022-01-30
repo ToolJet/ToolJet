@@ -10,6 +10,7 @@ import { previewQuery } from '@/_helpers/appUtils';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
+import { rgb } from '@react-spring/shared';
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
@@ -298,35 +299,34 @@ let QueryManager = class QueryManager extends React.Component {
         ...provided,
         width: 300,
       }),
-      menu: (provided) => ({
-        ...provided,
-        zIndex: 2,
-      }),
-    };
-    const selectStylesDarkMode = {
-      container: (provided) => ({
-        ...provided,
-        width: 300,
-      }),
       control: (provided) => ({
         ...provided,
-        backgroundColor: '#2b3547',
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
       }),
       input: (provided) => ({
         ...provided,
-        color: '#fff',
+        color: this.props.darkMode ? '#fff' : '#232e3c',
       }),
       menu: (provided) => ({
         ...provided,
         zIndex: 2,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
       }),
       option: (provided) => ({
         ...provided,
-        backgroundColor: '#2b3547',
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+        ':hover': {
+          backgroundColor: this.props.darkMode ? '#1167b1' : '#b3e5fc',
+        },
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#808080',
       }),
       singleValue: (provided) => ({
         ...provided,
-        color: '#fff',
+        color: this.props.darkMode ? '#fff' : '#232e3c',
       }),
     };
 
@@ -434,7 +434,7 @@ let QueryManager = class QueryManager extends React.Component {
                       ]}
                       onChange={(newValue) => this.changeDataSource(newValue.value)}
                       placeholder="Select a data source"
-                      styles={`${this.props.darkMode ? selectStylesDarkMode : selectStyles}`}
+                      styles={selectStyles}
                     />
                   </div>
                 )}
