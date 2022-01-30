@@ -607,11 +607,8 @@ button {
  .onboarding-page-wrapper{
   padding: 3% 6%;
   height: 100vh;
- }
- .onboarding-confetti{
-   padding-left: 16px;  
-   display: flex;
-    margin-bottom: 10px;
+  padding-left: 24px;
+  padding-right: 0 !important;
  }
  .empty-action{
   margin-top: 0px !important;
@@ -661,6 +658,7 @@ button {
   font-size: 20px;
   line-height: 24px;  
   margin-bottom: 21px;
+  color: #000000;
   span{
     color: #8092AB;
   }
@@ -673,6 +671,7 @@ button {
   font-size: 48px;
   font-weight: 700;
   line-height: 58.09px;
+  color: #000000;
 }
  .onboarding-card-wrapper{
    border: 1px solid #D2DDEC;

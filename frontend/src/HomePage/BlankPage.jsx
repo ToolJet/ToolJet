@@ -26,9 +26,6 @@ export const BlankPage = function BlankPage({ createApp, handleImportApp, isImpo
     <div className="onboarding-page-wrapper container-xl">
       <div className="onboarding-header-wrapper">
         <h1 className="onboarding-header">Welcome to Tooljet!</h1>
-        <span className="onboarding-confetti">
-          <img src="/assets/images/confetti.svg" alt="" />
-        </span>
       </div>
       <p className="onboarding-subheader">
         You can get started by creating a new application or by creating an application using a template in ToolJet
