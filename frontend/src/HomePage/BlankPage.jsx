@@ -23,7 +23,7 @@ export const BlankPage = function BlankPage({ createApp, handleImportApp, isImpo
     },
   ];
   return (
-    <div className="onboarding-page-wrapper">
+    <div className="onboarding-page-wrapper container-xl">
       <div className="onboarding-header-wrapper">
         <h1 className="onboarding-header">Welcome to Tooljet!</h1>
         <span className="onboarding-confetti">
