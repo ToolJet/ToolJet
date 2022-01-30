@@ -37,11 +37,11 @@ module.exports = {
       },
     },
     navbar: {
-      title: 'ToolJet',
       logo: {
         href: '/docs/intro',
         alt: 'ToolJet Logo',
         src: 'img/logo.svg',
+        width: 90
       },
       items: [
         {

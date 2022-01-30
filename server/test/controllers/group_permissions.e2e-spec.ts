@@ -258,8 +258,10 @@ describe('group permissions controller', () => {
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOne(GroupPermission, {
-        group: 'admin',
-        organizationId: adminUser.organizationId,
+        where: {
+          group: 'admin',
+          organizationId: adminUser.organizationId,
+        },
       });
 
       const response = await request(nestApp.getHttpServer())
@@ -278,8 +280,10 @@ describe('group permissions controller', () => {
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOne(GroupPermission, {
-        group: 'all_users',
-        organizationId: adminUser.organizationId,
+        where: {
+          group: 'all_users',
+          organizationId: adminUser.organizationId,
+        },
       });
 
       const response = await request(nestApp.getHttpServer())
@@ -361,8 +365,10 @@ describe('group permissions controller', () => {
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOne(GroupPermission, {
-        group: 'admin',
-        organizationId: organization.id,
+        where: {
+          group: 'admin',
+          organizationId: organization.id,
+        },
       });
 
       const response = await request(nestApp.getHttpServer())
@@ -467,8 +473,10 @@ describe('group permissions controller', () => {
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOne(GroupPermission, {
-        group: 'admin',
-        organizationId: organization.id,
+        where: {
+          group: 'admin',
+          organizationId: organization.id,
+        },
       });
 
       const response = await request(nestApp.getHttpServer())
@@ -505,8 +513,10 @@ describe('group permissions controller', () => {
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOne(GroupPermission, {
-        group: 'admin',
-        organizationId: organization.id,
+        where: {
+          group: 'admin',
+          organizationId: organization.id,
+        },
       });
       const groupPermissionId = adminGroupPermission.id;
       const response = await request(nestApp.getHttpServer())
@@ -551,7 +561,9 @@ describe('group permissions controller', () => {
       });
       const groupPermissionId = groupPermission.id;
       const appGroupPermission = await manager.findOne(AppGroupPermission, {
-        groupPermissionId,
+        where: {
+          groupPermissionId,
+        },
       });
       const appGroupPermissionId = appGroupPermission.id;
 
@@ -586,7 +598,9 @@ describe('group permissions controller', () => {
       });
       const groupPermissionId = groupPermission.id;
       const appGroupPermission = await manager.findOne(AppGroupPermission, {
-        groupPermissionId,
+        where: {
+          groupPermissionId,
+        },
       });
       const appGroupPermissionId = appGroupPermission.id;
 

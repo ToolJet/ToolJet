@@ -316,6 +316,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -339,6 +340,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -365,6 +367,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: 0,
@@ -384,6 +387,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -413,6 +417,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -435,6 +440,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -464,6 +470,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -486,6 +493,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -649,6 +657,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: {},
@@ -669,6 +678,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -1227,6 +1237,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       file: [{ name: '', content: '', dataURL: '', type: '', parsedData: '' }],
@@ -1252,6 +1263,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -1414,6 +1426,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -1432,6 +1445,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -1726,6 +1740,98 @@ export const componentTypes = [
         strokeWidth: { value: '{{8}}' },
         counterClockwise: { value: '{{false}}' },
         circleRatio: { value: '{{1}}' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'Spinner',
+    displayName: 'Spinner',
+    description: 'Spinner can be used to display loading status',
+    component: 'Spinner',
+    defaultSize: {
+      width: 2,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      colour: { type: 'color', displayName: 'Colour' },
+      size: {
+        type: 'select',
+        displayName: 'Size',
+        options: [
+          { name: 'small', value: 'sm' },
+          { name: 'large', value: 'lg' },
+        ],
+      },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        size: { value: 'sm' },
+        colour: { value: '#0565ff' },
+      },
+    },
+  },
+  {
+    name: 'Statistics',
+    displayName: 'Statistics',
+    description: 'Statistics can be used to display different statistical information',
+    component: 'Statistics',
+    defaultSize: {
+      width: 9.2,
+      height: 152,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
+      primaryValue: { type: 'code', displayName: 'Primary value' },
+      secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
+      secondaryValue: { type: 'code', displayName: 'Secondary value' },
+      secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
+    },
+    events: {},
+    styles: {
+      primaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
+      primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
+      secondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
+      secondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        primaryValueLabel: { value: 'This months earnings' },
+        primaryValue: { value: '682.3' },
+        secondaryValueLabel: { value: 'Last month' },
+        secondaryValue: { value: '2.85' },
+        secondarySignDisplay: { value: 'positive' },
+      },
+      events: [],
+      styles: {
+        primaryLabelColour: { value: '#8092AB' },
+        primaryTextColour: { value: '#000000' },
+        secondaryLabelColour: { value: '#8092AB' },
+        secondaryTextColour: { value: '#36AF8B' },
         visibility: { value: '{{true}}' },
       },
     },

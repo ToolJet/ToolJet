@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Firestore.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Firestore datasource",
   "description": "A schema defining Firestore datasource",
   "type": "database",
@@ -16,13 +15,34 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "list": [
-        { "value": "get_document", "name": "Get Document" },
-        { "value": "query_collection", "name": "Query collection" },
-        { "value": "add_document", "name": "Add Document to Collection" },
-        { "value": "update_document", "name": "Update Document" },
-        { "value": "set_document", "name": "Set Document" },
-        { "value": "bulk_update", "name": "Bulk update using document id" },
-        { "value": "delete_document", "name": "Delete Document" }
+        {
+          "value": "get_document",
+          "name": "Get Document"
+        },
+        {
+          "value": "query_collection",
+          "name": "Query collection"
+        },
+        {
+          "value": "add_document",
+          "name": "Add Document to Collection"
+        },
+        {
+          "value": "update_document",
+          "name": "Update Document"
+        },
+        {
+          "value": "set_document",
+          "name": "Set Document"
+        },
+        {
+          "value": "bulk_update",
+          "name": "Bulk update using document id"
+        },
+        {
+          "value": "delete_document",
+          "name": "Delete Document"
+        }
       ]
     },
     "get_document": {
@@ -57,8 +77,14 @@
         "type": "dropdown",
         "description": "Single select dropdown for order type",
         "list": [
-          { "value": "asc", "name": "Ascending" },
-          { "value": "desc", "name": "Descending" }
+          {
+            "value": "asc",
+            "name": "Ascending"
+          },
+          {
+            "value": "desc",
+            "name": "Descending"
+          }
         ]
       },
       "limit": {
@@ -83,15 +109,42 @@
         "type": "dropdown",
         "description": "Single select dropdown for where operation",
         "list": [
-          { "value": "==", "name": "==" },
-          { "value": "<", "name": "<" },
-          { "value": ">", "name": ">" },
-          { "value": "<=", "name": "<=" },
-          { "value": ">=", "name": ">=" },
-          { "value": "array-contains", "name": "array-contains" },
-          { "value": "in", "name": "in" },
-          { "value": "array-contains-any", "name": "array-contains-any" },
-          { "value": "", "name": "None" }
+          {
+            "value": "==",
+            "name": "=="
+          },
+          {
+            "value": "<",
+            "name": "<"
+          },
+          {
+            "value": ">",
+            "name": ">"
+          },
+          {
+            "value": "<=",
+            "name": "<="
+          },
+          {
+            "value": ">=",
+            "name": ">="
+          },
+          {
+            "value": "array-contains",
+            "name": "array-contains"
+          },
+          {
+            "value": "in",
+            "name": "in"
+          },
+          {
+            "value": "array-contains-any",
+            "name": "array-contains-any"
+          },
+          {
+            "value": "",
+            "name": "None"
+          }
         ]
       },
       "where_value": {

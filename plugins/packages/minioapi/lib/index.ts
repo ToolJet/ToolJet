@@ -1,10 +1,10 @@
 import { QueryError, QueryResult,  QueryService, ConnectionTestResult } from '@tooljet-plugins/common'
 import { Client as MinioClient, ClientOptions } from 'minio';
-
 import { getObject, uploadObject, listBuckets, listObjects, signedUrlForGet, signedUrlForPut } from './operations';
+import { SourceOptions, QueryOptions } from './types'
 
 export default class MinioService implements QueryService {
-  async run(sourceOptions: any, queryOptions: any, _dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, _dataSourceId: string): Promise<QueryResult> {
     const operation = queryOptions.operation;
     const minioClient = await this.getConnection(sourceOptions, { operation });
     let result = {};
@@ -40,14 +40,14 @@ export default class MinioService implements QueryService {
     };
   }
 
-  async testConnection(sourceOptions: object): Promise<ConnectionTestResult> {
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const minioClient: MinioClient = await this.getConnection(sourceOptions);
     await minioClient.listBuckets();
 
     return { status: 'ok' };
   }
 
-  async getConnection(sourceOptions: any, options?: object): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
     const credentials: ClientOptions = {
       endPoint: sourceOptions['host'],
       port: sourceOptions['port'],

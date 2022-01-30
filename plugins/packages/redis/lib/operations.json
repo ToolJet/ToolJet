@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Redis.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Redis data query schema",
   "description": "A schema defining redis data query",
   "type": "database",
@@ -16,5 +15,7 @@
       "height": "150px"
     }
   },
-  "required": ["query"]
+  "required": [
+    "query"
+  ]
 }

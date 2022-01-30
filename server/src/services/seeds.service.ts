@@ -13,7 +13,9 @@ export class SeedsService {
   async perform(): Promise<void> {
     await this.entityManager.transaction(async (manager) => {
       const defaultUser = await manager.findOne(User, {
-        email: 'dev@tooljet.io',
+        where: {
+          email: 'dev@tooljet.io',
+        },
       });
 
       if (defaultUser) {

@@ -472,6 +472,7 @@ export const EventManager = ({
   }
 
   const events = component.component.definition.events || [];
+  const componentName = componentMeta.name ? componentMeta.name : 'query';
 
   if (events.length === 0) {
     return (
@@ -485,7 +486,9 @@ export const EventManager = ({
           </button>
         </div>
         <div className="text-center">
-          <small className="color-disabled">This table doesn&apos;t have any events</small>
+          <small className="color-disabled">
+            This {componentName.toLowerCase()} doesn&apos;t have any event handlers
+          </small>
         </div>
       </>
     );
