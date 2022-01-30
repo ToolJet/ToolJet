@@ -700,7 +700,7 @@ class Editor extends React.Component {
               }}
             >
               <div>
-                <img src="/assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                <img src="/assets/images/icons/query-trash-icon.svg" width="12" height="12" className="mx-1" />
               </div>
             </button>
           )}
