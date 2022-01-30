@@ -3,6 +3,9 @@
 @import "./z-index.scss";
 @import "./mixins.scss";
 
+// variables
+$border-radius: 4px;
+
 body {
   font-family: "Roboto", sans-serif;
 }
@@ -3782,4 +3785,14 @@ input[type="text"] {
   100% {
     opacity: 1;
   }
+}
+
+.btn-event-handler {
+  @include button-outline($light-theme: true);
+  height: 32px;
+  width: 122px;
+}
+
+.btn-event-handler.dark {
+  @include button-outline($light-theme: false);
 }

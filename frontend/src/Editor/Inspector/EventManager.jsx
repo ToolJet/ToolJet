@@ -19,6 +19,7 @@ export const EventManager = ({
   popoverPlacement,
 }) => {
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
@@ -437,10 +438,7 @@ export const EventManager = ({
     return (
       <>
         <div className="text-right mb-3">
-          <button
-            className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-            onClick={addHandler}
-          >
+          <button className={`btn btn-sm btn-event-handler ${darkMode && 'dark'}`} onClick={addHandler}>
             + Add event handler
           </button>
         </div>
