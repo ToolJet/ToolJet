@@ -35,7 +35,7 @@ export class ThreadService {
   }
 
   public async getThread(threadId: number): Promise<Thread> {
-    const foundThread = await this.threadRepository.findOne(threadId);
+    const foundThread = await this.threadRepository.findOne({ where: { id: threadId } });
     if (!foundThread) {
       throw new NotFoundException('Thread not found');
     }
@@ -43,7 +43,7 @@ export class ThreadService {
   }
 
   public async editThread(threadId: number, createThreadDto: CreateThreadDTO): Promise<Thread> {
-    const editedThread = await this.threadRepository.findOne(threadId);
+    const editedThread = await this.threadRepository.findOne({ where: { id: threadId } });
     if (!editedThread) {
       throw new NotFoundException('Thread not found');
     }

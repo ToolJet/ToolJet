@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Graphql.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Graphql data query schema",
   "description": "A schema defining graphql data query",
   "type": "api",
@@ -13,5 +12,7 @@
       "height": "150px"
     }
   },
-  "required": ["query"]
+  "required": [
+    "query"
+  ]
 }

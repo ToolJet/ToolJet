@@ -519,7 +519,7 @@ class DataSourceManager extends React.Component {
           show={this.props.showDataSourceManagerModal}
           size={selectedDataSource ? 'lg' : 'xl'}
           onEscapeKeyDown={this.hideModal}
-          className={selectedDataSource ? 'mt-5 animation-fade' : 'mt-5 select-datasource-list-modal animation-fade'}
+          className={selectedDataSource ? 'animation-fade' : 'select-datasource-list-modal animation-fade'}
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
           onExit={this.onExit}
@@ -771,6 +771,9 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
     }
   }, [queryString]);
   React.useEffect(() => {
+    if (searchText === '') {
+      onClear();
+    }
     if (searchText) {
       document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '0.5rem';
     }
@@ -778,6 +781,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
     return () => {
       document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '2.5rem';
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
   return (
