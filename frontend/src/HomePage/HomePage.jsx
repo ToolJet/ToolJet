@@ -47,6 +47,26 @@ class HomePage extends React.Component {
   componentDidMount() {
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
+    window.addEventListener('keydown', (event) => this.onKeyPressed(event), true);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', (event) => this.onKeyPressed(event), false);
+  }
+
+  onKeyPressed(event) {
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    const handled = false;
+    if (event.key === 'Escape') {
+      this.state.showTemplateLibraryModal && this.setState({ showTemplateLibraryModal: false });
+    }
+
+    if (handled) {
+      event.preventDefault();
+    }
   }
 
   fetchApps = (page = 1, folder, searchKey) => {
