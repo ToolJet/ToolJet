@@ -151,6 +151,7 @@ export function CodeHinter({
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
   const defaultClassName = className === 'query-hinter' || undefined ? '' : 'code-hinter';
+
   return (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
       <div
@@ -171,7 +172,7 @@ export function CodeHinter({
           selectors={{ className: 'preview-block-portal' }}
         >
           <CodeMirror
-            value={typeof initialValue === 'string' ? initialValue : '{{' + JSON.stringify(initialValue) + '}}'}
+            value={initialValue}
             realState={realState}
             scrollbarStyle={null}
             height={height || 'auto'}

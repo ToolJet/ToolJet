@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';
@@ -8,7 +8,6 @@ import { Toggle } from './Elements/Toggle';
 import { AlignButtons } from './Elements/AlignButtons';
 import { TypeMapping } from './TypeMapping';
 import { QuerySelector } from './QuerySelector';
-import { resolveReferences } from '@/_helpers/utils';
 
 const AllElements = {
   Color,
@@ -48,38 +47,24 @@ export function renderElement(
 ) {
   const componentDefinition = component.component.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
+  const definition = paramTypeDefinition[param] || {};
 
   const meta = componentMeta[paramType][param];
 
-  return (() => {
-    const [codable, setCodable] = useState(meta.type === 'code');
-    const ElementToRender = codable ? Code : AllElements[TypeMapping[meta.type]];
-    const definition =
-      (ElementToRender === Code
-        ? paramTypeDefinition[param]
-        : resolveReferences(paramTypeDefinition[param], currentState)) || {};
-    return (
-      <div className="row">
-        <div className="col-10">
-          <ElementToRender
-            param={{ name: param, ...component.component.properties[param] }}
-            definition={definition}
-            dataQueries={dataQueries}
-            onChange={paramUpdated}
-            paramType={paramType}
-            components={components}
-            componentMeta={componentMeta}
-            currentState={currentState}
-            darkMode={darkMode}
-            componentName={component.component.name || null}
-          />
-        </div>
-        <div className={`col-2 d-flex flex-columns align-items-center ${meta.type === 'code' ? 'd-none' : ''}`}>
-          <div className={`fx ${ElementToRender === Code ? 'active' : ''}`} onClick={() => setCodable(!codable)}>
-            fx
-          </div>
-        </div>
-      </div>
-    );
-  })();
+  const ElementToRender = AllElements[TypeMapping[meta.type]];
+
+  return (
+    <ElementToRender
+      param={{ name: param, ...component.component.properties[param] }}
+      definition={definition}
+      dataQueries={dataQueries}
+      onChange={paramUpdated}
+      paramType={paramType}
+      components={components}
+      componentMeta={componentMeta}
+      currentState={currentState}
+      darkMode={darkMode}
+      componentName={component.component.name || null}
+    />
+  );
 }
