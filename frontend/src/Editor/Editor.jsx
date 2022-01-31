@@ -887,10 +887,27 @@ class Editor extends React.Component {
     );
   };
 
+  handleOnComponentOptionChanged = (component, optionName, value) => {
+    onComponentOptionChanged(this, component, optionName, value);
+  };
+
+  handleOnComponentOptionsChanged = (component, options) => {
+    onComponentOptionsChanged(this, component, options);
+  };
+
+  handleComponentClick = (id, component) => {
+    this.setState({
+      selectedComponent: { id, component },
+    });
+    this.switchSidebarTab(1);
+  };
+
+  handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
+
   render() {
     const {
       currentSidebarTab,
-      selectedComponent,
+      selectedComponent = {},
       appDefinition,
       appId,
       slug,
@@ -1086,26 +1103,17 @@ class Editor extends React.Component {
                         zoomLevel={zoomLevel}
                         currentLayout={currentLayout}
                         deviceWindowWidth={deviceWindowWidth}
-                        selectedComponent={selectedComponent || {}}
+                        selectedComponent={selectedComponent}
                         appLoading={isLoading}
-                        onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
-                        onComponentOptionChanged={(component, optionName, value) =>
-                          onComponentOptionChanged(this, component, optionName, value)
-                        }
-                        onComponentOptionsChanged={(component, options) =>
-                          onComponentOptionsChanged(this, component, options)
-                        }
+                        onEvent={this.handleEvent}
+                        onComponentOptionChanged={this.handleOnComponentOptionChanged}
+                        onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
                         currentState={this.state.currentState}
                         configHandleClicked={this.configHandleClicked}
                         handleUndo={this.handleUndo}
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
-                        onComponentClick={(id, component) => {
-                          this.setState({
-                            selectedComponent: { id, component },
-                          });
-                          this.switchSidebarTab(1);
-                        }}
+                        onComponentClick={this.handleComponentClick}
                       />
                       <CustomDragLayer
                         snapToGrid={true}
