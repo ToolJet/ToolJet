@@ -61,6 +61,7 @@ export const Inspector = ({
     });
     cloneComponent(clonedComponent);
     toast.success(`${component.component.name} cloned succesfully`);
+    switchSidebarTab(2);
   });
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
