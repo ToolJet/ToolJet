@@ -3116,14 +3116,59 @@ input[type="text"] {
   font-weight: 400 !important;
   color: #0565fe !important;
 }
-
-.empty-title {
-  font-size: 12px;
+.empty{
+  padding-top: 1.5rem !important;
+}
+.empty-img 
+{
+  margin-bottom: 0 !important;
+  img{
+    height: 220px !important;
+    width: 260.83px !important;
+  }
+}
+.empty-action{
+  margin-top: 0 !important;
+}
+.empty-action a{
+  width: 123px;
+  height: 36px;
+  background: #4D72FA;
+  border-radius: 4px;
   font-style: normal;
-  font-weight: 400;
-  line-height: 15px;
-  letter-spacing: -0.01em;
-  text-align: left;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 20px;
+}
+.empty-action a:first-child:hover {
+  background-color: #4D72FA !important;
+  color: #ffffff !important;
+}
+.empty-import-button{
+  color: #4D72FA !important ;
+  background: #ffffff !important;
+  border: 1px solid #4D72FA !important;
+  cursor: pointer;
+  padding-left: .5rem;
+}
+.empty-welcome-header{
+  font-style: normal;
+  font-weight: bold;
+  font-size: 32px;
+  line-height: 39px;
+  margin-bottom: 12px;
+  margin-top: 40px;
+  color: #000;
+}
+.empty-title {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 19px;
+  display: flex;
+  align-items: center;
+  color: #5E5E5E;
+  margin-bottom: 24px;
 }
 //select-search-action
 .popover-action-select-search > .select-search .select-search__select {
