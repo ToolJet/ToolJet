@@ -3,6 +3,7 @@ import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { computeComponentName } from '@/_helpers/utils';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -540,6 +541,11 @@ class Editor extends React.Component {
   };
 
   cloneComponent = (newComponent) => {
+    newComponent.component.name = computeComponentName(
+      newComponent.component.component,
+      this.state.appDefinition.components
+    );
+
     const appDefinition = this.state.appDefinition;
     appDefinition.components[newComponent.id] = newComponent;
     this.appDefinitionChanged(appDefinition);

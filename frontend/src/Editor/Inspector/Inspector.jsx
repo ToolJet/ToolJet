@@ -6,7 +6,7 @@ import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
-import { computeComponentName, validateQueryName, convertToKebabCase } from '@/_helpers/utils';
+import { validateQueryName, convertToKebabCase } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
@@ -49,7 +49,6 @@ export const Inspector = ({
     e.preventDefault();
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.id = uuidv4();
-    clonedComponent.component.name = computeComponentName(clonedComponent.component.component, allComponents);
 
     if (component.parent) clonedComponent.parent = component.parent;
 
@@ -59,7 +58,6 @@ export const Inspector = ({
       let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
       childComponent.id = uuidv4();
       childComponent.parent = clonedComponent.id;
-      childComponent.component.name = computeComponentName(childComponent.component.component, allComponents);
       cloneComponent(childComponent);
     });
     cloneComponent(clonedComponent);
