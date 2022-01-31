@@ -493,7 +493,7 @@ describe('group permissions controller', () => {
       const userAppGroupPermission = sampleApp.app_group_permissions.find(
         (a) => a.group_permission_id == userGroupPermission.id
       );
-      expect(userAppGroupPermission.read).toBe(true);
+      expect(userAppGroupPermission.read).toBe(false);
       expect(userAppGroupPermission.update).toBe(false);
       expect(userAppGroupPermission.delete).toBe(false);
     });
@@ -606,7 +606,7 @@ describe('group permissions controller', () => {
       });
       const appGroupPermissionId = appGroupPermission.id;
 
-      expect(appGroupPermission.read).toBe(true);
+      expect(appGroupPermission.read).toBe(false);
       expect(appGroupPermission.update).toBe(false);
 
       const response = await request(nestApp.getHttpServer())
@@ -653,7 +653,7 @@ describe('group permissions controller', () => {
       });
       const appGroupPermissionId = appGroupPermission.id;
 
-      expect(appGroupPermission.read).toBe(true);
+      expect(appGroupPermission.read).toBe(false);
       expect(appGroupPermission.update).toBe(false);
 
       const response = await request(nestApp.getHttpServer())
