@@ -302,6 +302,15 @@ button {
           }
         }
       }
+
+      .fx {
+        font-weight: 400;
+      }
+      .fx:hover, .fx.active {
+        color: #375FCF;
+        cursor: pointer;
+        font-weight: 500;
+      }
     }
 
     .components-container::-webkit-scrollbar {
