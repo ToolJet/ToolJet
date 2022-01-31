@@ -798,6 +798,7 @@ export const componentTypes = [
         ],
       },
       backgroundColor: { type: 'color', displayName: 'Background color' },
+      padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -814,6 +815,7 @@ export const componentTypes = [
       events: [],
       styles: {
         borderType: { value: 'none' },
+        padding: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
