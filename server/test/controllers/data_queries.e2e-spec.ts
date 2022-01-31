@@ -11,8 +11,9 @@ import {
   createAppGroupPermission,
   createApplicationVersion,
 } from '../test.helper';
-import { getRepository } from 'typeorm';
+import { getManager, getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 
 describe('data queries controller', () => {
   let app: INestApplication;
@@ -221,6 +222,15 @@ describe('data queries controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
+
+    const allUserGroup = await getManager().findOne(GroupPermission, {
+      where: { group: 'all_users', organization: adminUserData.organization },
+    });
+    await getManager().update(
+      AppGroupPermission,
+      { app: application, groupPermissionId: allUserGroup },
+      { read: true }
+    );
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOne({
