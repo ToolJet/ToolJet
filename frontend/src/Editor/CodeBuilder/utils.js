@@ -5,6 +5,9 @@ export function getSuggestionKeys(currentState) {
   let suggestions = [];
   _.keys(currentState).forEach((key) => {
     _.keys(currentState[key]).forEach((key2) => {
+      if (key === 'variables') {
+        return suggestions.push(`${key}.${key2}`);
+      }
       _.keys(currentState[key][key2]).forEach((key3) => {
         suggestions.push(`${key}.${key2}.${key3}`);
       });
