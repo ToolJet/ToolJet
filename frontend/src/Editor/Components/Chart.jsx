@@ -55,11 +55,13 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
       showgrid: showGridLines,
       showline: true,
       color: fontColor,
+      automargin: true,
     },
     yaxis: {
       showgrid: showGridLines,
       showline: true,
       color: fontColor,
+      automargin: true,
     },
     margin: {
       l: padding,
