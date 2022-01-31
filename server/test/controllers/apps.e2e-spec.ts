@@ -120,6 +120,9 @@ describe('apps controller', () => {
           groups: ['all_users', 'admin'],
         });
         const organization = adminUserData.organization;
+        const allUserGroup = await getManager().findOne(GroupPermission, {
+          where: { group: 'all_users', organization: adminUserData.organization },
+        });
         const developerUserData = await createUser(app, {
           email: 'developer@tooljet.io',
           groups: ['all_users', 'developer'],
@@ -155,10 +158,20 @@ describe('apps controller', () => {
           name: 'App not in folder',
           user: adminUserData.user,
         });
+        await getManager().update(
+          AppGroupPermission,
+          { app: appNotInFolder, groupPermissionId: allUserGroup },
+          { read: true }
+        );
         const appInFolder = await createApplication(app, {
           name: 'App in folder',
           user: adminUserData.user,
         });
+        await getManager().update(
+          AppGroupPermission,
+          { app: appInFolder, groupPermissionId: allUserGroup },
+          { read: true }
+        );
         const folder = await getManager().save(Folder, {
           name: 'Folder',
           organizationId: adminUserData.organization.id,
@@ -300,14 +313,16 @@ describe('apps controller', () => {
           name: 'Owned App',
           user: developerUserData.user,
         });
-        await createApplication(app, {
+        const appNotInfolder = await createApplication(app, {
           name: 'App not in folder',
           user: adminUserData.user,
         });
+        await getManager().update(AppGroupPermission, { appId: appNotInfolder.id }, { read: true });
         const appInFolder = await createApplication(app, {
           name: 'App in folder',
           user: adminUserData.user,
         });
+        await getManager().update(AppGroupPermission, { appId: appInFolder.id }, { read: true });
         await getManager().save(FolderApp, {
           app: appInFolder,
           folder: folder,
