@@ -3,7 +3,7 @@ import LazyLoad from 'react-lazyload';
 
 export const Image = function Image({ height, properties, styles, fireEvent }) {
   const { source } = properties;
-  const { visibility, disabledState, borderType } = styles;
+  const { visibility, disabledState, borderType, backgroundColor } = styles;
   const widgetVisibility = visibility ?? true;
   const imageRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
@@ -37,6 +37,7 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
           <img
             src={source}
             className={`${borderType !== 'none' ? borderType : ''}`}
+            style={{ backgroundColor }}
             height={height}
             onClick={() => fireEvent('onClick')}
           />
