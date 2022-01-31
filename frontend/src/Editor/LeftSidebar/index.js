@@ -63,9 +63,9 @@ export const LeftSidebar = ({
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
-        <div className='left-sidebar-item no-border'>
-          <button 
-            type="button" 
+        <div className="left-sidebar-item no-border">
+          <button
+            type="button"
             className="btn btn-sm"
             onClick={() => {
               window.$chatwoot.toggle();

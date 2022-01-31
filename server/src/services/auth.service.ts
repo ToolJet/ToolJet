@@ -10,7 +10,7 @@ import { AuditLoggerService } from './audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
-const { TrackClient, RegionUS } = require("customerio-node");
+const { TrackClient, RegionUS } = require('customerio-node');
 
 @Injectable()
 export class AuthService {
@@ -21,7 +21,7 @@ export class AuthService {
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
     private auditLoggerService: AuditLoggerService
-  ) { }
+  ) {}
 
   verifyToken(token: string) {
     try {
@@ -87,13 +87,13 @@ export class AuthService {
 
     await this.emailService.sendWelcomeEmail(user.email, user.firstName, user.invitationToken);
 
-    let cio = new TrackClient(process.env.customerIoSiteId, process.env.customerIoApiKey, { region: RegionUS });
+    const cio = new TrackClient(process.env.customerIoSiteId, process.env.customerIoApiKey, { region: RegionUS });
 
     cio.identify(user.email, {
       email: user.email,
       created_at: Math.round(+new Date() / 1000),
       first_name: user.firstName,
-      last_name: user.lastName
+      last_name: user.lastName,
     });
 
     await this.auditLoggerService.perform({

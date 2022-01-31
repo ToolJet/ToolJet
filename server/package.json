@@ -21,8 +21,8 @@
     "test:e2e": "NODE_ENV=test jest --runInBand --config ./test/jest-e2e.json --detectOpenHandles",
     "db:create": "ts-node ./scripts/create-database.ts",
     "db:drop": "ts-node ./scripts/drop-database.ts",
-    "db:migrate": "npm run typeorm migration:run",
-    "db:seed": "ts-node -r tsconfig-paths/register ./scripts/seeds.ts",
+    "db:migrate": "ts-node -r tsconfig-paths/register --transpile-only ./node_modules/typeorm/cli.js migration:run",
+    "db:seed": "ts-node -r tsconfig-paths/register --transpile-only ./scripts/seeds.ts",
     "db:reset": "npm run db:drop && npm run db:create && npm run db:migrate",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config ormconfig.ts"
   },
