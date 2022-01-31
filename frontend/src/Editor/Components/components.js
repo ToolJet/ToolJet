@@ -236,7 +236,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        padding: { value: '100' },
+        padding: { value: '50' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
