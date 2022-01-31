@@ -1,4 +1,5 @@
 node_modules
+package-lock.json
 lerna-debug.log
 npm-debug.log
 packages/*/dist
