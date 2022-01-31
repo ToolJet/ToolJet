@@ -3,7 +3,7 @@ import LazyLoad from 'react-lazyload';
 
 export const Image = function Image({ height, properties, styles, fireEvent }) {
   const { source } = properties;
-  const { visibility, disabledState, borderType, backgroundColor } = styles;
+  const { visibility, disabledState, borderType, backgroundColor, padding } = styles;
   const widgetVisibility = visibility ?? true;
   const imageRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
@@ -26,7 +26,14 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
   }
 
   return (
-    <div data-disabled={disabledState} style={{ display: widgetVisibility ? '' : 'none' }} ref={imageRef}>
+    <div
+      data-disabled={disabledState}
+      style={{
+        display: widgetVisibility ? 'flex' : 'none',
+        justifyContent: 'center',
+      }}
+      ref={imageRef}
+    >
       {imageRef.current && (
         <LazyLoad
           offset={imageOffset > 0 ? imageOffset : 0}
@@ -37,7 +44,7 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
           <img
             src={source}
             className={`${borderType !== 'none' ? borderType : ''}`}
-            style={{ backgroundColor }}
+            style={{ backgroundColor, padding: Number.parseInt(padding) }}
             height={height}
             onClick={() => fireEvent('onClick')}
           />
