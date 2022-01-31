@@ -372,6 +372,19 @@ export const SubContainer = ({
     }
   }
 
+  function customRemoveComponent(component) {
+    const componentName = appDefinition.components[component.id]['component'].name;
+    removeComponent(component);
+    if (parentComponent.component === 'Listview') {
+      const currentData = currentState.components[parentComponent.name]?.data || [];
+      const newData = currentData.map((widget) => {
+        delete widget[componentName];
+        return widget;
+      });
+      onComponentOptionChanged(parentComponent, 'data', newData);
+    }
+  }
+
   return (
     <div
       ref={drop}
@@ -404,7 +417,7 @@ export const SubContainer = ({
           selectedComponent={selectedComponent}
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
-          removeComponent={removeComponent}
+          removeComponent={customRemoveComponent}
           canvasWidth={getContainerCanvasWidth()}
           readOnly={readOnly}
           customResolvables={customResolvables}
