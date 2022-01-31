@@ -188,6 +188,7 @@ export const componentTypes = [
     },
     events: {},
     styles: {
+      padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -235,6 +236,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        padding: { value: '50' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
