@@ -241,6 +241,34 @@ function executeAction(_ref, event, mode) {
 
       case 'set-table-page': {
         setTablePageIndex(_ref, event.table, event.pageIndex);
+        break;
+      }
+
+      case 'set-custom-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const value = resolveReferences(event.value, _ref.state.currentState);
+        const customVariables = { ..._ref.state.currentState.variables };
+        customVariables[key] = value;
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            variables: customVariables,
+          },
+        });
+      }
+
+      case 'unset-custom-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const customVariables = { ..._ref.state.currentState.variables };
+        delete customVariables[key];
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            variables: customVariables,
+          },
+        });
       }
     }
   }
