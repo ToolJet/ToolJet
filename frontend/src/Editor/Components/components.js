@@ -797,6 +797,7 @@ export const componentTypes = [
           { name: 'Thumbnail', value: 'img-thumbnail' },
         ],
       },
+      backgroundColor: { type: 'color', displayName: 'Background color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
