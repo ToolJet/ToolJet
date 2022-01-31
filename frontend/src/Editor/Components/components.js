@@ -173,6 +173,7 @@ export const componentTypes = [
       data: { type: 'json', displayName: 'Data' },
       loadingState: { type: 'code', displayName: 'Loading State' },
       markerColor: { type: 'color', displayName: 'Marker color' },
+      showAxis: { type: 'toggle', displayName: 'Show axis' },
       showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
       type: {
         type: 'select',
@@ -203,6 +204,7 @@ export const componentTypes = [
       properties: {
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
+        showAxis: { value: true },
         showGridLines: { value: true },
         plotFromJson: { value: false },
         loadingState: { value: `{{false}}` },

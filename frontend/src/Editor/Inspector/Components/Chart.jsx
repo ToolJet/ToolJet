@@ -173,6 +173,19 @@ class Chart extends React.Component {
       }
 
       items.push({
+        title: 'Show axis',
+        children: renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'showAxis',
+          'properties',
+          currentState
+        ),
+      });
+
+      items.push({
         title: 'Show grid lines',
         children: renderElement(
           component,
