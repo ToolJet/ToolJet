@@ -20,20 +20,6 @@ export const Listview = function Listview({
   const { data, rowHeight, showBorder } = { ...fallbackProperties, ...properties };
   const { backgroundColor, visibility, disabledState } = { ...fallbackStyles, ...styles };
 
-  let childComponents = [];
-
-  const allComponents = containerProps.appDefinition ? containerProps.appDefinition.components : {};
-  Object.keys(allComponents).forEach((key) => {
-    if (allComponents[key].parent === id) {
-      const dataObj = {
-        id: key,
-        name: allComponents[key]['component'].name,
-        data: allComponents[key]['component']['exposedVariables'],
-      };
-      childComponents[key] = dataObj;
-    }
-  });
-
   const computedStyles = {
     backgroundColor,
     height,
