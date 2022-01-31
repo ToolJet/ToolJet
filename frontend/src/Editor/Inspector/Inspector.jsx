@@ -25,7 +25,6 @@ export const Inspector = ({
   componentDefinitionChanged,
   dataQueries,
   allComponents,
-  componentChanged,
   currentState,
   apps,
   darkMode,
@@ -77,7 +76,7 @@ export const Inspector = ({
       let newComponent = { ...component };
       newComponent.component.name = newName;
 
-      componentChanged(newComponent);
+      componentDefinitionChanged(newComponent);
     } else {
       toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.');
     }

@@ -551,21 +551,6 @@ class Editor extends React.Component {
     this.appDefinitionChanged(appDefinition);
   };
 
-  componentChanged = (newComponent) => {
-    this.setState({
-      appDefinition: {
-        ...this.state.appDefinition,
-        components: {
-          ...this.state.appDefinition.components,
-          [newComponent.id]: {
-            ...this.state.appDefinition.components[newComponent.id],
-            ...newComponent,
-          },
-        },
-      },
-    });
-  };
-
   globalSettingsChanged = (key, value) => {
     const appDefinition = { ...this.state.appDefinition };
 
@@ -1298,7 +1283,6 @@ class Editor extends React.Component {
                       cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
-                      componentChanged={this.componentChanged}
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
