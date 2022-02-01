@@ -77,6 +77,7 @@ export function Table({
   tableType = tableType === '' ? 'table-bordered' : tableType;
 
   const cellSizeType = component.definition.styles.cellSize?.value;
+  const borderRadius = component.definition.styles.borderRadius?.value;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
@@ -813,7 +814,13 @@ export function Table({
     <div
       data-disabled={parsedDisabledState}
       className="card jet-table"
-      style={{ width: `100%`, height: `${height}px`, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{
+        width: `100%`,
+        height: `${height}px`,
+        display: parsedWidgetVisibility ? '' : 'none',
+        overflow: 'hidden',
+        borderRadius: Number.parseFloat(borderRadius),
+      }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);
