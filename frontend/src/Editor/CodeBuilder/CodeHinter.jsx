@@ -237,7 +237,6 @@ export function CodeHinter({
       paramLabel={paramLabel}
       forceCodeBox={() => {
         setForceCodeBox(true);
-        console.log({ paramName });
         onFxPress(true);
       }}
       meta={fieldMeta}
