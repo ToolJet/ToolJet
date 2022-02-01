@@ -203,7 +203,7 @@ export function CodeHinter({
               selectors={{ className: 'preview-block-portal' }}
             >
               <CodeMirror
-                value={typeof initialValue === 'string' ? initialValue : '{{(' + JSON.stringify(initialValue) + ')}}'}
+                value={typeof initialValue === 'string' ? initialValue : ''}
                 realState={realState}
                 scrollbarStyle={null}
                 height={height || 'auto'}

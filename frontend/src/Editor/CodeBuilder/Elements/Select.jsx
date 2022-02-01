@@ -1,15 +1,12 @@
 import React from 'react';
-import { ToolTip } from './Components/ToolTip';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import FxButton from './FxButton';
 
-export const Select = ({ value, onChange, paramLabel, forceCodeBox, meta }) => {
-  console.log({ value });
+export const Select = ({ value, onChange, forceCodeBox, meta }) => {
   return (
     <div className="row">
       <div className="col-10">
         <div className="field mb-3">
-          <ToolTip label={paramLabel} meta={{}} />
           <SelectSearch
             options={meta.options}
             value={value}
@@ -20,7 +17,7 @@ export const Select = ({ value, onChange, paramLabel, forceCodeBox, meta }) => {
           />
         </div>
       </div>
-      <div className="col-2 pt-3">
+      <div className="col-2 pt-2">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>
