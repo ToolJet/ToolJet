@@ -27,7 +27,7 @@ export const Listview = function Listview({
   };
 
   const onRowClicked = (index) => {
-    fireEvent('onRowClicked', { data: currentState.components['listview1'].data[index], rowId: index });
+    fireEvent('onRowClicked', { data: currentState.components[`${component.name}`].data[index], rowId: index });
   };
 
   const parentRef = useRef(null);
