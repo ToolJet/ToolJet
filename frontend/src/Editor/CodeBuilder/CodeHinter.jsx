@@ -34,6 +34,7 @@ export function CodeHinter({
   componentName = null,
   usePortalEditor = true,
   className,
+  type,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -152,7 +153,7 @@ export function CodeHinter({
 
   const defaultClassName = className === 'query-hinter' || undefined ? '' : 'code-hinter';
 
-  return (
+  return (type ?? 'code') === 'code' ? (
     <div className="code-hinter-wrapper" style={{ width: '100%' }}>
       <div
         className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
@@ -191,6 +192,8 @@ export function CodeHinter({
       </div>
       {enablePreview && !isOpen && getPreview()}
     </div>
+  ) : (
+    <div>test</div>
   );
 }
 
