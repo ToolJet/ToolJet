@@ -542,12 +542,10 @@ class Editor extends React.Component {
   };
 
   cloneComponent = (newComponent) => {
-    newComponent.component.name = computeComponentName(
-      newComponent.component.component,
-      this.state.appDefinition.components
-    );
+    const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
 
-    const appDefinition = this.state.appDefinition;
+    newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
+
     appDefinition.components[newComponent.id] = newComponent;
     this.appDefinitionChanged(appDefinition);
   };
