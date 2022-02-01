@@ -11,13 +11,16 @@ $ npm install -g @tooljet/tooljet-cli
 $ tooljet COMMAND
 running command...
 $ tooljet (--version)
-@tooljet/tooljet-cli/0.0.6 darwin-arm64 node-v14.17.3
+@tooljet/tooljet-cli/0.0.9 darwin-arm64 node-v14.17.3
 $ tooljet --help [COMMAND]
 USAGE
   $ tooljet COMMAND
 ...
 ```
 <!-- usagestop -->
+
+Command should be executed inside `Tooljet` directory
+
 # Commands
 <!-- commands -->
 * [`tooljet plugin create PLUGIN_NAME`](#tooljet-plugin-create-plugin_name)

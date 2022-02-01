@@ -20,7 +20,7 @@ to: <%= plugins_path %>/packages/<%= name %>/package.json
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "common": "file:../common",
+    "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2"
   }
 }
