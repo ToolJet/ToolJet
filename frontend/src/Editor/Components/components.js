@@ -740,7 +740,7 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Show loading state' },
     },
     defaultSize: {
-      width: 3,
+      width: 5,
       height: 30,
     },
     events: [],
