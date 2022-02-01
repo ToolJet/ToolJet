@@ -50,7 +50,6 @@ export function renderElement(
   const definition = paramTypeDefinition[param] || {};
 
   const meta = componentMeta[paramType][param];
-
   const ElementToRender = AllElements[TypeMapping[meta.type]];
 
   return (
@@ -66,6 +65,10 @@ export function renderElement(
       darkMode={darkMode}
       componentName={component.component.name || null}
       type={meta.type}
+      fxActive={definition.fxActive ?? false}
+      onFxPress={(active) => {
+        paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
+      }}
     />
   );
 }

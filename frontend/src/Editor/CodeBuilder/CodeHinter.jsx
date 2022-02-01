@@ -57,6 +57,8 @@ export function CodeHinter({
   paramLabel,
   type,
   fieldMeta,
+  onFxPress,
+  fxActive,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -177,7 +179,7 @@ export function CodeHinter({
 
   const ElementToRender = AllElements[TypeMapping[type]];
 
-  const [forceCodeBox, setForceCodeBox] = useState(false);
+  const [forceCodeBox, setForceCodeBox] = useState(fxActive);
 
   return (type ?? 'code') === 'code' || forceCodeBox ? (
     <div className="row">
@@ -222,7 +224,13 @@ export function CodeHinter({
         </div>
       </div>
       <div className={`col-2 ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
-        <FxButton active={true} onPress={() => setForceCodeBox(false)} />
+        <FxButton
+          active={true}
+          onPress={() => {
+            setForceCodeBox(false);
+            onFxPress(false);
+          }}
+        />
       </div>
     </div>
   ) : (
@@ -231,7 +239,11 @@ export function CodeHinter({
       onChange={onChange}
       paramName={paramName}
       paramLabel={paramLabel}
-      forceCodeBox={() => setForceCodeBox(true)}
+      forceCodeBox={() => {
+        setForceCodeBox(true);
+        console.log({ paramName });
+        onFxPress(true);
+      }}
       meta={fieldMeta}
     />
   );

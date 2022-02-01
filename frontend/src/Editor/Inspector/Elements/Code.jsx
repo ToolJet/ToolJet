@@ -11,6 +11,8 @@ export const Code = ({
   currentState,
   darkMode,
   componentName,
+  onFxPress,
+  fxActive,
 }) => {
   const initialValue = definition ? definition.value : '';
   const paramMeta = componentMeta[paramType][param.name];
@@ -40,7 +42,11 @@ export const Code = ({
         onChange={(value) => handleCodeChanged(value)}
         componentName={`widget/${componentName}::${getfieldName}`}
         type={paramMeta.type}
+        paramName={param.name}
+        paramLabel={displayName}
         fieldMeta={paramMeta}
+        onFxPress={onFxPress}
+        fxActive={fxActive}
       />
     </div>
   );
