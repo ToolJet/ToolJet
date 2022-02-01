@@ -45,13 +45,19 @@ export function Table({
   const color = component.definition.styles.textColor.value;
   const actions = component.definition.properties.actions || { value: [] };
   const serverSidePaginationProperty = component.definition.properties.serverSidePagination;
-  const serverSidePagination = serverSidePaginationProperty ? serverSidePaginationProperty.value : false;
+  const serverSidePagination = serverSidePaginationProperty
+    ? resolveWidgetFieldValue(serverSidePaginationProperty.value, currentState)
+    : false;
 
   const serverSideSearchProperty = component.definition.properties.serverSideSearch;
-  const serverSideSearch = serverSideSearchProperty ? serverSideSearchProperty.value : false;
+  const serverSideSearch = serverSideSearchProperty
+    ? resolveWidgetFieldValue(serverSideSearchProperty.value, currentState)
+    : false;
 
   const displaySearchBoxProperty = component.definition.properties.displaySearchBox;
-  const displaySearchBox = displaySearchBoxProperty ? displaySearchBoxProperty.value : true;
+  const displaySearchBox = displaySearchBoxProperty
+    ? resolveWidgetFieldValue(displaySearchBoxProperty.value, currentState)
+    : true;
 
   const showDownloadButtonProperty = component.definition.properties.showDownloadButton?.value;
   const showDownloadButton = resolveWidgetFieldValue(showDownloadButtonProperty, currentState) ?? true; // default is true for backward compatibility
