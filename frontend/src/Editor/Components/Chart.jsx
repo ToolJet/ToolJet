@@ -10,7 +10,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
   const [loadingState, setLoadingState] = useState(false);
 
   const { padding, visibility, disabledState } = styles;
-  const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson } = properties;
+  const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes } = properties;
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
@@ -56,12 +56,14 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
       showline: true,
       color: fontColor,
       automargin: true,
+      visible: showAxes,
     },
     yaxis: {
       showgrid: showGridLines,
       showline: true,
       color: fontColor,
       automargin: true,
+      visible: showAxes,
     },
     margin: {
       l: padding,
