@@ -16,7 +16,10 @@ export const BlankPage = function BlankPage({
           <div className="container-xl d-flex flex-column justify-content-center">
             <div className="empty">
               <div className="empty-img">
-                <img src="/assets/images/onboarding.svg" alt="" />
+                <img
+                  src={darkMode ? '/assets/images/dark-mode-onboarding.svg' : '/assets/images/onboarding.svg'}
+                  alt=""
+                />
               </div>
               <h3 className="empty-welcome-header" style={{ color: darkMode && '#ffffff' }}>
                 Welcome to Tooljet!
