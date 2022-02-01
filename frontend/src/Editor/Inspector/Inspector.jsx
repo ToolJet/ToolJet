@@ -42,8 +42,7 @@ export const Inspector = ({
     e.preventDefault();
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.id = uuidv4();
-
-    if (component.parent) clonedComponent.parent = component.parent;
+    cloneComponent(clonedComponent);
 
     const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
 
@@ -53,7 +52,6 @@ export const Inspector = ({
       childComponent.parent = clonedComponent.id;
       cloneComponent(childComponent);
     });
-    cloneComponent(clonedComponent);
     toast.success(`${component.component.name} cloned succesfully`);
     switchSidebarTab(2);
   });
