@@ -17,7 +17,6 @@ import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
-import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';
 import { Select } from './Elements/Select';
@@ -29,7 +28,6 @@ import FxButton from './Elements/FxButton';
 const AllElements = {
   Color,
   Json,
-  Text,
   Toggle,
   Select,
   AlignButtons,
