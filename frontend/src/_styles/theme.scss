@@ -3140,6 +3140,7 @@ input[type="text"] {
   font-size: 14px;
   line-height: 20px;
 }
+
 .empty-action a:first-child:hover {
   background-color: #4D72FA !important;
   color: #ffffff !important;
@@ -3170,11 +3171,58 @@ input[type="text"] {
   color: #5E5E5E;
   margin-bottom: 24px;
 }
-//select-search-action
-.popover-action-select-search > .select-search .select-search__select {
-  max-height: 200px;
-  overflow-y: scroll;
+
+// template card styles
+.template-card-wrapper{
+  display: flex;
+  flex-direction: row;
+  background: #FFFFFC;
+  border: 1px solid #D2DDEC;
+  box-sizing: border-box;
+  border-radius: 8px;
+  width: 299px;
+  height: 100px;
 }
+.template-action-wrapper{
+  display: flex;
+  flex-direction: row !important;
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 19px;
+  color: #4D72FA;
+  p{
+    margin-right: 16px;
+  }
+}
+.template-card-title{
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 22px;
+  display: flex;
+  align-items: center;
+  color: #000000;
+  margin-bottom: 3px !important;
+  margin-top: 20px;
+}
+.template-card-details{
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.template-icon-wrapper {
+  width: 61.44px;
+  height: 60px;
+  top: 685px;
+  background: #D2DDEC;
+  border-radius: 4px;
+  margin: 20px 16.36px;
+}
+// template style end
 
 .calendar-widget.compact {
   .rbc-time-view-resources .rbc-time-header-content {

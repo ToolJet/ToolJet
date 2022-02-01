@@ -33,14 +33,6 @@ export const BlankPage = function BlankPage({ createApp, handleImportApp, isImpo
                     <input type="file" ref={fileInput} style={{ display: 'none' }} />
                   </label>
                 </a>
-                {/* <a
-                  href="https://docs.tooljet.io"
-                  target="_blank"
-                  className="btn btn-primary text-light mx-1"
-                  rel="noreferrer"
-                >
-                  Read documentation
-                </a> */}
               </div>
             </div>
           </div>
