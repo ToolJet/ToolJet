@@ -970,6 +970,26 @@ button {
   }
 }
 
+.fx-button {
+  font-weight: 400;
+}
+
+.fx-button:hover, .fx-button.active {
+  font-weight: 600;
+  color: #4D72FA;
+  cursor: pointer;
+}
+
+.unselectable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+
 .theme-dark {
   .accordion-button::after {
     background-image: url("data:image/svg+xml,%3Csvg id='SvgjsSvg1001' width='288' height='288' xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.com/svgjs'%3E%3Cdefs id='SvgjsDefs1002'%3E%3C/defs%3E%3Cg id='SvgjsG1008' transform='matrix(1,0,0,1,0,0)'%3E%3Csvg xmlns='http://www.w3.org/2000/svg' fill='/fffff' viewBox='0 0 16 16' width='288' height='288'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z' fill='%23ffffff' class='color000 svgShape'%3E%3C/path%3E%3C/svg%3E%3C/g%3E%3C/svg%3E");
