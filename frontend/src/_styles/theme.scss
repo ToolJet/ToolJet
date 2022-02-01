@@ -1061,7 +1061,7 @@ button {
   .select-search, .select-search-dark, 
   .select-search__value input, .select-search-dark input {
     width: 224px!important;
-    height: 28px!important;
+    height: 32px!important;
     border-radius: $border-radius!important;
   }
 }
@@ -3851,18 +3851,13 @@ input[type="text"] {
   @include button-outline($light-theme: false);
 }
 
-.rest-methods-options {
-  margin-top: 3px;
-  
+.rest-methods-options {  
   .select-search, .select-search-dark, .select-search__value input, .select-search-dark__value input {
     width: 90px !important;
-    height: 28px !important;
+    height: 32px !important;
     border-radius: $border-radius !important;
   }
 }
-
-
-
 
 .query-pane-restapi-tabs.dark {
   background: $bg-dark!important;
@@ -3901,14 +3896,6 @@ input[type="text"] {
     .rest-api-tab-content {
       margin-top: 1rem;
       min-height: 160px;
-
-      .code-hinter-wrapper .popup-btn {
-        margin-top: 0.35rem!important;
-      }
-
-      .CodeMirror-placeholder {
-        margin-left: 4px!important;
-      }
 
       .rest-api-tabpanes {
         display: none;

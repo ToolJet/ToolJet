@@ -39,7 +39,7 @@ export default ({
                   currentState={currentState}
                   initialValue={option[0]}
                   theme={theme}
-                  height={'28px'}
+                  height={'32px'}
                   width="80%"
                   placeholder="key"
                   onChange={onChange('headers', 0, index)}
@@ -52,7 +52,7 @@ export default ({
                   currentState={currentState}
                   initialValue={option[1]}
                   theme={theme}
-                  height={'28px'}
+                  height={'32px'}
                   width="80%"
                   placeholder="value"
                   onChange={onChange('headers', 1, index)}
