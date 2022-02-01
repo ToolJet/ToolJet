@@ -945,6 +945,7 @@ export const componentTypes = [
       onSelect: { displayName: 'On select' },
     },
     styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -965,6 +966,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },

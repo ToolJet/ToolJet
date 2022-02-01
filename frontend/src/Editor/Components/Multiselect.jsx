@@ -4,7 +4,6 @@ import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const Multiselect = function Multiselect({
   height,
-
   properties,
   styles,
   exposedVariables,
@@ -12,7 +11,7 @@ export const Multiselect = function Multiselect({
   fireEvent,
 }) {
   const { label, value, values, display_values } = properties;
-  const { visibility, disabledState } = styles;
+  const { borderRadius, visibility, disabledState } = styles;
 
   useEffect(() => {
     let newValues = [];
@@ -52,6 +51,12 @@ export const Multiselect = function Multiselect({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  useEffect(() => {
+    document.querySelector('.multiselect-widget .select-search__input').style.borderRadius = `${Number.parseFloat(
+      borderRadius
+    )}px`;
+  }, [borderRadius]);
 
   const handleChange = (value) => {
     setCurrentValue(value);
