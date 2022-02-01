@@ -357,7 +357,7 @@ export const SubContainer = ({
   };
 
   function onComponentOptionChangedForSubcontainer(component, optionName, value, extraProps) {
-    if (parentComponent.component === 'Listview') {
+    if (parentComponent?.component === 'Listview') {
       let newData = currentState.components[parentComponent.name]?.data || [];
       newData[listViewItemOptions.index] = {
         ...newData[listViewItemOptions.index],
