@@ -20,7 +20,6 @@ import usePortal from '@/_hooks/use-portal';
 import { Text } from './Elements/Text';
 import { Color } from './Elements/Color';
 import { Json } from './Elements/Json';
-import { Code } from './Elements/Code';
 import { Select } from './Elements/Select';
 import { Toggle } from './Elements/Toggle';
 import { AlignButtons } from './Elements/AlignButtons';
@@ -31,7 +30,6 @@ const AllElements = {
   Color,
   Json,
   Text,
-  Code,
   Toggle,
   Select,
   AlignButtons,
