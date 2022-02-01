@@ -1204,7 +1204,7 @@ class Editor extends React.Component {
                               </h5>
                             </div>
 
-                            <div className="col-auto">
+                            <div className="col-auto mx-1">
                               <span
                                 className={`query-btn mx-1 ${this.props.darkMode ? 'dark' : ''}`}
                                 data-class="py-1 px-0"
@@ -1214,7 +1214,7 @@ class Editor extends React.Component {
                               </span>
 
                               <span
-                                className={`query-btn mx-2 ${this.props.darkMode ? 'dark' : ''}`}
+                                className={`query-btn mx-3 ${this.props.darkMode ? 'dark' : ''}`}
                                 data-tip="Add new query"
                                 data-class="py-1 px-2"
                                 onClick={() =>
