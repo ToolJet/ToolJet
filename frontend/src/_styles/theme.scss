@@ -4047,3 +4047,8 @@ input[type="text"] {
 .tab-pane-body {
   margin-left: -2.5%!important;
 }
+
+//CodeMirror padding
+.CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like {
+  padding: 0 8px !important;
+}
