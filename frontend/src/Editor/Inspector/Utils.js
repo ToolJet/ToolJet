@@ -54,7 +54,7 @@ export function renderElement(
   const ElementToRender = AllElements[TypeMapping[meta.type]];
 
   return (
-    <ElementToRender
+    <Code
       param={{ name: param, ...component.component.properties[param] }}
       definition={definition}
       dataQueries={dataQueries}
@@ -65,6 +65,7 @@ export function renderElement(
       currentState={currentState}
       darkMode={darkMode}
       componentName={component.component.name || null}
+      type={meta.type}
     />
   );
 }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import { ToolTip } from './Components/ToolTip';
 
-export const Color = ({ param, definition, onChange, paramType, componentMeta }) => {
+export const Color = ({ value, onChange, paramLabel }) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const coverStyles = {
@@ -13,32 +13,23 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta })
     left: '0px',
   };
 
-  const paramMeta = componentMeta[paramType][param.name] || {};
-  const displayName = paramMeta.displayName || param.name;
-
-  console.log({ paramMeta });
-
   const decimalToHex = (alpha) => {
     let aHex = Math.round(255 * alpha).toString(16);
     return alpha === 0 ? '00' : aHex.length < 2 ? `0${aHex}` : aHex;
   };
   const handleColorChange = (color) => {
     const hexCode = `${color.hex}${decimalToHex(color?.rgb?.a ?? 1.0)}`;
-    onChange(param, 'value', hexCode, paramType);
+    onChange(hexCode);
   };
 
   return (
     <div className="field mb-3">
-      <ToolTip label={displayName} meta={paramMeta} />
+      <ToolTip label={paramLabel} meta={{}} />
 
       {showPicker && (
         <div>
           <div style={coverStyles} onClick={() => setShowPicker(false)} />
-          <SketchPicker
-            onFocus={() => setShowPicker(true)}
-            color={definition.value}
-            onChangeComplete={handleColorChange}
-          />
+          <SketchPicker onFocus={() => setShowPicker(true)} color={value} onChangeComplete={handleColorChange} />
         </div>
       )}
 
@@ -49,11 +40,11 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta })
             float: 'right',
             width: '20px',
             height: '20px',
-            backgroundColor: definition.value,
-            border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(definition.value) && '#c5c8c9'}`,
+            backgroundColor: value,
+            border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(value) && '#c5c8c9'}`,
           }}
         ></div>
-        <div className="col">{definition.value}</div>
+        <div className="col">{value}</div>
       </div>
     </div>
   );

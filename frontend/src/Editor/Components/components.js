@@ -122,7 +122,7 @@ export const componentTypes = [
     },
     properties: {
       text: { type: 'code', displayName: 'Button Text' },
-      loadingState: { type: 'code', displayName: 'Loading State' },
+      loadingState: { type: 'toggle', displayName: 'Loading State' },
     },
     events: {
       onClick: { displayName: 'On click' },
