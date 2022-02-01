@@ -28,6 +28,7 @@ let QueryManager = class QueryManager extends React.Component {
       selectedQuery: null,
       selectedDataSource: null,
       dataSourceMeta: {},
+      dataQueries: [],
     };
 
     this.previewPanelRef = React.createRef();
@@ -39,12 +40,13 @@ let QueryManager = class QueryManager extends React.Component {
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
     let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
+    const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
 
     this.setState(
       {
         appId: props.appId,
         dataSources: props.dataSources,
-        dataQueries: props.dataQueries,
+        dataQueries: dataQueries,
         mode: props.mode,
         currentTab: 1,
         addingQuery: props.addingQuery,

@@ -318,6 +318,7 @@ class Editor extends React.Component {
                     ...queryState,
                   },
                 },
+                showQuerySearchField: false,
               });
             }
           );
@@ -332,21 +333,6 @@ class Editor extends React.Component {
         runQuery(this, query.id, query.name);
       }
     });
-  };
-
-  //* on creating a new query after filterQuery is called
-  createNewQuery = () => {
-    this.fetchDataQueries();
-    setTimeout(() => {
-      this.setState({
-        options: {},
-        selectedDataSource: null,
-        selectedQuery: {},
-        editingQuery: false,
-        addingQuery: true,
-        showQuerySearchField: false,
-      });
-    }, 500);
   };
 
   fetchApps = (page) => {
@@ -1263,7 +1249,15 @@ class Editor extends React.Component {
                                 <span className="mute-text">{dataQueriesDefaultText}</span> <br />
                                 <button
                                   className={`button-family-secondary mt-3 ${this.props.darkMode && 'dark'}`}
-                                  onClick={() => this.createNewQuery()}
+                                  onClick={() =>
+                                    this.setState({
+                                      options: {},
+                                      selectedDataSource: null,
+                                      selectedQuery: {},
+                                      editingQuery: false,
+                                      addingQuery: true,
+                                    })
+                                  }
                                 >
                                   {'Create query'}
                                 </button>
