@@ -4069,3 +4069,8 @@ input[type="text"] {
 .query-icon.dark {
   filter: brightness(0) invert(1);
 }
+
+//Rest-API Tab Panes
+.tab-pane-body {
+  margin-left: -2.5%!important;
+}

@@ -47,7 +47,7 @@ export default ({
                 />
               </div>
 
-              <div style={{ marginLeft: '-2.5%' }} className="col-5 field">
+              <div className="col-5 field tab-pane-body">
                 <CodeHinter
                   currentState={currentState}
                   initialValue={option[1]}
