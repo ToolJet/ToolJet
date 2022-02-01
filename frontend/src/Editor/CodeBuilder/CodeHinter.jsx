@@ -180,7 +180,7 @@ export function CodeHinter({
 
   return (type ?? 'code') === 'code' || forceCodeBox ? (
     <div className="row">
-      <div className="col-10">
+      <div className={`col-${(type ?? 'code') === 'code' ? 12 : 10}`}>
         <div className="code-hinter-wrapper" style={{ width: '100%' }}>
           <div
             className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
@@ -220,7 +220,7 @@ export function CodeHinter({
           {enablePreview && !isOpen && getPreview()}
         </div>
       </div>
-      <div className="col-2">
+      <div className={`col-2 ${(type ?? 'code') === 'code' ? 'd-none' : ''}`}>
         <FxButton active={false} onPress={() => setForceCodeBox(false)} />
       </div>
     </div>
