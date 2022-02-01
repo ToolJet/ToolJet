@@ -67,6 +67,7 @@ export default function AppCard(props) {
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
                 title={app?.current_version_id === null ? 'App does not have a deployed version' : 'Open in app viewer'}
+                style={{ marginLeft: `${canUpdate ? '0px' : '2px'}` }}
               >
                 <button
                   type="button"
