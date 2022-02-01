@@ -3,6 +3,7 @@ import 'react-datetime/css/react-datetime.css';
 import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
+import { isEmpty } from 'lodash';
 
 export const DaterangePicker = function DaterangePicker({
   height,
@@ -13,13 +14,13 @@ export const DaterangePicker = function DaterangePicker({
 }) {
   const { visibility, disabledState } = styles;
 
-  const startDateProp = exposedVariables.startDate;
-  const endDateProp = exposedVariables.endDate;
+  const startDateProp = isEmpty(exposedVariables.startDate) ? null : exposedVariables.startDate;
+  const endDateProp = isEmpty(exposedVariables.endDate) ? null : exposedVariables.endDate;
   const formatProp = properties.format;
 
   const [focusedInput, setFocusedInput] = useState(null);
-  const [startDate, setStartDate] = useState(startDateProp ?? null);
-  const [endDate, setEndDate] = useState(endDateProp ?? null);
+  const [startDate, setStartDate] = useState(startDateProp);
+  const [endDate, setEndDate] = useState(endDateProp);
 
   function onDateChange(dates) {
     const start = dates.startDate;
