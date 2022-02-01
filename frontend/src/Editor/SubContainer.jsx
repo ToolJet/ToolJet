@@ -421,7 +421,7 @@ export const SubContainer = ({
           canvasWidth={getContainerCanvasWidth()}
           readOnly={readOnly}
           customResolvables={customResolvables}
-          parentId={parentComponent.name}
+          parentId={parentComponent?.name}
           containerProps={{
             mode,
             snapToGrid,
