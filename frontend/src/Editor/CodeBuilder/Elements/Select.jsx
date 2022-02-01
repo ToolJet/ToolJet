@@ -1,24 +1,28 @@
 import React from 'react';
 import { ToolTip } from './Components/ToolTip';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import FxButton from './FxButton';
 
-export const Select = ({ param, definition, onChange, paramType, componentMeta }) => {
-  const paramMeta = componentMeta[paramType][param.name];
-  const displayName = paramMeta.displayName || param.name;
-  const options = paramMeta.options;
-  const value = definition ? definition.value : '';
-
+export const Select = ({ value, onChange, paramLabel, forceCodeBox, meta }) => {
+  console.log({ value });
   return (
-    <div className="field mb-3">
-      <ToolTip label={displayName} meta={paramMeta} />
-      <SelectSearch
-        options={options}
-        value={value}
-        search={true}
-        onChange={(newVal) => onChange(param, 'value', newVal, paramType)}
-        filterOptions={fuzzySearch}
-        placeholder="Select.."
-      />
+    <div className="row">
+      <div className="col-10">
+        <div className="field mb-3">
+          <ToolTip label={paramLabel} meta={{}} />
+          <SelectSearch
+            options={meta.options}
+            value={value}
+            search={true}
+            onChange={onChange}
+            filterOptions={fuzzySearch}
+            placeholder="Select.."
+          />
+        </div>
+      </div>
+      <div className="col-2 pt-3">
+        <FxButton active={false} onPress={forceCodeBox} />
+      </div>
     </div>
   );
 };

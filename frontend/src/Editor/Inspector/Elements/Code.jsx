@@ -40,6 +40,7 @@ export const Code = ({
         onChange={(value) => handleCodeChanged(value)}
         componentName={`widget/${componentName}::${getfieldName}`}
         type={paramMeta.type}
+        fieldMeta={paramMeta}
       />
     </div>
   );

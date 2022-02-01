@@ -56,6 +56,7 @@ export function CodeHinter({
   paramName,
   paramLabel,
   type,
+  fieldMeta,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -221,7 +222,7 @@ export function CodeHinter({
         </div>
       </div>
       <div className={`col-2 ${(type ?? 'code') === 'code' ? 'd-none' : ''}`}>
-        <FxButton active={false} onPress={() => setForceCodeBox(false)} />
+        <FxButton active={true} onPress={() => setForceCodeBox(false)} />
       </div>
     </div>
   ) : (
@@ -231,6 +232,7 @@ export function CodeHinter({
       paramName={paramName}
       paramLabel={paramLabel}
       forceCodeBox={() => setForceCodeBox(true)}
+      meta={fieldMeta}
     />
   );
 }
