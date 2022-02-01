@@ -3131,18 +3131,17 @@ input[type="text"] {
   margin-top: 0 !important;
 }
 .empty-action a{
-  width: 123px;
   height: 36px;
-  background: #4D72FA;
   border-radius: 4px;
   font-style: normal;
   font-weight: normal;
   font-size: 14px;
   line-height: 20px;
 }
-
+.empty-action a:first-child{
+  margin-right: 24px;
+}
 .empty-action a:first-child:hover {
-  background-color: #4D72FA !important;
   color: #ffffff !important;
 }
 .empty-import-button{
@@ -3151,6 +3150,10 @@ input[type="text"] {
   border: 1px solid #4D72FA !important;
   cursor: pointer;
   padding-left: .5rem;
+  position: relative;
+  &:hover{
+    background-color: #f4f6fa !important;
+  }
 }
 .empty-welcome-header{
   font-style: normal;
@@ -3160,6 +3163,7 @@ input[type="text"] {
   margin-bottom: 12px;
   margin-top: 40px;
   color: #000;
+  font-family: Inter;
 }
 .empty-title {
   font-style: normal;
@@ -3171,7 +3175,6 @@ input[type="text"] {
   color: #5E5E5E;
   margin-bottom: 24px;
 }
-
 // template card styles
 .template-card-wrapper{
   display: flex;

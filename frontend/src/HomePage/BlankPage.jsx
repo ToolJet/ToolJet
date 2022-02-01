@@ -1,6 +1,13 @@
 import React from 'react';
 
-export const BlankPage = function BlankPage({ createApp, handleImportApp, isImportingApp, fileInput }) {
+export const BlankPage = function BlankPage({
+  createApp,
+  darkMode,
+  creatingApp,
+  handleImportApp,
+  isImportingApp,
+  fileInput,
+}) {
   return (
     <div>
       <div className="page-wrapper">
@@ -11,25 +18,22 @@ export const BlankPage = function BlankPage({ createApp, handleImportApp, isImpo
               <div className="empty-img">
                 <img src="/assets/images/onboarding.svg" alt="" />
               </div>
-              <h3 className="empty-welcome-header">Welcome to Tooljet!</h3>
-              <p className="empty-title">
-                Welcome to ToolJet ! You can get started by creating a new application or by creating an application
-                using a template in ToolJet Library.
+              <h3 className="empty-welcome-header" style={{ color: darkMode && '#ffffff' }}>
+                Welcome to Tooljet!
+              </h3>
+              <p className="empty-title" style={{ color: darkMode && '#ffffff' }}>
+                You can get started by creating a new application or by creating an application using a template in
+                ToolJet Library.
               </p>
               <div className="empty-action">
-                <a onClick={createApp} className="btn text-light mx-1">
-                  Create new app
+                <a onClick={createApp} className="btn btn-primary">
+                  {creatingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
+                  Create new application
                 </a>
-                <a
-                  href="https://docs.tooljet.io"
-                  target="_blank"
-                  className="btn text-light mx-1 empty-import-button"
-                  rel="noreferrer"
-                  onChange={handleImportApp}
-                >
+                <a className="btn empty-import-button" onChange={handleImportApp}>
                   <label>
                     {isImportingApp && <span className="spinner-border spinner-border-sm me-2" role="status"></span>}
-                    Import App
+                    Import an application
                     <input type="file" ref={fileInput} style={{ display: 'none' }} />
                   </label>
                 </a>
