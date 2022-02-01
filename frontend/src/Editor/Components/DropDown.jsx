@@ -14,7 +14,7 @@ export const DropDown = function DropDown({
   component,
 }) {
   let { label, value, display_values, values } = properties;
-  const { visibility, disabledState } = styles;
+  const { selectedColor, visibility, disabledState } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
 
   if (!_.isArray(values)) {
@@ -85,7 +85,7 @@ export const DropDown = function DropDown({
 
     singleValue: (provided, _state) => ({
       ...provided,
-      color: disabledState ? 'grey' : darkMode ? 'white' : 'black',
+      color: disabledState ? 'grey' : selectedColor ? selectedColor : darkMode ? 'white' : 'black',
     }),
 
     input: (provided, _state) => ({
