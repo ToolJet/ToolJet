@@ -538,6 +538,8 @@ class HomePage extends React.Component {
             isImportingApp={isImportingApp}
             fileInput={this.fileInput}
             handleImportApp={this.handleImportApp}
+            creatingApp={creatingApp}
+            darkMode={this.props.darkMode}
           />
         )}
 

@@ -3116,20 +3116,116 @@ input[type="text"] {
   font-weight: 400 !important;
   color: #0565fe !important;
 }
-
-.empty-title {
-  font-size: 12px;
+.empty{
+  padding-top: 1.5rem !important;
+}
+.empty-img 
+{
+  margin-bottom: 0 !important;
+  img{
+    height: 220px !important;
+    width: 260.83px !important;
+  }
+}
+.empty-action{
+  margin-top: 0 !important;
+}
+.empty-action a{
+  height: 36px;
+  border-radius: 4px;
   font-style: normal;
-  font-weight: 400;
-  line-height: 15px;
-  letter-spacing: -0.01em;
-  text-align: left;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 20px;
 }
-//select-search-action
-.popover-action-select-search > .select-search .select-search__select {
-  max-height: 200px;
-  overflow-y: scroll;
+.empty-action a:first-child{
+  margin-right: 24px;
 }
+.empty-action a:first-child:hover {
+  color: #ffffff !important;
+}
+.empty-import-button{
+  color: #4D72FA !important ;
+  background: #ffffff !important;
+  border: 1px solid #4D72FA !important;
+  cursor: pointer;
+  padding-left: .5rem;
+  position: relative;
+  &:hover{
+    background-color: #f4f6fa !important;
+  }
+}
+.empty-welcome-header{
+  font-style: normal;
+  font-weight: bold;
+  font-size: 32px;
+  line-height: 39px;
+  margin-bottom: 12px;
+  margin-top: 40px;
+  color: #000;
+  font-family: Inter;
+}
+.empty-title {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 19px;
+  display: flex;
+  align-items: center;
+  color: #5E5E5E;
+  margin-bottom: 24px;
+}
+// template card styles
+.template-card-wrapper{
+  display: flex;
+  flex-direction: row;
+  background: #FFFFFC;
+  border: 1px solid #D2DDEC;
+  box-sizing: border-box;
+  border-radius: 8px;
+  width: 299px;
+  height: 100px;
+}
+.template-action-wrapper{
+  display: flex;
+  flex-direction: row !important;
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 19px;
+  color: #4D72FA;
+  p{
+    margin-right: 16px;
+  }
+}
+.template-card-title{
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 22px;
+  display: flex;
+  align-items: center;
+  color: #000000;
+  margin-bottom: 3px !important;
+  margin-top: 20px;
+}
+.template-card-details{
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.template-icon-wrapper {
+  width: 61.44px;
+  height: 60px;
+  top: 685px;
+  background: #D2DDEC;
+  border-radius: 4px;
+  margin: 20px 16.36px;
+}
+// template style end
 
 .calendar-widget.compact {
   .rbc-time-view-resources .rbc-time-header-content {
