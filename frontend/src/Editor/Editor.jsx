@@ -559,9 +559,14 @@ class Editor extends React.Component {
     const appDefinition = { ...this.state.appDefinition };
 
     appDefinition.globalSettings[key] = value;
-    this.setState({
-      appDefinition,
-    });
+    this.setState(
+      {
+        appDefinition,
+      },
+      () => {
+        this.autoSave();
+      }
+    );
   };
 
   saveApp = (id, attributes, notify = false) => {

@@ -970,6 +970,26 @@ button {
   }
 }
 
+.fx-button {
+  font-weight: 400;
+}
+
+.fx-button:hover, .fx-button.active {
+  font-weight: 600;
+  color: #4D72FA;
+  cursor: pointer;
+}
+
+.unselectable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+
 .theme-dark {
   .accordion-button::after {
     background-image: url("data:image/svg+xml,%3Csvg id='SvgjsSvg1001' width='288' height='288' xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.com/svgjs'%3E%3Cdefs id='SvgjsDefs1002'%3E%3C/defs%3E%3Cg id='SvgjsG1008' transform='matrix(1,0,0,1,0,0)'%3E%3Csvg xmlns='http://www.w3.org/2000/svg' fill='/fffff' viewBox='0 0 16 16' width='288' height='288'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z' fill='%23ffffff' class='color000 svgShape'%3E%3C/path%3E%3C/svg%3E%3C/g%3E%3C/svg%3E");
@@ -1554,7 +1574,7 @@ button {
   .sort-desc:after {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
-    border-top: 5px solid #333;
+    border-top: 5px solid #767676;
     border-bottom: 5px solid transparent;
     left: 6px;
     top: 8px;
@@ -1564,7 +1584,7 @@ button {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 0px solid transparent;
-    border-bottom: 5px solid #333;
+    border-bottom: 5px solid #767676;
     left: 6px;
     bottom: 8px;
   }
@@ -3061,6 +3081,7 @@ input[type="text"] {
     min-height: 26px;
     padding: 0;
     padding-left: 2px;
+    background-color: $white;
   }
 
   td.rdtActive,
@@ -3116,20 +3137,116 @@ input[type="text"] {
   font-weight: 400 !important;
   color: #0565fe !important;
 }
-
-.empty-title {
-  font-size: 12px;
+.empty{
+  padding-top: 1.5rem !important;
+}
+.empty-img 
+{
+  margin-bottom: 0 !important;
+  img{
+    height: 220px !important;
+    width: 260.83px !important;
+  }
+}
+.empty-action{
+  margin-top: 0 !important;
+}
+.empty-action a{
+  height: 36px;
+  border-radius: 4px;
   font-style: normal;
-  font-weight: 400;
-  line-height: 15px;
-  letter-spacing: -0.01em;
-  text-align: left;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 20px;
 }
-//select-search-action
-.popover-action-select-search > .select-search .select-search__select {
-  max-height: 200px;
-  overflow-y: scroll;
+.empty-action a:first-child{
+  margin-right: 24px;
 }
+.empty-action a:first-child:hover {
+  color: #ffffff !important;
+}
+.empty-import-button{
+  color: #4D72FA !important ;
+  background: #ffffff !important;
+  border: 1px solid #4D72FA !important;
+  cursor: pointer;
+  padding-left: .5rem;
+  position: relative;
+  &:hover{
+    background-color: #f4f6fa !important;
+  }
+}
+.empty-welcome-header{
+  font-style: normal;
+  font-weight: bold;
+  font-size: 32px;
+  line-height: 39px;
+  margin-bottom: 12px;
+  margin-top: 40px;
+  color: #000;
+  font-family: Inter;
+}
+.empty-title {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 19px;
+  display: flex;
+  align-items: center;
+  color: #5E5E5E;
+  margin-bottom: 24px;
+}
+// template card styles
+.template-card-wrapper{
+  display: flex;
+  flex-direction: row;
+  background: #FFFFFC;
+  border: 1px solid #D2DDEC;
+  box-sizing: border-box;
+  border-radius: 8px;
+  width: 299px;
+  height: 100px;
+}
+.template-action-wrapper{
+  display: flex;
+  flex-direction: row !important;
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 19px;
+  color: #4D72FA;
+  p{
+    margin-right: 16px;
+  }
+}
+.template-card-title{
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 22px;
+  display: flex;
+  align-items: center;
+  color: #000000;
+  margin-bottom: 3px !important;
+  margin-top: 20px;
+}
+.template-card-details{
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.template-icon-wrapper {
+  width: 61.44px;
+  height: 60px;
+  top: 685px;
+  background: #D2DDEC;
+  border-radius: 4px;
+  margin: 20px 16.36px;
+}
+// template style end
 
 .calendar-widget.compact {
   .rbc-time-view-resources .rbc-time-header-content {

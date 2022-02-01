@@ -57,6 +57,7 @@ export const componentTypes = [
           { name: 'Spacious', value: 'spacious' },
         ],
       },
+      borderRadius: { type: 'code', displayName: 'Border Radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -104,6 +105,7 @@ export const componentTypes = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
+        borderRadius: { value: '0' },
       },
     },
   },
@@ -173,6 +175,7 @@ export const componentTypes = [
       data: { type: 'json', displayName: 'Data' },
       loadingState: { type: 'code', displayName: 'Loading State' },
       markerColor: { type: 'color', displayName: 'Marker color' },
+      showAxes: { type: 'toggle', displayName: 'Show axes' },
       showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
       type: {
         type: 'select',
@@ -203,6 +206,7 @@ export const componentTypes = [
       properties: {
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
+        showAxes: { value: true },
         showGridLines: { value: true },
         plotFromJson: { value: false },
         loadingState: { value: `{{false}}` },
@@ -738,7 +742,7 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Show loading state' },
     },
     defaultSize: {
-      width: 3,
+      width: 5,
       height: 30,
     },
     events: [],
@@ -890,6 +894,7 @@ export const componentTypes = [
       onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
       disabledState: { type: 'code', displayName: 'Disable' },
@@ -916,6 +921,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -1577,7 +1583,9 @@ export const componentTypes = [
       rowHeight: { type: 'code', displayName: 'Row height' },
       showBorder: { type: 'code', displayName: 'Show bottom border' },
     },
-    events: {},
+    events: {
+      onRowClicked: { displayName: 'Row clicked' },
+    },
     styles: {
       backgroundColor: { type: 'color' },
       visibility: { type: 'code', displayName: 'Visibility' },
