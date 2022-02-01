@@ -13,7 +13,7 @@ export const Toggle = ({ value, onChange, paramLabel, forceCodeBox }) => {
           </label>
         </div>
       </div>
-      <div className="col-2">
+      <div className="col-2 pt-2">
         <FxButton active={false} onPress={forceCodeBox} />
       </div>
     </div>

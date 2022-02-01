@@ -221,7 +221,7 @@ export function CodeHinter({
           {enablePreview && !isOpen && getPreview()}
         </div>
       </div>
-      <div className={`col-2 ${(type ?? 'code') === 'code' ? 'd-none' : ''}`}>
+      <div className={`col-2 ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
         <FxButton active={true} onPress={() => setForceCodeBox(false)} />
       </div>
     </div>
