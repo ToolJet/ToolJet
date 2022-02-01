@@ -17,6 +17,21 @@ import { getSuggestionKeys, onBeforeChange, handleChange } from './utils';
 import { resolveReferences } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
+import { Color } from './Elements/Color';
+import { Json } from './Elements/Json';
+import { Select } from './Elements/Select';
+import { Toggle } from './Elements/Toggle';
+import { AlignButtons } from './Elements/AlignButtons';
+import { TypeMapping } from './TypeMapping';
+import FxButton from './Elements/FxButton';
+
+const AllElements = {
+  Color,
+  Json,
+  Toggle,
+  Select,
+  AlignButtons,
+};
 
 export function CodeHinter({
   initialValue,
@@ -34,6 +49,12 @@ export function CodeHinter({
   componentName = null,
   usePortalEditor = true,
   className,
+  paramName,
+  paramLabel,
+  type,
+  fieldMeta,
+  onFxPress,
+  fxActive,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -152,45 +173,74 @@ export function CodeHinter({
 
   const defaultClassName = className === 'query-hinter' || undefined ? '' : 'code-hinter';
 
-  return (
-    <div className="code-hinter-wrapper" style={{ width: '100%' }}>
-      <div
-        className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
-        key={suggestions.length}
-        style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
-      >
-        {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
-        <CodeHinter.Portal
-          isOpen={isOpen}
-          callback={setIsOpen}
-          componentName={componentName}
-          key={suggestions.length}
-          customComponent={getPreview}
-          forceUpdate={forceUpdate}
-          optionalProps={{ styles: { height: 300 }, cls: className }}
-          darkMode={darkMode}
-          selectors={{ className: 'preview-block-portal' }}
-        >
-          <CodeMirror
-            value={initialValue}
-            realState={realState}
-            scrollbarStyle={null}
-            height={height || 'auto'}
-            onFocus={() => setFocused(true)}
-            onBlur={(editor) => {
-              const value = editor.getValue();
-              onChange(value);
-              setFocused(false);
-            }}
-            onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
-            onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
-            options={options}
-            viewportMargin={Infinity}
-          />
-        </CodeHinter.Portal>
+  const ElementToRender = AllElements[TypeMapping[type]];
+
+  const [forceCodeBox, setForceCodeBox] = useState(fxActive);
+
+  return (type ?? 'code') === 'code' || forceCodeBox ? (
+    <div className="row" style={{ width: '100%' }}>
+      <div className={`col-${(type ?? 'code') === 'code' ? 12 : 10}`}>
+        <div className="code-hinter-wrapper" style={{ width: '100%' }}>
+          <div
+            className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
+            key={suggestions.length}
+            style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
+          >
+            {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
+            <CodeHinter.Portal
+              isOpen={isOpen}
+              callback={setIsOpen}
+              componentName={componentName}
+              key={suggestions.length}
+              customComponent={getPreview}
+              forceUpdate={forceUpdate}
+              optionalProps={{ styles: { height: 300 }, cls: className }}
+              darkMode={darkMode}
+              selectors={{ className: 'preview-block-portal' }}
+            >
+              <CodeMirror
+                value={typeof initialValue === 'string' ? initialValue : ''}
+                realState={realState}
+                scrollbarStyle={null}
+                height={height || 'auto'}
+                onFocus={() => setFocused(true)}
+                onBlur={(editor) => {
+                  const value = editor.getValue();
+                  onChange(value);
+                  setFocused(false);
+                }}
+                onChange={(editor) => valueChanged(editor, onChange, suggestions, ignoreBraces)}
+                onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+                options={options}
+                viewportMargin={Infinity}
+              />
+            </CodeHinter.Portal>
+          </div>
+          {enablePreview && !isOpen && getPreview()}
+        </div>
       </div>
-      {enablePreview && !isOpen && getPreview()}
+      <div className={`col-2 ${(type ?? 'code') === 'code' ? 'd-none' : ''} pt-2`}>
+        <FxButton
+          active={true}
+          onPress={() => {
+            setForceCodeBox(false);
+            onFxPress(false);
+          }}
+        />
+      </div>
     </div>
+  ) : (
+    <ElementToRender
+      value={resolveReferences(initialValue, realState)}
+      onChange={onChange}
+      paramName={paramName}
+      paramLabel={paramLabel}
+      forceCodeBox={() => {
+        setForceCodeBox(true);
+        onFxPress(true);
+      }}
+      meta={fieldMeta}
+    />
   );
 }
 
