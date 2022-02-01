@@ -116,7 +116,7 @@ class Restapi extends React.Component {
                 componentName={`${queryName}::url`}
                 mode="javascript"
                 lineNumbers={false}
-                height={'28px'}
+                height={'32px'}
               />
             </div>
           </div>

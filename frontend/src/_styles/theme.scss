@@ -3852,6 +3852,7 @@ input[type="text"] {
 }
 
 .rest-methods-options {
+  margin-top: 3px;
   
   .select-search, .select-search-dark, .select-search__value input, .select-search-dark__value input {
     width: 90px !important;
@@ -3860,22 +3861,7 @@ input[type="text"] {
   }
 }
 
-.rest-methods-field {
-  .code-hinter-wrapper .popup-btn {
-    margin-top: 0.4rem!important;
-  }
 
-  .CodeMirror pre.CodeMirror-line {
-    height: 28px!important;
-    margin-top: -2px!important;
-  }
-
-  .CodeMirror-placeholder {
-    height: 28px!important;
-    position: absolute!important;
-    margin-top: 3px!important;
-  }
-}
 
 
 .query-pane-restapi-tabs.dark {
