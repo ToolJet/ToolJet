@@ -891,7 +891,7 @@ export const componentTypes = [
     },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
-      selectedColor: { type: 'color', displayName: 'Selected Color' },
+      selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
