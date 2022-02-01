@@ -14,7 +14,7 @@ export const DropDown = function DropDown({
   component,
 }) {
   let { label, value, display_values, values } = properties;
-  const { visibility, disabledState } = styles;
+  const { borderRadius, visibility, disabledState } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
 
   if (!_.isArray(values)) {
@@ -74,7 +74,7 @@ export const DropDown = function DropDown({
       minHeight: height,
       height: height,
       boxShadow: state.isFocused ? null : null,
-      borderRadius: 0,
+      borderRadius: Number.parseFloat(borderRadius),
     }),
 
     valueContainer: (provided, _state) => ({
