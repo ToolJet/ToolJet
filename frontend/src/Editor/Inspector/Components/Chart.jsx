@@ -173,13 +173,13 @@ class Chart extends React.Component {
       }
 
       items.push({
-        title: 'Show axis',
+        title: 'Show axes',
         children: renderElement(
           component,
           componentMeta,
           paramUpdated,
           dataQueries,
-          'showAxis',
+          'showAxes',
           'properties',
           currentState
         ),
