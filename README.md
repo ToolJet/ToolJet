@@ -23,27 +23,43 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
   </kbd>
 </p>
 
+
+
+### Visual application builder 
 <p align="center">
   <kbd>
     <img src="https://user-images.githubusercontent.com/7828962/151908119-ddabf0fe-b226-4c19-8ed7-b541a186987d.png"/>
   </kbd>
 </p>
 
-## Features
+</hr>
 
-- Visual app builder with widgets, such as tables, charts, modals, buttons, dropdowns, and more.
-- All widgets are responsive
-- Mobile 📱 & desktop layouts 🖥
-- Dark mode
-- Connect to databases, cloud storages and APIs.
-- Deploy on-premise (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
-- Granular access control on organization-level and app-level.
-- Write JS code almost anywhere in the builder.
-- Query editors for all supported data sources.
-- Transform query results using JS code. 
-- All the credentials are securely encrypted using `aes-256-gcm`.
-- ToolJet acts only as a proxy and doesn't store any data.
-- Support for OAuth.
+### Connect to databases, cloud storages, APIS and products that you love
+![sources](https://user-images.githubusercontent.com/7828962/151920225-6c7f7a8f-eb84-4c76-a0b9-598310101691.png)
+
+### Deploy anywhere !
+![deploy](https://user-images.githubusercontent.com/7828962/151920413-f60cd818-196a-48f8-80c1-6d71f08b32be.png)
+
+### Extend using plugins
+![extend](https://user-images.githubusercontent.com/7828962/151920561-e3997f62-0041-4eb8-9273-de8e9d06c70e.png)
+
+
+## All features
+
+- *Visual app builder:* 35+ built-in responsive widgets such as Tables, Charts, Lists, Forms, Progressbars, and more.
+- *20+ data sources:* connect to databases, cloud storages and APIs.
+- *Desktop & mobile*: ;layout widths can be customised to support different screens. 
+- *Self-host:* (supports Docker, Kubernetes, Heroku, AWS EC2, Google Cloud Run, and more).
+- *Collaborate:* add comments anywhere on the canvas and tag your team members.
+- *Version control:* every application have different versions with proper release cycle.
+- *Run JS code:* ability custom JavaScript snippets
+- *Granular access control* on organization-level and app-level.
+- *low-code:* write JS code almost anywhere in the builder. For example, the color property of text can be set to `status === 'success' ? 'green' : 'red'`
+- *no-code query editors* for all supported data sources.
+- *Join and transform data:* transform query results using just JavaScript code. 
+- *Secure:* All the credentials are securely encrypted using `aes-256-gcm`.
+- *Doesn't store data:* ToolJet acts only as a proxy and doesn't store any data.
+- *SSO:* Supports multiple SSO providers
 
 <hr>
 
