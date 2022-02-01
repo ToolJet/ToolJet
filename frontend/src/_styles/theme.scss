@@ -319,10 +319,11 @@ button {
     }
 
     .components-container {
-      height: 88%;
+      height: 100%;
       overflow: auto;
       overflow-x: hidden;
-
+      padding-bottom: 20%;
+      
       .component-image-holder {
         border-radius: 0;
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -423,7 +424,7 @@ button {
       height: 350px;
       position: fixed;
       left: 3%;
-      right: 300px;
+      right: 301px;
       bottom: 0;
       overflow-x: hidden;
       flex: 1 1 auto;
@@ -1539,6 +1540,9 @@ button {
     height: 0;
     width: 0;
   }
+  .th{
+    white-space: normal;
+  }
 
   th:after {
     content: " ";
@@ -1550,7 +1554,7 @@ button {
   .sort-desc:after {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
-    border-top: 5px solid #333;
+    border-top: 5px solid #767676;
     border-bottom: 5px solid transparent;
     left: 6px;
     top: 8px;
@@ -1560,7 +1564,7 @@ button {
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 0px solid transparent;
-    border-bottom: 5px solid #333;
+    border-bottom: 5px solid #767676;
     left: 6px;
     bottom: 8px;
   }
@@ -2969,7 +2973,6 @@ input:focus-visible {
 }
 
 input[type="text"] {
-  border-radius: 0 !important;
   outline-color: #dadcde !important;
 }
 
@@ -3607,7 +3610,7 @@ input[type="text"] {
  * Folder List
  */
 .folder-list {
-  color: #000000;
+  color: #292D37;
   .list-group-transparent .list-group-item.active {
     color: $primary;
     background-color: #edf1ff;

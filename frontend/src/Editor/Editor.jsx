@@ -101,6 +101,7 @@ class Editor extends React.Component {
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
         errors: {},
+        variables: {},
       },
       apps: [],
       dataQueriesDefaultText: "You haven't created queries yet.",
@@ -555,9 +556,14 @@ class Editor extends React.Component {
     const appDefinition = { ...this.state.appDefinition };
 
     appDefinition.globalSettings[key] = value;
-    this.setState({
-      appDefinition,
-    });
+    this.setState(
+      {
+        appDefinition,
+      },
+      () => {
+        this.autoSave();
+      }
+    );
   };
 
   saveApp = (id, attributes, notify = false) => {
@@ -883,10 +889,27 @@ class Editor extends React.Component {
     );
   };
 
+  handleOnComponentOptionChanged = (component, optionName, value) => {
+    onComponentOptionChanged(this, component, optionName, value);
+  };
+
+  handleOnComponentOptionsChanged = (component, options) => {
+    onComponentOptionsChanged(this, component, options);
+  };
+
+  handleComponentClick = (id, component) => {
+    this.setState({
+      selectedComponent: { id, component },
+    });
+    this.switchSidebarTab(1);
+  };
+
+  handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
+
   render() {
     const {
       currentSidebarTab,
-      selectedComponent,
+      selectedComponent = {},
       appDefinition,
       appId,
       slug,
@@ -1037,9 +1060,7 @@ class Editor extends React.Component {
             <LeftSidebar
               appVersionsId={this.state?.editingVersion?.id}
               errorLogs={currentState.errors}
-              queries={currentState.queries}
               components={currentState.components}
-              globals={currentState.globals}
               appId={appId}
               darkMode={this.props.darkMode}
               dataSources={this.state.dataSources}
@@ -1049,6 +1070,7 @@ class Editor extends React.Component {
               switchDarkMode={this.props.switchDarkMode}
               globalSettingsChanged={this.globalSettingsChanged}
               globalSettings={appDefinition.globalSettings}
+              currentState={currentState}
             />
             <div className="main main-editor-canvas" id="main-editor-canvas">
               <div
@@ -1083,26 +1105,17 @@ class Editor extends React.Component {
                         zoomLevel={zoomLevel}
                         currentLayout={currentLayout}
                         deviceWindowWidth={deviceWindowWidth}
-                        selectedComponent={selectedComponent || {}}
+                        selectedComponent={selectedComponent}
                         appLoading={isLoading}
-                        onEvent={(eventName, options) => onEvent(this, eventName, options, 'edit')}
-                        onComponentOptionChanged={(component, optionName, value) =>
-                          onComponentOptionChanged(this, component, optionName, value)
-                        }
-                        onComponentOptionsChanged={(component, options) =>
-                          onComponentOptionsChanged(this, component, options)
-                        }
+                        onEvent={this.handleEvent}
+                        onComponentOptionChanged={this.handleOnComponentOptionChanged}
+                        onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
                         currentState={this.state.currentState}
                         configHandleClicked={this.configHandleClicked}
                         handleUndo={this.handleUndo}
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
-                        onComponentClick={(id, component) => {
-                          this.setState({
-                            selectedComponent: { id, component },
-                          });
-                          this.switchSidebarTab(1);
-                        }}
+                        onComponentClick={this.handleComponentClick}
                       />
                       <CustomDragLayer
                         snapToGrid={true}
@@ -1211,7 +1224,7 @@ class Editor extends React.Component {
                       {loadingDataQueries ? (
                         <div className="p-5">
                           <center>
-                            <div className="spinner-border text-azure" role="status"></div>
+                            <div className="spinner-border" role="status"></div>
                           </center>
                         </div>
                       ) : (

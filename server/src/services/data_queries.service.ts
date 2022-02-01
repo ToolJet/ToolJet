@@ -19,7 +19,7 @@ export class DataQueriesService {
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
-    return await this.dataQueriesRepository.findOne({ id: dataQueryId }, { relations: ['dataSource', 'app'] });
+    return await this.dataQueriesRepository.findOne({ where: { id: dataQueryId }, relations: ['dataSource', 'app'] });
   }
 
   async all(user: User, query: object): Promise<DataQuery[]> {
