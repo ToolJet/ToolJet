@@ -11,8 +11,9 @@ import {
   createAppGroupPermission,
   createApplicationVersion,
 } from '../test.helper';
-import { getRepository } from 'typeorm';
+import { getManager, getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 
 describe('data queries controller', () => {
   let app: INestApplication;
@@ -52,7 +53,9 @@ describe('data queries controller', () => {
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'developer',
+      where: {
+        group: 'developer',
+      },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
       read: true,
@@ -62,7 +65,9 @@ describe('data queries controller', () => {
 
     // setup app permissions for viewer
     const viewerUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'viewer',
+      where: {
+        group: 'viewer',
+      },
     });
     await createAppGroupPermission(app, application, viewerUserGroup.id, {
       read: true,
@@ -138,7 +143,9 @@ describe('data queries controller', () => {
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'developer',
+      where: {
+        group: 'developer',
+      },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
       read: true,
@@ -222,9 +229,20 @@ describe('data queries controller', () => {
       groups: ['all_users', 'admin'],
     });
 
+    const allUserGroup = await getManager().findOne(GroupPermission, {
+      where: { group: 'all_users', organization: adminUserData.organization },
+    });
+    await getManager().update(
+      AppGroupPermission,
+      { app: application, groupPermissionId: allUserGroup },
+      { read: true }
+    );
+
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'developer',
+      where: {
+        group: 'developer',
+      },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
       read: true,
@@ -320,7 +338,9 @@ describe('data queries controller', () => {
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'developer',
+      where: {
+        group: 'developer',
+      },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
       read: true,
@@ -447,7 +467,9 @@ describe('data queries controller', () => {
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'developer',
+      where: {
+        group: 'developer',
+      },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
       read: true,
@@ -457,7 +479,9 @@ describe('data queries controller', () => {
 
     // setup app permissions for viewer
     const viewerUserGroup = await getRepository(GroupPermission).findOne({
-      group: 'viewer',
+      where: {
+        group: 'viewer',
+      },
     });
     await createAppGroupPermission(app, application, viewerUserGroup.id, {
       read: true,

@@ -1,5 +1,5 @@
 import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
-import * as SendGrid from '@sendgrid/mail';
+import sgMail from "@sendgrid/mail"
 import { EmailOptions, SourceOptions, QueryOptions } from './types'
 
 export default class SendGridQueryService implements QueryService {
@@ -8,7 +8,7 @@ export default class SendGridQueryService implements QueryService {
       throw new QueryError('Query could not be completed as API key is not set', 'Missing API key', {});
     }
 
-    SendGrid.setApiKey(sourceOptions.api_key);
+    sgMail.setApiKey(sourceOptions.api_key);
 
     let result = {};
     const sendgridEmailOptions: EmailOptions = {
@@ -24,7 +24,7 @@ export default class SendGridQueryService implements QueryService {
     }
 
     try {
-      result = await SendGrid.send(sendgridEmailOptions);
+      result = await sgMail.send(sendgridEmailOptions);
     } catch (error) {
       console.log(error.response);
       throw new QueryError('Query could not be completed', error.message, {});

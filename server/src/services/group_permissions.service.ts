@@ -42,7 +42,9 @@ export class GroupPermissionsService {
     let result;
 
     const groupPermission = await this.groupPermissionsRepository.findOne({
-      id: groupPermissionId,
+      where: {
+        id: groupPermissionId,
+      },
     });
 
     if (groupPermission.group == 'admin' || groupPermission.group == 'all_users') {
@@ -71,11 +73,15 @@ export class GroupPermissionsService {
 
   async updateAppGroupPermission(user: User, groupPermissionId: string, appGroupPermissionId: string, actions: any) {
     const appGroupPermission = await this.appGroupPermissionsRepository.findOne({
-      id: appGroupPermissionId,
-      groupPermissionId: groupPermissionId,
+      where: {
+        id: appGroupPermissionId,
+        groupPermissionId: groupPermissionId,
+      },
     });
     const groupPermission = await this.groupPermissionsRepository.findOne({
-      id: appGroupPermission.groupPermissionId,
+      where: {
+        id: appGroupPermission.groupPermissionId,
+      },
     });
 
     if (groupPermission.organizationId !== user.organizationId) {
@@ -90,8 +96,10 @@ export class GroupPermissionsService {
 
   async update(user: User, groupPermissionId: string, body: any) {
     const groupPermission = await this.groupPermissionsRepository.findOne({
-      id: groupPermissionId,
-      organizationId: user.organizationId,
+      where: {
+        id: groupPermissionId,
+        organizationId: user.organizationId,
+      },
     });
 
     const { app_create, app_delete, add_apps, remove_apps, add_users, remove_users, folder_create } = body;
@@ -161,8 +169,10 @@ export class GroupPermissionsService {
 
   async findOne(user: User, groupPermissionId: string): Promise<GroupPermission> {
     return this.groupPermissionsRepository.findOne({
-      organizationId: user.organizationId,
-      id: groupPermissionId,
+      where: {
+        organizationId: user.organizationId,
+        id: groupPermissionId,
+      },
     });
   }
 
@@ -189,8 +199,10 @@ export class GroupPermissionsService {
 
   async findAddableApps(user: User, groupPermissionId: string): Promise<App[]> {
     const groupPermission = await this.groupPermissionsRepository.findOne({
-      id: groupPermissionId,
-      organizationId: user.organizationId,
+      where: {
+        id: groupPermissionId,
+        organizationId: user.organizationId,
+      },
     });
 
     const appsInGroup = await groupPermission.apps;
@@ -223,8 +235,10 @@ export class GroupPermissionsService {
 
   async findAddableUsers(user: User, groupPermissionId: string): Promise<User[]> {
     const groupPermission = await this.groupPermissionsRepository.findOne({
-      id: groupPermissionId,
-      organizationId: user.organizationId,
+      where: {
+        id: groupPermissionId,
+        organizationId: user.organizationId,
+      },
     });
 
     const userInGroup = await groupPermission.users;

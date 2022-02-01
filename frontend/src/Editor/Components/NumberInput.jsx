@@ -5,7 +5,7 @@ export const NumberInput = function NumberInput({ height, properties, exposedVar
     setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
-
+  const { visibility, borderRadius } = styles;
   return (
     <input
       disabled={styles.disabledState}
@@ -25,9 +25,9 @@ export const NumberInput = function NumberInput({ height, properties, exposedVar
         }
       }}
       type="number"
-      className="form-control rounded-0"
+      className="form-control"
       placeholder={properties.placeholder}
-      style={{ height, display: styles.visibility ? '' : 'none' }}
+      style={{ height, display: visibility ? '' : 'none', borderRadius: `${borderRadius}px` }}
       value={exposedVariables.value}
     />
   );

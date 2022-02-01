@@ -188,6 +188,7 @@ export const componentTypes = [
     },
     events: {},
     styles: {
+      padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -235,6 +236,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        padding: { value: '50' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -316,6 +318,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -339,6 +342,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -365,6 +369,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: 0,
@@ -384,6 +389,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -413,6 +419,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -435,6 +442,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -464,6 +472,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -486,6 +495,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -649,6 +659,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: {},
@@ -669,6 +680,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -787,6 +799,8 @@ export const componentTypes = [
           { name: 'Thumbnail', value: 'img-thumbnail' },
         ],
       },
+      backgroundColor: { type: 'color', displayName: 'Background color' },
+      padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -803,6 +817,7 @@ export const componentTypes = [
       events: [],
       styles: {
         borderType: { value: 'none' },
+        padding: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -1227,6 +1242,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       file: [{ name: '', content: '', dataURL: '', type: '', parsedData: '' }],
@@ -1252,6 +1268,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -1414,6 +1431,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -1432,6 +1450,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
