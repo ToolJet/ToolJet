@@ -1582,7 +1582,9 @@ export const componentTypes = [
       rowHeight: { type: 'code', displayName: 'Row height' },
       showBorder: { type: 'code', displayName: 'Show bottom border' },
     },
-    events: {},
+    events: {
+      onRowClicked: { displayName: 'Row clicked' },
+    },
     styles: {
       backgroundColor: { type: 'color' },
       visibility: { type: 'code', displayName: 'Visibility' },
