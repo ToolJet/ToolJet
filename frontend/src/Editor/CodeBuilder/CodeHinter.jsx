@@ -63,7 +63,7 @@ export function CodeHinter({
     singleLine: true,
     mode: mode || 'handlebars',
     tabSize: 2,
-    theme: theme || 'default',
+    theme: darkMode ? 'monokai' : 'default',
     readOnly: false,
     highlightSelectionMatches: true,
     placeholder,
