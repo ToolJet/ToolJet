@@ -147,6 +147,8 @@ class Editor extends React.Component {
     const driver = new Driver({
       allowClose: true,
       closeBtnText: 'Skip',
+      nextBtnText: 'Next',
+      prevBtnText: 'Previous',
       onReset: (Element) => {
         // Here we need to write the logic to update walkthroughCompleted column of the current user.
         addToLocalStorage({ key: 'walkthroughCompleted', value: true });
@@ -166,6 +168,7 @@ class Editor extends React.Component {
               description: 'From the widget sidebar, drag and drop widgets to the canvas.',
               position: 'left',
               offset: 100,
+              closeBtnText: 'Skip (1/3)',
             },
           },
           {
@@ -174,6 +177,7 @@ class Editor extends React.Component {
               title: 'Inspector',
               description: 'Inspector lets you check the properties of widgets, results of queries etc.',
               position: 'right',
+              closeBtnText: 'Skip (2/2)',
             },
           },
           {
@@ -182,6 +186,7 @@ class Editor extends React.Component {
               title: 'Inspector',
               description: 'Inspector lets you check the properties of widgets, results of queries etc.',
               position: 'right',
+              closeBtnText: 'Skip (3/3)',
             },
           },
         ]);
