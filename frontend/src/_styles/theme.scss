@@ -3937,3 +3937,8 @@ input[type="text"] {
   border-top: 0.5px solid #E1E1E1!important;
   margin-top: -1px !important;
 }
+
+div#driver-highlighted-element-stage, div#driver-page-overlay {
+  background: transparent !important;
+  outline: 5000px solid rgba(0, 0, 0, .75)
+}

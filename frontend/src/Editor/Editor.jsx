@@ -42,6 +42,8 @@ import DesktopSelectedIcon from './Icons/desktop-selected.svg';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { AppVersionsManager } from './AppVersionsManager';
+import * as Driver from 'driver.js';
+import 'driver.js/dist/driver.min.css';
 
 setAutoFreeze(false);
 enablePatches();
@@ -138,6 +140,39 @@ class Editor extends React.Component {
       currentSidebarTab: 2,
       selectedComponent: null,
     });
+
+    const driver = new Driver();
+
+    setTimeout(function () {
+      driver.defineSteps([
+        {
+          element: '.widget-header',
+          popover: {
+            title: 'Drag and drop widgets',
+            description: 'From the widget sidebar, drag and drop widgets to the canvas.',
+            position: 'left',
+          },
+        },
+        {
+          element: '.sidebar-datasources',
+          popover: {
+            title: 'Inspector',
+            description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+            position: 'right',
+          },
+        },
+        {
+          element: '.left-sidebar-inspector',
+          popover: {
+            title: 'Inspector',
+            description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+            position: 'right',
+          },
+        },
+      ]);
+
+      driver.start();
+    }, 2000);
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
