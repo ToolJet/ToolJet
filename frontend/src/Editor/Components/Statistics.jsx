@@ -15,6 +15,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     fontFamily: 'Inter',
     justifyContent: 'center',
     display: visibility ? 'flex' : 'none',
+    overflowWrap: 'anywhere',
   };
 
   const letterStyle = {
