@@ -37,6 +37,7 @@ export const Inspector = ({
   const tabsRef = useRef(null);
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
+  useHotkeys('escape', () => switchSidebarTab(2));
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
