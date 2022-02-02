@@ -44,6 +44,8 @@ export const Container = ({
   socket,
   handleUndo,
   handleRedo,
+  onComponentHover,
+  hoveredComponent,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -467,6 +469,8 @@ export const Container = ({
               deviceWindowWidth={deviceWindowWidth}
               isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
               darkMode={darkMode}
+              onComponentHover={onComponentHover}
+              hoveredComponent={hoveredComponent}
               containerProps={{
                 mode,
                 snapToGrid,
@@ -485,6 +489,8 @@ export const Container = ({
                 deviceWindowWidth,
                 selectedComponent,
                 darkMode,
+                onComponentHover,
+                hoveredComponent,
               }}
             />
           );

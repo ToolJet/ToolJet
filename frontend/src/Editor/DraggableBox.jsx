@@ -90,11 +90,17 @@ export const DraggableBox = function DraggableBox({
   readOnly,
   customResolvables,
   parentId,
+  hoveredComponent,
+  onComponentHover,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
+
+  useEffect(() => {
+    setMouseOver(hoveredComponent === id);
+  }, [hoveredComponent]);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -176,9 +182,14 @@ export const DraggableBox = function DraggableBox({
     >
       {inCanvas ? (
         <div
-          className={`draggable-box`}
-          onMouseOver={() => setMouseOver(true)}
-          onMouseLeave={() => setMouseOver(false)}
+          className={`draggable-box widget-${id}`}
+          onMouseOver={(e) => {
+            if (e.currentTarget.className.includes(`widget-${id}`)) {
+              onComponentHover(id);
+              e.stopPropagation();
+            }
+          }}
+          onMouseLeave={() => onComponentHover(false)}
           style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd

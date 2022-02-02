@@ -38,6 +38,8 @@ export const SubContainer = ({
   customResolvables,
   parentComponent,
   listViewItemOptions,
+  onComponentHover,
+  hoveredComponent,
 }) => {
   const [_currentParentRef, setParentRef] = useState(parentRef);
 
@@ -422,6 +424,8 @@ export const SubContainer = ({
           readOnly={readOnly}
           customResolvables={customResolvables}
           parentId={parentComponent.name}
+          onComponentHover={onComponentHover}
+          hoveredComponent={hoveredComponent}
           containerProps={{
             mode,
             snapToGrid,
@@ -441,6 +445,8 @@ export const SubContainer = ({
             selectedComponent,
             darkMode,
             readOnly,
+            onComponentHover,
+            hoveredComponent,
           }}
         />
       ))}

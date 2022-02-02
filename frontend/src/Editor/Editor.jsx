@@ -907,6 +907,12 @@ class Editor extends React.Component {
     this.switchSidebarTab(1);
   };
 
+  handleComponentHover = (id) => {
+    this.setState({
+      hoveredComponent: id,
+    });
+  };
+
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
   render() {
@@ -945,6 +951,7 @@ class Editor extends React.Component {
       isSavingEditingVersion,
       showSaveDetail,
       showCreateVersionModalPrompt,
+      hoveredComponent,
     } = this.state;
 
     const appLink = slug ? `/applications/${slug}` : '';
@@ -1119,6 +1126,8 @@ class Editor extends React.Component {
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
                         onComponentClick={this.handleComponentClick}
+                        onComponentHover={this.handleComponentHover}
+                        hoveredComponent={hoveredComponent}
                       />
                       <CustomDragLayer
                         snapToGrid={true}
