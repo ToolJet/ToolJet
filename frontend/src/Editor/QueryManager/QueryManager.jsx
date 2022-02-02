@@ -293,6 +293,42 @@ let QueryManager = class QueryManager extends React.Component {
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
 
+    const selectStyles = {
+      container: (provided) => ({
+        ...provided,
+        width: 300,
+      }),
+      control: (provided) => ({
+        ...provided,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+      }),
+      input: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+      menu: (provided) => ({
+        ...provided,
+        zIndex: 2,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+        ':hover': {
+          backgroundColor: this.props.darkMode ? '#1167b1' : '#b3e5fc',
+        },
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#808080',
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+    };
+
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -397,12 +433,7 @@ let QueryManager = class QueryManager extends React.Component {
                       ]}
                       onChange={(newValue) => this.changeDataSource(newValue.value)}
                       placeholder="Select a data source"
-                      styles={{
-                        menu: (provided) => ({
-                          ...provided,
-                          zIndex: 2,
-                        }),
-                      }}
+                      styles={selectStyles}
                     />
                   </div>
                 )}

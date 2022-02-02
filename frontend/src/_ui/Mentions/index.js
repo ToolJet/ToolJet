@@ -28,6 +28,10 @@ const Mentions = ({ users, value, setValue, placeholder }) => {
             backgroundColor: 'white',
             boxShadow: '0px 2px 12px rgba(41, 45, 55, 0.156863)',
             borderRadius: '4',
+            marginTop: '-20px',
+            height: '22px',
+            fontSize: '14px',
+            color: '#282D37',
           },
           item: {
             padding: '10px 16px',
