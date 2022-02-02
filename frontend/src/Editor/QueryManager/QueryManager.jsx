@@ -1,7 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select';
 import ReactTooltip from 'react-tooltip';
 import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
@@ -219,16 +219,14 @@ let QueryManager = class QueryManager extends React.Component {
     this.optionchanged(option, !currentValue);
   };
 
-  renderDataSourceOption = (props, option, snapshot, className) => {
+  renderDataSourceOption = (props) => {
     //Todo: add icon for the "runjs" query
-    const Icon = allSvgs[option.kind];
+    const Icon = allSvgs[props.kind];
     return (
-      <button {...props} className={className} type="button">
-        <div>
-          {Icon && <Icon style={{ height: 25, width: 25 }} />}
-          <span className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}>{option.name}</span>
-        </div>
-      </button>
+      <div>
+        {Icon && <Icon style={{ height: 25, width: 25 }} />}
+        <span className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}>{props.label}</span>
+      </div>
     );
   };
 
@@ -281,6 +279,57 @@ let QueryManager = class QueryManager extends React.Component {
     let buttonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
+
+    const selectStyles = {
+      container: (provided) => ({
+        ...provided,
+        width: 224,
+        height: 32,
+      }),
+      control: (provided) => ({
+        ...provided,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        height: '32px!important',
+        minHeight: '32px!important',
+      }),
+      valueContainer: (provided, _state) => ({
+        ...provided,
+        height: 32,
+        marginBottom: '4px',
+      }),
+      indicatorsContainer: (provided, _state) => ({
+        ...provided,
+        height: 32,
+      }),
+      indicatorSeparator: (_state) => ({
+        display: 'none',
+      }),
+      input: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+      menu: (provided) => ({
+        ...provided,
+        zIndex: 2,
+        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+        ':hover': {
+          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
+        },
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#808080',
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+    };
 
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
@@ -373,22 +422,19 @@ let QueryManager = class QueryManager extends React.Component {
                 {dataSources && mode === 'create' && (
                   <div className="datasource-picker mt-1 mb-2">
                     <label className="form-label col-md-2">Datasource</label>
-                    <SelectSearch
+                    <Select
                       options={[
                         ...dataSources.map((source) => {
-                          return { name: source.name, value: source.id, kind: source.kind };
+                          return { label: source.name, value: source.id, kind: source.kind };
                         }),
                         ...staticDataSources.map((source) => {
-                          return { name: source.name, value: source.id, kind: source.kind };
+                          return { label: source.name, value: source.id, kind: source.kind };
                         }),
                       ]}
-                      value={selectedDataSource ? selectedDataSource.id : ''}
-                      search={true}
-                      onChange={(value) => this.changeDataSource(value)}
-                      filterOptions={fuzzySearch}
-                      renderOption={this.renderDataSourceOption}
+                      formatOptionLabel={this.renderDataSourceOption}
+                      onChange={(newValue) => this.changeDataSource(newValue.value)}
                       placeholder="Select a data source"
-                      className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                      styles={selectStyles}
                     />
                   </div>
                 )}
