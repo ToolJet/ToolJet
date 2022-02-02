@@ -141,16 +141,24 @@ class Editor extends React.Component {
       selectedComponent: null,
     });
 
-    const driver = new Driver();
+    // start walkthrough only if the current user haven't completed it already
+    const driver = new Driver({
+      allowClose: true,
+      closeBtnText: 'Skip',
+      onReset: (Element) => {
+        // Here we need to write the logic to update walkthroughCompleted column of the current user.
+      },
+    });
 
     setTimeout(function () {
       driver.defineSteps([
         {
-          element: '.widget-header',
+          element: '.components-container',
           popover: {
             title: 'Drag and drop widgets',
             description: 'From the widget sidebar, drag and drop widgets to the canvas.',
             position: 'left',
+            offset: 100,
           },
         },
         {
