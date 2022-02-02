@@ -131,6 +131,8 @@ button {
   }
 
   .query-manager {
+    user-select: none;
+
     .btn {
       height: 31px;
     }
@@ -520,6 +522,7 @@ button {
         height: 100%;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* Internet Explorer 10+ */
+        user-select: none;
 
         &::-webkit-scrollbar {
           /* WebKit */
