@@ -1,10 +1,9 @@
 import _ from 'lodash';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 
 export const Multiselect = function Multiselect({
   height,
-
   properties,
   styles,
   exposedVariables,
@@ -12,7 +11,8 @@ export const Multiselect = function Multiselect({
   fireEvent,
 }) {
   const { label, value, values, display_values } = properties;
-  const { visibility, disabledState } = styles;
+  const { borderRadius, visibility, disabledState } = styles;
+  const selectRef = useRef(null);
 
   useEffect(() => {
     let newValues = [];
@@ -53,6 +53,13 @@ export const Multiselect = function Multiselect({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
+  useEffect(() => {
+    selectRef.current.querySelector('.select-search__input').style.borderRadius = `${Number.parseFloat(
+      borderRadius
+    )}px`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [borderRadius, selectRef.current]);
+
   const handleChange = (value) => {
     setCurrentValue(value);
     setExposedVariable('values', value).then(() => fireEvent('onSelect'));
@@ -78,6 +85,7 @@ export const Multiselect = function Multiselect({
           }}
           filterOptions={fuzzySearch}
           placeholder="Select.."
+          ref={selectRef}
         />
       </div>
     </div>
