@@ -1,7 +1,7 @@
 import React from 'react';
 import 'codemirror/theme/duotone-light.css';
 import DOMPurify from 'dompurify';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select';
 import { openapiService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
@@ -58,16 +58,18 @@ class Stripe extends React.Component {
   }
 
   changeOperation = (value) => {
-    const operation = value.split(',')[0];
-    const path = value.split(',')[1];
+    const { name, operation } = value;
+    const path = name;
 
     this.setState(
       {
         selectedOperation: this.state.specJson.paths[path][operation],
         options: {
-          ...this.state.options,
-          path,
-          operation,
+          params: {
+            ...this.state.options?.params,
+            path,
+            operation,
+          },
         },
       },
       () => {
@@ -96,25 +98,22 @@ class Stripe extends React.Component {
     this.props.optionsChanged(newOptions);
   };
 
-  renderOperationOption = (props, option, snapshot, className) => {
+  renderOperationOption = (props) => {
     return (
-      <button {...props} className={className} type="button">
-        <div className="row">
-          <div className="col-md-1">
-            <span className={`badge bg-${operationColorMapping[option.operation]}`}>{option.operation}</span>
-          </div>
-
-          <div className="col-md-8">
-            <span className="text-muted mx-2">{option.name}</span>
-          </div>
+      <div className="row">
+        <div className="col-auto" style={{ width: '60px' }}>
+          <span className={`badge bg-${operationColorMapping[props.operation]}`}>{props.operation}</span>
         </div>
-      </button>
+
+        <div className="col">
+          <span>{props.name}</span>
+        </div>
+      </div>
     );
   };
 
   computeOperationSelectionOptions = (paths) => {
     let options = [];
-
     for (const path of Object.keys(paths)) {
       for (const operation of Object.keys(paths[path])) {
         options.push({
@@ -124,7 +123,6 @@ class Stripe extends React.Component {
         });
       }
     }
-
     return options;
   };
 
@@ -146,6 +144,62 @@ class Stripe extends React.Component {
       }
     }
 
+    const selectStyles = {
+      container: (provided) => ({
+        ...provided,
+        width: '50%',
+        height: 32,
+      }),
+      control: (provided) => ({
+        ...provided,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        height: '32px!important',
+        minHeight: '32px!important',
+      }),
+      valueContainer: (provided, _state) => ({
+        ...provided,
+        height: 32,
+        marginBottom: '4px',
+      }),
+      indicatorsContainer: (provided, _state) => ({
+        ...provided,
+        height: 32,
+      }),
+      indicatorSeparator: (_state) => ({
+        display: 'none',
+      }),
+      input: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+      menu: (provided) => ({
+        ...provided,
+        zIndex: 2,
+        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+        ':hover': {
+          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
+        },
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#808080',
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+    };
+
+    const currentValue = {
+      value: this.props.options.params?.operation + ',' + this.props.options.params?.path,
+      name: this.props.options.params.path,
+      operation: this.props.options.params.operation,
+    };
     return (
       <div>
         {loadingSpec && (
@@ -162,14 +216,13 @@ class Stripe extends React.Component {
                 <label className="form-label pt-2">Operation</label>
               </div>
               <div className="col stripe-operation-options" style={{ width: '90px', marginTop: 0 }}>
-                <SelectSearch
+                <Select
                   options={this.computeOperationSelectionOptions(specJson.paths)}
-                  value="sv"
-                  search={true}
+                  formatOptionLabel={this.renderOperationOption}
                   onChange={(value) => this.changeOperation(value)}
-                  filterOptions={fuzzySearch}
-                  renderOption={this.renderOperationOption}
                   placeholder="Select an operation"
+                  styles={selectStyles}
+                  value={currentValue ?? ''}
                 />
 
                 {selectedOperation && (
@@ -319,3 +372,20 @@ class Stripe extends React.Component {
 }
 
 export { Stripe };
+
+// const options = defaults(
+//   { ...props.options },
+//   {
+//     params: {
+//       path: {},
+//       query: {},
+//       request: {},
+//     },
+//     operation: null,
+//     path: '',
+//   }
+// );
+// this.state = {
+//   loadingSpec: true,
+//   options,
+// };
