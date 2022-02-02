@@ -4,7 +4,8 @@ import { history } from '@/_helpers';
 import moment from 'moment';
 
 export default function AppCard(props) {
-  const { app } = props;
+  const { app, canUpdateApp } = props;
+  const canUpdate = canUpdateApp(app);
 
   const [focused, setFocused] = useState(false);
 
@@ -46,24 +47,27 @@ export default function AppCard(props) {
         <>
           <div className="container-fluid d-flex flex-column align-content-center px-0 mt-2">
             <div className="row">
-              <div className="col-6 pe-1">
-                <button
-                  type="button"
-                  className="btn btn-sm btn-light edit-button"
-                  style={{ width: '100%' }}
-                  onClick={() => history.push(`/apps/${app.id}`)}
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  title="Open in app builder"
-                >
-                  Edit
-                </button>
-              </div>
+              {canUpdate && (
+                <div className="col-6 pe-1">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-light edit-button"
+                    style={{ width: '100%' }}
+                    onClick={() => history.push(`/apps/${app.id}`)}
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Open in app builder"
+                  >
+                    Edit
+                  </button>
+                </div>
+              )}
               <div
-                className="col-6 ps-1"
+                className={`col-${canUpdate ? '6' : '12'} ps-1`}
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
                 title={app?.current_version_id === null ? 'App does not have a deployed version' : 'Open in app viewer'}
+                style={{ marginLeft: `${canUpdate ? '0px' : '2px'}` }}
               >
                 <button
                   type="button"
