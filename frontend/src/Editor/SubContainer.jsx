@@ -420,6 +420,7 @@ export const SubContainer = ({
           removeComponent={customRemoveComponent}
           canvasWidth={getContainerCanvasWidth()}
           readOnly={readOnly}
+          darkMode={darkMode}
           customResolvables={customResolvables}
           parentId={parentComponent?.name}
           containerProps={{
