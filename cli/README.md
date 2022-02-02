@@ -7,11 +7,11 @@ tooljet cli
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @tooljet/tooljet-cli
+$ npm install -g @tooljet/cli
 $ tooljet COMMAND
 running command...
 $ tooljet (--version)
-@tooljet/tooljet-cli/0.0.9 darwin-arm64 node-v14.17.3
+@tooljet/cli/0.0.1 darwin-arm64 node-v14.17.3
 $ tooljet --help [COMMAND]
 USAGE
   $ tooljet COMMAND
