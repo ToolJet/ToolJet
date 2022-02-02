@@ -24,6 +24,8 @@ import {
   setStateAsync,
   computeComponentState,
   getSvgIcon,
+  addToLocalStorage,
+  getDataFromLocalStorage,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import ReactTooltip from 'react-tooltip';
@@ -147,39 +149,45 @@ class Editor extends React.Component {
       closeBtnText: 'Skip',
       onReset: (Element) => {
         // Here we need to write the logic to update walkthroughCompleted column of the current user.
+        addToLocalStorage({ key: 'walkthroughCompleted', value: true });
       },
     });
 
     setTimeout(function () {
-      driver.defineSteps([
-        {
-          element: '.components-container',
-          popover: {
-            title: 'Drag and drop widgets',
-            description: 'From the widget sidebar, drag and drop widgets to the canvas.',
-            position: 'left',
-            offset: 100,
+      if (
+        getDataFromLocalStorage('walkthroughCompleted') == undefined ||
+        !getDataFromLocalStorage('walkthroughCompleted')
+      ) {
+        driver.defineSteps([
+          {
+            element: '.components-container',
+            popover: {
+              title: 'Drag and drop widgets',
+              description: 'From the widget sidebar, drag and drop widgets to the canvas.',
+              position: 'left',
+              offset: 100,
+            },
           },
-        },
-        {
-          element: '.sidebar-datasources',
-          popover: {
-            title: 'Inspector',
-            description: 'Inspector lets you check the properties of widgets, results of queries etc.',
-            position: 'right',
+          {
+            element: '.sidebar-datasources',
+            popover: {
+              title: 'Inspector',
+              description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+              position: 'right',
+            },
           },
-        },
-        {
-          element: '.left-sidebar-inspector',
-          popover: {
-            title: 'Inspector',
-            description: 'Inspector lets you check the properties of widgets, results of queries etc.',
-            position: 'right',
+          {
+            element: '.left-sidebar-inspector',
+            popover: {
+              title: 'Inspector',
+              description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+              position: 'right',
+            },
           },
-        },
-      ]);
+        ]);
 
-      driver.start();
+        driver.start();
+      }
     }, 2000);
   }
 
