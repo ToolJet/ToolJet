@@ -11,6 +11,8 @@ export const Listview = function Listview({
   removeComponent,
   properties,
   styles,
+  currentState,
+  fireEvent,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -22,6 +24,10 @@ export const Listview = function Listview({
     backgroundColor,
     height,
     display: visibility ? 'flex' : 'none',
+  };
+
+  const onRowClicked = (index) => {
+    fireEvent('onRowClicked', { data: currentState.components[`${component.name}`].data[index], rowId: index });
   };
 
   const parentRef = useRef(null);
@@ -41,6 +47,10 @@ export const Listview = function Listview({
             className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
             style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
             key={index}
+            onClick={(event) => {
+              event.stopPropagation();
+              onRowClicked(index);
+            }}
           >
             <SubContainer
               parentComponent={component}
