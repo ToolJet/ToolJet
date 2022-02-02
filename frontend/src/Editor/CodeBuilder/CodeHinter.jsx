@@ -184,7 +184,14 @@ export function CodeHinter({
           <div
             className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
             key={suggestions.length}
-            style={{ height: height || 'auto', minHeight, maxHeight: '320px', overflow: 'auto' }}
+            style={{
+              height: height || 'auto',
+              minHeight,
+              maxHeight: '320px',
+              overflow: 'auto',
+              padding: '0.18rem 0.75rem',
+              fontSize: ' .875rem',
+            }}
           >
             {usePortalEditor && <CodeHinter.PopupIcon callback={handleToggle} />}
             <CodeHinter.Portal
