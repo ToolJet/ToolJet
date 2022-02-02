@@ -99,17 +99,23 @@ class Stripe extends React.Component {
   };
 
   renderOperationOption = (props) => {
-    return (
-      <div className="row">
-        <div className="col-auto" style={{ width: '60px' }}>
-          <span className={`badge bg-${operationColorMapping[props.operation]}`}>{props.operation}</span>
-        </div>
+    const path = props.name || props.path;
+    const operation = props.operation;
+    if (path && operation) {
+      return (
+        <div className="row">
+          <div className="col-auto" style={{ width: '60px' }}>
+            <span className={`badge bg-${operationColorMapping[operation]}`}>{operation}</span>
+          </div>
 
-        <div className="col">
-          <span>{props.name}</span>
+          <div className="col">
+            <span>{path}</span>
+          </div>
         </div>
-      </div>
-    );
+      );
+    } else {
+      return 'Select an operation';
+    }
   };
 
   computeOperationSelectionOptions = (paths) => {
@@ -197,8 +203,8 @@ class Stripe extends React.Component {
 
     const currentValue = {
       value: this.props.options.params?.operation + ',' + this.props.options.params?.path,
-      name: this.props.options.params.path,
-      operation: this.props.options.params.operation,
+      name: this.props.options.params?.path,
+      operation: this.props.options.params?.operation,
     };
     return (
       <div>
@@ -217,12 +223,13 @@ class Stripe extends React.Component {
               </div>
               <div className="col stripe-operation-options" style={{ width: '90px', marginTop: 0 }}>
                 <Select
+                  className="stripe-operation-select"
                   options={this.computeOperationSelectionOptions(specJson.paths)}
                   formatOptionLabel={this.renderOperationOption}
                   onChange={(value) => this.changeOperation(value)}
                   placeholder="Select an operation"
                   styles={selectStyles}
-                  value={currentValue ?? ''}
+                  value={currentValue}
                 />
 
                 {selectedOperation && (
@@ -372,20 +379,3 @@ class Stripe extends React.Component {
 }
 
 export { Stripe };
-
-// const options = defaults(
-//   { ...props.options },
-//   {
-//     params: {
-//       path: {},
-//       query: {},
-//       request: {},
-//     },
-//     operation: null,
-//     path: '',
-//   }
-// );
-// this.state = {
-//   loadingSpec: true,
-//   options,
-// };
