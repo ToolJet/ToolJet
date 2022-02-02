@@ -71,7 +71,9 @@ const DynamicForm = ({
     lineNumbers = true,
     initialValue,
     height = 'auto',
+    width,
     ignoreBraces = false,
+    className,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -134,11 +136,12 @@ const DynamicForm = ({
             : initialValue,
           mode,
           lineNumbers,
-          className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
+          className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => optionchanged(key, value),
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
+          width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
           ignoreBraces,
         };

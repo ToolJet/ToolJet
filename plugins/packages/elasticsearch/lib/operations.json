@@ -38,7 +38,11 @@
         "key": "index",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter index"
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
       },
       "query": {
         "label": "Query",
@@ -55,7 +59,11 @@
         "key": "index",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter index"
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
       },
       "body": {
         "label": "Body",
@@ -71,36 +79,49 @@
       "index": {
         "label": "Index",
         "key": "index",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter index"
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+        
       },
       "id": {
         "label": "Id",
         "key": "id",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter id"
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter id"
       }
     },
     "update": {
       "index": {
         "label": "Index",
         "key": "index",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter index"
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
       },
       "id": {
         "label": "Id",
         "key": "id",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter id"
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter id"
       },
       "body": {
         "label": "body",

@@ -13,3 +13,25 @@
       }
     }
 }
+
+
+@mixin button-outline($light-theme: true) {
+    border: 1px solid $primary;
+    box-sizing: border-box;
+    border-radius: $border-radius;
+    color: $primary;
+    @if $light-theme {
+      background: $white;
+      &:hover {
+        background: #4d72fa;
+        color: #FFFFFC;
+      }
+    } @else {
+      background: transparent!important;
+      &:hover {
+        background: #4d72fa!important;
+        color: #FFFFFC!important;
+
+      }
+    }
+}

@@ -24,7 +24,10 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Send multiple individuals emails",
-        "placeholder": "{{false}}"
+        "placeholder": "{{false}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "send_mail_to": {
         "label": "Send mail to",
@@ -32,21 +35,30 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter email recipient(s)",
-        "placeholder": "{{['dev@tooljet.io']}}"
+        "placeholder": "{{['dev@tooljet.io']}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "send_mail_from": {
         "label": "Send mail from",
         "key": "send_mail_from",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter email Sender"
+        "description": "Enter email Sender",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "subject": {
         "label": "Subject",
         "key": "subject",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter subject"
+        "description": "Enter subject",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "text": {
         "label": "Body as text",
