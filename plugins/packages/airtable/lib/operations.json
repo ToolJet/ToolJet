@@ -35,28 +35,44 @@
         "key": "base_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter base ID"
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "appwKbrBctcQF9pYr"
       },
       "table_name": {
         "label": "Table name",
         "key": "table_name",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter table name"
+        "description": "Enter table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Table name"
       },
       "page_size": {
         "label": "Page size",
         "key": "page_size",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter page size"
+        "description": "Enter page size",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "10"
       },
       "offset": {
         "label": "Offset",
         "key": "offset",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter offset"
+        "description": "Enter offset",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "recAOzdIHaRpvRaGE"
       }
     },
     "retrieve_record": {
@@ -65,21 +81,33 @@
         "key": "base_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter base ID"
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "appwKbrBctcQF9pYr"
       },
       "table_name": {
         "label": "Table name",
         "key": "table_name",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter table name"
+        "description": "Enter table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Table_name"
       },
       "record_id": {
         "label": "Record ID",
         "key": "record_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter record id"
+        "description": "Enter record id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "recu9xMnUdr2n2cw8"
       }
     },
     "update_record": {
@@ -88,21 +116,33 @@
         "key": "base_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter base ID"
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "appwKbrBctcQF9pYr"
       },
       "table_name": {
         "label": "Table name",
         "key": "table_name",
         "lineNumbers": false,
         "type": "codehinter",
-        "description": "Enter table name"
+        "description": "Enter table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Table_name"
       },
       "record_id": {
         "label": "Record ID",
         "key": "record_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter record id"
+        "description": "Enter record id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "appwKbrBctcQF9pYr"
       },
       "body": {
         "label": "Body",
@@ -118,21 +158,33 @@
         "key": "base_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter base ID"
+        "description": "Enter base ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "appwKbrBctcQF9pYr"
       },
       "table_name": {
         "label": "Table name",
         "key": "table_name",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter table name"
+        "description": "Enter table name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Table_name"
       },
       "record_id": {
         "label": "Record ID",
         "key": "record_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter record id"
+        "description": "Enter record id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "appwKbrBctcQF9pYr"
       }
     }
   }

@@ -1,7 +1,7 @@
 import 'codemirror/theme/duotone-light.css';
 
 import React from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select';
 import { isEmpty, defaults } from 'lodash';
 import Tabs from './Tabs';
 
@@ -76,56 +76,109 @@ class Restapi extends React.Component {
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
     const queryName = this.props.queryName;
 
+    const selectStyles = {
+      container: (provided) => ({
+        ...provided,
+        width: 100,
+        height: 32,
+      }),
+      control: (provided) => ({
+        ...provided,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        height: '32px!important',
+        minHeight: '32px!important',
+      }),
+      valueContainer: (provided, _state) => ({
+        ...provided,
+        height: 32,
+        marginBottom: '4px',
+      }),
+      indicatorsContainer: (provided, _state) => ({
+        ...provided,
+        height: 32,
+      }),
+      indicatorSeparator: (_state) => ({
+        display: 'none',
+      }),
+      input: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+      menu: (provided) => ({
+        ...provided,
+        zIndex: 2,
+        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+        ':hover': {
+          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
+        },
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#808080',
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+    };
+
     return (
       <div>
-        <div className="mb-3 mt-2">
-          <div className="mb-3">
-            <div className="row g-2">
-              <div className="col-auto" style={{ width: '120px' }}>
-                <SelectSearch
-                  options={[
-                    { name: 'GET', value: 'get' },
-                    { name: 'POST', value: 'post' },
-                    { name: 'PUT', value: 'put' },
-                    { name: 'PATCH', value: 'patch' },
-                    { name: 'DELETE', value: 'delete' },
-                  ]}
-                  value={options.method === '' ? 'get' : options.method}
-                  search={false}
-                  closeOnSelect={true}
-                  onChange={(value) => {
-                    changeOption(this, 'method', value);
-                  }}
-                  filterOptions={fuzzySearch}
-                  placeholder="Method"
-                />
-              </div>
+        <div className="row mt-2" style={{ height: 'fit-content' }}>
+          <div className="col-auto rest-methods-options" style={{ width: '90px' }}>
+            <Select
+              options={[
+                { label: 'GET', value: 'get' },
+                { label: 'POST', value: 'post' },
+                { label: 'PUT', value: 'put' },
+                { label: 'PATCH', value: 'patch' },
+                { label: 'DELETE', value: 'delete' },
+              ]}
+              onChange={(value) => {
+                changeOption(this, 'method', value);
+              }}
+              value={options.method === '' ? 'get' : options.method}
+              defaultValue={{ label: 'GET', value: 'get' }}
+              placeholder="Method"
+              styles={selectStyles}
+            />
+          </div>
 
-              <div className="col field" style={{ display: 'flex' }}>
-                {dataSourceURL && (
-                  <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
-                )}
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={options.url}
-                  height="36px"
-                  className="codehinter-query-editor-input"
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  onChange={(value) => {
-                    changeOption(this, 'url', value);
-                  }}
-                  placeholder="Enter request URL"
-                  componentName={`${queryName}::url`}
-                />
-              </div>
+          <div className="col field mx-3" style={{ display: 'flex' }}>
+            {dataSourceURL && (
+              <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
+            )}
+            <div className="col-6 rest-methods-field">
+              <CodeHinter
+                currentState={this.props.currentState}
+                initialValue={options.url}
+                theme={this.props.darkMode ? 'monokai' : 'default'}
+                onChange={(value) => {
+                  changeOption(this, 'url', value);
+                }}
+                placeholder="Enter request URL"
+                componentName={`${queryName}::url`}
+                mode="javascript"
+                lineNumbers={false}
+                height={'32px'}
+              />
             </div>
           </div>
+        </div>
+
+        <div className={`query-pane-restapi-tabs mt-3 px-2 ${this.props.darkMode ? 'dark' : ''}`}>
           <Tabs
             theme={this.props.darkMode ? 'monokai' : 'default'}
             options={this.state.options}
             currentState={this.props.currentState}
             onChange={this.handleChange}
             removeKeyValuePair={this.removeKeyValuePair}
+            addNewKeyValuePair={this.addNewKeyValuePair}
             darkMode={this.props.darkMode}
             componentName={queryName}
           />

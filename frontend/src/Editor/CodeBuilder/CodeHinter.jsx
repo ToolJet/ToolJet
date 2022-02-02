@@ -49,6 +49,7 @@ export function CodeHinter({
   componentName = null,
   usePortalEditor = true,
   className,
+  width = '100%',
   paramName,
   paramLabel,
   type,
@@ -178,7 +179,7 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
 
   return (type ?? 'code') === 'code' || forceCodeBox ? (
-    <div className="row" style={{ width: '100%' }}>
+    <div className="row" style={{ width: width }}>
       <div className={`col-${(type ?? 'code') === 'code' ? 12 : 10}`}>
         <div className="code-hinter-wrapper" style={{ width: '100%' }}>
           <div
