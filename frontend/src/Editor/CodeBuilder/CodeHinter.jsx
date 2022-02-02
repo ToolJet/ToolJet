@@ -23,6 +23,7 @@ import { Select } from './Elements/Select';
 import { Toggle } from './Elements/Toggle';
 import { AlignButtons } from './Elements/AlignButtons';
 import { TypeMapping } from './TypeMapping';
+import { Number } from './Elements/Number';
 import FxButton from './Elements/FxButton';
 
 const AllElements = {
@@ -31,6 +32,7 @@ const AllElements = {
   Toggle,
   Select,
   AlignButtons,
+  Number,
 };
 
 export function CodeHinter({

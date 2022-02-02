@@ -134,7 +134,7 @@ export const componentTypes = [
       textColor: { type: 'color', displayName: 'Text color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
-      borderRadius: { type: 'code', displayName: 'Border radius' },
+      borderRadius: { type: 'number', displayName: 'Border radius' },
     },
     exposedVariables: {},
     definition: {
