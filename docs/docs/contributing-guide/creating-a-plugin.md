@@ -35,9 +35,9 @@ All the plugins live under the `/plugins` directory. The structure of a plugin l
 
 ## Getting Started
 
-1. Install [tooljet cli](https://www.npmjs.com/package/tooljet):
+1. Install [tooljet-cli](https://www.npmjs.com/package/@tooljet/tooljet-cli):
   ```bash
-  $ npm i -g tooljet
+  $ npm i -g @tooljet/tooljet-cli
   ```
 
 2. Bootstrap a new plugin using cli
