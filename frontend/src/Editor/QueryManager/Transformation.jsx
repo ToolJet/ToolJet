@@ -6,6 +6,7 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
+import { Alert } from '@/_ui/Alert';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode }) => {
   const defaultValue =
@@ -30,6 +31,9 @@ return data.filter(row => row.amount > 1000);`;
 
   return (
     <div className="field mb-2 transformation-editor">
+      <span style={{ fontWeight: 600 }} className="form-check-label">
+        Transformations
+      </span>
       <div className="form-check form-switch my-2">
         <input
           className="form-check-input"
@@ -37,19 +41,16 @@ return data.filter(row => row.amount > 1000);`;
           onClick={toggleEnableTransformation}
           checked={enableTransformation}
         />
-        <span className="form-check-label">Transformations</span>
       </div>
       {!enableTransformation && (
-        <div>
-          <div className="alert alert-success" role="alert">
-            Transformations can be used to transform the results of queries. All the app variables are accessible from
-            transformers and supports JS libraries such as Lodash & Moment.{' '}
-            <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
-              Read documentation
-            </a>
-            .
-          </div>
-        </div>
+        <Alert svg="circular-info">
+          Transformations can be used to transform the results of queries. All the app variables are accessible from
+          transformers and supports JS libraries such as Lodash & Moment.{' '}
+          <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
+            Read documentation
+          </a>
+          .
+        </Alert>
       )}
       <br></br>
       {enableTransformation && (
