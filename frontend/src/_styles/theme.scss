@@ -640,8 +640,17 @@ button {
   border: 0.5px solid #b4bbc6;
   padding: 1rem;
   border-radius: 8px;
-  height: 155px;
+  height: 180px;
 }
+
+.app-icon-skeleton {
+  background-color: #91a4f6;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  height: 40px;
+  width: 40px;
+}
+
 .card-skeleton-button {
   height: 20px;
   width: 60px;
@@ -2860,6 +2869,10 @@ input:focus-visible {
       #5a6170 40%,
       #4c5b79 80%
     );
+  }
+
+  .app-icon-skeleton::after {
+    background-image: linear-gradient(to right, #566177 0, #5a6170 40%, #4c5b79 80%);
   }
 
   .select-search__input {
