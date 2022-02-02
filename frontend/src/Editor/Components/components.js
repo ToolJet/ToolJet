@@ -896,6 +896,7 @@ export const componentTypes = [
     styles: {
       borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
+      selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
