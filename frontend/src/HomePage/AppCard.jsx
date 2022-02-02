@@ -18,6 +18,7 @@ export default function AppCard({
   appActionModal,
   canUpdateApp,
 }) {
+  const canUpdate = canUpdateApp(app);
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -89,18 +90,20 @@ export default function AppCard({
       <div style={{ display: focused ? 'block' : 'none' }}>
         <div className="container-fluid d-flex flex-column align-content-center px-0 mt-1">
           <div className="row">
-            <div className="col-6 pe-1">
-              <ToolTip message="Open in app builder">
-                <button
-                  type="button"
-                  className="btn btn-sm btn-light edit-button"
-                  onClick={() => history.push(`/apps/${app.id}`)}
-                >
-                  Edit
-                </button>
-              </ToolTip>
-            </div>
-            <div className="col-6 ps-1">
+            {canUpdate && (
+              <div className="col-6 pe-1">
+                <ToolTip message="Open in app builder">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-light edit-button"
+                    onClick={() => history.push(`/apps/${app.id}`)}
+                  >
+                    Edit
+                  </button>
+                </ToolTip>
+              </div>
+            )}
+            <div className={`col-${canUpdate ? '6' : '12'} ps-1`}>
               <ToolTip
                 message={
                   app?.current_version_id === null ? 'App does not have a deployed version' : 'Open in app viewer'
