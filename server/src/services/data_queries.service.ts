@@ -1,5 +1,4 @@
 import allPlugins from '@tooljet/plugins/dist/server';
-import { OAuthUnauthorizedClientError } from 'src/modules/data_sources/query.errors';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -94,7 +93,7 @@ export class DataQueriesService {
     try {
       return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
     } catch (error) {
-      if (error instanceof OAuthUnauthorizedClientError) {
+      if (error.constructor.name === 'OAuthUnauthorizedClientError') {
         console.log('Access token expired. Attempting refresh token flow.');
 
         const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id);
