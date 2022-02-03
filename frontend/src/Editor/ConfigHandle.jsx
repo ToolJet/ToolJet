@@ -18,16 +18,16 @@ export const ConfigHandle = function ConfigHandle({
         top: position === 'top' ? '-22px' : widgetTop + widgetHeight - 10,
       }}
     >
-      <span
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          configHandleClicked(id, component);
-        }}
-        className="badge handle-content"
-        role="button"
-      >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+      <span className="badge handle-content">
+        <div
+          style={{ display: 'flex', alignItems: 'center' }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            configHandleClicked(id, component);
+          }}
+          role="button"
+        >
           <img
             style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
             src="/assets/images/icons/settings.svg"
