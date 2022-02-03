@@ -359,7 +359,7 @@ export const SubContainer = ({
   };
 
   function onComponentOptionChangedForSubcontainer(component, optionName, value, extraProps) {
-    if (parentComponent.component === 'Listview') {
+    if (parentComponent?.component === 'Listview') {
       let newData = currentState.components[parentComponent.name]?.data || [];
       newData[listViewItemOptions.index] = {
         ...newData[listViewItemOptions.index],
@@ -422,10 +422,11 @@ export const SubContainer = ({
           removeComponent={customRemoveComponent}
           canvasWidth={getContainerCanvasWidth()}
           readOnly={readOnly}
+          darkMode={darkMode}
           customResolvables={customResolvables}
-          parentId={parentComponent.name}
           onComponentHover={onComponentHover}
           hoveredComponent={hoveredComponent}
+          parentId={parentComponent?.name}
           containerProps={{
             mode,
             snapToGrid,
