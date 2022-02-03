@@ -102,8 +102,8 @@ export const Inspector = ({
       return setInputFocus();
     }
 
-    const newComponent = { ...component };
     if (validateQueryName(newName)) {
+      let newComponent = { ...component };
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
     } else {
