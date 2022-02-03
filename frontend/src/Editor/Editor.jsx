@@ -3,6 +3,7 @@ import React, { createRef } from 'react';
 import { datasourceService, dataqueryService, appService, authenticationService, appVersionService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { computeComponentName } from '@/_helpers/utils';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce } from 'lodash';
 import { Container } from './Container';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -542,19 +543,13 @@ class Editor extends React.Component {
     return setStateAsync(_self, newDefinition);
   };
 
-  componentChanged = (newComponent) => {
-    this.setState({
-      appDefinition: {
-        ...this.state.appDefinition,
-        components: {
-          ...this.state.appDefinition.components,
-          [newComponent.id]: {
-            ...this.state.appDefinition.components[newComponent.id],
-            ...newComponent,
-          },
-        },
-      },
-    });
+  cloneComponent = (newComponent) => {
+    const appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
+
+    newComponent.component.name = computeComponentName(newComponent.component.component, appDefinition.components);
+
+    appDefinition.components[newComponent.id] = newComponent;
+    this.appDefinitionChanged(appDefinition);
   };
 
   globalSettingsChanged = (key, value) => {
@@ -1317,9 +1312,9 @@ class Editor extends React.Component {
                   !isEmpty(appDefinition.components) &&
                   !isEmpty(appDefinition.components[selectedComponent.id]) ? (
                     <Inspector
+                      cloneComponent={this.cloneComponent}
                       componentDefinitionChanged={this.componentDefinitionChanged}
                       dataQueries={dataQueries}
-                      componentChanged={this.componentChanged}
                       removeComponent={this.removeComponent}
                       selectedComponentId={selectedComponent.id}
                       currentState={currentState}
