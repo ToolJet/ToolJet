@@ -91,20 +91,16 @@ export const Inspector = ({
     return isValid;
   };
 
-  function handleonChangeInputEvent(event) {
-    const newName = event.target.value;
-
-    if (!validateComponentName(newName)) {
-      toast.error('Component name already exists');
-    }
-    setNewComponentName(newName);
-  }
-
   function handleComponentNameChange(newName) {
     if (newName.length === 0) {
       toast.error('Widget name cannot be empty');
       return setInputFocus();
     }
+
+    if (!validateComponentName(newName)) {
+      toast.error('Component name already exists');
+    }
+
     const newComponent = { ...component };
     if (validateQueryName(newName) && validateComponentName(newName)) {
       newComponent.component.name = newName;
@@ -319,7 +315,7 @@ export const Inspector = ({
               <div>
                 <div className="input-icon">
                   <input
-                    onChange={handleonChangeInputEvent}
+                    onChange={(e) => setNewComponentName(e.target.value)}
                     type="text"
                     onKeyUp={(e) => {
                       if (e.keyCode === 13) handleComponentNameChange(newComponentName);
