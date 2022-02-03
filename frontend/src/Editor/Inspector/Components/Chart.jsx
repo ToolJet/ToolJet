@@ -2,6 +2,7 @@ import React from 'react';
 import { renderElement } from '../Utils';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import Accordion from '@/_ui/Accordion';
+import { resolveReferences } from '@/_helpers/utils';
 
 class Chart extends React.Component {
   constructor(props) {
@@ -61,7 +62,10 @@ class Chart extends React.Component {
 
     const jsonDescription = this.state.component.component.definition.properties.jsonDescription;
 
-    const plotFromJson = this.state.component.component.definition.properties.plotFromJson.value;
+    const plotFromJson = resolveReferences(
+      this.state.component.component.definition.properties.plotFromJson.value,
+      currentState
+    );
 
     const chartType = this.state.component.component.definition.properties.type.value;
 
@@ -171,6 +175,19 @@ class Chart extends React.Component {
           ),
         });
       }
+
+      items.push({
+        title: 'Show axes',
+        children: renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'showAxes',
+          'properties',
+          currentState
+        ),
+      });
 
       items.push({
         title: 'Show grid lines',

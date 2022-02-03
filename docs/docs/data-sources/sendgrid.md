@@ -41,9 +41,12 @@ Optional parameters:
 <img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query.jpg" alt="ToolJet - Query SendGrid" height="420"/>
 
 :::info
-**Send mail to** - accepts a array/list of emails separated by comma.
+**Send mail to** - accepts an array/list of emails separated by comma.
 For example:
 `{{["dev@tooljet.io", "admin@tooljet.io"]}}`.
+
+**Send mail from** - accepts a string.
+For example: `admin@tooljet.io`
 :::
 
 :::tip

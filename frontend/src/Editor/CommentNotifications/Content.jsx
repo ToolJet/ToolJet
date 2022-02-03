@@ -69,13 +69,14 @@ const Content = ({ notifications, loading }) => {
 
   // TODO: move filter to separate file
   return (
-    <div className="card">
-      {!loading && (
-        <div className="card-header">
-          <sub className="fw-400 comment-notification-count light-gray">
-            Total {pluralize(notifications.length, 'comment')}
-          </sub>
-          {/* <div className="ms-auto position-relative">
+    <div className="comment-card-wrapper">
+      <div className="card">
+        {!loading && (
+          <div className="card-header">
+            <sub className="fw-400 comment-notification-count light-gray">
+              Total {pluralize(notifications.length, 'comment')}
+            </sub>
+            {/* <div className="ms-auto position-relative">
           <svg {...trigger} width="15" height="14" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M14.3333 1H1L6.33333 7.30667V11.6667L9 13V7.30667L14.3333 1Z"
@@ -123,9 +124,10 @@ const Content = ({ notifications, loading }) => {
             </div>
           </animated.div>
         </div> */}
-        </div>
-      )}
-      <div>{getContent()}</div>
+          </div>
+        )}
+        <div>{getContent()}</div>
+      </div>
     </div>
   );
 };

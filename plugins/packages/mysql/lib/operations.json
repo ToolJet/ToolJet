@@ -48,14 +48,23 @@
           "key": "table",
           "type": "codehinter",
           "lineNumbers": false,
-          "description": "Enter table"
+          "description": "Enter table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table"
+          
         },
         "primary_key_column": {
           "label": "Primary key column",
           "key": "primary_key_column",
           "type": "codehinter",
           "lineNumbers": false,
-          "description": "Enter primary key column"
+          "description": "Enter primary key column",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter primary key column"
         },
         "records": {
           "label": "Records",

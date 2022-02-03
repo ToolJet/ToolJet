@@ -1,6 +1,7 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
+import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '../Components/components';
 import { Table } from './Components/Table';
 import { Chart } from './Components/Chart';
@@ -14,11 +15,11 @@ import { FilePicker } from './Components/FilePicker';
 import useFocus from '@/_hooks/use-Focus';
 
 export const Inspector = ({
+  cloneComponent,
   selectedComponentId,
   componentDefinitionChanged,
   dataQueries,
   allComponents,
-  componentChanged,
   currentState,
   apps,
   darkMode,
@@ -29,18 +30,47 @@ export const Inspector = ({
     id: selectedComponentId,
     component: allComponents[selectedComponentId].component,
     layouts: allComponents[selectedComponentId].layouts,
+    parent: allComponents[selectedComponentId].parent,
   };
-  // const [component, setComponent] = useState(selectedComponent);
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
-  // const [components, setComponents] = useState(allComponents);
   const [key, setKey] = React.useState('properties');
   const [tabHeight, setTabHeight] = React.useState(0);
   const tabsRef = useRef(null);
-
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
+  useHotkeys('escape', () => switchSidebarTab(2));
+
+  useHotkeys('cmd+d, ctrl+d', (e) => {
+    e.preventDefault();
+    let clonedComponent = JSON.parse(JSON.stringify(component));
+    clonedComponent.id = uuidv4();
+    cloneComponent(clonedComponent);
+
+    let childComponents = [];
+
+    if (component.component.component === 'Tabs') {
+      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
+    } else {
+      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+    }
+
+    childComponents.forEach((componentId) => {
+      let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
+      childComponent.id = uuidv4();
+
+      if (component.component.component === 'Tabs') {
+        const childTabId = childComponent.parent.split('-').at(-1);
+        childComponent.parent = `${clonedComponent.id}-${childTabId}`;
+      } else {
+        childComponent.parent = clonedComponent.id;
+      }
+      cloneComponent(childComponent);
+    });
+    toast.success(`${component.component.name} cloned succesfully`);
+    switchSidebarTab(2);
+  });
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
@@ -50,22 +80,13 @@ export const Inspector = ({
     }
   }, []);
 
-  // useEffect(() => {
-  //   setComponent(selectedComponent);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [selectedComponent.component.definition]);
-
-  // useEffect(() => {
-  //   setComponents(allComponents);
-  // }, [allComponents]);
-
   const validateComponentName = (name) => {
-    const isValid = Object.values(allComponents)
+    const isValid = !Object.values(allComponents)
       .map((component) => component.component.name)
       .includes(name);
 
     if (component.component.name === name) {
-      return false;
+      return true;
     }
     return isValid;
   };
@@ -73,7 +94,7 @@ export const Inspector = ({
   function handleonChangeInputEvent(event) {
     const newName = event.target.value;
 
-    if (validateComponentName(newName)) {
+    if (!validateComponentName(newName)) {
       toast.error('Component name already exists');
     }
     setNewComponentName(newName);
@@ -85,9 +106,9 @@ export const Inspector = ({
       return setInputFocus();
     }
     const newComponent = { ...component };
-    if (validateQueryName(newName) && !validateComponentName(newName)) {
+    if (validateQueryName(newName) && validateComponentName(newName)) {
       newComponent.component.name = newName;
-      componentChanged(newComponent);
+      componentDefinitionChanged(newComponent);
     } else if (newComponent.component.name !== newName) {
       toast.error('Invalid widget name. Should be unique and only include letters, numbers and underscore.');
       setInputFocus();

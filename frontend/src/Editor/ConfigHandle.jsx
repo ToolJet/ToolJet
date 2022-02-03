@@ -29,9 +29,9 @@ export const ConfigHandle = function ConfigHandle({
       >
         <img
           style={{ cursor: 'pointer', marginRight: '5px' }}
-          src="/assets/images/icons/menu.svg"
-          width="8"
-          height="8"
+          src="/assets/images/icons/settings.svg"
+          width="12"
+          height="12"
           draggable="false"
         />
         {component.name}

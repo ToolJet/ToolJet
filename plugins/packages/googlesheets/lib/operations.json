@@ -41,7 +41,11 @@
         "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter spreadsheet_id"
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
       },
       "spreadsheet_range": {
         "label": "Range",
@@ -49,7 +53,10 @@
         "type": "codehinter",
         "lineNumbers": false,
         "placeholder": "A1:Z500",
-        "description": "Enter range"
+        "description": "Enter range",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "sheet": {
         "label": "Sheet",
@@ -57,7 +64,10 @@
         "type": "codehinter",
         "lineNumbers": false,
         "placeholder": "Leave blank to use first sheet",
-        "description": "Enter sheet"
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     },
     "append": {
@@ -66,7 +76,11 @@
         "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter spreadsheet_id"
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
       },
       "sheet": {
         "label": "Sheet",
@@ -74,14 +88,21 @@
         "type": "codehinter",
         "lineNumbers": false,
         "placeholder": "Leave blank to use first sheet",
-        "description": "Enter sheet"
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "rows": {
         "label": "Rows",
         "key": "rows",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter rows"
+        "description": "Enter rows",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter rows"
       }
     },
     "info": {
@@ -90,7 +111,12 @@
         "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter spreadsheet_id"
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+        
       }
     },
     "delete_row": {
@@ -99,21 +125,33 @@
         "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter spreadsheet_id"
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
       },
       "sheet": {
         "label": "GID",
         "key": "sheet",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter sheet"
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter sheet"
       },
       "row_index": {
         "label": "Delete row number",
         "key": "row_index",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter row number"
+        "description": "Enter row number",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter row number"
       }
     },
     "update": {
@@ -122,15 +160,21 @@
         "key": "spreadsheet_id",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter spreadsheet_id"
+        "description": "Enter spreadsheet_id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
       },
       "where_field": {
         "label": "Where",
         "key": "where_field",
-        "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter field"
+        "description": "Enter field",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter field"
       },
       "where_operation": {
         "label": "Operator",
@@ -148,17 +192,21 @@
       "where_value": {
         "label": "Value",
         "key": "where_value",
-        "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter value"
+        "description": "Enter value",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter spreadsheet_id"
       },
       "body": {
         "label": "Body",
         "key": "body",
         "type": "codehinter",
         "description": "Enter body",
-        "lineNumbers": false
+        "lineNumbers": false,
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     }
   }

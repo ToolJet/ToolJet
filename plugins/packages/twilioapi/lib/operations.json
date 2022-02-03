@@ -23,14 +23,21 @@
         "key": "toNumber",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter to number"
+        "description": "Enter to number",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "body": {
         "label": "Body",
         "key": "body",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter message body"
+        "description": "Enter message body",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter message body"
       }
     }
   }
