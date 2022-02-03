@@ -38,6 +38,8 @@ export const SubContainer = ({
   customResolvables,
   parentComponent,
   listViewItemOptions,
+  onComponentHover,
+  hoveredComponent,
 }) => {
   const [_currentParentRef, setParentRef] = useState(parentRef);
 
@@ -422,6 +424,8 @@ export const SubContainer = ({
           readOnly={readOnly}
           darkMode={darkMode}
           customResolvables={customResolvables}
+          onComponentHover={onComponentHover}
+          hoveredComponent={hoveredComponent}
           parentId={parentComponent?.name}
           containerProps={{
             mode,
@@ -442,6 +446,8 @@ export const SubContainer = ({
             selectedComponent,
             darkMode,
             readOnly,
+            onComponentHover,
+            hoveredComponent,
           }}
         />
       ))}
