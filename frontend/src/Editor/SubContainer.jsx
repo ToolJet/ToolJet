@@ -1,17 +1,12 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
+import { v4 as uuidv4 } from 'uuid';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
-
-function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
-  );
-}
 
 export const SubContainer = ({
   mode,
