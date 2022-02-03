@@ -3177,6 +3177,15 @@ input[type="text"] {
   .DateRangePickerInput_arrow_svg {
     height: 17px;
   }
+
+  .DateRangePickerInput{
+    overflow: hidden;
+  }
+  
+  .DateInput_fang {
+    position: fixed;
+    top: 57px !important;
+  }
 }
 
 .fw-400 {
