@@ -27,10 +27,9 @@ export default class Install extends Command {
     }
 
     CliUx.ux.action.start('adding npm module');
-
     await execa('npm', ['i', `${args.npm_module}`], { cwd: pluginPath });
+    CliUx.ux.action.stop();
 
     this.log('\x1b[42m', '\x1b[30m', `Package: ${args.npm_module} added to ${plugin}`, '\x1b[0m');
-    CliUx.ux.action.stop();
   }
 }

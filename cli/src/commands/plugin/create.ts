@@ -10,10 +10,11 @@ const Logger = require('hygen/lib/logger');
 export default class Create extends Command {
   static flags = {
     type: Flags.string({ options: ['database', 'api', 'cloud-storage'] }),
+    build: Flags.boolean({ char: 'b' }),
   };
   static description = 'Create a new tooljet plugin';
 
-  static examples = [`$ tooljet plugin create <name> --type=<database | api | cloud-storage>`];
+  static examples = [`$ tooljet plugin create <name> --type=<database | api | cloud-storage> [--build]`];
 
   static args = [{ name: 'plugin_name', description: 'Name of the plugin', required: true }];
 
@@ -21,11 +22,11 @@ export default class Create extends Command {
     const { args, flags } = await this.parse(Create);
 
     if (Number(args.plugin_name)) {
-      this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin ]name can not be a number');
+      this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin name can not be a number');
       process.exit(1);
     }
 
-    let type = flags.type;
+    let { type } = flags;
 
     const name = await CliUx.ux.prompt('Enter plugin display name');
 
@@ -88,9 +89,14 @@ export default class Create extends Command {
     });
 
     await execa('npx', ['lerna', 'link', 'convert'], { cwd: pluginsPath });
-    await execa('npm run', ['build:plugins'], { cwd: pluginsPath });
-
     CliUx.ux.action.stop();
+
+    if (flags.build) {
+      CliUx.ux.action.start('building plugins');
+      await execa.command('npm run build:plugins', { cwd: process.cwd() });
+      CliUx.ux.action.stop();
+    }
+
     this.log('\x1b[42m', '\x1b[30m', `Plugin: ${args.plugin_name} created successfully`, '\x1b[0m');
 
     const tree = CliUx.ux.tree();

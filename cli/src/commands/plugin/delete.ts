@@ -1,4 +1,4 @@
-import { Command, CliUx } from '@oclif/core';
+import { Command, CliUx, Flags } from '@oclif/core';
 import * as inquirer from 'inquirer';
 const execa = require('execa');
 const path = require('path');
@@ -8,12 +8,16 @@ const rimraf = require('rimraf');
 export default class Delete extends Command {
   static description = 'Delete a tooljet plugin';
 
-  static examples = [`$ tooljet plugin delete <name>`];
+  static flags = {
+    build: Flags.boolean({ char: 'b' }),
+  };
+
+  static examples = [`$ tooljet plugin delete <name> [--build]`];
 
   static args = [{ name: 'plugin_name', description: 'Name of the plugin', required: true }];
 
   async run(): Promise<void> {
-    const { args } = await this.parse(Delete);
+    const { args, flags } = await this.parse(Delete);
 
     const pluginsPath = 'plugins';
     const pluginPath = path.join('plugins', 'packages', `${args.plugin_name}`);
@@ -41,6 +45,13 @@ export default class Delete extends Command {
           rimraf.sync(pluginDocPath);
           await execa('npx', ['lerna', 'link', 'convert'], { cwd: pluginsPath });
           CliUx.ux.action.stop();
+
+          if (flags.build) {
+            CliUx.ux.action.start('building plugins');
+            await execa.command('npm run build:plugins', { cwd: process.cwd() });
+            CliUx.ux.action.stop();
+          }
+
           this.log('\x1b[42m', '\x1b[30m', `Plugin: ${args.plugin_name} deleted successfully`, '\x1b[0m');
         } else {
           CliUx.ux.action.stop();
