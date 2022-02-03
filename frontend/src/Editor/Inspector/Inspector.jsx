@@ -44,12 +44,24 @@ export const Inspector = ({
     clonedComponent.id = uuidv4();
     cloneComponent(clonedComponent);
 
-    const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+    let childComponents = [];
+
+    if (component.component.component === 'Tabs') {
+      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
+    } else {
+      childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+    }
 
     childComponents.forEach((componentId) => {
       let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
       childComponent.id = uuidv4();
-      childComponent.parent = clonedComponent.id;
+
+      if (component.component.component === 'Tabs') {
+        const childTabId = childComponent.parent.split('-').at(-1);
+        childComponent.parent = `${clonedComponent.id}-${childTabId}`;
+      } else {
+        childComponent.parent = clonedComponent.id;
+      }
       cloneComponent(childComponent);
     });
     toast.success(`${component.component.name} cloned succesfully`);
