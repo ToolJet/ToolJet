@@ -51,7 +51,11 @@
         "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter path"
+        "description": "Enter path",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter path"
       }
     },
     "query_collection": {
@@ -60,15 +64,22 @@
         "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter path"
+        "description": "Enter path",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter path"
       },
       "order_field": {
         "label": "Order",
         "key": "order_field",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter order"
+        "description": "Enter order",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter order"
       },
       "order_type": {
         "label": "Order type",
@@ -92,15 +103,22 @@
         "key": "limit",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter limit"
+        "description": "Enter limit",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter limit"
       },
       "where_field": {
         "label": "Field",
         "key": "where_field",
-        "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter field"
+        "description": "Enter field",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter field"
       },
       "where_operation": {
         "label": "Operator",
@@ -150,10 +168,13 @@
       "where_value": {
         "label": "Value",
         "key": "where_value",
-        "className": "col-4",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter value"
+        "description": "Enter value",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter value"
       }
     },
     "add_document": {
@@ -162,7 +183,11 @@
         "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter path"
       },
       "body": {
         "label": "Body",
@@ -178,7 +203,11 @@
         "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter path"
+        "description": "Enter path",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter path"
       },
       "body": {
         "label": "Body",
@@ -194,7 +223,11 @@
         "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter path"
+        "description": "Enter path",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter path"
       },
       "body": {
         "label": "Body",
@@ -210,14 +243,22 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "document_id_key": {
         "label": "Key for document Id",
         "key": "document_id_key",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter key for document Id"
+        "description": "Enter key for document Id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter id"
       },
       "records": {
         "label": "Records",
@@ -234,7 +275,11 @@
         "key": "path",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter path"
+        "description": "Enter path",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter path"
       }
     }
   }
