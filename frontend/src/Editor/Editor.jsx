@@ -49,7 +49,6 @@ import * as Driver from 'driver.js';
 import 'driver.js/dist/driver.min.css';
 import { SearchBoxComponent } from '@/_ui/Search';
 
-
 setAutoFreeze(false);
 enablePatches();
 class Editor extends React.Component {
