@@ -142,20 +142,22 @@ class Editor extends React.Component {
       currentSidebarTab: 2,
       selectedComponent: null,
     });
+  }
 
-    // start walkthrough only if the current user haven't completed it already
+  initWalkThrough() {
     const driver = new Driver({
       allowClose: true,
       closeBtnText: 'Skip',
       nextBtnText: 'Next',
       prevBtnText: 'Previous',
-      onReset: (Element) => {
+      onReset: () => {
         // Here we need to write the logic to update walkthroughCompleted column of the current user.
         addToLocalStorage({ key: 'walkthroughCompleted', value: true });
       },
     });
 
     setTimeout(function () {
+      // start walkthrough only if the current user haven't completed it already
       if (
         getDataFromLocalStorage('walkthroughCompleted') == undefined ||
         !getDataFromLocalStorage('walkthroughCompleted')
@@ -194,6 +196,12 @@ class Editor extends React.Component {
         driver.start();
       }
     }, 2000);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.editingVersion == undefined && this.state.editingVersion) {
+      this.initWalkThrough();
+    }
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
