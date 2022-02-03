@@ -100,7 +100,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
-        textColor: { value: undefined },
+        textColor: { value: '#000' },
         actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
