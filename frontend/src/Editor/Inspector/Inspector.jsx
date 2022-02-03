@@ -99,6 +99,7 @@ export const Inspector = ({
 
     if (!validateComponentName(newName)) {
       toast.error('Component name already exists');
+      return setInputFocus();
     }
 
     const newComponent = { ...component };
