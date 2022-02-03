@@ -59,29 +59,37 @@ export const Inspector = ({
   //   setComponents(allComponents);
   // }, [allComponents]);
 
+  const validateComponentName = (name) => {
+    const isValid = Object.values(allComponents)
+      .map((component) => component.component.name)
+      .includes(name);
+
+    if (component.component.name === name) {
+      return false;
+    }
+    return isValid;
+  };
+
   function handleonChangeInputEvent(event) {
     const newName = event.target.value;
-    if (
-      Object.values(allComponents)
-        .map((component) => component.component.name)
-        .includes(newName)
-    ) {
+
+    if (validateComponentName(newName)) {
       toast.error('Component name already exists');
     }
     setNewComponentName(newName);
   }
 
   function handleComponentNameChange(newName) {
-    const isValid = !Object.values(allComponents)
-      .map((component) => component.component.name)
-      .includes(newName);
-
-    let newComponent = { ...component };
-    if (validateQueryName(newName) && isValid) {
+    if (newName.length === 0) {
+      toast.error('Widget name cannot be empty');
+      return setInputFocus();
+    }
+    const newComponent = { ...component };
+    if (validateQueryName(newName) && !validateComponentName(newName)) {
       newComponent.component.name = newName;
       componentChanged(newComponent);
     } else if (newComponent.component.name !== newName) {
-      toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.');
+      toast.error('Invalid widget name. Should be unique and only include letters, numbers and underscore.');
       setInputFocus();
     }
   }
@@ -271,23 +279,6 @@ export const Inspector = ({
       }
     }
   }
-
-  const componentWillUnmount = React.useRef(false);
-  // componentWillUnmount
-  React.useEffect(() => {
-    return () => {
-      componentWillUnmount.current = true;
-    };
-  }, []);
-
-  React.useEffect(() => {
-    return () => {
-      if (componentWillUnmount.current) {
-        setNewComponentName(component.component.name);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [component.componentname]);
 
   return (
     <div className="inspector">
