@@ -182,7 +182,7 @@ export function CodeHinter({
   return (type ?? 'code') === 'code' || forceCodeBox ? (
     <div className="row" style={{ width: '100%' }}>
       <div className={`col-${(type ?? 'code') === 'code' ? 12 : 10}`}>
-        <div className="code-hinter-wrapper" style={{ width: '100%' }}>
+        <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
           <div
             className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
             key={suggestions.length}
