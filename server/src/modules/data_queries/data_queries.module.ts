@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataQuery } from '../../../src/entities/data_query.entity';
 import { DataQueriesController } from '../../../src/controllers/data_queries.controller';
@@ -21,6 +21,7 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
       Organization,
     ]),
     CaslModule,
+    LoggerModule,
   ],
   providers: [
     DataQueriesService,
@@ -48,6 +50,7 @@ import { AppImportExportService } from '@services/app_import_export.service';
     AppsService,
     UsersService,
     AppImportExportService,
+    Logger,
   ],
   controllers: [DataQueriesController],
 })

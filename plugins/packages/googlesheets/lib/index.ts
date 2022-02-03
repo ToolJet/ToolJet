@@ -1,4 +1,4 @@
-import { QueryError, QueryResult,  QueryService} from '@tooljet-plugins/common'
+import { QueryError, QueryResult, QueryService, OAuthUnauthorizedClientError} from '@tooljet-plugins/common'
 import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
 import got, { Headers } from 'got'
 import { SourceOptions, QueryOptions } from './types'
@@ -115,6 +115,10 @@ export default class GooglesheetsQueryService implements QueryService {
       }
     } catch (error) {
       console.log(error.response);
+
+      if (error.response.statusCode === 401) {
+        throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {...error});
+      }
       throw new QueryError('Query could not be completed', error.message, {});
     }
 
@@ -122,5 +126,45 @@ export default class GooglesheetsQueryService implements QueryService {
       status: 'ok',
       data: result,
     };
+  }
+
+  async refreshToken(sourceOptions, error) {
+    if (!sourceOptions['refresh_token']) {
+      throw new QueryError('Query could not be completed', error.response, {});
+    }
+    const accessTokenUrl = 'https://oauth2.googleapis.com/token';
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const grantType = 'refresh_token';
+
+    const data = {
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: grantType,
+      refresh_token: sourceOptions['refresh_token']
+    };
+
+    const accessTokenDetails = {};
+
+    try {
+      const response = await got(accessTokenUrl, {
+        method: 'post',
+        json: data,
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const result = JSON.parse(response.body);
+
+      if (!(response.statusCode >= 200 || response.statusCode < 300)) {
+        throw new QueryError('could not connect to Googlesheets', error.response, {});
+      }
+
+      if (result['access_token']) {
+        accessTokenDetails['access_token'] = result['access_token']
+      }
+    } catch (error) {
+      console.log(error.response.body);
+      throw new QueryError('could not connect to Googlesheets', error.response, {});
+    }
+    return accessTokenDetails;
   }
 }

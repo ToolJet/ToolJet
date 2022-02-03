@@ -14,7 +14,7 @@ import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { DataQueriesService } from '../../src/services/data_queries.service';
 import { DataSourcesService } from '../../src/services/data_sources.service';
-import { QueryError } from 'src/modules/data_sources/query.error';
+import { QueryError } from 'src/modules/data_sources/query.errors';
 import { QueryAuthGuard } from 'src/modules/auth/query-auth.guard';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppsService } from '@services/apps.service';

@@ -177,6 +177,11 @@ export class DataSourcesService {
     return parsedOptions;
   }
 
+  async updateOAuthAccessToken(accessTokenDetails: object, dataSourceOptions: object) {
+    const existingCredentialId = dataSourceOptions['access_token']['credential_id'];
+    await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
+  }
+
   async getAuthUrl(provider): Promise<object> {
     const service = new allPlugins[provider]();
     return { url: service.authUrl() };
