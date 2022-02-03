@@ -134,6 +134,8 @@ button {
   }
 
   .query-manager {
+    user-select: none;
+
     // .row {
     //   width: 605px;
     // }
@@ -541,6 +543,7 @@ button {
         min-height: 41px;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* Internet Explorer 10+ */
+        user-select: none;
 
         &::-webkit-scrollbar {
           /* WebKit */
