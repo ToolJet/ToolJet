@@ -299,7 +299,7 @@ export const componentTypes = [
     description: 'Text field for forms',
     component: 'TextInput',
     defaultSize: {
-      width: 4,
+      width: 6,
       height: 30,
     },
     others: {
@@ -456,7 +456,7 @@ export const componentTypes = [
     description: 'Select a date and time',
     component: 'Datepicker',
     defaultSize: {
-      width: 4,
+      width: 5,
       height: 30,
     },
     validation: {
@@ -509,7 +509,7 @@ export const componentTypes = [
     description: 'A single checkbox',
     component: 'Checkbox',
     defaultSize: {
-      width: 4,
+      width: 5,
       height: 30,
     },
     others: {
@@ -553,8 +553,8 @@ export const componentTypes = [
     description: 'Radio buttons',
     component: 'RadioButton',
     defaultSize: {
-      width: 5,
-      height: 30,
+      width: 6,
+      height: 60,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -603,7 +603,7 @@ export const componentTypes = [
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
-      width: 5,
+      width: 6,
       height: 30,
     },
     others: {
@@ -706,6 +706,7 @@ export const componentTypes = [
     },
     events: {},
     styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -723,6 +724,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -742,7 +744,7 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Show loading state' },
     },
     defaultSize: {
-      width: 5,
+      width: 6,
       height: 30,
     },
     events: [],
@@ -1024,7 +1026,7 @@ export const componentTypes = [
     description: 'Display Google Maps',
     component: 'Map',
     defaultSize: {
-      width: 12,
+      width: 16,
       height: 420,
     },
     others: {
@@ -1133,7 +1135,7 @@ export const componentTypes = [
     description: 'Star rating',
     component: 'StarRating',
     defaultSize: {
-      width: 8,
+      width: 10,
       height: 30,
     },
     others: {
@@ -1625,7 +1627,7 @@ export const componentTypes = [
     description: 'Content can be shown as tags',
     component: 'Tags',
     defaultSize: {
-      width: 5,
+      width: 8,
       height: 30,
     },
     others: {
@@ -1663,7 +1665,7 @@ export const componentTypes = [
     description: 'Pagination ',
     component: 'Pagination',
     defaultSize: {
-      width: 9,
+      width: 10,
       height: 30,
     },
     others: {
@@ -1713,7 +1715,7 @@ export const componentTypes = [
     description: 'Show the progress using circular progressbar',
     component: 'CircularProgressBar',
     defaultSize: {
-      width: 2,
+      width: 7,
       height: 50,
     },
     others: {
@@ -1766,7 +1768,7 @@ export const componentTypes = [
     description: 'Spinner can be used to display loading status',
     component: 'Spinner',
     defaultSize: {
-      width: 2,
+      width: 4,
       height: 30,
     },
     others: {

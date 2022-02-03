@@ -51,6 +51,7 @@ export function CodeHinter({
   componentName = null,
   usePortalEditor = true,
   className,
+  width = '100%',
   paramName,
   paramLabel,
   type,
@@ -182,7 +183,7 @@ export function CodeHinter({
 
   return (
     <>
-      <div className="row" style={{ width: '100%', display: codeShow ? 'flex' : 'none' }}>
+      <div className="row" style={{ width: width, display: codeShow ? 'flex' : 'none' }}>
         <div className={`col-${(type ?? 'code') === 'code' ? 12 : 10}`}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div

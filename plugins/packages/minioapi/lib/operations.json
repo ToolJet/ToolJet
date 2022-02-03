@@ -43,14 +43,21 @@
         "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter bucket"
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
       },
       "key": {
         "label": "Object Name",
         "key": "objectName",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter object name"
+        "description": "Enter object name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     },
     "put_object": {
@@ -59,28 +66,41 @@
         "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter bucket"
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
       },
       "key": {
         "label": "Object Name",
         "key": "objectName",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter object name"
+        "description": "Enter object name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "contentType": {
         "label": "Content Type",
         "key": "contentType",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter content type"
+        "description": "Enter content type",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "data": {
         "label": "Upload data",
         "key": "data",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter upload data"
+        "description": "Enter upload data",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     },
     "list_objects": {
@@ -89,14 +109,21 @@
         "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter bucket"
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
       },
       "prefix": {
         "label": "Prefix",
         "key": "prefix",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter prefix"
+        "description": "Enter prefix",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     },
     "signed_url_for_get": {
@@ -105,14 +132,21 @@
         "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter bucket"
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
       },
       "key": {
         "label": "Object Name",
         "key": "objectName",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter key"
+        "description": "Enter key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "expiresIn": {
         "label": "Expires in",
@@ -120,7 +154,10 @@
         "type": "codehinter",
         "lineNumbers": false,
         "initialValue": "86400",
-        "description": "Enter expires in"
+        "description": "Enter expires in",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     },
     "signed_url_for_put": {
@@ -129,14 +166,21 @@
         "key": "bucket",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter bucket"
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
       },
       "key": {
         "label": "Object Name",
         "key": "objectName",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter key"
+        "description": "Enter key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       },
       "expiresIn": {
         "label": "Expires in",
@@ -144,7 +188,10 @@
         "type": "codehinter",
         "initialValue": "86400",
         "lineNumbers": false,
-        "description": "Enter expires in"
+        "description": "Enter expires in",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     }
   }
