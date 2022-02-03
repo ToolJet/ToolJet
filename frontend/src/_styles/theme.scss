@@ -2326,12 +2326,29 @@ hr {
 
     .handle-content {
       cursor: move;
-      color: #4d72fa;
-      background: rgba(66, 153, 225, 0.1);
+      color: $white;
+      background: $primary;
     }
 
     .badge {
       font-size: 9px;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+
+      .delete-part{
+        margin-left: 10px;
+        float: right;
+      }
+
+      .delete-part::before {
+        height: 12px;
+        display: inline-block;
+        width: 2px;
+        background-color: rgba(255,255,255,0.8);
+        opacity: 0.5;
+        content: '';
+        vertical-align: middle;
+      }
     }
   }
 }
