@@ -109,7 +109,7 @@ export const Inspector = ({
     if (validateQueryName(newName) && validateComponentName(newName)) {
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
-    } else if (newComponent.component.name !== newName) {
+    } else {
       toast.error('Invalid widget name. Should be unique and only include letters, numbers and underscore.');
       setInputFocus();
     }
