@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/_components';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import useFocus from '@/_hooks/use-Focus';
 
 export const Inspector = ({
   cloneComponent,
@@ -35,6 +36,8 @@ export const Inspector = ({
   const [key, setKey] = React.useState('properties');
   const [tabHeight, setTabHeight] = React.useState(0);
   const tabsRef = useRef(null);
+  const [newComponentName, setNewComponentName] = useState(component.component.name);
+  const [inputRef, setInputFocus] = useFocus();
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
   useHotkeys('escape', () => switchSidebarTab(2));
@@ -77,14 +80,35 @@ export const Inspector = ({
     }
   }, []);
 
+  const validateComponentName = (name) => {
+    const isValid = !Object.values(allComponents)
+      .map((component) => component.component.name)
+      .includes(name);
+
+    if (component.component.name === name) {
+      return true;
+    }
+    return isValid;
+  };
+
   function handleComponentNameChange(newName) {
+    if (newName.length === 0) {
+      toast.error('Widget name cannot be empty');
+      return setInputFocus();
+    }
+
+    if (!validateComponentName(newName)) {
+      toast.error('Component name already exists');
+      return setInputFocus();
+    }
+
     if (validateQueryName(newName)) {
       let newComponent = { ...component };
       newComponent.component.name = newName;
-
       componentDefinitionChanged(newComponent);
     } else {
-      toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.');
+      toast.error('Invalid widget name. Should be unique and only include letters, numbers and underscore.');
+      setInputFocus();
     }
   }
 
@@ -292,10 +316,15 @@ export const Inspector = ({
               <div>
                 <div className="input-icon">
                   <input
+                    onChange={(e) => setNewComponentName(e.target.value)}
                     type="text"
-                    onChange={(e) => handleComponentNameChange(e.target.value)}
+                    onKeyUp={(e) => {
+                      if (e.keyCode === 13) handleComponentNameChange(newComponentName);
+                    }}
+                    onBlur={() => handleComponentNameChange(newComponentName)}
                     className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
-                    value={component.component.name}
+                    value={newComponentName}
+                    ref={inputRef}
                   />
                   <span className="input-icon-addon">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
