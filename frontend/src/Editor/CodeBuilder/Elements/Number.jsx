@@ -16,7 +16,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
         <div className="col-10">
           <div className="field mb-3 form-control">
             <input
-              style={{ numberTheme }}
+              style={numberTheme}
               type="text"
               onChange={(e) => {
                 setNumber(e.target.value);
