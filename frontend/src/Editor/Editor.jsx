@@ -1030,6 +1030,7 @@ class Editor extends React.Component {
                         onVersionRelease={this.onVersionRelease}
                         editingVersion={editingVersion}
                         fetchApp={this.fetchApp}
+                        saveEditingVersion={this.saveEditingVersion}
                       />
                     )}
                   </div>

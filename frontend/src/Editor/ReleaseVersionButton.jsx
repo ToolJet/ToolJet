@@ -9,11 +9,13 @@ export const ReleaseVersionButton = function DeployVersionButton({
   isVersionReleased,
   fetchApp,
   onVersionRelease,
+  saveEditingVersion,
 }) {
   const [isReleasing, setIsReleasing] = useState(false);
 
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
+    saveEditingVersion();
     appService
       .saveApp(appId, {
         name: appName,
