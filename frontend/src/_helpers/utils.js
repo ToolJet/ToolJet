@@ -126,6 +126,18 @@ export function computeComponentName(componentType, currentComponents) {
   const currentComponentsForKind = Object.values(currentComponents).filter(
     (component) => component.component.component === componentType
   );
+
+  const existingComponentNames = currentComponentsForKind.map((component) => component.component.name);
+  let currentComponentWithNumbers = [];
+  if (existingComponentNames.length > 0) {
+    existingComponentNames.forEach((name) => {
+      if (name && name.includes(componentType.toLowerCase())) {
+        const number = parseInt(name.match(/\d+/));
+        number && currentComponentWithNumbers.push(number);
+      }
+    });
+  }
+
   let found = false;
   let componentName = '';
   let currentNumber = currentComponentsForKind.length + 1;
@@ -135,7 +147,13 @@ export function computeComponentName(componentType, currentComponents) {
     if (Object.values(currentComponents).find((component) => component.name === componentName) === undefined) {
       found = true;
     }
-    currentNumber = currentNumber + 1;
+
+    if (currentComponentWithNumbers.includes(currentNumber) || currentNumber > 1) {
+      const maxNumber = Math.max(...currentComponentWithNumbers);
+      componentName = `${componentType.toLowerCase()}${maxNumber + 1}`;
+    } else {
+      currentNumber = currentNumber + 1;
+    }
   }
 
   return componentName;
