@@ -103,7 +103,7 @@ export const Inspector = ({
     }
 
     const newComponent = { ...component };
-    if (validateQueryName(newName) && validateComponentName(newName)) {
+    if (validateQueryName(newName)) {
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
     } else {
