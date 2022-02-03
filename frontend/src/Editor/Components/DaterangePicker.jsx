@@ -25,10 +25,9 @@ export const DaterangePicker = function DaterangePicker({
   const dateRangeRef = useRef(null);
 
   useEffect(() => {
-    dateRangeRef.current.container.querySelector(
-      '.DateRangePickerInput__withBorder'
-    ).style.borderRadius = `${Number.parseFloat(borderRadius)}px`;
-    dateRangeRef.current.container.querySelector('.DateRangePickerInput__withBorder').style.overFlow = `hidden`;
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.borderRadius = `${Number.parseFloat(
+      borderRadius
+    )}px`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRangeRef.current, borderRadius]);
 
