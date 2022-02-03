@@ -20,9 +20,19 @@ export default class Create extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Create);
 
+    if (Number(args.plugin_name)) {
+      this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin ]name can not be a number');
+      process.exit(1);
+    }
+
     let type = flags.type;
 
     const name = await CliUx.ux.prompt('Enter plugin display name');
+
+    if (Number(name)) {
+      this.log('\x1b[41m%s\x1b[0m', 'Error : Plugin Display name can not be a number');
+      process.exit(1);
+    }
 
     if (!type) {
       const responses: any = await inquirer.prompt([
@@ -78,6 +88,7 @@ export default class Create extends Command {
     });
 
     await execa('npx', ['lerna', 'link', 'convert'], { cwd: pluginsPath });
+    await execa('npm run', ['build:plugins'], { cwd: pluginsPath });
 
     CliUx.ux.action.stop();
     this.log('\x1b[42m', '\x1b[30m', `Plugin: ${args.plugin_name} created successfully`, '\x1b[0m');

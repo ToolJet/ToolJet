@@ -1,7 +1,7 @@
 {
   "name": "@tooljet/cli",
   "description": "tooljet cli tool",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "bin": {
     "tooljet": "./bin/run"
   },
@@ -71,7 +71,7 @@
   },
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
-    "lint": "eslint . --ext .ts --config .eslintrc",
+    "lint": "eslint .  '**/*.ts'",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
     "prepack": "npm run build && oclif manifest && oclif readme",
