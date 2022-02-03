@@ -84,6 +84,11 @@ class Restapi extends React.Component {
       }),
       control: (provided) => ({
         ...provided,
+        borderColor: 'hsl(0, 0%, 80%)',
+        boxShadow: 'none',
+        '&:hover': {
+          borderColor: 'hsl(0, 0%, 80%)',
+        },
         backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
         height: '32px!important',
         minHeight: '32px!important',
