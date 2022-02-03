@@ -28,8 +28,6 @@
     "eslint-config-oclif": "^4",
     "eslint-config-oclif-typescript": "^1.0.2",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-cypress": "^2.12.1",
-    "eslint-plugin-jest": "^24.4.2",
     "eslint-plugin-prettier": "^3.4.1",
     "globby": "^11",
     "mocha": "^9",
