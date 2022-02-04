@@ -2,6 +2,7 @@
 import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -46,14 +47,22 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         let result = '';
 
         if (reservedKeyword.includes(code)) {
-          let jsonString = JSON.stringify(code, handleCircularStructureToJSON());
-          result = jsonString;
-          return [result, {}];
+          error = `${code} is a reserved keyword`;
+          return [{}, error];
         }
 
         try {
           const evalFunction = Function(
-            ['variables', 'components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
+            [
+              'variables',
+              'components',
+              'queries',
+              'globals',
+              'moment',
+              '_',
+              ...Object.keys(customObjects),
+              reservedKeyword,
+            ],
             `return ${code}`
           );
           result = evalFunction(
@@ -63,7 +72,8 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
             state.globals,
             moment,
             _,
-            ...Object.values(customObjects)
+            ...Object.values(customObjects),
+            null
           );
         } catch (err) {
           error = err;
