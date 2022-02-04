@@ -175,7 +175,7 @@
         "key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ projections: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
+        "placeholder": "{ projection: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
         "description": "Enter options",
         "height": "150px"
       }
@@ -206,7 +206,7 @@
         "key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ projections: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
+        "placeholder": "{ projection: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
         "description": "Enter options",
         "height": "150px"
       }
