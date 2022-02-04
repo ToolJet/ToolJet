@@ -3,6 +3,8 @@ import React from 'react';
 import { MentionsInput, Mention } from 'react-mentions';
 
 const Mentions = ({ users, value, setValue, placeholder }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <MentionsInput
       style={{
@@ -10,6 +12,7 @@ const Mentions = ({ users, value, setValue, placeholder }) => {
           fontSize: 16,
           lineHeight: 1.2,
           minHeight: 40,
+          color: '#f8f8f2',
         },
         highlighter: {
           padding: 9,
@@ -22,6 +25,7 @@ const Mentions = ({ users, value, setValue, placeholder }) => {
           paddingLeft: 0,
           border: 0,
           outline: 0,
+          color: darkMode ? '#f8f8f2' : '#000',
         },
         suggestions: {
           list: {
