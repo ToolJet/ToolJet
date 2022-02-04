@@ -913,7 +913,7 @@ export function Table({
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
                         <td
-                          className={cx(`${wrapAction}-wrapper`, {
+                          className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
                             'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                             'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
                             'has-dropdown': cell.column.columnType === 'dropdown',

@@ -172,7 +172,7 @@ class Table extends React.Component {
               <label className="form-label">Overflow</label>
               <SelectSearch
                 options={[
-                  { name: 'Wrap', value: 'text' },
+                  { name: 'Wrap', value: 'wrap' },
                   { name: 'Scroll', value: 'scroll' },
                   { name: 'Hide', value: 'hide' },
                 ]}
