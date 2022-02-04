@@ -2353,6 +2353,10 @@ hr {
   }
 }
 
+.draggable-box:hover {
+  z-index: 3 !important;
+}
+
 .modal-content {
   .config-handle {
     position: absolute;
