@@ -505,9 +505,19 @@ class Editor extends React.Component {
     if (!this.isVersionReleased()) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       // Delete child components when parent is deleted
-      const childComponents = Object.keys(newDefinition.components).filter(
-        (key) => newDefinition.components[key].parent === component.id
-      );
+
+      let childComponents = [];
+
+      if (newDefinition.components[component.id].component.component === 'Tabs') {
+        childComponents = Object.keys(newDefinition.components).filter((key) =>
+          newDefinition.components[key].parent?.startsWith(component.id)
+        );
+      } else {
+        childComponents = Object.keys(newDefinition.components).filter(
+          (key) => newDefinition.components[key].parent === component.id
+        );
+      }
+
       childComponents.forEach((componentId) => {
         delete newDefinition.components[componentId];
       });
