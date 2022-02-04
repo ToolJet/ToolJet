@@ -1455,7 +1455,7 @@ border-radius: 4px;
     overflow-x: scroll;
   }
   .hide-wrapper{
-   display: none !important;
+   visibility: hidden !important;
   }
   td {
     .text-container:focus-visible,
