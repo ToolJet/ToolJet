@@ -184,7 +184,7 @@ export function CodeHinter({
   return (
     <>
       <div className="row" style={{ width: width, display: codeShow ? 'flex' : 'none' }}>
-        <div className={`col-${(type ?? 'code') === 'code' ? 12 : 10}`}>
+        <div className={`col-${(type ?? 'code') === 'code' ? 12 : 10}`} style={{ marginBottom: '28px' }}>
           <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
