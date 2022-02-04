@@ -164,24 +164,29 @@ class Table extends React.Component {
               defaultValue={column.name}
             />
           </div>
-          <div className="field mb-2">
-            <label className="form-label">Text wrap</label>
-            <SelectSearch
-              options={[
-                { name: 'Text wrap', value: 'text' },
-                { name: 'Scroll', value: 'scroll' },
-                { name: 'Hide', value: 'hide' },
-              ]}
-              value={column.textWrap}
-              search={true}
-              closeOnSelect={true}
-              onChange={(value) => {
-                this.onColumnItemChange(index, 'textWrap', value);
-              }}
-              filterOptions={fuzzySearch}
-              placeholder="Select.."
-            />
-          </div>
+          {(column.columnType === 'string' ||
+            column.columnType === undefined ||
+            column.columnType === 'default' ||
+            column.columnType === 'text') && (
+            <div className="field mb-2">
+              <label className="form-label">Overflow</label>
+              <SelectSearch
+                options={[
+                  { name: 'Wrap', value: 'text' },
+                  { name: 'Scroll', value: 'scroll' },
+                  { name: 'Hide', value: 'hide' },
+                ]}
+                value={column.textWrap}
+                search={true}
+                closeOnSelect={true}
+                onChange={(value) => {
+                  this.onColumnItemChange(index, 'textWrap', value);
+                }}
+                filterOptions={fuzzySearch}
+                placeholder="Select.."
+              />
+            </div>
+          )}
           <div className="field mb-2">
             <label className="form-label">key</label>
             <CodeHinter
@@ -561,7 +566,6 @@ class Table extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-
     if (item === 'name') {
       const columnSizes = this.props.component.component.definition.properties.columnSizes;
 
@@ -573,7 +577,6 @@ class Table extends React.Component {
         }
       }
     }
-
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
