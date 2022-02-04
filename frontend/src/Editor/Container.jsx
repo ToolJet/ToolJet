@@ -416,6 +416,8 @@ export const Container = ({
               key={index}
               style={{
                 transform: `translate(${(previewComment.x * canvasWidth) / 100}px, ${previewComment.y}px)`,
+                position: 'absolute',
+                zIndex: 2,
               }}
             >
               <label className="form-selectgroup-item comment-preview-bubble">
