@@ -538,6 +538,8 @@ class HomePage extends React.Component {
             isImportingApp={isImportingApp}
             fileInput={this.fileInput}
             handleImportApp={this.handleImportApp}
+            creatingApp={creatingApp}
+            darkMode={this.props.darkMode}
           />
         )}
 
@@ -553,6 +555,7 @@ class HomePage extends React.Component {
                     folderChanged={this.folderChanged}
                     foldersChanged={this.foldersChanged}
                     canCreateFolder={this.canCreateFolder()}
+                    darkMode={this.props.darkMode}
                   />
                 </div>
 
@@ -590,6 +593,7 @@ class HomePage extends React.Component {
                           currentPage={meta.current_page}
                           count={this.pageCount()}
                           pageChanged={this.pageChanged}
+                          darkMode={this.props.darkMode}
                         />
                       )}
                     </div>
@@ -599,6 +603,7 @@ class HomePage extends React.Component {
             </div>
             <TemplateLibraryModal
               show={this.state.showTemplateLibraryModal}
+              onHide={() => this.setState({ showTemplateLibraryModal: false })}
               onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
               darkMode={this.props.darkMode}
             />

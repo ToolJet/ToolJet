@@ -1,17 +1,12 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
+import { v4 as uuidv4 } from 'uuid';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
-
-function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
-  );
-}
 
 export const SubContainer = ({
   mode,
@@ -38,6 +33,8 @@ export const SubContainer = ({
   customResolvables,
   parentComponent,
   listViewItemOptions,
+  onComponentHover,
+  hoveredComponent,
 }) => {
   const [_currentParentRef, setParentRef] = useState(parentRef);
 
@@ -357,15 +354,32 @@ export const SubContainer = ({
   };
 
   function onComponentOptionChangedForSubcontainer(component, optionName, value, extraProps) {
-    let newData = currentState.components[parentComponent.name]?.data || [];
-    newData[listViewItemOptions.index] = {
-      ...newData[listViewItemOptions.index],
-      [component.name]: {
-        ...(newData[listViewItemOptions.index] ? newData[listViewItemOptions.index][component.name] : {}),
-        [optionName]: value,
-      },
-    };
-    onComponentOptionChanged(parentComponent, 'data', newData);
+    if (parentComponent?.component === 'Listview') {
+      let newData = currentState.components[parentComponent.name]?.data || [];
+      newData[listViewItemOptions.index] = {
+        ...newData[listViewItemOptions.index],
+        [component.name]: {
+          ...(newData[listViewItemOptions.index] ? newData[listViewItemOptions.index][component.name] : {}),
+          [optionName]: value,
+        },
+      };
+      onComponentOptionChanged(parentComponent, 'data', newData);
+    } else {
+      onComponentOptionChanged(component, optionName, value, extraProps);
+    }
+  }
+
+  function customRemoveComponent(component) {
+    const componentName = appDefinition.components[component.id]['component'].name;
+    removeComponent(component);
+    if (parentComponent.component === 'Listview') {
+      const currentData = currentState.components[parentComponent.name]?.data || [];
+      const newData = currentData.map((widget) => {
+        delete widget[componentName];
+        return widget;
+      });
+      onComponentOptionChanged(parentComponent, 'data', newData);
+    }
   }
 
   return (
@@ -400,11 +414,14 @@ export const SubContainer = ({
           selectedComponent={selectedComponent}
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
-          removeComponent={removeComponent}
+          removeComponent={customRemoveComponent}
           canvasWidth={getContainerCanvasWidth()}
           readOnly={readOnly}
+          darkMode={darkMode}
           customResolvables={customResolvables}
-          parentId={parentComponent.name}
+          onComponentHover={onComponentHover}
+          hoveredComponent={hoveredComponent}
+          parentId={parentComponent?.name}
           containerProps={{
             mode,
             snapToGrid,
@@ -424,6 +441,8 @@ export const SubContainer = ({
             selectedComponent,
             darkMode,
             readOnly,
+            onComponentHover,
+            hoveredComponent,
           }}
         />
       ))}

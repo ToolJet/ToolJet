@@ -7,9 +7,11 @@ import { allSources } from './QueryEditors';
 import { Transformation } from './Transformation';
 import ReactJson from 'react-json-view';
 import { previewQuery } from '@/_helpers/appUtils';
+import { allSvgs } from '@tooljet/plugins/client';
 import { EventManager } from '../Inspector/EventManager';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
+
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
 const staticDataSources = [
@@ -26,6 +28,7 @@ let QueryManager = class QueryManager extends React.Component {
       selectedQuery: null,
       selectedDataSource: null,
       dataSourceMeta: {},
+      dataQueries: [],
     };
 
     this.previewPanelRef = React.createRef();
@@ -37,12 +40,13 @@ let QueryManager = class QueryManager extends React.Component {
     const source = props.dataSources.find((datasource) => datasource.id === dataSourceId);
     let dataSourceMeta = DataSourceTypes.find((source) => source.kind === selectedQuery?.kind);
     const paneHeightChanged = this.state.queryPaneHeight !== props.queryPaneHeight;
+    const dataQueries = props.dataQueries?.length ? props.dataQueries : this.state.dataQueries;
 
     this.setState(
       {
         appId: props.appId,
         dataSources: props.dataSources,
-        dataQueries: props.dataQueries,
+        dataQueries: dataQueries,
         mode: props.mode,
         currentTab: 1,
         addingQuery: props.addingQuery,
@@ -58,12 +62,12 @@ let QueryManager = class QueryManager extends React.Component {
           let source = props.dataSources.find((datasource) => datasource.id === selectedQuery.data_source_id);
           if (selectedQuery.kind === 'restapi') {
             if (!selectedQuery.data_source_id) {
-              source = { kind: 'restapi' };
+              source = { kind: 'restapi', id: 'null', name: 'REST API' };
             }
           }
           if (selectedQuery.kind === 'runjs') {
             if (!selectedQuery.data_source_id) {
-              source = { kind: 'runjs' };
+              source = { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' };
             }
           }
 
@@ -93,6 +97,11 @@ let QueryManager = class QueryManager extends React.Component {
     this.setStateFromProps(this.props);
   }
 
+  isJson = (maybeJson) => {
+    if (typeof maybeJson === 'object') return true;
+    return false;
+  };
+
   changeDataSource = (sourceId) => {
     const source = [...this.state.dataSources, ...staticDataSources].find((datasource) => datasource.id === sourceId);
 
@@ -113,7 +122,9 @@ let QueryManager = class QueryManager extends React.Component {
       selectedDataSource: source,
       selectedSource: source,
       queryName: this.computeQueryName(source.kind),
-      ...(isSchemaUnavailable && { options: schemaUnavailableOptions[source.kind] }),
+      ...(isSchemaUnavailable && {
+        options: schemaUnavailableOptions[source.kind],
+      }),
     });
   };
 
@@ -208,31 +219,14 @@ let QueryManager = class QueryManager extends React.Component {
     this.optionchanged(option, !currentValue);
   };
 
-  renderDataSourceOption = (props, option, snapshot, className) => {
-    const icon = option.kind ? `/assets/images/icons/editor/datasources/${option.kind.toLowerCase() + '.svg'}` : null;
+  renderDataSourceOption = (props) => {
+    //Todo: add icon for the "runjs" query
+    const Icon = allSvgs[props.kind];
     return (
-      <button
-        {...props}
-        className={`${className} ${this.props.darkMode ? 'select-search__option__dark' : ''}`}
-        type="button"
-      >
-        <div>
-          <span>
-            {icon && (
-              <img
-                src={icon}
-                style={{
-                  margin: 'auto',
-                  marginRight: '3px',
-                }}
-                height="25"
-                width="25"
-              ></img>
-            )}
-            {option.name}
-          </span>
-        </div>
-      </button>
+      <div>
+        {Icon && <Icon style={{ height: 25, width: 25 }} />}
+        <span className={`mx-2 ${this.props.darkMode ? 'text-white' : 'text-muted'}`}>{props.label}</span>
+      </div>
     );
   };
 
@@ -286,6 +280,62 @@ let QueryManager = class QueryManager extends React.Component {
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
 
+    const selectStyles = {
+      container: (provided) => ({
+        ...provided,
+        width: 224,
+        height: 32,
+      }),
+      control: (provided) => ({
+        ...provided,
+        borderColor: 'hsl(0, 0%, 80%)',
+        boxShadow: 'none',
+        '&:hover': {
+          borderColor: 'hsl(0, 0%, 80%)',
+        },
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        height: '32px!important',
+        minHeight: '32px!important',
+      }),
+      valueContainer: (provided, _state) => ({
+        ...provided,
+        height: 32,
+        marginBottom: '4px',
+      }),
+      indicatorsContainer: (provided, _state) => ({
+        ...provided,
+        height: 32,
+      }),
+      indicatorSeparator: (_state) => ({
+        display: 'none',
+      }),
+      input: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+      menu: (provided) => ({
+        ...provided,
+        zIndex: 2,
+        backgroundColor: this.props.darkMode ? 'rgb(31,40,55)' : 'white',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: this.props.darkMode ? '#2b3547' : '#fff',
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+        ':hover': {
+          backgroundColor: this.props.darkMode ? '#323C4B' : '#d8dce9',
+        },
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#808080',
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: this.props.darkMode ? '#fff' : '#232e3c',
+      }),
+    };
+
     return (
       <div className="query-manager" key={selectedQuery ? selectedQuery.id : ''}>
         <ReactTooltip type="dark" effect="solid" delayShow={250} />
@@ -315,25 +365,19 @@ let QueryManager = class QueryManager extends React.Component {
             )}
           </div>
           {(addingQuery || editingQuery) && selectedDataSource && (
-            <div className="col query-name-field">
-              <div className="input-icon" style={{ width: '160px' }}>
-                <input
-                  type="text"
-                  onChange={(e) => this.setState({ queryName: e.target.value })}
-                  className="form-control-plaintext form-control-plaintext-sm mt-1"
-                  value={queryName}
-                  style={{ width: '160px' }}
-                  autoFocus={false}
-                />
-                <span className="input-icon-addon">
-                  <img className="svg-icon" src="/assets/images/icons/edit.svg" width="12" height="12" />
-                </span>
-              </div>
+            <div className="col-2 query-name-field">
+              <input
+                type="text"
+                onChange={(e) => this.setState({ queryName: e.target.value })}
+                className="form-control-plaintext form-control-plaintext-sm mt-1"
+                value={queryName}
+                autoFocus={false}
+              />
             </div>
           )}
           <div className="col-auto px-1 m-auto">
             {(addingQuery || editingQuery) && (
-              <span
+              <button
                 onClick={() => {
                   const _options = { ...options };
 
@@ -350,16 +394,20 @@ let QueryManager = class QueryManager extends React.Component {
                       console.log(error, data);
                     });
                 }}
-                className={`btn btn-secondary m-1 float-right1 ${previewLoading ? ' btn-loading' : ''}`}
+                className={`btn button-family-secondary m-1 float-right1 ${previewLoading ? 'button-loading' : ''} ${
+                  this.props.darkMode ? 'dark' : ''
+                } `}
+                style={{ width: '72px', height: '28px' }}
               >
                 Preview
-              </span>
+              </button>
             )}
             {(addingQuery || editingQuery) && (
               <button
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
                 className={`btn btn-primary m-1 float-right ${isUpdating || isCreating ? 'btn-loading' : ''}`}
+                style={{ width: '72px', height: '28px' }}
               >
                 {buttonText}
               </button>
@@ -375,27 +423,23 @@ let QueryManager = class QueryManager extends React.Component {
         {(addingQuery || editingQuery) && (
           <div className="py-2">
             {currentTab === 1 && (
-              <div className="row row-deck px-2 pt-1 query-details">
+              <div className="row row-deck px-2 mt-0 query-details">
                 {dataSources && mode === 'create' && (
-                  <div className="datasource-picker mb-2">
+                  <div className="datasource-picker mt-1 mb-2">
                     <label className="form-label col-md-2">Datasource</label>
                     <Select
                       options={[
                         ...dataSources.map((source) => {
-                          return { label: source.name, value: source.id };
+                          return { label: source.name, value: source.id, kind: source.kind };
                         }),
                         ...staticDataSources.map((source) => {
-                          return { label: source.name, value: source.id };
+                          return { label: source.name, value: source.id, kind: source.kind };
                         }),
                       ]}
+                      formatOptionLabel={this.renderDataSourceOption}
                       onChange={(newValue) => this.changeDataSource(newValue.value)}
                       placeholder="Select a data source"
-                      styles={{
-                        menu: (provided) => ({
-                          ...provided,
-                          zIndex: 2,
-                        }),
-                      }}
+                      styles={selectStyles}
                     />
                   </div>
                 )}
@@ -414,8 +458,7 @@ let QueryManager = class QueryManager extends React.Component {
                     />
                     {!dataSourceMeta?.disableTransformations && (
                       <div>
-                        <hr></hr>
-                        <div className="mb-3 mt-2">
+                        <div className="mb-3 mt-4">
                           <Transformation
                             changeOption={this.optionchanged}
                             options={this.props.selectedQuery.options ?? {}}
@@ -426,7 +469,9 @@ let QueryManager = class QueryManager extends React.Component {
                       </div>
                     )}
                     <div className="row preview-header border-top" ref={this.previewPanelRef}>
-                      <div className="py-2">Preview</div>
+                      <div className="py-2" style={{ fontWeight: 600 }}>
+                        Preview
+                      </div>
                     </div>
                     <div className="mb-3 mt-2">
                       {previewLoading && (
@@ -434,23 +479,26 @@ let QueryManager = class QueryManager extends React.Component {
                           <div className="spinner-border text-azure mt-5" role="status"></div>
                         </center>
                       )}
-                      {previewLoading === false && (
-                        <div>
-                          <ReactJson
-                            name={false}
-                            style={{ fontSize: '0.7rem' }}
-                            enableClipboard={false}
-                            src={queryPreviewData}
-                            theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                            displayDataTypes={true}
-                            collapsed={false}
-                            displayObjectSize={true}
-                            quotesOnKeys={false}
-                            sortKeys={true}
-                            indentWidth={1}
-                          />
-                        </div>
-                      )}
+                      {previewLoading === false &&
+                        (this.isJson(queryPreviewData) ? (
+                          <div>
+                            <ReactJson
+                              name={false}
+                              style={{ fontSize: '0.7rem' }}
+                              enableClipboard={false}
+                              src={queryPreviewData}
+                              theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
+                              displayDataTypes={true}
+                              collapsed={false}
+                              displayObjectSize={true}
+                              quotesOnKeys={false}
+                              sortKeys={true}
+                              indentWidth={1}
+                            />
+                          </div>
+                        ) : (
+                          <div>{queryPreviewData}</div>
+                        ))}
                     </div>
                   </div>
                 )}

@@ -58,9 +58,12 @@ export class AppsController {
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
+    const dataQueriesBelongingToEditingVersion = app.dataQueries.filter(
+      (query) => query.appVersionId === app.editingVersion.id
+    );
 
     // serialize queries
-    for (const query of app.dataQueries) {
+    for (const query of dataQueriesBelongingToEditingVersion) {
       const decamelizedQuery = decamelizeKeys(query);
       decamelizedQuery['options'] = query.options;
       seralizedQueries.push(decamelizedQuery);
@@ -90,8 +93,8 @@ export class AppsController {
 
     // serialize
     return {
-      current_version_id: app['current_version_id'],
-      data_queries: app.dataQueries,
+      current_version_id: app['currentVersionId'],
+      data_queries: app.dataQueries.filter((query) => query.appVersionId === app['currentVersionId']),
       definition: app.editingVersion?.definition,
       is_public: app.isPublic,
       name: app.name,

@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
+import cx from 'classnames';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -57,6 +58,7 @@ function getStyles(isDragging, isSelectedComponent) {
 
 export const DraggableBox = function DraggableBox({
   id,
+  className,
   mode,
   title,
   _left,
@@ -90,11 +92,17 @@ export const DraggableBox = function DraggableBox({
   readOnly,
   customResolvables,
   parentId,
+  hoveredComponent,
+  onComponentHover,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
+
+  useEffect(() => {
+    setMouseOver(hoveredComponent === id);
+  }, [hoveredComponent]);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -176,9 +184,14 @@ export const DraggableBox = function DraggableBox({
     >
       {inCanvas ? (
         <div
-          className={`draggable-box`}
-          onMouseOver={() => setMouseOver(true)}
-          onMouseLeave={() => setMouseOver(false)}
+          className={cx(`draggable-box widget-${id}`, { [className]: !!className })}
+          onMouseOver={(e) => {
+            if (e.currentTarget.className.includes(`widget-${id}`)) {
+              onComponentHover(id);
+              e.stopPropagation();
+            }
+          }}
+          onMouseLeave={() => onComponentHover(false)}
           style={getStyles(isDragging, isSelectedComponent)}
         >
           <Rnd
@@ -218,11 +231,14 @@ export const DraggableBox = function DraggableBox({
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' && !readOnly && mouseOver && !isResizing && (
+              {mode === 'edit' && !readOnly && (mouseOver || isSelectedComponent) && !isResizing && (
                 <ConfigHandle
                   id={id}
                   removeComponent={removeComponent}
                   component={component}
+                  position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
+                  widgetTop={currentLayoutOptions.top}
+                  widgetHeight={currentLayoutOptions.height}
                   configHandleClicked={(id, component) => configHandleClicked(id, component)}
                 />
               )}

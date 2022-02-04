@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Mongodb.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Mongodb datasource",
   "description": "A schema defining Mongodb datasource",
   "type": "database",
@@ -94,7 +93,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "document": {
         "label": "Document",
@@ -112,7 +115,7 @@
         "mode": "javascript",
         "placeholder": "{ checkKeys: true }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "insert_many": {
@@ -121,7 +124,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "document": {
         "label": "Documents",
@@ -139,7 +146,7 @@
         "mode": "javascript",
         "placeholder": "{ checkKeys: true }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "find_one": {
@@ -148,7 +155,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -164,7 +175,7 @@
         "key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ projections: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
+        "placeholder": "{ projection: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
         "description": "Enter options",
         "height": "150px"
       }
@@ -175,7 +186,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -191,7 +206,7 @@
         "key": "options",
         "type": "codehinter",
         "mode": "javascript",
-        "placeholder": "{ projections: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
+        "placeholder": "{ projection: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
         "description": "Enter options",
         "height": "150px"
       }
@@ -202,7 +217,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "options": {
         "label": "Options",
@@ -211,7 +230,7 @@
         "mode": "javascript",
         "placeholder": "{ fullResponse: true }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "count": {
@@ -220,7 +239,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -238,7 +261,7 @@
         "mode": "javascript",
         "placeholder": "{ skip: 2 }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "distinct": {
@@ -247,14 +270,22 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "field": {
         "label": "Field",
         "key": "field",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter field name"
+        "description": "Enter field name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter field name"
       },
       "filter": {
         "label": "Filter",
@@ -272,7 +303,7 @@
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "update_one": {
@@ -281,7 +312,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -308,7 +343,7 @@
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "update_many": {
@@ -317,7 +352,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -344,7 +383,7 @@
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "replace_one": {
@@ -353,7 +392,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -380,7 +423,7 @@
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "find_one_replace": {
@@ -389,7 +432,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -416,7 +463,7 @@
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "find_one_update": {
@@ -425,7 +472,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -452,7 +503,7 @@
         "mode": "javascript",
         "placeholder": "{ upsert: true }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "find_one_delete": {
@@ -461,7 +512,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -479,7 +534,7 @@
         "mode": "javascript",
         "placeholder": "{ sort: { field: -1 } }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "delete_one": {
@@ -488,7 +543,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -506,7 +565,7 @@
         "mode": "javascript",
         "placeholder": "{  comment: 'some comment' }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "delete_many": {
@@ -515,7 +574,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "filter": {
         "label": "Filter",
@@ -533,7 +596,7 @@
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "bulk_write": {
@@ -542,7 +605,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "operations": {
         "label": "Operations",
@@ -560,7 +627,7 @@
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     },
     "aggregate": {
@@ -569,7 +636,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection"
       },
       "pipeline": {
         "label": "Pipeline",
@@ -587,7 +658,7 @@
         "mode": "javascript",
         "placeholder": "{ comment: 'some comment' }",
         "description": "Enter options",
-        "height": "50px"
+        "height": "150px"
       }
     }
   }

@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/Mongodb.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Mongodb datasource",
   "description": "A schema defining mongodb datasource",
   "type": "database",
@@ -13,22 +12,50 @@
       "rawData": {}
     },
     "options": {
-      "host": { "type": "string" },
-      "port": { "type": "string" },
-      "username": { "type": "string" },
-      "password": { "type": "string", "encrypted": true },
-      "connection_type": { "type": "options" },
-      "connection_string": { "type": "string", "encrypted": true }
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      },
+      "connection_type": {
+        "type": "options"
+      },
+      "connection_string": {
+        "type": "string",
+        "encrypted": true
+      }
     }
   },
   "defaults": {
-    "database": { "value": "" },
-    "host": { "value": "localhost" },
-    "port": { "value": 27017 },
-    "username": { "value": "" },
-    "password": { "value": "" },
-    "connection_type": { "value": "manual" },
-    "connection_string": { "value": "" }
+    "database": {
+      "value": ""
+    },
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 27017
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "connection_type": {
+      "value": "manual"
+    },
+    "connection_string": {
+      "value": ""
+    }
   },
   "properties": {
     "connection_type": {
@@ -37,8 +64,14 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for connection_type",
       "list": [
-        { "name": "Manual connection", "value": "manual" },
-        { "name": "Connect using connection string", "value": "string" }
+        {
+          "name": "Manual connection",
+          "value": "manual"
+        },
+        {
+          "name": "Connect using connection string",
+          "value": "string"
+        }
       ]
     },
     "manual": {

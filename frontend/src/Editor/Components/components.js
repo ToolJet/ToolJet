@@ -57,6 +57,7 @@ export const componentTypes = [
           { name: 'Spacious', value: 'spacious' },
         ],
       },
+      borderRadius: { type: 'code', displayName: 'Border Radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -104,6 +105,7 @@ export const componentTypes = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
+        borderRadius: { value: '0' },
       },
     },
   },
@@ -173,6 +175,7 @@ export const componentTypes = [
       data: { type: 'json', displayName: 'Data' },
       loadingState: { type: 'code', displayName: 'Loading State' },
       markerColor: { type: 'color', displayName: 'Marker color' },
+      showAxes: { type: 'toggle', displayName: 'Show axes' },
       showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
       type: {
         type: 'select',
@@ -188,6 +191,7 @@ export const componentTypes = [
     },
     events: {},
     styles: {
+      padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -202,6 +206,7 @@ export const componentTypes = [
       properties: {
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
+        showAxes: { value: true },
         showGridLines: { value: true },
         plotFromJson: { value: false },
         loadingState: { value: `{{false}}` },
@@ -235,6 +240,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        padding: { value: '50' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -293,7 +299,7 @@ export const componentTypes = [
     description: 'Text field for forms',
     component: 'TextInput',
     defaultSize: {
-      width: 4,
+      width: 6,
       height: 30,
     },
     others: {
@@ -316,6 +322,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -339,6 +346,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -365,6 +373,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: 0,
@@ -384,6 +393,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -413,6 +423,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -435,6 +446,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -444,7 +456,7 @@ export const componentTypes = [
     description: 'Select a date and time',
     component: 'Datepicker',
     defaultSize: {
-      width: 4,
+      width: 5,
       height: 30,
     },
     validation: {
@@ -464,6 +476,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -486,6 +499,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -495,7 +509,7 @@ export const componentTypes = [
     description: 'A single checkbox',
     component: 'Checkbox',
     defaultSize: {
-      width: 4,
+      width: 5,
       height: 30,
     },
     others: {
@@ -539,8 +553,8 @@ export const componentTypes = [
     description: 'Radio buttons',
     component: 'RadioButton',
     defaultSize: {
-      width: 5,
-      height: 30,
+      width: 6,
+      height: 60,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -589,7 +603,7 @@ export const componentTypes = [
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
-      width: 5,
+      width: 6,
       height: 30,
     },
     others: {
@@ -649,6 +663,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: {},
@@ -669,6 +684,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -690,6 +706,7 @@ export const componentTypes = [
     },
     events: {},
     styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -707,6 +724,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -726,7 +744,7 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Show loading state' },
     },
     defaultSize: {
-      width: 3,
+      width: 6,
       height: 30,
     },
     events: [],
@@ -743,7 +761,7 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        text: { value: 'Text goes here !' },
+        text: { value: 'Text goes here!' },
         visible: { value: true },
         loadingState: { value: `{{false}}` },
       },
@@ -787,6 +805,8 @@ export const componentTypes = [
           { name: 'Thumbnail', value: 'img-thumbnail' },
         ],
       },
+      backgroundColor: { type: 'color', displayName: 'Background color' },
+      padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -803,6 +823,7 @@ export const componentTypes = [
       events: [],
       styles: {
         borderType: { value: 'none' },
+        padding: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -875,7 +896,9 @@ export const componentTypes = [
       onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
+      selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
@@ -900,6 +923,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -928,6 +952,7 @@ export const componentTypes = [
       onSelect: { displayName: 'On select' },
     },
     styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -948,6 +973,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -1000,7 +1026,7 @@ export const componentTypes = [
     description: 'Display Google Maps',
     component: 'Map',
     defaultSize: {
-      width: 12,
+      width: 16,
       height: 420,
     },
     others: {
@@ -1109,7 +1135,7 @@ export const componentTypes = [
     description: 'Star rating',
     component: 'StarRating',
     defaultSize: {
-      width: 8,
+      width: 10,
       height: 30,
     },
     others: {
@@ -1227,6 +1253,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       file: [{ name: '', content: '', dataURL: '', type: '', parsedData: '' }],
@@ -1252,6 +1279,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -1414,6 +1442,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -1432,6 +1461,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -1557,7 +1587,9 @@ export const componentTypes = [
       rowHeight: { type: 'code', displayName: 'Row height' },
       showBorder: { type: 'code', displayName: 'Show bottom border' },
     },
-    events: {},
+    events: {
+      onRowClicked: { displayName: 'Row clicked' },
+    },
     styles: {
       backgroundColor: { type: 'color' },
       visibility: { type: 'code', displayName: 'Visibility' },
@@ -1595,7 +1627,7 @@ export const componentTypes = [
     description: 'Content can be shown as tags',
     component: 'Tags',
     defaultSize: {
-      width: 5,
+      width: 8,
       height: 30,
     },
     others: {
@@ -1633,7 +1665,7 @@ export const componentTypes = [
     description: 'Pagination ',
     component: 'Pagination',
     defaultSize: {
-      width: 9,
+      width: 10,
       height: 30,
     },
     others: {
@@ -1683,7 +1715,7 @@ export const componentTypes = [
     description: 'Show the progress using circular progressbar',
     component: 'CircularProgressBar',
     defaultSize: {
-      width: 2,
+      width: 7,
       height: 50,
     },
     others: {
@@ -1736,7 +1768,7 @@ export const componentTypes = [
     description: 'Spinner can be used to display loading status',
     component: 'Spinner',
     defaultSize: {
-      width: 2,
+      width: 4,
       height: 30,
     },
     others: {
@@ -1775,7 +1807,7 @@ export const componentTypes = [
   {
     name: 'Statistics',
     displayName: 'Statistics',
-    description: 'Statistics',
+    description: 'Statistics can be used to display different statistical information',
     component: 'Statistics',
     defaultSize: {
       width: 9.2,
@@ -1792,14 +1824,13 @@ export const componentTypes = [
       secondaryValue: { type: 'code', displayName: 'Secondary value' },
       secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
     },
-    events: {
-      onChange: { displayName: 'On change' },
-    },
+    events: {},
     styles: {
       primaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
       primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
       secondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
       secondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
+      visibility: { type: 'code', displayName: 'Visibility' },
     },
     definition: {
       others: {
@@ -1813,11 +1844,13 @@ export const componentTypes = [
         secondaryValue: { value: '2.85' },
         secondarySignDisplay: { value: 'positive' },
       },
+      events: [],
       styles: {
         primaryLabelColour: { value: '#8092AB' },
         primaryTextColour: { value: '#000000' },
         secondaryLabelColour: { value: '#8092AB' },
         secondaryTextColour: { value: '#36AF8B' },
+        visibility: { value: '{{true}}' },
       },
     },
   },

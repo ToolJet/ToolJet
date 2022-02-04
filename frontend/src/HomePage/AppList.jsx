@@ -7,13 +7,14 @@ const AppList = (props) => {
       {props.isLoading && (
         <>
           {Array.from(Array(2)).map((_, rowIndex) => (
-            <div className="row mb-4" key={rowIndex}>
+            <div className="row mb-3" key={rowIndex}>
               {Array.from(Array(5)).map((_, index) => (
                 <div className="col" key={rowIndex * 5 + index}>
                   <div className="card-skeleton-container">
+                    <div className="app-icon-skeleton"></div>
                     <div className="skeleton-line"></div>
                     <div className="skeleton-line"></div>
-                    <div className="card-skeleton-button"></div>
+                    <div className="skeleton-line"></div>
                   </div>
                 </div>
               ))}
@@ -51,7 +52,9 @@ const AppList = (props) => {
       )}
       {!props.isLoading && props.meta.total_count === 0 && !(props.currentFolder && props.currentFolder.id) && (
         <div>
-          <span className="d-block text-center text-body pt-5">No Applications found</span>
+          <span className={`d-block text-center text-body pt-5 ${props.darkMode && 'text-white-50'}`}>
+            No Applications found
+          </span>
         </div>
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (

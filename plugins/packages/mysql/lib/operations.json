@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/Mysql.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Mysql datasource",
   "description": "A schema defining Mysql datasource",
   "type": "database",
@@ -12,8 +11,14 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for mode",
       "list": [
-        { "name": "SQL mode", "value": "sql" },
-        { "name": "GUI mode", "value": "gui" }
+        {
+          "name": "SQL mode",
+          "value": "sql"
+        },
+        {
+          "name": "GUI mode",
+          "value": "gui"
+        }
       ]
     },
     "sql": {
@@ -43,14 +48,23 @@
           "key": "table",
           "type": "codehinter",
           "lineNumbers": false,
-          "description": "Enter table"
+          "description": "Enter table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table"
+          
         },
         "primary_key_column": {
           "label": "Primary key column",
           "key": "primary_key_column",
           "type": "codehinter",
           "lineNumbers": false,
-          "description": "Enter primary key column"
+          "description": "Enter primary key column",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter primary key column"
         },
         "records": {
           "label": "Records",

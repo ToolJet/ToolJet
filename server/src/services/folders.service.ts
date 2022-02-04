@@ -63,39 +63,49 @@ export class FoldersService {
       .getMany();
     const allViewableAppIds = allViewableApps.map((app) => app.id);
 
-    if (allViewableAppIds.length !== 0) {
+    if (await this.usersService.userCan(user, 'create', 'Folder')) {
       return await createQueryBuilder(Folder, 'folders')
-        .leftJoinAndSelect('folders.folderApps', 'folder_apps')
-        .where('folder_apps.app_id IN(:...allViewableAppIds)', {
+        .leftJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.app_id IN(:...allViewableAppIds)', {
           allViewableAppIds,
         })
         .andWhere('folders.organization_id = :organizationId', {
           organizationId: user.organizationId,
         })
-        .orWhere('folder_apps.app_id IS NULL')
         .orderBy('folders.name', 'ASC')
         .distinct()
         .getMany();
-    } else {
-      return [];
     }
+
+    if (allViewableAppIds.length === 0) return [];
+
+    return await createQueryBuilder(Folder, 'folders')
+      .innerJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.app_id IN(:...allViewableAppIds)', {
+        allViewableAppIds,
+      })
+      .andWhere('folders.organization_id = :organizationId', {
+        organizationId: user.organizationId,
+      })
+      .orderBy('folders.name', 'ASC')
+      .distinct()
+      .getMany();
   }
+
   async all(user: User, searchKey: string): Promise<Folder[]> {
-    const allFloderList = await this.allFolders(user);
-    if (!searchKey || !allFloderList || allFloderList.length === 0) {
-      return allFloderList;
+    const allFolderList = await this.allFolders(user);
+    if (!searchKey || !allFolderList || allFolderList.length === 0) {
+      return allFolderList;
     }
     const folders = await this.allFoldersWithSearchKey(user, searchKey);
-    allFloderList.forEach((folder, index) => {
+    allFolderList.forEach((folder, index) => {
       const currentFolder = folders.filter((f) => f.id === folder.id);
       if (currentFolder && currentFolder.length > 0) {
-        allFloderList[index] = currentFolder[0];
+        allFolderList[index] = currentFolder[0];
       } else {
-        allFloderList[index].folderApps = [];
-        allFloderList[index].generateCount();
+        allFolderList[index].folderApps = [];
+        allFolderList[index].generateCount();
       }
     });
-    return allFloderList;
+    return allFolderList;
   }
   async allFoldersWithSearchKey(user: User, searchKey: string): Promise<Folder[]> {
     const allViewableAppsWithSearchQb = createQueryBuilder(App, 'apps')
@@ -109,7 +119,9 @@ export class FoldersService {
       )
       .where(
         new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+          qb.where('user_group_permissions.user_id = :userId', {
+            userId: user.id,
+          })
             .andWhere('app_group_permissions.read = :value', { value: true })
             .orWhere('(apps.is_public = :value AND apps.organization_id = :organizationId) OR apps.user_id = :userId', {
               value: true,
@@ -170,7 +182,9 @@ export class FoldersService {
       )
       .where(
         new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+          qb.where('user_group_permissions.user_id = :userId', {
+            userId: user.id,
+          })
             .andWhere('app_group_permissions.read = :value', { value: true })
             .orWhere(
               '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +
@@ -232,7 +246,9 @@ export class FoldersService {
       )
       .where(
         new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', { userId: user.id })
+          qb.where('user_group_permissions.user_id = :userId', {
+            userId: user.id,
+          })
             .andWhere('app_group_permissions.read = :value', { value: true })
             .orWhere(
               '(viewable_apps.is_public = :value AND viewable_apps.organization_id = :organizationId) ' +

@@ -1,6 +1,5 @@
 {
-  "$schema": "https://json-schema.org/",
-  "$id": "https://tooljet.io/dataqueries/TypseSense.schema.json",
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "TypeSense datasource",
   "description": "A schema defining TypeSense datasource",
   "type": "database",
@@ -15,12 +14,30 @@
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for operation",
       "list": [
-        { "value": "create_collection", "name": "Create a collection" },
-        { "value": "search", "name": "Search" },
-        { "value": "index_document", "name": "Index a document" },
-        { "value": "get", "name": "Get a document" },
-        { "value": "update", "name": "Update a document" },
-        { "value": "delete", "name": "Delete a document" }
+        {
+          "value": "create_collection",
+          "name": "Create a collection"
+        },
+        {
+          "value": "search",
+          "name": "Search"
+        },
+        {
+          "value": "index_document",
+          "name": "Index a document"
+        },
+        {
+          "value": "get",
+          "name": "Get a document"
+        },
+        {
+          "value": "update",
+          "name": "Update a document"
+        },
+        {
+          "value": "delete",
+          "name": "Delete a document"
+        }
       ]
     },
     "create_collection": {
@@ -39,7 +56,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection name"
+        "description": "Enter collection name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection name"
       },
       "query": {
         "label": "Search parameters",
@@ -56,7 +77,11 @@
         "key": "collection",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection name"
+        "description": "Enter collection name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter collection name"
       },
       "document": {
         "label": "Document",
@@ -72,36 +97,48 @@
       "index": {
         "label": "Collection",
         "key": "collection",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection"
       },
       "id": {
         "label": "Id",
         "key": "id",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter id"
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter id"
       }
     },
     "update": {
       "index": {
         "label": "Collection",
         "key": "collection",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection"
       },
       "id": {
         "label": "Id",
         "key": "id",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter id"
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter id"
       },
       "document": {
         "label": "Document",
@@ -117,18 +154,24 @@
       "index": {
         "label": "Collection",
         "key": "collection",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter collection"
+        "description": "Enter collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter collection"
       },
       "id": {
         "label": "Id",
         "key": "id",
-        "className": "col-6",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter id"
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins col-6",
+        "placeholder": "Enter id"
       }
     }
   }

@@ -37,10 +37,10 @@ Lastly, supply the environment variable `SSO_GOOGLE_OAUTH2_CLIENT_ID` to your de
 
 :::info
 
-### Restrict to your domain
-Set the environment variable `RESTRICTED_DOMAIN` to ensure that ToolJet verifies the domain of the user who signs in via SSO, on the server side.
+### Restrict to your domains
+Set the environment variable `SSO_RESTRICTED_DOMAIN` to ensure that ToolJet verifies the domain of the user who signs in via SSO, on the server side.
 If you're setting this environment variable, please make sure that the value does not contain any protocols, subdomains or slashes. It should
-simply be `yourdomain.com`.
+simply be `yourdomain.com`. Add multiple domians separated by coma example : `yourdomain.com,yourotherdomain.com`
 :::
 
 :::info
