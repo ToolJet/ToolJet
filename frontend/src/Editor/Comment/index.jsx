@@ -114,7 +114,7 @@ const Comment = ({
       <div
         ref={drag}
         id={`thread-${threadId}`}
-        className={cx('animation-fade comments cursor-move', { open: open })}
+        className={cx('comments cursor-move', { open })}
         style={{
           transform: `translate(${(x * canvasWidth) / 100}px, ${y}px)`,
         }}
