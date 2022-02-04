@@ -1215,7 +1215,7 @@ class Editor extends React.Component {
                           <>
                             <div className="col">
                               <h5 style={{ fontSize: '14px' }} className="py-1 px-3 mt-2 text-muted">
-                                Queries
+                                queries
                               </h5>
                             </div>
 
