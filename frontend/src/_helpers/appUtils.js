@@ -115,7 +115,7 @@ async function copyToClipboard(text) {
 }
 
 function showModal(_ref, modal, show) {
-  const modalId = modal.id;
+  const modalId = modal?.id ?? modal;
   if (_.isEmpty(modalId)) {
     console.log('No modal is associated with this event.');
     return Promise.resolve();
@@ -241,6 +241,34 @@ function executeAction(_ref, event, mode) {
 
       case 'set-table-page': {
         setTablePageIndex(_ref, event.table, event.pageIndex);
+        break;
+      }
+
+      case 'set-custom-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const value = resolveReferences(event.value, _ref.state.currentState);
+        const customVariables = { ..._ref.state.currentState.variables };
+        customVariables[key] = value;
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            variables: customVariables,
+          },
+        });
+      }
+
+      case 'unset-custom-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const customVariables = { ..._ref.state.currentState.variables };
+        delete customVariables[key];
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            variables: customVariables,
+          },
+        });
       }
     }
   }
@@ -685,15 +713,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode) 
   });
 }
 
-function setTablePageIndex(_ref, table, index) {
-  if (_.isEmpty(table.id)) {
+function setTablePageIndex(_ref, tableId, index) {
+  if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
   }
 
-  const tableMeta = _ref.state.currentState.components[table.name];
+  const table = Object.entries(_ref.state.currentState.components).filter((entry) => entry[1].id === tableId)[0][1];
   const newPageIndex = resolveReferences(index, _ref.state.currentState);
-  tableMeta.setPage(newPageIndex);
+  table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }
 

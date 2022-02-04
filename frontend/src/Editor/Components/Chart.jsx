@@ -9,8 +9,8 @@ const Plot = createPlotlyComponent(Plotly);
 export const Chart = function Chart({ width, height, darkMode, properties, styles }) {
   const [loadingState, setLoadingState] = useState(false);
 
-  const { visibility, disabledState } = styles;
-  const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson } = properties;
+  const { padding, visibility, disabledState } = styles;
+  const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes } = properties;
 
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
@@ -55,11 +55,21 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
       showgrid: showGridLines,
       showline: true,
       color: fontColor,
+      automargin: true,
+      visible: showAxes,
     },
     yaxis: {
       showgrid: showGridLines,
       showline: true,
       color: fontColor,
+      automargin: true,
+      visible: showAxes,
+    },
+    margin: {
+      l: padding,
+      r: padding,
+      b: padding,
+      t: padding,
     },
   };
 

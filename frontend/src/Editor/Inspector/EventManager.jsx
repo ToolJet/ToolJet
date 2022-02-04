@@ -65,7 +65,7 @@ export const EventManager = ({
       if (components[key].component.component === componentType) {
         componentOptions.push({
           name: components[key].component.name,
-          value: { name: components[key].component.name, id: key },
+          value: key,
         });
       }
     });
@@ -207,7 +207,7 @@ export const EventManager = ({
                 <div className="col-9">
                   <SelectSearch
                     options={getComponentOptions('Modal')}
-                    value={event.model}
+                    value={event.modal?.id ?? event.modal}
                     search={true}
                     onChange={(value) => {
                       handlerChanged(index, 'modal', value);
@@ -225,7 +225,7 @@ export const EventManager = ({
                 <div className="col-9">
                   <SelectSearch
                     options={getComponentOptions('Modal')}
-                    value={event.model}
+                    value={event.modal?.id ?? event.modal}
                     search={true}
                     onChange={(value) => {
                       handlerChanged(index, 'modal', value);
@@ -365,6 +365,47 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'pageIndex', value)}
                       enablePreview={true}
                       usePortalEditor={false}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            {event.actionId === 'set-custom-variable' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">Key</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.key}
+                      onChange={(value) => handlerChanged(index, 'key', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">Value</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.value}
+                      onChange={(value) => handlerChanged(index, 'value', value)}
+                      enablePreview={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            {event.actionId === 'unset-custom-variable' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">Key</div>
+                  <div className="col-9">
+                    <CodeHinter
+                      currentState={currentState}
+                      initialValue={event.key}
+                      onChange={(value) => handlerChanged(index, 'key', value)}
+                      enablePreview={true}
                     />
                   </div>
                 </div>
