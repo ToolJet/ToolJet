@@ -152,52 +152,78 @@ class Editor extends React.Component {
       closeBtnText: 'Skip',
       nextBtnText: 'Next',
       prevBtnText: 'Previous',
+      padding: 2,
       onReset: () => {
         // Here we need to write the logic to update walkthroughCompleted column of the current user.
         addToLocalStorage({ key: 'walkthroughCompleted', value: true });
       },
     });
 
-    setTimeout(function () {
-      // start walkthrough only if the current user haven't completed it already
-      if (
-        getDataFromLocalStorage('walkthroughCompleted') == undefined ||
-        !getDataFromLocalStorage('walkthroughCompleted')
-      ) {
-        driver.defineSteps([
-          {
-            element: '.components-container',
-            popover: {
-              title: 'Drag and drop widgets',
-              description: 'From the widget sidebar, drag and drop widgets to the canvas.',
-              position: 'left',
-              offset: 100,
-              closeBtnText: 'Skip (1/3)',
-            },
+    if (
+      getDataFromLocalStorage('walkthroughCompleted') == undefined ||
+      !getDataFromLocalStorage('walkthroughCompleted')
+    ) {
+      driver.defineSteps([
+        {
+          element: '.component-image-holder',
+          popover: {
+            title: 'Drag and drop widgets',
+            description: 'From the widget sidebar, drag and drop widgets to the canvas.',
+            position: 'left',
+            closeBtnText: 'Skip (1/6)',
           },
-          {
-            element: '.sidebar-datasources',
-            popover: {
-              title: 'Inspector',
-              description: 'Inspector lets you check the properties of widgets, results of queries etc.',
-              position: 'right',
-              closeBtnText: 'Skip (2/2)',
-            },
+        },
+        {
+          element: '.sidebar-datasources',
+          popover: {
+            title: 'Connect to data sources',
+            description: 'You can manage your data sources from here.',
+            position: 'right',
+            closeBtnText: 'Skip (2/6)',
           },
-          {
-            element: '.left-sidebar-inspector',
-            popover: {
-              title: 'Inspector',
-              description: 'Inspector lets you check the properties of widgets, results of queries etc.',
-              position: 'right',
-              closeBtnText: 'Skip (3/3)',
-            },
+        },
+        {
+          element: '.left-sidebar-inspector',
+          popover: {
+            title: 'Inspector',
+            description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+            position: 'right',
+            closeBtnText: 'Skip (3/6)',
           },
-        ]);
+        },
+        {
+          element: '.queries-header ',
+          popover: {
+            title: 'Create queries',
+            description:
+              'Create queries to interact with your data sources, run JavaScript snippets and to make API requests.',
+            position: 'top',
+            closeBtnText: 'Skip (4/6)',
+          },
+        },
+        {
+          element: '.release-buttons',
+          popover: {
+            title: 'Preview, release & share',
+            description:
+              'Click on preview to view the current changes on app viewer. Click on share button to view the sharing options. Release the editing version to make the changes live. Released versions cannot be modified, you will have to create another version to make more changes.',
+            position: 'bottom',
+            closeBtnText: 'Skip (5/6)',
+          },
+        },
+        {
+          element: '.sidebar-comments',
+          popover: {
+            title: 'Collaborate',
+            description: 'Add comments on canvas and tag your team members to collaborate.',
+            position: 'right',
+            closeBtnText: 'Skip (6/6)',
+          },
+        },
+      ]);
 
-        driver.start();
-      }
-    }, 2000);
+      driver.start();
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -1096,7 +1122,7 @@ class Editor extends React.Component {
                 <div className="layout-buttons cursor-pointer">
                   {this.renderLayoutIcon(currentLayout === 'desktop')}
                 </div>
-                <div className="navbar-nav flex-row order-md-last">
+                <div className="navbar-nav flex-row order-md-last release-buttons">
                   <div className="nav-item dropdown d-none d-md-flex me-2">
                     <a
                       href={appLink}
