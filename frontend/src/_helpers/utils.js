@@ -35,8 +35,8 @@ export function resolve(data, state) {
 }
 
 export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+  const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
-
   const objectType = typeof object;
   let error;
   switch (objectType) {
@@ -44,12 +44,13 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
       if (object.startsWith('{{') && object.endsWith('}}')) {
         const code = object.replace('{{', '').replace('}}', '');
         let result = '';
-        if (code === 'this' || code === 'window' || code === 'app') {
+
+        if (reservedKeyword.includes(code)) {
           let jsonString = JSON.stringify(code, handleCircularStructureToJSON());
-          console.log('jsonString', jsonString);
           result = jsonString;
           return [result, {}];
         }
+
         try {
           const evalFunction = Function(
             ['variables', 'components', 'queries', 'globals', 'moment', '_', ...Object.keys(customObjects)],
@@ -68,7 +69,6 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
           error = err;
           console.log('eval_error', err);
         }
-
         if (withError) return [result, error];
         return result;
       }
@@ -306,7 +306,7 @@ export function buildURLWithQuery(url, query = {}) {
   return `${url}?${toQuery(query)}`;
 }
 
-const handleCircularStructureToJSON = () => {
+export const handleCircularStructureToJSON = () => {
   const seen = new WeakSet();
 
   return (key, value) => {
@@ -320,3 +320,12 @@ const handleCircularStructureToJSON = () => {
     return value;
   };
 };
+
+export function hasCircularDependency(obj) {
+  try {
+    JSON.stringify(obj);
+  } catch (e) {
+    return String(e).includes('Converting circular structure to JSON');
+  }
+  return false;
+}
