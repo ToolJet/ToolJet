@@ -98,7 +98,6 @@ export function CodeHinter({
   }
 
   const getPreviewContent = (content, type) => {
-    console.log('getPreviewContent', content, type);
     switch (type) {
       case 'object':
         return JSON.stringify(content);

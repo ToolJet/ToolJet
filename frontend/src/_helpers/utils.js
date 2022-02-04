@@ -316,7 +316,6 @@ export const handleCircularStructureToJSON = () => {
       }
       seen.add(value);
     }
-
     return value;
   };
 };
