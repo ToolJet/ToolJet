@@ -15,13 +15,15 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     fontFamily: 'Inter',
     justifyContent: 'center',
     display: visibility ? 'flex' : 'none',
-    overflowWrap: 'anywhere',
+    wordBreak: 'break-all',
   };
 
   const letterStyle = {
     fontSize: '14px',
-    marginTop: '12px',
     fontWeight: '500',
+    wordBreak: 'break-all',
+    padding: '12px',
+    marginTop: '12px',
   };
 
   const primaryStyle = {
@@ -29,6 +31,8 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     color: primaryTextColour !== '#000000' ? primaryTextColour : darkMode && '#FFFFFC',
     fontWeight: '700',
     marginBottom: '0px',
+    wordBreak: 'break-all',
+    padding: '0 10px',
   };
 
   const marginStyle = {
@@ -41,7 +45,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
     justifyContent: 'center',
     alignItems: ' center',
     padding: '5px 8px',
-    width: '61px',
+    minWidth: '61px',
     height: '24px',
     background:
       secondarySignDisplay !== 'negative' ? (darkMode ? '#206953' : '#EDFFF9') : darkMode ? '#F8ABB8' : '#FDEAED',
@@ -68,7 +72,7 @@ export const Statistics = function Statistics({ height, properties, styles, dark
       </p>
       <h2 style={primaryStyle}>{primaryValue}</h2>
       <div>
-        <div className="d-flex flex-row">
+        <div className="d-flex flex-row justify-content-center">
           {secondarySignDisplay !== 'negative' ? (
             <img src="/assets/images/icons/widgets/upstatistics.svg" style={{ ...marginStyle, marginRight: '6.5px' }} />
           ) : (
@@ -83,7 +87,6 @@ export const Statistics = function Statistics({ height, properties, styles, dark
           style={{
             ...letterStyle,
             color: secondaryLabelColour !== '#8092AB' ? secondaryLabelColour : darkMode && '#FFFFFC',
-            marginBottom: '12px',
           }}
         >
           {secondaryValueLabel}
