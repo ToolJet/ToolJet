@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
+import cx from 'classnames';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -57,6 +58,7 @@ function getStyles(isDragging, isSelectedComponent) {
 
 export const DraggableBox = function DraggableBox({
   id,
+  className,
   mode,
   title,
   _left,
@@ -182,7 +184,7 @@ export const DraggableBox = function DraggableBox({
     >
       {inCanvas ? (
         <div
-          className={`draggable-box widget-${id}`}
+          className={cx(`draggable-box widget-${id}`, { [className]: !!className })}
           onMouseOver={(e) => {
             if (e.currentTarget.className.includes(`widget-${id}`)) {
               onComponentHover(id);

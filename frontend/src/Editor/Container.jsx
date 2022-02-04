@@ -439,6 +439,7 @@ export const Container = ({
         if (!box.parent && canShowInCurrentLayout) {
           return (
             <DraggableBox
+              className={showComments && 'pointer-events-none'}
               canvasWidth={canvasWidth}
               onComponentClick={
                 config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
