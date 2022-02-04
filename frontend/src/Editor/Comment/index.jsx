@@ -167,6 +167,7 @@ const Comment = ({
             users={users}
             editComment={editComment}
             editCommentId={editCommentId}
+            setEditCommentId={setEditCommentId}
             handleSubmit={editCommentId ? handleEdit : handleSubmit}
           />
         </div>
