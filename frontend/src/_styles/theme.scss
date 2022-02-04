@@ -1452,7 +1452,7 @@ border-radius: 4px;
     word-break: break-all;
   }
   .scroll-wrapper{
-    overflow-x: scroll;
+    overflow-x: auto;
   }
   .hide-wrapper{
    visibility: hidden !important;
@@ -1508,6 +1508,10 @@ border-radius: 4px;
     background: transparent;
     height: 0;
     width: 0;
+  }
+  td:hover::-webkit-scrollbar {
+    height: 4px;
+    width:4px;
   }
 
   th:after {
