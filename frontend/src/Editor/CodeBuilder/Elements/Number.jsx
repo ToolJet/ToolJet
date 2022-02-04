@@ -9,6 +9,7 @@ export const Number = ({ value, onChange, forceCodeBox }) => {
     backgroundColor: 'transparent',
     border: 'none',
     color: darkMode && '#fff',
+    padding: '0.18rem 0.75rem',
   };
   return (
     <>
