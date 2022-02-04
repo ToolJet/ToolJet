@@ -568,7 +568,6 @@ class Table extends React.Component {
     const column = columns.value[index];
     if (item === 'name') {
       const columnSizes = this.props.component.component.definition.properties.columnSizes;
-
       if (columnSizes) {
         const newColumnSizes = JSON.parse(JSON.stringify(columnSizes));
         if (newColumnSizes[column.name]) {
@@ -580,7 +579,6 @@ class Table extends React.Component {
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
-
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
   };
 
