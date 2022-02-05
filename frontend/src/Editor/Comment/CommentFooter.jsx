@@ -29,7 +29,7 @@ function CommentFooter({ users, editComment = '', editCommentId, handleSubmit })
   };
 
   useHotkeys('⌘+enter, control+enter', () => handleClick());
-
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <>
       <div {...content} className={open ? 'show' : 'hide'}>
@@ -43,6 +43,7 @@ function CommentFooter({ users, editComment = '', editCommentId, handleSubmit })
               value={comment}
               setValue={setComment}
               placeholder="Type your comment here"
+              darkMode={darkMode}
             />
           </div>
           <div className="col-1 cursor-pointer">
