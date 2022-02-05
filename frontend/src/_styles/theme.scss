@@ -3903,6 +3903,18 @@ input[type="text"] {
   }
 }
 
+.modal-content.home-modal-component.dark {
+  background-color: $bg-dark-light !important;
+  color: $white !important;
+  
+  .modal-header {
+    background-color: $bg-dark-light !important;
+  }
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
+}
+
 .radio-img {
   input {
     display: none;
@@ -4261,7 +4273,7 @@ input[type="text"] {
 }
 
 .popover.popover-dark-themed {
-  background-color: #232e3c;
+  background-color: $bg-dark-light;
   border-color: rgba(101, 109, 119, 0.16); 
   .popover-body {
     color: #D9DCDE !important;
