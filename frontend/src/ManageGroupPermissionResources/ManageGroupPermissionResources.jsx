@@ -348,6 +348,7 @@ class ManageGroupPermissionResources extends React.Component {
                       <div className="row">
                         <div className="col-5">
                           <SelectSearch
+                            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                             options={appSelectOptions}
                             closeOnSelect={false}
                             multiple
@@ -454,6 +455,7 @@ class ManageGroupPermissionResources extends React.Component {
                       <div className="row">
                         <div className="col-5">
                           <SelectSearch
+                            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                             options={userSelectOptions}
                             closeOnSelect={false}
                             multiple
