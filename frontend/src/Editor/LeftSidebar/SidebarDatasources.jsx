@@ -37,7 +37,7 @@ export const LeftSidebarDataSources = ({ appId, editingVersionId, darkMode, data
         tip="Add or edit datasources"
         {...trigger}
         icon="database"
-        className={`left-sidebar-item ${open && 'active'}`}
+        className={`left-sidebar-item sidebar-datasources ${open && 'active'}`}
       />
       <div {...content} className={`card popover datasources-popover ${open ? 'show' : 'hide'}`}>
         <LeftSidebarDataSources.Container

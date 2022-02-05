@@ -29,6 +29,7 @@
     "dompurify": "^2.2.7",
     "draft-js": "^0.11.7",
     "draft-js-export-html": "^1.4.1",
+    "driver.js": "^0.9.8",
     "emoji-mart": "^3.0.1",
     "fuse.js": "^6.4.6",
     "history": "^4.9.0",
