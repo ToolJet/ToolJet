@@ -10,7 +10,7 @@ import { Stripe } from './Stripe';
 
 export const allSources = {
   ...Object.keys(allOperations).reduce((accumulator, currentValue) => {
-    accumulator[currentValue] = ({ ...rest }) => <DynamicForm schema={allOperations[currentValue]} {...rest} />;
+    accumulator[currentValue] = (props) => <DynamicForm schema={allOperations[currentValue]} {...props} />;
     return accumulator;
   }, {}),
   Restapi,
