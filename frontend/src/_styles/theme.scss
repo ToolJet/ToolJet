@@ -3913,6 +3913,13 @@ input[type="text"] {
   .btn-close {
     filter: brightness(0) invert(1);
   }
+
+  .form-control {
+    border-color: $border-grey-dark !important;
+  }
+  input {
+    background-color: $bg-dark-light !important;
+  }
 }
 
 .radio-img {
