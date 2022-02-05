@@ -3671,6 +3671,12 @@ input[type="text"] {
   }
 }
 
+.tabs-inspector.dark {
+  .nav-link.active {
+    border-bottom: 1px solid $primary!important;
+  }
+}
+
 .close-icon {
   position: absolute;
   top: 0;
@@ -3698,7 +3704,7 @@ input[type="text"] {
 
 .tabs-inspector.nav-tabs {
   border: 0;
-  width: 80%;
+  width: 81%;
 }
 
 .bg-primary-lt {
