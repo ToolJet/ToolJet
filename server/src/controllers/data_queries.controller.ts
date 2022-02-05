@@ -14,7 +14,6 @@ import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { DataQueriesService } from '../../src/services/data_queries.service';
 import { DataSourcesService } from '../../src/services/data_sources.service';
-import { QueryError } from 'src/modules/data_sources/query.error';
 import { QueryAuthGuard } from 'src/modules/auth/query-auth.guard';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { AppsService } from '@services/apps.service';
@@ -153,7 +152,7 @@ export class DataQueriesController {
     try {
       result = await this.dataQueriesService.runQuery(req.user, dataQuery, options);
     } catch (error) {
-      if (error instanceof QueryError) {
+      if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
           message: error.message,
@@ -198,7 +197,7 @@ export class DataQueriesController {
     try {
       result = await this.dataQueriesService.runQuery(req.user, dataQueryEntity, options);
     } catch (error) {
-      if (error instanceof QueryError) {
+      if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
           message: error.message,

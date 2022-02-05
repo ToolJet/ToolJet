@@ -19,7 +19,10 @@ export class DataQueriesService {
   ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
-    return await this.dataQueriesRepository.findOne({ where: { id: dataQueryId }, relations: ['dataSource', 'app'] });
+    return await this.dataQueriesRepository.findOne({
+      where: { id: dataQueryId },
+      relations: ['dataSource', 'app'],
+    });
   }
 
   async all(user: User, query: object): Promise<DataQuery[]> {
@@ -70,14 +73,44 @@ export class DataQueriesService {
     return dataQuery;
   }
 
-  async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
-    const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
+  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions) {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions);
     const kind = dataQuery.kind;
     const service = new allPlugins[kind]();
+    return { service, sourceOptions, parsedQueryOptions };
+  }
 
-    const result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+  async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
+    const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
+    let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
+      dataSource,
+      dataQuery,
+      queryOptions
+    );
+    let result;
+
+    try {
+      return await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+    } catch (error) {
+      if (error.constructor.name === 'OAuthUnauthorizedClientError') {
+        console.log('Access token expired. Attempting refresh token flow.');
+
+        const accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id);
+        await this.dataSourcesService.updateOAuthAccessToken(accessTokenDetails, dataSource.options);
+        await dataSource.reload();
+
+        ({ sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
+          dataSource,
+          dataQuery,
+          queryOptions
+        ));
+
+        result = await service.run(sourceOptions, parsedQueryOptions, dataSource.id, dataSource.updatedAt);
+      } else {
+        throw error;
+      }
+    }
 
     return result;
   }
