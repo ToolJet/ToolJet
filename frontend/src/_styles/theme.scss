@@ -2836,7 +2836,7 @@ input:focus-visible {
 
   .btn-light,
   .btn-outline-light {
-    background-color: #42546a !important;
+    background-color: #42546a;
     --tblr-btn-color-text: #ffffff;
     img {
       filter: brightness(0) invert(1);
@@ -2999,6 +2999,7 @@ input:focus-visible {
 
   .color-picker-input {
     border: solid 1px #333c48;
+    height: 36px;
   }
 
   .codehinter-query-editor-input {

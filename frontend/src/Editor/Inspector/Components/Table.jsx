@@ -411,7 +411,7 @@ class Table extends React.Component {
     };
 
     return (
-      <Popover id="popover-basic">
+      <Popover id="popover-basic" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Content>
           <div className="field mb-2">
             <label className="form-label">Button Text</label>
@@ -428,6 +428,7 @@ class Table extends React.Component {
           <div className="field mb-2">
             <label className="form-label">Button position</label>
             <SelectSearch
+              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
               options={[
                 { name: 'Left', value: 'left' },
                 { name: 'Right', value: 'right' },
