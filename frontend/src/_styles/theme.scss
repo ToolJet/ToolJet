@@ -4259,3 +4259,11 @@ input[type="text"] {
 .pointer-events-none {
   pointer-events: none;
 }
+
+.popover.popover-dark-themed {
+  background-color: #232e3c;
+  border-color: rgba(101, 109, 119, 0.16); 
+  .popover-body {
+    color: #D9DCDE !important;
+  }
+}
