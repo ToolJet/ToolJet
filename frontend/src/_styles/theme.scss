@@ -4256,6 +4256,39 @@ input[type="text"] {
   border-top: 0.5px solid #e1e1e1 !important;
   margin-top: -1px !important;
 }
+
+div#driver-highlighted-element-stage, div#driver-page-overlay {
+  background: transparent !important;
+  outline: 5000px solid rgba(0, 0, 0, .75)
+}
+
+#driver-popover-item{
+  padding: 20px !important;
+
+  .driver-prev-btn,
+  .driver-next-btn,
+  .driver-close-btn{
+    border: none !important;
+    background: none !important;
+    padding-left: 0 !important;
+    font-size: 14px !important;
+  }
+
+  .driver-next-btn,
+  .driver-prev-btn {
+    color: $primary !important;
+  }
+
+  .driver-disabled{
+    color: $primary;
+    opacity: 0.5;
+  }
+
+  .driver-popover-footer{
+    margin-top: 20px !important;
+  }
+}
+
 .pointer-events-none {
   pointer-events: none;
 }
