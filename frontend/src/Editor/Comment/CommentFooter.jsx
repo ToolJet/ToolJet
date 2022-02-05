@@ -33,7 +33,7 @@ function CommentFooter({ users, editComment = '', editCommentId, handleSubmit })
   return (
     <>
       <div {...content} className={open ? 'show' : 'hide'}>
-        <Picker style={{ width: 320 }} set="apple" onSelect={addEmoji} />
+        <Picker theme={darkMode ? 'dark' : 'light'} style={{ width: 320 }} set="apple" onSelect={addEmoji} />
       </div>
       <div className="card-footer">
         <div className="row align-items-center">
