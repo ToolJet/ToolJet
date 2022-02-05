@@ -469,6 +469,7 @@ class HomePage extends React.Component {
               </div>
               <div>
                 <SelectSearch
+                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                   options={this.state.folders.map((folder) => {
                     return { name: folder.name, value: folder.id };
                   })}
