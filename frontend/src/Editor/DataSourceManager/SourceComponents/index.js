@@ -23,6 +23,6 @@ export const OtherSources = [RunjsSchema.source];
 export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...OtherSources];
 
 export const SourceComponents = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  accumulator[currentValue] = ({ ...rest }) => <DynamicForm schema={allManifests[currentValue]} {...rest} />;
+  accumulator[currentValue] = (props) => <DynamicForm schema={allManifests[currentValue]} {...props} />;
   return accumulator;
 }, {});
