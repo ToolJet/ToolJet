@@ -92,8 +92,10 @@ describe('audit logs controller', () => {
         .expect(200);
       auditLogsResponse = response.body.audit_logs;
 
-      expect(response.body.audit_logs).toHaveLength(2);
-      expect(auditLogsResponse.map((log) => log.id).sort()).toEqual([firstAuditLog.id, secondAuditLog.id].sort());
+      expect(response.body.audit_logs).toHaveLength(3);
+      expect(auditLogsResponse.map((log) => log.id).sort()).toEqual(
+        [firstAuditLog.id, secondAuditLog.id, thirdAuditLog.id].sort()
+      );
     });
   });
 
