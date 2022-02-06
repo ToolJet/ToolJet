@@ -13,7 +13,7 @@ const layerStyles = {
   height: '100%',
 };
 
-function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout, canvasWidth) {
+function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout, initialClientOffset, canvasWidth) {
   if (!initialOffset || !currentOffset) {
     return {
       display: 'none',
@@ -40,7 +40,9 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
     const zoomLevel = item.zoomLevel;
 
     x = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-    y = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+    y = Math.round(initialClientOffset.y - 10 + delta.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+
+    console.log('dragging', initialClientOffset.y);
   }
 
   [x, y] = snapToGrid(canvasWidth, x, y);
@@ -58,14 +60,17 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
   };
 }
 export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
-  const { itemType, isDragging, item, initialOffset, currentOffset, delta } = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
-    itemType: monitor.getItemType(),
-    initialOffset: monitor.getInitialSourceClientOffset(),
-    currentOffset: monitor.getSourceClientOffset(),
-    isDragging: monitor.isDragging(),
-    delta: monitor.getDifferenceFromInitialOffset(),
-  }));
+  const { itemType, isDragging, item, initialOffset, currentOffset, delta, initialClientOffset } = useDragLayer(
+    (monitor) => ({
+      item: monitor.getItem(),
+      itemType: monitor.getItemType(),
+      initialOffset: monitor.getInitialSourceClientOffset(),
+      initialClientOffset: monitor.getInitialClientOffset(),
+      currentOffset: monitor.getSourceClientOffset(),
+      isDragging: monitor.isDragging(),
+      delta: monitor.getDifferenceFromInitialOffset(),
+    })
+  );
 
   if (itemType === ItemTypes.COMMENT) return null;
   function renderItem() {
@@ -83,7 +88,17 @@ export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
 
   return (
     <div style={layerStyles}>
-      <div style={getItemStyles(delta, item, initialOffset, currentOffset, currentLayout, canvasWidth)}>
+      <div
+        style={getItemStyles(
+          delta,
+          item,
+          initialOffset,
+          currentOffset,
+          currentLayout,
+          initialClientOffset,
+          canvasWidth
+        )}
+      >
         {renderItem()}
       </div>
     </div>

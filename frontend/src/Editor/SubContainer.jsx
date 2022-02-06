@@ -72,13 +72,11 @@ export const SubContainer = ({
           },
         })
       );
-      console.log('new boxes - 1', boxes);
     },
     [boxes]
   );
 
   useEffect(() => {
-    console.log('new boxes - 2', boxes);
     if (appDefinitionChanged) {
       appDefinitionChanged({ ...appDefinition, components: boxes });
     }
@@ -178,16 +176,19 @@ export const SubContainer = ({
         } else {
           //  This is a new component
           componentMeta = componentTypes.find((component) => component.component === item.component.component);
-          console.log('adding new component');
           componentData = JSON.parse(JSON.stringify(componentMeta));
           componentData.name = computeComponentName(componentData.component, boxes);
 
           const offsetFromTopOfWindow = canvasBoundingRect.top;
           const offsetFromLeftOfWindow = canvasBoundingRect.left;
           const currentOffset = monitor.getSourceClientOffset();
+          const initialClientOffset = monitor.getInitialClientOffset();
+          const delta = monitor.getDifferenceFromInitialOffset();
 
           left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-          top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+          top = Math.round(
+            initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+          );
 
           id = uuidv4();
         }
