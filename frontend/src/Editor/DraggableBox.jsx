@@ -189,7 +189,7 @@ export const DraggableBox = function DraggableBox({
       {inCanvas ? (
         <div
           className={cx(`draggable-box widget-${id}`, { [className]: !!className })}
-          onMouseOver={(e) => {
+          onMouseEnter={(e) => {
             if (e.currentTarget.className.includes(`widget-${id}`)) {
               onComponentHover(id);
               e.stopPropagation();
