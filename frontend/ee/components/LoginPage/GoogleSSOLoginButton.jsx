@@ -5,13 +5,16 @@ import { authenticationService } from '@/_services';
 export default function GoogleSSOLoginButton(props) {
   const googleSSOSuccessHandler = (googleUser) => {
     const idToken = googleUser.getAuthResponse().id_token;
-    authenticationService.signInViaOAuth(idToken).then(props.authSuccessHandler).catch(props.authFailureHandler);
+    authenticationService
+      .signInViaOAuth({ token: idToken, origin: 'google' })
+      .then(props.authSuccessHandler)
+      .catch(props.authFailureHandler);
   };
 
   return (
     <div className="mt-2">
       <GoogleLogin
-        clientId={window.public_config.SSO_GOOGLE_OAUTH2_CLIENT_ID}
+        clientId={window.public_config?.SSO_GOOGLE_OAUTH2_CLIENT_ID}
         buttonText="Login"
         onSuccess={googleSSOSuccessHandler}
         onFailure={props.authFailureHandler}

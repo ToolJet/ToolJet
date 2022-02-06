@@ -70,7 +70,7 @@ export class CommentService {
   }
 
   public async getComment(commentId: number): Promise<Comment> {
-    const foundComment = await this.commentRepository.findOne(commentId);
+    const foundComment = await this.commentRepository.findOne({ where: { id: commentId } });
     if (!foundComment) {
       throw new NotFoundException('Comment not found');
     }
@@ -78,7 +78,7 @@ export class CommentService {
   }
 
   public async editComment(commentId: number, createCommentDto: CreateCommentDTO): Promise<Comment> {
-    const editedComment = await this.commentRepository.findOne(commentId);
+    const editedComment = await this.commentRepository.findOne({ where: { id: commentId } });
     if (!editedComment) {
       throw new NotFoundException('Comment not found');
     }

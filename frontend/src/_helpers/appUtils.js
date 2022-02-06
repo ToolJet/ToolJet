@@ -13,6 +13,7 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '../Editor/Components/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
+import { allSvgs } from '@tooljet/plugins/client';
 
 export function setStateAsync(_ref, state) {
   return new Promise((resolve) => {
@@ -59,6 +60,14 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
 export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
   window.open(authUrl);
+}
+
+export function addToLocalStorage(object) {
+  localStorage.setItem(object['key'], object['value']);
+}
+
+export function getDataFromLocalStorage(key) {
+  return localStorage.getItem(key);
 }
 
 export function runTransformation(_ref, rawData, transformation, query) {
@@ -239,7 +248,35 @@ function executeAction(_ref, event, mode) {
       }
 
       case 'set-table-page': {
-        return setTablePageIndex(_ref, event.table, event.pageIndex);
+        setTablePageIndex(_ref, event.table, event.pageIndex);
+        break;
+      }
+
+      case 'set-custom-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const value = resolveReferences(event.value, _ref.state.currentState);
+        const customVariables = { ..._ref.state.currentState.variables };
+        customVariables[key] = value;
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            variables: customVariables,
+          },
+        });
+      }
+
+      case 'unset-custom-variable': {
+        const key = resolveReferences(event.key, _ref.state.currentState);
+        const customVariables = { ..._ref.state.currentState.variables };
+        delete customVariables[key];
+
+        return _ref.setState({
+          currentState: {
+            ..._ref.state.currentState,
+            variables: customVariables,
+          },
+        });
       }
     }
   }
@@ -398,6 +435,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarNavigate',
       'onCalendarViewChange',
       'onSearchTextChanged',
+      'onPageChange',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -713,7 +751,21 @@ export function computeComponentState(_ref, components) {
     const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
     const existingValues = currentComponents[existingComponentName];
 
-    componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+    if (component.parent) {
+      const parentComponent = components[component.parent];
+      let isListView = false;
+      try {
+        isListView = parentComponent.component.component === 'Listview';
+      } catch {
+        console.log('error');
+      }
+
+      if (!isListView) {
+        componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+      }
+    } else {
+      componentState[component.component.name] = { ...componentMeta.exposedVariables, id: key, ...existingValues };
+    }
   });
 
   return setStateAsync(_ref, {
@@ -726,3 +778,9 @@ export function computeComponentState(_ref, components) {
     defaultComponentStateComputed: true,
   });
 }
+
+export const getSvgIcon = (key, height = 50, width = 50) => {
+  const Icon = allSvgs[key];
+
+  return <Icon style={{ height, width }} />;
+};

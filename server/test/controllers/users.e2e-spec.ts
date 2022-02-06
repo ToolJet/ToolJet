@@ -29,7 +29,7 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(200);
 
-      const updatedUser = await getManager().findOne(User, { email: user.email });
+      const updatedUser = await getManager().findOne(User, { where: { email: user.email } });
       expect(updatedUser.password).not.toEqual(oldPassword);
     });
 
@@ -46,7 +46,7 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(403);
 
-      const updatedUser = await getManager().findOne(User, { email: user.email });
+      const updatedUser = await getManager().findOne(User, { where: { email: user.email } });
       expect(updatedUser.password).toEqual(oldPassword);
     });
   });
@@ -65,7 +65,7 @@ describe('users controller', () => {
 
       expect(response.statusCode).toBe(200);
 
-      const updatedUser = await getManager().findOne(User, { email: user.email });
+      const updatedUser = await getManager().findOne(User, { where: { email: user.email } });
       expect(updatedUser.firstName).toEqual(firstName);
       expect(updatedUser.lastName).toEqual(lastName);
     });

@@ -53,8 +53,14 @@ export class User extends BaseEntity {
   @Column({ name: 'organization_id' })
   organizationId: string;
 
+  @Column({ name: 'role' })
+  role: string;
+
   @Column({ name: 'sso_id' })
   ssoId: string;
+
+  @Column({ name: 'sso' })
+  sso: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

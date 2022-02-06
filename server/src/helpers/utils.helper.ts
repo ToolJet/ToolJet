@@ -1,4 +1,4 @@
-import { QueryError } from 'src/modules/data_sources/query.error';
+import { QueryError } from 'src/modules/data_sources/query.errors';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {

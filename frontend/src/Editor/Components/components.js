@@ -37,6 +37,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      actionButtonRadius: { type: 'code', displayName: 'Action Button Radius' },
       tableType: {
         type: 'select',
         displayName: 'Table type',
@@ -56,6 +57,7 @@ export const componentTypes = [
           { name: 'Spacious', value: 'spacious' },
         ],
       },
+      borderRadius: { type: 'code', displayName: 'Border Radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -99,9 +101,11 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: undefined },
+        actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
+        borderRadius: { value: '0' },
       },
     },
   },
@@ -171,6 +175,7 @@ export const componentTypes = [
       data: { type: 'json', displayName: 'Data' },
       loadingState: { type: 'code', displayName: 'Loading State' },
       markerColor: { type: 'color', displayName: 'Marker color' },
+      showAxes: { type: 'toggle', displayName: 'Show axes' },
       showGridLines: { type: 'toggle', displayName: 'Show grid lines' },
       type: {
         type: 'select',
@@ -181,9 +186,12 @@ export const componentTypes = [
           { name: 'Pie', value: 'pie' },
         ],
       },
+      jsonDescription: { type: 'json', displayName: 'Json Description' },
+      plotFromJson: { type: 'toggle', displayName: 'Use Plotly JSON schema' },
     },
     events: {},
     styles: {
+      padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -198,8 +206,29 @@ export const componentTypes = [
       properties: {
         title: { value: 'This title can be changed' },
         markerColor: { value: '#CDE1F8' },
+        showAxes: { value: true },
         showGridLines: { value: true },
+        plotFromJson: { value: false },
         loadingState: { value: `{{false}}` },
+        jsonDescription: {
+          value: `{
+            "data": [
+                {
+                    "x": [
+                        "Jan",
+                        "Feb",
+                        "Mar"
+                    ],
+                    "y": [
+                        100,
+                        80,
+                        40
+                    ],
+                    "type": "bar"
+                }
+            ]
+        }`,
+        },
         type: { value: `line` },
         data: {
           value: `[
@@ -211,6 +240,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        padding: { value: '50' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -269,7 +299,7 @@ export const componentTypes = [
     description: 'Text field for forms',
     component: 'TextInput',
     defaultSize: {
-      width: 4,
+      width: 6,
       height: 30,
     },
     others: {
@@ -292,6 +322,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -315,6 +346,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -333,12 +365,15 @@ export const componentTypes = [
     },
     properties: {
       value: { type: 'code', displayName: 'Default value' },
+      minValue: { type: 'code', displayName: 'Minimum value' },
+      maxValue: { type: 'code', displayName: 'Maximum value' },
       placeholder: { type: 'code', displayName: 'Placeholder' },
     },
     events: {},
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: 0,
@@ -350,12 +385,15 @@ export const componentTypes = [
       },
       properties: {
         value: { value: '99' },
+        maxValue: { value: '' },
+        minValue: { value: '' },
         placeholder: { value: '0' },
       },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -385,6 +423,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -407,6 +446,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -416,7 +456,7 @@ export const componentTypes = [
     description: 'Select a date and time',
     component: 'Datepicker',
     defaultSize: {
-      width: 4,
+      width: 5,
       height: 30,
     },
     validation: {
@@ -436,6 +476,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -458,6 +499,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -467,7 +509,7 @@ export const componentTypes = [
     description: 'A single checkbox',
     component: 'Checkbox',
     defaultSize: {
-      width: 4,
+      width: 5,
       height: 30,
     },
     others: {
@@ -511,8 +553,8 @@ export const componentTypes = [
     description: 'Radio buttons',
     component: 'RadioButton',
     defaultSize: {
-      width: 5,
-      height: 30,
+      width: 6,
+      height: 60,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -529,6 +571,7 @@ export const componentTypes = [
     },
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      activeColor: { type: 'color', displayName: 'Active Color' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -548,6 +591,7 @@ export const componentTypes = [
       events: [],
       styles: {
         textColor: { value: '#000' },
+        activeColor: { value: '#4D72FA' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -559,7 +603,7 @@ export const componentTypes = [
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
-      width: 5,
+      width: 6,
       height: 30,
     },
     others: {
@@ -619,6 +663,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: {},
@@ -639,6 +684,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -660,6 +706,7 @@ export const componentTypes = [
     },
     events: {},
     styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -677,6 +724,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -696,12 +744,13 @@ export const componentTypes = [
       loadingState: { type: 'code', displayName: 'Show loading state' },
     },
     defaultSize: {
-      width: 3,
+      width: 6,
       height: 30,
     },
     events: [],
     styles: {
       textColor: { type: 'color', displayName: 'Text Color' },
+      textAlign: { type: 'alignButtons', displayName: 'Align Text' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -712,13 +761,15 @@ export const componentTypes = [
         showOnMobile: { value: false },
       },
       properties: {
-        text: { value: 'Text goes here !' },
+        text: { value: 'Text goes here!' },
         visible: { value: true },
         loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
+        groupActions: { value: 'left' },
         textColor: { value: '#000' },
+        textAlign: { value: 'left' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -729,8 +780,8 @@ export const componentTypes = [
     displayName: 'Image',
     description: 'Display an Image',
     defaultSize: {
-      width: 5,
-      height: 210,
+      width: 3,
+      height: 100,
     },
     component: 'Image',
     others: {
@@ -744,6 +795,18 @@ export const componentTypes = [
       onClick: { displayName: 'On click' },
     },
     styles: {
+      borderType: {
+        type: 'select',
+        displayName: 'Border type',
+        options: [
+          { name: 'None', value: 'none' },
+          { name: 'Rounded', value: 'rounded' },
+          { name: 'Circle', value: 'rounded-circle' },
+          { name: 'Thumbnail', value: 'img-thumbnail' },
+        ],
+      },
+      backgroundColor: { type: 'color', displayName: 'Background color' },
+      padding: { type: 'code', displayName: 'Padding' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -759,6 +822,8 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderType: { value: 'none' },
+        padding: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -831,7 +896,9 @@ export const componentTypes = [
       onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
+      selectedTextColor: { type: 'color', displayName: 'Selected Text Color' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
     exposedVariables: {
@@ -856,6 +923,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -884,6 +952,7 @@ export const componentTypes = [
       onSelect: { displayName: 'On select' },
     },
     styles: {
+      borderRadius: { type: 'code', displayName: 'Border radius' },
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
     },
@@ -904,6 +973,7 @@ export const componentTypes = [
       },
       events: [],
       styles: {
+        borderRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -956,7 +1026,7 @@ export const componentTypes = [
     description: 'Display Google Maps',
     component: 'Map',
     defaultSize: {
-      width: 12,
+      width: 16,
       height: 420,
     },
     others: {
@@ -1065,7 +1135,7 @@ export const componentTypes = [
     description: 'Star rating',
     component: 'StarRating',
     defaultSize: {
-      width: 8,
+      width: 10,
       height: 30,
     },
     others: {
@@ -1169,14 +1239,25 @@ export const componentTypes = [
       fileType: { type: 'code', displayName: 'Accept file types' },
       maxSize: { type: 'code', displayName: 'Max size limit (Bytes)' },
       minSize: { type: 'code', displayName: 'Min size limit (Bytes)' },
+      parseContent: { type: 'toggle', displayName: 'Parse content' },
+      parseFileType: {
+        type: 'select',
+        displayName: 'File type',
+        options: [
+          { name: 'Autodetect from extension', value: 'auto-detect' },
+          { name: 'CSV', value: 'csv' },
+        ],
+      },
     },
     events: { onFileSelected: { displayName: 'On File Selected' } },
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
-      file: [{ name: '', content: '', dataURL: '', type: '' }],
+      file: [{ name: '', content: '', dataURL: '', type: '', parsedData: '' }],
+      isParsing: false,
     },
     definition: {
       others: {
@@ -1191,11 +1272,14 @@ export const componentTypes = [
         fileType: { value: '{{"image/*"}}' },
         maxSize: { value: '{{1048576}}' },
         minSize: { value: '{{50}}' },
+        parseContent: { value: false },
+        parseFileType: { value: 'auto-detect' },
       },
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -1358,6 +1442,7 @@ export const componentTypes = [
     styles: {
       visibility: { type: 'code', displayName: 'Visibility' },
       disabledState: { type: 'code', displayName: 'Disable' },
+      borderRadius: { type: 'code', displayName: 'Border radius' },
     },
     exposedVariables: {
       value: '',
@@ -1376,6 +1461,7 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{0}}' },
       },
     },
   },
@@ -1480,6 +1566,291 @@ export const componentTypes = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Listview',
+    displayName: 'List view',
+    description: 'Wrapper for multiple components',
+    defaultSize: {
+      width: 5,
+      height: 200,
+    },
+    component: 'Listview',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      data: { type: 'code', displayName: 'List data' },
+      rowHeight: { type: 'code', displayName: 'Row height' },
+      showBorder: { type: 'code', displayName: 'Show bottom border' },
+    },
+    events: {
+      onRowClicked: { displayName: 'Row clicked' },
+    },
+    styles: {
+      backgroundColor: { type: 'color' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      data: [{}],
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        data: {
+          value: "{{ [ { image: 'https://reqres.in/img/faces/8-image.jpg' }] }}",
+        },
+        rowHeight: {
+          value: '100',
+        },
+        visible: { value: true },
+        showBorder: { value: '{{true}}' },
+      },
+      events: [],
+      styles: {
+        backgroundColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'Tags',
+    displayName: 'Tags',
+    description: 'Content can be shown as tags',
+    component: 'Tags',
+    defaultSize: {
+      width: 8,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      data: { type: 'code', displayName: 'Tags' },
+    },
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        data: {
+          value:
+            "{{ [ \n\t\t{ title: 'success', color: '#2fb344', textColor: '#fff' }, \n\t\t{ title: 'info', color: '#206bc4', textColor: '#fff'  }, \n\t\t{ title: 'warning', color: '#f59f00', textColor: '#fff'  }, \n\t\t{ title: 'danger', color: '#d63939', textColor: '#fff' } ] }}",
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'Pagination',
+    displayName: 'Pagination',
+    description: 'Pagination ',
+    component: 'Pagination',
+    defaultSize: {
+      width: 10,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      numberOfPages: { type: 'code', displayName: 'Number of pages' },
+      defaultPageIndex: { type: 'code', displayName: 'Default page index' },
+    },
+    validation: {},
+    events: {
+      onPageChange: { displayName: 'On Page Change' },
+    },
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      disabledState: { type: 'code', displayName: 'Disable' },
+    },
+    exposedVariables: {
+      totalPages: null,
+      currentPageIndex: null,
+    },
+    definition: {
+      validation: {},
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        numberOfPages: {
+          value: '{{5}}',
+        },
+        defaultPageIndex: {
+          value: '{{1}}',
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'CircularProgressbar',
+    displayName: 'Circular Progressbar',
+    description: 'Show the progress using circular progressbar',
+    component: 'CircularProgressBar',
+    defaultSize: {
+      width: 7,
+      height: 50,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      text: { type: 'code', displayName: 'Text' },
+      progress: { type: 'code', displayName: 'Progress' },
+    },
+    events: {},
+    styles: {
+      color: { type: 'color', displayName: 'Color' },
+      textColor: { type: 'color', displayName: 'Text Color' },
+      textSize: { type: 'code', displayName: 'Text Size' },
+      strokeWidth: { type: 'code', displayName: 'Stroke Width' },
+      counterClockwise: { type: 'code', displayName: 'Counter Clockwise' },
+      circleRatio: { type: 'code', displayName: 'Circle Ratio' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        text: {
+          value: '',
+        },
+        progress: {
+          value: '{{50}}',
+        },
+      },
+      events: [],
+      styles: {
+        color: { value: '#4D72FA' },
+        textColor: { value: '#4D72FA' },
+        textSize: { value: '{{16}}' },
+        strokeWidth: { value: '{{8}}' },
+        counterClockwise: { value: '{{false}}' },
+        circleRatio: { value: '{{1}}' },
+        visibility: { value: '{{true}}' },
+      },
+    },
+  },
+  {
+    name: 'Spinner',
+    displayName: 'Spinner',
+    description: 'Spinner can be used to display loading status',
+    component: 'Spinner',
+    defaultSize: {
+      width: 4,
+      height: 30,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {},
+    events: {},
+    styles: {
+      visibility: { type: 'code', displayName: 'Visibility' },
+      colour: { type: 'color', displayName: 'Colour' },
+      size: {
+        type: 'select',
+        displayName: 'Size',
+        options: [
+          { name: 'small', value: 'sm' },
+          { name: 'large', value: 'lg' },
+        ],
+      },
+    },
+    exposedVariables: {},
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {},
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        size: { value: 'sm' },
+        colour: { value: '#0565ff' },
+      },
+    },
+  },
+  {
+    name: 'Statistics',
+    displayName: 'Statistics',
+    description: 'Statistics can be used to display different statistical information',
+    component: 'Statistics',
+    defaultSize: {
+      width: 9.2,
+      height: 152,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      primaryValueLabel: { type: 'code', displayName: 'Primary value label' },
+      primaryValue: { type: 'code', displayName: 'Primary value' },
+      secondaryValueLabel: { type: 'code', displayName: 'Secondary value label' },
+      secondaryValue: { type: 'code', displayName: 'Secondary value' },
+      secondarySignDisplay: { type: 'code', displayName: 'Secondary sign display' },
+    },
+    events: {},
+    styles: {
+      primaryLabelColour: { type: 'color', displayName: 'Primary Label Colour' },
+      primaryTextColour: { type: 'color', displayName: 'Primary Text  Colour' },
+      secondaryLabelColour: { type: 'color', displayName: 'Secondary Label Colour' },
+      secondaryTextColour: { type: 'color', displayName: 'Secondary Text Colour' },
+      visibility: { type: 'code', displayName: 'Visibility' },
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: true },
+        showOnMobile: { value: false },
+      },
+      properties: {
+        primaryValueLabel: { value: 'This months earnings' },
+        primaryValue: { value: '682.3' },
+        secondaryValueLabel: { value: 'Last month' },
+        secondaryValue: { value: '2.85' },
+        secondarySignDisplay: { value: 'positive' },
+      },
+      events: [],
+      styles: {
+        primaryLabelColour: { value: '#8092AB' },
+        primaryTextColour: { value: '#000000' },
+        secondaryLabelColour: { value: '#8092AB' },
+        secondaryTextColour: { value: '#36AF8B' },
+        visibility: { value: '{{true}}' },
       },
     },
   },
