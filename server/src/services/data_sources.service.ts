@@ -1,10 +1,10 @@
-import allPlugins from '@tooljet/plugins/dist/server';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getManager, Repository } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
+import { allPlugins } from '../../src/modules/data_sources/plugins';
 
 @Injectable()
 export class DataSourcesService {
@@ -88,7 +88,9 @@ export class DataSourcesService {
         sourceOptions[key] = options[key]['value'];
       }
 
-      const service = new allPlugins[kind]();
+      const plugins = await allPlugins;
+      const serviceClass = plugins[kind];
+      const service = new serviceClass();
       result = await service.testConnection(sourceOptions);
     } catch (error) {
       result = {
@@ -107,7 +109,8 @@ export class DataSourcesService {
       const provider = findOption(options, 'provider')['value'];
       const authCode = findOption(options, 'code')['value'];
 
-      const queryService = new allPlugins[provider]();
+      const plugins = await allPlugins;
+      const queryService = new plugins[provider]();
       const accessDetails = await queryService.accessDetailsFrom(authCode);
 
       for (const row of accessDetails) {
@@ -150,7 +153,7 @@ export class DataSourcesService {
     return parsedOptions;
   }
 
-  async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, entityManager = getManager()) {
+  async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>) {
     if (!options) return {};
 
     const optionsWithOauth = await this.parseOptionsForOauthDataSource(options);
@@ -158,24 +161,14 @@ export class DataSourcesService {
 
     for (const option of optionsWithOauth) {
       if (option['encrypted']) {
-        const existingCredentialId =
-          dataSource.options[option['key']] && dataSource.options[option['key']]['credential_id'];
+        const existingCredentialId = dataSource.options[option['key']]['credential_id'];
 
-        if (existingCredentialId) {
-          await this.credentialsService.update(existingCredentialId, option['value'] || '');
+        await this.credentialsService.update(existingCredentialId, option['value'] || '');
 
-          parsedOptions[option['key']] = {
-            credential_id: existingCredentialId,
-            encrypted: option['encrypted'],
-          };
-        } else {
-          const credential = await this.credentialsService.create(option['value'] || '', entityManager);
-
-          parsedOptions[option['key']] = {
-            credential_id: credential.id,
-            encrypted: option['encrypted'],
-          };
-        }
+        parsedOptions[option['key']] = {
+          credential_id: existingCredentialId,
+          encrypted: option['encrypted'],
+        };
       } else {
         parsedOptions[option['key']] = {
           value: option['value'],
@@ -187,13 +180,9 @@ export class DataSourcesService {
     return parsedOptions;
   }
 
-  async updateOAuthAccessToken(accessTokenDetails: object, dataSourceOptions: object) {
-    const existingCredentialId = dataSourceOptions['access_token']['credential_id'];
-    await this.credentialsService.update(existingCredentialId, accessTokenDetails['access_token']);
-  }
-
   async getAuthUrl(provider): Promise<object> {
-    const service = new allPlugins[provider]();
+    const plugins = await allPlugins;
+    const service = new plugins[provider]();
     return { url: service.authUrl() };
   }
 }

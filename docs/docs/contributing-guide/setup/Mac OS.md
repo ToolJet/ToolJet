@@ -61,12 +61,10 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
    ORM_LOGGING=all
    ```
 
-4. Install and build dependencies
+4. Install dependencies
     ```bash
-    npm install
     npm install --prefix server
     npm install --prefix frontend
-    npm run build:plugins
     ```
 
 5. Set up database
@@ -74,9 +72,11 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
     npm run --prefix server db:reset
     ```
 
-6. Run plugins compilation in watch mode
+6. Install webpack & nest-cli
     ```bash
-    cd ./plugins && npm start
+    npm install -g webpack
+    npm install -g webpack-cli
+    npm install -g @nestjs/cli
     ```
 
 7. Run the server

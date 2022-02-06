@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { folderService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import Modal from './Modal';
 
 export const Folders = function Folders({
   folders,
   foldersLoading,
+  totalCount,
   currentFolder,
   folderChanged,
   foldersChanged,
   canCreateFolder,
-  darkMode,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
 
@@ -26,14 +25,14 @@ export const Folders = function Folders({
   function saveFolder() {
     if (!newFolderName || !newFolderName.trim()) {
       toast.error("folder name can't be empty.", {
-        position: 'top-center',
+        position: 'top-left',
       });
       return;
     }
     setCreationStatus(true);
     folderService.create(newFolderName).then(() => {
       toast.success('folder created.', {
-        position: 'top-center',
+        position: 'top-left',
       });
       setCreationStatus(false);
       setShowForm(false);
@@ -48,7 +47,7 @@ export const Folders = function Folders({
   }
 
   return (
-    <div className="w-100 px-3 pe-lg-4 folder-list">
+    <div className="w-100 px-3 card folder-list">
       {isLoading && (
         <div className="px-1 py-2" style={{ minHeight: '200px' }}>
           {[1, 2, 3, 4, 5].map((element, index) => {
@@ -67,69 +66,58 @@ export const Folders = function Folders({
       )}
 
       {!isLoading && (
-        <div
-          data-testid="applicationFoldersList"
-          className={`list-group list-group-transparent mb-3 ${darkMode && 'dark'}`}
-        >
+        <div data-testid="applicationFoldersList" className="list-group list-group-transparent mb-3">
           <a
-            className={`list-group-item list-group-item-action d-flex align-items-center all-apps-link ${
+            className={`list-group-item list-group-item-action d-flex align-items-center ${
               !activeFolder.id ? 'active' : ''
             }`}
             onClick={() => handleFolderChange({})}
           >
             All applications
+            <small className="text-muted ms-auto">
+              <span className="badge bg-primary-lt" data-testid="allApplicationsCount">
+                {totalCount}
+              </span>
+            </small>
           </a>
-          <hr></hr>
-          <div className="d-flex justify-content-between mb-3">
-            <div className="folder-info">Folders</div>
-            {canCreateFolder && (
-              <div className="folder-create-btn" onClick={() => setShowForm(true)}>
-                + Create new folder
-              </div>
-            )}
-          </div>
-          {folders && folders.length > 0 ? (
-            folders.map((folder, index) => (
-              <a
-                key={index}
-                className={`list-group-item list-group-item-action d-flex align-items-center ${
-                  activeFolder.id === folder.id ? 'active' : ''
-                }`}
-                onClick={() => handleFolderChange(folder)}
-              >
-                <span className="me-2">
-                  <img src="/assets/images/icons/folder.svg" alt="" width="14" height="14" className="folder-ico" />
-                </span>
-                {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
-              </a>
-            ))
-          ) : (
-            <div className="folder-info">You haven&apos;t created any folders. Use folders to organize your apps</div>
+          {folders.map((folder, index) => (
+            <a
+              key={index}
+              className={`list-group-item list-group-item-action d-flex align-items-center ${
+                activeFolder.id === folder.id ? 'active' : ''
+              }`}
+              onClick={() => handleFolderChange(folder)}
+            >
+              {folder.name}
+              <small className="text-muted ms-auto">
+                <span className="badge bg-primary-lt">{folder.count}</span>
+              </small>
+            </a>
+          ))}
+          <hr />
+          {!showForm && canCreateFolder && (
+            <a className="mx-3 fw-500" onClick={() => setShowForm(true)}>
+              + Folder
+            </a>
           )}
-          <Modal show={showForm} closeModal={() => setShowForm(false)} title="Create folder">
-            <div className="row">
-              <div className="col modal-main">
+          {showForm && (
+            <div className="p-2 row">
+              <div className="col">
                 <input
                   type="text"
                   onChange={(e) => setNewFolderName(e.target.value)}
                   className="form-control"
                   placeholder="folder name"
                   disabled={isCreating}
-                  maxLength={25}
                 />
               </div>
-            </div>
-            <div className="row">
-              <div className="col d-flex modal-footer-btn">
-                <button className="btn btn-light" onClick={() => setShowForm(false)}>
-                  Cancel
-                </button>
+              <div className="col-auto">
                 <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={saveFolder}>
-                  Create folder
+                  Save
                 </button>
               </div>
             </div>
-          </Modal>
+          )}
         </div>
       )}
     </div>

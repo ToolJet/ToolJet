@@ -35,9 +35,6 @@ export class App extends BaseEntity {
   @Column({ name: 'is_public', default: true })
   isPublic: boolean;
 
-  @Column({ name: 'icon' })
-  icon: string;
-
   @Column({ name: 'organization_id' })
   organizationId: string;
 

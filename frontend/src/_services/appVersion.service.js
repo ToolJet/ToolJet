@@ -12,10 +12,9 @@ function getAll(appId) {
   return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
 }
 
-function create(appId, versionName, versionFromId) {
+function create(appId, versionName) {
   const body = {
     versionName,
-    versionFromId,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };

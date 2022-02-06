@@ -1,5 +1,4 @@
 import React from 'react';
-import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button({ height, properties, styles, fireEvent }) {
@@ -19,9 +18,7 @@ export const Button = function Button({ height, properties, styles, fireEvent })
   return (
     <button
       disabled={disabledState}
-      className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
-        'btn-loading': loadingState,
-      })}
+      className={`jet-button btn btn-primary p-1 ${loadingState === true ? ' btn-loading' : ''}`}
       style={computedStyles}
       onClick={(event) => {
         event.stopPropagation();

@@ -6,5 +6,4 @@ export const TypeMapping = {
   code: 'Code',
   toggle: 'Toggle',
   select: 'Select',
-  alignButtons: 'AlignButtons',
 };

@@ -4,11 +4,13 @@ import { AppModule } from './app.module';
 import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
+import url from "url";
 import { AllExceptionsFilter } from './all-exceptions-filter';
 
-const fs = require('fs');
+const fs = require("fs");
 
-globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8');
+globalThis.TOOLJET_VERSION = fs.readFileSync("./.version", "utf8");
+globalThis.CACHED_CONNECTIONS = {};
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -31,23 +33,23 @@ async function bootstrap() {
       useDefaults: true,
       directives: {
         upgradeInsecureRequests: null,
-        'img-src': ['*', 'data:'],
-        'script-src': [
-          'maps.googleapis.com',
-          'apis.google.com',
-          'accounts.google.com',
+        "img-src": ["*", "data:"],
+        "script-src": [
+          "maps.googleapis.com",
+          "apis.google.com",
+          "accounts.google.com",
           "'self'",
           "'unsafe-inline'",
           "'unsafe-eval'",
-          'blob:',
+          "blob:",
         ],
-        'default-src': [
-          'maps.googleapis.com',
-          'apis.google.com',
-          'accounts.google.com',
-          '*.sentry.io',
+        "default-src": [
+          "maps.googleapis.com",
+          "apis.google.com",
+          "accounts.google.com",
+          "*.sentry.io",
           "'self'",
-          'blob:',
+          "blob:",
         ],
         'connect-src': ['ws://' + domain, "'self'", '*'],
         'frame-ancestors': ['*'],
@@ -56,13 +58,15 @@ async function bootstrap() {
     })
   );
 
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
+  app.use(json({ limit: "50mb" }));
+  app.use(
+    urlencoded({ extended: true, limit: "50mb", parameterLimit: 1000000 })
+  );
 
   const port = parseInt(process.env.PORT) || 3000;
 
-  await app.listen(port, '0.0.0.0', function () {
-    console.log('Listening on port %d', port);
+  await app.listen(port, "0.0.0.0", function () {
+    console.log("Listening on port %d", port);
   });
 }
 

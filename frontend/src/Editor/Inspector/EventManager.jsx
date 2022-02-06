@@ -370,47 +370,6 @@ export const EventManager = ({
                 </div>
               </>
             )}
-            {event.actionId === 'set-custom-variable' && (
-              <>
-                <div className="row">
-                  <div className="col-3 p-2">Key</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      currentState={currentState}
-                      initialValue={event.key}
-                      onChange={(value) => handlerChanged(index, 'key', value)}
-                      enablePreview={true}
-                    />
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">Value</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      currentState={currentState}
-                      initialValue={event.value}
-                      onChange={(value) => handlerChanged(index, 'value', value)}
-                      enablePreview={true}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-            {event.actionId === 'unset-custom-variable' && (
-              <>
-                <div className="row">
-                  <div className="col-3 p-2">Key</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      currentState={currentState}
-                      initialValue={event.key}
-                      onChange={(value) => handlerChanged(index, 'key', value)}
-                      enablePreview={true}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
           </div>
         </Popover.Content>
       </Popover>
@@ -472,7 +431,6 @@ export const EventManager = ({
   }
 
   const events = component.component.definition.events || [];
-  const componentName = componentMeta.name ? componentMeta.name : 'query';
 
   if (events.length === 0) {
     return (
@@ -486,9 +444,7 @@ export const EventManager = ({
           </button>
         </div>
         <div className="text-center">
-          <small className="color-disabled">
-            This {componentName.toLowerCase()} doesn&apos;t have any event handlers
-          </small>
+          <small className="color-disabled">This table doesn&apos;t have any events</small>
         </div>
       </>
     );

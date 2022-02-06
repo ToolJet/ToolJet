@@ -14,7 +14,7 @@ export const DropDown = function DropDown({
   component,
 }) {
   let { label, value, display_values, values } = properties;
-  const { selectedTextColor, borderRadius, visibility, disabledState } = styles;
+  const { visibility, disabledState } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
 
   if (!_.isArray(values)) {
@@ -74,7 +74,7 @@ export const DropDown = function DropDown({
       minHeight: height,
       height: height,
       boxShadow: state.isFocused ? null : null,
-      borderRadius: Number.parseFloat(borderRadius),
+      borderRadius: 0,
     }),
 
     valueContainer: (provided, _state) => ({
@@ -85,7 +85,7 @@ export const DropDown = function DropDown({
 
     singleValue: (provided, _state) => ({
       ...provided,
-      color: disabledState ? 'grey' : selectedTextColor ? selectedTextColor : darkMode ? 'white' : 'black',
+      color: disabledState ? 'grey' : darkMode ? 'white' : 'black',
     }),
 
     input: (provided, _state) => ({
@@ -103,17 +103,17 @@ export const DropDown = function DropDown({
       const styles = darkMode
         ? {
             color: 'white',
-            backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
+            backgroundColor: state.value === currentValue ? '#4D72FA' : state.isFocused ? '#2F3C4C' : 'rgb(31,40,55)',
             ':hover': {
-              backgroundColor: state.value === currentValue ? '#1F2E64' : '#323C4B',
+              backgroundColor: '#2F3C4C',
+            },
+            ':active': {
+              backgroundColor: '#4D72FA',
             },
           }
         : {
-            backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
+            backgroundColor: state.value === currentValue ? '#4D72FA' : state.isFocused ? '#d8dce9' : 'white',
             color: state.value === currentValue ? 'white' : 'black',
-            ':hover': {
-              backgroundColor: state.value === currentValue ? '#3650AF' : '#d8dce9',
-            },
           };
       return {
         ...provided,

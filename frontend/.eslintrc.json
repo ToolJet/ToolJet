@@ -10,7 +10,8 @@
       "plugin:react-hooks/recommended",
       "plugin:import/errors",
       "plugin:import/warnings",
-      "plugin:prettier/recommended"
+      "plugin:prettier/recommended",
+      "plugin:cypress/recommended"
     ],
     "parser": "babel-eslint",
     "parserOptions": {

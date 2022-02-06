@@ -31,7 +31,7 @@ export class AuditLoggerService {
     resourceName = null,
     metadata = {},
   }: AuditLogFields): Promise<AuditLog> {
-    return await this.auditLogRepository.save(
+    return this.auditLogRepository.save(
       this.auditLogRepository.create({
         userId,
         organizationId,

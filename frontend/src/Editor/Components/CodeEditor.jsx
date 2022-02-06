@@ -47,7 +47,6 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
           minHeight: height - 1,
           maxHeight: '320px',
           overflow: 'auto',
-          borderRadius: `${styles.borderRadius}px`,
         }}
       >
         <CodeMirror

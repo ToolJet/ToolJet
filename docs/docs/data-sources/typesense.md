@@ -1,7 +1,3 @@
----
-sidebar_position: 17
----
-
 # TypeSense
 ToolJet can connect to your TypeSense deployment to read and write data.
 

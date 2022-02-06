@@ -4,7 +4,6 @@ import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
-import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { validateEmail } from '../_helpers/utils';
 
 class LoginPage extends React.Component {
@@ -20,14 +19,6 @@ class LoginPage extends React.Component {
       isLoading: false,
       showPassword: false,
     };
-  }
-
-  componentDidMount() {
-    this.props.location?.state?.errorMessage &&
-      toast.error(this.props.location.state.errorMessage, {
-        id: 'toast-login-auth-error',
-        position: 'top-center',
-      });
   }
 
   handleChange = (event) => {
@@ -65,11 +56,7 @@ class LoginPage extends React.Component {
     this.setState({ isLoading: false });
   };
 
-  authFailureHandler = (error) => {
-    if (error?.error === 'idpiframe_initialization_failed') {
-      //Error thrown by google on load
-      return this.setState({ isLoading: false });
-    }
+  authFailureHandler = () => {
     toast.error('Invalid email or password', {
       id: 'toast-login-auth-error',
       position: 'top-center',
@@ -159,7 +146,6 @@ class LoginPage extends React.Component {
                     authFailureHandler={this.authFailureHandler}
                   />
                 )}
-                {window.public_config?.SSO_GIT_OAUTH2_CLIENT_ID && <GitSSOLoginButton />}
               </div>
             </div>
           </form>
