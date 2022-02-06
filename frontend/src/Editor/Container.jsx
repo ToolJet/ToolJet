@@ -27,7 +27,7 @@ export const Container = ({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
-  configHandleClicked,
+  setSelectedComponent,
   zoomLevel,
   currentLayout,
   removeComponent,
@@ -459,7 +459,7 @@ export const Container = ({
               draggingStatusChanged={(status) => setIsDragging(status)}
               inCanvas={true}
               zoomLevel={zoomLevel}
-              configHandleClicked={configHandleClicked}
+              setSelectedComponent={setSelectedComponent}
               removeComponent={removeComponent}
               currentLayout={currentLayout}
               deviceWindowWidth={deviceWindowWidth}
@@ -479,7 +479,7 @@ export const Container = ({
                 onComponentOptionsChanged,
                 appLoading,
                 zoomLevel,
-                configHandleClicked,
+                setSelectedComponent,
                 removeComponent,
                 currentLayout,
                 deviceWindowWidth,

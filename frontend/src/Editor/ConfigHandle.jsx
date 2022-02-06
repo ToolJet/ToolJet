@@ -3,7 +3,7 @@ import React from 'react';
 export const ConfigHandle = function ConfigHandle({
   id,
   component,
-  configHandleClicked,
+  setSelectedComponent,
   dragRef,
   removeComponent,
   position,
@@ -24,7 +24,7 @@ export const ConfigHandle = function ConfigHandle({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            configHandleClicked(id, component);
+            setSelectedComponent(id, component);
           }}
           role="button"
         >

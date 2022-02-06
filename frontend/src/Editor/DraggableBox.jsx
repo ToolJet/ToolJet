@@ -80,7 +80,7 @@ export const DraggableBox = function DraggableBox({
   resizingStatusChanged,
   zoomLevel,
   containerProps,
-  configHandleClicked,
+  setSelectedComponent,
   removeComponent,
   currentLayout,
   layouts,
@@ -137,6 +137,10 @@ export const DraggableBox = function DraggableBox({
   useEffect(() => {
     if (draggingStatusChanged) {
       draggingStatusChanged(isDragging2);
+    }
+
+    if (isDragging2 && !isSelectedComponent) {
+      setSelectedComponent(id, component);
     }
   }, [isDragging2]);
 
@@ -207,7 +211,9 @@ export const DraggableBox = function DraggableBox({
               y: currentLayoutOptions ? currentLayoutOptions.top : 0,
             }}
             defaultSize={{}}
-            className={`resizer ${mouseOver || isResizing || isSelectedComponent ? 'resizer-active' : ''} `}
+            className={`resizer ${
+              mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
+            } `}
             onResize={() => setResizing(true)}
             onDrag={(e) => {
               e.preventDefault();
@@ -239,7 +245,7 @@ export const DraggableBox = function DraggableBox({
                   position={currentLayoutOptions.top < 15 ? 'bottom' : 'top'}
                   widgetTop={currentLayoutOptions.top}
                   widgetHeight={currentLayoutOptions.height}
-                  configHandleClicked={(id, component) => configHandleClicked(id, component)}
+                  setSelectedComponent={(id, component) => setSelectedComponent(id, component)}
                 />
               )}
               <Box
