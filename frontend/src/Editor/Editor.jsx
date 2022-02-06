@@ -792,11 +792,13 @@ class Editor extends React.Component {
             </button>
           )}
         </div>
-        <div className="col-auto">
+        <div className="col-auto" style={{ width: '28px' }}>
           {isLoading === true ? (
-            <div className="px-2">
-              <div className="text-center spinner-border spinner-border-sm" role="status"></div>
-            </div>
+            <center>
+              <div className="pt-1">
+                <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+              </div>
+            </center>
           ) : (
             <button
               style={{ marginTop: '3px' }}
