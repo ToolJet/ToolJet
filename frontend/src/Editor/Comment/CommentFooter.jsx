@@ -29,11 +29,11 @@ function CommentFooter({ users, editComment = '', editCommentId, handleSubmit })
   };
 
   useHotkeys('⌘+enter, control+enter', () => handleClick());
-
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <>
       <div {...content} className={open ? 'show' : 'hide'}>
-        <Picker style={{ width: 320 }} set="apple" onSelect={addEmoji} />
+        <Picker theme={darkMode ? 'dark' : 'light'} style={{ width: 320 }} set="apple" onSelect={addEmoji} />
       </div>
       <div className="card-footer">
         <div className="row align-items-center">
@@ -43,6 +43,7 @@ function CommentFooter({ users, editComment = '', editCommentId, handleSubmit })
               value={comment}
               setValue={setComment}
               placeholder="Type your comment here"
+              darkMode={darkMode}
             />
           </div>
           <div className="col-1 cursor-pointer">
