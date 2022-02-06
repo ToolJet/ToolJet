@@ -26,7 +26,7 @@ const DynamicForm = ({
   queryName,
 }) => {
   // if(schema.properties)  todo add empty check
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
     }
@@ -60,9 +60,10 @@ const DynamicForm = ({
   };
 
   const getElementProps = ({
-    key,
-    list,
-    rows = 5,
+    $key,
+    $options,
+    $rows = 5,
+    $hasSearch,
     helpText,
     description,
     type,
@@ -71,9 +72,8 @@ const DynamicForm = ({
     lineNumbers = true,
     initialValue,
     height = 'auto',
-    width,
     ignoreBraces = false,
-    className,
+    isScrollable = false,
   }) => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
     switch (type) {
@@ -84,28 +84,29 @@ const DynamicForm = ({
           type,
           placeholder: description,
           className: 'form-control',
-          value: options[key]?.value,
-          ...(type === 'textarea' && { rows: rows }),
+          value: options[$key]?.value,
+          ...(type === 'textarea' && { rows: $rows }),
           ...(helpText && { helpText }),
-          onChange: (e) => optionchanged(key, e.target.value),
+          onChange: (e) => optionchanged($key, e.target.value),
         };
       case 'toggle':
         return {
-          defaultChecked: options[key],
-          checked: options[key]?.value,
-          onChange: (e) => optionchanged(key, e.target.checked),
+          defaultChecked: options[$key],
+          checked: options[$key]?.value,
+          onChange: (e) => optionchanged($key, e.target.checked),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
         return {
-          options: list,
-          value: options[key]?.value || options[key],
-          onChange: (value) => optionchanged(key, value),
+          options: $options,
+          value: options[$key]?.value || options[$key],
+          hasSearch: $hasSearch,
+          onChange: (value) => optionchanged($key, value),
         };
       case 'react-component-headers':
         return {
-          getter: key,
-          options: options[key]?.value,
+          getter: $key,
+          options: options[$key]?.value,
           optionchanged,
         };
       case 'react-component-oauth-authentication':
@@ -129,21 +130,21 @@ const DynamicForm = ({
       case 'codehinter':
         return {
           currentState,
-          initialValue: options[key]
-            ? typeof options[key] === 'string'
-              ? options[key]
-              : JSON.stringify(options[key])
+          initialValue: options[$key]
+            ? typeof options[$key] === 'string'
+              ? options[$key]
+              : JSON.stringify(options[$key])
             : initialValue,
           mode,
           lineNumbers,
-          className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
-          onChange: (value) => optionchanged(key, value),
+          className: lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
+          onChange: (value) => optionchanged($key, value),
           theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
           placeholder,
           height,
-          width,
-          componentName: queryName ? `${queryName}::${key ?? ''}` : null,
+          componentName: queryName ? `${queryName}::${$key ?? ''}` : null,
           ignoreBraces,
+          isScrollable,
         };
       default:
         return {};
@@ -161,16 +162,16 @@ const DynamicForm = ({
     return (
       <div className="row">
         {Object.keys(obj).map((key) => {
-          const { label, type, encrypted, className } = obj[key];
+          const { $label, type, $encrypted, className } = obj[key];
 
           const Element = getElement(type);
 
           return (
             <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
-              {label && (
+              {$label && (
                 <label className="form-label">
-                  {label}
-                  {(type === 'password' || encrypted) && (
+                  {$label}
+                  {(type === 'password' || $encrypted) && (
                     <small className="text-green mx-2">
                       <img
                         className="mx-2 encrypted-icon"
@@ -196,13 +197,13 @@ const DynamicForm = ({
     if (flipComponentDropdown) {
       // options[key].value for datasource
       // options[key] for dataquery
-      const selector = options[flipComponentDropdown.key]?.value || options[flipComponentDropdown.key];
+      const selector = options[flipComponentDropdown.$key]?.value || options[flipComponentDropdown.$key];
 
       return (
         <>
           <div className="row">
             <div className="col-md-12 my-2">
-              {flipComponentDropdown.label && <label className="form-label">{flipComponentDropdown.label}</label>}
+              {flipComponentDropdown.$label && <label className="form-label">{flipComponentDropdown.$label}</label>}
               <Select {...getElementProps(flipComponentDropdown)} />
             </div>
           </div>

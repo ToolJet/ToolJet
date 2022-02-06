@@ -2,9 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad from 'react-lazyload';
 
 export const Image = function Image({ height, properties, styles, fireEvent }) {
-  const { source } = properties;
-  const { visibility, disabledState, borderType, backgroundColor, padding } = styles;
-  const widgetVisibility = visibility ?? true;
+  const source = properties.source;
+  const widgetVisibility = styles.visibility ?? true;
   const imageRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
 
@@ -26,14 +25,7 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
   }
 
   return (
-    <div
-      data-disabled={disabledState}
-      style={{
-        display: widgetVisibility ? 'flex' : 'none',
-        justifyContent: 'center',
-      }}
-      ref={imageRef}
-    >
+    <div data-disabled={styles.disabledState} style={{ display: widgetVisibility ? '' : 'none' }} ref={imageRef}>
       {imageRef.current && (
         <LazyLoad
           offset={imageOffset > 0 ? imageOffset : 0}
@@ -41,13 +33,7 @@ export const Image = function Image({ height, properties, styles, fireEvent }) {
           placeholder={<Placeholder />}
           debounce={500}
         >
-          <img
-            src={source}
-            className={`${borderType !== 'none' ? borderType : ''}`}
-            style={{ backgroundColor, padding: Number.parseInt(padding) }}
-            height={height}
-            onClick={() => fireEvent('onClick')}
-          />
+          <img src={source} height={height} onClick={() => fireEvent('onClick')} />
         </LazyLoad>
       )}
     </div>

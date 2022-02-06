@@ -5,9 +5,6 @@ export function getSuggestionKeys(currentState) {
   let suggestions = [];
   _.keys(currentState).forEach((key) => {
     _.keys(currentState[key]).forEach((key2) => {
-      if (key === 'variables') {
-        return suggestions.push(`${key}.${key2}`);
-      }
       _.keys(currentState[key][key2]).forEach((key3) => {
         suggestions.push(`${key}.${key2}.${key3}`);
       });
@@ -34,11 +31,7 @@ export function computeCurrentWord(editor, _cursorPosition, ignoreBraces = false
   const splitter = ignoreBraces ? ' ' : '{{';
 
   const split = sliced.split(splitter);
-  const splittedWord = split.slice(-1).pop();
-
-  // Check if the word still has spaces, to avoid replacing entire code
-  const lastWord = splittedWord.split(' ').slice(-1).pop();
-
+  const lastWord = split[split.length - 1];
   return lastWord;
 }
 
@@ -100,7 +93,7 @@ export function handleChange(editor, onChange, suggestions, ignoreBraces = false
   const hints = generateHints(currentWord, suggestions);
 
   const options = {
-    alignWithWord: false,
+    alignWithWord: true,
     completeSingle: false,
     hint: function () {
       return {

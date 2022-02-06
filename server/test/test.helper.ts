@@ -23,9 +23,8 @@ import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { AppsModule } from 'src/modules/apps/apps.module';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
-import { createMock, DeepMocked } from '@golevelup/ts-jest';
 
-export async function createNestAppInstance(): Promise<INestApplication> {
+export async function createNestAppInstance() {
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
@@ -40,31 +39,6 @@ export async function createNestAppInstance(): Promise<INestApplication> {
   await app.init();
 
   return app;
-}
-
-export async function createNestAppInstanceWithEnvMock(): Promise<{
-  app: INestApplication;
-  mockConfig: DeepMocked<ConfigService>;
-}> {
-  let app: INestApplication;
-
-  const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
-    providers: [
-      {
-        provide: ConfigService,
-        useValue: createMock<ConfigService>(),
-      },
-    ],
-  }).compile();
-
-  app = moduleRef.createNestApplication();
-  app.setGlobalPrefix('api');
-  app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
-  app.useWebSocketAdapter(new WsAdapter(app));
-  await app.init();
-
-  return { app, mockConfig: moduleRef.get(ConfigService) };
 }
 
 export function authHeaderForUser(user: any): string {
@@ -115,15 +89,14 @@ export async function importAppFromTemplates(nestApp, user, identifier) {
   return service.perform(user, identifier);
 }
 
-export async function createApplicationVersion(nestApp, application, { name = 'v0', definition = null } = {}) {
+export async function createApplicationVersion(nestApp, application) {
   let appVersionsRepository: Repository<AppVersion>;
   appVersionsRepository = nestApp.get('AppVersionRepository');
 
   return await appVersionsRepository.save(
     appVersionsRepository.create({
       app: application,
-      name,
-      definition,
+      name: 'v0',
     })
   );
 }
@@ -282,10 +255,8 @@ export async function maybeCreateAdminAppGroupPermissions(nestApp, app) {
   const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
 
   const orgAdminGroupPermissions = await groupPermissionRepository.findOne({
-    where: {
-      organizationId: app.organizationId,
-      group: 'admin',
-    },
+    organizationId: app.organizationId,
+    group: 'admin',
   });
 
   if (orgAdminGroupPermissions) {
@@ -309,10 +280,8 @@ export async function maybeCreateAllUsersAppGroupPermissions(nestApp, app) {
   const appGroupPermissionRepository: Repository<AppGroupPermission> = nestApp.get('AppGroupPermissionRepository');
 
   const allUsersGroup = await groupPermissionRepository.findOne({
-    where: {
-      organizationId: app.organizationId,
-      group: 'all_users',
-    },
+    organizationId: app.organizationId,
+    group: 'all_users',
   });
 
   if (allUsersGroup) {

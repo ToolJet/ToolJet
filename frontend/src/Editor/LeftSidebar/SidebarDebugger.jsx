@@ -122,7 +122,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors }) => {
       <div
         {...content}
         className={`card popover debugger-popover ${open || popoverPinned ? 'show' : 'hide'}`}
-        style={{ minWidth: '350px', minHeight: '108px', resize: 'horizontal', maxWidth: '50%' }}
+        style={{ minWidth: '180px', minHeight: '108px', maxWidth: '480px' }}
       >
         <div className="row-header">
           <div className="nav-header">

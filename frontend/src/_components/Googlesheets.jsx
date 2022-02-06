@@ -20,7 +20,7 @@ const Googlesheets = ({ optionchanged, createDataSource, options, isSaving, sele
     datasourceService
       .fetchOauth2BaseUrl(provider)
       .then((data) => {
-        const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=consent`;
+        const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');
         optionchanged('provider', provider).then(() => {
           optionchanged('oauth2', true);

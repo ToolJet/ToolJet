@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 
 export const RadioButton = function RadioButton({
   id,
@@ -11,7 +10,8 @@ export const RadioButton = function RadioButton({
   setExposedVariable,
 }) {
   const { label, value, values, display_values } = properties;
-  const { visibility, disabledState, textColor, activeColor } = styles;
+  const { visibility, disabledState, textColor } = styles;
+
   let selectOptions = [];
 
   try {
@@ -43,15 +43,12 @@ export const RadioButton = function RadioButton({
         {selectOptions.map((option, index) => (
           <label key={index} className="form-check form-check-inline">
             <input
-              style={{
-                marginTop: '1px',
-                backgroundColor: exposedVariables?.value === option.value ? `${activeColor}` : 'white',
-              }}
+              style={{ marginTop: '1px' }}
               className="form-check-input"
-              checked={exposedVariables?.value === option.value}
+              checked={exposedVariables.value === option.value}
               type="radio"
               value={option.value}
-              name={`${id}-${uuidv4()}`}
+              name={`${id}-radio-options`}
               onChange={() => onSelect(option.value)}
             />
             <span className="form-check-label" style={{ color: textColor }}>

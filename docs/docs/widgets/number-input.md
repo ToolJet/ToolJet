@@ -10,8 +10,6 @@ Numbers can be changed by using the arrow keys.
 
 #### Properties
 
-| properties    | description                                                |
-| ------------- | ---------------------------------------------------------- |
-| Placeholder   | It specifies a hint that describes the expected value.     |
-| Maximum value | It specifies the maximum value the number input can go to. |
-| Minimum value | It specifies the minimum value the number input can go to. |
+| properties      | description |
+| ----------- | ----------- |
+| Placeholder |  It specifies a hint that describes the expected value.|

@@ -22,7 +22,7 @@ export class OrganizationUsersService {
   ) {}
 
   async findOne(id: string): Promise<OrganizationUser> {
-    return await this.organizationUsersRepository.findOne({ where: { id } });
+    return await this.organizationUsersRepository.findOne({ id: id });
   }
 
   async inviteNewUser(request): Promise<OrganizationUser> {
@@ -76,7 +76,7 @@ export class OrganizationUsersService {
 
   async changeRole(user: User, id: string, role: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
+    const organizationUser = await this.organizationUsersRepository.findOne(id);
     if (organizationUser.role == 'admin') {
       const lastActiveAdmin = await this.lastActiveAdmin(organizationUser.organizationId);
 
@@ -89,8 +89,8 @@ export class OrganizationUsersService {
 
   async archive(id: string) {
     await getManager().transaction(async (manager) => {
-      const organizationUser = await manager.findOne(OrganizationUser, { where: { id } });
-      const user = await manager.findOne(User, { where: { id: organizationUser.userId } });
+      const organizationUser = await manager.findOne(OrganizationUser, id);
+      const user = await manager.findOne(User, organizationUser.userId);
 
       await this.usersService.throwErrorIfRemovingLastActiveAdmin(user);
 
@@ -102,7 +102,7 @@ export class OrganizationUsersService {
   }
 
   async unarchive(user: User, id: string) {
-    const organizationUser = await this.organizationUsersRepository.findOne({ where: { id } });
+    const organizationUser = await this.organizationUsersRepository.findOne(id);
     if (organizationUser.status !== 'archived') return false;
 
     await getManager().transaction(async (manager) => {

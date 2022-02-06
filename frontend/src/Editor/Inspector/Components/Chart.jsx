@@ -2,7 +2,6 @@ import React from 'react';
 import { renderElement } from '../Utils';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import Accordion from '@/_ui/Accordion';
-import { resolveReferences } from '@/_helpers/utils';
 
 class Chart extends React.Component {
   constructor(props) {
@@ -60,13 +59,6 @@ class Chart extends React.Component {
 
     const data = this.state.component.component.definition.properties.data;
 
-    const jsonDescription = this.state.component.component.definition.properties.jsonDescription;
-
-    const plotFromJson = resolveReferences(
-      this.state.component.component.definition.properties.plotFromJson.value,
-      currentState
-    );
-
     const chartType = this.state.component.component.definition.properties.type.value;
 
     let items = [];
@@ -81,71 +73,39 @@ class Chart extends React.Component {
         'title',
         'properties',
         currentState,
-        components,
-        this.props.darkMode
+        components
       ),
     });
 
     items.push({
-      title: 'Plotly JSON chart schema',
+      title: 'Properties',
       children: renderElement(
         component,
         componentMeta,
         paramUpdated,
         dataQueries,
-        'plotFromJson',
+        'type',
         'properties',
-        currentState
+        currentState,
+        components
       ),
     });
 
-    if (plotFromJson) {
-      items.push({
-        title: 'Json description',
-        children: (
-          <CodeHinter
-            currentState={this.props.currentState}
-            initialValue={jsonDescription.value}
-            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-            mode="javascript"
-            lineNumbers={false}
-            className="chart-input pr-2"
-            onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
-            componentName={`widget/${this.props.component.component.name}::${chartType}`}
-          />
-        ),
-      });
-    } else {
-      items.push({
-        title: 'Properties',
-        children: renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'type',
-          'properties',
-          currentState,
-          components
-        ),
-      });
-
-      items.push({
-        title: 'Chart data',
-        children: (
-          <CodeHinter
-            currentState={this.props.currentState}
-            initialValue={data.value}
-            theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
-            mode="javascript"
-            lineNumbers={false}
-            className="chart-input pr-2"
-            onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
-            componentName={`widget/${this.props.component.component.name}::${chartType}`}
-          />
-        ),
-      });
-    }
+    items.push({
+      title: 'Chart data',
+      children: (
+        <CodeHinter
+          currentState={this.props.currentState}
+          initialValue={data.value}
+          theme={this.props.darkMode ? 'monokai' : 'duotone-light'}
+          mode="javascript"
+          lineNumbers={false}
+          className="chart-input pr-2"
+          onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
+          componentName={`widget/${this.props.component.component.name}::${chartType}`}
+        />
+      ),
+    });
 
     items.push({
       title: 'Loading state',
@@ -161,29 +121,14 @@ class Chart extends React.Component {
     });
 
     if (chartType !== 'pie') {
-      if (!plotFromJson) {
-        items.push({
-          title: 'Marker color',
-          children: renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'markerColor',
-            'properties',
-            currentState
-          ),
-        });
-      }
-
       items.push({
-        title: 'Show axes',
+        title: 'Marker color',
         children: renderElement(
           component,
           componentMeta,
           paramUpdated,
           dataQueries,
-          'showAxes',
+          'markerColor',
           'properties',
           currentState
         ),

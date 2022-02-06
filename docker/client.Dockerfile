@@ -1,28 +1,22 @@
 # pull official base image
 FROM node:14.17.3-alpine AS builder
-
-RUN npm i -g npm@7.20.0
+ENV NODE_ENV=production
 
 # set working directory
 WORKDIR /app
 
-COPY ./package.json ./package.json
+# add `/app/node_modules/.bin` to $PATH
+ENV PATH /app/node_modules/.bin:$PATH
 
 # Fix for heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Build plugins
-COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins install
-COPY ./plugins/ ./plugins/
-RUN npm run build:plugins
+# install app dependencies
+COPY ./frontend/package.json ./frontend/package-lock.json  ./
+RUN npm install --only=production
+COPY ./frontend .
+RUN NODE_ENV=production npm run-script build
 
-# Build frontend
-ENV NODE_ENV=production
-COPY ./frontend/package.json ./frontend/package-lock.json  ./frontend/
-RUN npm --prefix frontend install --only=production
-COPY ./frontend ./frontend
-RUN npm --prefix frontend run build
 
 FROM openresty/openresty:1.19.9.1rc1-buster-fat
 
@@ -34,7 +28,7 @@ RUN luarocks install lua-resty-auto-ssl
 
 RUN mkdir /etc/resty-auto-ssl /var/log/openresty /var/www /etc/fallback-certs
 
-COPY --from=builder /app/frontend/build /var/www
+COPY --from=builder /app/build /var/www
 
 COPY ./frontend/config/nginx.conf.template /etc/openresty/nginx.conf.template
 COPY ./frontend/config/entrypoint.sh /entrypoint.sh
