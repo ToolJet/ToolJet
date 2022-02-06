@@ -43,10 +43,12 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
    SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
    ```
 
-4. Install dependencies
+4. Install and build dependencies
     ```bash
+    npm install
     npm install --prefix server
     npm install --prefix frontend
+    npm run build:plugins
     ```
 
 5. Set up database
@@ -54,19 +56,25 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     npm run --prefix server db:reset
     ```
 
-6. Run the server
+6. Run plugins compilation in watch mode
+    ```bash
+    cd ./plugins && npm start
+    ```
+
+7. Run the server
     ```bash
     cd ./server && npm run start:dev
     ```
 
-7. Run the client
+8. Run the client
     ```bash
     cd ./frontend && npm start
     ```
 
+
     The client will start running on the port 8082, you can access the client by visiting:  [https://localhost:8082](https://localhost:8082)
 
-8. Create login credentials
+9. Create login credentials
 
     Visiting https://localhost:8082 should redirect you to the login page, click on the signup link and enter your email. The emails sent by the server in development environment are captured and are opened in your default browser. Click the invitation link in the email preview to setup the account.
 

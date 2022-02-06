@@ -49,7 +49,8 @@ export class AppsService {
   ) {}
 
   async find(id: string): Promise<App> {
-    return this.appsRepository.findOne(id, {
+    return this.appsRepository.findOne({
+      where: { id },
       relations: ['dataQueries'],
     });
   }
@@ -64,7 +65,8 @@ export class AppsService {
   }
 
   async findVersion(id: string): Promise<AppVersion> {
-    return this.appVersionsRepository.findOne(id, {
+    return this.appVersionsRepository.findOne({
+      where: { id },
       relations: ['app', 'dataQueries'],
     });
   }
@@ -209,13 +211,14 @@ export class AppsService {
   async update(user: User, appId: string, params: any) {
     const currentVersionId = params['current_version_id'];
     const isPublic = params['is_public'];
-    const { name, slug } = params;
+    const { name, slug, icon } = params;
 
     const updateableParams = {
       name,
       slug,
       isPublic,
       currentVersionId,
+      icon,
     };
 
     // removing keys with undefined values
@@ -280,13 +283,11 @@ export class AppsService {
     });
   }
 
-  async createVersion(user: User, app: App, versionName: string): Promise<AppVersion> {
+  async createVersion(user: User, app: App, versionName: string, versionFromId: string): Promise<AppVersion> {
     const lastVersion = await this.appVersionsRepository.findOne({
-      where: { appId: app.id },
-      order: {
-        createdAt: 'DESC',
-      },
+      where: { id: versionFromId },
     });
+
     let appVersion: AppVersion;
     await getManager().transaction(async (manager) => {
       appVersion = await manager.save(
@@ -443,8 +444,8 @@ export class AppsService {
 
     for await (const newOption of newOptionsWithCredentials) {
       const oldOption = oldOptions.find((oldOption) => oldOption['key'] == newOption['key']);
-      const oldCredential = await manager.findOne(Credential, oldOption.credential_id);
-      const newCredential = await manager.findOne(Credential, newOption['credential_id']);
+      const oldCredential = await manager.findOne(Credential, { where: { id: oldOption.credential_id } });
+      const newCredential = await manager.findOne(Credential, { where: { id: newOption['credential_id'] } });
       newCredential.valueCiphertext = oldCredential.valueCiphertext;
 
       await manager.save(newCredential);

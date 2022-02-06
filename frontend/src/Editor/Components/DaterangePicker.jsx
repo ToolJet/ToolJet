@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import 'react-datetime/css/react-datetime.css';
 import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
+import { isEmpty } from 'lodash';
 
 export const DaterangePicker = function DaterangePicker({
   height,
@@ -11,26 +12,35 @@ export const DaterangePicker = function DaterangePicker({
   exposedVariables,
   setExposedVariable,
 }) {
-  const { visibility, disabledState } = styles;
+  const { borderRadius, visibility, disabledState } = styles;
 
-  const startDateProp = exposedVariables.startDate;
-  const endDateProp = exposedVariables.endDate;
+  const startDateProp = isEmpty(exposedVariables.startDate) ? null : exposedVariables.startDate;
+  const endDateProp = isEmpty(exposedVariables.endDate) ? null : exposedVariables.endDate;
   const formatProp = properties.format;
 
   const [focusedInput, setFocusedInput] = useState(null);
-  const [startDate, setStartDate] = useState(startDateProp ?? null);
-  const [endDate, setEndDate] = useState(endDateProp ?? null);
+  const [startDate, setStartDate] = useState(startDateProp);
+  const [endDate, setEndDate] = useState(endDateProp);
+
+  const dateRangeRef = useRef(null);
+
+  useEffect(() => {
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.borderRadius = `${Number.parseFloat(
+      borderRadius
+    )}px`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRangeRef.current, borderRadius]);
 
   function onDateChange(dates) {
     const start = dates.startDate;
     const end = dates.endDate;
 
     if (start) {
-      setExposedVariable('startDate', start.format(formatProp.value));
+      setExposedVariable('startDate', start.format(formatProp));
     }
 
     if (end) {
-      setExposedVariable('endDate', end.format(formatProp.value));
+      setExposedVariable('endDate', end.format(formatProp));
     }
 
     setStartDate(start);
@@ -54,6 +64,8 @@ export const DaterangePicker = function DaterangePicker({
         onFocusChange={(focus) => focusChanged(focus)}
         focusedInput={focusedInput}
         hideKeyboardShortcutsPanel={true}
+        displayFormat={formatProp}
+        ref={dateRangeRef}
       />
     </div>
   );

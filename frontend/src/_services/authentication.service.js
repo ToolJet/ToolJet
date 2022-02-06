@@ -62,11 +62,11 @@ function logout() {
   history.push(`/login?redirectTo=${window.location.pathname}`);
 }
 
-function signInViaOAuth(token) {
+function signInViaOAuth(ssoResponse) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }),
+    body: JSON.stringify(ssoResponse),
   };
 
   return fetch(`${config.apiUrl}/oauth/sign-in`, requestOptions)

@@ -42,7 +42,7 @@ describe('UsersService', () => {
       );
 
       const manager = getManager();
-      const newUser = await manager.findOne(User, { email: 'john@example.com' });
+      const newUser = await manager.findOne(User, { where: { email: 'john@example.com' } });
       expect(newUser.firstName).toEqual('John');
       expect(newUser.lastName).toEqual('Wick');
       expect(newUser.organizationId).toBe(adminUser.organizationId);
@@ -51,7 +51,9 @@ describe('UsersService', () => {
       const userGroups = await manager.find(UserGroupPermission, { userId: newUser.id });
       expect(userGroups).toHaveLength(1);
 
-      const groupPermission = await manager.findOne(GroupPermission, { id: userGroups[0].groupPermissionId });
+      const groupPermission = await manager.findOne(GroupPermission, {
+        where: { id: userGroups[0].groupPermissionId },
+      });
       expect(groupPermission.group).toEqual('all_users');
       expect(groupPermission.organizationId).toEqual(adminUser.organizationId);
     });

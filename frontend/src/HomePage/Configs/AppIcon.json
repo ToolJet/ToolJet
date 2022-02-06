@@ -1,0 +1,19 @@
+{
+  "iconList": [
+    "apps",
+    "business",
+    "calender",
+    "chart-bar",
+    "code",
+    "cpu",
+    "database",
+    "file-analytics",
+    "flame",
+    "presentation",
+    "report-search",
+    "settings",
+    "users",
+    "world"
+  ],
+  "defaultIcon": "apps"
+}

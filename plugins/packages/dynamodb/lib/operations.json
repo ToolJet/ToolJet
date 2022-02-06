@@ -1,0 +1,99 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Dynamodb datasource",
+  "description": "A schema defining Dynamodb datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_tables",
+          "name": "List Tables"
+        },
+        {
+          "value": "get_item",
+          "name": "Get Item"
+        },
+        {
+          "value": "query_table",
+          "name": "Query Table"
+        },
+        {
+          "value": "scan_table",
+          "name": "Scan Table"
+        },
+        {
+          "value": "delete_item",
+          "name": "Delete Item"
+        }
+      ]
+    },
+    "get_item": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table"
+      },
+      "key": {
+        "label": "Key name",
+        "key": "key",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter key name",
+        "height": "150px"
+      }
+    },
+    "query_table": {
+      "query_condition": {
+        "label": "Query condition",
+        "key": "query_condition",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter query condition",
+        "height": "150px"
+      }
+    },
+    "scan_table": {
+      "scan_condition": {
+        "label": "Scan condition",
+        "key": "scan_condition",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter scan condition",
+        "height": "150px"
+      }
+    },
+    "delete_item": {
+      "table": {
+        "label": "Table",
+        "key": "get_item",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table"
+      },
+      "key": {
+        "label": "Key name",
+        "key": "key",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter key name",
+        "height": "150px"
+      }
+    }
+  }
+}
