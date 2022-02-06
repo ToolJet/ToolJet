@@ -41,17 +41,11 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
 
     x = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
     y = Math.round(initialClientOffset.y - 10 + delta.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
-
-    console.log('dragging', initialClientOffset.y);
   }
 
   [x, y] = snapToGrid(canvasWidth, x, y);
 
   x += realCanvasDelta;
-
-  console.log('cvv', canvasWidth, x);
-
-  // x = (x * canvasWidth) / 100;
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
