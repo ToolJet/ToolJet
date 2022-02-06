@@ -84,7 +84,8 @@ export class DataQueriesService {
     return { service, sourceOptions, parsedQueryOptions };
   }
 
-  async runQuery(user: User, dataQuery: any, queryOptions: object): Promise<object> {
+  async runQuery(request: any, dataQuery: any, queryOptions: object): Promise<object> {
+    const user = request.user;
     const dataSource = dataQuery.dataSource?.id ? dataQuery.dataSource : {};
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
