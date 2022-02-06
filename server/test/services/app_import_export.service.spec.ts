@@ -75,7 +75,8 @@ describe('AppImportExportService', () => {
         kind: 'test_kind',
       });
 
-      const exportedApp = await getManager().findOne(App, application.id, {
+      const exportedApp = await getManager().findOne(App, {
+        where: { id: application.id },
         relations: ['dataQueries', 'dataSources', 'appVersions'],
       });
 
@@ -129,7 +130,8 @@ describe('AppImportExportService', () => {
       const exportedApp = await service.export(adminUser, app.id);
 
       const result = await service.import(adminUser, exportedApp);
-      const importedApp = await getManager().findOne(App, result.id, {
+      const importedApp = await getManager().findOne(App, {
+        where: { id: result.id },
         relations: ['dataQueries', 'dataSources', 'appVersions'],
       });
 
@@ -180,7 +182,8 @@ describe('AppImportExportService', () => {
 
       const exportedApp = await service.export(adminUser, application.id);
       const result = await service.import(adminUser, exportedApp);
-      const importedApp = await getManager().findOne(App, result.id, {
+      const importedApp = await getManager().findOne(App, {
+        where: { id: result.id },
         relations: ['dataQueries', 'dataSources', 'appVersions'],
       });
 

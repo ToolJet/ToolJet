@@ -1,0 +1,137 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Elasticsearch datasource",
+  "description": "A schema defining Elasticsearch datasource",
+  "type": "database",
+  "defaults": {
+    "query": "",
+    "operation": "search"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "search",
+          "name": "Search"
+        },
+        {
+          "value": "index_document",
+          "name": "Index a document"
+        },
+        {
+          "value": "get",
+          "name": "Get a document"
+        },
+        {
+          "value": "update",
+          "name": "Update a document"
+        }
+      ]
+    },
+    "search": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "placeholder": "{ \"name\": \"\" }",
+        "description": "Enter query",
+        "height": "150px"
+      }
+    },
+    "index_document": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"name\": \"The Hitchhikers Guide to the Galaxy\" }",
+        "description": "Enter body",
+        "height": "150px"
+      }
+    },
+    "get": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+        
+      },
+      "id": {
+        "label": "Id",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter id"
+      }
+    },
+    "update": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "id": {
+        "label": "Id",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter id"
+      },
+      "body": {
+        "label": "body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ doc: { page_count: 225 } }",
+        "description": "Enter body",
+        "height": "150px"
+      }
+    }
+  }
+}

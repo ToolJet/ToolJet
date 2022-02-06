@@ -280,6 +280,7 @@ export class FoldersService {
         'apps_in_folder_join',
         'apps.id = apps_in_folder_join.apps_in_folder_id'
       )
+      .innerJoinAndSelect('apps.user', 'user')
       .setParameters({
         ...folderAppsQb.getParameters(),
         ...viewableAppsQb.getParameters(),
