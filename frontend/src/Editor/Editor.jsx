@@ -837,7 +837,7 @@ class Editor extends React.Component {
     this.setState({ showComments: !this.state.showComments });
   };
 
-  configHandleClicked = (id, component) => {
+  setSelectedComponent = (id, component) => {
     this.switchSidebarTab(1);
     this.setState({ selectedComponent: { id, component } });
   };
@@ -1225,7 +1225,7 @@ class Editor extends React.Component {
                         onComponentOptionChanged={this.handleOnComponentOptionChanged}
                         onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
                         currentState={this.state.currentState}
-                        configHandleClicked={this.configHandleClicked}
+                        setSelectedComponent={this.setSelectedComponent}
                         handleUndo={this.handleUndo}
                         handleRedo={this.handleRedo}
                         removeComponent={this.removeComponent}
