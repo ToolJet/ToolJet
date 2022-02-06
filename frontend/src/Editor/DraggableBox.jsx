@@ -218,7 +218,9 @@ export const DraggableBox = function DraggableBox({
             onDrag={(e) => {
               e.preventDefault();
               e.stopImmediatePropagation();
-              setDragging(true);
+              if (!isDragging2) {
+                setDragging(true);
+              }
             }}
             resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
             resizeHandleStyles={resizerStyles}
