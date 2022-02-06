@@ -1,17 +1,12 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { useDrop, useDragLayer } from 'react-dnd';
+import { v4 as uuidv4 } from 'uuid';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import { snapToGrid as doSnapToGrid } from './snapToGrid';
 import update from 'immutability-helper';
 import { componentTypes } from './Components/components';
 import { computeComponentName } from '@/_helpers/utils';
-
-function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
-  );
-}
 
 export const SubContainer = ({
   mode,
@@ -27,13 +22,19 @@ export const SubContainer = ({
   zoomLevel,
   parent,
   parentRef,
-  configHandleClicked,
+  setSelectedComponent,
   deviceWindowWidth,
   selectedComponent,
   currentLayout,
   removeComponent,
   darkMode,
   containerCanvasWidth,
+  readOnly,
+  customResolvables,
+  parentComponent,
+  listViewItemOptions,
+  onComponentHover,
+  hoveredComponent,
 }) => {
   const [_currentParentRef, setParentRef] = useState(parentRef);
 
@@ -50,7 +51,7 @@ export const SubContainer = ({
 
   Object.keys(allComponents).forEach((key) => {
     if (allComponents[key].parent === parent) {
-      childComponents[key] = allComponents[key];
+      childComponents[key] = { ...allComponents[key], component: { ...allComponents[key]['component'], parent } };
     }
   });
 
@@ -71,13 +72,11 @@ export const SubContainer = ({
           },
         })
       );
-      console.log('new boxes - 1', boxes);
     },
     [boxes]
   );
 
   useEffect(() => {
-    console.log('new boxes - 2', boxes);
     if (appDefinitionChanged) {
       appDefinitionChanged({ ...appDefinition, components: boxes });
     }
@@ -177,16 +176,19 @@ export const SubContainer = ({
         } else {
           //  This is a new component
           componentMeta = componentTypes.find((component) => component.component === item.component.component);
-          console.log('adding new component');
           componentData = JSON.parse(JSON.stringify(componentMeta));
           componentData.name = computeComponentName(componentData.component, boxes);
 
           const offsetFromTopOfWindow = canvasBoundingRect.top;
           const offsetFromLeftOfWindow = canvasBoundingRect.left;
           const currentOffset = monitor.getSourceClientOffset();
+          const initialClientOffset = monitor.getInitialClientOffset();
+          const delta = monitor.getDifferenceFromInitialOffset();
 
           left = Math.round(currentOffset.x + currentOffset.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
-          top = Math.round(currentOffset.y + currentOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow);
+          top = Math.round(
+            initialClientOffset.y - 10 + delta.y + initialClientOffset.y * (1 - zoomLevel) - offsetFromTopOfWindow
+          );
 
           id = uuidv4();
         }
@@ -352,18 +354,47 @@ export const SubContainer = ({
     backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
   };
 
+  function onComponentOptionChangedForSubcontainer(component, optionName, value, extraProps) {
+    if (parentComponent?.component === 'Listview') {
+      let newData = currentState.components[parentComponent.name]?.data || [];
+      newData[listViewItemOptions.index] = {
+        ...newData[listViewItemOptions.index],
+        [component.name]: {
+          ...(newData[listViewItemOptions.index] ? newData[listViewItemOptions.index][component.name] : {}),
+          [optionName]: value,
+        },
+      };
+      onComponentOptionChanged(parentComponent, 'data', newData);
+    } else {
+      onComponentOptionChanged(component, optionName, value, extraProps);
+    }
+  }
+
+  function customRemoveComponent(component) {
+    const componentName = appDefinition.components[component.id]['component'].name;
+    removeComponent(component);
+    if (parentComponent.component === 'Listview') {
+      const currentData = currentState.components[parentComponent.name]?.data || [];
+      const newData = currentData.map((widget) => {
+        delete widget[componentName];
+        return widget;
+      });
+      onComponentOptionChanged(parentComponent, 'data', newData);
+    }
+  }
+
   return (
     <div
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
-      className={`real-canvas ${isDragging || isResizing ? ' show-grid' : ''}`}
+      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
     >
-      {Object.keys(childComponents).map((key) => (
+      {Object.keys(childComponents).map((key, index) => (
         <DraggableBox
           onComponentClick={onComponentClick}
           onEvent={onEvent}
-          onComponentOptionChanged={onComponentOptionChanged}
+          onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
           onComponentOptionsChanged={onComponentOptionsChanged}
           key={key}
           currentState={currentState}
@@ -371,19 +402,27 @@ export const SubContainer = ({
           onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
-          {...boxes[key]}
+          extraProps={{ listviewItemIndex: listViewItemOptions?.index }}
+          allComponents={allComponents}
+          {...childComponents[key]}
           mode={mode}
           resizingStatusChanged={(status) => setIsResizing(status)}
           draggingStatusChanged={(status) => setIsDragging(status)}
           inCanvas={true}
           zoomLevel={zoomLevel}
-          configHandleClicked={configHandleClicked}
+          setSelectedComponent={setSelectedComponent}
           currentLayout={currentLayout}
           selectedComponent={selectedComponent}
           deviceWindowWidth={deviceWindowWidth}
           isSelectedComponent={selectedComponent ? selectedComponent.id === key : false}
-          removeComponent={removeComponent}
+          removeComponent={customRemoveComponent}
           canvasWidth={getContainerCanvasWidth()}
+          readOnly={readOnly}
+          darkMode={darkMode}
+          customResolvables={customResolvables}
+          onComponentHover={onComponentHover}
+          hoveredComponent={hoveredComponent}
+          parentId={parentComponent?.name}
           containerProps={{
             mode,
             snapToGrid,
@@ -396,12 +435,15 @@ export const SubContainer = ({
             onComponentOptionsChanged,
             appLoading,
             zoomLevel,
-            configHandleClicked,
+            setSelectedComponent,
             removeComponent,
             currentLayout,
             deviceWindowWidth,
             selectedComponent,
             darkMode,
+            readOnly,
+            onComponentHover,
+            hoveredComponent,
           }}
         />
       ))}

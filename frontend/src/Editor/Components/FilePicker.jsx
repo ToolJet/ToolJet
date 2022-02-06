@@ -3,15 +3,26 @@ import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 
-export const FilePicker = ({ width, height, component, currentState, onComponentOptionChanged, onEvent, darkMode }) => {
+export const FilePicker = ({
+  width,
+  height,
+  component,
+  currentState,
+  onComponentOptionChanged,
+  onEvent,
+  darkMode,
+  styles,
+}) => {
   //* properties definitions
-  const enableDropzone = component.definition.properties.enableDropzone?.value ?? true;
+  const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
   const enableMultiple = component.definition.properties.enableMultiple?.value ?? false;
   const fileType = component.definition.properties.fileType?.value ?? 'image/*';
   const maxSize = component.definition.properties.maxSize?.value ?? 1048576;
   const minSize = component.definition.properties.minSize?.value ?? 0;
+  const parseContent = component.definition.properties.parseContent?.value ?? false;
+  const fileTypeFromExtension = component.definition.properties.parseFileType?.value ?? 'auto-detect';
 
   const parsedEnableDropzone =
     typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone, currentState) : true;
@@ -44,7 +55,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
     justifyContent: 'center',
     padding: '20px',
     borderWidth: 1.5,
-    borderRadius: 2,
+    borderRadius: `${styles.borderRadius}px`,
     borderColor: '#42536A',
     borderStyle: 'dashed',
     color: '#bdbdbd',
@@ -127,12 +138,19 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
     // * readAsDataURL
     const readFileAsDataURL = await getFileData(file, 'readAsDataURL');
+    const autoDetectFileType = fileTypeFromExtension === 'auto-detect';
+
+    // * parse file content
+    const shouldProcessFileParsing = parseContent
+      ? await parseFileContent(file, autoDetectFileType, fileTypeFromExtension)
+      : false;
 
     return {
       name: file.name,
       type: file.type,
       content: readFileAsText,
       dataURL: readFileAsDataURL,
+      parsedData: shouldProcessFileParsing ? await processFileContent(file.type, readFileAsText) : null,
     };
   };
 
@@ -143,6 +161,9 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
 
     if (acceptedFiles.length !== 0) {
       const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
+      if (parseContent) {
+        onComponentOptionChanged(component, 'isParsing', true);
+      }
       acceptedFiles.map((acceptedFile) => {
         const acceptedFileData = fileReader(acceptedFile);
         acceptedFileData.then((data) => {
@@ -159,6 +180,7 @@ export const FilePicker = ({ width, height, component, currentState, onComponent
             setTimeout(() => {
               setShowSelectedFiles(true);
               setAccepted(false);
+              onComponentOptionChanged(component, 'isParsing', false);
               resolve();
             }, 600);
           });
@@ -280,4 +302,66 @@ FilePicker.AcceptedFiles = ({ children, width, height, showFilezone, bgThemeColo
       <div className="row accepted-files">{children}</div>
     </aside>
   );
+};
+
+const processCSV = (str, delimiter = ',') => {
+  const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
+  const rows = str.slice(str.indexOf('\n') + 1).split('\n');
+
+  try {
+    const newArray = rows.map((row) => {
+      const values = row.split(delimiter);
+      const eachObject = headers.reduce((obj, header, i) => {
+        obj[header] = values[i];
+        return obj;
+      }, {});
+      return eachObject;
+    });
+
+    return newArray;
+  } catch (error) {
+    console.log(error);
+    handleErrors(error);
+  }
+};
+
+const processFileContent = (fileType, fileContent) => {
+  switch (fileType) {
+    case 'text/csv':
+      return processCSV(fileContent);
+
+    default:
+      break;
+  }
+};
+
+const parseFileContent = (file, autoDetect = false, parseFileType) => {
+  const fileType = file.type.split('/')[1];
+
+  if (autoDetect) {
+    return detectParserFile(file);
+  } else {
+    return fileType === parseFileType;
+  }
+};
+
+const detectParserFile = (file) => {
+  return (
+    file.type === 'text/csv' ||
+    file.type === 'application/vnd.ms-excel' ||
+    file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+};
+
+//? handle bad data in csv parser (e.g. empty cells) OR errors
+const handleErrors = (data) => {
+  const badData = data.filter((row) => {
+    return Object.values(row).some((value) => value === '');
+  });
+
+  const errors = data.filter((row) => {
+    return Object.values(row).some((value) => value === 'ERROR');
+  });
+
+  return [badData, errors];
 };

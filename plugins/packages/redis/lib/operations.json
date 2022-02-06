@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Redis data query schema",
+  "description": "A schema defining redis data query",
+  "type": "database",
+  "defaults": {
+    "query": "PING"
+  },
+  "properties": {
+    "query": {
+      "key": "query",
+      "type": "codehinter",
+      "description": "Enter query",
+      "placeholder": "PING",
+      "height": "150px"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}

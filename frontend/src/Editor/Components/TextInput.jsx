@@ -8,15 +8,13 @@ export const TextInput = function TextInput({ height, validate, properties, styl
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
-
   useEffect(() => {
     setValue(properties.value);
     setExposedVariable('value', properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
-
   return (
-    <div>
+    <div className="text-input">
       <input
         disabled={styles.disabledState}
         onChange={(e) => {
@@ -27,7 +25,7 @@ export const TextInput = function TextInput({ height, validate, properties, styl
         type="text"
         className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon`}
         placeholder={properties.placeholder}
-        style={{ height, display: styles.visibility ? '' : 'none' }}
+        style={{ height, display: styles.visibility ? '' : 'none', borderRadius: `${styles.borderRadius}px` }}
         value={value}
       />
       <div className="invalid-feedback">{validationError}</div>
