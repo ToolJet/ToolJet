@@ -29,7 +29,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ### Visual application builder 
 <p align="center">
   <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/151908119-ddabf0fe-b226-4c19-8ed7-b541a186987d.png"/>
+    <img src="https://user-images.githubusercontent.com/7828962/152667206-aaa0ae52-1260-48ce-9d0d-0f2e478f9fd1.png"/>
   </kbd>
 </p>
 
@@ -37,6 +37,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 <img width="1270" alt="2" src="https://user-images.githubusercontent.com/7828962/152630861-49af6c65-8ba1-4ea8-9205-9da271188f16.png">
 
 ![3](https://user-images.githubusercontent.com/7828962/152630864-6016f2f5-0e4c-421a-aba2-a86497bca5b5.png)
+
 
 ### Collaborate
 ![Comment_final_final](https://user-images.githubusercontent.com/7828962/152097198-ab886d76-1275-48d5-b3b6-5bfdc8bfff65.gif)
